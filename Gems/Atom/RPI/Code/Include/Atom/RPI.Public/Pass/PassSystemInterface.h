@@ -13,6 +13,7 @@
 #include <AzCore/std/string/string_view.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 
 #include <Atom/RPI.Reflect/Base.h>
@@ -66,7 +67,7 @@ namespace AZ
             ContinueVisitingPasses,
         };
 
-        class PassSystemInterface
+        class ATOM_RPI_PUBLIC_API PassSystemInterface
         {
             friend class Pass;
             friend class ParentPass;

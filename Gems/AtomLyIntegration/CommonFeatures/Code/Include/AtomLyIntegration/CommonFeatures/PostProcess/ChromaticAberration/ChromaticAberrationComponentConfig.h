@@ -18,6 +18,7 @@ namespace AZ
         class ChromaticAberrationComponentConfig final : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(ChromaticAberrationComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::ChromaticAberrationComponentConfig, "{D0E889C8-C0B0-4B88-8672-91A1A2D21EFF}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

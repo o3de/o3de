@@ -17,6 +17,25 @@
                         "GameObjectCreation":
                         {
                             "Editor info remover": { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
+                            "Asset platform component remover": 
+                            { 
+                                "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::AssetPlatformComponentRemover",
+                                "PlatformExcludedComponents":
+                                {
+                                    "server": [ "{C7801FA8-3E82-4D40-B039-4854F1892FDE}",  // MeshComponent
+                                                "{E5A56D7F-C63E-4080-BF62-01326AC60982}",  // MaterialComponent
+                                                "{F82379FB-E2AE-4F75-A6F4-1AE5F5DA42E8}",  // TerrainMacroMaterialComponent
+                                                "{9380B039-EB03-4920-9F06-D90481E739E6}",  // SimpleLODComponent
+                                                "{AC9B8FA0-A6DA-4377-8219-25BA7E4A22E9}",  // Cloth Component
+                                                "{9B900A04-192F-4F5E-AE31-762605D8159A}",  // DiffuseProbeGridComponent
+                                                "{33A1302F-A769-4D06-820A-096A4836A7E9}",  // ImageBasedLightComponent
+                                                "{744B3961-6242-4461-983F-2817D9D29C30}",  // AreaLightComponent
+                                                "{13054592-2753-46C2-B19E-59670D4CE03D}",  // DirectionalLightComponent
+                                                "{515957E3-8354-4048-8D6C-98628EF21804}",  // PopcornFX::EmitterComponent
+                                                "{F1DF3F60-CD2D-421A-8CF6-AD9851D4C2B2}"  // PopcornFXHelperLoopEmitterGameComponent
+                                              ]
+                                }
+                            },
                             "Prefab catchment": 
                             { 
                                 "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor",

@@ -16,7 +16,7 @@ namespace UnitTest
     // In order to have confidence in our other unit tests, we need to ensure ErrorMessageFinder correctly detects error messages
 
     class ErrorMessageFinderTests
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::vector<AZStd::string> m_reportedFailures;

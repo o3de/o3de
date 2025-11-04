@@ -61,7 +61,14 @@
        </widget>
       </item>
       <item row="0" column="8">
-       <widget class="QComboBox" name="m_shotCombo"/>
+       <widget class="QComboBox" name="m_shotCombo">
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item row="1" column="7" colspan="2">
        <spacer name="horizontalSpacer">
@@ -117,7 +124,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="m_resolutionCombo"/>
+         <widget class="QComboBox" name="m_resolutionCombo">
+          <property name="minimumSize">
+           <size>
+            <width>180</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="label_6">

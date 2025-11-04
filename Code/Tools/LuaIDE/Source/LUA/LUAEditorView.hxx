@@ -14,7 +14,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <QtWidgets/QDockWidget>
+#include <QDockWidget>
 
 #include "LUAEditorContextInterface.h"
 #include "LUABreakpointTrackerMessages.h"
@@ -62,7 +62,7 @@ namespace LUAEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(LUAViewWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAViewWidget, AZ::SystemAllocator);
 
         LUAViewWidget(QWidget *pParent = NULL);
         virtual ~LUAViewWidget();
@@ -177,9 +177,6 @@ namespace LUAEditor
         AzToolsFramework::ProgressShield *m_pLoadingProgressShield;
         AzToolsFramework::ProgressShield *m_pSavingProgressShield;
         AzToolsFramework::ProgressShield *m_pRequestingEditProgressShield;
-
-        int m_breakpointMarker_Waiting;
-        bool m_bHasInitialUpdate;
 
         struct BreakpointData
         {

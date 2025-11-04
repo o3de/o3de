@@ -15,11 +15,11 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <LyViewPaneNames.h>
-#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <Editor/Framework/Configuration.h>
-#include <ScriptCanvas/Components/EditorUtils.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Bus/RequestBus.h>
+#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
+#include <ScriptCanvas/Components/EditorUtils.h>
 
 namespace ScriptCanvasEditor
 {
@@ -155,17 +155,9 @@ namespace ScriptCanvasEditor
 
     void Configuration::OpenEditor([[maybe_unused]] const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
     {
-        AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-
         if (m_sourceHandle.IsDescriptionValid())
         {
-            AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, m_sourceHandle, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
-
-            if (!openOutcome)
-            {
-                AZ_Warning("Script Canvas", openOutcome, "%s", openOutcome.GetError().data());
-            }
+            SystemRequestBus::Broadcast(&SystemRequestBus::Events::OpenScriptCanvasEditor, m_sourceHandle.AbsolutePath().c_str());
         }
     }
 

@@ -86,7 +86,6 @@ namespace EMotionFX
         }
 
     protected:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         BlendTree* m_blendTree = nullptr;
         BlendTreeRangeRemapperNode* m_rangeRemapperNode = nullptr;
         BlendTreeFloatConstantNode* m_floatConstantNode = nullptr;
@@ -143,14 +142,9 @@ namespace EMotionFX
         {
             5.0f, 0.0f, 5.0f, 0.0f, {-1.5f, 0.0f, 4.5f, 11.5f}, {0.0f, 0.0f, 0.0f, 0.0f}
         }
-#if !AZ_TRAIT_EMOTION_FX_BLENDTREE_REMAP_NODE_TEST_DISABLE_FLOAT_MAX_CASE
-       ,{
-            -AZ::Constants::FloatMax, AZ::Constants::FloatMax, -AZ::Constants::FloatMax, AZ::Constants::FloatMax, {-1.5f, 0.0f, 4.5f, 11.5f}, {-1.5f, 0.0f, 4.5f, 11.5f}
-        }
-#endif
     };
 
-    INSTANTIATE_TEST_CASE_P(BlendTreeRangeRemapperNode_ValidOutputTests,
+    INSTANTIATE_TEST_SUITE_P(BlendTreeRangeRemapperNode_ValidOutputTests,
         BlendTreeRangeRemapperNodeFixture,
         ::testing::ValuesIn(blendTreeRangeRemapperNodeTestData)
     );

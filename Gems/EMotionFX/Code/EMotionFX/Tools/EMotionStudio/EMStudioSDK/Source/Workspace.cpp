@@ -23,6 +23,7 @@
 #include <EMotionFX/Source/ActorManager.h>
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
@@ -126,6 +127,8 @@ namespace EMStudio
 
     bool Workspace::SaveToFile(const char* filename) const
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         QSettings settings(filename, QSettings::IniFormat, GetManager()->GetMainWindow());
 
         AZStd::string commandString;

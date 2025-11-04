@@ -72,7 +72,7 @@ namespace GraphCanvas
     {
         if (classElement.GetVersion() == 1)
         {
-            AZ::Crc32 componentDataId = AZ_CRC("ComponentData", 0xa6acc628);
+            AZ::Crc32 componentDataId = AZ_CRC_CE("ComponentData");
             AZStd::unordered_map< AZ::Uuid, GraphCanvas::ComponentSaveData* > componentSaveData;
 
             AZ::SerializeContext::DataElementNode* dataNode = classElement.FindSubElement(componentDataId);
@@ -127,7 +127,6 @@ namespace GraphCanvas
                     "LmbrCentral", "Provides factory methods for Graph Canvas components")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }            
             
@@ -174,7 +173,7 @@ namespace GraphCanvas
 
     void GraphCanvasSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        required.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     void GraphCanvasSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

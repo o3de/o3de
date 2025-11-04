@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME StartingPointMovement ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         startingpointmovement_shared_files.cmake
@@ -20,8 +20,18 @@ ly_add_target(
             AZ::AzFramework
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/StartingPointMovementGem.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the above module is for use in all application types (there is no tool specialization)
-ly_create_alias(NAME StartingPointMovement.Servers  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
-ly_create_alias(NAME StartingPointMovement.Clients  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
-ly_create_alias(NAME StartingPointMovement.Builders NAMESPACE Gem TARGETS Gem::StartingPointMovement)
-ly_create_alias(NAME StartingPointMovement.Tools    NAMESPACE Gem TARGETS Gem::StartingPointMovement)
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})

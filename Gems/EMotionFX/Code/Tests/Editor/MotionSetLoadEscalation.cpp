@@ -53,9 +53,9 @@ namespace EMotionFX
 
     struct MotionSetFixture
         : ComponentFixture<
-            AZ::MemoryComponent,
             AZ::AssetManagerComponent,
             AZ::JobManagerComponent,
+            AZ::TaskGraphSystemComponent,
             AZ::StreamerComponent,
             AzFramework::AssetCatalogComponent,
             AzToolsFramework::Components::PropertyManagerComponent,
@@ -103,6 +103,7 @@ namespace EMotionFX
         MOCK_METHOD1(SetBranchToken, void (const AZStd::string&));
         MOCK_METHOD1(SetProjectName, void (const AZStd::string&));
         MOCK_METHOD0(ShowAssetProcessor, void());
+        MOCK_METHOD1(UpdateSourceControlStatus, void (bool));
         MOCK_METHOD1(ShowInAssetProcessor, void(const AZStd::string&));
         MOCK_METHOD1(WaitUntilAssetProcessorReady, bool(AZStd::chrono::duration<float>));
         MOCK_METHOD1(WaitUntilAssetProcessorConnected, bool(AZStd::chrono::duration<float>));

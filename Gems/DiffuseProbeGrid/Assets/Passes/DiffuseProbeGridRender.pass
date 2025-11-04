@@ -41,7 +41,7 @@
             "PassData": {
                 "$type": "RasterPassData",
                 "DrawListTag": "diffuseprobegridrender",
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

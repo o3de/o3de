@@ -8,12 +8,27 @@
 
 #pragma once
 
+#include <Compression/CompressionTypeIds.h>
+
 namespace Compression
 {
-    //! Returns a boolean true if decompression has completed
-    constexpr inline CompressionResultData::operator bool() const
+    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(CompressionOptions, "CompressionOptions", CompressionOptionsTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(CompressionOptions);
+    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(CompressionRegistrarInterface, "CompressionRegistrarInterface", CompressionRegistrarInterfaceTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(CompressionRegistrarInterface);
+
+    inline CompressionOptions::~CompressionOptions() = default;
+
+    //! Returns a boolean true if compression has completed
+    constexpr inline CompressionOutcome::operator bool() const
     {
         return m_result == CompressionResult::Complete;
+    }
+
+    //! Returns a boolean true if compression has completed
+    constexpr inline CompressionResultData::operator bool() const
+    {
+        return bool(m_compressionOutcome);
     }
 
     //! Retrieves the compressed data size
@@ -27,4 +42,5 @@ namespace Compression
     {
         return m_compressedBuffer.data();
     }
+
 } // namespace Compression

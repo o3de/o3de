@@ -17,6 +17,11 @@ namespace AZ
             m_device = &device;
         }
 
+        Device& FrameGraphExecuteGroupBase::GetDevice() const
+        {
+            return *m_device;
+        }
+
         ExecuteWorkRequest&& FrameGraphExecuteGroupBase::MakeWorkRequest()
         {
 #if defined(AZ_ENABLE_TRACING)

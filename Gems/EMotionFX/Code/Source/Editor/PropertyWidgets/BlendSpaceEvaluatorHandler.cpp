@@ -17,8 +17,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceEvaluatorPicker, PropertyWidgetAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceEvaluatorHandler,PropertyWidgetAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceEvaluatorPicker, PropertyWidgetAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceEvaluatorHandler,PropertyWidgetAllocator)
 
     BlendSpaceEvaluatorPicker::BlendSpaceEvaluatorPicker(QWidget* parent)
         : QComboBox(parent)
@@ -86,7 +86,7 @@ namespace EMotionFX
 
     AZ::u32 BlendSpaceEvaluatorHandler::GetHandlerName() const
     {
-        return AZ_CRC("BlendSpaceEvaluator", 0x9a3f7d07);
+        return AZ_CRC_CE("BlendSpaceEvaluator");
     }
 
 
@@ -96,7 +96,8 @@ namespace EMotionFX
 
         connect(picker, &BlendSpaceEvaluatorPicker::EvaluatorChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;

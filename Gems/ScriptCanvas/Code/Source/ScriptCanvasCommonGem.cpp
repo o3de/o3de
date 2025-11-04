@@ -56,14 +56,7 @@ namespace ScriptCanvas
         MathNodeUtilities::RandomEngineInit();
         InitDataRegistry();
 
-        ScriptCanvas::AutoGenRegistryManager::Init();
-        if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())
-        {
-            for (auto descriptor : ScriptCanvas::AutoGenRegistryManager::GetComponentDescriptors())
-            {
-                componentApplication->RegisterComponentDescriptor(descriptor);
-            }
-        }
+        ScriptCanvasModel::Instance().Init();
     }
 
     ScriptCanvasModuleCommon::~ScriptCanvasModuleCommon()

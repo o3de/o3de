@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionInstancePool, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionInstancePool, MotionAllocator)
 
 
     // constructor
@@ -87,7 +87,7 @@ namespace EMotionFX
 
     // constructor
     MotionInstancePool::MotionInstancePool()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_pool = nullptr;
     }

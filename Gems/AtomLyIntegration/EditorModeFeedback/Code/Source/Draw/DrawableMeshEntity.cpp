@@ -73,7 +73,7 @@ namespace AZ::Render
     {
         AZ::Render::MeshHandleStateNotificationBus::Handler::BusConnect(m_entityId);
     }
-        
+
     DrawableMeshEntity::~DrawableMeshEntity()
     {
         AZ::Render::MeshHandleStateNotificationBus::Handler::BusDisconnect();
@@ -84,7 +84,7 @@ namespace AZ::Render
         m_modelLodIndex = RPI::ModelLodIndex::Null;
         m_meshDrawPackets.clear();
     }
- 
+
     bool DrawableMeshEntity::CanDraw() const
     {
         return !m_meshDrawPackets.empty();
@@ -99,10 +99,10 @@ namespace AZ::Render
                 false,
                 "Attempted to draw entity '%s' but entity has no draw data!",
                 m_entityId.ToString().c_str());
-        
+
             return;
         }
-        
+
         const DrawableMetaData drawabaleMetaData(m_entityId);
 
         // If the mesh level of detail index has changed, rebuild the mesh draw packets with the new index
@@ -112,7 +112,7 @@ namespace AZ::Render
         }
 
         const auto model = drawabaleMetaData.GetFeatureProcessor()->GetModel(*m_meshHandle);
-        
+
         if (!model)
         {
             return;
@@ -123,21 +123,25 @@ namespace AZ::Render
         {
             CreateOrUpdateMeshDrawPackets(drawabaleMetaData.GetFeatureProcessor(), modelLodIndex, model);
         }
-        
+
         AZ::RPI::DynamicDrawInterface* dynamicDraw = AZ::RPI::GetDynamicDraw();
         for (auto& drawPacket : m_meshDrawPackets)
         {
             drawPacket.Update(*drawabaleMetaData.GetScene());
-            dynamicDraw->AddDrawPacket(drawabaleMetaData.GetScene(), drawPacket.GetRHIDrawPacket());
+            if (auto* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
+                rhiDrawPacket != nullptr)
+            {
+                dynamicDraw->AddDrawPacket(drawabaleMetaData.GetScene(), rhiDrawPacket);
+            }
         }
     }
-         
+
     RPI::ModelLodIndex DrawableMeshEntity::GetModelLodIndex(const RPI::ViewPtr view, Data::Instance<RPI::Model> model) const
     {
         const auto worldTM = AzToolsFramework::GetWorldTransform(m_entityId);
         return RPI::ModelLodUtils::SelectLod(view.get(), worldTM, *model);
     }
-        
+
     void DrawableMeshEntity::OnMeshHandleSet(const MeshFeatureProcessorInterface::MeshHandle* meshHandle)
     {
         m_meshHandle = meshHandle;
@@ -154,7 +158,7 @@ namespace AZ::Render
             CreateOrUpdateMeshDrawPackets(drawabaleMetaData.GetFeatureProcessor(), modelLodIndex, model);
         }
     }
-        
+
     void DrawableMeshEntity::CreateOrUpdateMeshDrawPackets(
         const MeshFeatureProcessorInterface* featureProcessor, const RPI::ModelLodIndex modelLodIndex, Data::Instance<RPI::Model> model)
     {
@@ -164,7 +168,7 @@ namespace AZ::Render
         {
             return;
         }
-        
+
         if (m_meshHandle->IsValid())
         {
             const auto maskMeshObjectSrg = CreateMaskShaderResourceGroup(featureProcessor);
@@ -176,7 +180,8 @@ namespace AZ::Render
     void DrawableMeshEntity::BuildMeshDrawPackets(
         const Data::Asset<RPI::ModelAsset> modelAsset, Data::Instance<RPI::ShaderResourceGroup> meshObjectSrg)
     {
-        const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[m_modelLodIndex.m_index];
+        const auto modelLodAssets = modelAsset->GetLodAssets();
+        const Data::Asset<RPI::ModelLodAsset>& modelLodAsset = modelLodAssets[m_modelLodIndex.m_index];
         Data::Instance<RPI::ModelLod> modelLod = RPI::ModelLod::FindOrCreate(modelLodAsset, modelAsset).get();
 
         for (size_t i = 0; i < modelLod->GetMeshes().size(); i++)

@@ -9,7 +9,6 @@
 #pragma once
 
 // include MCore
-#include <MCore/Source/Color.h>
 #include <MCore/Source/CommandGroup.h>
 #include <MCore/Source/CommandManagerCallback.h>
 
@@ -87,7 +86,6 @@ namespace EMStudio
         void SetAutoLoadLastWorkspace(bool autoLoad)                            { m_autoLoadLastWorkspace = autoLoad; }
         bool GetAutoLoadLastWorkspace() const                                   { return m_autoLoadLastWorkspace; }
 
-        const char* ConstructHTMLLink(const char* text, const MCore::RGBAColor& color = MCore::RGBAColor(0.95315f, 0.609375f, 0.109375f));
         void SetWidgetAsInvalidInput(QWidget* widget);
 
         static void MakeTransparentButton(QToolButton* button, const char* iconFileName, const char* toolTipText, uint32 width = 20, uint32 height = 20);

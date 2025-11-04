@@ -9,6 +9,8 @@
 #include <API/EditorAssetSystemAPI.h>
 #include <AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>
+#include <Atom/Feature/Utils/LightingPreset.h>
+#include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -40,7 +42,7 @@ namespace AZ
                 AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
 
                 // if it's a source thumbnail key, find first product with a matching asset type
-                auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data());
+                auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.get());
                 if (sourceKey)
                 {
                     bool foundIt = false;
@@ -50,7 +52,7 @@ namespace AZ
                 }
 
                 // if it's a product thumbnail key just return its assetInfo
-                auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.data());
+                auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.get());
                 if (productKey)
                 {
                     AZ::Data::AssetInfo assetInfo;
@@ -75,8 +77,8 @@ namespace AZ
                             // Reject any assets that don't match supported source file extensions
                             if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type())
                             {
-                                if (!AZ::StringFunc::EndsWith(path.c_str(), ".modelpreset.azasset") &&
-                                    !AZ::StringFunc::EndsWith(path.c_str(), ".lightingpreset.azasset"))
+                                if (!path.ends_with(AZ::Render::LightingPreset::Extension) &&
+                                    !path.ends_with(AZ::Render::ModelPreset::Extension))
                                 {
                                     continue;
                                 }

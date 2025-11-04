@@ -7,11 +7,15 @@
  */
 #pragma once
 
-#include "AzCore/Outcome/Internal/OutcomeStorage.h"
-#include "AzCore/RTTI/TypeInfo.h"
+#include <AzCore/std/utility/expected.h>
+#include <AzCore/RTTI/TypeInfo.h>
+
 
 namespace AZ
 {
+    // Add specializtion for AZStd::unexpect_t
+    AZ_TYPE_INFO_SPECIALIZE(AZStd::unexpect_t, "{D293EBFF-F38A-420D-AB93-837FF08ED9BE}");
+
     //////////////////////////////////////////////////////////////////////////
     // Outcome
 
@@ -76,20 +80,28 @@ namespace AZ
      *
      * \endcode
      */
-    template <class ValueT, class ErrorT = void>
+    template <class ValueT, class ErrorT = AZStd::unexpect_t>
     class Outcome
+        // AZStd::expected doesn't support a void error type as it doesn't serve any purpose
+        // For an AZ::Outcome that uses a void ErrorType, an AZStd::optional should be used instead
+        // The AZStd::unexpect_t is just used as a shim for backwards compatibility
+        : AZStd::expected<ValueT, AZStd::conditional_t<!AZStd::is_void_v<ErrorT>, ErrorT, AZStd::unexpect_t>>
     {
+        using BaseType = AZStd::expected<ValueT, AZStd::conditional_t<!AZStd::is_void_v<ErrorT>, ErrorT, AZStd::unexpect_t>>;
     public:
-        using ValueType = ValueT;
-        using ErrorType = ErrorT;
+        using ValueType = typename BaseType::value_type;
+        // Using the AZStd::unexpect_t as a placeholder for the void error type
+        using ErrorType = typename BaseType::error_type;
 
     private:
-        using SuccessType = SuccessValue<ValueType>;
-        using FailureType = FailureValue<ErrorType>;
+        using SuccessType = AZStd::conditional_t<!AZStd::is_void_v<ValueType>, ValueType, AZStd::in_place_t>;
+        using FailureType = AZStd::unexpected<ErrorType>;
 
     public:
+        //! Bring the AZStd::expected constructors into scope
+        using BaseType::BaseType;
         /**
-        Default construction is only allowed to support generic interactions with Outcome objects of all template argumetns; user
+        Default construction is only allowed to support generic interactions with Outcome objects of all template arguments; user
         Outcome must be either in success state or failure state
         */
         AZ_FORCE_INLINE Outcome();
@@ -111,6 +123,7 @@ namespace AZ
 
         //! Move constructor.
         AZ_FORCE_INLINE Outcome(Outcome&& other);
+
 
         AZ_FORCE_INLINE ~Outcome();
 
@@ -138,75 +151,38 @@ namespace AZ
 
         //! Returns value from successful outcome.
         //! Behavior is undefined if outcome was a failure.
-        template <class Value_Type = ValueType, class = AZ::Internal::enable_if_not_void<Value_Type> >
+        template <class Value_Type = ValueType, class = AZStd::enable_if_t<!AZStd::is_void_v<Value_Type>> >
         AZ_FORCE_INLINE Value_Type& GetValue();
 
-        template <class Value_Type = ValueType, class = AZ::Internal::enable_if_not_void<Value_Type> >
+        template <class Value_Type = ValueType, class = AZStd::enable_if_t<!AZStd::is_void_v<Value_Type>> >
         AZ_FORCE_INLINE const Value_Type& GetValue() const;
 
         //! Returns value from successful outcome as rvalue reference.
         //! Note that outcome's value may have its contents stolen,
         //! rendering it invalid for further access.
         //! Behavior is undefined if outcome was a failure.
-        template <class Value_Type = ValueType, class = AZ::Internal::enable_if_not_void<Value_Type> >
-        AZ_FORCE_INLINE Value_Type && TakeValue();
+        template <class Value_Type = ValueType, class = AZStd::enable_if_t<!AZStd::is_void_v<Value_Type>> >
+        AZ_FORCE_INLINE Value_Type&& TakeValue();
 
         //! Returns value from successful outcome.
         //! defaultValue is returned if outcome was a failure.
-        template <class U, class Value_Type = ValueType, class = AZ::Internal::enable_if_not_void<Value_Type> >
+        template <class U, class Value_Type = ValueType, class = AZStd::enable_if_t<!AZStd::is_void_v<Value_Type>> >
         AZ_FORCE_INLINE Value_Type GetValueOr(U&& defaultValue) const;
 
         //! Returns error for failed outcome.
         //! Behavior is undefined if outcome was a success.
-        template <class Error_Type = ErrorType, class = AZ::Internal::enable_if_not_void<Error_Type> >
+        template <class Error_Type = ErrorType, class = AZStd::enable_if_t<!AZStd::is_void_v<Error_Type>> >
         AZ_FORCE_INLINE Error_Type& GetError();
 
-        template <class Error_Type = ErrorType, class = AZ::Internal::enable_if_not_void<Error_Type> >
+        template <class Error_Type = ErrorType, class = AZStd::enable_if_t<!AZStd::is_void_v<Error_Type>> >
         AZ_FORCE_INLINE const Error_Type& GetError() const;
 
         //! Returns error for failed outcome as rvalue reference.
         //! Note that outcome's error may have its contents stolen,
         //! rendering it invalid for further access.
         //! Behavior is undefined if outcome was a success.
-        template <class Error_Type = ErrorType, class = AZ::Internal::enable_if_not_void<Error_Type> >
-        AZ_FORCE_INLINE Error_Type && TakeError();
-
-    private:
-        //! Return m_success  as a SuccessType.
-        //! Behavior is undefined if outcome was a failure.
-        SuccessType& GetSuccess();
-        const SuccessType& GetSuccess() const;
-
-        //! Return m_failure as a FailureType.
-        //! Behavior is undefined if outcome was a success.
-        FailureType& GetFailure();
-        const FailureType& GetFailure() const;
-
-        //! Run the appropriate SuccessType constructor on m_success.
-        template<class ... ArgsT>
-        void ConstructSuccess(ArgsT&& ... args);
-
-        //! Run the appropriate FailureType constructor on m_failure.
-        template<class ... ArgsT>
-        void ConstructFailure(ArgsT&& ... args);
-
-        // Memory for SuccessType and FailureType are stored within a union.
-        // This reduces the size of Outcome and lets us prevent instantiation
-        // of the unused type.
-        union
-        {
-            typename AZStd::aligned_storage<
-                sizeof(SuccessType),
-                AZStd::alignment_of<SuccessType>::value
-                >::type m_success;
-
-            typename AZStd::aligned_storage<
-                sizeof(FailureType),
-                AZStd::alignment_of<FailureType>::value
-                >::type m_failure;
-        };
-
-        bool m_isSuccess;
+        template <class Error_Type = ErrorType, class = AZStd::enable_if_t<!AZStd::is_void_v<Error_Type>> >
+        AZ_FORCE_INLINE Error_Type&& TakeError();
     };
 
     AZ_TYPE_INFO_TEMPLATE(Outcome, "{C1DB96E5-922A-4387-B658-B4BE7FB94EA0}", AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
@@ -218,13 +194,13 @@ namespace AZ
      * Used to return a success case in a function returning an AZ::Outcome<ValueT, ...>.
      * rhs is a universal reference: can either copy or move
      */
-    template <class ValueT, class = AZ::Internal::enable_if_not_void<ValueT> >
-    inline SuccessValue<ValueT> Success(ValueT&& rhs);
+    template <class ValueT, class = AZStd::enable_if_t<!AZStd::is_void_v<ValueT>> >
+    constexpr ValueT Success(ValueT&& rhs);
 
     /**
      * Used to return a success case in a function returning an AZ::Outcome<void, ...>.
      */
-    inline SuccessValue<void> Success();
+    constexpr AZStd::in_place_t Success();
 
     //////////////////////////////////////////////////////////////////////////
     // Failure
@@ -233,13 +209,13 @@ namespace AZ
      * Used to return a failure case in a function returning an AZ::Outcome<..., ValueT>.
      * rhs is a universal reference: can either copy or move
      */
-    template <class ValueT, class = AZ::Internal::enable_if_not_void<ValueT> >
-    inline FailureValue<ValueT> Failure(ValueT&& rhs);
+    template <class ValueT, class = AZStd::enable_if_t<!AZStd::is_void_v<ValueT>> >
+    constexpr AZStd::unexpected<ValueT> Failure(ValueT&& rhs);
 
     /**
      * Used to return a failure case in a function returning an AZ::Outcome<..., void>.
      */
-    inline FailureValue<void> Failure();
+    constexpr AZStd::unexpected<AZStd::unexpect_t> Failure();
 } // namespace AZ
 
 #include "AzCore/Outcome/Internal/OutcomeImpl.h"

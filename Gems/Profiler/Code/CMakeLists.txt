@@ -8,7 +8,7 @@
 
 # data portion
 ly_add_target(
-    NAME Profiler.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         profiler_files.cmake
@@ -24,7 +24,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Profiler ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         profiler_shared_files.cmake
@@ -35,15 +35,23 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Profiler.Static
+            Gem::${gem_name}.Static
 )
 
-ly_create_alias(NAME Profiler.Servers NAMESPACE Gem TARGETS Gem::Profiler)
-ly_create_alias(NAME Profiler.Builders NAMESPACE Gem TARGETS Gem::Profiler)
+ly_add_source_properties(
+    SOURCES
+        Source/ProfilerModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
 
 # visualization portion
 ly_add_target(
-    NAME ProfilerImGui ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}ImGui ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         profiler_imgui_shared_files.cmake
@@ -54,11 +62,21 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Profiler.Static
+            Gem::${gem_name}.Static
             Gem::ImGui.imguilib
     RUNTIME_DEPENDENCIES
         Gem::ImGui.imguilib
 )
 
-ly_create_alias(NAME Profiler.Clients NAMESPACE Gem TARGETS Gem::ProfilerImGui)
-ly_create_alias(NAME Profiler.Tools NAMESPACE Gem TARGETS Gem::ProfilerImGui)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/ProfilerImGuiModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name}ImGui)
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name}ImGui)
+ly_create_alias(NAME ${gem_name}.Tools NAMESPACE Gem TARGETS Gem::${gem_name}ImGui)

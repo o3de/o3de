@@ -54,6 +54,8 @@ namespace AZ
                 bool ReadValuesIntoGUI(size_t index, HeaderWidget* GUI, const property_t& instance,
                     AzToolsFramework::InstanceDataNode* node) override;
 
+                bool ModifyTooltip(QWidget* widget, QString& toolTipString) override;
+
                 static void Register();
                 static void Unregister();
 

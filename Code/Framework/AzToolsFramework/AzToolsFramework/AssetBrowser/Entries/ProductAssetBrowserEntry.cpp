@@ -7,6 +7,8 @@
  */
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -100,11 +102,11 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        void ProductAssetBrowserEntry::ThumbnailUpdated()
+        void ProductAssetBrowserEntry::SetThumbnailDirty()
         {
             if (EntryCache* cache = EntryCache::GetInstance())
             {
-                // if source is displaying product's thumbnail, then it needs to also listen to its ThumbnailUpdated
+                // if source is displaying product's thumbnail, then it needs to also SetThumbnailDirty
                 if (m_parentAssetEntry)
                 {
                     cache->m_dirtyThumbnailsSet.insert(m_parentAssetEntry);

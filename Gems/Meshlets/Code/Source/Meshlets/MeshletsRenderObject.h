@@ -17,15 +17,13 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RHI/StreamBufferView.h>
-
-#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
 
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
-#include "../../External/meshoptimizer.h"
+#include <meshoptimizer.h>
 
 #include <SharedBuffer.h>
 #include <MeshletsDispatchItem.h>
@@ -73,7 +71,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> RenderObjectSrg;     // Per object render data - includes instanceId and vertex buffers
             AZStd::vector<SrgBufferDescriptor> RenderBuffersDescriptors;
             RHI::IndexBufferView IndexBufferView;
-            AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews; 
+            AZStd::vector<Data::Instance<RHI::BufferView>> RenderBuffersViews;
             AZStd::vector <Data::Instance<RPI::Buffer>> RenderBuffers;    // stand alone non shared buffers
 
             const RHI::DrawPacket* MeshDrawPacket = nullptr;    // Should be moved to the instance data structure

@@ -61,7 +61,7 @@ namespace JsonSerializationTests
         DoubleSerializerTestDescription<double, AZ::JsonDoubleSerializer>,
         DoubleSerializerTestDescription<float, AZ::JsonFloatSerializer>
     >;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonDoubleSerializer, JsonSerializerConformityTests, DoubleSerializerConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(JsonDoubleSerializer, JsonSerializerConformityTests, DoubleSerializerConformityTestTypes));
 
     class JsonDoubleSerializerTests
         : public BaseJsonSerializerFixture

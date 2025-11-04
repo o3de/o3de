@@ -28,7 +28,7 @@ namespace AZ
         for (const ComponentDescriptor* descriptor : m_descriptors)
         {
             AZ_Warning("AZ::Module", descriptor, "Null module descriptor is being skipped (%s)", RTTI_GetType().ToString<AZStd::string>().c_str());
-            EBUS_EVENT(ComponentApplicationBus, RegisterComponentDescriptor, descriptor);
+            ComponentApplicationBus::Broadcast(&ComponentApplicationBus::Events::RegisterComponentDescriptor, descriptor);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace LmbrCentral
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReferenceShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReferenceShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(ReferenceShapeConfig, "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -78,14 +78,14 @@ namespace LmbrCentral
 
         //////////////////////////////////////////////////////////////////////////
         // ShapeComponentRequestsBus
-        AZ::Crc32 GetShapeType() override;
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point) override;
-        float DistanceFromPoint(const AZ::Vector3& point) override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override;
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const override;
+        float DistanceFromPoint(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////

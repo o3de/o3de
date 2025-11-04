@@ -42,7 +42,7 @@ namespace Physics
                 behaviorContext->EBus<AzPhysics::SimulatedBodyComponentRequestsBus>("SimulatedBodyComponentRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "physics")
-                    ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Script::Attributes::Category, "Physics")
                     ->Event("EnablePhysics", &AzPhysics::SimulatedBodyComponentRequests::EnablePhysics)
                     ->Event("DisablePhysics", &AzPhysics::SimulatedBodyComponentRequests::DisablePhysics)
                     ->Event("IsPhysicsEnabled", &AzPhysics::SimulatedBodyComponentRequests::IsPhysicsEnabled)
@@ -62,7 +62,7 @@ namespace Physics
                 behaviorContext->EBus<WindRequestsBus>("WindRequestsBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "physics")
-                    ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Script::Attributes::Category, "Physics")
                     ->Event("GetGlobalWind", &WindRequests::GetGlobalWind)
                     ->Event("GetWindAtPosition", static_cast<WindPositionFuncPtr>(&WindRequests::GetWind))
                     ->Event("GetWindInsideAabb", static_cast<WindAabbFuncPtr>(&WindRequests::GetWind))
@@ -77,7 +77,7 @@ namespace Physics
                 behaviorContext->EBus<CharacterRequestBus>("CharacterControllerRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "physics")
-                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Physics")
                     ->Event("GetBasePosition", &CharacterRequests::GetBasePosition, "Get Base Position")
                     ->Event("SetBasePosition", &CharacterRequests::SetBasePosition, "Set Base Position")
                     ->Event("GetCenterPosition", &CharacterRequests::GetCenterPosition, "Get Center Position")
@@ -172,6 +172,11 @@ namespace Physics
         {
             // If the filter tag is empty, then ignore it
             return !filterTag || tag == filterTag;
+        }
+
+        bool HasUniformScale(const AZ::Vector3& scale)
+        {
+            return AZ::IsClose(scale.GetX(), scale.GetY()) && AZ::IsClose(scale.GetX(), scale.GetZ());
         }
     }
 }

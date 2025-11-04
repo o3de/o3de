@@ -15,7 +15,6 @@ import ly_test_tools.environment.waiter
 import ly_test_tools.launchers.exceptions
 
 from ly_test_tools.launchers.platforms.base import Launcher
-from ly_test_tools.launchers.exceptions import TeardownError, ProcessNotStartedError
 from tempfile import TemporaryFile
 
 log = logging.getLogger(__name__)
@@ -74,7 +73,8 @@ class WinLauncher(Launcher):
 
     def get_output(self, encoding="utf-8"):
         if self._tmpout is None:
-            raise ProcessNotStartedError("Process must be started before retrieving output")
+            raise ly_test_tools.launchers.exceptions.ProcessNotStartedError(
+                "Process must be started before retrieving output")
 
         self._tmpout.seek(0)
         return self._tmpout.read().decode(encoding)
@@ -171,8 +171,8 @@ class WinLauncher(Launcher):
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self.workspace.paths.project()}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={host_ip}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
-
-        self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", host_ip)
+        self.args.append(f'--log_RemoteConsoleAllowedAddresses={host_ip}')
+        self.args.append("--log_IncludeTime=1")
 
 
 class DedicatedWinLauncher(WinLauncher):
@@ -227,43 +227,25 @@ class WinEditor(WinLauncher):
         return os.path.join(self.workspace.paths.build_directory(), "Editor.exe")
 
 
-class WinGenericLauncher(WinLauncher):
+class WinAtomToolsLauncher(WinLauncher):
 
-    def __init__(self, build, exe_file_name, args=None):
-        super(WinGenericLauncher, self).__init__(build, args)
-        self.exe_file_name = exe_file_name
-        self.expected_executable_path = os.path.join(
-            self.workspace.paths.build_directory(), f"{self.exe_file_name}.exe")
-
-        if not os.path.exists(self.expected_executable_path):
-            raise ProcessNotStartedError(
-                f"Unable to locate executable '{self.exe_file_name}.exe' "
-                f"in path: '{self.expected_executable_path}'")
+    def __init__(self, build, app_file_name, args=None):
+        super(WinAtomToolsLauncher, self).__init__(build, args)
+        self.app_file_name = app_file_name
+        self.expected_executable_path = ""
 
     def binary_path(self):
         """
-        Return full path to the .exe file for this build's configuration and project
+        Return full path to the Atom Tools application file for this build's configuration and project
         Relies on the build_directory() in self.workspace.paths to be accurate
 
         :return: full path to the given exe file
         """
         assert self.workspace.project is not None, (
             'Project cannot be NoneType - please specify a project name string.')
+        self.expected_executable_path = os.path.join(
+            self.workspace.paths.build_directory(), f"{self.app_file_name}.exe")
+        if not os.path.isfile(self.expected_executable_path):
+            raise ly_test_tools.launchers.exceptions.SetupError(
+                f'Invalid application path supplied: {self.expected_executable_path}')
         return self.expected_executable_path
-
-
-class WinMaterialEditor(WinLauncher):
-
-    def __init__(self, build, args=None):
-        super(WinMaterialEditor, self).__init__(build, args)
-        self.args.append('--regset="/Amazon/Settings/EnableSourceControl=false"')
-        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=true"')
-        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionEnabled=false"')
-
-    def binary_path(self):
-        """
-        Return full path to the MaterialEditor for this build's configuration and project
-        :return: full path to MaterialEditor
-        """
-        assert self.workspace.project is not None
-        return os.path.join(self.workspace.paths.build_directory(), "MaterialEditor.exe")

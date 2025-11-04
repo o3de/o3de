@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>587</width>
-    <height>409</height>
+    <height>209</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,7 +22,7 @@
   <property name="minimumSize">
    <size>
     <width>587</width>
-    <height>409</height>
+    <height>209</height>
    </size>
   </property>
   <property name="focusPolicy">
@@ -65,33 +65,6 @@
       <number>16</number>
      </property>
      <item>
-      <widget class="QLabel" name="NumberOfFilesMessage">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>329</width>
-         <height>19</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>9</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Importing 0 asset(s).</string>
-       </property>
-       <property name="class" stdset="0">
-        <string>AssetImporterLabel</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -102,7 +75,7 @@
        <property name="sizeHint" stdset="0">
         <size>
          <width>0</width>
-         <height>16</height>
+         <height>10</height>
         </size>
        </property>
       </spacer>
@@ -153,35 +126,12 @@
         </spacer>
        </item>
        <item>
-        <widget class="AzQtComponents::StyledLineEdit" name="DestinationLineEdit">
+        <widget class="AzQtComponents::BrowseEdit" name="DestinationLineEdit" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>300</width>
-           <height>28</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="cursor">
-          <cursorShape>IBeamCursor</cursorShape>
-         </property>
-         <property name="frame">
-          <bool>true</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
-         <property name="class" stdset="0">
-          <string>AssetImporterLineEdit</string>
          </property>
         </widget>
        </item>
@@ -200,35 +150,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="BrowseButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>76</width>
-           <height>28</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>8</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true"/>
-         </property>
-         <property name="text">
-          <string>Browse</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
@@ -395,7 +316,13 @@
        <property name="minimumSize">
         <size>
          <width>500</width>
-         <height>72</height>
+         <height>40</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>40</height>
         </size>
        </property>
        <property name="font">
@@ -490,9 +417,10 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AzQtComponents::StyledLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>AzQtComponents/Components/StyledLineEdit.h</header>
+   <class>AzQtComponents::BrowseEdit</class>
+   <extends>QWidget</extends>
+   <header location="global">AzQtComponents/Components/Widgets/BrowseEdit.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

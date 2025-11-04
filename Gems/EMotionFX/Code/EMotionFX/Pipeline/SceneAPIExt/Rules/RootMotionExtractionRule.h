@@ -18,22 +18,22 @@
 namespace EMotionFX::Pipeline::Rule
 {
     class RootMotionExtractionRule final
-        : public ExternalToolRule<RootMotionExtractionData>
+        : public ExternalToolRule<AZStd::shared_ptr<RootMotionExtractionData>>
     {
     public:
         AZ_RTTI(EMotionFX::Pipeline::Rule::RootMotionExtractionRule, "{1A7E6215-49E3-4D80-8B5C-1DA8E09DA5FB}", AZ::SceneAPI::DataTypes::IRule);
-        AZ_CLASS_ALLOCATOR(RootMotionExtractionRule, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(RootMotionExtractionRule, AZ::SystemAllocator)
 
-        RootMotionExtractionRule() = default;
-        RootMotionExtractionRule(const RootMotionExtractionData& data);
+        RootMotionExtractionRule();
+        RootMotionExtractionRule(AZStd::shared_ptr<RootMotionExtractionData> data);
         ~RootMotionExtractionRule() = default;
 
-        const RootMotionExtractionData& GetData() const override { return m_data; }
-        void SetData(const RootMotionExtractionData& data) override { m_data = data; }
+        const AZStd::shared_ptr<RootMotionExtractionData>& GetData() const override { return m_data; }
+        void SetData(const AZStd::shared_ptr<RootMotionExtractionData>& data) override { m_data = data; }
 
         static void Reflect(AZ::ReflectContext* context);
 
     private:
-        RootMotionExtractionData m_data;
+        AZStd::shared_ptr<RootMotionExtractionData> m_data;
     };
 } // EMotionFX::Pipeline::Rule

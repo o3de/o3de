@@ -8,12 +8,15 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #endif
 
 class QRadioButton;
@@ -27,12 +30,12 @@ namespace AzToolsFramework
     * To change the default display text for "False" and "True",
     * use AZ::Edit::Attributes::FalseText or AZ::Edit::Attributes::TrueText repsectively
     */
-    class PropertyBoolRadioButtonsCtrl
+    class AZTF_API PropertyBoolRadioButtonsCtrl
         : public QWidget
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyBoolRadioButtonsCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyBoolRadioButtonsCtrl, AZ::SystemAllocator);
 
         explicit PropertyBoolRadioButtonsCtrl(QWidget* pParent = nullptr);
         ~PropertyBoolRadioButtonsCtrl() override = default;
@@ -63,13 +66,13 @@ namespace AzToolsFramework
     * Property handler for use with the PropertyBoolRadioButtonsCtrl
     * To use this handler, create a reflected boolean variable and use handler name AZ::Edit::Handlers::RadioButton
     */
-    class BoolPropertyRadioButtonsHandler
+    class AZTF_API BoolPropertyRadioButtonsHandler
         : QObject
         , public PropertyHandler<bool, PropertyBoolRadioButtonsCtrl>
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(BoolPropertyRadioButtonsHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BoolPropertyRadioButtonsHandler, AZ::SystemAllocator);
         ~BoolPropertyRadioButtonsHandler() override = default;
 
         AZ::u32 GetHandlerName() const override;
@@ -78,10 +81,11 @@ namespace AzToolsFramework
         void UpdateWidgetInternalTabbing(PropertyBoolRadioButtonsCtrl* widget) override;
 
         QWidget* CreateGUI(QWidget* pParent) override;
+        bool ResetGUIToDefaults(PropertyBoolRadioButtonsCtrl* GUI) override;
         void ConsumeAttribute(PropertyBoolRadioButtonsCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyBoolRadioButtonsCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyBoolRadioButtonsCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    void RegisterBoolRadioButtonsHandler();
+    AZTF_API void RegisterBoolRadioButtonsHandler();
 };

@@ -36,6 +36,9 @@ namespace AzToolsFramework
             //! @return bool on whether the operation succeeds.
             virtual bool UpdateTemplateInstancesInQueue() = 0;
 
+            //! @return bool on whether instances are currently updated in the waiting queue.
+            virtual bool IsUpdatingTemplateInstancesInQueue() const = 0;
+
             //! Removes an instance from the waiting queue.
             //! @param instance The instance to be removed from queue.
             virtual void RemoveTemplateInstanceFromQueue(Instance* instance) = 0;

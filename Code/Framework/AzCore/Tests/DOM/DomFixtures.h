@@ -57,7 +57,7 @@ namespace AZ::Dom::Tests
 
     class DomTestFixture
         : public DomTestHarness
-        , public UnitTest::AllocatorsFixture
+        , public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override;

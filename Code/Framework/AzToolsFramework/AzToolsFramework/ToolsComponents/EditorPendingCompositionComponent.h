@@ -7,20 +7,38 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include "EditorComponentBase.h"
 #include "EditorPendingCompositionBus.h"
+
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
-        /**
-        * Contains pending components to be added to the entity we are attached to.
-        */
-        class EditorPendingCompositionComponent
+        //! Custom serializer to handle component data in the composition component.
+        class AZTF_API EditorPendingCompositionComponentSerializer
+            : public AZ::BaseJsonSerializer
+        {
+        public:
+            AZ_RTTI(EditorPendingCompositionComponentSerializer, "{9084611C-7011-4906-9EE6-EF10019ABADD}", BaseJsonSerializer);
+            AZ_CLASS_ALLOCATOR_DECL;
+
+            AZ::JsonSerializationResult::Result Load(
+                void* outputValue,
+                const AZ::Uuid& outputValueTypeId,
+                const rapidjson::Value& inputValue,
+                AZ::JsonDeserializerContext& context) override;
+        };
+
+        //! Contains pending components to be added to the entity we are attached to.
+        class AZTF_API EditorPendingCompositionComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorPendingCompositionRequestBus::Handler
         {
+            friend class EditorPendingCompositionComponentSerializer;
+
         public:
             AZ_COMPONENT(EditorPendingCompositionComponent, "{D40FCB35-153D-45B3-AF6D-7BA576D8AFBB}", EditorComponentBase);
             static void Reflect(AZ::ReflectContext* context);
@@ -28,9 +46,10 @@ namespace AzToolsFramework
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
             ////////////////////////////////////////////////////////////////////
             // EditorPendingCompositionRequestBus
-            void GetPendingComponents(AZStd::vector<AZ::Component*>& components) override;
+            void GetPendingComponents(AZ::Entity::ComponentArrayType& components) override;
             void AddPendingComponent(AZ::Component* componentToAdd) override;
             void RemovePendingComponent(AZ::Component* componentToRemove) override;
+            bool IsComponentPending(const AZ::Component* componentToCheck) override;
             ////////////////////////////////////////////////////////////////////
 
             ~EditorPendingCompositionComponent() override;
@@ -42,7 +61,8 @@ namespace AzToolsFramework
             void Deactivate() override;
             ////////////////////////////////////////////////////////////////////
 
-            AZStd::vector<AZ::Component*> m_pendingComponents;
+            // Map that stores a pair of component alias (serialized identifier) and component pointer.
+            AZStd::unordered_map<AZStd::string, AZ::Component*> m_pendingComponents;
         };
     } // namespace Components
 } // namespace AzToolsFramework

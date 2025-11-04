@@ -23,6 +23,8 @@ namespace AzQtComponents::Internal
     class AZ_QT_COMPONENTS_API RectangleWidget : public QWidget
     {
         Q_OBJECT
+
+        Q_PROPERTY(QColor color READ color WRITE setColor)
     public:
         explicit RectangleWidget(QWidget* parent);
 

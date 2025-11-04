@@ -8,6 +8,9 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/optional.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
@@ -22,7 +25,7 @@ namespace AzToolsFramework
 {
     //! Read-only interface for EditorVisibleEntityDataCache to be used by systems that want to efficiently
     //! query the state of visible entities in the viewport.
-    class EditorVisibleEntityDataCacheInterface
+    class AZTF_API EditorVisibleEntityDataCacheInterface
     {
         using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
 
@@ -42,12 +45,13 @@ namespace AzToolsFramework
         //! @note It may still be desirable to be able to 'click' an entity that is a descendant of a closed container
         //! to select the container itself, not the individual entity.
         virtual bool IsVisibleEntityIndividuallySelectableInViewport(size_t index) const = 0;
+        virtual bool IsVisibleEntityInFocusSubTree(size_t index) const = 0;
         virtual AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const = 0;
     };
 
     //! A cache of packed EntityData that can be iterated over efficiently without
     //! the need to make individual EBus calls
-    class EditorVisibleEntityDataCache
+    class AZTF_API EditorVisibleEntityDataCache
         : public EditorVisibleEntityDataCacheInterface
         , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityLockComponentNotificationBus::Router
@@ -82,6 +86,7 @@ namespace AzToolsFramework
         bool IsVisibleEntitySelected(size_t index) const override;
         bool IsVisibleEntityIconHidden(size_t index) const override;
         bool IsVisibleEntityIndividuallySelectableInViewport(size_t index) const override;
+        bool IsVisibleEntityInFocusSubTree(size_t index) const override;
         AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const override;
 
         void AddEntityIds(const EntityIdList& entityIds);

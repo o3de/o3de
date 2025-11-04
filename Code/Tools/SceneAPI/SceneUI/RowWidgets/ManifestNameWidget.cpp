@@ -21,11 +21,11 @@ namespace AZ
     {
         namespace SceneUI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ManifestNameWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(ManifestNameWidget, SystemAllocator);
 
             ManifestNameWidget::ManifestNameWidget(QWidget* parent)
                 : QLineEdit(parent)
-                , m_filterType(DataTypes::IManifestObject::TYPEINFO_Uuid())
+                , m_filterType(GetO3deTypeId(AZ::Adl{}, AZStd::type_identity<DataTypes::IManifestObject>()))
                 , m_inFailureState(false)
             {
                 connect(this, &QLineEdit::textChanged, this, &ManifestNameWidget::OnTextChanged);

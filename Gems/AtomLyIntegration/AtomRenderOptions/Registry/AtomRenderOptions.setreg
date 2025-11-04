@@ -1,0 +1,13 @@
+{
+    "O3DE": {
+        "AtomRenderOptions": {
+            "PassNamesInViewportOptionsMenu": [
+                "Shadows",
+                "TaaPass",
+                "ReflectionsPass",
+                "Ssao",
+                "TransparentPass"
+            ]
+        }
+    }
+}

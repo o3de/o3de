@@ -19,13 +19,24 @@
                         "tooltip": "Signaled after Get Half Forward Extent is invoked"
                     },
                     "details": {
-                        "name": "Get Half Forward Extent"
+                        "name": "Get Half Forward Extent",
+                        "tooltip": "Get the half extent in the character's forward direction (box geometry only)" 
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Half Forward Extent"
+                                "name": "Half Forward Extent",
+                                "tooltip": "The half extent in the character's forward direction (box geometry only)"
                             }
                         }
                     ]
@@ -41,13 +52,24 @@
                         "tooltip": "Signaled after Get Radius is invoked"
                     },
                     "details": {
-                        "name": "Get Radius"
+                        "name": "Get Radius",
+                        "tooltip": "Get the radius of the character (capsule geometry only)"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Radius"
+                                "name": "Radius",
+                                "tooltip": "The radius of the character (capsule geometry only)"
                             }
                         }
                     ]
@@ -63,13 +85,15 @@
                         "tooltip": "Signaled after Set Radius is invoked"
                     },
                     "details": {
-                        "name": "Set Radius"
+                        "name": "Set Radius",
+                        "tooltip": "Set the radius of the character (capsule geometry only)"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Radius"
+                                "name": "Radius",
+                                "tooltip": "The radius of the character (capsule geometry only)"
                             }
                         }
                     ]
@@ -85,13 +109,15 @@
                         "tooltip": "Signaled after Set Half Forward Extent is invoked"
                     },
                     "details": {
-                        "name": "Set Half Forward Extent"
+                        "name": "Set Half Forward Extent",
+                        "tooltip": "Set the half extent in the character's forward direction (box geometry only)"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Half Forward Extent"
+                                "name": "Half Forward Extent",
+                                "tooltip": "The half extent in the character's forward direction (box geometry only)"
                             }
                         }
                     ]
@@ -107,13 +133,15 @@
                         "tooltip": "Signaled after Set Height is invoked"
                     },
                     "details": {
-                        "name": "Set Height"
+                        "name": "Set Height",
+                        "tooltip": "Set the height of the character, without moving its center"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Height"
+                                "name": "Height",
+                                "tooltip": "New height value for the character"
                             }
                         }
                     ]
@@ -129,13 +157,24 @@
                         "tooltip": "Signaled after Get Half Side Extent is invoked"
                     },
                     "details": {
-                        "name": "Get Half Side Extent"
+                        "name": "Get Half Side Extent",
+                        "tooltip":"Get the half extent in the character's sideways direction (box geometry only)"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Half Side Extent"
+                                "name": "Half Side Extent",
+                                "tooltip": "The half extent in the character's sideways direction (box geometry only)"
                             }
                         }
                     ]
@@ -151,13 +190,24 @@
                         "tooltip": "Signaled after Get Height is invoked"
                     },
                     "details": {
-                        "name": "Get Height"
+                        "name": "Get Height",
+                        "tooltip": "Get the height of the character"
                     },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the entity the character is associated with"
+                            }
+                        }
+                    ],
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Height"
+                                "name": "Height",
+                                "tooltip": "Height of the character"
                             }
                         }
                     ]
@@ -173,13 +223,15 @@
                         "tooltip": "Signaled after Resize is invoked"
                     },
                     "details": {
-                        "name": "Resize"
+                        "name": "Resize",
+                        "tooltip": "Set the height of the character, without moving its base (feet)" 
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Size"
+                                "name": "Height",
+                                "tooltip": "The new height value for the character"
                             }
                         }
                     ]
@@ -195,13 +247,15 @@
                         "tooltip": "Signaled after Set Half Side Extent is invoked"
                     },
                     "details": {
-                        "name": "Set Half Side Extent"
+                        "name": "Set Half Side Extent",
+                        "tooltip": "Set the half extent in the character's sideways direction (box geometry only)"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Half Side Extent"
+                                "name": "Half Side Extent",
+                                "tooltip": "The half extent in the character's sideways direction (box geometry only)"
                             }
                         }
                     ]

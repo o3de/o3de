@@ -70,6 +70,7 @@ namespace ScriptCanvas::Developer
             : public CustomActionState
         {
         public:
+            AZ_CLASS_ALLOCATOR(CheckVariableForNameMismatchState, AZ::SystemAllocator)
             CheckVariableForNameMismatchState(AutomationStateModelId nameId, AutomationStateModelId variableId);
             ~CheckVariableForNameMismatchState() override = default;
 
@@ -93,6 +94,7 @@ namespace ScriptCanvas::Developer
             : public NamedAutomationState
         {
         public:
+            AZ_CLASS_ALLOCATOR(VariableInPaletteState, AZ::SystemAllocator)
             typedef std::function< AZ::Outcome<void, AZStd::string>(const ScriptCanvas::GraphVariable*)> VariablePaletteValidator;
 
             VariableInPaletteState(AZStd::string value, AutomationStateModelId variableId, VariablePaletteValidator validator);
@@ -121,6 +123,7 @@ namespace ScriptCanvas::Developer
             : public NamedAutomationState
         {
         public:
+            AZ_CLASS_ALLOCATOR(ValueInNodeState, AZ::SystemAllocator)
             typedef std::function< AZ::Outcome<void, AZStd::string>(const ScriptCanvas::Datum*)> DatumValidator;
 
             ValueInNodeState(AZStd::string value, AutomationStateModelId endpointId, DatumValidator datumValidator);
@@ -190,6 +193,7 @@ namespace ScriptCanvas::Developer
             : public NamedAutomationState
         {
         public:
+            AZ_CLASS_ALLOCATOR(ToggleBoolInPaletteState, AZ::SystemAllocator)
             ToggleBoolInPaletteState(AutomationStateModelId variableId);
             ~ToggleBoolInPaletteState() override = default;
 
@@ -210,6 +214,7 @@ namespace ScriptCanvas::Developer
             : public NamedAutomationState
         {
         public:
+            AZ_CLASS_ALLOCATOR(ToggleBoolInNodeState, AZ::SystemAllocator)
             ToggleBoolInNodeState(AutomationStateModelId endpointId);
             ~ToggleBoolInNodeState() override = default;
 
@@ -241,6 +246,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationTest
     {
     public:
+        AZ_CLASS_ALLOCATOR(VariableLifeCycleTest, AZ::SystemAllocator)
         VariableLifeCycleTest(AZStd::string name, AZStd::vector<ScriptCanvas::Data::Type> dataTypes, CreateVariableAction::CreationType creationType = CreateVariableAction::CreationType::AutoComplete);
         ~VariableLifeCycleTest() override = default;
 
@@ -295,6 +301,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationTest
     {
     public:
+        AZ_CLASS_ALLOCATOR(RapidVariableCreationDeletionTest, AZ::SystemAllocator)
 
         RapidVariableCreationDeletionTest();
         ~RapidVariableCreationDeletionTest() override = default;

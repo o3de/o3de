@@ -17,7 +17,7 @@ namespace AZ
     //! @struct ScheduledEventHandle
     //! This is a handle class that wraps a scheduled event.
     //! This is created inside of EventSchedulerSystemComponent and deleted in EventSchedulerSystemComponent::OnTick()
-    class ScheduledEventHandle
+    class AZCORE_API ScheduledEventHandle
     {
     public:
         //! Default constructor for AZStd::deque compatibility.
@@ -54,6 +54,9 @@ namespace AZ
         //! Gets the scheduled event instance bound to this event handle.
         //! @return the scheduled event instance bound to this event handle
         ScheduledEvent* GetScheduledEvent() const;
+
+        //! Used internally to clear the event associated with this handle.
+        void Clear();
 
     private:
 

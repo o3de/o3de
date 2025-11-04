@@ -14,7 +14,17 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AZ::Statistics
 {
-    StatisticalProfilerProxy* StatisticalProfilerProxy::TimedScope::m_profilerProxy = nullptr;
+    static StatisticalProfilerProxy* s_profilerProxy = nullptr;
+
+    StatisticalProfilerProxy* StatisticalProfilerProxy::TimedScope::GetProfilerProxy()
+    {
+        return s_profilerProxy;
+    }
+
+    void StatisticalProfilerProxy::TimedScope::SetProfilerProxy(StatisticalProfilerProxy* profilerProxy)
+    {
+        s_profilerProxy = profilerProxy;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void StatisticalProfilerProxySystemComponent::Reflect(AZ::ReflectContext* context)
@@ -29,13 +39,13 @@ namespace AZ::Statistics
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void StatisticalProfilerProxySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("StatisticalProfilerService", 0x20066f73));
+        provided.push_back(AZ_CRC_CE("StatisticalProfilerService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void StatisticalProfilerProxySystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("StatisticalProfilerService", 0x20066f73));
+        incompatible.push_back(AZ_CRC_CE("StatisticalProfilerService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

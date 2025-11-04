@@ -24,7 +24,7 @@ namespace EMStudio
     {
     public:
         AZ_TYPE_INFO(AnimViewportInputController, "{A1629CB6-2292-4B7D-8B49-F614BD4746AA}");
-        AZ_CLASS_ALLOCATOR(AnimViewportInputController, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AnimViewportInputController, AZ::SystemAllocator)
 
         // AzFramework::SingleViewportController overrides...
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;

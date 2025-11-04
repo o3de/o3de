@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Color.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBusSharedDispatchTraits.h>
-
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 
 namespace AZ
@@ -128,28 +128,28 @@ namespace LmbrCentral
 
         /// @brief Returns the type of shape that this component holds
         /// @return Crc32 indicating the type of shape
-        virtual AZ::Crc32 GetShapeType() = 0;
+        virtual AZ::Crc32 GetShapeType() const = 0;
 
         /// @brief Returns an AABB that encompasses this entire shape
         /// @return AABB that encompasses the shape
-        virtual AZ::Aabb GetEncompassingAabb() = 0;
+        virtual AZ::Aabb GetEncompassingAabb() const = 0;
 
         /**
         * @brief Returns the local space bounds of a shape and its world transform
         * @param transform AZ::Transform outparam containing the shape transform
         * @param bounds AZ::Aabb outparam containing an untransformed tight fitting bounding box according to the shape parameters
         */
-        virtual void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) = 0;
+        virtual void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const = 0;
 
         /// @brief Checks if a given point is inside a shape or outside it
         /// @param point Vector3 indicating the point to be tested
         /// @return bool indicating whether the point is inside or out
-        virtual bool IsPointInside(const AZ::Vector3& point) = 0;
+        virtual bool IsPointInside(const AZ::Vector3& point) const = 0;
 
         /// @brief Returns the min distance a given point is from the shape
         /// @param point Vector3 indicating point to calculate distance from
         /// @return float indicating distance point is from shape
-        virtual float DistanceFromPoint(const AZ::Vector3& point)
+        virtual float DistanceFromPoint(const AZ::Vector3& point) const
         {
             return sqrtf(DistanceSquaredFromPoint(point));
         }
@@ -157,21 +157,33 @@ namespace LmbrCentral
         /// @brief Returns the min squared distance a given point is from the shape
         /// @param point Vector3 indicating point to calculate square distance from
         /// @return float indicating square distance point is from shape
-        virtual float DistanceSquaredFromPoint(const AZ::Vector3& point) = 0;
+        virtual float DistanceSquaredFromPoint(const AZ::Vector3& point) const = 0;
 
         /// @brief Returns a random position inside the volume.
         /// @param randomDistribution An enum representing the different random distributions to use.
-        virtual AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType /*randomDistribution*/)
+        virtual AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType /*randomDistribution*/) const
         {
             AZ_Warning("ShapeComponentRequests", false, "GenerateRandomPointInside not implemented");
             return AZ::Vector3::CreateZero();
         }
 
         /// @brief Returns if a ray is intersecting the shape.
-        virtual bool IntersectRay(const AZ::Vector3& /*src*/, const AZ::Vector3& /*dir*/, float& /*distance*/)
+        virtual bool IntersectRay(const AZ::Vector3& /*src*/, const AZ::Vector3& /*dir*/, float& /*distance*/) const
         {
             AZ_Warning("ShapeComponentRequests", false, "IntersectRay not implemented");
             return false;
+        }
+
+        /// Get the translation offset for the shape relative to its entity.
+        virtual AZ::Vector3 GetTranslationOffset() const
+        {
+            return AZ::Vector3::CreateZero();
+        }
+
+        /// Set the translation offset for the shape relative to its entity.
+        virtual void SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
+        {
+            AZ_WarningOnce("ShapeComponentRequests", false, "SetTranslationOffset not implemented");
         }
 
         virtual ~ShapeComponentRequests() = default;
@@ -215,7 +227,7 @@ namespace LmbrCentral
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeComponentConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeComponentConfig, AZ::SystemAllocator);
         AZ_RTTI(ShapeComponentConfig, "{32683353-0EF5-4FBC-ACA7-E220C58F60F5}", AZ::ComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);

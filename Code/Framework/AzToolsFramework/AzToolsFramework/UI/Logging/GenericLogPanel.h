@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include "LogPanel_Panel.h"
 #include "LogControl.h" // for BaseLogView
@@ -23,13 +25,13 @@ namespace AzToolsFramework
         //! unlike the traceprintf view, this does not expect you to be filling it from many threads, so it has no thread safety on FillFromFile or AddLine - call those from the GUI thread.
         //! The tabs created will be separate views on the same log data.
         //! Note that if you want to have your own log file format you can derive from this base class and override the parseData function
-        class GenericLogPanel
+        class AZTF_API GenericLogPanel
             : public BaseLogPanel
         {
             Q_OBJECT
         public:
             // class allocator intentionally removed so that QT can make us in their auto-gen code
-            //AZ_CLASS_ALLOCATOR(StaticLogPanel, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(StaticLogPanel, AZ::SystemAllocator);
             GenericLogPanel(QWidget* pParent = nullptr);
 
             //! Fill From File - append log data from a file
@@ -62,12 +64,12 @@ namespace AzToolsFramework
             bool m_currentItemsExpandToFit = false;
         };
 
-        class GenericLogTab
+        class AZTF_API GenericLogTab
             : public BaseLogView
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(GenericLogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GenericLogTab, AZ::SystemAllocator);
             GenericLogTab(QWidget* pParent, const TabSettings& in_settings);
 
             void SetDataSource(QAbstractItemModel* source);

@@ -3,6 +3,8 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
+
+This file is being deprecated. relevant functions should be added to EditorPythonTestTools>script_canvas_tools_qt
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
@@ -18,13 +20,10 @@ import azlmbr.bus as bus
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
-                                                 TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING, NAME_STRING,
-                                                 SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
-                                                 VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, SCRIPT_EVENT_UI,
-                                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
-                                                 SCRIPT_EVENT_FILE_PATH, PARAMETERS_QT, VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT,
-                                                 NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
-                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES)
+                                 TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING, NAME_STRING,
+                                 SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES, SCRIPT_EVENT_UI,
+                                 EVENTS_QT, DEFAULT_SCRIPT_EVENT, PARAMETERS_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI,
+                                 VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, ENTITY_STATES)
 
 
 class Tests():
@@ -33,18 +32,6 @@ class Tests():
     parameter_created = ("Successfully added parameter", "Failed to add parameter")
     parameter_removed = ("Successfully removed parameter", "Failed to remove parameter")
 
-def click_menu_option(window, option_text):
-    """
-    function for clicking an option from a Qt menu object. This function bypasses menu groups or categories. for example,
-    if you want to click the Open option from the "File" category provide "Open" as your menu text instead of "File" then "Open".
-
-    param window: the qt window object where the menu option is located
-    param option_text: the label string used in the menu option that you want to click
-
-    returns none
-    """
-    action = pyside_utils.find_child_by_pattern(window, {"text": option_text, "type": QtWidgets.QAction})
-    action.trigger()
 
 def save_script_event_file(self, file_path):
     """
@@ -72,12 +59,6 @@ def initialize_editor_object(self):
 def initialize_sc_editor_objects(self):
     self.sc_editor = self.editor_main_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
     self.sc_editor_main_window = self.sc_editor.findChild(QtWidgets.QMainWindow)
-
-
-def initialize_variable_manager_object(self):
-    self.variable_manager = self.sc_editor.findChild(QtWidgets.QDockWidget, VARIABLE_MANAGER_QT)
-    if not self.variable_manager.isVisible():
-        self.click_menu_option(self.sc_editor, VARIABLE_MANAGER_QT)
 
 
 def initialize_asset_editor_object(self):
@@ -228,20 +209,6 @@ def get_node_inspector_node_titles(self, sc_graph_node_inspector, sc_graph):
         if background_title.text() is not "":
             titles.append(background_title.text())
     return titles
-
-
-def get_main_sc_window_qt_object():
-    """
-    function for getting the sc main window qt object.
-
-    params: none
-
-    returns: a qt widget main window object
-    """
-    editor_window = pyside_utils.get_editor_main_window()
-    sc_editor = editor_window.findChild(QtWidgets.QDockWidget, SCRIPT_CANVAS_UI)
-    return sc_editor.findChild(QtWidgets.QMainWindow)
-
 
 def create_new_sc_graph(sc_editor_main_window):
     """
@@ -417,6 +384,31 @@ def located_expected_tracer_lines(self, section_tracer, lines):
 
     return matching_lines >= expected_lines
 
+
+def located_expected_tracer_lines(section_tracer, lines):
+    """
+    function for parsing game mode's console output for expected test lines. requires section_tracer. duplicates lines
+    and error lines are not handled by this function
+
+    param self: The script calling this function
+    param section_tracer: python editor tracer object
+    param lines: list of expected lines
+
+
+    returns true if all the expected lines were detected in the parsed output
+    """
+    found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
+
+    expected_lines = len(lines)
+    matching_lines = 0
+
+    for line in lines:
+        for found_line in found_lines:
+            if line == found_line:
+                matching_lines += 1
+
+    return matching_lines >= expected_lines
+
 def create_entity_with_sc_component_asset(entity_name, source_file, position = math.Vector3(512.0, 512.0, 32.0)):
     """
     function for creating a new entity in the scene w/ a script canvas component. Function also adds as
@@ -464,26 +456,6 @@ def create_entity_with_multiple_sc_component_asset(entity_name, source_files, po
         hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
     return entity
-
-def change_entity_sc_asset(entity, source_file, component_index = 0):
-    """
-    function for changing the source file component property value of an entity. Function assumes that there is a SC
-    component somewhere in the list of components
-
-    param entity: The entity with the SC component you want to update
-    param source_file: The file you want to assign to the script canvas component property
-    param component_index: the index of the sc component you want to update.
-
-    returns true if the function was able to asign the source file ot the component
-    """
-
-    source_handle = scriptcanvas.SourceHandleFromPath(source_file)
-    script_canvas_component = entity.components[component_index]
-    hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, source_handle)
-    script_file = hydra.get_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
-    result = helper.wait_for_condition(lambda: script_file is not None, WAIT_TIME_3)
-
-    return result
 
 def change_entity_sc_variable_entity(entity_name, target_entity_name, component_property_path, component_index = 0):
     """

@@ -91,6 +91,14 @@ UiScrollBoxComponent::UiScrollBoxComponent()
     , m_isActive(false)
     , m_pressedScrollOffset(0.0f, 0.0f)
     , m_lastDragPoint(0.0f, 0.0f)
+    , m_scrollSensitivity(1.0f, 1.0f)
+    , m_lastOffsetChange(0.0f, 0.0f)
+    , m_offsetChangeAccumulator(0.0f, 0.0f)
+    , m_stoppingTimeAccumulator(0.0f)
+    , m_draggingTimeAccumulator(0.0f)
+    , m_momentumIsActive(false)
+    , m_momentumDuration(0.0f)
+    , m_momentumTimeAccumulator(0.0f)
 {
 }
 
@@ -111,7 +119,7 @@ void UiScrollBoxComponent::SetScrollOffset(AZ::Vector2 scrollOffset)
     if (m_isScrollingConstrained)
     {
         AZ::Entity* contentParentEntity = nullptr;
-        EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+        UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
         if (contentParentEntity)
         {
@@ -154,16 +162,16 @@ void UiScrollBoxComponent::ChangeContentSizeAndScrollOffset(AZ::Vector2 contentS
 
         // Get current content size
         AZ::Vector2 prevContentSize(0.0f, 0.0f);
-        EBUS_EVENT_ID_RESULT(prevContentSize, m_contentEntity, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+        UiTransformBus::EventResult(prevContentSize, m_contentEntity, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
         // Resize content element
         if (prevContentSize != contentSize)
         {
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, m_contentEntity, UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, m_contentEntity, &UiTransform2dBus::Events::GetOffsets);
 
             AZ::Vector2 pivot;
-            EBUS_EVENT_ID_RESULT(pivot, m_contentEntity, UiTransformBus, GetPivot);
+            UiTransformBus::EventResult(pivot, m_contentEntity, &UiTransformBus::Events::GetPivot);
 
             AZ::Vector2 sizeDiff = contentSize - prevContentSize;
 
@@ -178,7 +186,7 @@ void UiScrollBoxComponent::ChangeContentSizeAndScrollOffset(AZ::Vector2 contentS
                 offsets.m_bottom += sizeDiff.GetY() * (1.0f - pivot.GetY());
             }
 
-            EBUS_EVENT_ID(m_contentEntity, UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(m_contentEntity, &UiTransform2dBus::Events::SetOffsets, offsets);
         }
 
         // Adjust scroll offset
@@ -241,18 +249,19 @@ bool UiScrollBoxComponent::HasHorizontalContentToScroll()
         if (m_hScrollBarEntity.IsValid() && (m_hScrollBarVisibility != ScrollBarVisibility::AlwaysShow))
         {
             bool isEnabled = false;
-            EBUS_EVENT_ID_RESULT(isEnabled, m_hScrollBarEntity, UiElementBus, IsEnabled);
+            UiElementBus::EventResult(isEnabled, m_hScrollBarEntity, &UiElementBus::Events::IsEnabled);
             hasContentToScroll = isEnabled;
         }
         else
         {
             AZ::Entity* contentParentEntity = nullptr;
-            EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+            UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
             if (contentParentEntity)
             {
                 // Get content parent's size
                 AZ::Vector2 parentSize;
-                EBUS_EVENT_ID_RESULT(parentSize, contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                UiTransformBus::EventResult(
+                    parentSize, contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
                 // Get content size
                 UiTransformInterface::Rect contentRect = GetAxisAlignedContentRect();
@@ -284,18 +293,19 @@ bool UiScrollBoxComponent::HasVerticalContentToScroll()
         if (m_vScrollBarEntity.IsValid() && (m_vScrollBarVisibility != ScrollBarVisibility::AlwaysShow))
         {
             bool isEnabled = false;
-            EBUS_EVENT_ID_RESULT(isEnabled, m_vScrollBarEntity, UiElementBus, IsEnabled);
+            UiElementBus::EventResult(isEnabled, m_vScrollBarEntity, &UiElementBus::Events::IsEnabled);
             hasContentToScroll = isEnabled;
         }
         else
         {
             AZ::Entity* contentParentEntity = nullptr;
-            EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+            UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
             if (contentParentEntity)
             {
                 // Get content parent's size
                 AZ::Vector2 parentSize;
-                EBUS_EVENT_ID_RESULT(parentSize, contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                UiTransformBus::EventResult(
+                    parentSize, contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
                 // Get content size
                 UiTransformInterface::Rect contentRect = GetAxisAlignedContentRect();
@@ -391,6 +401,54 @@ UiScrollBoxInterface::ScrollBarVisibility UiScrollBoxComponent::GetVerticalScrol
 void UiScrollBoxComponent::SetVerticalScrollBarVisibility(ScrollBarVisibility visibility)
 {
     m_vScrollBarVisibility = visibility;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::Vector2 UiScrollBoxComponent::GetScrollSensitivity()
+{
+    return m_scrollSensitivity;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiScrollBoxComponent::SetScrollSensitivity(AZ::Vector2 scrollSensitivity)
+{
+    m_scrollSensitivity = scrollSensitivity;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+float UiScrollBoxComponent::GetMomentumDuration()
+{
+    return m_momentumDuration;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiScrollBoxComponent::SetMomentumDuration(float scrollMomentumDuration)
+{
+    m_momentumDuration = scrollMomentumDuration;
+}
+
+void UiScrollBoxComponent::SetMomentumActive(bool activate)
+{
+    m_momentumIsActive = activate;
+
+    if (m_momentumIsActive)
+    {
+        m_momentumTimeAccumulator = 0.0f;
+    }
+    else
+    {
+        m_offsetChangeAccumulator.Set(0.0f, 0.0f);
+        m_draggingTimeAccumulator = 0.0f;
+        m_stoppingTimeAccumulator = 0.0f;
+    }
+}
+
+void UiScrollBoxComponent::StopMomentum()
+{
+    m_offsetChangeAccumulator.Set(0.0f, 0.0f);
+    m_draggingTimeAccumulator = 0.0f;
+    m_stoppingTimeAccumulator = 0.0f;
+    m_momentumTimeAccumulator = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -492,7 +550,7 @@ AZ::EntityId UiScrollBoxComponent::FindClosestContentChildElement()
     // are in their centers (the default) then we will find the child whose center is closest
     // to the center of the content element's parent (usually the mask element)
     LyShine::EntityArray children;
-    EBUS_EVENT_ID_RESULT(children, m_contentEntity, UiElementBus, GetChildElements);
+    UiElementBus::EventResult(children, m_contentEntity, &UiElementBus::Events::GetChildElements);
 
     float closestDistSq = FLT_MAX;
     AZ::EntityId closestChild;
@@ -524,7 +582,7 @@ AZ::EntityId UiScrollBoxComponent::FindNextContentChildElement(UiNavigationHelpe
     // Iterate over the children of the content element and find the one who's pivot is closest to
     // the content element's anchors in the specified direction.
     LyShine::EntityArray children;
-    EBUS_EVENT_ID_RESULT(children, m_contentEntity, UiElementBus, GetChildElements);
+    UiElementBus::EventResult(children, m_contentEntity, &UiElementBus::Events::GetChildElements);
 
     float shortestDist = FLT_MAX;
     float shortestPerpendicularDist = FLT_MAX;
@@ -580,11 +638,11 @@ AZ::EntityId UiScrollBoxComponent::FindNextContentChildElement(UiNavigationHelpe
 bool UiScrollBoxComponent::GetScrollableParentToContentRatio(AZ::Vector2& ratioOut)
 {
     AZ::Entity* contentParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
     if (contentParentEntity)
     {
         AZ::Vector2 parentSize;
-        EBUS_EVENT_ID_RESULT(parentSize, contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+        UiTransformBus::EventResult(parentSize, contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
         UiTransformInterface::Rect contentRect = GetAxisAlignedContentRect();
         AZ::Vector2 contentSize = contentRect.GetSize();
@@ -649,7 +707,7 @@ void UiScrollBoxComponent::InGamePostActivate()
     if (m_hScrollBarEntity.IsValid() && m_isHorizontalScrollingEnabled)
     {
         // Set this entity as the scrollable entity of the scroller
-        EBUS_EVENT_ID(m_hScrollBarEntity, UiScrollerBus, SetScrollableEntity, GetEntityId());
+        UiScrollerBus::Event(m_hScrollBarEntity, &UiScrollerBus::Events::SetScrollableEntity, GetEntityId());
 
         UiScrollerToScrollableNotificationBus::MultiHandler::BusConnect(m_hScrollBarEntity);
     }
@@ -657,7 +715,7 @@ void UiScrollBoxComponent::InGamePostActivate()
     if (m_vScrollBarEntity.IsValid() && m_isVerticalScrollingEnabled)
     {
         // Set this entity as the scrollable entity of the scroller
-        EBUS_EVENT_ID(m_vScrollBarEntity, UiScrollerBus, SetScrollableEntity, GetEntityId());
+        UiScrollerBus::Event(m_vScrollBarEntity, &UiScrollerBus::Events::SetScrollableEntity, GetEntityId());
 
         UiScrollerToScrollableNotificationBus::MultiHandler::BusConnect(m_vScrollBarEntity);
     }
@@ -674,7 +732,7 @@ void UiScrollBoxComponent::InGamePostActivate()
 
         // Listen for canvas space rect changes from the content entity's parent
         AZ::Entity* contentParentEntity = nullptr;
-        EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+        UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
         if (contentParentEntity)
         {
             UiTransformChangeNotificationBus::MultiHandler::BusConnect(contentParentEntity->GetId());
@@ -696,6 +754,9 @@ bool UiScrollBoxComponent::HandlePressed(AZ::Vector2 point, bool& shouldStayActi
         m_pressedScrollOffset = m_scrollOffset;
     }
 
+    // Stop momentum if the user pressed the screen, when handled directly
+    SetMomentumActive(false);
+        
     return handled;
 }
 
@@ -717,6 +778,9 @@ bool UiScrollBoxComponent::HandleReleased([[maybe_unused]] AZ::Vector2 point)
 
     m_isPressed = false;
     m_isDragging = false;
+
+    //Start momentum if released the screen
+    SetMomentumActive(true);
 
     return m_isHandlingEvents;
 }
@@ -793,7 +857,7 @@ bool UiScrollBoxComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
                 if (m_isScrollingConstrained)
                 {
                     AZ::Entity* contentParentEntity = nullptr;
-                    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+                    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
                     newScrollOffset = ConstrainOffset(newScrollOffset, contentParentEntity);
                 }
@@ -821,7 +885,7 @@ bool UiScrollBoxComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
             if (m_isScrollingConstrained)
             {
                 AZ::Entity* contentParentEntity = nullptr;
-                EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+                UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
                 // Only scroll if constraining doesn't change the offset
                 AZ::Vector2 constrainedScrollOffset = ConstrainOffset(newScrollOffset, contentParentEntity);
@@ -835,12 +899,12 @@ bool UiScrollBoxComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
         {
             // get content parent's rect in canvas space
             AZ::Entity* contentParentEntity = nullptr;
-            EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+            UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
             if (contentParentEntity)
             {
                 UiTransformInterface::Rect parentRect;
-                EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+                UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
                 const float keySteps = 10.0f;
 
@@ -885,6 +949,7 @@ void UiScrollBoxComponent::InputPositionUpdate(AZ::Vector2 point)
 {
     if (m_isPressed && m_contentEntity.IsValid())
     {
+        m_lastOffsetChange = AZ::Vector2(0.0f, 0.0f);
         if (!m_isDragging)
         {
             CheckForDragOrHandOffToParent(point);
@@ -893,14 +958,15 @@ void UiScrollBoxComponent::InputPositionUpdate(AZ::Vector2 point)
         if (m_isDragging)
         {
             AZ::Vector2 dragVector = point - m_pressedPoint;
-
+            dragVector *= m_scrollSensitivity;
+            
             AZ::Entity* contentParentEntity = nullptr;
-            EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+            UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
             AZ::Matrix4x4 transform;
             if (contentParentEntity)
             {
-                EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetTransformFromViewport, transform);
+                UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transform);
             }
             else
             {
@@ -935,11 +1001,19 @@ void UiScrollBoxComponent::InputPositionUpdate(AZ::Vector2 point)
 
             if (newScrollOffset != m_scrollOffset)
             {
+                m_lastOffsetChange = newScrollOffset - m_scrollOffset;
+                m_offsetChangeAccumulator += m_lastOffsetChange;
                 DoSetScrollOffset(newScrollOffset);
 
                 NotifyScrollersOnValueChanging();
 
                 DoChangingActions();
+            }
+            
+            //Reset offset and time accumulators if change scrolling direction
+            if (m_lastOffsetChange.Dot(m_offsetChangeAccumulator) < 0.0f)
+            {
+                SetMomentumActive(false);
             }
         }
     }
@@ -950,7 +1024,7 @@ bool UiScrollBoxComponent::DoesSupportDragHandOff(AZ::Vector2 startPoint)
 {
     // this component does support hand-off, so long as the start point is in its bounds
     bool isPointInRect = false;
-    EBUS_EVENT_ID_RESULT(isPointInRect, GetEntityId(), UiTransformBus, IsPointInRect, startPoint);
+    UiTransformBus::EventResult(isPointInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, startPoint);
     return isPointInRect;
 }
 
@@ -964,12 +1038,12 @@ bool UiScrollBoxComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
 
     // get transform of content entity
     AZ::Entity* contentParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
     AZ::Matrix4x4 transform;
     if (contentParentEntity)
     {
-        EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetTransformFromViewport, transform);
+        UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transform);
     }
     else
     {
@@ -985,9 +1059,13 @@ bool UiScrollBoxComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
         m_pressedPoint = startPoint;
         m_pressedScrollOffset = m_scrollOffset;
         m_lastDragPoint = m_pressedPoint;
+        
+        // Stop momentum if the user pressed the screen, when handled indirectly
+        SetMomentumActive(false);
 
         // tell the canvas that this is now the active interacatable
-        EBUS_EVENT_ID(currentActiveInteractable, UiInteractableActiveNotificationBus, ActiveChanged, GetEntityId(), false);
+        UiInteractableActiveNotificationBus::Event(
+            currentActiveInteractable, &UiInteractableActiveNotificationBus::Events::ActiveChanged, GetEntityId(), false);
         result = true;
     }
     else
@@ -996,11 +1074,18 @@ bool UiScrollBoxComponent::OfferDragHandOff(AZ::EntityId currentActiveInteractab
 
         // look for a parent interactable that the start point of the drag is inside
         AZ::EntityId interactableContainer;
-        EBUS_EVENT_ID_RESULT(interactableContainer, GetEntityId(), UiElementBus, FindParentInteractableSupportingDrag, startPoint);
+        UiElementBus::EventResult(
+            interactableContainer, GetEntityId(), &UiElementBus::Events::FindParentInteractableSupportingDrag, startPoint);
 
         // if there was a parent interactable offer them the opportunity to become the active interactable
-        EBUS_EVENT_ID_RESULT(result, interactableContainer, UiInteractableBus,
-            OfferDragHandOff, currentActiveInteractable, startPoint, currentPoint, dragThreshold);
+        UiInteractableBus::EventResult(
+            result,
+            interactableContainer,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            currentActiveInteractable,
+            startPoint,
+            currentPoint,
+            dragThreshold);
     }
 
     return result;
@@ -1037,7 +1122,7 @@ void UiScrollBoxComponent::HandleDescendantReceivedHoverByNavigation(AZ::EntityI
     bool isAncestor = false;
     if (m_contentEntity.IsValid())
     {
-        EBUS_EVENT_ID_RESULT(isAncestor, descendantEntityId, UiElementBus, IsAncestor, m_contentEntity);
+        UiElementBus::EventResult(isAncestor, descendantEntityId, &UiElementBus::Events::IsAncestor, m_contentEntity);
     }
 
     if (isAncestor)
@@ -1048,7 +1133,7 @@ void UiScrollBoxComponent::HandleDescendantReceivedHoverByNavigation(AZ::EntityI
         {
             // Find the descendant's ancestor that's a direct child of the content entity
             AZ::EntityId parent;
-            EBUS_EVENT_ID_RESULT(parent, descendantEntityId, UiElementBus, GetParentEntityId);
+            UiElementBus::EventResult(parent, descendantEntityId, &UiElementBus::Events::GetParentEntityId);
             while (parent.IsValid())
             {
                 if (parent == m_contentEntity)
@@ -1058,7 +1143,7 @@ void UiScrollBoxComponent::HandleDescendantReceivedHoverByNavigation(AZ::EntityI
 
                 descendantEntityId = parent;
                 parent.SetInvalid();
-                EBUS_EVENT_ID_RESULT(parent, descendantEntityId, UiElementBus, GetParentEntityId);
+                UiElementBus::EventResult(parent, descendantEntityId, &UiElementBus::Events::GetParentEntityId);
             }
 
             if (descendantEntityId.IsValid())
@@ -1081,16 +1166,16 @@ void UiScrollBoxComponent::HandleDescendantReceivedHoverByNavigation(AZ::EntityI
         {
             // Check if the descendant element is visible in the viewport area
             AZ::EntityId contentParent;
-            EBUS_EVENT_ID_RESULT(contentParent, m_contentEntity, UiElementBus, GetParentEntityId);
+            UiElementBus::EventResult(contentParent, m_contentEntity, &UiElementBus::Events::GetParentEntityId);
             if (contentParent.IsValid())
             {
                 UiTransformInterface::Rect contentParentRect;
                 AZ::Matrix4x4 transformFromViewport;
-                EBUS_EVENT_ID(contentParent, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, contentParentRect);
-                EBUS_EVENT_ID(contentParent, UiTransformBus, GetTransformFromViewport, transformFromViewport);
+                UiTransformBus::Event(contentParent, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, contentParentRect);
+                UiTransformBus::Event(contentParent, &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
 
                 UiTransformInterface::RectPoints descendantPoints;
-                EBUS_EVENT_ID(descendantEntityId, UiTransformBus, GetViewportSpacePoints, descendantPoints);
+                UiTransformBus::Event(descendantEntityId, &UiTransformBus::Events::GetViewportSpacePoints, descendantPoints);
                 descendantPoints = descendantPoints.Transform(transformFromViewport);
 
                 UiTransformInterface::Rect descendantRect;
@@ -1165,6 +1250,64 @@ void UiScrollBoxComponent::OnCanvasSpaceRectChanged([[maybe_unused]] AZ::EntityI
     if (sizeChanged)
     {
         ContentOrParentSizeChanged();
+    }
+}
+
+void UiScrollBoxComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+{
+    if (!m_momentumIsActive && m_isDragging)
+    {
+        m_draggingTimeAccumulator += deltaTime;
+        // Detect if stopped by checking if immediate offset change falls below threshold
+        if ((m_lastOffsetChange / m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD)
+        {
+            m_stoppingTimeAccumulator += deltaTime;
+        }
+        else
+        {
+            m_stoppingTimeAccumulator = 0.0f;
+        }
+    }
+    
+    // Stop momentum if off or already ran the full momentum duration
+    if (!m_momentumIsActive ||
+        m_momentumDuration < m_momentumTimeAccumulator)
+    {
+        return;
+    }
+    
+    // Stop momentum if no dragging accumulator, or not enough drag, or if stopped for long enough
+    if (m_draggingTimeAccumulator == 0.0f ||
+        (m_offsetChangeAccumulator / m_scrollSensitivity).GetLength() < MIN_OFFSET_THRESHOLD ||
+        m_stoppingTimeAccumulator > MAX_STOPPING_DELAY)
+    {
+        return;
+    }
+    
+    m_momentumTimeAccumulator += deltaTime;
+
+    float momentumRatio = AZ::GetClamp(m_momentumTimeAccumulator / m_momentumDuration, 0.0f, 1.0f);
+    float momentumEasing = 1.0f + (momentumRatio - 1.0f) * (momentumRatio - 1.0f) * (momentumRatio - 1.0f); // Ease Out Cubic decrease
+
+    // m_offsetChangeAccumulator is the aggregated unidirectional scrolling, inverse easing for deceleration
+    AZ::Vector2 momentumOffsetChange = m_offsetChangeAccumulator * ( deltaTime / m_draggingTimeAccumulator) * (1.0f - momentumEasing);
+    AZ::Vector2 newScrollOffset = m_scrollOffset + momentumOffsetChange;
+
+    // do constraining
+    if (m_isScrollingConstrained)
+    {
+        AZ::Entity* contentParentEntity = nullptr;
+        EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+        newScrollOffset = ConstrainOffset(newScrollOffset, contentParentEntity);
+    }
+
+    if (newScrollOffset != m_scrollOffset)
+    {
+        DoSetScrollOffset(newScrollOffset);
+
+        NotifyScrollersOnValueChanging();
+
+        DoChangingActions();
     }
 }
 
@@ -1268,7 +1411,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiScrollBox.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiScrollBox.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Content group
@@ -1287,7 +1430,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                     ->EnumAttribute(UiScrollBoxInterface::SnapMode::None, "None")
                     ->EnumAttribute(UiScrollBoxInterface::SnapMode::Children, "To children")
                     ->EnumAttribute(UiScrollBoxInterface::SnapMode::Grid, "To grid")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement(0, &UiScrollBoxComponent::m_snapGrid, "Grid spacing",
                     "The scroll offset will be snapped to multiples of these values.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBoxComponent::IsSnapToGrid);
@@ -1300,7 +1443,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isHorizontalScrollingEnabled, "Enabled",
                     "Check this box to allow the scroll box to be scrolled horizontally.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_hScrollBarEntity, "Scrollbar element",
                     "The element that is the horizontal scrollbar.")
@@ -1322,7 +1465,7 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiScrollBoxComponent::m_isVerticalScrollingEnabled, "Enabled",
                     "Check this box to allow the scroll box to be scrolled vertically.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBoxComponent::m_vScrollBarEntity, "Scrollbar element",
                     "The element that is the vertical scrollbar.")
@@ -1371,6 +1514,12 @@ void UiScrollBoxComponent::Reflect(AZ::ReflectContext* context)
             ->Event("SetHorizontalScrollBarVisibility", &UiScrollBoxBus::Events::SetHorizontalScrollBarVisibility)
             ->Event("GetVerticalScrollBarVisibility", &UiScrollBoxBus::Events::GetVerticalScrollBarVisibility)
             ->Event("SetVerticalScrollBarVisibility", &UiScrollBoxBus::Events::SetVerticalScrollBarVisibility)
+            ->Event("GetScrollSensitivity", &UiScrollBoxBus::Events::GetScrollSensitivity)
+            ->Event("SetScrollSensitivity", &UiScrollBoxBus::Events::SetScrollSensitivity)
+            ->Event("GetMomentumDuration", &UiScrollBoxBus::Events::GetMomentumDuration)
+            ->Event("SetMomentumDuration", &UiScrollBoxBus::Events::SetMomentumDuration)
+            ->Event("SetMomentumActive", &UiScrollBoxBus::Events::SetMomentumActive)
+            ->Event("StopMomentum", &UiScrollBoxBus::Events::StopMomentum)
             ->Event("GetScrollOffsetChangingActionName", &UiScrollBoxBus::Events::GetScrollOffsetChangingActionName)
             ->Event("SetScrollOffsetChangingActionName", &UiScrollBoxBus::Events::SetScrollOffsetChangingActionName)
             ->Event("GetScrollOffsetChangedActionName", &UiScrollBoxBus::Events::GetScrollOffsetChangedActionName)
@@ -1408,8 +1557,13 @@ UiScrollBoxComponent::EntityComboBoxVec UiScrollBoxComponent::PopulateChildEntit
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -1443,9 +1597,11 @@ UiScrollBoxComponent::EntityComboBoxVec UiScrollBoxComponent::PopulateScrollBarE
 
     // Get a list of all scrollbar elements
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     LyShine::EntityArray scrollBarElements;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElements,
+    UiCanvasBus::Event(
+        canvasEntityId,
+        &UiCanvasBus::Events::FindElements,
         [this, orientation](const AZ::Entity* entity)
         {
             bool isScroller = false;
@@ -1455,7 +1611,7 @@ UiScrollBoxComponent::EntityComboBoxVec UiScrollBoxComponent::PopulateScrollBarE
                 {
                     // Check scrollbar's orientation
                     UiScrollerInterface::Orientation entityOrientation;
-                    EBUS_EVENT_ID_RESULT(entityOrientation, entity->GetId(), UiScrollerBus, GetOrientation);
+                    UiScrollerBus::EventResult(entityOrientation, entity->GetId(), &UiScrollerBus::Events::GetOrientation);
                     isScroller = (entityOrientation == orientation);
                 }
             }
@@ -1491,7 +1647,7 @@ AZ::Vector2 UiScrollBoxComponent::ConstrainOffset(AZ::Vector2 proposedOffset, AZ
     {
         // get content parent's rect in canvas space
         UiTransformInterface::Rect parentRect;
-        EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+        UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
         // get content's rect in canvas space
         UiTransformInterface::Rect contentRect = GetAxisAlignedContentRect();
@@ -1568,7 +1724,7 @@ bool UiScrollBoxComponent::DoSnap()
     if (m_isScrollingConstrained)
     {
         AZ::Entity* contentParentEntity = nullptr;
-        EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+        UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
         newScrollOffset = ConstrainOffset(newScrollOffset, contentParentEntity);
     }
 
@@ -1586,7 +1742,7 @@ AZ::Vector2 UiScrollBoxComponent::ComputeCurrentOffsetToChild(AZ::EntityId child
 {
     // Get the position of the child element's pivot in canvas space
     AZ::Vector2 childPivotPosition;
-    EBUS_EVENT_ID_RESULT(childPivotPosition, child, UiTransformBus, GetCanvasSpacePivot);
+    UiTransformBus::EventResult(childPivotPosition, child, &UiTransformBus::Events::GetCanvasSpacePivot);
 
     AZ::Vector2 anchorCenter = ComputeContentAnchorCenterInCanvasSpace();
 
@@ -1595,12 +1751,12 @@ AZ::Vector2 UiScrollBoxComponent::ComputeCurrentOffsetToChild(AZ::EntityId child
     AZ::Vector2 offsetToChild = childPivotPosition - anchorCenter;
 
     AZ::Entity* contentParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
     AZ::Matrix4x4 transform;
     if (contentParentEntity)
     {
-        EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetTransformFromCanvasSpace, transform);
+        UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetTransformFromCanvasSpace, transform);
     }
     else
     {
@@ -1630,7 +1786,7 @@ AZ::Vector2 UiScrollBoxComponent::ComputeContentAnchorCenterInCanvasSpace() cons
 {
     // Get the position of the content elements anchors in canvas space
     AZ::Entity* contentParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
     if (!contentParentEntity)
     {
@@ -1639,11 +1795,11 @@ AZ::Vector2 UiScrollBoxComponent::ComputeContentAnchorCenterInCanvasSpace() cons
 
     // get content parent's rect in canvas space
     UiTransformInterface::Rect parentRect;
-    EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+    UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
     // Get the content anchor center in canvas space
     UiTransform2dInterface::Anchors anchors;
-    EBUS_EVENT_ID_RESULT(anchors, m_contentEntity, UiTransform2dBus, GetAnchors);
+    UiTransform2dBus::EventResult(anchors, m_contentEntity, &UiTransform2dBus::Events::GetAnchors);
 
     UiTransformInterface::Rect anchorRect;
     anchorRect.left = parentRect.left + anchors.m_left * parentRect.GetWidth();
@@ -1654,7 +1810,7 @@ AZ::Vector2 UiScrollBoxComponent::ComputeContentAnchorCenterInCanvasSpace() cons
     AZ::Vector2 anchorCenter =  anchorRect.GetCenter();
 
     AZ::Matrix4x4 transformToCanvasSpace;
-    EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetTransformToCanvasSpace, transformToCanvasSpace);
+    UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetTransformToCanvasSpace, transformToCanvasSpace);
     AZ::Vector3 anchorCenter3(anchorCenter.GetX(), anchorCenter.GetY(), 0.0f);
     anchorCenter3 = transformToCanvasSpace * anchorCenter3;
     anchorCenter = AZ::Vector2(anchorCenter3.GetX(), anchorCenter3.GetY());
@@ -1686,7 +1842,7 @@ float UiScrollBoxComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
     const float validDragRatio = 0.5f;
 
     AZ::Entity* contentParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
 
     if (!contentParentEntity)
     {
@@ -1695,7 +1851,7 @@ float UiScrollBoxComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
 
     // convert the drag vector to local space
     AZ::Matrix4x4 transformFromViewport;
-    EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+    UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
     AZ::Vector2 dragVec = endPoint - startPoint;
     AZ::Vector3 dragVec3(dragVec.GetX(), dragVec.GetY(), 0.0f);
     AZ::Vector3 localDragVec = transformFromViewport.Multiply3x3(dragVec3);
@@ -1712,7 +1868,7 @@ float UiScrollBoxComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
 
     // convert back to viewport space
     AZ::Matrix4x4 transformToViewport;
-    EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetTransformToViewport, transformToViewport);
+    UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetTransformToViewport, transformToViewport);
     AZ::Vector3 validDragVec = transformToViewport.Multiply3x3(localDragVec);
 
     float validDistance = validDragVec.GetLengthSq();
@@ -1732,7 +1888,7 @@ float UiScrollBoxComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
 void UiScrollBoxComponent::CheckForDragOrHandOffToParent(AZ::Vector2 point)
 {
     AZ::EntityId parentDraggable;
-    EBUS_EVENT_ID_RESULT(parentDraggable, GetEntityId(), UiElementBus, FindParentInteractableSupportingDrag, point);
+    UiElementBus::EventResult(parentDraggable, GetEntityId(), &UiElementBus::Events::FindParentInteractableSupportingDrag, point);
 
     // if this interactable is inside another interactable that supports drag then we use
     // a threshold value before starting a drag on this interactable
@@ -1756,8 +1912,14 @@ void UiScrollBoxComponent::CheckForDragOrHandOffToParent(AZ::Vector2 point)
     {
         // offer the parent draggable the chance to become the active interactable
         bool handOff = false;
-        EBUS_EVENT_ID_RESULT(handOff, parentDraggable, UiInteractableBus,
-            OfferDragHandOff, GetEntityId(), m_pressedPoint, point, containedDragThreshold);
+        UiInteractableBus::EventResult(
+            handOff,
+            parentDraggable,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            GetEntityId(),
+            m_pressedPoint,
+            point,
+            containedDragThreshold);
 
         if (handOff)
         {
@@ -1777,10 +1939,10 @@ void UiScrollBoxComponent::DoSetScrollOffset(AZ::Vector2 scrollOffset)
         // The scrollOffset is the distance from the content element's anchors to its pivot
         // Given the scrollOffset we adjust the offsets to make this so.
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, m_contentEntity, UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, m_contentEntity, &UiTransform2dBus::Events::GetOffsets);
 
         AZ::Vector2 pivot;
-        EBUS_EVENT_ID_RESULT(pivot, m_contentEntity, UiTransformBus, GetPivot);
+        UiTransformBus::EventResult(pivot, m_contentEntity, &UiTransformBus::Events::GetPivot);
 
         float width = offsets.m_right - offsets.m_left;
         float height = offsets.m_bottom - offsets.m_top;
@@ -1790,7 +1952,7 @@ void UiScrollBoxComponent::DoSetScrollOffset(AZ::Vector2 scrollOffset)
         offsets.m_top = scrollOffset.GetY() - height * pivot.GetY();
         offsets.m_bottom = offsets.m_top + height;
 
-        EBUS_EVENT_ID(m_contentEntity, UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(m_contentEntity, &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -1806,8 +1968,9 @@ void UiScrollBoxComponent::DoChangedActions()
     if (!m_scrollOffsetChangedActionName.empty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_scrollOffsetChangedActionName);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(
+            canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_scrollOffsetChangedActionName);
     }
 
     NotifyListenersOnScrollOffsetChanged();
@@ -1827,8 +1990,9 @@ void UiScrollBoxComponent::DoChangingActions()
     if (!m_scrollOffsetChangingActionName.empty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_scrollOffsetChangingActionName);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(
+            canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_scrollOffsetChangingActionName);
     }
 
     NotifyListenersOnScrollOffsetChanging();
@@ -1844,7 +2008,8 @@ void UiScrollBoxComponent::NotifyScrollersOnValueChanged()
 
     if (result)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiScrollableToScrollerNotificationBus, OnValueChangedByScrollable, normalizedScrollValueOut);
+        UiScrollableToScrollerNotificationBus::Event(
+            GetEntityId(), &UiScrollableToScrollerNotificationBus::Events::OnValueChangedByScrollable, normalizedScrollValueOut);
     }
 }
 
@@ -1856,7 +2021,8 @@ void UiScrollBoxComponent::NotifyScrollersOnValueChanging()
 
     if (result)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiScrollableToScrollerNotificationBus, OnValueChangingByScrollable, normalizedScrollValueOut);
+        UiScrollableToScrollerNotificationBus::Event(
+            GetEntityId(), &UiScrollableToScrollerNotificationBus::Events::OnValueChangingByScrollable, normalizedScrollValueOut);
     }
 }
 
@@ -1868,7 +2034,8 @@ void UiScrollBoxComponent::NotifyListenersOnScrollValueChanged()
 
     if (result)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiScrollableNotificationBus, OnScrollableValueChanged, normalizedScrollValueOut);
+        UiScrollableNotificationBus::Event(
+            GetEntityId(), &UiScrollableNotificationBus::Events::OnScrollableValueChanged, normalizedScrollValueOut);
     }
 }
 
@@ -1880,30 +2047,31 @@ void UiScrollBoxComponent::NotifyListenersOnScrollValueChanging()
 
     if (result)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiScrollableNotificationBus, OnScrollableValueChanging, normalizedScrollValueOut);
+        UiScrollableNotificationBus::Event(
+            GetEntityId(), &UiScrollableNotificationBus::Events::OnScrollableValueChanging, normalizedScrollValueOut);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiScrollBoxComponent::NotifyListenersOnScrollOffsetChanged()
 {
-    EBUS_EVENT_ID(GetEntityId(), UiScrollBoxNotificationBus, OnScrollOffsetChanged, m_scrollOffset);
+    UiScrollBoxNotificationBus::Event(GetEntityId(), &UiScrollBoxNotificationBus::Events::OnScrollOffsetChanged, m_scrollOffset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiScrollBoxComponent::NotifyListenersOnScrollOffsetChanging()
 {
-    EBUS_EVENT_ID(GetEntityId(), UiScrollBoxNotificationBus, OnScrollOffsetChanging, m_scrollOffset);
+    UiScrollBoxNotificationBus::Event(GetEntityId(), &UiScrollBoxNotificationBus::Events::OnScrollOffsetChanging, m_scrollOffset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiTransformInterface::Rect UiScrollBoxComponent::GetAxisAlignedContentRect()
 {
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(m_contentEntity, UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(m_contentEntity, &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(m_contentEntity, UiTransformBus, GetLocalTransform, transform);
+    UiTransformBus::Event(m_contentEntity, &UiTransformBus::Events::GetLocalTransform, transform);
 
     points = points.Transform(transform);
 
@@ -1920,11 +2088,11 @@ UiTransformInterface::Rect UiScrollBoxComponent::GetAxisAlignedContentRect()
 bool UiScrollBoxComponent::ScrollOffsetToNormalizedScrollValue(AZ::Vector2 scrollOffset, AZ::Vector2& normalizedScrollValueOut)
 {
     AZ::Entity* contentParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
     if (contentParentEntity)
     {
         UiTransformInterface::Rect parentRect;
-        EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+        UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
         UiTransformInterface::Rect contentRect = GetAxisAlignedContentRect();
 
@@ -1962,11 +2130,11 @@ bool UiScrollBoxComponent::NormalizedScrollValueToScrollOffset(UiScrollerInterfa
     if (orientation == UiScrollerInterface::Orientation::Horizontal || orientation == UiScrollerInterface::Orientation::Vertical)
     {
         AZ::Entity* contentParentEntity = nullptr;
-        EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+        UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
         if (contentParentEntity)
         {
             UiTransformInterface::Rect parentRect;
-            EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+            UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
             UiTransformInterface::Rect contentRect = GetAxisAlignedContentRect();
 
@@ -2053,16 +2221,16 @@ bool UiScrollBoxComponent::IsVerticalScrollBarOnRight()
     // Check if vertical scrollbar is on the right of the content's parent
 
     AZ::Entity* contentParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
     if (contentParentEntity)
     {
         // Get content parent rect in canvas space
         UiTransformInterface::Rect parentRect;
-        EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+        UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
         // Get vertical scrollbar rect in canvas space
         UiTransformInterface::Rect vScrollBarRect;
-        EBUS_EVENT_ID(m_vScrollBarEntity, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, vScrollBarRect);
+        UiTransformBus::Event(m_vScrollBarEntity, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, vScrollBarRect);
 
         return (vScrollBarRect.GetCenter().GetX() > parentRect.GetCenter().GetX());
     }
@@ -2076,16 +2244,16 @@ bool UiScrollBoxComponent::IsHorizontalScrollBarOnBottom()
     // Check if horizontal scrollbar is on the bottom of the content's parent
 
     AZ::Entity* contentParentEntity = nullptr;
-    EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+    UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
     if (contentParentEntity)
     {
         // Get content parent rect in canvas space
         UiTransformInterface::Rect parentRect;
-        EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceRectNoScaleRotate, parentRect);
+        UiTransformBus::Event(contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, parentRect);
 
         // Get horizontal scrollbar rect in canvas space
         UiTransformInterface::Rect hScrollBarRect;
-        EBUS_EVENT_ID(m_hScrollBarEntity, UiTransformBus, GetCanvasSpaceRectNoScaleRotate, hScrollBarRect);
+        UiTransformBus::Event(m_hScrollBarEntity, &UiTransformBus::Events::GetCanvasSpaceRectNoScaleRotate, hScrollBarRect);
 
         return (hScrollBarRect.GetCenter().GetY() > parentRect.GetCenter().GetY());
     }
@@ -2104,7 +2272,7 @@ void UiScrollBoxComponent::UpdateScrollBarVisiblity()
         // Set scrollbar visibility based on whether there is scrollable content
 
         AZ::Entity* contentParentEntity = nullptr;
-        EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+        UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
         if (contentParentEntity)
         {
             bool showHScrollBar = true;
@@ -2112,7 +2280,7 @@ void UiScrollBoxComponent::UpdateScrollBarVisiblity()
 
             // Get content parent's size
             AZ::Vector2 parentSize;
-            EBUS_EVENT_ID_RESULT(parentSize, contentParentEntity->GetId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+            UiTransformBus::EventResult(parentSize, contentParentEntity->GetId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
             // Get content size
             UiTransformInterface::Rect contentRect = GetAxisAlignedContentRect();
@@ -2144,7 +2312,8 @@ void UiScrollBoxComponent::UpdateScrollBarVisiblity()
                 {
                     // Get height of horizontal scrollbar
                     AZ::Vector2 hScrollBarSize;
-                    EBUS_EVENT_ID_RESULT(hScrollBarSize, m_hScrollBarEntity, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                    UiTransformBus::EventResult(
+                        hScrollBarSize, m_hScrollBarEntity, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
                     float hScrollBarHeight = hScrollBarSize.GetY();
 
                     supposedParentSize.SetY(supposedParentSize.GetY() - hScrollBarHeight);
@@ -2164,7 +2333,8 @@ void UiScrollBoxComponent::UpdateScrollBarVisiblity()
                     {
                         // Get width of vertical scrollbar
                         AZ::Vector2 vScrollBarSize;
-                        EBUS_EVENT_ID_RESULT(vScrollBarSize, m_vScrollBarEntity, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                        UiTransformBus::EventResult(
+                            vScrollBarSize, m_vScrollBarEntity, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
                         float vScrollBarWidth = vScrollBarSize.GetX();
 
                         supposedParentSize.SetX(supposedParentSize.GetX() - vScrollBarWidth);
@@ -2187,11 +2357,11 @@ void UiScrollBoxComponent::UpdateScrollBarVisiblity()
             // Set enabled property on the scrollbars
             if (updateHorizontalScrollBar)
             {
-                EBUS_EVENT_ID(m_hScrollBarEntity, UiElementBus, SetIsEnabled, showHScrollBar);
+                UiElementBus::Event(m_hScrollBarEntity, &UiElementBus::Events::SetIsEnabled, showHScrollBar);
             }
             if (updateVerticalScrollBar)
             {
-                EBUS_EVENT_ID(m_vScrollBarEntity, UiElementBus, SetIsEnabled, showVScrollBar);
+                UiElementBus::Event(m_vScrollBarEntity, &UiElementBus::Events::SetIsEnabled, showVScrollBar);
             }
         }
     }
@@ -2206,27 +2376,27 @@ void UiScrollBoxComponent::UpdateScrollBarAnchorsAndOffsets()
     {
         // Set anchors
         UiTransform2dInterface::Anchors anchors;
-        EBUS_EVENT_ID_RESULT(anchors, m_hScrollBarEntity, UiTransform2dBus, GetAnchors);
+        UiTransform2dBus::EventResult(anchors, m_hScrollBarEntity, &UiTransform2dBus::Events::GetAnchors);
         anchors.m_left = 0.0f;
         anchors.m_right = 1.0f;
-        EBUS_EVENT_ID(m_hScrollBarEntity, UiTransform2dBus, SetAnchors, anchors, false, false);
+        UiTransform2dBus::Event(m_hScrollBarEntity, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 
         // Set offsets
 
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, m_hScrollBarEntity, UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, m_hScrollBarEntity, &UiTransform2dBus::Events::GetOffsets);
 
         bool isVScrollBarEnabled = false;
         if (m_vScrollBarEntity.IsValid() && m_isVerticalScrollingEnabled)
         {
-            EBUS_EVENT_ID_RESULT(isVScrollBarEnabled, m_vScrollBarEntity, UiElementBus, IsEnabled);
+            UiElementBus::EventResult(isVScrollBarEnabled, m_vScrollBarEntity, &UiElementBus::Events::IsEnabled);
         }
 
         if (isVScrollBarEnabled)
         {
             // Get width of vertical scrollbar
             AZ::Vector2 vScrollBarSize;
-            EBUS_EVENT_ID_RESULT(vScrollBarSize, m_vScrollBarEntity, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+            UiTransformBus::EventResult(vScrollBarSize, m_vScrollBarEntity, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
             if (IsVerticalScrollBarOnRight())
             {
@@ -2245,34 +2415,34 @@ void UiScrollBoxComponent::UpdateScrollBarAnchorsAndOffsets()
             offsets.m_right = 0.0f;
         }
 
-        EBUS_EVENT_ID(m_hScrollBarEntity, UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(m_hScrollBarEntity, &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 
     if (m_vScrollBarEntity.IsValid() && m_isVerticalScrollingEnabled && (m_vScrollBarVisibility != ScrollBarVisibility::AlwaysShow))
     {
         // Set anchors
         UiTransform2dInterface::Anchors anchors;
-        EBUS_EVENT_ID_RESULT(anchors, m_vScrollBarEntity, UiTransform2dBus, GetAnchors);
+        UiTransform2dBus::EventResult(anchors, m_vScrollBarEntity, &UiTransform2dBus::Events::GetAnchors);
         anchors.m_top = 0.0f;
         anchors.m_bottom = 1.0f;
-        EBUS_EVENT_ID(m_vScrollBarEntity, UiTransform2dBus, SetAnchors, anchors, false, false);
+        UiTransform2dBus::Event(m_vScrollBarEntity, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 
         // Set offsets
 
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, m_vScrollBarEntity, UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, m_vScrollBarEntity, &UiTransform2dBus::Events::GetOffsets);
 
         bool isHScrollBarEnabled = false;
         if (m_hScrollBarEntity.IsValid() && m_isHorizontalScrollingEnabled)
         {
-            EBUS_EVENT_ID_RESULT(isHScrollBarEnabled, m_hScrollBarEntity, UiElementBus, IsEnabled);
+            UiElementBus::EventResult(isHScrollBarEnabled, m_hScrollBarEntity, &UiElementBus::Events::IsEnabled);
         }
 
         if (isHScrollBarEnabled)
         {
             // Get height of horizontal scrollbar
             AZ::Vector2 hScrollBarSize;
-            EBUS_EVENT_ID_RESULT(hScrollBarSize, m_hScrollBarEntity, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+            UiTransformBus::EventResult(hScrollBarSize, m_hScrollBarEntity, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
             if (IsHorizontalScrollBarOnBottom())
             {
@@ -2291,7 +2461,7 @@ void UiScrollBoxComponent::UpdateScrollBarAnchorsAndOffsets()
             offsets.m_bottom = 0.0f;
         }
 
-        EBUS_EVENT_ID(m_vScrollBarEntity, UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(m_vScrollBarEntity, &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -2304,25 +2474,26 @@ void UiScrollBoxComponent::UpdateContentParentOffsets(bool checkScrollBarVisibil
         // Set content parent offsets based on scrollbar visibility
 
         AZ::Entity* contentParentEntity = nullptr;
-        EBUS_EVENT_ID_RESULT(contentParentEntity, m_contentEntity, UiElementBus, GetParent);
+        UiElementBus::EventResult(contentParentEntity, m_contentEntity, &UiElementBus::Events::GetParent);
         if (contentParentEntity)
         {
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, contentParentEntity->GetId(), UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, contentParentEntity->GetId(), &UiTransform2dBus::Events::GetOffsets);
 
             if (m_hScrollBarEntity.IsValid() && m_isHorizontalScrollingEnabled && (m_hScrollBarVisibility == ScrollBarVisibility::AutoHideAndResizeViewport))
             {
                 bool isHScrollBarEnabled = false;
                 if (checkScrollBarVisibility)
                 {
-                    EBUS_EVENT_ID_RESULT(isHScrollBarEnabled, m_hScrollBarEntity, UiElementBus, IsEnabled);
+                    UiElementBus::EventResult(isHScrollBarEnabled, m_hScrollBarEntity, &UiElementBus::Events::IsEnabled);
                 }
 
                 if (isHScrollBarEnabled)
                 {
                     // Get height of horizontal scrollbar
                     AZ::Vector2 hScrollBarSize;
-                    EBUS_EVENT_ID_RESULT(hScrollBarSize, m_hScrollBarEntity, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                    UiTransformBus::EventResult(
+                        hScrollBarSize, m_hScrollBarEntity, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
                     if (IsHorizontalScrollBarOnBottom())
                     {
@@ -2347,14 +2518,15 @@ void UiScrollBoxComponent::UpdateContentParentOffsets(bool checkScrollBarVisibil
                 bool isVScrollBarEnabled = false;
                 if (checkScrollBarVisibility)
                 {
-                    EBUS_EVENT_ID_RESULT(isVScrollBarEnabled, m_vScrollBarEntity, UiElementBus, IsEnabled);
+                    UiElementBus::EventResult(isVScrollBarEnabled, m_vScrollBarEntity, &UiElementBus::Events::IsEnabled);
                 }
 
                 if (isVScrollBarEnabled)
                 {
                     // Get width of vertical scrollbar
                     AZ::Vector2 vScrollBarSize;
-                    EBUS_EVENT_ID_RESULT(vScrollBarSize, m_vScrollBarEntity, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                    UiTransformBus::EventResult(
+                        vScrollBarSize, m_vScrollBarEntity, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
                     if (IsVerticalScrollBarOnRight())
                     {
@@ -2374,7 +2546,7 @@ void UiScrollBoxComponent::UpdateContentParentOffsets(bool checkScrollBarVisibil
                 }
             }
 
-            EBUS_EVENT_ID(contentParentEntity->GetId(), UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(contentParentEntity->GetId(), &UiTransform2dBus::Events::SetOffsets, offsets);
         }
     }
 }
@@ -2400,7 +2572,8 @@ void UiScrollBoxComponent::ContentOrParentSizeChanged()
     bool result = GetScrollableParentToContentRatio(parentToContentRatio);
     if (result)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiScrollableToScrollerNotificationBus, OnScrollableParentToContentRatioChanged, parentToContentRatio);
+        UiScrollableToScrollerNotificationBus::Event(
+            GetEntityId(), &UiScrollableToScrollerNotificationBus::Events::OnScrollableParentToContentRatioChanged, parentToContentRatio);
     }
 
     if (DoSnap())
@@ -2450,7 +2623,7 @@ bool UiScrollBoxComponent::VersionConverter(AZ::SerializeContext& context,
     {
         // find the base class (AZ::Component)
         // NOTE: in very old versions there may not be a base class because the base class was not serialized
-        int componentBaseClassIndex = classElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+        int componentBaseClassIndex = classElement.FindElement(AZ_CRC_CE("BaseClass1"));
 
         // If there was a base class, make a copy and remove it
         AZ::SerializeContext::DataElementNode componentBaseClassNode;

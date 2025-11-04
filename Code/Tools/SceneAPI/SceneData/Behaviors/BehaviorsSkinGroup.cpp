@@ -28,10 +28,6 @@ namespace AZ
     {
         namespace Behaviors
         {
-            const char* SkinGroup::s_skinVirtualTypeName = "Skin";
-            Crc32 SkinGroup::s_skinVirtualType = AZ_CRC(SkinGroup::s_skinVirtualTypeName, 0x0279681e);
-            const int SkinGroup::s_rigsPreferredTabOrder = 1;
-
             void SkinGroup::Activate()
             {
             }
@@ -103,7 +99,7 @@ namespace AZ
                 }
             }
 
-            void SkinGroup::GetVirtualTypes(AZStd::set<Crc32>& types, const Containers::Scene& scene,
+            void SkinGroup::GetVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types, const Containers::Scene& scene,
                 Containers::SceneGraph::NodeIndex node)
             {
                 if (types.find(s_skinVirtualType) != types.end())
@@ -129,7 +125,7 @@ namespace AZ
                 }
             }
 
-            void SkinGroup::GetAllVirtualTypes(AZStd::set<Crc32>& types)
+            void SkinGroup::GetAllVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types)
             {
                 if (types.find(s_skinVirtualType) == types.end())
                 {

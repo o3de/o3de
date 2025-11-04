@@ -29,7 +29,7 @@ namespace AZ
     * machine. Obviously for remote data exchange you will need to use
     * Sockets/DCOM/etc.
     */
-    class SharedMemory : public SharedMemory_Platform
+    class AZCORE_API SharedMemory : public SharedMemory_Platform
     {
     protected:
         using Platform = SharedMemory_Platform;
@@ -85,7 +85,7 @@ namespace AZ
     /**
      * Shared memory with read and write pointers.
      */
-    class SharedMemoryRingBuffer
+    class AZCORE_API SharedMemoryRingBuffer
         : public SharedMemory
     {
         Internal::RingData*     m_info;

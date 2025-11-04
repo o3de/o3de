@@ -6,8 +6,8 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/Debug.azsli>
 
@@ -40,7 +40,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     uint m_imageScale;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+// The shader variant system needs a fallback if you have non-static options.
+#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
 
 // Vertex Shader
 VSOutput MainVS(VSInput input)
@@ -165,7 +166,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float3 diffuse = float3(0.0f, 0.0f, 0.0f);
     if (probeIrradianceBlendWeight > 0.0f)
     {
-        float3 probeIrradiance = SampleProbeIrradiance(sampleIndex, probeIrradianceCoords, depth, normal, albedo, PassSrg::m_imageScale);
+        float3 probeIrradiance = SampleProbeIrradiance(sampleIndex, probeIrradianceCoords, depth, normal, albedo.rgb, PassSrg::m_imageScale);
         diffuse = (albedo.rgb / PI) * probeIrradiance * probeIrradianceBlendWeight;
     }
 
@@ -174,7 +175,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
         float3 globalIrradiance = SampleGlobalIBL(sampleIndex, screenCoords, depth, normal);
 
         // adjust IBL lighting by exposure
-        float3 globalDiffuse = (albedo * globalIrradiance) * pow(2.0, SceneSrg::m_iblExposure);
+        float3 globalDiffuse = (albedo.rgb * globalIrradiance) * pow(2.0, SceneSrg::m_iblExposure);
 
         diffuse += globalDiffuse * (1.0f - probeIrradianceBlendWeight);
     }

@@ -37,7 +37,7 @@ namespace TestImpact
                 "source"
             };
 
-            enum
+            enum Fields
             {
                 PackagesKey,
                 NameKey,
@@ -49,8 +49,12 @@ namespace TestImpact
                 NumberKey,
                 HitsKey,
                 SourcesKey,
-                SourceKey
+                SourceKey,
+                // Checksum
+                _CHECKSUM_
             };
+
+            static_assert(Fields::_CHECKSUM_ == AZStd::size(Keys));
 
             AZ_TestImpact_Eval(!coverageData.empty(), ArtifactException, "Cannot parse coverage, string is empty");
             AZStd::vector<ModuleCoverage> modules;
@@ -113,7 +117,7 @@ namespace TestImpact
                                         const size_t number =
                                             AZStd::stol(AZStd::string(line_node->first_attribute(Keys[NumberKey])->value()));
                                         const size_t hits = AZStd::stol(AZStd::string(line_node->first_attribute(Keys[HitsKey])->value()));
-                                        sourceCoverage.m_coverage.emplace_back(LineCoverage{number, hits});
+                                        sourceCoverage.m_lineCoverage.emplace_back(LineCoverage{number, hits});
                                     }
                                 }
 

@@ -16,7 +16,7 @@ namespace ScriptCanvas
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(Endpoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Endpoint, AZ::SystemAllocator);
         AZ_TYPE_INFO(Endpoint, "{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}");
 
         Endpoint() = default;
@@ -42,7 +42,7 @@ namespace ScriptCanvas
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(NamedEndpoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NamedEndpoint, AZ::SystemAllocator);
         AZ_TYPE_INFO(NamedEndpoint, "{E4FAB996-1958-4445-8C8B-367F582773F7}");
 
         static void Reflect(AZ::ReflectContext* reflection);

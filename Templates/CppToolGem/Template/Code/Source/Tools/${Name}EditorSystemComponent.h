@@ -19,11 +19,12 @@ namespace ${SanitizedCppName}
     /// System component for ${SanitizedCppName} editor
     class ${SanitizedCppName}EditorSystemComponent
         : public ${SanitizedCppName}SystemComponent
-        , private AzToolsFramework::EditorEvents::Bus::Handler
+        , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = ${SanitizedCppName}SystemComponent;
     public:
-        AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}", BaseSystemComponent);
+        AZ_COMPONENT_DECL(${SanitizedCppName}EditorSystemComponent);
+
         static void Reflect(AZ::ReflectContext* context);
 
         ${SanitizedCppName}EditorSystemComponent();

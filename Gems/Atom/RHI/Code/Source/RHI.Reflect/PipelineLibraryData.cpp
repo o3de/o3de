@@ -7,33 +7,31 @@
  */
 
 #include <Atom/RHI.Reflect/PipelineLibraryData.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void PipelineLibraryData::Reflect(ReflectContext* context)
     {
-        void PipelineLibraryData::Reflect(ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<PipelineLibraryData>()
-                    ->Version(1)
-                    ->Field("m_data", &PipelineLibraryData::m_data);
-            }
+            serializeContext->Class<PipelineLibraryData>()
+                ->Version(1)
+                ->Field("m_data", &PipelineLibraryData::m_data);
         }
+    }
 
-        ConstPtr<PipelineLibraryData> PipelineLibraryData::Create(AZStd::vector<uint8_t>&& data)
-        {
-            return aznew PipelineLibraryData(AZStd::move(data));
-        }
+    ConstPtr<PipelineLibraryData> PipelineLibraryData::Create(AZStd::vector<uint8_t>&& data)
+    {
+        return aznew PipelineLibraryData(AZStd::move(data));
+    }
 
-        PipelineLibraryData::PipelineLibraryData(AZStd::vector<uint8_t>&& data)
-            : m_data{AZStd::move(data)}
-        {}
+    PipelineLibraryData::PipelineLibraryData(AZStd::vector<uint8_t>&& data)
+        : m_data{AZStd::move(data)}
+    {}
 
-        AZStd::span<const uint8_t> PipelineLibraryData::GetData() const
-        {
-            return m_data;
-        }
+    AZStd::span<const uint8_t> PipelineLibraryData::GetData() const
+    {
+        return m_data;
     }
 }

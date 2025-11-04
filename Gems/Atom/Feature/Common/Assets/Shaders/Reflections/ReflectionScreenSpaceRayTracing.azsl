@@ -1,0 +1,117 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include "ReflectionScreenSpaceRayTracingCommon.azsli"
+
+[shader("raygeneration")]
+void RayGeneration()
+{
+    uint2 coords = DispatchRaysIndex().xy;
+    uint2 dimensions = DispatchRaysDimensions().xy;
+    float2 UV = ((float2)coords / dimensions);
+    uint2 fullScreenCoords = coords * RayTracingGlobalSrg::m_invOutputScale;
+    uint2 fullScreenDimensions = dimensions * RayTracingGlobalSrg::m_invOutputScale;
+
+    // determine if this pixel is in the roughness range for reflection
+    float4 specularF0 = RayTracingGlobalSrg::m_specularF0.Load(fullScreenCoords, 0);
+    float roughness = specularF0.a;
+    if (roughness > RayTracingGlobalSrg::m_maxRoughness || !any(specularF0.rgb))
+    {
+        RayTracingGlobalSrg::m_hitCoords[coords] = float4(0.0f, 0.0f, (float)ReflectionScreenSpaceRayTracingResult::NoRayTracing, (float)ReflectionScreenSpaceRayTracingHitResult::None);
+        return;
+    }
+
+    // compute world space position
+    float depth = RayTracingGlobalSrg::m_depth.Load(fullScreenCoords, 0);
+    float2 ndcPos = float2(UV.x, 1.0f - UV.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(ndcPos, depth, 1.0f);
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+    positionVS /= positionVS.w;
+    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+
+    // compute camera-to-position vector
+    float3 cameraToPositionWS = normalize(positionWS.xyz - ViewSrg::m_worldPosition);
+
+    // load normal
+    float4 encodedNormal = RayTracingGlobalSrg::m_normal.Load(fullScreenCoords, 0);
+    float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
+
+    // reflect view ray around surface normal
+    float3 reflectDirWS = normalize(reflect(cameraToPositionWS, normalWS));
+
+    // setup the primary ray
+    RayDesc ray;
+    ray.Origin = positionWS.xyz + (reflectDirWS * 0.001f);
+    ray.Direction = reflectDirWS;
+    ray.TMin = 0.0f;
+    ray.TMax = RayTracingGlobalSrg::m_maxRayLength;
+
+    // find the first frontface
+    PayloadData payload = (PayloadData)0;
+    TraceRay(
+        RayTracingSceneSrg::m_scene,
+        RAY_FLAG_CULL_BACK_FACING_TRIANGLES,
+        0xFF,
+        0,
+        1,
+        0,
+        ray,
+        payload);
+
+    float hitDistance = payload.m_hitT;
+    if (hitDistance < 0.0f)
+    {
+        // ray miss
+        if (any(payload.m_fallbackColor))
+        {
+            RayTracingGlobalSrg::m_hitCoords[coords] = float4(0.0f, 0.0f, (float)ReflectionScreenSpaceRayTracingResult::Hit, (float)ReflectionScreenSpaceRayTracingHitResult::OffScreen);
+            RayTracingGlobalSrg::m_fallbackColor[coords] = float4(payload.m_fallbackColor, 1.0f); 
+        }
+        else
+        {
+            RayTracingGlobalSrg::m_hitCoords[coords] = float4(0.0f, 0.0f, (float)ReflectionScreenSpaceRayTracingResult::Miss, (float)ReflectionScreenSpaceRayTracingHitResult::None);
+        }
+
+        return;
+    }
+
+    float3 hitPositionWS = positionWS.xyz + (reflectDirWS * hitDistance);
+
+    // convert hit position to screenspace
+    float4 hitCoords = mul(ViewSrg::m_viewProjectionMatrix, float4(hitPositionWS, 1.0f));
+    hitCoords /= hitCoords.w;
+    hitCoords.y = -hitCoords.y;
+    hitCoords.xy = (hitCoords.xy * 0.5f + 0.5f) * fullScreenDimensions;
+    
+    float hitResult = 0.0f;
+    bool fallback = false;
+    if (payload.m_offScreen)
+    {
+        hitResult = (float)ReflectionScreenSpaceRayTracingHitResult::OffScreen;
+        fallback = true;
+    }
+    else if (payload.m_obstructed)
+    {
+        hitResult = (float)ReflectionScreenSpaceRayTracingHitResult::Obstructed;
+        fallback = true;
+    }
+    else
+    {
+        hitResult = (float)ReflectionScreenSpaceRayTracingHitResult::OnScreen;
+    }
+
+    RayTracingGlobalSrg::m_hitCoords[coords] = float4(hitCoords.xy, (float)ReflectionScreenSpaceRayTracingResult::Hit, hitResult);
+    RayTracingGlobalSrg::m_fallbackColor[coords] = float4(payload.m_fallbackColor, (float)fallback);
+    RayTracingGlobalSrg::m_fallbackAlbedo[coords] = float4(payload.m_fallbackAlbedo, (float)fallback);
+    RayTracingGlobalSrg::m_fallbackPosition[coords] = float4(payload.m_fallbackPosition, (float)fallback);
+    RayTracingGlobalSrg::m_fallbackNormal[coords] = float4(payload.m_fallbackNormal, (float)fallback);
+}

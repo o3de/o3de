@@ -6,6 +6,10 @@
 #
 # {END_LICENSE}
 
+# Setup the gem meta variables that includes the "gem_path", "gem_name" and "gem_version"
+# The "pal_dir" variable is also set which refers to the Platform/<platform-name> directory
+# based on the directory of this CMakeLists.txt
+o3de_gem_setup("${Name}")
 
 ly_add_target(
     NAME ${Name}.Object OBJECT
@@ -21,16 +25,14 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            Gem::ScriptCanvas
+            Gem::ScriptCanvas.API
             Gem::ScriptCanvas.Extensions
     AUTOGEN_RULES
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
-        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,$path/$fileprefix_Nodeables.generated.h
-        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,$path/$fileprefix_Nodeables.generated.cpp
 )
 
-set (dependent_targets ${GemName}.Private.Object;${GemName};${GemName}.Editor)
+set (dependent_targets ${gem_name}.Private.Object;${gem_name};${gem_name}.Editor)
 
 foreach (dependent_target IN LISTS dependent_targets)
     if (TARGET ${dependent_target})

@@ -7,13 +7,13 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI/Base.h>
 
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ::RHI
 {
-    //! A structure to represent continous number of tiles of a given heap page
+    //! A structure to represent continuous number of tiles of a given heap page
     struct PageTileSpan
     {
     public:
@@ -37,7 +37,7 @@ namespace AZ::RHI
     };
 
     //! This allocator allocates tile groups from a page which is aligned by tiles.
-    class PageTileAllocator
+    class ATOM_RHI_PUBLIC_API PageTileAllocator
     {
     public:
         PageTileAllocator() = default;
@@ -60,7 +60,7 @@ namespace AZ::RHI
         uint32_t GetUsedTileCount() const;
         uint32_t GetTotalTileCount() const;
 
-        //! Returns whether all tiles in this page are avaliable
+        //! Returns whether all tiles in this page are available
         bool IsPageFree() const;
 
         //! Get tile groups in free list

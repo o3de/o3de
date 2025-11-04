@@ -11,7 +11,7 @@ namespace UnitTest
 {
     using namespace AZ;
 
-    RHI::ResultCode BufferView::InitInternal(RHI::Device&, const RHI::Resource&)
+    RHI::ResultCode BufferView::InitInternal(RHI::Device&, const RHI::DeviceResource&)
     {
         return RHI::ResultCode::Success;
     }
@@ -51,7 +51,8 @@ namespace UnitTest
 
     void BufferPool::ShutdownInternal() {}
 
-    RHI::ResultCode BufferPool::InitBufferInternal(RHI::Buffer& bufferBase, const RHI::BufferDescriptor& descriptor)
+    RHI::ResultCode BufferPool::InitBufferInternal(
+        RHI::DeviceBuffer& bufferBase, const RHI::BufferDescriptor& descriptor, [[maybe_unused]] bool usedForCrossDevice)
     {
         AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
 
@@ -61,13 +62,24 @@ namespace UnitTest
         return RHI::ResultCode::Success;
     }
 
-    void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+    AZ::RHI::ResultCode BufferPool::InitBufferCrossDeviceInternal(
+        AZ::RHI::DeviceBuffer& bufferBase, AZ::RHI::DeviceBuffer& originalDeviceBuffer)
+    {
+        AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
+
+        Buffer& buffer = static_cast<Buffer&>(bufferBase);
+        buffer.m_data.resize(originalDeviceBuffer.GetDescriptor().m_byteCount);
+
+        return RHI::ResultCode::Success;
+    }
+
+    void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
     {
         Buffer& buffer = static_cast<Buffer&>(resourceBase);
         buffer.m_data.clear();
     }
 
-    RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& request, RHI::BufferMapResponse& response)
+    RHI::ResultCode BufferPool::MapBufferInternal(const RHI::DeviceBufferMapRequest& request, RHI::DeviceBufferMapResponse& response)
     {
         Buffer& buffer = static_cast<Buffer&>(*request.m_buffer);
         response.m_data = static_cast<uint8_t*>(buffer.Map()) + request.m_byteOffset;
@@ -75,18 +87,18 @@ namespace UnitTest
         return RHI::ResultCode::Success;
     }
 
-    void BufferPool::UnmapBufferInternal(RHI::Buffer& bufferBase)
+    void BufferPool::UnmapBufferInternal(RHI::DeviceBuffer& bufferBase)
     {
         Buffer& buffer = static_cast<Buffer&>(bufferBase);
         buffer.Unmap();
     }
 
-    RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::Buffer&)
+    RHI::ResultCode BufferPool::OrphanBufferInternal(RHI::DeviceBuffer&)
     {
         return RHI::ResultCode::Success;
     }
 
-    AZ::RHI::ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const AZ::RHI::BufferStreamRequest& request)
+    AZ::RHI::ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const AZ::RHI::DeviceBufferStreamRequest& request)
     {
         return RHI::ResultCode::Success;
     }

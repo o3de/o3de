@@ -1,0 +1,30 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup DrawSrg : SRG_PerDraw
+{
+    // Material-Type ID of the current draw-item. 
+    int m_materialTypeId;
+
+    // Note: The intended use-case is that a Visibility-(Raster-)pass writes at least the meshInfoIndex of the mesh visible on a 
+    // screenspace-pixel to the VBuffer, and the deferred pass renders one fullscreen-triangle for each material-type and shader option combination,
+    // using the meshInfoIndex from the VBuffer to figure out if any given pixel needs to be rendered with the current draw-call, or can be skipped.
+    // Since the draw-packet IDs can be different for a mesh for different deferred DrawListTags, we provide the drawPacketIds for all meshes for the 
+    // current DrawListTag
+
+    // Id of the current draw-packet. This is a unique id from the combination of the Material-Type-Id and the actual Shader Options
+    uint m_drawPacketId;
+
+    // List of draw-packet - Ids for each mesh with the current drawListTag. Indexed with the MeshInfo - Index.
+    Buffer<uint> m_drawPacketIds;
+
+};

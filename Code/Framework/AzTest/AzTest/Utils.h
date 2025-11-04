@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzTest/Printers.h>
@@ -19,69 +20,91 @@ namespace AZ::IO
 namespace AZ
 {
     class SettingsRegistryInterface;
-    namespace Test
+}
+
+namespace AZ::Test
+{
+    /*! Command line parameter functions */
+    //! Check to see if the parameters includes the specified parameter
+    bool ContainsParameter(int argc, char** argv, const std::string& param);
+
+    //! Performs a deep copy of an array of char* parameters into a new array
+    //! New parameters are dynamically allocated
+    //! This does not set the size for the output array (assumed to be same as argc)
+    void CopyParameters(int argc, char** target, char** source);
+
+    //! Get index of the specified parameter
+    //! Returns -1 if the parameter is not found
+    int GetParameterIndex(int argc, char** argv, const std::string& param);
+
+    //! Get multi-value parameter list based on a flag (and remove from argv if specified)
+    //! Returns a string vector for ease of use and cleanup
+    std::vector<std::string> GetParameterList(int& argc, char** argv, const std::string& param, bool removeOnReturn = false);
+
+    //! Get value of the specified parameter (and remove from argv if specified)
+    //! This assumes that the value is the next argument after the specified parameter
+    std::string GetParameterValue(int& argc, char** argv, const std::string& param, bool removeOnReturn = false);
+
+    //! Remove parameters and shift remaining down, startIndex and endIndex are inclusive
+    void RemoveParameters(int& argc, char** argv, int startIndex, int endIndex);
+
+    //! Split a C-string command line into an array of char* parameters (argv/argc)
+    //! Char* array is dynamically allocated
+    char** SplitCommandLine(int& size /* out */, char* const cmdLine);
+
+    /*! General string functions */
+    //! Check if a string has a specific ending substring
+    bool EndsWith(const std::string& s, const std::string& ending);
+
+    //! Check if a string has a specific beginning substring
+    bool StartsWith(const std::string& s, const std::string& beginning);
+
+    // Returns the path of the current executable (does not include the binary)
+    AZStd::string GetCurrentExecutablePath();
+
+    // Returns the path to the engine's root by cdup from the current execution path until engine.txt is found
+    AZStd::string GetEngineRootPath();
+
+    //! Add to the SettingsRegistry an entry with the gem name under the
+    //! SettingsRegistryMergeUtils::ActiveGemsRootKey field
+    //! This also queries the gem path as determined by recursing through the o3de manifest
+    //! files(o3de_manifest.json, project.json, engine.json, gem.json) and matching the gem name.
+    //! If the FileIOBase pointer is non-nullptr an alias is registered that maps
+    //! @gemroot<gem-name> to <gem-path>
+    void AddActiveGem(AZStd::string_view, AZ::SettingsRegistryInterface& registry, AZ::IO::FileIOBase* fileIo = nullptr);
+
+    //! Provides a scoped object that will create a temporary operating-system specific folder on creation, and delete it and
+    //! its contents on destruction. This class is only available on host platforms (Windows, Mac, and Linux)
+    class ScopedAutoTempDirectory
     {
-        /*! Command line parameter functions */
-        //! Check to see if the parameters includes the specified parameter
-        bool ContainsParameter(int argc, char** argv, const std::string& param);
+    public:
+        ScopedAutoTempDirectory();
+        ~ScopedAutoTempDirectory();
 
-        //! Performs a deep copy of an array of char* parameters into a new array
-        //! New parameters are dynamically allocated
-        //! This does not set the size for the output array (assumed to be same as argc)
-        void CopyParameters(int argc, char** target, char** source);
+        const char* GetDirectory() const;
+        AZ::IO::Path GetDirectoryAsPath() const;
+        AZ::IO::FixedMaxPath GetDirectoryAsFixedMaxPath() const;
+        AZ::IO::Path Resolve(const char* path) const;
 
-        //! Get index of the specified parameter
-        int GetParameterIndex(int argc, char** argv, const std::string& param);
+    private:
+        char m_tempDirectory[AZ::IO::MaxPathLength] = { '\0' };
+    };
 
-        //! Get multi-value parameter list based on a flag (and remove from argv if specified)
-        //! Returns a string vector for ease of use and cleanup
-        std::vector<std::string> GetParameterList(int& argc, char** argv, const std::string& param, bool removeOnReturn = false);
+    //! Creates a test file within a temporary directory using the supplied string contents
+    //! @param tempDirectory Temporary directory where test file will reside
+    //! @param relativePath relative path within temporary directory to write test file
+    //! @param content text data to write to test file
+    //! @return an optional with the path of the created test file if successful.
+    //!         If the test file could not be created a null optional is returned
+    AZStd::optional<AZ::IO::FixedMaxPath> CreateTestFile(
+        const ScopedAutoTempDirectory& tempDirectory, AZ::IO::PathView relativePath, AZStd::string_view content);
 
-        //! Get value of the specified parameter (and remove from argv if specified)
-        //! This assumes that the value is the next argument after the specified parameter
-        std::string GetParameterValue(int& argc, char** argv, const std::string& param, bool removeOnReturn = false);
-
-        //! Remove parameters and shift remaining down, startIndex and endIndex are inclusive
-        void RemoveParameters(int& argc, char** argv, int startIndex, int endIndex);
-
-        //! Split a C-string command line into an array of char* parameters (argv/argc)
-        //! Char* array is dynamically allocated
-        char** SplitCommandLine(int& size /* out */, char* const cmdLine);
-
-        /*! General string functions */
-        //! Check if a string has a specific ending substring
-        bool EndsWith(const std::string& s, const std::string& ending);
-
-        //! Check if a string has a specific beginning substring
-        bool StartsWith(const std::string& s, const std::string& beginning);
-
-        // Returns the path of the current executable (does not include the binary)
-        AZStd::string GetCurrentExecutablePath();
-
-        // Returns the path to the engine's root by cdup from the current execution path until engine.txt is found
-        AZStd::string GetEngineRootPath();
-
-        //! Add to the SettingsRegistry an entry with the gem name under the
-        //! SettingsRegistryMergeUtils::ActiveGemsRootKey field
-        //! This also queries the gem path as determined by recursing through the o3de manifest
-        //! files(o3de_manifest.json, project.json, engine.json, gem.json) and matching the gem name.
-        //! If the FileIOBase pointer is non-nullptr an alias is registered that maps
-        //! @gemroot<gem-name> to <gem-path>
-        void AddActiveGem(AZStd::string_view, AZ::SettingsRegistryInterface& registry, AZ::IO::FileIOBase* fileIo = nullptr);
-
-        //! Provides a scoped object that will create a temporary operating-system specific folder on creation, and delete it and
-        //! its contents on destruction. This class is only available on host platforms (Windows, Mac, and Linux)
-        class ScopedAutoTempDirectory
-        {
-        public:
-            ScopedAutoTempDirectory();
-            ~ScopedAutoTempDirectory();
-
-            const char* GetDirectory() const;
-            AZ::IO::Path Resolve(const char* path) const;
-        private:
-            char m_tempDirectory[AZ::IO::MaxPathLength] = { '\0' };
-        };
-
-    }
+    //! Creates a test file within a temporary directory using the supplied string contents
+    //! @param tempDirectory Temporary directory where test file will reside
+    //! @param relativePath relative path within temporary directory to write test file
+    //! @param content binary data to write to test file
+    //! @return an optional with the path of the created test file if successful.
+    //!         If the test file could not be created a null optional is returned
+    AZStd::optional<AZ::IO::FixedMaxPath> CreateTestFile(
+        const ScopedAutoTempDirectory& tempDirectory, AZ::IO::PathView relativePath, AZStd::span<const AZStd::byte> content);
 }

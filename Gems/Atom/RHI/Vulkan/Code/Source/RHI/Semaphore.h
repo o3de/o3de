@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI/DeviceObject.h>
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/SignalEvent.h>
 
@@ -18,29 +18,35 @@ namespace AZ
     {
         class Device;
 
-        class Semaphore final
-            : public RHI::DeviceObject
+        class Semaphore : public RHI::DeviceObject
         {
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(Semaphore, AZ::ThreadPoolAllocator, 0);
+            AZ_RTTI(Semaphore, "{A0946587-C4FD-49E7-BB6D-92EA80CE140E}", RHI::DeviceObject);
+            AZ_CLASS_ALLOCATOR(Semaphore, AZ::ThreadPoolAllocator);
 
             using WaitSemaphore = AZStd::pair<VkPipelineStageFlags, RHI::Ptr<Semaphore>>;
 
-            static RHI::Ptr<Semaphore> Create();
             RHI::ResultCode Init(Device& device);
             ~Semaphore() = default;
+            void Reset();
 
-            void SignalEvent();
-            void WaitEvent() const;
-            void ResetSignalEvent();
+            void SetSignalEvent(const AZStd::shared_ptr<AZ::Vulkan::SignalEvent>& signalEvent);
+            void SetSignalEventBitToSignal(int bitToSignal);
+            void SetSignalEventDependencies(SignalEvent::BitSet dependencies);
+
             void SetRecycleValue(bool canRecycle);
             bool GetRecycleValue() const;
             VkSemaphore GetNativeSemaphore() const;
 
-        private:
+            virtual void SignalEvent();
+            virtual void WaitEvent() const;
+
+        protected:
             Semaphore() = default;
+            virtual RHI::ResultCode InitInternal(Device& device) = 0;
+            virtual void ResetInternal(){};
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object
@@ -52,8 +58,11 @@ namespace AZ
             void Shutdown() override;
             //////////////////////////////////////////////////////////////////////////
 
+            AZStd::shared_ptr<AZ::Vulkan::SignalEvent> m_signalEvent;
+            int m_bitToSignal = -1;
+            SignalEvent::BitSet m_waitDependencies = 0;
+
             VkSemaphore m_nativeSemaphore = VK_NULL_HANDLE;
-            AZ::Vulkan::SignalEvent m_signalEvent;
             bool m_recyclable = true;
         };
     }

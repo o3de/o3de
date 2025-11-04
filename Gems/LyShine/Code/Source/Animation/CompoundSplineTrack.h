@@ -20,7 +20,7 @@ class UiCompoundSplineTrack
     : public IUiAnimTrack
 {
 public:
-    AZ_CLASS_ALLOCATOR(UiCompoundSplineTrack, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(UiCompoundSplineTrack, AZ::SystemAllocator)
     AZ_RTTI(UiCompoundSplineTrack, "{91947B8B-65B7-451D-9D04-0C821C82014E}", IUiAnimTrack);
 
     UiCompoundSplineTrack(int nDims, EUiAnimValue inValueType, CUiAnimParamType subTrackParamTypes[MAX_SUBTRACKS]);
@@ -102,7 +102,7 @@ public:
     void SetValue(float time, const AZ::Vector4& value, bool bDefault = false) override;
     void SetValue(float time, const AZ::Color& value, bool bDefault = false) override;
 
-    void OffsetKeyPosition(const Vec3& value) override;
+    void OffsetKeyPosition(const AZ::Vector3& value) override;
 
     void SetTimeRange(const Range& timeRange) override;
 

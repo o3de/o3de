@@ -6,11 +6,10 @@
  *
  */
 
-#ifndef CRYINCLUDE_CRYCOMMON_ILOG_H
-#define CRYINCLUDE_CRYCOMMON_ILOG_H
 #pragma once
 
 #include <IMiniLog.h> // <> required for Interfuscator
+#include <AzCore/std/string/string_view.h>
 
 // enable this define to support log scopes to provide more context information for log lines
 // this code is disable by default due it's runtime cost
@@ -251,9 +250,3 @@ public:
 
 #define CRY_DEFINE_ASSET_SCOPE(sAssetType, sAssetName) CLogAssetScopeName __asset_scope_name(gEnv->pLog, sAssetType, sAssetName);
 #endif
-
-
-#endif // CRYINCLUDE_CRYCOMMON_ILOG_H
-
-
-

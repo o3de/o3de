@@ -8,7 +8,7 @@
 #pragma once
 
 #include <RHI/Buffer.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/ArgumentBuffer.h>
@@ -31,11 +31,11 @@ namespace AZ
         };
         
         class ShaderResourceGroup final
-            : public RHI::ShaderResourceGroup
+            : public RHI::DeviceShaderResourceGroup
         {
-            using Base = RHI::ShaderResourceGroup;
+            using Base = RHI::DeviceShaderResourceGroup;
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
 
             static RHI::Ptr<ShaderResourceGroup> Create();
 
@@ -43,11 +43,16 @@ namespace AZ
             const ImageView* GetImageView(const int index) const;
             void UpdateCompiledDataIndex();            
             const ArgumentBuffer& GetCompiledArgumentBuffer() const;            
+
             void CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
-                                            ArgumentBuffer::ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
-                                            ArgumentBuffer::GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
+                                           ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead,
+                                           ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeReadWrite) const;
+
+            void CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                           ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesRead,
+                                           ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesReadWrite) const;
+
             bool IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
-            
         private:
             ShaderResourceGroup() = default;
             

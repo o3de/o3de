@@ -16,18 +16,22 @@
 #include <PythonMarshalComponent.h>
 #include <PythonLogSymbolsComponent.h>
 
+#include <InitializePython.h>
+
 namespace EditorPythonBindings
 {
     class EditorPythonBindingsModule
         : public AZ::Module
         , public AzToolsFramework::EmbeddedPython::PythonLoader
+        , private InitializePython
     {
     public:
         AZ_RTTI(EditorPythonBindingsModule, "{851B9E35-4FD5-49B1-8207-E40D4BBA36CC}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(EditorPythonBindingsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorPythonBindingsModule, AZ::SystemAllocator);
 
         EditorPythonBindingsModule()
             : AZ::Module()
+            , InitializePython()
         {
             m_descriptors.insert(m_descriptors.end(), 
             {
@@ -54,7 +58,8 @@ namespace EditorPythonBindings
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_EditorPythonBindings, EditorPythonBindings::EditorPythonBindingsModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), EditorPythonBindings::EditorPythonBindingsModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_EditorPythonBindings_Editor, EditorPythonBindings::EditorPythonBindingsModule)
+#endif

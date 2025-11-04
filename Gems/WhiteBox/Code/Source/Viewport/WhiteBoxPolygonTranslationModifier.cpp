@@ -21,7 +21,7 @@
 namespace WhiteBox
 {
     
-    AZ_CLASS_ALLOCATOR_IMPL(PolygonTranslationModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PolygonTranslationModifier, AZ::SystemAllocator)
 
     PolygonTranslationModifier::PolygonTranslationModifier(
         const AZ::EntityComponentIdPair& entityComponentIdPair, const Api::PolygonHandle& polygonHandle,
@@ -58,7 +58,7 @@ namespace WhiteBox
 
         CreateView();
 
-        m_translationManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_translationManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
 
         struct SharedState
         {

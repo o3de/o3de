@@ -48,7 +48,7 @@ namespace AZ
             return m_pipeline->GetPipelineLibrary();
         }
 
-        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::PipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary)
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;
@@ -62,7 +62,7 @@ namespace AZ
             return result;
         }
 
-        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::PipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary)
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;
@@ -76,7 +76,7 @@ namespace AZ
             return result;
         }
 
-        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::PipelineLibrary* pipelineLibrary)
+        RHI::ResultCode PipelineState::InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::DevicePipelineLibrary* pipelineLibrary)
         {
             Pipeline::Descriptor pipelineDescriptor;
             pipelineDescriptor.m_pipelineDescritor = &descriptor;
@@ -97,6 +97,14 @@ namespace AZ
             {
                 device.QueueForRelease(m_pipeline);
                 m_pipeline = nullptr;
+            }
+        }
+
+        void PipelineState::SetNameInternal(const AZStd::string_view& name)
+        {
+            if (m_pipeline)
+            {
+                m_pipeline->SetName(AZ::Name(name));
             }
         }
     }

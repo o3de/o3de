@@ -336,7 +336,7 @@ namespace AZStd::ranges
         // customization of iter_move and iter_swap
 
         friend constexpr decltype(auto) iter_move(
-            iterator& i)
+            const iterator& i)
             noexcept(noexcept(ranges::iter_move(i.m_inner)))
         {
             return ranges::iter_move(i.m_inner);
@@ -344,8 +344,8 @@ namespace AZStd::ranges
 
 
         friend constexpr void iter_swap(
-            iterator& x,
-            iterator& y)
+            const iterator& x,
+            const iterator& y)
             noexcept(noexcept(ranges::iter_swap(x.m_inner, y.m_inner)))
         {
             return ranges::iter_swap(x.m_inner, y.m_inner);

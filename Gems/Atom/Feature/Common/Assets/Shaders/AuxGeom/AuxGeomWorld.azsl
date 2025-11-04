@@ -6,7 +6,7 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 ShaderResourceGroup PerDrawSrg : SRG_PerDraw
 {

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -38,3 +39,5 @@ namespace AzToolsFramework
         using EditorSelectionAccentingRequestBus = AZ::EBus<EditorSelectionAccentingRequests>;
     } // namespace Components
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Components::EditorSelectionAccentingRequests);

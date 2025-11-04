@@ -15,3 +15,11 @@
 #define AZ_TRAIT_AZFRAMEWORK_PYTHON_SHELL "python.cmd"
 #define AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER 1
 #define AZ_TRAIT_AZFRAMEWORK_PROCESSLAUNCH_DEFAULT 0
+
+// On Linux is necessary, on Windows is not necessary to display
+// the mouse when Lua hits a breakpoint. On Windows, for the most part
+// it is harmless, but there's an annoying effect if enabling
+// this trait because it causes the mouse pointer to reposition
+// itself close to the client area of the render viewport.
+// To avoid this minor annoyance we set this to 0 on windows.
+#define AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT 0 

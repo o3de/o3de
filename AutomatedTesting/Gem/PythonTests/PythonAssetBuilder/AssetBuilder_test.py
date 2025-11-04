@@ -50,13 +50,13 @@ def compile_test_case_name(request):
 def find_products(cache_folder, platform):
     con = sqlite3.connect(os.path.join(cache_folder, 'assetdb.sqlite'))
     detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/test_asset.mock_asset')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative_1.azmodel')
-    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center_1.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive.fbx.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative.fbx.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive.fbx.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative.fbx.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive.fbx.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative.fbx.azmodel')
+    detect_product(con, platform, 'gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.fbx.azmodel')
     con.close()
 
 

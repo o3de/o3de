@@ -155,7 +155,6 @@ private:
     // Id of maximized view pane.
     int m_maximizedViewId;
 
-    QSize m_infoBarSize;
     QSettings* m_settings;
 };
 

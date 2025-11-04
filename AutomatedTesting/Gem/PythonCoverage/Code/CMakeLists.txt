@@ -12,7 +12,7 @@ include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 if(PAL_TRAIT_PYTHONCOVERAGE_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME PythonCoverage.Editor.Static STATIC
+            NAME ${gem_name}.Editor.Static STATIC
             NAMESPACE Gem
             FILES_CMAKE
                 pythoncoverage_editor_files.cmake
@@ -34,10 +34,10 @@ if(PAL_TRAIT_PYTHONCOVERAGE_SUPPORTED)
         )
 
         ly_add_target(
-            NAME PythonCoverage.Editor GEM_MODULE
+            NAME ${gem_name}.Editor GEM_MODULE
             NAMESPACE Gem
             AUTOMOC
-            OUTPUT_NAME Gem.PythonCoverage.Editor
+            OUTPUT_NAME Gem.${gem_name}.Editor
             FILES_CMAKE
                 pythoncoverage_editor_shared_files.cmake
             COMPILE_DEFINITIONS
@@ -50,10 +50,19 @@ if(PAL_TRAIT_PYTHONCOVERAGE_SUPPORTED)
                     Include
             BUILD_DEPENDENCIES
                 PUBLIC
-                    Gem::PythonCoverage.Editor.Static
+                    Gem::${gem_name}.Editor.Static
         )
 
-        ly_create_alias(NAME PythonCoverage.Tools    NAMESPACE Gem TARGETS Gem::PythonCoverage.Editor)
-        ly_create_alias(NAME PythonCoverage.Builders NAMESPACE Gem TARGETS Gem::PythonCoverage.Editor)
+        # Inject the gem name into the Module source file
+        ly_add_source_properties(
+            SOURCES
+                Source/PythonCoverageEditorModule.cpp
+            PROPERTY COMPILE_DEFINITIONS
+                VALUES
+                    O3DE_GEM_NAME=${gem_name}
+                    O3DE_GEM_VERSION=${gem_version})
+
+        ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+        ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     endif()
 endif()

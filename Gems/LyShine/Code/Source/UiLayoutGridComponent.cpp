@@ -50,14 +50,14 @@ void UiLayoutGridComponent::ApplyLayoutWidth()
     UiTransform2dInterface::Offsets offsets(0.0f, 0.0f, m_cellSize.GetX(), m_cellSize.GetY());
 
     AZStd::vector<AZ::EntityId> childEntityIds;
-    EBUS_EVENT_ID_RESULT(childEntityIds, GetEntityId(), UiElementBus, GetChildEntityIds);
+    UiElementBus::EventResult(childEntityIds, GetEntityId(), &UiElementBus::Events::GetChildEntityIds);
     for (auto child : childEntityIds)
     {
         // Set the anchors
-        EBUS_EVENT_ID(child, UiTransform2dBus, SetAnchors, anchors, false, false);
+        UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 
         // Set the offsets
-        EBUS_EVENT_ID(child, UiTransform2dBus, SetOffsets, offsets);
+        UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetOffsets, offsets);
     }
 }
 
@@ -65,7 +65,7 @@ void UiLayoutGridComponent::ApplyLayoutWidth()
 void UiLayoutGridComponent::ApplyLayoutHeight()
 {
     int numChildren = 0;
-    EBUS_EVENT_ID_RESULT(numChildren, GetEntityId(), UiElementBus, GetNumChildElements);
+    UiElementBus::EventResult(numChildren, GetEntityId(), &UiElementBus::Events::GetNumChildElements);
     if (numChildren > 0)
     {
         // Get the layout rect inside the padding
@@ -100,14 +100,14 @@ void UiLayoutGridComponent::ApplyLayoutHeight()
         UiTransform2dInterface::Offsets offsets(0.0f, 0.0f, 0.0f, 0.0f);
 
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, GetEntityId(), UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, GetEntityId(), &UiElementBus::Events::GetChildEntityIds);
         int childIndex = 0;
         int columnIndex = 0;
         int rowIndex = 0;
         for (auto child : childEntityIds)
         {
             // Set the anchors
-            EBUS_EVENT_ID(child, UiTransform2dBus, SetAnchors, anchors, false, false);
+            UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 
             // Set the offsets
 
@@ -161,7 +161,7 @@ void UiLayoutGridComponent::ApplyLayoutHeight()
             offsets.m_top += vAlignmentOffset;
             offsets.m_bottom += vAlignmentOffset;
 
-            EBUS_EVENT_ID(child, UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetOffsets, offsets);
 
             childIndex++;
         }
@@ -227,7 +227,7 @@ AZ::Vector2 UiLayoutGridComponent::GetSizeToFitChildElements(const AZ::Vector2& 
     if (!m_origOffsetsInitialized)
     {
         m_origOffsetsInitialized = true;
-        EBUS_EVENT_ID_RESULT(m_origOffsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(m_origOffsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
     }
 
     if (numChildElements > 0)
@@ -235,8 +235,8 @@ AZ::Vector2 UiLayoutGridComponent::GetSizeToFitChildElements(const AZ::Vector2& 
         // Calculate a layout rect size that is used to determine the number of rows and columns.
         // Since the element size may change after this call, use the original offsets to get the layout rect size
         UiTransform2dInterface::Offsets realOffsets;
-        EBUS_EVENT_ID_RESULT(realOffsets, GetEntityId(), UiTransform2dBus, GetOffsets);
-        EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, m_origOffsets);
+        UiTransform2dBus::EventResult(realOffsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
+        UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, m_origOffsets);
 
         size = GetChildrenBoundingRectSize(childElementSize, numChildElements);
 
@@ -250,7 +250,7 @@ AZ::Vector2 UiLayoutGridComponent::GetSizeToFitChildElements(const AZ::Vector2& 
         const float epsilon = 0.01f;
         size += AZ::Vector2(epsilon, epsilon);
 
-        EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, realOffsets);
+        UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, realOffsets);
     }
 
     return size;
@@ -352,7 +352,7 @@ float UiLayoutGridComponent::GetMinHeight()
 float UiLayoutGridComponent::GetTargetWidth(float maxWidth)
 {
     int numChildElements = 0;
-    EBUS_EVENT_ID_RESULT(numChildElements, GetEntityId(), UiElementBus, GetNumChildElements);
+    UiElementBus::EventResult(numChildElements, GetEntityId(), &UiElementBus::Events::GetNumChildElements);
 
     if (numChildElements == 0)
     {
@@ -399,7 +399,7 @@ float UiLayoutGridComponent::GetTargetWidth(float maxWidth)
 float UiLayoutGridComponent::GetTargetHeight(float /*maxHeight*/)
 {
     int numChildElements = 0;
-    EBUS_EVENT_ID_RESULT(numChildElements, GetEntityId(), UiElementBus, GetNumChildElements);
+    UiElementBus::EventResult(numChildElements, GetEntityId(), &UiElementBus::Events::GetNumChildElements);
 
     if (numChildElements == 0)
     {
@@ -408,7 +408,7 @@ float UiLayoutGridComponent::GetTargetHeight(float /*maxHeight*/)
 
     // Check how many elements fit in a row
     AZ::Vector2 rectSize(0.0f, 0.0f);
-    EBUS_EVENT_ID_RESULT(rectSize, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(rectSize, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     // At least one child must fit in each row
     int numElementsPerRow = 1;
@@ -484,7 +484,7 @@ void UiLayoutGridComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiLayoutGrid.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiLayoutGrid.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::LayoutPadding, &UiLayoutGridComponent::m_padding, "Padding", "The layout padding")

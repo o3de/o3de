@@ -6,10 +6,8 @@
  *
  */
 
-#include "Nodeable.h"
-
 #include <AzCore/Serialization/SerializeContext.h>
-#include <ScriptCanvas/Core/SubgraphInterface.h>
+#include <ScriptCanvas/Core/Nodeable.h>
 
 namespace NodeableOutCpp
 {

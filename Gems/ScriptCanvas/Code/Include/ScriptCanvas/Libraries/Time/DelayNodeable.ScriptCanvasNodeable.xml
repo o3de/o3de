@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/DelayNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/DelayNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:noNamespaceSchemaLocation="../../AutoGen/ScriptCanvasNodeable.xsd">
     <Class Name="DelayNodeable"
         QualifiedName="ScriptCanvas::Nodeables::Time::DelayNodeable"
         PreferredClassName="Delay"

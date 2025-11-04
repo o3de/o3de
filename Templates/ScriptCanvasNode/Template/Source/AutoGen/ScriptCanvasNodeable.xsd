@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="ScriptCanvas">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Class">
+                    <xs:complexType mixed="true">
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" minOccurs="0" name="Input">
+                                <xs:complexType>
+                                    <xs:sequence minOccurs="0" maxOccurs="unbounded" >
+                                        <xs:element maxOccurs="unbounded" name="Parameter">
+                                            <xs:complexType>
+                                                <xs:attribute name="Name" type="xs:string" use="required" />
+                                                <xs:attribute name="Type" type="xs:string" use="required" />
+                                                <xs:attribute name="DefaultValue" type="xs:string" use="optional" />
+                                                <xs:attribute name="Description" type="xs:string" use="required" />
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="Name" type="xs:string" use="required" />
+                                    <xs:attribute name="Description" type="xs:string" use="required" />
+                                    <xs:attribute name="OutputName" type="xs:string" use="optional" />
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="Output" minOccurs="0" maxOccurs="unbounded" >
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element minOccurs="0" maxOccurs="unbounded" name="Parameter">
+                                            <xs:complexType>
+                                                <xs:attribute name="Name" type="xs:string" use="required" />
+                                                <xs:attribute name="Type" type="xs:string" use="required" />
+                                                <xs:attribute name="Description" type="xs:string" use="required" />
+                                                <xs:attribute name="DefaultValue" type="xs:string" use="optional" />
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="Name" type="xs:string" use="required" />
+                                    <xs:attribute name="Description" type="xs:string" use="required" />
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element maxOccurs="unbounded" minOccurs="0" name="PropertyInterface">
+                                <xs:complexType>
+                                    <xs:attribute name="Name" type="xs:string" use="required" />
+                                    <xs:attribute name="Description" type="xs:string" use="required" />
+                                    <xs:attribute name="Property" type="xs:string" use="required" />
+                                    <xs:attribute name="Type" type="xs:string" use="required" />
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="Name" type="xs:string" use="required" />
+                        <xs:attribute name="QualifiedName" type="xs:string" use="required" />
+                        <xs:attribute name="PreferredClassName" type="xs:string" use="required" />
+                        <xs:attribute name="Uuid" type="xs:string" use="optional" />
+                        <xs:attribute name="Icon" type="xs:string" use="optional" />
+                        <xs:attribute name="Category" type="xs:string" use="required" />
+                        <xs:attribute name="Namespace" type="xs:string" use="required" />
+                        <xs:attribute name="Description" type="xs:string" use="required" />
+                        <xs:attribute name="Base" type="xs:string" use="optional" />
+                        <xs:attribute name="NodeableUuid" type="xs:string" use="optional" />
+                        <xs:attribute name="GraphEntryPoint" type="xs:boolean" use="optional" default="false"/>
+                        <xs:attribute name="ExtendReflectionSerialize" type="xs:boolean" use="optional" default="false"/>
+                        <xs:attribute name="ExtendReflectionEdit" type="xs:boolean" use="optional" default="false"/>
+                        <xs:attribute name="ExtendReflectionBehavior" type="xs:boolean" use="optional" default="false"/>
+                        <xs:attribute name="ExtendConfigureSlots" type="xs:boolean" use="optional" default="false"/>
+                        <xs:attribute name="HideProperty" type="xs:boolean" use="optional" default="false"/>
+                        <xs:attribute name="Version" type="xs:nonNegativeInteger" use="optional"/>
+                        <xs:attribute name="VersionConverter" type="xs:string" use="optional"/>
+                        <xs:attribute name="EventHandler" type="xs:string" use="optional"/>
+                        <xs:attribute name="Deprecated" type="xs:boolean" use="optional"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="Include" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -18,7 +18,7 @@ namespace SurfaceData
     class SurfaceTag final
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceTag, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceTag, AZ::SystemAllocator);
         AZ_TYPE_INFO(SurfaceTag, "{67C8C6ED-F32A-443E-A777-1CAE48B22CD7}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -28,20 +28,20 @@ namespace SurfaceData
         {
         }
 
-        SurfaceTag(const AZStd::string& value)
+        explicit SurfaceTag(const AZStd::string& value)
             : m_surfaceTagCrc(AZ::Crc32(value.data()))
         {
         }
 
-        SurfaceTag(const AZ::Crc32& value)
+        explicit SurfaceTag(const AZ::Crc32& value)
             : m_surfaceTagCrc(value)
         {
         }
 
         AZ_INLINE bool operator==(const SurfaceTag& other) const;
+        AZ_INLINE bool operator!=(const SurfaceTag& other) const;
         AZ_INLINE bool operator<(const SurfaceTag& other) const;
         AZ_INLINE operator AZ::Crc32() const;
-        AZ_INLINE operator AZ::u32() const;
 
         void SetTag(const AZStd::string& value)
         {
@@ -65,6 +65,11 @@ namespace SurfaceData
         return other.m_surfaceTagCrc == m_surfaceTagCrc;
     }
 
+    AZ_INLINE bool SurfaceTag::operator!=(const SurfaceTag& other) const
+    {
+        return other.m_surfaceTagCrc != m_surfaceTagCrc;
+    }
+
     AZ_INLINE bool SurfaceTag::operator<(const SurfaceTag& other) const
     {
         return other.m_surfaceTagCrc < m_surfaceTagCrc;
@@ -72,11 +77,19 @@ namespace SurfaceData
 
     AZ_INLINE SurfaceTag::operator AZ::Crc32() const
     {
-        return m_surfaceTagCrc;
-    }
-
-    AZ_INLINE SurfaceTag::operator AZ::u32() const
-    {
-        return static_cast<AZ::u32>(m_surfaceTagCrc);
+        return static_cast<AZ::Crc32>(m_surfaceTagCrc);
     }
 }
+
+namespace AZStd
+{
+    template<>
+    struct hash<SurfaceData::SurfaceTag>
+    {
+        size_t operator()(const SurfaceData::SurfaceTag& tag) const
+        {
+            AZStd::hash<AZ::Crc32> hasher;
+            return hasher(AZ::Crc32(tag));
+        }
+    };
+} // namespace AZStd

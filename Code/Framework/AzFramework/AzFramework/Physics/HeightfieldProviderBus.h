@@ -14,6 +14,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <AzCore/EBus/EBusSharedDispatchTraits.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
@@ -71,11 +72,11 @@ namespace Physics
 
         //! Returns the height field gridsize columns.
         //! @return the size of the grid in the x direction.
-        virtual size_t GetHeightfieldGridColumns() const = 0;
+        virtual AZ::u64 GetHeightfieldGridColumns() const = 0;
 
         //! Returns the height field gridsize rows.
         //! @return the size of the grid in the y direction.
-        virtual size_t GetHeightfieldGridRows() const = 0;
+        virtual AZ::u64 GetHeightfieldGridRows() const = 0;
 
         //! Returns the height field min and max height bounds.
         //! @param minHeightBounds contains the minimum height that the heightfield can contain.
@@ -169,3 +170,9 @@ namespace Physics
 
     using HeightfieldProviderNotificationBus = AZ::EBus<HeightfieldProviderNotifications>;
 } // namespace Physics
+
+// Disable exporting specialized EBus types due to an issue with the EBusSharedDispatchTraits not being
+// able to inherit the custom mutex type from the EBusTraits.
+
+// AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderRequests);
+// AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderNotifications);

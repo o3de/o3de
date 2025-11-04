@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>Icons/application.svg</file>
+		<file>Icons/emptyoption.svg</file>
+		<file>Icons/defrag.svg</file>
     </qresource>
 </RCC>

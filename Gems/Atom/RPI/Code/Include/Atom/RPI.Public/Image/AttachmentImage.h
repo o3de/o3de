@@ -9,9 +9,8 @@
 #pragma once
 
 #include <Atom/RHI/ImagePool.h>
-
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
-
 
 namespace AZ
 {
@@ -45,14 +44,14 @@ namespace AZ
         //! AttachmentImage is intended for use, primarily, as an attachment on a pass. Image data can
         //! be produced by the GPU or uploaded directly from CPU data. Use this class to represent
         //! color / depth stencil targets, read-write images, etc.
-        class AttachmentImage final
+        class ATOM_RPI_PUBLIC_API AttachmentImage final
             : public Image
         {
             friend class ImageSystem;
 
         public:
             AZ_INSTANCE_DATA(AttachmentImage, "{85691099-5143-4C11-88B0-897DA9064FDF}", Image);
-            AZ_CLASS_ALLOCATOR(AttachmentImage, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AttachmentImage, AZ::SystemAllocator);
 
             ~AttachmentImage();
 
@@ -82,7 +81,7 @@ namespace AZ
             const RHI::AttachmentId& GetAttachmentId() const;
 
         private:
-            AttachmentImage() = default;
+            AttachmentImage();
 
             //! Standard instance creation path.
             static Data::Instance<AttachmentImage> CreateInternal(AttachmentImageAsset& imageAsset);

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 
@@ -20,11 +21,11 @@ namespace AzToolsFramework
     {
         class PrefabPublicInterface;
 
-        class PrefabPublicRequestHandler final
+        class AZTF_API PrefabPublicRequestHandler final
             : public PrefabPublicRequestBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabPublicRequestHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabPublicRequestHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicRequestHandler, "{83FBDDF9-10BE-4373-B1DC-44B47EE4805C}");
 
             static void Reflect(AZ::ReflectContext* context);
@@ -36,6 +37,7 @@ namespace AzToolsFramework
             InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+            PrefabOperationResult DetachPrefabAndRemoveContainerEntity(const AZ::EntityId& containerEntityId) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
             AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             CreateSpawnableResult CreateInMemorySpawnableAsset(AZStd::string_view prefabFilePath, AZStd::string_view spawnableName) override;

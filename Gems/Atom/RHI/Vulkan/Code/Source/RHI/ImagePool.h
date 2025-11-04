@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h>
-#include <RHI/MemoryAllocator.h>
+#include <Atom/RHI/DeviceImagePool.h>
 
 namespace AZ
 {
@@ -18,40 +16,26 @@ namespace AZ
         class Device;
 
         class ImagePool final
-            : public RHI::ImagePool
+            : public RHI::DeviceImagePool
         {
-            using Base = RHI::ImagePool;
+            using Base = RHI::DeviceImagePool;
         public:
-            AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
             AZ_RTTI(ImagePool, "35351DF3-823C-4042-A8BA-D6FE10FF6A8D", Base);
 
             static RHI::Ptr<ImagePool> Create();
-
-            void GarbageCollect();
 
         private:
             ImagePool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // FrameSchedulerEventBus::Handler
-            void OnFrameEnd() override;
-            //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::ImagePool
+            // RHI::DeviceImagePool
             RHI::ResultCode InitInternal(RHI::Device&, const RHI::ImagePoolDescriptor&) override;
-            RHI::ResultCode InitImageInternal(const RHI::ImageInitRequest& request) override;
-            RHI::ResultCode UpdateImageContentsInternal(const RHI::ImageUpdateRequest& request) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request) override;
+            RHI::ResultCode UpdateImageContentsInternal(const RHI::DeviceImageUpdateRequest& request) override;
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Object
-            void SetNameInternal(const AZStd::string_view& name) override;
-            //////////////////////////////////////////////////////////////////////////
-
-            MemoryAllocator m_memoryAllocator;
         };
     }
 }

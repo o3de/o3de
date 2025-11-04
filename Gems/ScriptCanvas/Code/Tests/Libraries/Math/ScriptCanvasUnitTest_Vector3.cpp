@@ -181,7 +181,11 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestVector3Functions, Reciprocal_Call_GetExpectedResult)
     {
         auto actualResult = Vector3Functions::Reciprocal(AZ::Vector3::CreateOne());
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3::CreateOne()));
+#else
         EXPECT_EQ(actualResult, AZ::Vector3::CreateOne());
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestVector3Functions, Slerp_Call_GetExpectedResult)
@@ -193,7 +197,11 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestVector3Functions, DirectionTo_Call_GetExpectedResult)
     {
         auto actualResult = Vector3Functions::DirectionTo(AZ::Vector3::CreateZero(), AZ::Vector3(1, 0, 0), 1);
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(AZStd::get<0>(actualResult), IsClose(AZ::Vector3(1, 0, 0)));
+#else
         EXPECT_EQ(AZStd::get<0>(actualResult), AZ::Vector3(1, 0, 0));
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         EXPECT_EQ(AZStd::get<1>(actualResult), 1);
     }
 } // namespace ScriptCanvasUnitTest

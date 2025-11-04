@@ -13,14 +13,14 @@
 
 namespace UnitTest
 {
-    class SpawnableTest : public AllocatorsFixture
+    class SpawnableTest : public LeakDetectionFixture
     {
     public:
         static constexpr size_t DefaultEntityAliasTestCount = 8;
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_spawnable = aznew AzFramework::Spawnable();
         }
@@ -30,7 +30,7 @@ namespace UnitTest
             delete m_spawnable;
             m_spawnable = nullptr;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void InsertEntities(size_t count)

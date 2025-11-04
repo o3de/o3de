@@ -60,22 +60,22 @@ namespace LmbrCentral
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("AudioTriggerService", 0xeba17b52));
+            dependent.push_back(AZ_CRC_CE("AudioTriggerService"));
         }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AudioMultiPositionService", 0x2cc67a6e));
+            provided.push_back(AZ_CRC_CE("AudioMultiPositionService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("AudioTriggerService", 0xeba17b52));
+            required.push_back(AZ_CRC_CE("AudioTriggerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AudioMultiPositionService", 0x2cc67a6e));
+            incompatible.push_back(AZ_CRC_CE("AudioMultiPositionService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

@@ -15,3 +15,12 @@ set_target_properties(AssetProcessor PROPERTIES
     ENTITLEMENT_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Mac/AssetProcessorEntitlements.plist
     XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.O3DE.AssetProcessor"
 )
+
+# Copy the AssetBuilder to the bundle Content/MacOS directory
+# The AssetProcessor launches the AssetBuilder next to it in the same executable directory
+ly_add_target_files(
+    TARGETS
+        AssetProcessor
+    FILES
+        $<TARGET_FILE:AssetBuilder>
+    )

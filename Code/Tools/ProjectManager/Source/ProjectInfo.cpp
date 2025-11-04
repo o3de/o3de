@@ -21,6 +21,7 @@ namespace O3DE::ProjectManager
         const QString& iconPath,
         const QString& newPreviewImagePath,
         const QString& newBackgroundImagePath,
+        bool isScriptOnly,
         bool needsBuild)
         : m_path(path)
         , m_projectName(projectName)
@@ -31,6 +32,7 @@ namespace O3DE::ProjectManager
         , m_iconPath(iconPath)
         , m_newPreviewImagePath(newPreviewImagePath)
         , m_newBackgroundImagePath(newBackgroundImagePath)
+        , m_isScriptOnly(isScriptOnly)
         , m_needsBuild(needsBuild)
     {
     }
@@ -78,6 +80,14 @@ namespace O3DE::ProjectManager
             return false;
         }
         if (m_newBackgroundImagePath != rhs.m_newBackgroundImagePath)
+        {
+            return false;
+        }
+        if (m_version != rhs.m_version)
+        {
+            return false;
+        }
+        if (m_isScriptOnly != rhs.m_isScriptOnly)
         {
             return false;
         }

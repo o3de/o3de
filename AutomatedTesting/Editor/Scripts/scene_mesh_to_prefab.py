@@ -151,10 +151,10 @@ def update_manifest(scene):
                                                                entity_id, "AZ::Render::EditorMeshComponent")
         # Set the ModelAsset assetHint to the relative path of the input asset + the name of the MeshGroup we just
         # created + the azmodel extension The MeshGroup we created will be output as a product in the asset's path
-        # named mesh_group_name.azmodel The assetHint will be converted to an AssetId later during prefab loading
+        # named mesh_group_name.fbx.azmodel The assetHint will be converted to an AssetId later during prefab loading
         json_update = json.dumps({
             "Controller": {"Configuration": {"ModelAsset": {
-                "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".azmodel"}}}
+                "assetHint": os.path.join(source_relative_path, mesh_group_name) + ".fbx.azmodel"}}}
         })
         # Apply the JSON above to the component we created
         result = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "UpdateComponentForEntity", entity_id,
@@ -166,13 +166,13 @@ def update_manifest(scene):
         # Add a physics component referencing the triangle mesh we made for the first node
         if previous_entity_id is None:
             physx_mesh_component = azlmbr.entity.EntityUtilityBus(azlmbr.bus.Broadcast, "GetOrAddComponentByTypeName",
-                                      entity_id, "{FD429282-A075-4966-857F-D0BBF186CFE6} EditorColliderComponent")
+                                      entity_id, "{20382794-0E74-4860-9C35-A19F22DC80D4} EditorMeshColliderComponent")
 
             json_update = json.dumps({
                 "ShapeConfiguration": {
                     "PhysicsAsset": {
                         "Asset": {
-                            "assetHint": os.path.join(source_relative_path, source_filename_only + "_triangle.pxmesh")
+                            "assetHint": os.path.join(source_relative_path, source_filename_only + "_triangle.fbx.pxmesh")
                         }
                     }
                 }
@@ -235,18 +235,19 @@ def on_update_manifest(args):
         log_exception_traceback()
 
     global sceneJobHandler
+    # do not delete or set sceneJobHandler to None, just disconnect from it.
+    # this call is occuring while the scene Job Handler itself is in the callstack, so deleting it here
+    # would cause a crash.
     sceneJobHandler.disconnect()
-    sceneJobHandler = None
     return data
 
 
 # try to create SceneAPI handler for processing
 try:
     import azlmbr.scene as sceneApi
-
-    if sceneJobHandler is None:
-        sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
-        sceneJobHandler.connect()
-        sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
+    
+    sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
+    sceneJobHandler.connect()
+    sceneJobHandler.add_callback('OnUpdateManifest', on_update_manifest)
 except:
     sceneJobHandler = None

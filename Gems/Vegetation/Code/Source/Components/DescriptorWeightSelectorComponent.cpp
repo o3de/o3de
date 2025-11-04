@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <AzCore/Debug/Profiler.h>
+#include <VegetationProfiler.h>
 
 namespace Vegetation
 {
@@ -60,12 +60,12 @@ namespace Vegetation
 
     void DescriptorWeightSelectorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDescriptorSelectorService", 0xe684eeec));
+        services.push_back(AZ_CRC_CE("VegetationDescriptorSelectorService"));
     }
 
     void DescriptorWeightSelectorComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationDescriptorSelectorService", 0xe684eeec));
+        services.push_back(AZ_CRC_CE("VegetationDescriptorSelectorService"));
     }
 
     void DescriptorWeightSelectorComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -144,7 +144,7 @@ namespace Vegetation
 
     void DescriptorWeightSelectorComponent::SelectDescriptors(const DescriptorSelectorParams& params, DescriptorPtrVec& descriptors) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         switch (m_configuration.m_sortBehavior)
         {

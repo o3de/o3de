@@ -18,7 +18,7 @@
 
 namespace AzToolsFramework
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MultiLinearManipulator, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MultiLinearManipulator, AZ::SystemAllocator)
 
     AZStd::shared_ptr<MultiLinearManipulator> MultiLinearManipulator::MakeShared(const AZ::Transform& worldFromLocal)
     {
@@ -49,6 +49,11 @@ namespace AzToolsFramework
     void MultiLinearManipulator::InstallMouseMoveCallback(const MouseActionCallback& onMouseMoveCallback)
     {
         m_onMouseMoveCallback = onMouseMoveCallback;
+    }
+
+    void MultiLinearManipulator::InstallInvalidateCallback(const InvalidateActionCallback& onInvalidateCallback)
+    {
+        m_onInvalidateCallback = onInvalidateCallback;
     }
 
     static MultiLinearManipulator::Action BuildMultiLinearManipulatorAction(
@@ -173,6 +178,11 @@ namespace AzToolsFramework
         for (auto& view : m_manipulatorViews)
         {
             view->Invalidate(GetManipulatorManagerId());
+        }
+
+        if (m_onInvalidateCallback)
+        {
+            m_onInvalidateCallback();
         }
     }
 

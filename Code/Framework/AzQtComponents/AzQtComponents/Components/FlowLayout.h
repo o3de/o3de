@@ -42,9 +42,9 @@
 #ifndef FLOWLAYOUT_H
 #define FLOWLAYOUT_H
 
-#include <QtCore/QRect>
-#include <QtWidgets/QLayout>
-#include <QtWidgets/QStyle>
+#include <QRect>
+#include <QLayout>
+#include <QStyle>
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 

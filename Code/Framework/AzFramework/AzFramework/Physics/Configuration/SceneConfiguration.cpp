@@ -14,7 +14,7 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SceneConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SceneConfiguration, AZ::SystemAllocator);
 
     /*static*/ void SceneConfiguration::Reflect(AZ::ReflectContext* context)
     {

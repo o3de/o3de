@@ -1,4 +1,4 @@
 {
-    "materialType": "Materials/Special/DebugVertexStreams.materialtype",
+    "materialType": "DebugVertexStreams.materialtype",
     "materialTypeVersion": 1
 }

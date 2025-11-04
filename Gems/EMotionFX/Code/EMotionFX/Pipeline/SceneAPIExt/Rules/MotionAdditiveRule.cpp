@@ -18,7 +18,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
-            AZ_CLASS_ALLOCATOR_IMPL(MotionAdditiveRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(MotionAdditiveRule, AZ::SystemAllocator)
 
              MotionAdditiveRule::MotionAdditiveRule()
                 : m_sampleFrameIndex(0)

@@ -11,7 +11,6 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
@@ -25,7 +24,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
-#include <Atom/Feature/SkyBox/SkyBoxLUT.h>
+#include <SkyBox/SkyBoxLUT.h>
 
 namespace AZ
 {
@@ -89,7 +88,8 @@ namespace AZ
 
             if (m_buffer)
             {
-                m_sceneSrg->SetBufferView(m_physicalSkyBufferIndex, m_buffer->GetBufferView());
+                m_sceneSrg->SetBufferView(
+                    m_physicalSkyBufferIndex, m_buffer->GetBufferView());
             }
         }
 
@@ -446,7 +446,7 @@ namespace AZ
             AZ::Vector3 S = EvaluateHosek(static_cast<float>(cos(inverseAltitude)), 0.0f, 1.0f, result) * z;
 
             // dividing z by the luminance of S
-            z /= S.Dot(AZ::Vector3(0.2126, 0.7152, 0.0722));
+            z /= S.Dot(AZ::Vector3(0.2126f, 0.7152f, 0.0722f));
             z *= normalizedSunY;
 
             result.z = z;

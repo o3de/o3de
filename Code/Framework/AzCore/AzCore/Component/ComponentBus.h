@@ -11,9 +11,7 @@
  * class for their buses. Buses enable components to communicate with each other and 
  * with external systems.
  */
-
-#ifndef AZCORE_COMPONENT_BUS_H
-#define AZCORE_COMPONENT_BUS_H
+#pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -86,7 +84,7 @@ namespace AZ
     class ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ComponentConfig, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentConfig, SystemAllocator);
         AZ_RTTI(ComponentConfig, "{0A7929DF-2932-40EA-B2B3-79BC1C3490D0}");
 
         virtual ~ComponentConfig() = default;
@@ -96,7 +94,7 @@ namespace AZ
      * A pair of entity and component IDs that are used to access an address 
      * of an AZ::EntityComponentBus.
      */
-    class EntityComponentIdPair 
+    class AZCORE_API EntityComponentIdPair 
     {
     public:
 
@@ -104,7 +102,7 @@ namespace AZ
          * Specifies that this class should use AZ::SystemAllocator for memory
          * management by default.
          */
-        AZ_CLASS_ALLOCATOR(EntityComponentIdPair, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityComponentIdPair, AZ::SystemAllocator);
 
         /**
          * Adds run-time type information to this class.
@@ -237,5 +235,3 @@ namespace AZStd
         }
     };
 }
-#endif // AZCORE_COMPONENT_BUS_H
-#pragma once

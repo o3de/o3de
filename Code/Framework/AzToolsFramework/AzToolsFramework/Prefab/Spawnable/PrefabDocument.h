@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
@@ -20,7 +22,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     class PrefabProcessorContext;
 
-    class PrefabDocument final
+    class AZTF_API PrefabDocument final
     {
     public:
         explicit PrefabDocument(AZStd::string name);
@@ -47,7 +49,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AzToolsFramework::Prefab::AliasPathView entity,
             AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
             AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-            uint32_t tag,
+            const AZ::Crc32& tag,
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context);
 
         // Where possible, prefer functions directly on the PrefabDocument Instead of using the Instance.

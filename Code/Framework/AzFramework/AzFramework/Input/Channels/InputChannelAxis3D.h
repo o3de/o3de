@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Channels/InputChannel.h>
 
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -18,14 +19,14 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit three dimensional axis input values.
     //! Example: motion sensor data (acceleration, rotation, or magnetic field)
-    class InputChannelAxis3D : public InputChannel
+    class AZF_API InputChannelAxis3D : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Custom data struct for three dimensional axis data
         struct AxisData3D : public InputChannel::CustomData
         {
-            AZ_CLASS_ALLOCATOR(AxisData3D, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AxisData3D, AZ::SystemAllocator);
             AZ_RTTI(AxisData3D, "{ABD4447B-34C6-4D17-B4E8-5B62209C14EA}", CustomData);
             ~AxisData3D() override = default;
 
@@ -35,7 +36,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannelAxis3D, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannelAxis3D, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

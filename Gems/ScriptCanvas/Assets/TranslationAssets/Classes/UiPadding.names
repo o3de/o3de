@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "SetPadding",
-                    "context": "UiPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Padding"
@@ -58,7 +57,6 @@
                 },
                 {
                     "base": "SetBottom",
-                    "context": "UiPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Bottom"
@@ -87,7 +85,6 @@
                 },
                 {
                     "base": "SetRight",
-                    "context": "UiPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Right"
@@ -116,7 +113,6 @@
                 },
                 {
                     "base": "SetTop",
-                    "context": "UiPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Top"
@@ -145,7 +141,6 @@
                 },
                 {
                     "base": "SetLeft",
-                    "context": "UiPadding",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Left"

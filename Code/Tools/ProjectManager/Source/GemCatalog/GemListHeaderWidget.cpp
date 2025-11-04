@@ -22,7 +22,7 @@ namespace O3DE::ProjectManager
         : QFrame(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
+        vLayout->setContentsMargins(0, 0, 0, 0);
         setLayout(vLayout);
 
         setStyleSheet("background-color: #333333;");
@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
         // Top section
         QHBoxLayout* topLayout = new QHBoxLayout();
         topLayout->addSpacing(16);
-        topLayout->setMargin(0);
+        topLayout->setContentsMargins(0, 0, 0, 0);
 
         auto* tagWidget = new FilterTagWidgetContainer();
 
@@ -63,7 +63,7 @@ namespace O3DE::ProjectManager
 
         QPushButton* refreshButton = new QPushButton();
         refreshButton->setObjectName("RefreshButton");
-        connect( refreshButton, &QPushButton::clicked, [this] { emit OnRefresh(); });
+        connect(refreshButton, &QPushButton::clicked, [this] { emit OnRefresh(/*refreshRemoteRepos*/true); });
         topLayout->addWidget(refreshButton);
 
         auto refreshGemCountUI = [=]() {

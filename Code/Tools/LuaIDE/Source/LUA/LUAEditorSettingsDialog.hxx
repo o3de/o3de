@@ -13,7 +13,7 @@
 #include "LUAEditorView.hxx"
 #include "LUAEditorStyleMessages.h"
 
-#include <QtWidgets/QDialog>
+#include <QDialog>
 #endif
 
 #pragma once
@@ -30,7 +30,7 @@ namespace LUAEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(LUAEditorSettingsDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorSettingsDialog, AZ::SystemAllocator);
         LUAEditorSettingsDialog(QWidget *parent = 0);
         ~LUAEditorSettingsDialog() override;
         
@@ -39,6 +39,7 @@ namespace LUAEditor
         void OnSave();
         void OnSaveClose();
         void OnCancel();
+        void OnApply();
 
     private:
 

@@ -71,23 +71,29 @@ namespace ScriptEvents
         //AZ_TracePrintf("Script Events", "Script Broadcast Method: %s %s::%s (Arguments: %zu)\n", m_returnType.ToString<AZStd::string>().c_str(), busName.c_str(), m_name.c_str(), method.GetParameters().size());
     }
 
-    bool ScriptEventBroadcast::Call(AZ::BehaviorArgument* params, unsigned int paramCount, AZ::BehaviorArgument* returnValue) const
+    bool ScriptEventBroadcast::Call(AZStd::span<AZ::BehaviorArgument> params, AZ::BehaviorArgument* returnValue) const
     {
         Internal::BindingRequest::BindingParameters parameters;
         parameters.m_eventName = m_name;
         parameters.m_address = nullptr;
-        parameters.m_parameters = params;
-        parameters.m_parameterCount = paramCount;
+        parameters.m_parameters = params.data();
+        parameters.m_parameterCount = AZ::u32(params.size());
         parameters.m_returnValue = returnValue;
 
         Internal::BindingRequestBus::Event(m_busBindingId, &Internal::BindingRequest::Bind, parameters);
-        
+
         if (returnValue && returnValue->m_onAssignedResult)
         {
             returnValue->m_onAssignedResult();
         }
 
         return true;
+    }
+
+    auto ScriptEventBroadcast::IsCallable([[maybe_unused]] AZStd::span<AZ::BehaviorArgument> params, [[maybe_unused]] AZ::BehaviorArgument* returnValue) const
+        -> ResultOutcome
+    {
+        return AZ::Success();
     }
 
     void ScriptEventBroadcast::ReserveArguments(size_t numArguments)
@@ -97,14 +103,14 @@ namespace ScriptEvents
         m_argumentToolTips.resize(numArguments);
     }
 
-    void ScriptEventBroadcast::SetArgumentName(size_t index, const AZStd::string& name)
+    void ScriptEventBroadcast::SetArgumentName(size_t index, AZStd::string name)
     {
         if (index >= m_argumentNames.size())
         {
             m_argumentNames.resize(index + 1);
         }
 
-        m_argumentNames[index] = name;
+        m_argumentNames[index] = AZStd::move(name);
     }
 
     size_t ScriptEventBroadcast::GetMinNumberOfArguments() const

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/Origin.h>
 
@@ -18,38 +19,16 @@ namespace AZ
     namespace RPI
     {
         //! Custom data for the CopyPass. Should be specified in the PassRequest.
-        struct CopyPassData
+        struct ATOM_RPI_REFLECT_API CopyPassData
             : public PassData
         {
             AZ_RTTI(CopyPassData, "{A0E4DBBF-2FE7-4027-B6B1-4F15AEB03B04}", PassData);
-            AZ_CLASS_ALLOCATOR(CopyPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CopyPassData, SystemAllocator);
 
             CopyPassData() = default;
             virtual ~CopyPassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<CopyPassData, PassData>()
-                        ->Version(1)
-                        ->Field("BufferSize", &CopyPassData::m_bufferSize)
-                        ->Field("BufferSourceOffset", &CopyPassData::m_bufferSourceOffset)
-                        ->Field("BufferSourceBytesPerRow", &CopyPassData::m_bufferSourceBytesPerRow)
-                        ->Field("BufferSourceBytesPerImage", &CopyPassData::m_bufferSourceBytesPerImage)
-                        ->Field("BufferDestinationOffset", &CopyPassData::m_bufferDestinationOffset)
-                        ->Field("BufferDestinationBytesPerRow", &CopyPassData::m_bufferDestinationBytesPerRow)
-                        ->Field("BufferDestinationBytesPerImage", &CopyPassData::m_bufferDestinationBytesPerImage)
-                        ->Field("ImageSourceSize", &CopyPassData::m_sourceSize)
-                        ->Field("ImageSourceSubresource", &CopyPassData::m_imageSourceSubresource)
-                        ->Field("ImageSourceOrigin", &CopyPassData::m_imageSourceOrigin)
-                        ->Field("ImageDestinationSubresource", &CopyPassData::m_imageDestinationSubresource)
-                        ->Field("ImageDestinationOrigin", &CopyPassData::m_imageDestinationOrigin)
-                        ->Field("CloneInput", &CopyPassData::m_cloneInput)
-                        ->Field("UseCopyQueue", &CopyPassData::m_useCopyQueue)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             // Size
             uint32_t m_bufferSize = 0;
@@ -72,6 +51,10 @@ namespace AZ
             // Image Destination
             RHI::ImageSubresource m_imageDestinationSubresource;
             RHI::Origin m_imageDestinationOrigin;
+
+            // Device indices
+            int m_sourceDeviceIndex = RHI::MultiDevice::InvalidDeviceIndex;
+            int m_destinationDeviceIndex = RHI::MultiDevice::InvalidDeviceIndex; //@TODO maybe a mask so we can broadcast?
 
             // If set to true, pass will automatically create a transient output attachment based on input
             // If false, the output target of the copy will need to be specified

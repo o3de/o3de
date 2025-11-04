@@ -117,7 +117,7 @@ namespace UnitTest
     class TestEditorVertexSelectionVariable : public AzToolsFramework::EditorVertexSelectionVariable<AZ::Vector3>
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestEditorVertexSelectionVariable, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TestEditorVertexSelectionVariable, AZ::SystemAllocator)
 
         void ShowVertexDeletionWarning() override
         {
@@ -125,7 +125,7 @@ namespace UnitTest
         }
     };
 
-    class EditorVertexSelectionFixture : public ToolsApplicationFixture
+    class EditorVertexSelectionFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -161,7 +161,7 @@ namespace UnitTest
     {
         namespace aztf = AzToolsFramework;
         m_vertexSelection.Create(
-            AZ::EntityComponentIdPair(m_entityId, TestComponentId), aztf::g_mainManipulatorManagerId,
+            AZ::EntityComponentIdPair(m_entityId, TestComponentId), aztf::GetMainManipulatorManagerId(),
             AZStd::make_unique<aztf::NullHoverSelection>(), aztf::TranslationManipulators::Dimensions::Three,
             aztf::ConfigureTranslationManipulatorAppearance3d);
     }

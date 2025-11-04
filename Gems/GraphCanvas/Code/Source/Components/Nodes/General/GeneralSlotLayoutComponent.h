@@ -37,12 +37,12 @@ namespace GraphCanvas
         // AZ::Component
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GraphCanvas_SlotsContainerService", 0x948b6696));
+            provided.push_back(AZ_CRC_CE("GraphCanvas_SlotsContainerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incombatible)
         {
-            incombatible.push_back(AZ_CRC("GraphCanvas_SlotsContainerService", 0x948b6696));
+            incombatible.push_back(AZ_CRC_CE("GraphCanvas_SlotsContainerService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -52,8 +52,8 @@ namespace GraphCanvas
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4));
-            required.push_back(AZ_CRC("GraphCanvas_SceneMemberService", 0xe9759a2d));
+            required.push_back(AZ_CRC_CE("GraphCanvas_StyledGraphicItemService"));
+            required.push_back(AZ_CRC_CE("GraphCanvas_SceneMemberService"));
         }
 
         void Init() override;
@@ -91,7 +91,7 @@ namespace GraphCanvas
             : public QGraphicsWidget
         {
         public:
-            AZ_CLASS_ALLOCATOR(LayoutDividerWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LayoutDividerWidget, AZ::SystemAllocator);
             LayoutDividerWidget(QGraphicsItem* parent);
 
             void UpdateStyle(const Styling::StyleHelper& styleHelper);
@@ -102,7 +102,7 @@ namespace GraphCanvas
             , public SlotUINotificationBus::MultiHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(LinearSlotGroupWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LinearSlotGroupWidget, AZ::SystemAllocator);
             LinearSlotGroupWidget(QGraphicsItem* parent);
 
             void DisplaySlot(const AZ::EntityId& slotId);
@@ -143,7 +143,7 @@ namespace GraphCanvas
 
     public:
         AZ_TYPE_INFO(GeneralSlotLayoutGraphicsWidget, "{9DE7D3C0-D88C-47D8-85D4-5E0F619E60CB}");
-        AZ_CLASS_ALLOCATOR(GeneralSlotLayoutGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GeneralSlotLayoutGraphicsWidget, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context) = delete;
 
         GeneralSlotLayoutGraphicsWidget(GeneralSlotLayoutComponent& nodeSlots);

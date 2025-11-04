@@ -16,8 +16,8 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorViewPolygon, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorViewEdge, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorViewPolygon, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ManipulatorViewEdge, AZ::SystemAllocator)
 
     static AZStd::vector<AZ::Vector3> TransformToWorldSpace(
         const AZ::Transform& worldFromLocal, const AZStd::vector<AZ::Vector3>& points)

@@ -16,9 +16,9 @@
 #include "SerializeXMLReader.h"
 #include "SerializeXMLWriter.h"
 
-#include "XMLBinaryReader.h"
+#include <AzCore/Serialization/Locale.h>
 
-#include <md5.h>
+#include "XMLBinaryReader.h"
 
 //////////////////////////////////////////////////////////////////////////
 #ifdef CRY_COLLECT_XML_NODE_STATS
@@ -53,9 +53,13 @@ IXmlParser* CXmlUtils::CreateXmlParser()
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CXmlUtils::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 {
+    // when saving and loading data files to disk, use the invariant locale
+    AZ::Locale::ScopedSerializationLocale scopedLocale; 
+
     // XmlParser is supposed to log warnings and errors (if any),
     // so we don't need to call parser.getErrorString(),
     // CryLog() etc here.
+    
     XmlParser parser(bReuseStrings);
     return parser.ParseFile(sFilename, true);
 }
@@ -63,18 +67,12 @@ XmlNodeRef CXmlUtils::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CXmlUtils::LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings, bool bSuppressWarnings)
 {
+     // when saving and loading data files to disk, use the invariant locale
+    AZ::Locale::ScopedSerializationLocale scopedLocale; 
+
     XmlParser parser(bReuseStrings);
     XmlNodeRef node = parser.ParseBuffer(buffer, static_cast<int>(size), true, bSuppressWarnings);
     return node;
-}
-
-
-void GetMD5(const char* pSrcBuffer, int nSrcSize, char signatureMD5[16])
-{
-    MD5Context md5c;
-    MD5Init(&md5c);
-    MD5Update(&md5c, (unsigned char*)pSrcBuffer, nSrcSize);
-    MD5Final((unsigned char*)signatureMD5, &md5c);
 }
 
 //////////////////////////////////////////////////////////////////////////

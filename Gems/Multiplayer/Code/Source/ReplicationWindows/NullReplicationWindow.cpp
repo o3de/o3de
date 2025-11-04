@@ -38,6 +38,16 @@ namespace Multiplayer
         return false;
     }
 
+    bool NullReplicationWindow::AddEntity([[maybe_unused]] AZ::Entity* entity)
+    {
+        return false;
+    }
+
+    void NullReplicationWindow::RemoveEntity([[maybe_unused]] AZ::Entity* entity)
+    {
+        ;
+    }
+
     void NullReplicationWindow::UpdateWindow()
     {
         ;

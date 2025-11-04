@@ -16,12 +16,16 @@
 #include <AzCore/Serialization/Json/IntSerializer.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/MapSerializer.h>
+#include <AzCore/Serialization/Json/PointerJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/SmartPointerSerializer.h>
 #include <AzCore/Serialization/Json/StringSerializer.h>
 #include <AzCore/Serialization/Json/TupleSerializer.h>
 #include <AzCore/Serialization/Json/UnorderedSetSerializer.h>
 #include <AzCore/Serialization/Json/UnsupportedTypesSerializer.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/EnumConstantJsonSerializer.h>
+#include <AzCore/Serialization/PointerObject.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/ConfigurableStack.h>
 #include <AzCore/std/any.h>
@@ -41,6 +45,7 @@
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+
 
 namespace AZ
 {
@@ -73,7 +78,7 @@ namespace AZ
             jsonContext->Serializer<JsonStringSerializer>()->HandlesType<AZStd::string>();
             jsonContext->Serializer<JsonOSStringSerializer>()->HandlesType<OSString>();
 
-            jsonContext->Serializer<JsonByteStreamSerializer>()->HandlesType<JsonByteStream>();
+            jsonContext->Serializer<JsonByteStreamSerializer<AZStd::allocator>>()->HandlesType<JsonByteStream<AZStd::allocator>>();
 
             jsonContext->Serializer<JsonBasicContainerSerializer>()
                 ->HandlesType<AZStd::fixed_vector>()
@@ -110,6 +115,11 @@ namespace AZ
                 ->HandlesType<AZStd::optional>();
             jsonContext->Serializer<JsonBitsetSerializer>()
                 ->HandlesType<AZStd::bitset>();
+            jsonContext->Serializer<EnumConstantJsonSerializer>()
+                ->HandlesType<AZ::Edit::EnumConstant>();
+
+            jsonContext->Serializer<PointerJsonSerializer>()
+                ->HandlesType<PointerObject>();
 
             MathReflect(jsonContext);
         }

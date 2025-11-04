@@ -35,22 +35,6 @@ namespace AZ
             m_asset->m_poolDescriptor = AZStd::move(descriptor);
         }
 
-        void StreamingImagePoolAssetCreator::SetControllerAsset(const Data::Asset<StreamingImageControllerAsset>& controllerAsset)
-        {
-            if (!ValidateIsReady())
-            {
-                return;
-            }
-
-            if (!controllerAsset.GetId().IsValid())
-            {
-                ReportError("You must provide a valid controller asset reference.");
-                return;
-            }
-
-            m_asset->m_controllerAsset = controllerAsset;
-        }
-
         void StreamingImagePoolAssetCreator::SetPoolName(AZStd::string_view poolName)
         {
             if (ValidateIsReady())
@@ -69,12 +53,6 @@ namespace AZ
             if (!m_asset->m_poolDescriptor)
             {
                 ReportError("Streaming image pool was not assigned a pool descriptor.");
-                return false;
-            }
-
-            if (!m_asset->m_controllerAsset.GetId().IsValid())
-            {
-                ReportError("Streaming image pool was not assigned a controller asset.");
                 return false;
             }
 

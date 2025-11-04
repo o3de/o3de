@@ -24,7 +24,7 @@ namespace GameStateSamples
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(GameStatePrimaryControllerDisconnected, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameStatePrimaryControllerDisconnected, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

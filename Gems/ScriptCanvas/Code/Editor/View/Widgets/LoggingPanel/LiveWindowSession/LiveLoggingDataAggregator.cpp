@@ -10,12 +10,14 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <AzFramework/Network/IRemoteTools.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h>
 #include <ScriptCanvas/Debugger/API.h>
 #include <ScriptCanvas/Asset/ExecutionLogAssetBus.h>
-#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 
 namespace ScriptCanvasEditor
 {
@@ -24,8 +26,7 @@ namespace ScriptCanvasEditor
     //////////////////////////////
     
     LiveLoggingDataAggregator::LiveLoggingDataAggregator()
-        : m_captureType(CaptureType::Editor)
-        , m_isCapturingData(false)
+        : m_isCapturingData(false)
         , m_ignoreRegistrations(false)
     {
         ScriptCanvas::Debugger::ClientUINotificationBus::Handler::BusConnect();
@@ -41,10 +42,10 @@ namespace ScriptCanvasEditor
     {
         ResetData();
 
-        bool isConnected = false;
-        ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(isConnected, &ScriptCanvas::Debugger::ClientRequests::HasValidConnection);
+        AzFramework::RemoteToolsEndpointInfo target;
+        ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(target, &ScriptCanvas::Debugger::ClientRequests::GetNetworkTarget);
         
-        if (isConnected)
+        if (target.IsValid())
         {
             EditorLoggingComponentNotificationBus::Handler::BusDisconnect();
 
@@ -52,15 +53,7 @@ namespace ScriptCanvasEditor
             {
                 ScriptCanvas::Debugger::ServiceNotificationsBus::Handler::BusConnect();
             }
-
-            bool isSelf = false;
-            ScriptCanvas::Debugger::ClientRequestsBus::BroadcastResult(isSelf, &ScriptCanvas::Debugger::ClientRequests::IsConnectedToSelf);
-
-            if (!isSelf)
-            {
-                m_captureType = CaptureType::External;
-                m_staticRegistrations.clear();
-            }
+            m_staticRegistrations.clear();
         }
         else
         {
@@ -70,8 +63,6 @@ namespace ScriptCanvasEditor
             }
 
             ScriptCanvas::Debugger::ServiceNotificationsBus::Handler::BusDisconnect();
-
-            m_captureType = CaptureType::Editor;
             SetupEditorEntities();
         }
     }
@@ -115,24 +106,24 @@ namespace ScriptCanvasEditor
         RemoveStaticRegistration(namedEntityId, oldGraphIdentifier);
     }
 
-    void LiveLoggingDataAggregator::Connected([[maybe_unused]] const ScriptCanvas::Debugger::Target& target)
+    void LiveLoggingDataAggregator::Connected([[maybe_unused]] ScriptCanvas::Debugger::Target& target)
     {
         AZStd::lock(m_notificationMutex);
         SetupExternalEntities();
     }
 
-    void LiveLoggingDataAggregator::GraphActivated([[maybe_unused]] const ScriptCanvas::GraphActivation& activationSignal)
+    void LiveLoggingDataAggregator::GraphActivated(const ScriptCanvas::GraphActivation& activationSignal)
     {
-//        AZStd::lock(m_notificationMutex);
-//         RegisterScriptCanvas(activationSignal.m_runtimeEntity, activationSignal.m_graphIdentifier);
-//         RegisterEntityName(activationSignal.m_runtimeEntity, activationSignal.m_runtimeEntity.GetName());
-//         LoggingDataNotificationBus::Event(GetDataId(), &LoggingDataNotifications::OnEnabledStateChanged, activationSignal.m_entityIsObserved, activationSignal.m_runtimeEntity, activationSignal.m_graphIdentifier);
+        AZStd::lock(m_notificationMutex);
+        RegisterScriptCanvas(activationSignal.m_runtimeEntity, activationSignal.m_graphIdentifier);
+        RegisterEntityName(activationSignal.m_runtimeEntity, activationSignal.m_runtimeEntity.GetName());
+        LoggingDataNotificationBus::Event(GetDataId(), &LoggingDataNotifications::OnEnabledStateChanged, activationSignal.m_entityIsObserved, activationSignal.m_runtimeEntity, activationSignal.m_graphIdentifier);
     }
 
-    void LiveLoggingDataAggregator::GraphDeactivated([[maybe_unused]] const ScriptCanvas::GraphDeactivation& deactivationSignal)
+    void LiveLoggingDataAggregator::GraphDeactivated(const ScriptCanvas::GraphDeactivation& deactivationSignal)
     {
-        // AZStd::lock(m_notificationMutex);
-        // UnregisterScriptCanvas(deactivationSignal.m_runtimeEntity, deactivationSignal.m_graphIdentifier);
+        AZStd::lock(m_notificationMutex);
+        UnregisterScriptCanvas(deactivationSignal.m_runtimeEntity, deactivationSignal.m_graphIdentifier);
     }
 
     void LiveLoggingDataAggregator::NodeStateChanged(const ScriptCanvas::NodeStateChange& nodeStateChangeSignal)
@@ -199,7 +190,7 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        if (IsCapturingData() || m_captureType == External)
+        if (IsCapturingData())
         {
             if (graphIdentifier.m_componentId == k_dynamicallySpawnedControllerId)
             {
@@ -235,7 +226,7 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        if (IsCapturingData() || m_captureType == External)
+        if (IsCapturingData())
         {
             if (graphIdentifier.m_componentId == k_dynamicallySpawnedControllerId)
             {
@@ -244,20 +235,6 @@ namespace ScriptCanvasEditor
             else
             {
                 ScriptCanvas::Debugger::ClientUIRequestBus::Broadcast(&ScriptCanvas::Debugger::ClientUIRequests::RemoveEntityLoggingTarget, namedEntityId, graphIdentifier);
-
-                if (m_captureType == Editor)
-                {
-                    bool gotResult = false;
-                    AZ::EntityId editorId;
-
-                    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(gotResult, &AzToolsFramework::EditorEntityContextRequests::MapRuntimeIdToEditorId, namedEntityId, editorId);
-
-                    if (gotResult)
-                    {
-                        AZ::NamedEntityId namedEditorId(editorId, namedEntityId.GetName());
-                        RemoveStaticRegistration(namedEditorId, graphIdentifier);
-                    }
-                }
             }
 
             return;
@@ -268,8 +245,7 @@ namespace ScriptCanvasEditor
 
     void LiveLoggingDataAggregator::AddStaticRegistration(const AZ::NamedEntityId& namedEntityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
     {
-        if (graphIdentifier.m_componentId == k_dynamicallySpawnedControllerId
-            || m_captureType != Editor)
+        if (graphIdentifier.m_componentId == k_dynamicallySpawnedControllerId)
         {
             return;
         }
@@ -295,8 +271,7 @@ namespace ScriptCanvasEditor
 
     void LiveLoggingDataAggregator::RemoveStaticRegistration(const AZ::NamedEntityId& namedEntityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
     {
-        if (graphIdentifier.m_componentId == k_dynamicallySpawnedControllerId
-            || m_captureType != Editor)
+        if (graphIdentifier.m_componentId == k_dynamicallySpawnedControllerId)
         {
             return;
         }
@@ -362,29 +337,7 @@ namespace ScriptCanvasEditor
         const AZStd::string name = AZStd::string::format("ScriptCanvasLog_%s", AZStd::to_string(AZStd::GetTimeUTCMilliSecond()).data());
         ScriptCanvas::ExecutionLogAssetEBus::Broadcast(&ScriptCanvas::ExecutionLogAssetBus::SaveToRelativePath, name);
 
-        if (m_captureType == CaptureType::Editor)
-        {
-            bool isDesiredTargetConnected = false;
-            AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
-            if (remoteTools)
-            {
-                const AzFramework::RemoteToolsEndpointInfo& desiredTarget = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
-                isDesiredTargetConnected = desiredTarget.IsOnline();
-            }
-
-            if (isDesiredTargetConnected)
-            {
-                SetupExternalEntities();
-            }
-            else
-            {
-                SetupEditorEntities();
-            }
-        }
-        else
-        {
-            SetupExternalEntities();
-        }
+        SetupExternalEntities();
 
         ScriptCanvas::ExecutionLogAssetEBus::Broadcast(&ScriptCanvas::ExecutionLogAssetBus::ClearLog);
 

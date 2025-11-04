@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 
 namespace AZ::IO
@@ -24,12 +25,12 @@ namespace AZ::IO
     //! which itself pipes all operations via Local or RemoteFileIO.
     //! this allows us to talk to files inside packfiles, without having to change the interface.
 
-    class ArchiveFileIO
+    class AZF_API ArchiveFileIO
         : public AZ::IO::FileIOBase
     {
     public:
         AZ_RTTI(ArchiveFileIO, "{679F8DB8-CC61-4BC8-ADDB-170E3D428B5D}", FileIOBase);
-        AZ_CLASS_ALLOCATOR(ArchiveFileIO, OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ArchiveFileIO, OSAllocator);
 
         ArchiveFileIO(IArchive* archive);
         ~ArchiveFileIO();

@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MorphMeshDeformer, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MorphMeshDeformer, DeformerAllocator)
 
     // constructor
     MorphMeshDeformer::MorphMeshDeformer(Mesh* mesh)

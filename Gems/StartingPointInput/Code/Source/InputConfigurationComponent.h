@@ -32,7 +32,7 @@ namespace StartingPointInput
 
         AZ_COMPONENT(InputConfigurationComponent, "{3106EE2A-4816-433E-B855-D17A6484D5EC}", AzFramework::EditorEntityEvents);
         virtual ~InputConfigurationComponent();
-        InputConfigurationComponent() = default;
+        InputConfigurationComponent();
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void Reflect(AZ::ReflectContext* reflection);
 
@@ -76,5 +76,7 @@ namespace StartingPointInput
         // Unlike the definition of most assets, the input asset requires additional preparation after its loaded
         // in order to actually be prepared to be used.
         bool m_isAssetPrepared = false;
+
+        AZ::Uuid m_uuid;
     };
 } // namespace Input

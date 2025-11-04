@@ -18,13 +18,13 @@ namespace AZ
     /**
      * Represents a Slice asset.
      */
-    class SliceAsset
+    class AZCORE_API SliceAsset
         : public Data::AssetData
     {
         friend class SliceAssetHandler;
 
     public:
-        AZ_CLASS_ALLOCATOR(SliceAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceAsset, AZ::SystemAllocator);
         AZ_RTTI(SliceAsset, "{C62C7A87-9C09-4148-A985-12F2C99C0A45}", AssetData);
 
         SliceAsset(const Data::AssetId& assetId = Data::AssetId());
@@ -82,11 +82,11 @@ namespace AZ
     /**
      * Represents an exported Dynamic Slice.
      */
-    class DynamicSliceAsset
+    class AZCORE_API DynamicSliceAsset
         : public SliceAsset
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicSliceAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicSliceAsset, AZ::SystemAllocator);
         AZ_RTTI(DynamicSliceAsset, "{78802ABF-9595-463A-8D2B-D022F906F9B1}", SliceAsset);
 
         DynamicSliceAsset(const Data::AssetId& assetId = Data::AssetId())
@@ -118,7 +118,7 @@ namespace AZ
     namespace Data
     {
         /// Asset filter helper for stripping all assets except slices.
-        bool AssetFilterSourceSlicesOnly(const AssetFilterInfo& filterInfo);
+        AZCORE_API bool AssetFilterSourceSlicesOnly(const AssetFilterInfo& filterInfo);
     }
 
 } // namespace AZ

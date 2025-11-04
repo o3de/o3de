@@ -17,6 +17,7 @@ static constexpr AZ::TypeId HatComponentTypeId{ "{EADEF936-E987-4BF3-9651-A42251
 class HatConfig : public AZ::ComponentConfig
 {
 public:
+    AZ_CLASS_ALLOCATOR(HatConfig, AZ::SystemAllocator)
     AZ_RTTI(HatConfig, "{A3129800-43DF-48CA-9BC3-77632241B8ED}", ComponentConfig);
     float m_brimWidth = 1.f;
 };
@@ -243,7 +244,7 @@ TEST_F(BehaviorEntityTest, FindComponentOfType_Succeeds)
     AZ::Component* rawComponent2 = m_rawEntity->CreateComponent(EarComponentTypeId);
 
     AzFramework::BehaviorComponentId foundComponentId = m_behaviorEntity.FindComponentOfType(azrtti_typeid(rawComponent2));
-    EXPECT_EQ(rawComponent2->GetId(), foundComponentId);
+    EXPECT_EQ(rawComponent2->GetId(), AZ::ComponentId(foundComponentId));
 }
 
 TEST_F(BehaviorEntityTest, FindComponentOfType_ForNonexistentComponent_ReturnsInvalidComponentId)

@@ -11,15 +11,15 @@ set(FILES
     DllMain.cpp
     ManifestMetaInfoHandler.h
     ManifestMetaInfoHandler.cpp
-    SceneDataStandaloneAllocator.h
-    SceneDataStandaloneAllocator.cpp
     ReflectionRegistrar.h
     ReflectionRegistrar.cpp
+    Behaviors/BehaviorsImportGroup.cpp
     Behaviors/BehaviorsMeshGroup.cpp
     Behaviors/BehaviorsSkeletonGroup.cpp
     Behaviors/BehaviorsSkinGroup.cpp
     Behaviors/Registry.h
     Behaviors/Registry.cpp
+    Behaviors/ImportGroup.h
     Behaviors/MeshGroup.h
     Behaviors/SkeletonGroup.h
     Behaviors/SkinGroup.h
@@ -37,6 +37,8 @@ set(FILES
     Behaviors/SkinRuleBehavior.cpp
     Behaviors/ScriptProcessorRuleBehavior.h
     Behaviors/ScriptProcessorRuleBehavior.cpp
+    Groups/ImportGroup.h
+    Groups/ImportGroup.cpp
     Groups/MeshGroup.h
     Groups/MeshGroup.cpp
     Groups/SkeletonGroup.h
@@ -67,8 +69,14 @@ set(FILES
     Rules/SkinMeshAdvancedRule.cpp
     Rules/SkinRule.h
     Rules/SkinRule.cpp
+    Rules/TagRule.h
+    Rules/TagRule.cpp
     Rules/TangentsRule.h
     Rules/TangentsRule.cpp
+    Rules/UVsRule.h
+    Rules/UVsRule.cpp
+    Rules/UnmodifiableRule.h
+    Rules/UnmodifiableRule.cpp
     GraphData/CustomPropertyData.h
     GraphData/CustomPropertyData.cpp
     GraphData/MeshData.h

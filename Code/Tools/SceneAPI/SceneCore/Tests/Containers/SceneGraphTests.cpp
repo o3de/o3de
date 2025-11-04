@@ -220,6 +220,13 @@ namespace AZ
                 EXPECT_TRUE(m_assertTriggered);
             }
 
+            TEST_F(SceneGraphTest, AddChild_EmptyNameUsed_AssertTriggered)
+            {
+                SceneGraph testSceneGraph;
+                testSceneGraph.AddChild(testSceneGraph.GetRoot(), "");
+                EXPECT_TRUE(m_assertTriggered);
+            }
+
             TEST_F(SceneGraphTest, AddChild_ParentIsEndPoint_AssertTriggered)
             {
                 SceneGraph testSceneGraph;

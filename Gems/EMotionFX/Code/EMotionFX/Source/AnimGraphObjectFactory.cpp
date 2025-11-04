@@ -65,6 +65,9 @@
 #include <EMotionFX/Source/BlendTreeFootIKNode.h>
 #include <EMotionFX/Source/BlendTreeRaycastNode.h>
 #include <EMotionFX/Source/BlendTreeSimulatedObjectNode.h>
+#include <EMotionFX/Source/BlendTreeFabrikNode.h>
+#include <EMotionFX/Source/BlendTreeRotationComposeNode.h>
+#include <EMotionFX/Source/BlendTreeRotationDecomposeNode.h>
 
 #include "AnimGraphBindPoseNode.h"
 #include "AnimGraphMotionNode.h"
@@ -87,11 +90,12 @@
 #include "AnimGraphParameterAction.h"
 #include "AnimGraphFollowerParameterAction.h"
 #include "AnimGraphSymbolicFollowerParameterAction.h"
+#include "AnimGraphSimpleStateAction.h"
 #include "Allocators.h"
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphObjectFactory, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphObjectFactory, AnimGraphAllocator)
 
     AnimGraphObjectFactory::AnimGraphObjectFactory()
     {
@@ -142,6 +146,7 @@ namespace EMotionFX
         AnimGraphParameterAction::Reflect(context);
         AnimGraphFollowerParameterAction::Reflect(context);
         AnimGraphSymbolicFollowerParameterAction::Reflect(context);
+        AnimGraphSimpleStateAction::Reflect(context);
         AnimGraphTriggerAction::Reflect(context);
 
         // Blend tree
@@ -172,6 +177,8 @@ namespace EMotionFX
         BlendTreeVector4DecomposeNode::Reflect(context);
         BlendTreeVector2ComposeNode::Reflect(context);
         BlendTreeVector3ComposeNode::Reflect(context);
+        BlendTreeRotationComposeNode::Reflect(context);
+        BlendTreeRotationDecomposeNode::Reflect(context);
         BlendTreeRotationMath2Node::Reflect(context);
         BlendTreeRotationLimitNode::Reflect(context);
         BlendTreeVector4ComposeNode::Reflect(context);
@@ -191,6 +198,7 @@ namespace EMotionFX
         BlendTreeFootIKNode::Reflect(context);
         BlendTreeRaycastNode::Reflect(context);
         BlendTreeSimulatedObjectNode::Reflect(context);
+        BlendTreeFabrikNode::Reflect(context);
     }
 
     AnimGraphObjectFactory::UITypesSet& AnimGraphObjectFactory::GetUITypes()
@@ -260,8 +268,12 @@ namespace EMotionFX
             azrtti_typeid<AnimGraphParameterAction>(),
             azrtti_typeid<AnimGraphFollowerParameterAction>(),
             azrtti_typeid<AnimGraphSymbolicFollowerParameterAction>(),
+            azrtti_typeid<AnimGraphSimpleStateAction>(),
             azrtti_typeid<BlendTreeRotationLimitNode>(),
-            azrtti_typeid<BlendTreeRotationMath2Node>()
+            azrtti_typeid<BlendTreeRotationMath2Node>(),
+            azrtti_typeid<BlendTreeFabrikNode>(),
+            azrtti_typeid<BlendTreeRotationComposeNode>(),
+            azrtti_typeid<BlendTreeRotationDecomposeNode>(),
         };
 
         return uitypes;

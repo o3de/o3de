@@ -13,5 +13,5 @@
 
 namespace ScriptCanvasEditor
 {
-    static const GraphCanvas::EditorId AssetEditorId = AZ_CRC("ScriptCanvasEditor", 0xa6d1a85a);
+    static const GraphCanvas::EditorId AssetEditorId = AZ_CRC_CE("ScriptCanvasEditor");
 }

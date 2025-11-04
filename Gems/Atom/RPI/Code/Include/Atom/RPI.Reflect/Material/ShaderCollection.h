@@ -9,24 +9,26 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <Atom/RHI/DrawList.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <AtomCore/std/containers/vector_set.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RPI
     {
         //! Collects the set of all possible shaders that a material could use at runtime,
         //! along with configuration that indicates how each shader should be used.
-        //! Each shader item may be reconfigured at runtime, but items cannot be added 
-        //! or removed (this restriction helps simplify overall material system code, 
+        //! Each shader item may be reconfigured at runtime, but items cannot be added
+        //! or removed (this restriction helps simplify overall material system code,
         //! especially around material functors).
-        class ShaderCollection
+        class ATOM_RPI_REFLECT_API ShaderCollection
         {
             friend class MaterialTypeAssetCreator;
         public:
@@ -35,7 +37,7 @@ namespace AZ
 
             //! Contains shader asset and configures how that shader should be used
             //! at runtime, especially which variant of the shader to use.
-            class Item
+            class ATOM_RPI_REFLECT_API Item
             {
                 friend class MaterialTypeAssetCreator;
                 friend class ShaderVariantReferenceSerializationEvents;
@@ -48,11 +50,30 @@ namespace AZ
                 //! Required for use in containers; not meant to be called directly.
                 Item();
 
+                // type of the generated draw-item the Rendering-Pass expects
+                enum class DrawItemType : uint32_t
+                {
+                    Raster = 0, // the shader expects a default draw item for a rasterpass (default)
+                    Dispatch, // the shader expects a dispatch-item for a compute-pass
+                    Deferred, // the shader expects a fullscreen draw item for a deferred rendering pass
+                    RayTracing, // the shader expects shader libraries for a raytracing shader table
+                    Custom, // The draw-item will be created in a custom gem
+                    MaxCount // count for array indexing
+                };
+
                 //! @param shaderAsset The ShaderAsset represented by this item.
                 //! @param shaderTag Unique tag to identify this item.
                 //! @param variantId The the initial state of shader option values for use with this shader item.
-                Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId = ShaderVariantId{});
-                Item(Data::Asset<ShaderAsset>&& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId = ShaderVariantId{});
+                Item(
+                    const Data::Asset<ShaderAsset>& shaderAsset,
+                    const AZ::Name& shaderTag,
+                    DrawItemType drawItemType = DrawItemType::Raster,
+                    ShaderVariantId variantId = ShaderVariantId{});
+                Item(
+                    Data::Asset<ShaderAsset>&& shaderAsset,
+                    const AZ::Name& shaderTag,
+                    DrawItemType drawItemType = DrawItemType::Raster,
+                    ShaderVariantId variantId = ShaderVariantId{});
 
                 const Data::Asset<ShaderAsset>& GetShaderAsset() const;
 
@@ -91,6 +112,20 @@ namespace AZ
                 //! Returns the shader tag used to identify this item
                 const AZ::Name& GetShaderTag() const;
 
+                //! If the AssetId of @newShaderAsset matches the AssetId of @m_shaderAsset,
+                //! then @m_shaderAsset will be updated to @newShaderAsset, AND m_shaderOptionGroup
+                //! will be updated too.
+                void TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset);
+
+                // Returns true if was able to initialized the non-serialized @m_shaderOptionGroup.
+                // Only returns false if @m_shaderAsset is not ready.
+                bool InitializeShaderOptionGroup();
+
+                DrawItemType GetDrawItemType() const
+                {
+                    return m_drawItemType;
+                }
+
             private:
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;       //!< Temporarily holds the ShaderVariantId, used for serialization. This will be copied to/from m_shaderOptionGroup.
@@ -101,6 +136,7 @@ namespace AZ
                 AZStd::unordered_set<ShaderOptionIndex> m_ownedShaderOptionIndices; //!< Set of shader options in this shader that are owned by the material.
                 bool m_enabled = true;                   //!< Disabled items will not be included in the final draw packet that gets sent to the renderer.
                 AZ::Name m_shaderTag;                    //!< Unique tag that identifies this item
+                DrawItemType m_drawItemType = DrawItemType::Raster; //!< Type of draw-item that this shader expects
             };
 
             using iterator = AZStd::vector<Item>::iterator;
@@ -117,11 +153,24 @@ namespace AZ
             bool HasShaderTag(const AZ::Name& shaderTag) const;
             Item& operator[](const AZ::Name& shaderTag);
             const Item& operator[](const AZ::Name& shaderTag) const;
+
+            //! Convenience function that loops through all @m_shaderItems
+            //! and calls TryReplaceShaderAsset on all of them.
+            void TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset);
+
+            //! Loops through all items in the collection and calls Item::InitializeShaderOptionGroup().
+            //! Returns true if all Item::InitializeShaderOptionGroup() return true,
+            //! otherwise returns false.
+            bool InitializeShaderOptionGroups();
+
         private:
             using NameReflectionMapForIndex = RHI::NameIdReflectionMap<RHI::Handle<uint32_t>>;
 
             AZStd::vector<Item> m_shaderItems;
             NameReflectionMapForIndex m_shaderTagIndexMap;
         };
+
+        AZ_TYPE_INFO_SPECIALIZE(ShaderCollection::Item::DrawItemType, "{967D8A25-E303-44E2-A0D0-0F75C8F9CEA7}");
+
     } // namespace RPI
 } // namespace AZ

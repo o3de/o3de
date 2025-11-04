@@ -28,13 +28,14 @@
                 "$type": "EditorDisabledCompositionComponent",
                 "Id": 16239496886950819870
             },
+            "Component_[5014513100684860270]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 5014513100684860270,
+                "LocalBookmarkFileName": "base_empty_16781296498493257.setreg"
+            },
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
-            },
-            "Component_[6545738857812235305]": {
-                "$type": "SelectionComponent",
-                "Id": 6545738857812235305
             },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",

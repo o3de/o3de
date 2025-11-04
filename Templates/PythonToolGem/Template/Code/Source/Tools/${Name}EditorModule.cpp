@@ -8,6 +8,7 @@
  */
 // {END_LICENSE}
 
+#include <${Name}/${Name}TypeIds.h>
 #include <${Name}ModuleInterface.h>
 #include "${Name}EditorSystemComponent.h"
 #include <AzToolsFramework/API/PythonLoader.h>
@@ -27,8 +28,8 @@ namespace ${SanitizedCppName}
         , public AzToolsFramework::EmbeddedPython::PythonLoader
     {
     public:
-        AZ_RTTI(${SanitizedCppName}EditorModule, "${ModuleClassId}", ${SanitizedCppName}ModuleInterface);
-        AZ_CLASS_ALLOCATOR(${SanitizedCppName}EditorModule, AZ::SystemAllocator, 0);
+        AZ_RTTI(${SanitizedCppName}EditorModule, ${SanitizedCppName}EditorModuleTypeId, ${SanitizedCppName}ModuleInterface);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}EditorModule, AZ::SystemAllocator);
 
         ${SanitizedCppName}EditorModule()
         {
@@ -56,4 +57,8 @@ namespace ${SanitizedCppName}
     };
 }// namespace ${SanitizedCppName}
 
-AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}, ${SanitizedCppName}::${SanitizedCppName}EditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), ${SanitizedCppName}::${SanitizedCppName}EditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}_Editor, ${SanitizedCppName}::${SanitizedCppName}EditorModule)
+#endif

@@ -33,6 +33,7 @@ namespace AzFramework
             using testing::Return;
             using testing::SetArgPointee;
             using testing::_;
+            using testing::DoAll;
 
             XcbBaseTestFixture::SetUp();
             EXPECT_CALL(m_interface, xkb_context_new(XKB_CONTEXT_NO_FLAGS))
@@ -139,6 +140,11 @@ namespace AzFramework
         }
         MOCK_METHOD2(OnInputTextEvent, void(const AZStd::string& /*textUTF8*/, bool& /*o_hasBeenConsumed*/));
     };
+
+    // Disable all the XCB tests as a result of converting AzFramework.NativeUI to a shared library. 
+    // We cannot mock the xcb_ system calls inside the provide shared library. We will need to split 
+    // out the xcp related code to its own static library and create a test module for that in order 
+    // to be able to mock the xcb function.
 
     TEST_F(XcbInputDeviceKeyboardTests, InputChannelsUpdateStateFromXcbEvents)
     {

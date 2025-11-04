@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class RandomNoiseGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(RandomNoiseGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RandomNoiseGradientNode, AZ::SystemAllocator);
         AZ_RTTI(RandomNoiseGradientNode, "{DE6B5261-81AE-46DB-9DC3-35573C866909}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);

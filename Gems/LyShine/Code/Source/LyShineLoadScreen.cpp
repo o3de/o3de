@@ -30,12 +30,12 @@ namespace LyShine
 
     void LyShineLoadScreenComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.emplace_back(AZ_CRC("LyShineLoadScreenService", 0xbb5eab17));
+        provided.emplace_back(AZ_CRC_CE("LyShineLoadScreenService"));
     }
 
     void LyShineLoadScreenComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.emplace_back(AZ_CRC("LyShineLoadScreenService", 0xbb5eab17));
+        incompatible.emplace_back(AZ_CRC_CE("LyShineLoadScreenService"));
     }
 
     void LyShineLoadScreenComponent::Init()
@@ -61,7 +61,7 @@ namespace LyShine
             return false;
         }
         //TODO: gEnv->pRenderer is always null, fix the logic below
-        AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
+        AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
         return false;
 #if 0
         if (!gEnv || gEnv->pRenderer || !AZ::Interface<ILyShine>::Get())
@@ -100,7 +100,7 @@ namespace LyShine
             return false;
         }
 
-        AZ_ErrorOnce(nullptr, false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
+        AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
         return false;
         //TODO: gEnv->pRenderer is always null, fix the logic below
 #if 0
@@ -141,7 +141,7 @@ namespace LyShine
     void LyShineLoadScreenComponent::UpdateAndRender([[maybe_unused]] float deltaTimeInSeconds)
     {
         AZ_Assert(m_isPlaying, "LyShineLoadScreenComponent should not be connected to LoadScreenUpdateNotificationBus while not playing");
-        AZ_ErrorOnce(nullptr, m_isPlaying && AZ::Interface<ILyShine>::Get(), "UpdateAndRender needs to be removed/ported to use Atom");
+        AZ_ErrorOnce(AZ::Debug::Trace::GetDefaultSystemWindow(), m_isPlaying && AZ::Interface<ILyShine>::Get(), "UpdateAndRender needs to be removed/ported to use Atom");
 
         //TODO: gEnv->pRenderer is always null, fix the logic below
 #if 0
@@ -185,7 +185,8 @@ namespace LyShine
             // Release the game canvas.
             if (m_gameCanvasEntityId.IsValid())
             {
-                EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, m_gameCanvasEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_gameCanvasEntityId);
                 if (canvasEntity)
                 {
                     AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_gameCanvasEntityId, false);
@@ -196,7 +197,8 @@ namespace LyShine
             // Release the level canvas.
             if (m_levelCanvasEntityId.IsValid())
             {
-                EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, m_levelCanvasEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_levelCanvasEntityId);
                 if (canvasEntity)
                 {
                     AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_levelCanvasEntityId, false);
@@ -244,10 +246,10 @@ namespace LyShine
             return AZ::EntityId();
         }
 
-        EBUS_EVENT_ID(canvasId, UiCanvasBus, SetKeepLoadedOnLevelUnload, true);
+        UiCanvasBus::Event(canvasId, &UiCanvasBus::Events::SetKeepLoadedOnLevelUnload, true);
 
         // Set the load screen draw order so it renders in front of other canvases that may load during the level load
-        EBUS_EVENT_ID(canvasId, UiCanvasBus, SetDrawOrder, std::numeric_limits<int>::max());
+        UiCanvasBus::Event(canvasId, &UiCanvasBus::Events::SetDrawOrder, std::numeric_limits<int>::max());
 
         ICVar* autoPlayVar = gEnv->pConsole->GetCVar(autoPlayVarName);
         AZStd::string sequence = autoPlayVar ? autoPlayVar->GetString() : "";
@@ -258,7 +260,7 @@ namespace LyShine
         }
 
         IUiAnimationSystem* animSystem = nullptr;
-        EBUS_EVENT_ID_RESULT(animSystem, canvasId, UiCanvasBus, GetAnimationSystem);
+        UiCanvasBus::EventResult(animSystem, canvasId, &UiCanvasBus::Events::GetAnimationSystem);
         if (!animSystem)
         {
             // Nothing can be auto-played.

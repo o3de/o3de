@@ -348,7 +348,7 @@ AZ::AtomFont::AtomFont([[maybe_unused]] ISystem* system)
 
     // Queue a load for the font per viewport dynamic draw context shader, and wait for it to load
     static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
-    Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::GetAssetByProductPath<RPI::ShaderAsset>(shaderFilepath, RPI::AssetUtils::TraceLevel::Assert);
+    Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>(shaderFilepath, RPI::AssetUtils::TraceLevel::Assert);
     shaderAsset.QueueLoad();
     Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
 
@@ -486,7 +486,10 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
                     fontFamily.reset(new FontFamily(),
                         [this](FontFamily* fontFamily)
                     {
-                        ReleaseFontFamily(fontFamily);
+                        if (AZ::Interface<AzFramework::FontQueryInterface>::Get())
+                        {
+                            ReleaseFontFamily(fontFamily);
+                        }
                     });
 
                     // Map the font family name both by path and by name defined
@@ -532,7 +535,10 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
             fontFamily.reset(new FontFamily(),
                 [this](FontFamily* fontFamily)
             {
-                ReleaseFontFamily(fontFamily);
+                if (AZ::Interface<AzFramework::FontQueryInterface>::Get())
+                {
+                    ReleaseFontFamily(fontFamily);
+                }
             });
 
             // Use filepath as familyName so font loading/unloading doesn't break with duplicate file names
@@ -641,7 +647,7 @@ void AZ::AtomFont::OnLanguageChanged()
 {
     ReloadAllFonts();
 
-    EBUS_EVENT(LanguageChangeNotificationBus, LanguageChanged);
+    LanguageChangeNotificationBus::Broadcast(&LanguageChangeNotificationBus::Events::LanguageChanged);
 }
 
 void AZ::AtomFont::ReloadAllFonts()
@@ -673,7 +679,7 @@ void AZ::AtomFont::ReloadAllFonts()
 
     // All UI text components need to reload their font assets (both in-game
     // and in-editor).
-    EBUS_EVENT(FontNotificationBus, OnFontsReloaded);
+    FontNotificationBus::Broadcast(&FontNotificationBus::Events::OnFontsReloaded);
 }
 
 void AZ::AtomFont::UnregisterFont(const char* fontName)
@@ -816,6 +822,11 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, AZStd::st
 {
     outputFullPath = fontFamilyName;
     outputDirectory = PathUtil::GetPath(fontFamilyName);
+
+    // Fonts will fail engine load if not fully compiled, so ensure that its present if possible.
+    // This should never actually go wrong unless the AP cannot be run at all or all assets are missing.
+    // This is essentally a no-op in release builds.
+    AZ::RPI::AssetUtils::TryToCompileAsset(outputFullPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
     XmlNodeRef root = SafeLoadXmlFromFile(outputFullPath);
 
     // When parsing a <font> tag in markup, only the font name is given and 
@@ -833,6 +844,7 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, AZStd::st
         // Try: "fonts/fontName.fontfamily"
         outputDirectory = AZStd::string("fonts/");
         outputFullPath = outputDirectory + fileNoExtension + fileExtension;
+        AZ::RPI::AssetUtils::TryToCompileAsset(outputFullPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
         root = SafeLoadXmlFromFile(outputFullPath);
 
         // Finally, try: "fonts/fontName/fontName.fontfamily"
@@ -840,6 +852,7 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, AZStd::st
         {
             outputDirectory = AZStd::string("fonts/") + fileNoExtension + "/";
             outputFullPath = outputDirectory + fileNoExtension + fileExtension;
+            AZ::RPI::AssetUtils::TryToCompileAsset(outputFullPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
             root = SafeLoadXmlFromFile(outputFullPath);
         }
     }

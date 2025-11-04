@@ -114,9 +114,9 @@ def AssetListCombiner_CombinedDescriptorsExpressInConfiguredArea():
 
     # 2) Create 3 entities with Vegetation Asset List components set to spawn different descriptors
     center_point = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "AssetList_PinkFlower")[0]
-    purple_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    purple_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     purple_flower_prefab = dynveg.create_temp_mesh_prefab(purple_flower_asset_path, "AssetList_PurpleFlower")[0]
     asset_list_entity = create_asset_list_entity("Asset List 1", center_point, pink_flower_prefab)
     asset_list_entity2 = create_asset_list_entity("Asset List 2", center_point, None)

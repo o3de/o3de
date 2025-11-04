@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -60,8 +59,9 @@ namespace SceneProcessing
         {
             SceneProcessing::InitSceneAPIFixture::SetUp();
 
-            m_systemEntity = m_app.Create({}, {});
-            m_systemEntity->AddComponent(aznew AZ::MemoryComponent());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_systemEntity = m_app.Create({}, startupParameters);
             m_systemEntity->AddComponent(aznew AZ::JobManagerComponent());
             m_systemEntity->Init();
             m_systemEntity->Activate();
@@ -92,16 +92,10 @@ namespace SceneProcessing
 
             auto mesh = AZStd::make_unique<AZ::SceneData::GraphData::MeshData>();
 
-            int i = 0;
             for (const AZ::Vector3& position : planeVertexPositions)
             {
                 mesh->AddPosition(position);
                 mesh->AddNormal(AZ::Vector3::CreateAxisY());
-
-                // This assumes that the data coming from the import process gives a unique control point
-                // index to every vertex. This follows the behavior of the AssImp library.
-                mesh->SetVertexIndexToControlPointIndexMap(i, i);
-                ++i;
             }
 
             mesh->AddFace({0, 1, 2}, 0);

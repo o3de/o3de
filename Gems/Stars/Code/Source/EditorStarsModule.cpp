@@ -17,7 +17,7 @@ namespace AZ::Render
     {
     public:
         AZ_RTTI(EditorStarsModule, "{3D5FD4A5-4405-408A-BD64-F3B27006DB4A}", StarsModule);
-        AZ_CLASS_ALLOCATOR(EditorStarsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorStarsModule, AZ::SystemAllocator);
 
         EditorStarsModule()
         {
@@ -36,4 +36,8 @@ namespace AZ::Render
     };
 }// namespace AZ::Render 
 
-AZ_DECLARE_MODULE_CLASS(Gem_Stars, AZ::Render::EditorStarsModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), AZ::Render::EditorStarsModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Stars_Editor, AZ::Render::EditorStarsModule)
+#endif

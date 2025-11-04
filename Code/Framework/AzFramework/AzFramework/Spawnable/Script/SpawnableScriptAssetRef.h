@@ -12,12 +12,14 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Asset/AssetCommon.h>
+
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework::Scripts
 {
     //! A wrapper around Spawnable asset that can be used by Script Canvas and Lua
-    class SpawnableScriptAssetRef final
+    class AZF_API SpawnableScriptAssetRef final
         : private AZ::Data::AssetBus::Handler
     {
     public:
@@ -34,11 +36,21 @@ namespace AzFramework::Scripts
 
         void SetAsset(const AZ::Data::Asset<Spawnable>& asset);
         AZ::Data::Asset<Spawnable> GetAsset() const;
+        //! Sets the Asset by AssetId, which is convenient for automation
+        //! or in-game scripting.
+        void SetAssetId(const AZ::Data::AssetId& assetId);
+        // helpful for automation to get the AssetId.
+        AZ::Data::AssetId GetAssetId() const;
+        // Returns true if the AssetId is valid.
+        // This is for convenience, because the same can be achieved
+        // by calling GetAssetId().IsValid().
+        bool IsValid() const;
 
     private:
         class SerializationEvents : public AZ::SerializeContext::IEventHandler
         {
-            void OnReadEnd(void* classPtr) override
+            // Called when the Serializer has completed writing TO the c++ object in memory.
+            void OnWriteEnd(void* classPtr) override
             {
                 SpawnableScriptAssetRef* spawnableScriptAssetRef = reinterpret_cast<SpawnableScriptAssetRef*>(classPtr);
                 // Call SetAsset to connect AssetBus handler as soon as m_asset field is set
@@ -51,4 +63,4 @@ namespace AzFramework::Scripts
 
         AZ::Data::Asset<Spawnable> m_asset;
     };
-}
+} // namespace AzFramework::Scripts

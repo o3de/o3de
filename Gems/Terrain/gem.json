@@ -1,11 +1,13 @@
 {
     "gem_name": "Terrain",
+    "version": "0.0.0",
     "display_name": "Terrain",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "summary": "The Terrain Gem is an experimental terrain system.  The terrain system maps height, color, and surface data to regions of the world, provides gradient-based and shape-based authoring tools and workflows, includes specialized rendering for efficient display, and integrates with physics for physical simulation.",
+    "type": "Code",
     "canonical_tags": [
         "Gem"
     ],

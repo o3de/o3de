@@ -47,7 +47,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(UpgradeHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UpgradeHelper, AZ::SystemAllocator);
 
         UpgradeHelper(QWidget* parent = nullptr);
         ~UpgradeHelper();

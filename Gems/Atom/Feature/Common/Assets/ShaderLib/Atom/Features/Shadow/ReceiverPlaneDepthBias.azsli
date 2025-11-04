@@ -15,7 +15,12 @@
 // Another implementation example: https://github.com/TheRealMJP/Shadows
 float2 ComputeReceiverPlaneDepthBias(float3 projCoordsDDX, float3 projCoordsDDY)
 {
-    const float invDet = 1.0f / ((projCoordsDDX.x * projCoordsDDY.y) - (projCoordsDDX.y * projCoordsDDY.x));
+    float denom = ((projCoordsDDX.x * projCoordsDDY.y) - (projCoordsDDX.y * projCoordsDDY.x));
+    if(denom < EPSILON)
+    {
+        return float2(0.0,0.0);
+    }
+    const float invDet = 1.0 / denom ;
 
     float2 receiverPlaneDepthBias;
     
@@ -28,9 +33,9 @@ float2 ComputeReceiverPlaneDepthBias(float3 projCoordsDDX, float3 projCoordsDDY)
 
 // For each sample in the Pcf kernel, offset the z comparison depth value by the amount returned by this function.
 // receiverPlaneDepthBias should be the input from ComputeReceiverPlaneDepthBias()
-float ApplyReceiverPlaneDepthBias(const float2 receiverPlaneDepthBias, const float2 texCoordOffset)
-{  
-    float fragmentDepthBias = dot(receiverPlaneDepthBias, texCoordOffset);
+real ApplyReceiverPlaneDepthBias(const real2 receiverPlaneDepthBias, const real2 texCoordOffset)
+{
+    real fragmentDepthBias = dot(receiverPlaneDepthBias, texCoordOffset);
     // Because ddx/ddy can only give us a very rough approximation of the underlying surface, we might introduce acne by biasing away from the camera.
     // Clamping this will remove this effect
     fragmentDepthBias = min(fragmentDepthBias, 0.0);

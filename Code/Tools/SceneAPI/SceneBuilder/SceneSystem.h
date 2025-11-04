@@ -9,7 +9,6 @@
  */
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <SceneAPI/SceneBuilder/SceneBuilderConfiguration.h>
 #include <SceneAPI/SceneCore/DataTypes/MatrixType.h>
 
 namespace AZ
@@ -23,7 +22,7 @@ namespace AZ
 
     namespace SceneAPI
     {
-        class SCENE_BUILDER_API SceneSystem
+        class SceneSystem
         {
         public:
             SceneSystem();
@@ -48,10 +47,8 @@ namespace AZ
             float m_unitSizeInMeters = 1;
             float m_originalUnitSizeInMeters = 1;
 
-            AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
             AZStd::unique_ptr<DataTypes::MatrixType> m_adjustTransform;
             AZStd::unique_ptr<DataTypes::MatrixType> m_adjustTransformInverse;
-            AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
         };
     }
 };

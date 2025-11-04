@@ -14,7 +14,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Statistics/RunningStatistic.h>
@@ -27,11 +27,11 @@ namespace AZ::IO
         struct ReportData;
     }
 
-    struct FullFileDecompressorConfig final :
+    struct AZCORE_API FullFileDecompressorConfig final :
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::FullFileDecompressorConfig, "{C96B7EC1-8C73-4493-A7CB-66F5D550FC3A}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(FullFileDecompressorConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FullFileDecompressorConfig, AZ::SystemAllocator);
 
         ~FullFileDecompressorConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
@@ -53,7 +53,7 @@ namespace AZ::IO
     //! Finally, the lack of an upper limit also means that the duration of the decompression job
     //! can vary largely so a dedicated job system is used to decompress on to avoid blocking
     //! the main job system from working.
-    class FullFileDecompressor
+    class AZCORE_API FullFileDecompressor
         : public StreamStackEntry
     {
     public:
@@ -65,7 +65,7 @@ namespace AZ::IO
         bool ExecuteRequests() override;
 
         void UpdateStatus(Status& status) const override;
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+        void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
 
         void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
@@ -84,8 +84,8 @@ namespace AZ::IO
         {
             bool IsProcessing() const;
 
-            AZStd::chrono::high_resolution_clock::time_point m_queueStartTime;
-            AZStd::chrono::high_resolution_clock::time_point m_jobStartTime;
+            AZStd::chrono::steady_clock::time_point m_queueStartTime;
+            AZStd::chrono::steady_clock::time_point m_jobStartTime;
             Buffer m_compressedData{ nullptr };
             FileRequest* m_waitRequest{ nullptr };
             u32 m_alignmentOffset{ 0 };

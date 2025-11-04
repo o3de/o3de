@@ -13,7 +13,7 @@ namespace DebugDraw
     class EditorDebugDrawComponentSettings
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorDebugDrawComponentSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorDebugDrawComponentSettings, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorDebugDrawComponentSettings, "{39FF3385-9AD8-4C3F-AAFF-3CBE1D76B767}");
         static void Reflect(AZ::ReflectContext* context);
 

@@ -7,8 +7,8 @@
  */
 
 #include <QStandardItemModel>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QTreeView>
+#include <QCheckBox>
+#include <QTreeView>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
@@ -26,7 +26,7 @@ namespace EMotionFX
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(LODSceneGraphWidget, EMotionFX::PropertyWidgetAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(LODSceneGraphWidget, EMotionFX::PropertyWidgetAllocator)
 
             LODSceneGraphWidget::LODSceneGraphWidget(const SceneContainers::Scene& scene, const SceneDataTypes::ISceneNodeSelectionList& targetList,
                 QWidget* parent)

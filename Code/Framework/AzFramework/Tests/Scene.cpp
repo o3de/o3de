@@ -15,6 +15,7 @@ AZ_PUSH_DISABLE_WARNING(, "-Wdelete-non-virtual-dtor")
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Scene/Scene.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
@@ -36,6 +37,7 @@ namespace SceneUnitTest
     class TestComponentConfig : public AZ::ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestComponentConfig, AZ::SystemAllocator)
         AZ_RTTI(TestComponentConfig, "{DCD12D72-3BFE-43A9-9679-66B745814CAF}", ComponentConfig);
 
         typedef void(*ActivateFunction)(TestComponent* component);
@@ -95,14 +97,11 @@ namespace SceneUnitTest
     // Fixture that creates a bare-bones app with only the system components necesary.
 
     class SceneTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -110,10 +109,13 @@ namespace SceneUnitTest
             m_app.RegisterComponentDescriptor(AZ::SliceSystemComponent::CreateDescriptor());
             m_app.RegisterComponentDescriptor(AZ::AssetManagerComponent::CreateDescriptor());
             m_app.RegisterComponentDescriptor(AZ::JobManagerComponent::CreateDescriptor());
+            m_app.RegisterComponentDescriptor(AZ::TaskGraphSystemComponent::CreateDescriptor());
             m_app.RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
 
             AZ::ComponentApplication::Descriptor desc;
-            m_systemEntity = m_app.Create(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_systemEntity = m_app.Create(desc, startupParameters);
             m_systemEntity->Init();
 
             m_systemEntity->CreateComponent<SceneSystemComponent>();
@@ -122,6 +124,7 @@ namespace SceneUnitTest
             m_systemEntity->CreateComponent<AZ::SliceSystemComponent>();
             m_systemEntity->CreateComponent<AZ::AssetManagerComponent>();
             m_systemEntity->CreateComponent<AZ::JobManagerComponent>();
+            m_systemEntity->CreateComponent<AZ::TaskGraphSystemComponent>();
             m_systemEntity->CreateComponent<AZ::StreamerComponent>();
             m_systemEntity->Activate();
 
@@ -133,9 +136,6 @@ namespace SceneUnitTest
             m_app.Destroy();
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         }
 
         AZ::IO::LocalFileIO m_fileIO;
@@ -207,7 +207,8 @@ namespace SceneUnitTest
         size_t index = 0;
         m_sceneSystem->IterateActiveScenes([&index, &scenes](const AZStd::shared_ptr<Scene>& scene)
             {
-                EXPECT_EQ(scenes[index++], scene);
+                AZStd::shared_ptr<Scene> newscene = scenes[index++];
+                EXPECT_EQ(newscene, scene);
                 return true;
             });
     }
@@ -240,7 +241,8 @@ namespace SceneUnitTest
         index = 0;
         m_sceneSystem->IterateZombieScenes([&index, &scenes](Scene& scene)
             {
-                EXPECT_EQ(scenes[index++].get(), &scene);
+                AZStd::shared_ptr<Scene> zombieScene = scenes[index++];
+                EXPECT_EQ(zombieScene.get(), &scene);
                 return true;
             });
 

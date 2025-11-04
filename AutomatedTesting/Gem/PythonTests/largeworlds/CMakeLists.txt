@@ -22,6 +22,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             AutomatedTesting.GameLauncher
         COMPONENT
             LargeWorlds
+        LABELS REQUIRES_tiaf
     )
     ly_add_pytest(
         NAME AutomatedTesting::DynamicVegetationTests_Periodic_Optimized
@@ -50,6 +51,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
            AutomatedTesting.Assets
         COMPONENT
             LargeWorlds
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_pytest(

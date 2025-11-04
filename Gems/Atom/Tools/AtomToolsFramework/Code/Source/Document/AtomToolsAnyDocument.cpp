@@ -60,6 +60,7 @@ namespace AtomToolsFramework
     DocumentTypeInfo AtomToolsAnyDocument::BuildDocumentTypeInfo(
         const AZStd::string& documentTypeName,
         const AZStd::vector<AZStd::string>& documentTypeExtensions,
+        const AZStd::vector<AZStd::string>& documentTypeTemplateExtensions,
         const AZStd::any& defaultValue,
         const AZ::Uuid& contentTypeIdIfNotEmbedded)
     {
@@ -71,10 +72,15 @@ namespace AtomToolsFramework
             return aznew AtomToolsAnyDocument(toolId, documentTypeInfo, defaultValue, contentTypeIdIfNotEmbedded);
         };
 
-        for (const auto& documentTypeExtension : documentTypeExtensions)
+        for (const auto& extension : documentTypeExtensions)
         {
-            documentType.m_supportedExtensionsToOpen.push_back({ documentTypeName, documentTypeExtension });
-            documentType.m_supportedExtensionsToSave.push_back({ documentTypeName, documentTypeExtension });
+            documentType.m_supportedExtensionsToOpen.push_back({ documentTypeName, extension });
+            documentType.m_supportedExtensionsToSave.push_back({ documentTypeName, extension });
+        }
+
+        for (const auto& extension : documentTypeTemplateExtensions)
+        {
+            documentType.m_supportedExtensionsToCreate.push_back({ documentTypeName + " Template", extension });
         }
         return documentType;
     }

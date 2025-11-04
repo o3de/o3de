@@ -9,9 +9,9 @@
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 #include <AzCore/std/containers/span.h>
-
 #include <AzCore/Name/Name.h>
 
 #include <limits>
@@ -36,7 +36,7 @@ namespace AZ
         };
 
         //! The structure that is used to store the readback data from the timestamp queries
-        class TimestampResult
+        class ATOM_RPI_PUBLIC_API TimestampResult
         {
         public:
             TimestampResult() = default;
@@ -59,7 +59,7 @@ namespace AZ
         //! NOTE: The number of supported entries in the PipelineStatistics depends on the flags that are
         //! defined in GpuQuerySystemDescriptor::m_statisticsQueryFlags. The number of flags must
         //! be equal to PipelineStatisticsResult's member count.
-        struct PipelineStatisticsResult
+        struct ATOM_RPI_PUBLIC_API PipelineStatisticsResult
         {
             AZ_TYPE_INFO(PipelineStatisticsResult, "{8C4A07F0-5B77-4614-9007-E6E1F08FAC73}");
             static void Reflect(AZ::ReflectContext* context);

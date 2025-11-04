@@ -109,7 +109,7 @@ namespace AzNetworking
 
     int32_t TcpSocket::SendInternal(const uint8_t* data, uint32_t size) const
     {
-        const int32_t sentBytes = send(aznumeric_cast<int32_t>(m_socketFd), (const char*)data, size, 0);
+        const int32_t sentBytes = static_cast<int32_t>(send(aznumeric_cast<int32_t>(m_socketFd), (const char*)data, size, 0));
 
         if (sentBytes < 0)
         {
@@ -126,7 +126,7 @@ namespace AzNetworking
 
     int32_t TcpSocket::ReceiveInternal(uint8_t* outData, uint32_t size) const
     {
-        const int32_t receivedBytes = recv(aznumeric_cast<int32_t>(m_socketFd), (char*)outData, (int32_t)size, 0);
+        const int32_t receivedBytes = static_cast<int32_t>(recv(aznumeric_cast<int32_t>(m_socketFd), (char*)outData, (int32_t)size, 0));
 
         if (receivedBytes < 0)
         {
@@ -157,7 +157,11 @@ namespace AzNetworking
         if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
         {
             const int32_t error = GetLastNetworkError();
-            AZLOG_WARN("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+            if (m_warnedBindForPortFailure != port)
+            {
+                m_warnedBindForPortFailure = port;
+                AZLOG_WARN("Failed to bind TCP listen socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+            }
             return false;
         }
 
@@ -183,8 +187,12 @@ namespace AzNetworking
 
             if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
             {
-                const int32_t error = GetLastNetworkError();
-                AZLOG_WARN("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(localPort), error, GetNetworkErrorDesc(error));
+                if (m_warnedBindForPortFailure != localPort)
+                {
+                    m_warnedBindForPortFailure = localPort;
+                    const int32_t error = GetLastNetworkError();
+                    AZLOG_WARN("Failed to bind TCP connect socket to port %u (%d:%s)", uint32_t(localPort), error, GetNetworkErrorDesc(error));
+                }
                 return false;
             }
         }

@@ -32,7 +32,6 @@ namespace GradientSignal
             {
                 ec->Class<GradientSignalSystemComponent>("GradientSignal", "Manages registration of gradient image assets and reflection of required types")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -54,12 +53,12 @@ namespace GradientSignal
 
     void GradientSignalSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("GradientSignalService", 0xa7a775e2));
+        provided.push_back(AZ_CRC_CE("GradientSignalService"));
     }
 
     void GradientSignalSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("GradientSignalService", 0xa7a775e2));
+        incompatible.push_back(AZ_CRC_CE("GradientSignalService"));
     }
 
     void GradientSignalSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

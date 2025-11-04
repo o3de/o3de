@@ -14,20 +14,36 @@
 
 namespace Platform
 {
-    bool RunEditorWithArg(const QString editor, const QString arg)
+    bool RunCommandWithArguments(const QString& command, const QStringList& argsList)
     {
         bool success = false;
+        QString args;
+        if (!argsList.isEmpty())
+        {
+            args = argsList.join(" ");
+        }
 
-        // Use the Win32API calls as they aren't limited to running items in the path.
-        QString fullTexturePathFixedForWindows = QString(arg.data()).replace('/', '\\');
+        HINSTANCE hInst = ShellExecuteW( nullptr,
+            L"open",
+            command.toStdWString().c_str(),
+            args.isEmpty() ? NULL : args.toStdWString().c_str(),
+            NULL, SW_SHOWNORMAL);
 
-        HINSTANCE hInst = ShellExecuteW(
-            nullptr, L"open", editor.toStdWString().c_str(), fullTexturePathFixedForWindows.toStdWString().c_str(), NULL,
-            SW_SHOWNORMAL);
-        
         success = ((DWORD_PTR)hInst > 32);
 
         return success;
+    }
+
+    bool OpenUri(const QUrl& uri)
+    {
+        return RunCommandWithArguments(uri.toString(), {});
+    }
+
+    bool RunEditorWithArg(const QString& editor, const QString& arg)
+    {
+        // Use the Win32API calls as they aren't limited to running items in the path.
+        QString fullTexturePathFixedForWindows = QString(arg.data()).replace('/', '\\');
+        return RunCommandWithArguments(editor, { fullTexturePathFixedForWindows });
     }
 
     QString GetDefaultEditor(const Common::EditFileType fileType)
@@ -114,4 +130,5 @@ namespace Platform
     {
         return "LuaCompiler.exe";
     }
+
 }

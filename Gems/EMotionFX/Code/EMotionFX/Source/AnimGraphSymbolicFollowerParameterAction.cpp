@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSymbolicFollowerParameterAction, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSymbolicFollowerParameterAction, AnimGraphAllocator)
 
     AnimGraphSymbolicFollowerParameterAction::AnimGraphSymbolicFollowerParameterAction()
         : AnimGraphTriggerAction()
@@ -144,7 +144,7 @@ namespace EMotionFX
             // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project's related
             // codebases and APIs. Please note, some instances have been retained in the current version to provide backward compatibility
             // for assets/materials created prior to the change. These will be deprecated in the future.
-            int index = classElement.FindElement(AZ_CRC("servantParameterName", 0xe6070940));
+            int index = classElement.FindElement(AZ_CRC_CE("servantParameterName"));
             if (index > 0)
             {
                 AZStd::string oldValue;
@@ -161,7 +161,7 @@ namespace EMotionFX
             // Developer code and APIs with exclusionary terms will be deprecated as we introduce replacements across this project's related
             // codebases and APIs. Please note, some instances have been retained in the current version to provide backward compatibility for
             // assets/materials created prior to the change. These will be deprecated in the future.
-            index = classElement.FindElement(AZ_CRC("masterParameterName", 0xd0d333e3));
+            index = classElement.FindElement(AZ_CRC_CE("masterParameterName"));
             if (index > 0)
             {
                 AZStd::string oldValue;
@@ -206,12 +206,12 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphSymbolicFollowerParameterAction::m_refAnimGraphAsset, "Follower anim graph", "Follower anim graph that we want to pick a parameter from")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphSymbolicFollowerParameterAction::OnAnimGraphAssetChanged)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("AnimGraphParameter", 0x778af55a), &AnimGraphSymbolicFollowerParameterAction::m_followerParameterName, "Follower parameter", "The follower parameter that we want to sync to.")
+            ->DataElement(AZ_CRC_CE("AnimGraphParameter"), &AnimGraphSymbolicFollowerParameterAction::m_followerParameterName, "Follower parameter", "The follower parameter that we want to sync to.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphSymbolicFollowerParameterAction::GetRefAnimGraph)
-            ->DataElement(AZ_CRC("AnimGraphParameter", 0x778af55a), &AnimGraphSymbolicFollowerParameterAction::m_leaderParameterName, "Leader parameter", "The leader parameter that we want to sync from.")
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphSymbolicFollowerParameterAction::GetRefAnimGraph)
+            ->DataElement(AZ_CRC_CE("AnimGraphParameter"), &AnimGraphSymbolicFollowerParameterAction::m_leaderParameterName, "Leader parameter", "The leader parameter that we want to sync from.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphSymbolicFollowerParameterAction::GetAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphSymbolicFollowerParameterAction::GetAnimGraph)
             ;
     }
 

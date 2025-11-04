@@ -13,23 +13,26 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Sfmt.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QScrollArea>
-#include <QtWidgets/QApplication>
+#include <QMessageBox>
+#include <QMenu>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
+#include <QScrollArea>
+#include <QApplication>
 #include <QPainter>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
-#include <QtWidgets/QInputDialog>
+#include <QInputDialog>
 AZ_POP_DISABLE_WARNING
-#include <QtCore/QTimer>
-#include <QtCore/QSet>
+#include <QTimer>
+#include <QSet>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 #include <AzCore/std/sort.h>
 
 namespace AzToolsFramework
 {
+    // Add implementation of IPropertyEditor RTTI virtual functions in the cpp file along with the ReflectedPropertyEditor
+    AZ_RTTI_NO_TYPE_INFO_IMPL(IPropertyEditor);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(ReflectedPropertyEditor, IPropertyEditor);
     const AZ::SerializeContext::ClassData* CreateContainerElementSelectClassCallback(const AZ::Uuid& classId, const AZ::Uuid& typeId, AZ::SerializeContext* context)
     {
         AZStd::vector<const AZ::SerializeContext::ClassData*> derivedClasses;
@@ -265,7 +268,7 @@ namespace AzToolsFramework
         : public AZ::UserSettings
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditorState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditorState, AZ::SystemAllocator);
         AZ_RTTI(ReflectedPropertyEditorState, "{A229B615-622B-4C0B-A17C-A1F5C3144D6E}", AZ::UserSettings);
 
         AZStd::unordered_set<AZ::u32> m_expandedElements; // crc of them + their parents.
@@ -1082,34 +1085,34 @@ namespace AzToolsFramework
         {
             newWidget = aznew PropertyRowWidget(m_containerWidget);
             QObject::connect(newWidget, &PropertyRowWidget::onRequestedContainerClear, m_editor,
-                [=](InstanceDataNode* node)
+                [this, newWidget](InstanceDataNode* node)
             {
                 m_editor->OnPropertyRowRequestClear(newWidget, node);
             }
             );
             QObject::connect(newWidget, &PropertyRowWidget::onRequestedContainerElementRemove, m_editor,
-                [=](InstanceDataNode* node)
+                [this, newWidget](InstanceDataNode* node)
             {
                 m_editor->OnPropertyRowRequestContainerRemoveItem(newWidget, node);
             }
             );
 
             QObject::connect(newWidget, &PropertyRowWidget::onRequestedContainerAdd, m_editor,
-                [=](InstanceDataNode* node)
+                [this, newWidget](InstanceDataNode* node)
             {
                 m_editor->OnPropertyRowRequestContainerAddItem(newWidget, node);
             }
             );
 
             QObject::connect(newWidget, &PropertyRowWidget::onUserExpandedOrContracted, m_editor,
-                [=](InstanceDataNode* node, bool expanded)
+                [this, newWidget](InstanceDataNode* node, bool expanded)
             {
                 m_editor->OnPropertyRowExpandedOrContracted(newWidget, node, expanded, true);
             }
             );
 
             QObject::connect(newWidget, &PropertyRowWidget::onRequestedContextMenu, m_editor,
-                [=](InstanceDataNode* node, const QPoint& point)
+                [this](InstanceDataNode* node, const QPoint& point)
             {
                 if (m_ptrNotify)
                 {
@@ -1200,7 +1203,7 @@ namespace AzToolsFramework
         m_impl->m_queuedTabOrderRefresh = false;
     }
 
-    void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key)
+    void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName)
     {
         if (m_impl->m_savedStateKey != key)
         {
@@ -2063,7 +2066,7 @@ namespace AzToolsFramework
             {
                 // Set the edit data for the key prompt
                 AZ::Edit::ElementData syntheticData;
-                syntheticData.m_elementId = 0;
+                syntheticData.m_elementId = AZ::Crc32();
                 syntheticData.m_name = message;
                 syntheticData.m_description = "";
 
@@ -2157,7 +2160,7 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        auto attribute = classElement->FindAttribute(AZ_CRC("KeyType", 0x15bc5303));
+                        auto attribute = classElement->FindAttribute(AZ_CRC_CE("KeyType"));
                         auto attributeData = azrtti_cast<AZ::AttributeData<AZ::TypeId>*>(attribute);
                         AZ_Assert(attributeData, "KeyType must be defined for keyed containers");
                         auto keyId = attributeData->Get(dataPtr);

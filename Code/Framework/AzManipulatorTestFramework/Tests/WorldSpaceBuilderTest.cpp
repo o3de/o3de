@@ -17,7 +17,7 @@
 
 namespace UnitTest
 {
-    class AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture : public ToolsApplicationFixture
+    class AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture : public ToolsApplicationFixture<>
     {
     protected:
         struct State

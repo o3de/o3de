@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 31;   // [GHI-6381]
+        builderDescriptor.m_version = 35;   // Added MipmapChain and StreamingImage allocator
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
@@ -118,12 +118,12 @@ namespace ImageProcessingAtom
 
     void BuilderPluginComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
+        provided.push_back(AZ_CRC_CE("ImagerBuilderPluginService"));
     }
 
     void BuilderPluginComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ImagerBuilderPluginService", 0x6dc0db6e));
+        incompatible.push_back(AZ_CRC_CE("ImagerBuilderPluginService"));
     }
 
     IImageObjectPtr BuilderPluginComponent::LoadImage(const AZStd::string& filePath)
@@ -287,6 +287,11 @@ namespace ImageProcessingAtom
     bool BuilderPluginComponent::IsValidPreset(PresetName presetName)
     {
         return ImageProcessingAtom::BuilderSettingManager::Instance()->IsValidPreset(presetName);
+    }
+
+    bool BuilderPluginComponent::IsExtensionSupported(const char* extension)
+    {
+        return ImageProcessingAtom::IsExtensionSupported(extension);
     }
 
     void ImageBuilderWorker::ShutDown()

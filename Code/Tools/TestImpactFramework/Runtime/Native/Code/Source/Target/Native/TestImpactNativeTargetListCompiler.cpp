@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <Artifact/TestImpactArtifactException.h>
 #include <Target/Native/TestImpactNativeTargetListCompiler.h>
 
@@ -27,18 +25,32 @@ namespace TestImpact
         AZStd::vector<NativeProductionTarget> productionTargets;
         AZStd::vector<NativeTestTarget> testTargets;
 
+        size_t numDiscardedTestTargets = 0;
         for (auto&& descriptor : buildTargetDescriptors)
         {
-            // If this build target has an associated test artifact then it is a test target, otherwise it is a production target
             if (auto&& testTargetMeta = testTargetMetaMap.find(descriptor.m_name); testTargetMeta != testTargetMetaMap.end())
             {
                 AZ_TestImpact_Eval(descriptor.m_type == TargetType::TestTarget, ArtifactException, "Target has associated target meta but is a production target");
                 testTargets.emplace_back(AZStd::move(descriptor), AZStd::move(testTargetMeta->second));
             }
-            else
+            else if (descriptor.m_type == TargetType::ProductionTarget)
             {
                 productionTargets.emplace_back(AZStd::move(descriptor));
             }
+            else
+            {
+                // Test targets without an associated test target meta artifact are either not opted in to TIAF or not in the
+                // suite(s) to be run so will be skipped
+                numDiscardedTestTargets++;
+            }
+        }
+
+        if (numDiscardedTestTargets)
+        {
+            AZ_Info(
+                "CompileNativeTargetLists",
+                "%zu test targets were either opted-out of TIAF or not in the suite(s) selected for this run.\n",
+                numDiscardedTestTargets);
         }
 
         return { { AZStd::move(productionTargets) }, { AZStd::move(testTargets) } };

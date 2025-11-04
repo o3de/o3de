@@ -8,7 +8,9 @@
 
 #include <QTemporaryDir>
 #include <AzTest/AzTest.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
 #include "AssetDatabase/AssetDatabase.h"
 #include <AssetManager/PathDependencyManager.h>
@@ -17,20 +19,10 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
+
 namespace UnitTests
 {
-    class MockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        bool GetAssetDatabaseLocation(AZStd::string& location) override
-        {
-            location = m_databaseLocation;
-            return true;
-        }
-
-        AZStd::string m_databaseLocation;
-    };
-
     namespace Util
     {
         using namespace AzToolsFramework::AssetDatabase;
@@ -56,7 +48,7 @@ namespace UnitTests
 
         QTemporaryDir m_tempDir;
         AZStd::string m_databaseLocation;
-        MockDatabaseLocationListener m_databaseLocationListener;
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
         AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> m_stateData;
         AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -65,7 +57,7 @@ namespace UnitTests
     };
 
     struct PathDependencyDeletionTest
-        : ::UnitTest::ScopedAllocatorSetupFixture
+        : ::UnitTest::LeakDetectionFixture
         , PathDependencyBase
     {
         void SetUp() override
@@ -89,24 +81,10 @@ namespace UnitTests
 
         BusConnect();
 
-        QDir tempPath(m_tempDir.path());
-
-        m_databaseLocationListener.BusConnect();
-
-        // in other unit tests we may open the database called ":memory:" to use an in-memory database instead of one on disk.
-        // in this test, however, we use a real database, because the file processor shares it and opens its own connection to it.
-        // ":memory:" databases are one-instance-only, and even if another connection is opened to ":memory:" it would
-        // not share with others created using ":memory:" and get a unique database instead.
-        m_databaseLocation = tempPath.absoluteFilePath("test_database.sqlite").toUtf8().constData();
-        m_databaseLocationListener.m_databaseLocation = m_databaseLocation;
-
         m_stateData = AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection>(new AssetProcessor::AssetDatabaseConnection());
         m_stateData->OpenDatabase();
 
         m_platformConfig = AZStd::make_unique<AssetProcessor::PlatformConfiguration>();
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
@@ -127,9 +105,6 @@ namespace UnitTests
         delete m_jobManagerEntity;
 
         delete m_descriptor;
-
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
         BusDisconnect();
     }
@@ -357,8 +332,7 @@ namespace UnitTests
     }
 
     struct PathDependencyBenchmarks
-        : ::UnitTest::ScopedAllocatorFixture
-          , PathDependencyBase
+        : PathDependencyBase
     {
         static inline constexpr int NumTestDependencies = 4; // Must be a multiple of 4
         static inline constexpr int NumTestProducts = 2; // Must be a multiple of 2
@@ -509,7 +483,8 @@ namespace UnitTests
     };
 
     struct PathDependencyTestValidation
-        : PathDependencyBenchmarks, ::testing::Test
+        : ::UnitTest::LeakDetectionFixture
+        , PathDependencyBenchmarks
     {
         void SetUp() override
         {

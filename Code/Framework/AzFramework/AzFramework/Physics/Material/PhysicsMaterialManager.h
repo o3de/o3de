@@ -15,12 +15,13 @@
 
 #include <AzFramework/Physics/Material/PhysicsMaterial.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     //! This class manages all the creation and deletion of physics materials.
     //! To use it call AZ::Interface<Physics::MaterialManager>::Get().
-    class MaterialManager
+    class AZF_API MaterialManager
     {
     public:
         AZ_RTTI(Physics::MaterialManager, "{39EF1222-BE2E-461D-B517-0395CF82C156}");

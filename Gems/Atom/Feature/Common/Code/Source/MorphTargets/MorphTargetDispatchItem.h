@@ -40,7 +40,7 @@ namespace AZ
             : private RPI::ShaderReloadNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(MorphTargetDispatchItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MorphTargetDispatchItem, AZ::SystemAllocator);
 
             MorphTargetDispatchItem() = delete;
             //! Create one dispatch item per morph target
@@ -58,7 +58,7 @@ namespace AZ
 
             bool Init();
 
-            const RHI::DispatchItem& GetRHIDispatchItem() const;
+            const AZ::RHI::DispatchItem& GetRHIDispatchItem() const;
 
             void SetWeight(float weight);
             float GetWeight() const;

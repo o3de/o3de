@@ -15,7 +15,6 @@
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <MCore/Source/Color.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
@@ -72,6 +71,11 @@ namespace EMotionFX
         void Update();
         void Reset();
 
+        // Filter Reflected Properties
+        void SetFilterString(QString filterString);
+        // Returns true if any Node in the Reflected Property Editor is displayed
+        bool HasDisplayedNodes() const;
+
         Actor* GetActor() const { return m_actor; };
         Node* GetJoint() const { return m_joint; }
         size_t GetColliderIndex() const { return m_colliderIndex; }
@@ -110,10 +114,10 @@ namespace EMotionFX
 
     public:
         AddColliderButton(const QString& text, QWidget* parent = nullptr,
-            PhysicsSetup::ColliderConfigType copyToColliderType = PhysicsSetup::ColliderConfigType::Unknown,
-            const AZStd::vector<AZ::TypeId>& supportedColliderTypes = {azrtti_typeid<Physics::BoxShapeConfiguration>(),
-            azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
-            azrtti_typeid<Physics::SphereShapeConfiguration>()});
+                          PhysicsSetup::ColliderConfigType copyToColliderType = PhysicsSetup::ColliderConfigType::Unknown,
+                          const AZStd::vector<AZ::TypeId>& supportedColliderTypes = {azrtti_typeid<Physics::BoxShapeConfiguration>(),
+                                                                                      azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
+                                                                                      azrtti_typeid<Physics::SphereShapeConfiguration>()});
 
     signals:
         void AddCollider(AZ::TypeId colliderType);
@@ -142,10 +146,13 @@ namespace EMotionFX
         void Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPairList& colliders, AZ::SerializeContext* serializeContext);
         void Update();
         void Reset();
+
+        void SetFilterString(QString str);
+        bool HasVisibleColliders() const;
+
         PhysicsSetup::ColliderConfigType ColliderType() { return m_colliderType; }
 
         void contextMenuEvent(QContextMenuEvent* event) override;
-        QSize sizeHint() const override;
 
         static int s_layoutSpacing;
 

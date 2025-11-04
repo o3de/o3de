@@ -13,12 +13,21 @@
 namespace EMotionFX
 {
     template <class ValueType, class Derived>
+    class RangedValueParameter;
+
+    AZ_TYPE_INFO_TEMPLATE(RangedValueParameter, "{83572845-AFBD-4685-AACD-0D15CF79006A}", AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS);
+
+    template <class ValueType, class Derived>
     class RangedValueParameter
         : public DefaultValueParameter<ValueType, RangedValueParameter<ValueType, Derived>>
     {
         using BaseType = DefaultValueParameter<ValueType, RangedValueParameter<ValueType, Derived>>;
     public:
-        AZ_RTTI((RangedValueParameter, "{83572845-AFBD-4685-AACD-0D15CF79006A}", ValueType, Derived), BaseType);
+        // AZ_RTTI can't be used when a CRTP is used when the base class receives a template parameter for this class
+        // and that template parameters participates in the base class TypeInfo calculation
+        // So use AZ_TYPE_INFO paired with AZ_RTTI_NO_DECL
+        AZ_RTTI_NO_TYPE_INFO_DECL()
+        AZ_CLASS_ALLOCATOR(RangedValueParameter, AnimGraphAllocator)
 
         RangedValueParameter(const ValueType& defaultValue, const ValueType& minValue, const ValueType& maxValue, bool hasMinValue = true, bool hasMaxValue = true, AZStd::string name = {}, AZStd::string description = {})
             : BaseType(defaultValue, AZStd::move(name), AZStd::move(description))
@@ -97,6 +106,8 @@ namespace EMotionFX
         bool m_hasMinValue = true;
         bool m_hasMaxValue = true;
     };
+
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE((RangedValueParameter, AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_CLASS), BaseType);
 
     template <class ValueType, class Derived>
     void RangedValueParameter<ValueType, Derived>::Reflect(AZ::ReflectContext* context)

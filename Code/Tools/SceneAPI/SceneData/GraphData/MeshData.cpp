@@ -10,6 +10,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include "MeshData.h"
 
 namespace AZ
 {
@@ -42,9 +43,7 @@ namespace AZ
                     behaviorContext->Class<MeshData>()
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
-                        ->Method("GetControlPointIndex", &MeshData::GetControlPointIndex)
-                        ->Method("GetUsedControlPointCount", &MeshData::GetUsedControlPointCount)
-                        ->Method("GetUsedPointIndexForControlPoint", &MeshData::GetUsedPointIndexForControlPoint)
+                        ->Method("GetVertexIndexCount", &MeshData::GetVertexIndexCount)
                         ->Method("GetVertexCount", &MeshData::GetVertexCount)
                         ->Method("HasNormalData", &MeshData::HasNormalData)
                         ->Method("GetPosition", &MeshData::GetPosition)
@@ -103,41 +102,9 @@ namespace AZ
                 m_faceMaterialIds.push_back(faceMaterialId);
             }
 
-            void MeshData::SetVertexIndexToControlPointIndexMap(int vertexIndex, int controlPointIndex)
+            size_t MeshData::GetVertexIndexCount() const
             {
-                m_vertexIndexToControlPointIndexMap[vertexIndex] = controlPointIndex;
-
-                // The above hashmap stores the control point index (value) per vertex (key).
-                // We construct an unordered set and fill in the control point indices in order to get access to the number of unique control points indices.
-                if (m_controlPointToUsedVertexIndexMap.find(controlPointIndex) == m_controlPointToUsedVertexIndexMap.end())
-                {
-                    m_controlPointToUsedVertexIndexMap[controlPointIndex] = aznumeric_cast<unsigned int>(m_controlPointToUsedVertexIndexMap.size());
-                }
-            }
-
-            int MeshData::GetControlPointIndex(int vertexIndex) const
-            {
-                AZ_Assert(m_vertexIndexToControlPointIndexMap.find(vertexIndex) != m_vertexIndexToControlPointIndexMap.end(), "Vertex index %i doesn't exist", vertexIndex);
-                // Note: AZStd::unordered_map's operator [] doesn't have const version... 
-                return m_vertexIndexToControlPointIndexMap.find(vertexIndex)->second;
-            }
-
-            size_t MeshData::GetUsedControlPointCount() const
-            {
-                return m_controlPointToUsedVertexIndexMap.size();
-            }
-
-            int MeshData::GetUsedPointIndexForControlPoint(int controlPointIndex) const
-            {
-                auto iter = m_controlPointToUsedVertexIndexMap.find(controlPointIndex);
-                if (iter != m_controlPointToUsedVertexIndexMap.end())
-                {
-                    return iter->second;
-                }
-                else
-                {
-                    return -1; // That control point is not used in this mesh
-                }
+                return m_faceList.size() * 3;
             }
 
             unsigned int MeshData::GetVertexCount() const
@@ -160,6 +127,36 @@ namespace AZ
             {
                 AZ_Assert(index < m_normals.size(), "GetNormal index not in range");
                 return m_normals[index];
+            }
+
+            AZStd::vector<AZ::Vector3>& MeshData::GetPositions()
+            {
+                return m_positions;
+            }
+
+            const AZStd::vector<AZ::Vector3>& MeshData::GetPositions() const
+            {
+                return m_positions;
+            }
+
+            AZStd::vector<AZ::Vector3>& MeshData::GetNormals()
+            {
+                return m_normals;
+            }
+
+            const AZStd::vector<AZ::Vector3>& MeshData::GetNormals() const
+            {
+                return m_normals;
+            }
+
+            AZStd::vector<AZ::SceneAPI::DataTypes::IMeshData::Face>& MeshData::GetFaces()
+            {
+                return m_faceList;
+            }
+
+            const AZStd::vector<AZ::SceneAPI::DataTypes::IMeshData::Face>& MeshData::GetFaces() const
+            {
+                return m_faceList;
             }
 
             unsigned int MeshData::GetFaceCount() const

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qstring.h>
+#include <QString>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -21,7 +21,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(GraphCanvasMimeContainer, "{CB8CAB35-B817-4910-AFC2-51881832591E}");
-        AZ_CLASS_ALLOCATOR(GraphCanvasMimeContainer, AZ::SystemAllocator, 0);        
+        AZ_CLASS_ALLOCATOR(GraphCanvasMimeContainer, AZ::SystemAllocator);        
         static void Reflect(AZ::ReflectContext* serializeContext);
         
         GraphCanvasMimeContainer() = default;

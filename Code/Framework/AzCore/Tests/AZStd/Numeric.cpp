@@ -12,7 +12,7 @@
 
 namespace UnitTest
 {
-    class AccumulateFixture : public AllocatorsTestFixture
+    class AccumulateFixture : public LeakDetectionFixture
     {
     };
 
@@ -45,7 +45,7 @@ namespace UnitTest
         EXPECT_THAT(evenNumbers, ElementsAre(2, 4, 6, 8, 10));
     }
 
-    class InnerProductFixture : public AllocatorsTestFixture
+    class InnerProductFixture : public LeakDetectionFixture
     {
     };
 

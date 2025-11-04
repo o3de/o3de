@@ -10,7 +10,8 @@
 
 #include <AzTest/AzTest.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include "native/tests/AssetProcessorTest.h"
+#include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include "AzToolsFramework/API/AssetDatabaseBus.h"
 #include "AssetDatabase/AssetDatabase.h"
 #include "FileProcessor/FileProcessor.h"
@@ -20,7 +21,6 @@
 
 namespace UnitTests
 {
-    using ::testing::NiceMock;
     using namespace AssetProcessor;
 
     using AzToolsFramework::AssetDatabase::ProductDatabaseEntry;
@@ -35,12 +35,6 @@ namespace UnitTests
     using AzToolsFramework::AssetDatabase::AssetDatabaseConnection;
     using AzToolsFramework::AssetDatabase::FileDatabaseEntry;
     using AzToolsFramework::AssetDatabase::FileDatabaseEntryContainer;
-
-    class FileProcessorTestsMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
-    };
 
     class FileProcessorTests
         : public AssetProcessorTest,
@@ -78,11 +72,10 @@ namespace UnitTests
         void RemoveResponseHandler([[maybe_unused]] unsigned int serial) override {};
 
     protected:
-        QTemporaryDir m_temporaryDir;
-        QDir m_temporarySourceDir;
+        QDir m_assetRootSourceDir;
 
         AZStd::string m_databaseLocation;
-        NiceMock<FileProcessorTestsMockDatabaseLocationListener> m_databaseLocationListener;
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
         AssetProcessor::AssetDatabaseConnection m_connection;
 
         AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;

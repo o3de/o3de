@@ -19,6 +19,12 @@ namespace TestImpact
     public:
         TestRunWithCoverageJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact);
 
+        //! Copy and move constructors/assignment operators.
+        TestRunWithCoverageJobData(const TestRunWithCoverageJobData& other);
+        TestRunWithCoverageJobData(TestRunWithCoverageJobData&& other);
+        TestRunWithCoverageJobData& operator=(const TestRunWithCoverageJobData& other);
+        TestRunWithCoverageJobData& operator=(TestRunWithCoverageJobData&& other);
+
         //! Returns the path to the coverage artifact produced by the test target.
         const RepoPath& GetCoverageArtifactPath() const;
 

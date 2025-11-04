@@ -11,17 +11,33 @@ import os
 import time
 import traceback
 from typing import Callable, Tuple
+from enum import Enum
 
 import azlmbr
 try:
     import azlmbr.atomtools.general as general  # Standard MaterialEditor or similar executable test.
 except ModuleNotFoundError:  # azlmbr.atomtools is not yet available in the Editor
     import azlmbr.legacy.general as general  # Will be updated in https://github.com/o3de/o3de/issues/11056
-import azlmbr.multiplayer as multiplayer
+
+try:
+    import azlmbr.multiplayer as multiplayer
+except ModuleNotFoundError: # Not all projects enable the Multiplayer Gem.
+    pass
+
 import azlmbr.debug
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.process_utils as process_utils
 
+# Controls how many reconnection attempts to make from the editor to the multiplayer server before giving up and failing the test.
+# Note that the editor will wait one additional second in between each attempt, so the final time will be
+# 1 + 2 + 3 + ... + MULIPLAYER_SERVER_RECONNECT_ATTEMPTS seconds, which formulates to n(n+1)/2 where n is the number of attempts.
+# For example, with the value of 35, the editor will wait 630 seconds (10.5 minutes) before giving up.
+
+# also note that the editor stops trying to connect the moment it is successful so its better for automated testing to set this to a very
+# large number rather than a borderline number.  10.5 minutes of still not appearing should be a very high confidence indicator that the 
+# server is not going to appear even on a very busy machine, and it's better to have a reliable indicator of failure than to have a borderline
+# wait time that could be failing just because it's a busy machine.
+MULIPLAYER_SERVER_RECONNECT_ATTEMPTS = 35
 
 class FailFast(Exception):
     """
@@ -41,7 +57,8 @@ class TestHelper:
         :param level_name: The name of the level to be created
         :return: True if ECreateLevelResult returns 0, False otherwise with logging to report reason
         """
-        Report.info(f"Creating level {level_name}")
+        template_name = "Prefabs/Default_Level.prefab"
+        Report.info(f"Creating level {level_name} from template '{template_name}'")
 
         # Use these hardcoded values to pass expected values for old terrain system until new create_level API is
         # available
@@ -50,7 +67,7 @@ class TestHelper:
         terrain_texture_resolution = 4096
         use_terrain = False
 
-        result = general.create_level_no_prompt(level_name, heightmap_resolution, heightmap_meters_per_pixel,
+        result = general.create_level_no_prompt(template_name, level_name, heightmap_resolution, heightmap_meters_per_pixel,
                                                 terrain_texture_resolution, use_terrain)
 
         # Result codes are ECreateLevelResult defined in CryEdit.h
@@ -155,7 +172,34 @@ class TestHelper:
         Report.critical_result(("Unexpected line not found: " + line, "Unexpected line found: " + line), not TestHelper.find_line(window, line, print_infos))
 
     @staticmethod
-    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
+    def all_expected_log_lines_found(section_tracer, lines):
+        """
+        function for parsing game mode's console output for expected test lines. duplicate lines and error lines are not
+        handled by this function.
+
+        param section_tracer: python editor tracer object
+        param lines: list of expected lines
+
+
+        returns true if all the expected lines were detected in the parsed output
+        """
+        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
+
+        expected_lines = len(lines)
+        matching_lines = 0
+
+        for line in lines:
+            for found_line in found_lines:
+                if line == found_line:
+                    matching_lines += 1
+
+        return matching_lines >= expected_lines
+
+    
+    EditorServerMode = Enum('EditorServerMode', ['DEDICATED_SERVER', 'CLIENT_SERVER'])
+
+    @staticmethod
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], editor_server_mode: EditorServerMode) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
 
@@ -166,19 +210,38 @@ class TestHelper:
         with MultiplayerHelper() as multiplayer_helper:
             # enter game-mode. 
             # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
+            general.set_cvar_integer('editorsv_max_connection_attempts', MULIPLAYER_SERVER_RECONNECT_ATTEMPTS)
+
+            # The editor waits 1 additional second between each retry, meaning the total time is the sum of the first n natural numbers, which
+            # solves as n(n+1)/2.
+            wait_duration = MULIPLAYER_SERVER_RECONNECT_ATTEMPTS * (MULIPLAYER_SERVER_RECONNECT_ATTEMPTS + 1.0) / 2.0
+
+            general.set_cvar_string('editorsv_clientserver', 'true' if editor_server_mode == TestHelper.EditorServerMode.CLIENT_SERVER else 'false')
+
             multiplayer.PythonEditorFuncs_enter_game_mode()
 
-            # make sure the server launcher is running
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 10.0)
-            waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher process is not running!"), interval=1.0)
+            if editor_server_mode == TestHelper.EditorServerMode.DEDICATED_SERVER:
+                # note that this next line merely waits for the editor say that it has asked the server to launch, not that it did actually launch.
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 20.0)
 
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorConnectionAttemptCount > 0, 10.0)
+                # note that this next line ensures that the process is running, not that it is connected to the editor.
+                waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher process is not running!"), interval=1.0)
+                Report.critical_result(("AutomatedTesting.ServerLauncher process successfully launched", "AutomatedTesting.ServerLauncher process failed to launch"), process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True))
 
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 10.0)
+                # note that this line waits for the editor to say that it has attempted to connect to the server at least once, not that it has actually connected.
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.editorConnectionAttemptCount > 0, 10.0)
+                Report.critical_result(("Multiplayer Editor attempting server connection.", "Multiplayer Editor never tried connecting to the server."), multiplayer_helper.editorConnectionAttemptCount > 0)
 
-            TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 10.0)
+                # between the previous step and this one, the editor has to use up all its connection attempts, and be successfully connected, which can take a while
+                # since the server process has to actually start up, load all its dynamic libraries, assets, etc.
+                # so it has to wait at least wait_duration seconds or else the test will fail prematurely
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, wait_duration)
+                Report.critical_result(("Multiplayer Editor sent level data to the server.", "Multiplayer Editor never sent the level to the server."), multiplayer_helper.editorSendingLevelData)
 
-        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 20.0)
+                Report.critical_result(("Multiplayer Editor successfully connected to server network simuluation.", "Multiplayer Editor failed to connected to server network simuluation."), multiplayer_helper.connectToSimulationSuccess)
+
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 10.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod

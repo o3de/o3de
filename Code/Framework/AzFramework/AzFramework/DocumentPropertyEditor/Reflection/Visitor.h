@@ -13,6 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/Attribute.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::Reflection
 {
@@ -173,7 +174,7 @@ namespace AZ::Reflection
 
     struct IObjectAccess
     {
-        virtual const AZ::TypeId& GetType() const = 0;
+        virtual AZ::TypeId GetType() const = 0;
         virtual AZStd::string_view GetTypeName() const = 0;
 
         virtual void* Get() = 0;
@@ -182,12 +183,14 @@ namespace AZ::Reflection
 
     // The IRead and/or IReadWrite interfaces are implemented by the user.
 
-    class IRead
+    class AZF_API IRead
     {
     public:
         virtual ~IRead() = default;
 
         virtual void Visit(bool value, const IAttributes& attributes);
+
+        virtual void Visit(char value, const IAttributes& attributes);
 
         virtual void Visit(AZ::s8 value, const IAttributes& attributes);
         virtual void Visit(AZ::s16 value, const IAttributes& attributes);
@@ -218,12 +221,14 @@ namespace AZ::Reflection
         virtual void Visit(const AZ::Data::Asset<AZ::Data::AssetData>& asset, const IAssetAccess& access, const IAttributes& attributes);
     };
 
-    class IReadWrite
+    class AZF_API IReadWrite
     {
     public:
         virtual ~IReadWrite() = default;
 
         virtual void Visit(bool& value, const IAttributes& attributes);
+
+        virtual void Visit(char& value, const IAttributes& attributes);
 
         virtual void Visit(AZ::s8& value, const IAttributes& attributes);
         virtual void Visit(AZ::s16& value, const IAttributes& attributes);
@@ -254,12 +259,14 @@ namespace AZ::Reflection
         virtual void Visit(const AZ::Data::Asset<AZ::Data::AssetData>& asset, IAssetAccess& access, const IAttributes& attributes);
     };
 
-    class IReadWriteToRead final : public IReadWrite
+    class AZF_API IReadWriteToRead final : public IReadWrite
     {
     public:
         IReadWriteToRead(IRead* reader) : m_reader(reader) {}
 
         void Visit(bool& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
+
+        void Visit(char& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
 
         void Visit(AZ::s8& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }
         void Visit(AZ::s16& value, const IAttributes& attributes) override { m_reader->Visit(value, attributes); }

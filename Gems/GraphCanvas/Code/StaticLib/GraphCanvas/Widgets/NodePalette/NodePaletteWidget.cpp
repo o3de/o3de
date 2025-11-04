@@ -64,27 +64,6 @@ namespace GraphCanvas
             QModelIndex sourceIndex = static_cast<const NodePaletteSortFilterProxyModel*>(index.model())->mapToSource(index);
             NodePaletteTreeItem* treeItem = static_cast<NodePaletteTreeItem*>(sourceIndex.internalPointer());
 
-            if (treeItem)
-            {
-                // Make the text slightly transparent if the item is disabled
-                if (!treeItem->IsEnabled())
-                {
-                    QVariant roleColor = index.data(Qt::ForegroundRole);
-                    QColor textColor = (roleColor.type() == QVariant::Type::Color)
-                        ? roleColor.value<QColor>() : options.palette.color(QPalette::Text);
-
-                    int fontAlpha = aznumeric_cast<int>(textColor.alpha() * 0.5f);
-                    fontAlpha = AZStd::min(AZStd::min(fontAlpha, 127), textColor.alpha());
-
-                    textColor.setAlpha(fontAlpha);
-
-                    options.palette.setColor(QPalette::Text, textColor);
-                }
-            }
-
-            // paint the original node item
-            IconDecoratedNameDelegate::paint(painter, options, index);
-
             const int textMargin = options.widget->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, options.widget) + 1;
             QRect textRect = options.widget->style()->subElementRect(QStyle::SE_ItemViewItemText, &options);
             textRect = textRect.adjusted(textMargin, 0, -textMargin, 0);
@@ -111,6 +90,26 @@ namespace GraphCanvas
                 }
             }
 
+            if (treeItem)
+            {
+                // Make the text slightly transparent if the item is disabled
+                if (!treeItem->IsEnabled())
+                {
+                    QVariant roleColor = index.data(Qt::ForegroundRole);
+                    QColor textColor = roleColor.canConvert<QColor>() ? roleColor.value<QColor>() : options.palette.color(QPalette::Text);
+
+                    int fontAlpha = aznumeric_cast<int>(textColor.alpha() * 0.5f);
+                    fontAlpha = AZStd::min(AZStd::min(fontAlpha, 127), textColor.alpha());
+
+                    textColor.setAlpha(fontAlpha);
+
+                    options.palette.setColor(QPalette::Text, textColor);
+                }
+            }
+
+            // paint the original node item
+            IconDecoratedNameDelegate::paint(painter, options, index);
+
             painter->restore();
         }
         else
@@ -126,7 +125,6 @@ namespace GraphCanvas
         : QWidget(parent)        
         , m_ui(new Ui::NodePaletteWidget())
         , m_itemDelegate(nullptr)        
-        , m_contextMenuCreateEvent(nullptr)
         , m_model(nullptr)
         , m_isInContextMenu(false)
         , m_searchFieldSelectionChange(false)
@@ -136,7 +134,6 @@ namespace GraphCanvas
     NodePaletteWidget::~NodePaletteWidget()
     {
         GraphCanvasTreeModelRequestBus::Handler::BusDisconnect();
-        delete m_contextMenuCreateEvent;
     }
 
     void NodePaletteWidget::SetupNodePalette(const NodePaletteConfig& paletteConfig)
@@ -228,7 +225,6 @@ namespace GraphCanvas
 
     void NodePaletteWidget::ResetDisplay()
     {
-        delete m_contextMenuCreateEvent;
         m_contextMenuCreateEvent = nullptr;
 
         {
@@ -254,7 +250,7 @@ namespace GraphCanvas
 
     GraphCanvasMimeEvent* NodePaletteWidget::GetContextMenuEvent() const
     {
-        return m_contextMenuCreateEvent;
+        return m_contextMenuCreateEvent.get();
     }
 
     void NodePaletteWidget::ResetSourceSlotFilter()
@@ -745,7 +741,7 @@ namespace GraphCanvas
     {
         if (m_isInContextMenu && !m_searchFieldSelectionChange)
         {
-            m_contextMenuCreateEvent = treeItem->CreateMimeEvent();
+            m_contextMenuCreateEvent.reset(treeItem->CreateMimeEvent());
 
             if (m_contextMenuCreateEvent)
             {

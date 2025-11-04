@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
@@ -20,9 +19,9 @@
 #include <ImageLoader/ImageLoaders.h>
 #include <Processing/ImageConvert.h>
 #include <Processing/ImageToProcess.h>
-#include <Processing/Utils.h>
 #include <Thumbnail/ImageThumbnail.h>
 #include <Thumbnail/ImageThumbnailSystemComponent.h>
+#include <Processing/Utils.h>
 
 namespace ImageProcessingAtom
 {
@@ -39,7 +38,6 @@ namespace ImageProcessingAtom
                 {
                     ec->Class<ImageThumbnailSystemComponent>("ImageThumbnailSystemComponent", "System component for image thumbnails.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
                 }
             }
@@ -84,6 +82,8 @@ namespace ImageProcessingAtom
             using namespace AzToolsFramework::Thumbnailer;
 
             ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::ImageThumbnailCache));
+
+            m_imageAssetLoader.reset(aznew Utils::AsyncImageAssetLoader());
         }
 
         void ImageThumbnailSystemComponent::TeardownThumbnails()
@@ -92,6 +92,8 @@ namespace ImageProcessingAtom
 
             ThumbnailerRequestBus::Broadcast(
                 &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::ImageThumbnailCache::ProviderName);
+
+            m_imageAssetLoader.reset();
         }
 
         void ImageThumbnailSystemComponent::OnApplicationAboutToStop()
@@ -107,7 +109,7 @@ namespace ImageProcessingAtom
         void ImageThumbnailSystemComponent::RenderThumbnail(
             AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
         {
-            if (auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(thumbnailKey.data()))
+            if (auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(thumbnailKey.get()))
             {
                 bool foundIt = false;
                 AZ::Data::AssetInfo assetInfo;
@@ -125,11 +127,15 @@ namespace ImageProcessingAtom
                     );
                 }
             }
-            else if (auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(thumbnailKey.data()))
+            else if (auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(thumbnailKey.get()))
             {
-                RenderThumbnailFromImage(thumbnailKey, thumbnailSize,
-                    [assetId = productKey->GetAssetId()]() { return Utils::LoadImageFromImageAsset(assetId); }
-                );
+                m_imageAssetLoader->QueueAsset(
+                    productKey->GetAssetId(),
+                    [this, thumbnailKey, thumbnailSize](const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset) {
+                        RenderThumbnailFromImage(thumbnailKey, thumbnailSize, [asset]() {
+                            return Utils::LoadImageFromImageAsset(asset);
+                        });
+                    });
             }
             else
             {
@@ -142,19 +148,17 @@ namespace ImageProcessingAtom
         void ImageThumbnailSystemComponent::RenderThumbnailFromImage(
             AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize, MkImageFn mkPreviewImage) const
         {
-            const auto JobRunner = [mkPreviewImage, thumbnailKey, thumbnailSize]() mutable
+            auto jobRunner = [mkPreviewImage, thumbnailKey, thumbnailSize]()
             {
                 IImageObjectPtr previewImage = mkPreviewImage();
                 if (!previewImage)
                 {
                     AZ::SystemTickBus::QueueFunction(
-                    [
-                        thumbnailKey
-                    ]()
-                    {
-                        AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                            thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
-                    });
+                        [thumbnailKey]()
+                        {
+                            AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                                thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                        });
 
                     return;
                 }
@@ -175,17 +179,15 @@ namespace ImageProcessingAtom
 
                 // Dispatch event on main thread
                 AZ::SystemTickBus::QueueFunction(
-                [
-                    thumbnailKey,
-                    pixmap = QPixmap::fromImage(image.scaled(QSize(thumbnailSize, thumbnailSize), Qt::KeepAspectRatio, Qt::SmoothTransformation))
-                ]() mutable
-                {
-                    AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                        thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
-                        pixmap);
-                });
+                    [thumbnailKey,
+                     pixmap = QPixmap::fromImage(
+                         image.scaled(QSize(thumbnailSize, thumbnailSize), Qt::KeepAspectRatio, Qt::SmoothTransformation))]()
+                    {
+                        AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                            thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered, pixmap);
+                    });
             };
-            AZ::CreateJobFunction(JobRunner, true)->Start();
+            AZ::CreateJobFunction(jobRunner, true)->Start();
         }
     } // namespace Thumbnails
 } // namespace ImageProcessingAtom

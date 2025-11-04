@@ -289,4 +289,8 @@ AzQtComponents::TabWidget::applySecondaryStyle(tabWidget, bordered);
     ui->exampleText->setHtml(exampleText);
 }
 
+TabWidgetPage::~TabWidgetPage()
+{
+}
 #include "Gallery/moc_TabWidgetPage.cpp"
+

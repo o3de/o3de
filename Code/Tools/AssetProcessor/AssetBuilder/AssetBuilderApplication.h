@@ -32,7 +32,9 @@ class AssetBuilderApplication
     , public IBuilderApplication
 {
 public:
+    AZ_CLASS_ALLOCATOR(AssetBuilderApplication, AZ::SystemAllocator)
     AssetBuilderApplication(int* argc, char*** argv);
+    AssetBuilderApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
     ~AssetBuilderApplication();
 
     AZ::ComponentTypeList GetRequiredSystemComponents() const override;
@@ -42,6 +44,10 @@ public:
     bool IsInDebugMode() const;
 
     void InitializeBuilderComponents() override;
+
+protected:
+    // AzFramework::ApplicationRequests::Bus overrides ...
+    void QueryApplicationType(AZ::ApplicationTypeQuery& appType) const override;
 
 private:
     void InstallCtrlHandler();

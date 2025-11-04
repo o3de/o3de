@@ -32,7 +32,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateFunctionMimeEvent, "{BCB4226C-4863-4646-838C-45ABD662C9BB}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateFunctionMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateFunctionMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -54,7 +54,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(FunctionPaletteTreeItem, "{AF75BBAD-BC8A-46D2-81B6-54C0E6CB3E41}", GraphCanvas::DraggableNodePaletteTreeItem);
-        AZ_CLASS_ALLOCATOR(FunctionPaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FunctionPaletteTreeItem, AZ::SystemAllocator);
 
         FunctionPaletteTreeItem(const char* name, const ScriptCanvas::Grammar::FunctionSourceId& sourceId, AZ::Data::Asset<AZ::Data::AssetData> asset);
         ~FunctionPaletteTreeItem() = default;

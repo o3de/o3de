@@ -20,9 +20,12 @@ end
 function Process(context)
     local textureMap = context:GetMaterialPropertyValue_Image("textureMap")
     local useTexture = context:GetMaterialPropertyValue_bool("useTexture")
+    local pixelDepthOffsetEnabled = context:GetMaterialPropertyValue_bool("pdo")
+
     local enable = textureMap ~= nil and useTexture 
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", enable)
     context:SetShaderOptionValue_bool("o_useHeightmap", enable)
+    context:SetInternalMaterialPropertyValue_bool("hasPerPixelDepth", enable and pixelDepthOffsetEnabled)
 end
 
 function ProcessEditor(context)

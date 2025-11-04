@@ -18,7 +18,7 @@ namespace UnitTest
     {
     protected:
         AzManipulatorTestFrameworkBusCallTestFixture()
-            : LinearManipulatorTestFixture(AzToolsFramework::g_mainManipulatorManagerId)
+            : LinearManipulatorTestFixture(AzToolsFramework::GetMainManipulatorManagerId())
         {
         }
 
@@ -26,7 +26,7 @@ namespace UnitTest
         {
             bool manipulatorInteracting = false;
             AzToolsFramework::ManipulatorManagerRequestBus::EventResult(
-                manipulatorInteracting, AzToolsFramework::g_mainManipulatorManagerId,
+                manipulatorInteracting, AzToolsFramework::GetMainManipulatorManagerId(),
                 &AzToolsFramework::ManipulatorManagerRequestBus::Events::Interacting);
 
             return manipulatorInteracting;

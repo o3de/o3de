@@ -27,7 +27,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::ReflectionProbeComponentConfig, "{D61730A1-CAF5-448C-B2A3-50D5DC909F31}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(ReflectionProbeComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ReflectionProbeComponentConfig, SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             float m_outerHeight = DefaultReflectionProbeExtents;
@@ -60,7 +60,7 @@ namespace AZ
         public:
             friend class EditorReflectionProbeComponent;
 
-            AZ_CLASS_ALLOCATOR(ReflectionProbeComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ReflectionProbeComponentController, AZ::SystemAllocator);
             AZ_RTTI(AZ::Render::ReflectionProbeComponentController, "{EFFA88F1-7ED2-4552-B6F6-5E6B2B6D9311}");
 
             static void Reflect(AZ::ReflectContext* context);
@@ -90,8 +90,10 @@ namespace AZ
             void UpdateCubeMap();
 
             // BoundsRequestBus overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
+            AZ::Aabb GetWorldBounds() const override;
+            AZ::Aabb GetLocalBounds() const override;
+
+            void RegisterInnerExtentsChangedHandler(AZ::Event<bool>::Handler& handler);
 
         private:
 
@@ -110,6 +112,9 @@ namespace AZ
             // update the feature processor and configuration outer extents
             void UpdateOuterExtents();
 
+            // computes the effective transform taking both the entity transform and the shape translation offset into account
+            AZ::Transform ComputeOverallTransform(const AZ::Transform& entityTransform) const;
+
             // box shape component, used for defining the outer extents of the probe area
             LmbrCentral::BoxShapeComponentRequests* m_boxShapeInterface = nullptr;
             LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
@@ -121,6 +126,9 @@ namespace AZ
             TransformInterface* m_transformInterface = nullptr;
             AZ::EntityId m_entityId;
             ReflectionProbeComponentConfig m_configuration;
+
+            // event fired when the inner extents change
+            AZ::Event<bool> m_innerExtentsChangedEvent;
         };
     } // namespace Render
 } // namespace AZ

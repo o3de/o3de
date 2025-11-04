@@ -9,6 +9,7 @@
 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Component/TransformBus.h>
 
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -58,7 +59,7 @@ namespace AZ
             LoadPencilMap();
             m_pencilMapIndex = GetSceneSrg()->FindShaderInputImageIndex(Name("m_dofPencilMap"));
 
-            // Get default 
+            // Get default
             auto viewSrg = GetDefaultViewSrg();
             AZ_Assert(viewSrg, "DepthOfFieldSettings : Failed to get the default render pipeline's default viewSrg.");
 
@@ -159,8 +160,25 @@ namespace AZ
             float focusDistance = 0.0f;
             if (m_enableAutoFocus)
             {
-                focusDistance = m_viewNear + m_normalizedFocusDistanceForAutoFocus * (m_viewFar - m_viewNear);
-                focusDistance = GetClamp(focusDistance, m_viewNear, m_viewFar);
+                if (m_focusedEntityId.IsValid())
+                {
+                    AZ::Vector3 focusPosition;
+                    AZ::TransformBus::EventResult(focusPosition, m_focusedEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
+
+                    AZ::Transform cameraTransform;
+                    AZ::TransformBus::EventResult(cameraTransform, m_cameraEntityId, &AZ::TransformBus::Events::GetWorldTM);
+
+                    AZ::Vector3 cameraPosition = cameraTransform.GetTranslation();
+                    AZ::Vector3 forward = cameraTransform.GetBasisY();
+
+                    focusDistance = forward.Dot(focusPosition - cameraPosition);
+                    focusDistance = GetClamp(focusDistance, m_viewNear, m_viewFar);
+                }
+                else
+                {
+                    focusDistance = m_viewNear + m_normalizedFocusDistanceForAutoFocus * (m_viewFar - m_viewNear);
+                    focusDistance = GetClamp(focusDistance, m_viewNear, m_viewFar);
+                }
             }
             else
             {
@@ -259,7 +277,7 @@ namespace AZ
 
         // [GFX TODO][ATOM-3035]This function is temporary and will change with improvement to the draw list tag system
         void DepthOfFieldSettings::UpdateAutoFocusDepth(bool enabled)
-        {            
+        {
             const Name TemplateNameReadBackFocusDepth = Name("DepthOfFieldReadBackFocusDepthTemplate");
             // [GFX TODO][ATOM-4908] multiple camera should be distingushed.
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(TemplateNameReadBackFocusDepth, GetParentScene());
@@ -286,10 +304,11 @@ namespace AZ
 
         void DepthOfFieldSettings::SetQualityLevel(uint32_t qualityLevel)
         {
-            m_qualityLevel = qualityLevel;
-            m_sampleRadialDivision2 = DepthOfField::QualitySet[qualityLevel].sampleRadialDivision2;
-            m_sampleRadialDivision4 = DepthOfField::QualitySet[qualityLevel].sampleRadialDivision4;
-            m_sampleRadialDivision8 = DepthOfField::QualitySet[qualityLevel].sampleRadialDivision8;
+            // Clamp quality level to be less than the size of the QualitySet array
+            m_qualityLevel = AZStd::max(qualityLevel, static_cast<uint32_t>(AZStd::size(DepthOfField::QualitySet) - 1));
+            m_sampleRadialDivision2 = DepthOfField::QualitySet[m_qualityLevel].sampleRadialDivision2;
+            m_sampleRadialDivision4 = DepthOfField::QualitySet[m_qualityLevel].sampleRadialDivision4;
+            m_sampleRadialDivision8 = DepthOfField::QualitySet[m_qualityLevel].sampleRadialDivision8;
         }
 
         void DepthOfFieldSettings::SetApertureF(float apertureF)
@@ -322,6 +341,12 @@ namespace AZ
         {
             m_enableAutoFocus = enableAutoFocus;
         }
+
+        void DepthOfFieldSettings::SetFocusedEntityId(EntityId focusedEntityId)
+        {
+            m_focusedEntityId = focusedEntityId;
+        }
+
 
         void DepthOfFieldSettings::SetAutoFocusScreenPosition(Vector2 screenPosition)
         {

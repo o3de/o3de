@@ -16,7 +16,7 @@ namespace AzGameFramework
     {
     public:
         AZ_RTTI(AzGameFrameworkModule, "{FC9FEAC4-ADF5-426B-B26D-96A3413F3AF2}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AzGameFrameworkModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AzGameFrameworkModule, AZ::OSAllocator);
 
         AzGameFrameworkModule();
         ~AzGameFrameworkModule() override = default;

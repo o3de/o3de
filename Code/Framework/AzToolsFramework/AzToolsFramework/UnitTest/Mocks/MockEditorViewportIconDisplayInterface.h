@@ -21,7 +21,9 @@ namespace UnitTest
 
         //! AzToolsFramework::EditorViewportIconDisplayInterface overrides ...
         MOCK_METHOD1(DrawIcon, void(const DrawParameters&));
+        MOCK_METHOD1(AddIcon, void(const DrawParameters&));
         MOCK_METHOD1(GetOrLoadIconForPath, IconId(AZStd::string_view path));
         MOCK_METHOD1(GetIconLoadStatus, IconLoadStatus(IconId icon));
+        MOCK_METHOD0(DrawIcons, void());
     };
 } // namespace UnitTest

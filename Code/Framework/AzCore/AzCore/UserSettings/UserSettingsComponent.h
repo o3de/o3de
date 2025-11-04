@@ -27,7 +27,7 @@ namespace AZ
     /**
      * UserSettingsComponent
      */
-    class UserSettingsComponent
+    class AZCORE_API UserSettingsComponent
         : public Component
         , protected UserSettingsComponentRequestBus::Handler
     {
@@ -57,8 +57,6 @@ namespace AZ
 
         /// \ref ComponentDescriptor::GetProvidedServices
         static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
-        /// \ref ComponentDescriptor::GetDependentServices
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
         /// \red ComponentDescriptor::Reflect
         static void Reflect(ReflectContext* reflection);
 

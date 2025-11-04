@@ -53,9 +53,11 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/CommandSystem/Source/ActorCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphCommands.h>
@@ -106,7 +108,7 @@ namespace EMStudio
         : QDialog(parent)
     {
         QHBoxLayout* mainLayout = new QHBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
 
         m_textEdit = new QTextEdit();
         m_textEdit->setTextInteractionFlags(Qt::NoTextInteraction | Qt::TextSelectableByMouse);
@@ -150,6 +152,8 @@ namespace EMStudio
         m_textEdit->setText(text.c_str());
     }
 
+    constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+
     MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
         : AzQtComponents::DockMainWindow(parent, flags)
         , m_prevSelectedActor(nullptr)
@@ -180,10 +184,16 @@ namespace EMStudio
         m_unselectCallback               = nullptr;
         m_clearSelectionCallback        = nullptr;
         m_saveWorkspaceCallback          = nullptr;
+
+        // Register this window as the widget for the Animation Editor Action Context.
+        AzToolsFramework::AssignWidgetToActionContextHelper(AnimationEditorActionContextIdentifier, this);
     }
 
     MainWindow::~MainWindow()
     {
+        // Unregister this window as the widget for the Animation Editor Action Context.
+        AzToolsFramework::RemoveWidgetFromActionContextHelper(AnimationEditorActionContextIdentifier, this);
+
         DisableUpdatingPlugins();
 
         if (m_nativeEventFilter)
@@ -283,7 +293,7 @@ namespace EMStudio
         menuWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
         QHBoxLayout* menuLayout = new QHBoxLayout(menuWidget);
-        menuLayout->setMargin(0);
+        menuLayout->setContentsMargins(0, 0, 0, 0);
         menuLayout->setSpacing(0);
 
         QMenuBar* menuBar = new QMenuBar(menuWidget);
@@ -315,7 +325,7 @@ namespace EMStudio
         // actor file actions
         QAction* openAction = menu->addAction(tr("&Open Actor"), this, &MainWindow::OnFileOpenActor, QKeySequence::Open);
         openAction->setObjectName("EMFX.MainWindow.OpenActorAction");
-        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), this, &MainWindow::OnFileMergeActor, Qt::CTRL + Qt::Key_I);
+        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), this, &MainWindow::OnFileMergeActor, 0x0 | Qt::CTRL | Qt::Key_I);
         m_mergeActorAction->setObjectName("EMFX.MainWindow.MergeActorAction");
         m_saveSelectedActorsAction = menu->addAction(tr("&Save Selected Actors"), this, &MainWindow::OnFileSaveSelectedActors);
         m_saveSelectedActorsAction->setObjectName("EMFX.MainWindow.SaveActorAction");
@@ -389,12 +399,12 @@ namespace EMStudio
 
         menu->addAction("Documentation", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/user-guide/visualization/animation/"));
+            QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/user-guide/visualization/animation/"));
         });
 
         menu->addAction("Forums", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/community/"));
+            QDesktopServices::openUrl(QUrl("https://www.o3de.org/community/"));
         });
 
         menu->addSeparator();
@@ -443,7 +453,7 @@ namespace EMStudio
         QAction* animGraphLayoutAction = new QAction(
             "AnimGraph",
             this);
-        animGraphLayoutAction->setShortcut(Qt::Key_1 | Qt::AltModifier);
+        animGraphLayoutAction->setShortcut(0x0 | Qt::Key_1 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(animGraphLayoutAction, layoutGroupName, false);
         connect(animGraphLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(0); });
         addAction(animGraphLayoutAction);
@@ -451,7 +461,7 @@ namespace EMStudio
         QAction* animationLayoutAction = new QAction(
             "Animation",
             this);
-        animationLayoutAction->setShortcut(Qt::Key_2 | Qt::AltModifier);
+        animationLayoutAction->setShortcut(0x0 | Qt::Key_2 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(animationLayoutAction, layoutGroupName, false);
         connect(animationLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(1); });
         addAction(animationLayoutAction);
@@ -459,7 +469,7 @@ namespace EMStudio
         QAction* characterLayoutAction = new QAction(
             "Character",
             this);
-        characterLayoutAction->setShortcut(Qt::Key_3 | Qt::AltModifier);
+        characterLayoutAction->setShortcut(0x0 | Qt::Key_3 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(characterLayoutAction, layoutGroupName, false);
         connect(characterLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(2); });
         addAction(characterLayoutAction);
@@ -1298,16 +1308,23 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 
         AZStd::string animgraphFilename;
-        EBUS_EVENT_RESULT(animgraphFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, animgraphId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            animgraphFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, animgraphId);
         bool found;
         if (!animgraphFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, animgraphFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                animgraphFilename.c_str(),
+                filename);
+
             if (found)
             {
                 animgraphFilename = filename;
@@ -1315,10 +1332,16 @@ namespace EMStudio
         }
 
         AZStd::string motionSetFilename;
-        EBUS_EVENT_RESULT(motionSetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, motionSetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            motionSetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, motionSetId);
         if (!motionSetFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, motionSetFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                motionSetFilename.c_str(),
+                filename);
+
             if (found)
             {
                 motionSetFilename = filename;
@@ -1597,7 +1620,7 @@ namespace EMStudio
 
         ResetSettingsDialog* resetDialog = new ResetSettingsDialog(this);
         resetDialog->setObjectName("EMFX.MainWindow.ResetSettingsDialog");
-        EMStudio::ResetSettingsDialog::connect(resetDialog, &QDialog::finished, [=](int resultCode)
+        EMStudio::ResetSettingsDialog::connect(resetDialog, &QDialog::finished, [this, resetDialog](int resultCode)
         {
             resetDialog->deleteLater();
 
@@ -2250,7 +2273,8 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/SrgSemantics.azsli> 
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
@@ -26,7 +26,7 @@ float4 CalculateOutputColor(const float3 inColor, const float3 finalEffect, cons
     return outColor;
 }
 
-partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     //! The color buffer to apply the editor mode feedback effects to.
     Texture2D<float4> m_framebuffer;
@@ -44,6 +44,75 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     //! The final blend amount that is used to scale the calculated blend values.
     float m_finalBlendAmount;
     
+    ///////////////////////////////////
+    //! EditorModeDesaturation related data
+    //! Amount of desaturation to apply.
+    float m_desaturationAmount;
+    ///////////////////////////////////
+    
+    ///////////////////////////////////
+    //! EditorModeOutline related data
+    //! Outline line thickness.
+    float m_lineThickness;
+
+    //! Outline line color.
+    float4 m_lineColor;
+
+    //! Outline style to use (0 = OutlineStyle::Always, 1 = OutlineStyle::Visible)
+    uint m_outlineStyle;
+    ///////////////////////////////////
+      
+    ///////////////////////////////////
+    //! EditorModeBlur related data
+    //! Width of kernel to apply box blur effect.
+    float m_kernelHalfWidth;
+
+    //! The direction to perform the blur (0 = horizontal, 1 = vertical).
+    uint m_direction;
+    ///////////////////////////////////
+     
+    ///////////////////////////////////
+    //! EditorModeTint related data
+    //! Amount of tint to apply.
+    float m_tintAmount;
+
+    //! Color of tint to apply.
+    float4 m_tintColor;
+    ///////////////////////////////////
+        
+    ///////////////////////////////////
+    //! EditorModeDepthTransition related data
+    /* -----------------
+        \      E      /
+         \#####|#####/
+          \####|####/
+           \###|###/
+            \##|##/
+             \-S-/
+              \ /
+               V
+
+        V = View position
+        S = Depth transition start
+        E = Depth transition end
+
+        When E is a non-zero value, the binary mask value will be transformed into a value from [m_minDepthTransitionValue, 1.0]
+        according to the fragment's depth position in the transition band (#) spanning from S to E. This is to allow feedback
+        effects to be scaled according to the distance of non-mask fragments to the viewer.
+    */
+
+    //! The minimum blend amount that will be calculated through depth transitioning.
+    float m_minDepthTransitionValue;
+    
+    //! Start of depth transtion for non-mask effect blending.
+    //! @note S in the diagram above.
+    float m_depthTransitionStart;
+
+    //! The duration (depth) of the depth transition band (0.0 = no depth transitioning will be applied).
+    //! @note E - S in the diagram above.
+    float m_depthTransitionDuration;
+    ///////////////////////////////////
+        
     Sampler LinearSampler
     {
         MinFilter = Linear;
@@ -75,5 +144,24 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float4 CalculateFinalBlendAmountAndOutputColor(const float3 inColor, const float3 finalEffect, const float t)
     {
         return CalculateOutputColor(inColor, finalEffect, PassSrg::CalculateFinalBlendAmount(t));
+    }
+    
+    //! Calculates the blend amount (0.0 = input color, 1.0 = final effect) as scaled by the fragment's linear depth according to the depth transition values.
+    float CalculateTransitionBlendAmountFromLinearDepth(const float linearDepth, const float maskValue)
+    {
+        if(PassSrg::m_depthTransitionDuration > 0.0)
+        {
+            const float depthTransition = clamp((linearDepth - PassSrg::m_depthTransitionStart) / (PassSrg::m_depthTransitionDuration), PassSrg::m_minDepthTransitionValue, 1.0);
+            return clamp((1.0 - maskValue) * depthTransition, 0.0, 1.0);
+        }
+
+        return 1.0 - maskValue;
+    }
+
+    //! Calculates the blend amount (0.0 = input color, 1.0 = final effect) as scaled by the fragment's non-linear depth according to the depth transition values.
+    float CalculateTransitionBlendAmountFromDepth(const float zDepth, const float maskValue)
+    {
+        const float linearDepth = CalculateLinearDepth(zDepth);
+        return CalculateTransitionBlendAmountFromLinearDepth(linearDepth, maskValue);
     }
 }

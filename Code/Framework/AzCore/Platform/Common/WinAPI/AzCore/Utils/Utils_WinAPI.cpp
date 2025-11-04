@@ -62,7 +62,7 @@ namespace AZ
             return AZStd::nullopt;
         }
 
-        AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath()
+        AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultDevWriteStoragePath()
         {
             return AZStd::nullopt;
         }
@@ -73,14 +73,74 @@ namespace AZ
             return result != nullptr;
         }
 
+        GetEnvOutcome GetEnv(AZStd::span<char> valueBuffer, const char* envname)
+        {
+            // Set the environment value capacity to 64KiB which is larger
+            // than any value that can be stored
+            constexpr size_t envValueCapacity = 1024 * 64;
+            wchar_t envValueBuffer[envValueCapacity];
+            // Restrict the environment variable key to 1024 characters
+            AZStd::fixed_wstring<1024> wEnvname;
+            AZStd::to_wstring(wEnvname, envname);
+            size_t variableSize = 0;
+
+            if (auto err = _wgetenv_s(&variableSize, envValueBuffer, envValueCapacity, wEnvname.c_str());
+                !err && variableSize > 0)
+            {
+                const size_t envValueLen = AZStd::min(AZStd::char_traits<wchar_t>::length(envValueBuffer), variableSize);
+                AZStd::fixed_string<envValueCapacity> utf8Value;
+                AZStd::to_string(utf8Value, AZStd::wstring_view(envValueBuffer, envValueLen));
+
+                // Now copy the string to the span if it has enough capacity
+                if (valueBuffer.size() >= utf8Value.size())
+                {
+                    // copy the utf8 string value over to the value buffer
+                    utf8Value.copy(valueBuffer.data(), valueBuffer.size());
+                    // return a string that points the beginning of the span buffer
+                    // with a size that is set to the environment variable value string
+                    return AZStd::string_view(valueBuffer.data(), utf8Value.size());
+                }
+
+                return AZ::Failure(GetEnvErrorResult{ GetEnvErrorCode::BufferTooSmall, utf8Value.size() });
+            }
+
+            return AZ::Failure(GetEnvErrorResult{ GetEnvErrorCode::EnvNotSet });
+        }
+
+        bool IsEnvSet(const char* envname)
+        {
+            // Set the environment value capacity to 64KiB which is larger
+            // than any value that can be stored
+            constexpr size_t envValueCapacity = 1024 * 64;
+            wchar_t envValueBuffer[envValueCapacity];
+            // Restrict the environment variable key to 1024 characters
+            AZStd::fixed_wstring<1024> wKey;
+            AZStd::to_wstring(wKey, AZStd::string_view(envname));
+            size_t variableSize = 0;
+            errno_t err = _wgetenv_s(&variableSize, envValueBuffer, envValueCapacity, wKey.c_str());
+            // A required size of zero indicates the environment variable is not set according
+            // to the microsoft example for _wgetenv_s
+            // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/getenv-s-wgetenv-s?view=msvc-170#example
+            return !err && variableSize > 0;
+        }
+
         bool SetEnv(const char* envname, const char* envvalue, [[maybe_unused]] bool overwrite)
         {
-            return _putenv_s(envname, envvalue);
+            constexpr size_t envValueCapacity = 1024 * 64;
+            // Copy over the envvalue to a wide character string ubffer
+            AZStd::fixed_wstring<envValueCapacity> wEnvvalue;
+            AZStd::to_wstring(wEnvvalue, envvalue);
+
+            // Restrict the environment variable key to 1024 characters
+            AZStd::fixed_wstring<1024> wEnvname;
+            AZStd::to_wstring(wEnvname, AZStd::string_view(envname));
+            // Use the _wputenv_s version to get unicode support
+            return _wputenv_s(wEnvname.c_str(), wEnvvalue.c_str()) == 0;
         }
 
         bool UnsetEnv(const char* envname)
         {
-            return SetEnv(envname, "", 1);
+            return SetEnv(envname, "", true);
         }
     }
 }

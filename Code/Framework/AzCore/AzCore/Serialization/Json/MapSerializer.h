@@ -14,7 +14,7 @@
 
 namespace AZ
 {
-    class JsonMapSerializer
+    class AZCORE_API JsonMapSerializer
         : public BaseJsonSerializer
     {
     public:
@@ -44,7 +44,7 @@ namespace AZ
         virtual bool ShouldClearContainer(const JsonDeserializerContext& context) const;
     };
 
-    class JsonUnorderedMapSerializer
+    class AZCORE_API JsonUnorderedMapSerializer
         : public JsonMapSerializer
     {
     public:
@@ -56,7 +56,7 @@ namespace AZ
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
     };
 
-    class JsonUnorderedMultiMapSerializer
+    class AZCORE_API JsonUnorderedMultiMapSerializer
         : public JsonMapSerializer
     {
     public:

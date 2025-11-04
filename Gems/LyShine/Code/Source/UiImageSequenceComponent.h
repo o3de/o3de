@@ -22,7 +22,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 //! \brief Image component capable of indexing and displaying from multiple image files in a directory.
 //!
@@ -99,19 +99,19 @@ public: // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
-        provided.push_back(AZ_CRC("UiIndexableImageService"));
+        provided.push_back(AZ_CRC_CE("UiVisualService"));
+        provided.push_back(AZ_CRC_CE("UiIndexableImageService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiVisualService", 0xa864fdf8));
+        incompatible.push_back(AZ_CRC_CE("UiVisualService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
 protected: // member functions

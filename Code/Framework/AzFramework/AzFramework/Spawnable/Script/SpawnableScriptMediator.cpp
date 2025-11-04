@@ -72,7 +72,7 @@ namespace AzFramework::Scripts
             m_activeSpawnTickets.insert(result.GetValue());
             return result;
         }
-        return AZ::Failure();
+        return AZ::Failure("CreateSpawnTicket failed to spawn"); // TODO-LS: add name of spawnableAsset.GetAsset()
     }
 
     bool SpawnableScriptMediator::Spawn(EntitySpawnTicket spawnTicket)

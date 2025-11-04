@@ -59,7 +59,6 @@ namespace LmbrCentral
                 editContext->Class<AudioSystemComponent>("Audio System", "Provides access to audio system features without the need for an Entity")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -91,14 +90,14 @@ namespace LmbrCentral
     // static
     void AudioSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("AudioSystemService", 0xfbb9b542));
+        provided.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////
     // static
     void AudioSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("AudioSystemService", 0xfbb9b542));
+        incompatible.push_back(AZ_CRC_CE("AudioSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////

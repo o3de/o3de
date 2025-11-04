@@ -640,11 +640,14 @@ namespace AZ::Render
             FrameAttachmentVisualizeInfo& attachmentVisualInfo = m_framesAttachments[i];
             attachmentVisualInfo.m_pFirstScopeVisual.clear();
             attachmentVisualInfo.m_pLastScopeVisual.clear();
-            const AZ::RHI::ScopeAttachment* scopeAttachment = attachment.GetFirstScopeAttachment();
-            while (scopeAttachment)
+            for (int deviceIndex{ 0 }; deviceIndex < RHI::RHISystemInterface::Get()->GetDeviceCount(); ++deviceIndex)
             {
-                attachmentVisualInfo.m_pFirstScopeVisual.push_back({ scopeAttachment->GetScope().GetId() });
-                scopeAttachment = scopeAttachment->GetNext();
+                const AZ::RHI::ScopeAttachment* scopeAttachment = attachment.GetFirstScopeAttachment(deviceIndex);
+                while (scopeAttachment)
+                {
+                    attachmentVisualInfo.m_pFirstScopeVisual.push_back({ scopeAttachment->GetScope().GetId() });
+                    scopeAttachment = scopeAttachment->GetNext();
+                }
             }
         }
     }

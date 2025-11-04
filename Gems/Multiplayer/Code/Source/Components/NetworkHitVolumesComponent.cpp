@@ -124,20 +124,40 @@ namespace Multiplayer
     {
         EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusConnect(GetEntityId());
         GetNetBindComponent()->AddEntitySyncRewindEventHandler(m_syncRewindHandler);
-        m_physicsCharacter = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
+        GetNetBindComponent()->AddEntityPreRenderEventHandler(m_preRenderHandler);
         GetTransformComponent()->BindTransformChangedEventHandler(m_transformChangedHandler);
         OnTransformUpdate(GetTransformComponent()->GetWorldTM());
+
+        // During activation the character controller is not created yet.
+        // Connect to CharacterNotificationBus to listen when it's activated after creation.
+        Physics::CharacterNotificationBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void NetworkHitVolumesComponent::OnCharacterActivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        m_physicsCharacter = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
+    }
+
+    void NetworkHitVolumesComponent::OnCharacterDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        DestroyHitVolumes();
+        m_physicsCharacter = nullptr;
     }
 
     void NetworkHitVolumesComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
+        m_debugDisplay = nullptr;
+        m_syncRewindHandler.Disconnect();
+        m_preRenderHandler.Disconnect();
+        m_transformChangedHandler.Disconnect();
         DestroyHitVolumes();
+        Physics::CharacterNotificationBus::Handler::BusDisconnect();
         EMotionFX::Integration::ActorComponentNotificationBus::Handler::BusDisconnect();
     }
 
     void NetworkHitVolumesComponent::OnPreRender([[maybe_unused]] float deltaTime)
     {
-        if (m_animatedHitVolumes.size() <= 0)
+        if (m_animatedHitVolumes.empty())
         {
             CreateHitVolumes();
         }
@@ -148,6 +168,11 @@ namespace Multiplayer
         {
             m_actorComponent->GetJointTransformComponents(hitVolume.m_jointIndex, EMotionFX::Integration::Space::ModelSpace, position, rotation, scale);
             hitVolume.UpdateTransform(AZ::Transform::CreateFromQuaternionAndTranslation(rotation, position) * hitVolume.m_colliderOffSetTransform);
+        }
+
+        if (bg_DrawArticulatedHitVolumes)
+        {
+            DrawDebugHitVolumes();
         }
     }
 
@@ -216,6 +241,62 @@ namespace Multiplayer
 
     void NetworkHitVolumesComponent::OnActorInstanceDestroyed([[maybe_unused]] EMotionFX::ActorInstance* actorInstance)
     {
+        DestroyHitVolumes();
         m_actorComponent = nullptr;
     }
-}
+
+    void NetworkHitVolumesComponent::DrawDebugHitVolumes()
+    {
+        if (m_debugDisplay == nullptr)
+        {
+            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+            m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        }
+
+        if (m_debugDisplay != nullptr)
+        {
+            const AZ::u32 previousState = m_debugDisplay->GetState();
+            m_debugDisplay->SetColor(AZ::Colors::Blue);
+
+            AZ::Transform rigidBodyTransform = GetEntity()->GetTransform()->GetWorldTM();
+
+            for (const AnimatedHitVolume& hitVolume : m_animatedHitVolumes)
+            {
+                AZ::Vector3 jointPosition = AZ::Vector3::CreateZero();
+                AZ::Vector3 jointScale = AZ::Vector3::CreateOne();
+                AZ::Quaternion jointRotation = AZ::Quaternion::CreateIdentity();
+                m_actorComponent->GetJointTransformComponents(
+                    hitVolume.m_jointIndex, EMotionFX::Integration::Space::ModelSpace, jointPosition, jointRotation, jointScale);
+
+                AZ::Transform colliderTransformNoScale = rigidBodyTransform *
+                    AZ::Transform::CreateFromQuaternionAndTranslation(jointRotation, jointPosition) * hitVolume.m_colliderOffSetTransform;
+
+                m_debugDisplay->PushMatrix(colliderTransformNoScale);
+
+                if (const Physics::SphereShapeConfiguration* sphereCollider =
+                        azrtti_cast<const Physics::SphereShapeConfiguration*>(hitVolume.m_shapeConfig))
+                {
+                    m_debugDisplay->DrawWireSphere(AZ::Vector3::CreateZero(), sphereCollider->m_radius);
+                }
+                else if (const Physics::CapsuleShapeConfiguration* capsuleCollider =
+                        azrtti_cast<const Physics::CapsuleShapeConfiguration*>(hitVolume.m_shapeConfig))
+                {
+                    const float radius = capsuleCollider->m_radius;
+                    const float height = capsuleCollider->m_height;
+                    m_debugDisplay->DrawWireCapsule(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), radius, height * 0.5f);
+                }
+                else if (const Physics::BoxShapeConfiguration* boxCollider =
+                        azrtti_cast<const Physics::BoxShapeConfiguration*>(hitVolume.m_shapeConfig))
+                {
+                    AZ::Vector3 dimensions = boxCollider->m_dimensions;
+                    m_debugDisplay->DrawWireBox(dimensions * -0.5f, dimensions * 0.5f);
+                }
+
+                m_debugDisplay->PopMatrix();
+            }
+
+            m_debugDisplay->SetState(previousState);
+        }
+    }
+} // namespace Multiplayer

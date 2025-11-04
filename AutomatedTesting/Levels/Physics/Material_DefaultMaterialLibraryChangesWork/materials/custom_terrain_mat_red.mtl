@@ -1,8 +1,0 @@
-<Material MtlFlags="524320" DccMaterialHash="0" Shader="Terrain.Layer" GenMask="200200200000000" StringGenMask="%NORMAL_MAP%SPECULAR_MAP%TEMP_TERRAIN" SurfaceType="mat_default" Diffuse="0.40197781,0,0,1" Specular="0.001517635,0.001517635,0.001517635,1" Opacity="1" Shininess="2.0078754" vertModifType="0" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="engineassets/texturemsg/defaultnouvs.dds"/>
-  <Texture Map="Bumpmap" File="engineassets/texturemsg/defaultnouvs_ddn.dds"/>
-  <Texture Map="Specular" File="engineassets/texturemsg/defaultnouvs_spec.dds"/>
- </Textures>
- <PublicParams BlendFalloff="1" DetailTextureStrength="0.80000001" BlendFactor="0" IndirectColor="0.25,0.25,0.25"/>
-</Material>

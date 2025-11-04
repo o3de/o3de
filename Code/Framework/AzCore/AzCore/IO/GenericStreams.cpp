@@ -160,10 +160,13 @@ namespace AZ::IO
         Open(path, mode);
     }
 
-    SystemFileStream::~SystemFileStream()
-    {
-        m_file.Close();
-    }
+    // Let the SystemFile destructor close or not close any files based
+    // on its destruction logic
+    SystemFileStream::~SystemFileStream() = default;
+
+    // Default the move constructor and assignment operator
+    SystemFileStream::SystemFileStream(SystemFileStream&&) = default;
+    SystemFileStream& SystemFileStream::operator=(SystemFileStream&&) = default;
 
     bool SystemFileStream::IsOpen() const
     {

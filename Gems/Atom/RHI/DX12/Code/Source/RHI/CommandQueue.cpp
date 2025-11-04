@@ -124,6 +124,13 @@ namespace AZ
             }
         }
 
+        AZStd::pair<uint64_t, uint64_t> CommandQueue::GetClockCalibration()
+        {
+            AZStd::pair<uint64_t, uint64_t> calibratedTimestamp{ 0ull, 0ull };
+            m_queue->GetClockCalibration(&calibratedTimestamp.first, &calibratedTimestamp.second);
+            return calibratedTimestamp;
+        }
+
         uint64_t CommandQueue::GetGpuTimestampFrequency() const
         {
             return m_calibratedGpuTimestampFrequency;
@@ -136,13 +143,18 @@ namespace AZ
             CommandQueueContext& context = device.GetCommandQueueContext();
             const FenceSet &compiledFences = context.GetCompiledFences();
 
-            QueueCommand([=](void* commandQueue)
+            QueueCommand([this, request, compiledFences](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
                 AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
 
                 static const uint32_t CommandListCountMax = 128;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
+
+                for (Fence* fence : request.m_userFencesToWaitFor)
+                {
+                    dx12CommandQueue->Wait(fence->Get(), fence->GetPendingValue());
+                }
 
                 for (size_t producerQueueIdx = 0; producerQueueIdx < request.m_waitFences.size(); ++producerQueueIdx)
                 {
@@ -186,7 +198,7 @@ namespace AZ
                 }
 
                 AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
-                for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
+                for (RHI::DeviceSwapChain* swapChain : request.m_swapChainsToPresent)
                 {
                     swapChain->Present();
                 }

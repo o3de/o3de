@@ -8,11 +8,15 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/UserSettings/UserSettings.h>
 namespace AZ
 {
     class Vector3;
 }
+
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -32,18 +36,22 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
     }
 
+    class ToastNotificationsView;
+
     namespace Prefab
     {
+        class InstanceEntityMapperInterface;
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
         class PrefabSystemComponentInterface;
-        class InstanceEntityMapperInterface;
+        class TemplateInstanceMapperInterface;
+        
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
-        class PrefabUserSettings : public AZ::UserSettings
+        class AZTF_API PrefabUserSettings : public AZ::UserSettings
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabUserSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUserSettings, AZ::SystemAllocator);
             AZ_RTTI(PrefabUserSettings, "{E17A6128-E2C3-4501-B1AD-B8BB0D315602}", AZ::UserSettings);
 
             AZStd::string m_saveLocation;
@@ -56,13 +64,14 @@ namespace AzToolsFramework
         };
 
         //! Class to handle dialogs and windows related to prefab save operations.
-        class PrefabSaveHandler final
+        class AZTF_API PrefabSaveHandler final
             : public QObject
             , public AzQtComponents::DragAndDropEventsBus::Handler
             , public AzQtComponents::DragAndDropItemViewEventsBus::Handler
+            , private AzToolsFramework::AssetSystemBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabSaveHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabSaveHandler, AZ::SystemAllocator);
 
             PrefabSaveHandler();
             ~PrefabSaveHandler();
@@ -84,6 +93,9 @@ namespace AzToolsFramework
             int GetDragAndDropItemViewEventsPriority() const override;
             void CanDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context) override;
             void DoDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context) override;
+
+            //! Initializes PrefabToastNotificationsView member, which uses the editor's main window as the parent widget to show toasts.
+            void InitializePrefabToastNotificationsView();
 
             // Dialogs
             int ExecuteClosePrefabDialog(TemplateId templateId);
@@ -114,6 +126,13 @@ namespace AzToolsFramework
                 const AZStd::string& prefabName, const AZStd::string& targetDirectory, AZStd::string& suggestedFullPath);
 
         private:
+
+            //! AssetSystemBus notification handlers
+            //! @{
+            //! Called by the AssetProcessor when the source file has been removed.
+            void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
+            //! @}
+
             AZStd::shared_ptr<QDialog> ConstructClosePrefabDialog(TemplateId templateId);
             AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
@@ -126,7 +145,10 @@ namespace AzToolsFramework
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
 
-            InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
+            AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_prefabToastNotificationsView;
+
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+            TemplateInstanceMapperInterface* m_templateInstanceMapperInterface = nullptr;
 
             bool CanDragAndDropData(
                 const QMimeData* data,

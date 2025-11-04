@@ -17,7 +17,7 @@ namespace GraphCanvas
         : public NodeContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManageUnusedSlotsMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ManageUnusedSlotsMenuAction, AZ::SystemAllocator);
         
         ManageUnusedSlotsMenuAction(QObject* parent, bool hideSlots);
         virtual ~ManageUnusedSlotsMenuAction() = default;

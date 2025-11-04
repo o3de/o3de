@@ -16,4 +16,6 @@ set(FILES
     Source/ProfilerImGuiModule.cpp
     Source/ProfilerImGuiSystemComponent.cpp
     Source/ProfilerImGuiSystemComponent.h
+    Source/ImGuiHeapMemoryProfiler.cpp
+    Source/ImGuiHeapMemoryProfiler.h
 )

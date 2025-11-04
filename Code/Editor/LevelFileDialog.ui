@@ -16,6 +16,9 @@
     <height>430</height>
    </size>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="filterLabel">

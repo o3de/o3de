@@ -10,7 +10,9 @@
 #include <AzCore/std/optional.h>
 
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
@@ -21,6 +23,18 @@
 
 namespace AZ::SceneAPI::Utilities
 {
+    bool IsDebugEnabled()
+    {
+        bool resultValue = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(resultValue, AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput);
+        }
+        return resultValue;
+    }
+
+    bool SaveToJson(const AZStd::string& fileName, const DebugSceneGraph& graph);
+
     void DebugNode::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
@@ -82,16 +96,18 @@ namespace AZ::SceneAPI::Utilities
 
     void DebugOutput::Write(const char* name, uint64_t data)
     {
-        m_output += AZStd::string::format("\t%s: %" PRIu64 "\n", name, data);
+        AZ::u64 multiplatformSafeData(static_cast<AZ::u64>(data));
+        m_output += AZStd::string::format("\t%s: %llu\n", name, multiplatformSafeData);
 
-        AddToNode(name, data);
+        AddToNode(name, multiplatformSafeData);
     }
 
     void DebugOutput::Write(const char* name, int64_t data)
     {
-        m_output += AZStd::string::format("\t%s: %" PRId64 "\n", name, data);
+        AZ::s64 multiplatformSafeData(static_cast<AZ::s64>(data));
+        m_output += AZStd::string::format("\t%s: %lld\n", name, multiplatformSafeData);
 
-        AddToNode(name, data);
+        AddToNode(name, multiplatformSafeData);
     }
 
     void DebugOutput::Write(const char* name, const DataTypes::MatrixType& data)
@@ -241,7 +257,12 @@ namespace AZ::SceneAPI::Utilities
             }
             dbgFile.Close();
 
+            // XML is useful because it stores more information than JSON with the serializer, so some automation is better suited to use XML.
             Utils::SaveObjectToFile((debugSceneFile + ".xml").c_str(), DataStream::StreamType::ST_XML, &debugSceneGraph);
+            // JSON is useful because it can be quicker and easier to parse than XML, and more structured than the human readable dbgsg file.
+            AZStd::string jsonFileName(debugSceneFile + ".json");
+            SaveToJson(jsonFileName, debugSceneGraph);
+
 
             static const AZ::Data::AssetType dbgSceneGraphAssetType("{07F289D1-4DC7-4C40-94B4-0A53BBCB9F0B}");
             productList.AddProduct(productName, AZ::Uuid::CreateName(productName.c_str()), dbgSceneGraphAssetType,
@@ -251,19 +272,47 @@ namespace AZ::SceneAPI::Utilities
             productList.AddProduct(
                 (productName + ".xml"), AZ::Uuid::CreateName((productName + ".xml").c_str()), dbgSceneGraphXmlAssetType,
                 AZStd::nullopt, AZStd::nullopt);
+            
+            static const AZ::Data::AssetType dbgSceneGraphJsonAssetType("{4342B27E-0E14-49C3-B3B9-BCDB9A5FCA23}");
+            productList.AddProduct(
+                jsonFileName, AZ::Uuid::CreateName((productName + ".json").c_str()), dbgSceneGraphJsonAssetType,
+                AZStd::nullopt, AZStd::nullopt);
 
             // save out debug text for the Scene Manifest
             AZStd::string productNameDebugManifest { debugSceneFile };
             AzFramework::StringFunc::Path::ReplaceExtension(productNameDebugManifest, "assetinfo.dbg");
             scene->GetManifest().SaveToFile(productNameDebugManifest.c_str());
 
-            static const AZ::Data::AssetType dbgSceneManifstAssetType("{48A78BE7-B3F2-44B8-8AA6-F0607E9A75A5}");
+            static const AZ::Data::AssetType dbgSceneManifestAssetType("{48A78BE7-B3F2-44B8-8AA6-F0607E9A75A5}");
             productList.AddProduct(
                 productNameDebugManifest,
                 AZ::Uuid::CreateName((productName + ".assetinfo.dbg").c_str()),
-                dbgSceneManifstAssetType,
+                dbgSceneManifestAssetType,
                 AZStd::nullopt,
                 AZStd::nullopt);
         }
+    }
+
+    bool SaveToJson(const AZStd::string& fileName, const DebugSceneGraph& graph)
+    {
+        AZ::JsonSerializerSettings settings;
+        rapidjson::Document jsonDocument;
+        auto jsonResult = JsonSerialization::Store(jsonDocument, jsonDocument.GetAllocator(), graph, settings);
+        if (jsonResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            AZ_Error("Scene Debug Output", false,
+                AZStd::string::format(
+                    "JSON serialization of file %.*s failed: %.*s", AZ_STRING_ARG(fileName), AZ_STRING_ARG(jsonResult.ToString(""))).c_str());
+            return false;
+        }
+
+        auto jsonSaveResult = AZ::JsonSerializationUtils::WriteJsonFile(jsonDocument, fileName);
+
+        AZ_Error(
+            "Scene Debug Output",
+            jsonSaveResult.IsSuccess(),
+            AZStd::string::format("Saving JSON to file %.*s failed: %.*s", AZ_STRING_ARG(fileName), AZ_STRING_ARG(jsonSaveResult.GetError())).c_str());
+
+        return jsonSaveResult.IsSuccess();
     }
 }

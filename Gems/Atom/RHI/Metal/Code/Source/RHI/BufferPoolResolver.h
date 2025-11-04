@@ -29,19 +29,19 @@ namespace AZ
 
         public:
             AZ_RTTI(BufferPoolResolver, "{ECC51B75-62AD-4C86-8CAB-D6B492BD2340}", Base);
-            AZ_CLASS_ALLOCATOR(BufferPoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPoolResolver, AZ::SystemAllocator);
 
             BufferPoolResolver(Device& device, const RHI::BufferPoolDescriptor& descriptor);
 
             ///Get a pointer to write a content to upload to GPU.
-            void* MapBuffer(const RHI::BufferMapRequest& request);
+            void* MapBuffer(const RHI::DeviceBufferMapRequest& request);
 
             //////////////////////////////////////////////////////////////////////
             ///ResourcePoolResolver
             void Compile() override;
             void Resolve(CommandList& commandList) const override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::Resource& resource) override;
+            void OnResourceShutdown(const RHI::DeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////
 
         private:

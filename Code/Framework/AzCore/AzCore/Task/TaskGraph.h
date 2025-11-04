@@ -17,6 +17,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Math/Crc.h>
 
 namespace AZ
 {
@@ -27,6 +28,8 @@ namespace AZ
     }
     class TaskExecutor;
     class TaskGraph;
+
+    inline constexpr AZ::Crc32 TaskExecutorServiceCrc = AZ_CRC_CE("TaskExecutorService");
 
     class TaskGraphActiveInterface
     {
@@ -39,7 +42,7 @@ namespace AZ
     // A TaskToken is returned each time a Task is added to the TaskGraph. TaskTokens are used to
     // express dependencies between tasks within the graph, and have no purpose after the graph
     // is submitted (simply let them go out of scope)
-    class TaskToken final
+    class AZCORE_API TaskToken final
     {
     public:
         // Indicate that this task must finish before the task token(s) passed as the argument
@@ -71,7 +74,7 @@ namespace AZ
     //
     // After the TaskGraphEvent is signaled, you are NOT allowed to reuse the same TaskGraphEvent
     // for a future submission.
-    class TaskGraphEvent
+    class AZCORE_API TaskGraphEvent
     {
     public:
         // ! The supplied string label is expected to be a string literal or otherwise outlive the lifetime of this TG event.
@@ -90,7 +93,7 @@ namespace AZ
         AZStd::binary_semaphore m_semaphore;
         AZStd::atomic_int       m_waitCount = 0;
         TaskExecutor*           m_executor = nullptr;
-        const char* m_label;
+        [[maybe_unused]] const char* m_label = nullptr;
     };
 
     // The TaskGraph encapsulates a set of tasks and their interdependencies. After adding
@@ -99,7 +102,7 @@ namespace AZ
     //
     // The TaskGraph MAY be retained across multiple frames and resubmitted, provided the
     // user provides some guarantees (see comments associated with TaskGraph::Retain).
-    class TaskGraph final
+    class AZCORE_API TaskGraph final
     {
     public:
         // ! The supplied string label is expected to be a string literal or otherwise outlive the lifetime of this TG.

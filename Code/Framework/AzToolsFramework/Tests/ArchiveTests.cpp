@@ -49,7 +49,7 @@ namespace UnitTest
         }
 
         class ArchiveComponentTest :
-            public ::testing::Test
+            public UnitTest::LeakDetectionFixture
         {
 
         public:
@@ -128,7 +128,9 @@ namespace UnitTest
             void SetUp() override
             {
                 m_app.reset(aznew ToolsTestApplication("ArchiveComponentTest"));
-                m_app->Start(AzFramework::Application::Descriptor());
+                AZ::ComponentApplication::StartupParameters startupParameters;
+                startupParameters.m_loadSettingsRegistry = false;
+                m_app->Start(AzFramework::Application::Descriptor(), startupParameters);
                 // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
                 // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
                 // in the unit tests.
@@ -136,7 +138,14 @@ namespace UnitTest
 
                 if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
                 {
-                    fileIoBase->SetAlias("@products@", m_tempDir.GetDirectory());
+                    QDir cacheFolder(m_tempDir.GetDirectory());
+                    // set the product tree folder to somewhere besides the root temp dir.
+                    // This is to avoid error spam - if you try to write to the Cache folder or a subfolder,
+                    // AZ::IO will issue an error, since the cache is supposed to be read-only.
+                    // here we set it to (tempFolder)/Cache subfolder so that if you want a folder in your test to act like
+                    // the read-only cache folder, you can use that folder, but otherwise, all other folders are fair game to
+                    // use for your tests without triggering the "you cannot write to the cache" error.
+                    fileIoBase->SetAlias("@products@", cacheFolder.absoluteFilePath("Cache").toUtf8().constData());
                 }
             }
 
@@ -154,9 +163,7 @@ namespace UnitTest
         {
             CreateArchiveFolder();
 
-            AZ_TEST_START_TRACE_SUPPRESSION;
             bool createResult = CreateArchive();
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_TRUE(createResult);
         }
@@ -165,7 +172,6 @@ namespace UnitTest
         {
             CreateArchiveFolder();
 
-            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_EQ(CreateArchive(), true);
 
             AZStd::vector<AZStd::string> fileList;
@@ -173,7 +179,6 @@ namespace UnitTest
             AzToolsFramework::ArchiveCommandsBus::BroadcastResult(listResult,
                 &AzToolsFramework::ArchiveCommandsBus::Events::ListFilesInArchive,
                 GetArchivePath().toUtf8().constData(), fileList);
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_TRUE(listResult);
             EXPECT_EQ(fileList.size(), 6);
@@ -184,9 +189,7 @@ namespace UnitTest
             QStringList fileList = CreateArchiveFileList();
 
             CreateArchiveFolder(GetArchiveFolderName(), fileList);
-            AZ_TEST_START_TRACE_SUPPRESSION;
             bool createResult = CreateArchive();
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_EQ(createResult, true);
 
@@ -203,13 +206,11 @@ namespace UnitTest
             QString listFile = CreateArchiveListTextFile();
             CreateArchiveFolder(GetArchiveFolderName(), CreateArchiveFileList());
 
-            AZ_TEST_START_TRACE_SUPPRESSION;
             std::future<bool> addResult;
             AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
                 addResult, &AzToolsFramework::ArchiveCommandsBus::Events::AddFilesToArchive, GetArchivePath().toUtf8().constData(),
                 GetArchiveFolder().toUtf8().constData(), listFile.toUtf8().constData());
             bool result = addResult.get();
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_TRUE(result);
         }
@@ -217,18 +218,14 @@ namespace UnitTest
         TEST_F(ArchiveComponentTest, ExtractArchive_AllFiles_Success)
         {
             CreateArchiveFolder();
-            AZ_TEST_START_TRACE_SUPPRESSION;
             bool createResult = CreateArchive();
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
             EXPECT_TRUE(createResult);
 
-            AZ_TEST_START_TRACE_SUPPRESSION;
             std::future<bool> extractResult;
             AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
                 extractResult, &AzToolsFramework::ArchiveCommandsBus::Events::ExtractArchive, GetArchivePath().toUtf8().constData(),
                 GetExtractFolder().toUtf8().constData());
             bool result = extractResult.get();
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_TRUE(result);
 
@@ -247,9 +244,7 @@ namespace UnitTest
 
             CreateArchiveFolder(GetArchiveFolderName(), fileList);
 
-            AZ_TEST_START_TRACE_SUPPRESSION;
             bool createResult = CreateArchive();
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
             EXPECT_EQ(createResult, true);
 
@@ -265,12 +260,98 @@ namespace UnitTest
                 AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, generatedID, newInfo);
             }
 
-            bool catalogCreated{ false };
             AZ_TEST_START_TRACE_SUPPRESSION;
+            bool catalogCreated{ false };
             AzToolsFramework::AssetBundleCommandsBus::BroadcastResult(catalogCreated, &AzToolsFramework::AssetBundleCommandsBus::Events::CreateDeltaCatalog, GetArchivePath().toUtf8().constData(), true);
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // produces different counts in different platforms
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // the above raises at least one complaint, but is os specific, since it creates a file in the cache (and then deletes it)
+
             EXPECT_EQ(catalogCreated, true);
         }
+
+
+        TEST_F(ArchiveComponentTest, SUITE_periodic_ArchiveAsyncMemoryCorruptionTest)
+        {
+            // simulate the way the Asset Processor might create many archives asynchronously, overlapping.
+            // The general pattern the AP uses is that NCPUs threads are created, and each thread could be creating an archive
+            // at the same time.  Each thread is operating on its own temp directory, and calls two APIs:
+            // CreateArchive (every time), and then AddFileToArchive (some of the time).
+            // There is always a file in the archive, but not always one in the extra API call.
+            // to simulate this, we're going to start 8 threads
+            // those 8 threads will continuously create files in a folder, then archive them, then add additional files to that archive.
+
+            const int numThreads = 8;
+            const int numIterationsPerThread = 100; // takes about 20sec in debug on good HW with ASAN, much faster in profile.
+
+            auto threadFn =
+                [this](int threadIndex, int iterations)
+            {
+                const int numDummyFiles = 5;
+
+                for (int iteration = 0; iteration < iterations; ++iteration)
+                {
+                    // create a temp folder and then 5 dummy files in that folder to represent the files that will be archived
+                    // tempfolder/archive_n_n = folder containing files to archive initially, in the "CreateArchive" API call.
+                    // tempfolder/extra_n_n = folder containing files to add to archive afterwards, in the "AddFilesToArchive" API call.
+                    // tempfolder/TestArchive_n_n.zip = archive output file.
+                    // tempfolder/extra_n_n/filelist.txt = list of files to add to archive in the "AddFilesToArchive" call.
+                    // we do not attempt to read the archive back, this is just a thrash test.
+                    QString folderName = QString("archive%1_%2").arg(threadIndex).arg(iteration);
+                    QString extraFolderName = QString("extra%1_%2").arg(threadIndex).arg(iteration);
+                    QString archivePath = QDir(m_tempDir.GetDirectory()).filePath(QString("TestArchive%1_%2.zip").arg(threadIndex).arg(iteration));
+                    QString folderPath = QDir(m_tempDir.GetDirectory()).filePath(folderName);
+                    QString extraFolderPath = QDir(m_tempDir.GetDirectory()).filePath(extraFolderName);
+                    QString dummyFileContent;
+
+                    for (int fileToArchive = 0; fileToArchive < numDummyFiles; ++fileToArchive)
+                    {
+                        QString filePath = QDir(folderPath).filePath(QString("file%1.txt").arg(fileToArchive));
+                        QString extraFileName = QString("extrafile%1.txt").arg(fileToArchive);
+                        QString extraFilePath = QDir(extraFolderPath).filePath(extraFileName);
+                        CreateDummyFile(filePath, QString(1024 * iteration, QChar('C')));
+                        CreateDummyFile(extraFilePath, QString(1024 * iteration, QChar('C')));
+                        dummyFileContent.append(QDir::toNativeSeparators(extraFileName));
+                        dummyFileContent.append("\n");
+                    }
+                    QString fileListPath = QDir(extraFolderPath).filePath("filelist.txt");
+                    CreateDummyFile(fileListPath, dummyFileContent);
+
+                    std::future<bool> createResult;
+                    AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
+                        createResult,
+                        &AzToolsFramework::ArchiveCommandsBus::Events::CreateArchive,
+                        archivePath.toUtf8().constData(),
+                        folderPath.toUtf8().constData());
+                    EXPECT_TRUE(createResult.valid() ? createResult.get() : false);
+
+                    std::future<bool> addResult;
+                    AzToolsFramework::ArchiveCommandsBus::BroadcastResult(
+                        addResult,
+                        &AzToolsFramework::ArchiveCommandsBus::Events::AddFilesToArchive,
+                        archivePath.toUtf8().constData(),
+                        extraFolderPath.toUtf8().constData(),
+                        fileListPath.toUtf8().constData());
+
+                    EXPECT_TRUE(addResult.valid() ? addResult.get() : false);
+                }
+            };
+
+            // spawn 8 threads to do the above and then wait for all of them to complete.
+            AZStd::vector<AZStd::thread> threads;
+
+            for (int i = 0; i < numThreads; ++i)
+            {
+                threads.emplace_back(threadFn, i, numIterationsPerThread);
+            }
+
+            for (int i = 0; i < numThreads; ++i)
+            {
+                if (threads[i].joinable())
+                {
+                    threads[i].join();
+                }
+            }
+        }
+
     }
 
 }

@@ -11,14 +11,15 @@
 #include <AzFramework/Physics/Material/PhysicsMaterialId.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialPropertyValue.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     //! Runtime Physics material instance.
-    class Material
+    class AZF_API Material
     {
     public:
-        AZ_RTTI(Physics::MaterialAsset, "{B0C593B9-F58E-47BF-856B-2F202A9E8813}");
+        AZ_RTTI(Physics::Material, "{B0C593B9-F58E-47BF-856B-2F202A9E8813}");
 
         Material() = default;
         Material(const MaterialId& id, const AZ::Data::Asset<MaterialAsset>& materialAsset);

@@ -19,7 +19,7 @@ namespace ImageProcessingAtom
     struct PlatformSetting
     {
         AZ_TYPE_INFO(PlatformSetting, "{95FBE763-C5CD-4C40-964F-9D34E3AB2138}");
-        AZ_CLASS_ALLOCATOR(PlatformSetting, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PlatformSetting, AZ::SystemAllocator);
 
         //! Platform's name
         PlatformName m_name;

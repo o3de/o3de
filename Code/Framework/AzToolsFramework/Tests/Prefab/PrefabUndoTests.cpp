@@ -6,15 +6,13 @@
  *
  */
 
-#include <Prefab/PrefabTestDomUtils.h>
-#include <Prefab/PrefabTestFixture.h>
-
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
 
-#include <Prefab/PrefabUndo.h>
+#include <Prefab/PrefabTestDomUtils.h>
+#include <Prefab/PrefabTestFixture.h>
 
 namespace UnitTest
 {
@@ -40,7 +38,7 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom entityDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomBeforeUpdate, *newEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomBeforeUpdate, *newEntity);
 
         float checkXValue = 0.0f;
         AZ::TransformBus::EventResult(checkXValue, entityId, &AZ::TransformInterface::GetWorldX);
@@ -55,7 +53,7 @@ namespace UnitTest
 
         //create document with after change snapshot
         PrefabDom entityDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfterUpdate, *newEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfterUpdate, *newEntity);
 
         //generate patch
         PrefabDom patch;
@@ -78,7 +76,7 @@ namespace UnitTest
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         // verify template updated correctly
-        //instantiate second instance for checking if propogation works
+        //instantiate second instance for checking if propagation works
         AZStd::unique_ptr<Instance> secondInstance = m_prefabSystemComponent->InstantiatePrefab(
             templateId, AZStd::nullopt,
             [](const AzToolsFramework::EntityList& entities)
@@ -116,14 +114,14 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom instanceDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBeforeUpdate, *testInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomBeforeUpdate, *testInstance);
 
         //add entity to instance
         testInstance->AddEntity(*newEntity);
 
         //create document with after change snapshot
         PrefabDom instanceDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfterUpdate, *testInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomAfterUpdate, *testInstance);
 
         //generate patch
         PrefabDom patch;
@@ -169,14 +167,14 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom instanceDomBeforeUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBeforeUpdate, *testInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomBeforeUpdate, *testInstance);
 
         //detach entity from instance
         testInstance->DetachEntity(entityId);
 
         //create document with after change snapshot
         PrefabDom instanceDomAfterUpdate;
-        m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfterUpdate, *testInstance);
+        m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(instanceDomAfterUpdate, *testInstance);
 
         //generate patch
         PrefabDom patch;

@@ -6,11 +6,11 @@
  *
  */
 
-#include <qaction.h>
-#include <qevent.h>
-#include <qheaderview.h>
-#include <qitemselectionmodel.h>
-#include <qscrollbar.h>
+#include <QAction>
+#include <QEvent>
+#include <QHeaderView>
+#include <QItemSelectionModel>
+#include <QScrollBar>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/Utils.h>
@@ -112,7 +112,7 @@ namespace ScriptCanvasEditor
             variableTypes.insert(typeId);
         }
 
-        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> settings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
 
         for (const AZ::Uuid& objectId : objectTypes)
         {

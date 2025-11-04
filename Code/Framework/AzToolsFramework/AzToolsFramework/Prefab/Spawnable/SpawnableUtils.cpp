@@ -114,9 +114,9 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             // Keep a transform component on the placeholder to maintain parent/child relationship.
             // This is used during prefab processing to sort the corresponding spawnable's entities by hierarchy
             auto transformComponent = aznew AzFramework::TransformComponent();
+            placeholder->AddComponent(transformComponent);
             auto entityTransformComponent = entityData->get().FindComponent<AzFramework::TransformComponent>();
             transformComponent->SetParentRelative(entityTransformComponent->GetParentId());
-            placeholder->AddComponent(transformComponent);
             return instance->ReplaceEntity(AZStd::move(placeholder), alias);
         }
 
@@ -192,7 +192,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         AZ::EntityId entityId,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType,
         AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior loadBehavior,
-        uint32_t tag,
+        const AZ::Crc32& tag,
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context)
     {
         using namespace AzToolsFramework::Prefab::PrefabConversionUtils;

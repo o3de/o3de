@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceBus.h>
 
@@ -16,7 +18,7 @@
 namespace AzToolsFramework
 {
     //! Component in charge of listening for SliceRequestBus requests
-    class SliceRequestComponent
+    class AZTF_API SliceRequestComponent
         : public AZ::Component
         , protected SliceRequestBus::Handler
     {
@@ -33,8 +35,5 @@ namespace AzToolsFramework
         //! AzToolsFramework::SliceRequestBus overrides ...
         bool IsSliceDynamic(const AZ::Data::AssetId& assetId) override;
         void SetSliceDynamic(const AZ::Data::AssetId& assetId, bool isDynamic) override;
-        AzFramework::SliceInstantiationTicket InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId, const AZ::Transform& transform) override;
-        bool CreateNewSlice(const AZ::EntityId& entityId, const char* assetPath) override;
-        void ShowPushDialog(const EntityIdList& entityIds) override;
     };
 } // namespace AzToolsFramework

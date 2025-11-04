@@ -21,7 +21,7 @@ namespace NvCloth
     {
         // It's necessary for the rule to specify the system allocator, otherwise
         // the editor crashes when deleting the cloth modifier from Scene Settings.
-        AZ_CLASS_ALLOCATOR_IMPL(ClothRule, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(ClothRule, AZ::SystemAllocator)
 
         const char* const ClothRule::DefaultChooseNodeName = "Choose a node";
         const char* const ClothRule::DefaultInverseMassesString = "Default: 1.0";

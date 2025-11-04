@@ -224,7 +224,7 @@ namespace ScriptCanvasEditor
     EBusHandlerActionFilterProxyModel::EBusHandlerActionFilterProxyModel(QObject* parent)
         : QSortFilterProxyModel(parent)
     {
-        m_regex.setCaseSensitivity(Qt::CaseInsensitive);
+        m_regex.setPatternOptions(QRegularExpression::PatternOption::CaseInsensitiveOption);
     }
     
     void EBusHandlerActionFilterProxyModel::SetFilterSource(QLineEdit* lineEdit)

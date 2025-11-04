@@ -18,7 +18,6 @@
 namespace ScriptCanvas
 {
     class Slot;
-    struct NodeUpdateSlotReport;
 
     class Connection
         : public AZ::Component
@@ -65,7 +64,7 @@ namespace ScriptCanvas
         //-------------------------------------------------------------------------
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasConnectionService", 0x028dc06e));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasConnectionService"));
         }
 
         Endpoint m_sourceEndpoint;

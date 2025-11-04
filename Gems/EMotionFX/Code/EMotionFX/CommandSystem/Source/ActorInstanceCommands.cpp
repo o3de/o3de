@@ -7,11 +7,13 @@
  */
 
 #include "ActorInstanceCommands.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include <EMotionFX/Source/ActorManager.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/StringConversions.h>
 #include "CommandManager.h"
-
 
 namespace CommandSystem
 {
@@ -549,6 +551,8 @@ namespace CommandSystem
         #else
             const AZ::Vector3 scale = AZ::Vector3::CreateOne();
         #endif
+
+        AZ::Locale::ScopedSerializationLocale localeScope;  // make sure '%f' uses the "C" Locale.
 
         const AZStd::string command = AZStd::string::format("CreateActorInstance -actorID %i -xPos %f -yPos %f -zPos %f -xScale %f -yScale %f -zScale %f -rot \"%s\"",
             actorInstance->GetActor()->GetID(),

@@ -42,8 +42,8 @@ namespace ScriptCanvas
 
                 OperatorArithmetic() = default;
 
-                AZ::Crc32 GetArithmeticExtensionId() const { return AZ_CRC("AddnewValueExtension", 0xea20301c); }
-                AZ::Crc32 GetArithmeticDynamicTypeGroup() const { return AZ_CRC("ArithmeticGroup", 0x4271e41f); }
+                AZ::Crc32 GetArithmeticExtensionId() const { return AZ_CRC_CE("AddnewValueExtension"); }
+                AZ::Crc32 GetArithmeticDynamicTypeGroup() const { return AZ_CRC_CE("ArithmeticGroup"); }
                 AZStd::string GetArithmeticDisplayGroup() const { return "ArithmeticGroup"; }
 
                 virtual AZStd::string_view OperatorFunction() const { return ""; }
@@ -54,11 +54,13 @@ namespace ScriptCanvas
                         Data::Type::Vector2(),
                         Data::Type::Vector3(),
                         Data::Type::Vector4(),
+                        Data::Type::VectorN(),
                         Data::Type::Color(),
                         Data::Type::Quaternion(),
                         Data::Type::Transform(),
                         Data::Type::Matrix3x3(),
-                        Data::Type::Matrix4x4()
+                        Data::Type::Matrix4x4(),
+                        Data::Type::MatrixMxN()
                     };
                 }
 

@@ -15,9 +15,13 @@
 
 namespace EMotionFX::Pipeline::Rule
 {
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    RootMotionExtractionRule::RootMotionExtractionRule(const RootMotionExtractionData& data)
-        : m_data(data)
+    RootMotionExtractionRule::RootMotionExtractionRule()
+    {
+        m_data = AZStd::make_shared<RootMotionExtractionData>();
+    }
+
+    RootMotionExtractionRule::RootMotionExtractionRule(AZStd::shared_ptr<RootMotionExtractionData> data)
+        : m_data(AZStd::move(data))
     {
     }
 
@@ -39,7 +43,7 @@ namespace EMotionFX::Pipeline::Rule
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            editContext->Class<RootMotionExtractionRule>("Root motion extraction (preview)", "Extract motion from the sample joint.")
+            editContext->Class<RootMotionExtractionRule>("Root motion extraction", "Extract motion from the sample joint.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")

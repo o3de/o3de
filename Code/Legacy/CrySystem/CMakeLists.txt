@@ -26,13 +26,14 @@ ly_add_target(
         PRIVATE
             3rdParty::expat
             3rdParty::lz4
-            3rdParty::md5
             3rdParty::TIFF
             3rdParty::zstd
             Legacy::CryCommon
             Legacy::CrySystem.XMLBinary
             Legacy::RemoteConsoleCore
             AZ::AzFramework
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_source_properties(

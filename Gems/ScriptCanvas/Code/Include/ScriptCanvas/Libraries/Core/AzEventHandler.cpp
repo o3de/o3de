@@ -156,7 +156,7 @@ namespace AzEventHandlerCpp
         }
     };
 
-    AZ_CLASS_ALLOCATOR_IMPL(AzEventEntrySerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AzEventEntrySerializer, AZ::SystemAllocator);
 
 }
 

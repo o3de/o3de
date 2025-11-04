@@ -34,11 +34,14 @@ namespace AtomToolsFramework
         //! @param objectPosition world space position to point camera at
         virtual void SetObjectPosition(const AZ::Vector3& objectPosition) = 0;
 
-        //! Get distance between camera and its object
-        virtual float GetDistanceToObject() const = 0;
+        //! Get the minimum radius of the object entity bounding box
+        virtual float GetObjectRadiusMin() const = 0;
 
-        //! Get bounding sphere radius of the active object
-        virtual float GetRadius() const = 0;
+        //! Get the radius of the object entity bounding box
+        virtual float GetObjectRadius() const = 0;
+
+        //! Get distance between camera and its object
+        virtual float GetObjectDistance() const = 0;
 
         //! Reset camera to default position and rotation 
         virtual void Reset() = 0;

@@ -33,7 +33,6 @@ import _pytest.python
 import _pytest.outcomes
 
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
-from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.o3de.multi_test_framework import MultiTestSuite, SharedTest, SingleTest
 
 logger = logging.getLogger(__name__)
@@ -137,10 +136,14 @@ class EditorTestSuite(MultiTestSuite):
     """
     # Extra cmdline arguments to supply for every Editor for this test suite.
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
+    # Extra commandline arguments to supply to the asset-processor for this test suite
+    global_assetprocessor_extra_cmdline_args = None
     # Tests usually run with no renderer, however some tests require a renderer and will disable this.
     use_null_renderer = True
     # Maximum time in seconds for a single Editor to stay open across the set of shared tests.
-    timeout_shared_test = 300
+    timeout_shared_test = 900
+    # Name of the executable's log file.
+    log_name = "editor_test.log"
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk.
     _timeout_crash_log = 20
     # Return code for test failure.
@@ -149,10 +152,6 @@ class EditorTestSuite(MultiTestSuite):
     _single_test_class = EditorSingleTest
     # Test class to use for shared test collection.
     _shared_test_class = EditorSharedTest
-    # Name of the executable's log file.
-    _log_name = "editor_test.log"
-    # Executable function to call when launching Editor.
-    _executable_function = launcher_helper.create_editor
 
     @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
     def pytest_multitest_makeitem(

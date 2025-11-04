@@ -18,13 +18,13 @@
 namespace O3DE::ProjectManager
 {
     class SettingsTests 
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         ~SettingsTests() override = default;
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             // Store off the old global settings registry to restore after each test
@@ -70,7 +70,7 @@ namespace O3DE::ProjectManager
             }
             m_registry.reset();
 
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
     protected:

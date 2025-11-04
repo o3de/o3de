@@ -9,7 +9,6 @@
 #include <AzTest/AzTest.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
-#include <SceneAPI/SceneData/SceneDataStandaloneAllocator.h>
 
 class SceneDataTestEnvironment
     : public AZ::Test::ITestEnvironment
@@ -21,11 +20,9 @@ public:
 protected:
     void SetupEnvironment() override
     {
-        AZ::SceneAPI::SceneDataStandaloneAllocator::Initialize();
-
         sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
         AZ_Assert(sceneCoreModule, "SceneData unit tests failed to create SceneCore module.");
-        [[maybe_unused]] bool loaded = sceneCoreModule->Load(false);
+        [[maybe_unused]] bool loaded = sceneCoreModule->Load();
         AZ_Assert(loaded, "SceneData unit tests failed to load SceneCore module.");
         auto init = sceneCoreModule->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
         AZ_Assert(init, "SceneData unit tests failed to find the initialization function the SceneCore module.");
@@ -38,7 +35,6 @@ protected:
         AZ_Assert(uninit, "SceneData unit tests failed to find the uninitialization function the SceneCore module.");
         (*uninit)();
         sceneCoreModule.reset();
-        AZ::SceneAPI::SceneDataStandaloneAllocator::TearDown();
     }
 
 private:

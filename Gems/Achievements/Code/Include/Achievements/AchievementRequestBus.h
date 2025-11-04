@@ -10,10 +10,10 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/RTTI/BehaviorContext.h>
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace Achievements
 {
@@ -67,7 +67,7 @@ namespace Achievements
         // Unlocks the given achievement for the current player or adds towards progression to unlocking
         virtual void UnlockAchievement(const UnlockAchievementParams& params) = 0;
         ////////////////////////////////////////////////////////////////////////////////////////
-        // Queries details of an achievements. fills in a structure with the name, description 
+        // Queries details of an achievements. fills in a structure with the name, description
         // and reward value
         virtual void QueryAchievementDetails(const QueryAchievementParams& params) = 0;
     };

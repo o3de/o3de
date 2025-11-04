@@ -43,6 +43,12 @@ namespace AzToolsFramework
 {
     const float g_defaultManipulatorSphereRadius = 0.1f;
 
+    float GetDefaultManipulatorSphereRadius()
+    {
+        return g_defaultManipulatorSphereRadius;
+    }
+
+
     AZ::Transform WorldFromLocalWithUniformScale(const AZ::EntityId entityId)
     {
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
@@ -504,7 +510,7 @@ namespace AzToolsFramework
             const AZ::Vector3 worldLineHitPosition = manipulatorState.TransformPoint(action.m_localLineHitPosition);
             debugDisplay.SetColor(AZ::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
             debugDisplay.DrawBall(
-                worldLineHitPosition, ManipulatorViewScaleMultiplier(worldLineHitPosition, cameraState) * g_defaultManipulatorSphereRadius,
+                worldLineHitPosition, ManipulatorViewScaleMultiplier(worldLineHitPosition, cameraState) * GetDefaultManipulatorSphereRadius(),
                 false);
         }
 
@@ -764,7 +770,7 @@ namespace AzToolsFramework
             debugDisplay.SetColor(m_color.GetAsVector4());
             debugDisplay.DrawBall(
                 worldSplineHitPosition,
-                ManipulatorViewScaleMultiplier(worldSplineHitPosition, cameraState) * g_defaultManipulatorSphereRadius, false);
+                ManipulatorViewScaleMultiplier(worldSplineHitPosition, cameraState) * GetDefaultManipulatorSphereRadius(), false);
         }
 
         RefreshBoundInternal(managerId, manipulatorId, splineBound);

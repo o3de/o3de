@@ -46,6 +46,7 @@ namespace ImageProcessingAtom
 
             uint32_t width = header.dwWidth;
             uint32_t height = header.dwHeight;
+            uint32_t depth = AZStd::max(header.dwDepth, 1u);
             uint32_t mips = 1;
             if (header.dwFlags & DDS_HEADER_FLAGS_MIPMAP)
             {
@@ -60,6 +61,12 @@ namespace ImageProcessingAtom
                 }
                 imageFlags |= EIF_Cubemap;
                 height *= 6;
+            }
+            else if (depth > 1)
+            {
+                AZ_Warning("Image Processing", header.dwCaps_2 & DDS_FLAGS_VOLUME,
+                    "Got a 3D image wih depth=%u, but it doesn't claim to be a volume texture. We'll treat it as volume texture.", depth);
+                imageFlags |= EIF_Volumetexture;
             }
 
             // Get pixel format
@@ -206,7 +213,7 @@ namespace ImageProcessingAtom
                 height = pFormatInfo->blockHeight;
             }
 
-            IImageObject* newImage = IImageObject::CreateImage(width, height, mips, format);
+            IImageObject* newImage = IImageObject::CreateImage(width, height, depth, mips, format);
 
             //set properties
             newImage->SetImageFlags(imageFlags);

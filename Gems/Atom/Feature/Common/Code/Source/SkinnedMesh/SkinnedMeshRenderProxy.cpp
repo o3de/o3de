@@ -9,9 +9,8 @@
 #include <SkinnedMesh/SkinnedMeshRenderProxy.h>
 #include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 #include <SkinnedMesh/SkinnedMeshComputePass.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <MorphTargets/MorphTargetComputePass.h>
-
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Scene.h>

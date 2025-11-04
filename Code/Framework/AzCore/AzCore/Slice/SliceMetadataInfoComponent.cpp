@@ -201,7 +201,7 @@ namespace AZ
         // - Change AssociatedIds(m_associatedEntities) to be a set of entityIds instead of an unordered_set
         if (classElement.GetVersion() <= 1)
         {
-            int associatedIdsIndex = classElement.FindElement(AZ_CRC("AssociatedIds", 0xb5dc95c6));
+            int associatedIdsIndex = classElement.FindElement(AZ_CRC_CE("AssociatedIds"));
 
             if (associatedIdsIndex < 0)
             {
@@ -235,12 +235,12 @@ namespace AZ
 
     void SliceMetadataInfoComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SliceMetadataInfoService", 0xdaaa6bb4));
+        provided.push_back(AZ_CRC_CE("SliceMetadataInfoService"));
     }
 
     void SliceMetadataInfoComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("SliceMetadataInfoService", 0xdaaa6bb4));
+        incompatible.push_back(AZ_CRC_CE("SliceMetadataInfoService"));
     }
 
     void SliceMetadataInfoComponent::CheckDependencyCount()

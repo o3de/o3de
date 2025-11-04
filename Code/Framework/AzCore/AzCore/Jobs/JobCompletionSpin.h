@@ -26,7 +26,7 @@ namespace AZ
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(JobCompletionSpin, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(JobCompletionSpin, ThreadPoolAllocator);
 
         JobCompletionSpin(JobContext* context = nullptr)
             : Job(false, context, true)

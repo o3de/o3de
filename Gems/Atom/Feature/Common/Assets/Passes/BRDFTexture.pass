@@ -36,9 +36,9 @@
             ],
             "PassData": {
                 "$type": "ComputePassData",
-                "Target Thread Count X": "256",
-                "Target Thread Count Y": "256",
-                "Target Thread Count Z": "1",
+                "ThreadCountX": "256",
+                "ThreadCountY": "256",
+                "ThreadCountZ": "1",
                 "ShaderAsset": {
                     "FilePath": "Shaders/BRDFTexture/BRDFTextureCS.shader"
                 }

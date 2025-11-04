@@ -50,8 +50,8 @@ namespace ScriptCanvas
 
             protected:
 
-                AZ::Crc32 GetWeightExtensionId() const { return AZ_CRC("WRS_Weight_Extension", 0xd17b9467); }
-                AZ::Crc32 GetExecutionExtensionId() const { return AZ_CRC("WRS_Execution_Extension", 0x0706035e); }
+                AZ::Crc32 GetWeightExtensionId() const { return AZ_CRC_CE("WRS_Weight_Extension"); }
+                AZ::Crc32 GetExecutionExtensionId() const { return AZ_CRC_CE("WRS_Execution_Extension"); }
                 AZStd::string GetDisplayGroup() const { return "WeightedExecutionGroup"; }
 
             private:

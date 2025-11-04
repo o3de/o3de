@@ -12,6 +12,8 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/LightingChannel/LightingChannelConfiguration.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h>
 
 namespace AZ
@@ -21,6 +23,7 @@ namespace AZ
         struct AreaLightComponentConfig final
             : public ComponentConfig
         {
+            AZ_CLASS_ALLOCATOR(AreaLightComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::AreaLightComponentConfig, "{11C08FED-7F94-4926-8517-46D08E4DD837}", ComponentConfig);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -38,6 +41,12 @@ namespace AZ
                 LightTypeCount,
             };
 
+            enum class ShadowCachingMode : uint8_t
+            {
+                NoCaching,
+                UpdateOnChange,
+            };
+
             static constexpr float CutoffIntensity = 0.1f;
 
             AZ::Color m_color = AZ::Color::CreateOne();
@@ -48,6 +57,7 @@ namespace AZ
             bool m_lightEmitsBothDirections = false;
             bool m_useFastApproximation = false;
             AZ::Crc32 m_shapeType;
+            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_goboImageAsset;
 
             bool m_enableShutters = false;
             LightType m_lightType = LightType::Unknown;
@@ -56,6 +66,8 @@ namespace AZ
 
             // Shadows (only used for supported shapes)
             bool m_enableShadow = false;
+            ShadowCachingMode m_shadowCachingMode = ShadowCachingMode::NoCaching;
+            mutable bool m_cacheShadows = false; // proxy property used for the edit context.
             float m_bias = 0.1f;
             float m_normalShadowBias = 0.0f;
             ShadowmapSize m_shadowmapMaxSize = ShadowmapSize::Size256;
@@ -66,6 +78,7 @@ namespace AZ
             // Global Illumination
             bool m_affectsGI = true;
             float m_affectsGIFactor = 1.0f;
+            AZ::Render::LightingChannelConfiguration m_lightingChannelConfig;
 
             // The following functions provide information to an EditContext...
 
@@ -126,6 +139,9 @@ namespace AZ
             
             //! Returns true if exponential shadow maps are disabled.
             bool IsEsmDisabled() const;
+
+            //! Returns true if the light type supports gobo texture
+            bool SupportsGobo() const;
         };
     }
 }

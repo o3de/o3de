@@ -59,12 +59,12 @@ namespace AZ
 
         void GridComponentController::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GridService", 0x3844bbe0));
+            provided.push_back(AZ_CRC_CE("GridService"));
         }
 
         void GridComponentController::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GridService", 0x3844bbe0));
+            incompatible.push_back(AZ_CRC_CE("GridService"));
         }
 
         GridComponentController::GridComponentController(const GridComponentConfig& config)

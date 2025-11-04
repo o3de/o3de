@@ -99,10 +99,6 @@
         _Func(ETC2A1_UNORM_SRGB,       VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK,      1,    0,    0) \
         _Func(ETC2A_UNORM,             VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK,     1,    0,    0) \
         _Func(ETC2A_UNORM_SRGB,        VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK,      1,    0,    0) \
-        _Func(PVRTC2_UNORM,            VK_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG,   1,    0,    0) \
-        _Func(PVRTC2_UNORM_SRGB,       VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG,    1,    0,    0) \
-        _Func(PVRTC4_UNORM,            VK_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG,   1,    0,    0) \
-        _Func(PVRTC4_UNORM_SRGB,       VK_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG,    1,    0,    0) \
         _Func(ASTC_4x4_UNORM,          VK_FORMAT_ASTC_4x4_UNORM_BLOCK,          1,    0,    0) \
         _Func(ASTC_4x4_UNORM_SRGB,     VK_FORMAT_ASTC_4x4_SRGB_BLOCK,           1,    0,    0) \
         _Func(ASTC_5x4_UNORM,          VK_FORMAT_ASTC_5x4_UNORM_BLOCK,          1,    0,    0) \

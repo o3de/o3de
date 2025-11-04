@@ -325,25 +325,26 @@ namespace ScriptCanvasEditor
         m_anchorTimeStamp = ScriptCanvas::Timestamp(0);
     }
 
-    void LoggingDataAggregator::RegisterScriptCanvas([[maybe_unused]] const AZ::NamedEntityId& entityId, [[maybe_unused]] const ScriptCanvas::GraphIdentifier& graphIdentifier)
+    void LoggingDataAggregator::RegisterScriptCanvas(const AZ::NamedEntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
     {
-//         bool foundMatch = false;
-// 
-//         auto matchedRange = m_registrationMap.equal_range(entityId);
-//         for (auto mapIter = matchedRange.first; mapIter != matchedRange.second; ++mapIter)
-//         {
-//             if (mapIter->second == graphIdentifier)
-//             {
-//                 foundMatch = true;
-//                 AZ_Warning("ScriptCanvas", false, "Received a duplicated registration callback.");
-//             }
-//         }
-// 
-//         if (!foundMatch)
-//         {
-//             m_registrationMap.insert(AZStd::make_pair(entityId, graphIdentifier));
-//             LoggingDataNotificationBus::Event(GetDataId(), &LoggingDataNotifications::OnEntityGraphRegistered, entityId, graphIdentifier);
-//         }
+         bool foundMatch = false;
+ 
+         auto matchedRange = m_registrationMap.equal_range(entityId);
+         for (auto mapIter = matchedRange.first; mapIter != matchedRange.second; ++mapIter)
+         {
+             if (mapIter->second == graphIdentifier)
+             {
+                 foundMatch = true;
+                 AZ_Warning("ScriptCanvas", false, "Received a duplicated registration callback.");
+                 break;
+             }
+         }
+ 
+         if (!foundMatch)
+         {
+             m_registrationMap.insert(AZStd::make_pair(entityId, graphIdentifier));
+             LoggingDataNotificationBus::Event(GetDataId(), &LoggingDataNotifications::OnEntityGraphRegistered, entityId, graphIdentifier);
+         }
     }
 
     void LoggingDataAggregator::UnregisterScriptCanvas(const AZ::NamedEntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)

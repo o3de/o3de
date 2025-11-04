@@ -108,6 +108,31 @@
     <bool>false</bool>
    </property>
   </widget>
+  <widget class="QPushButton" name="applyButton">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>80</y>
+     <width>111</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Apply</string>
+   </property>
+   <property name="autoDefault">
+    <bool>false</bool>
+   </property>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
@@ -123,54 +148,5 @@
   <tabstop>saveCloseButton</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>cancelButton</sender>
-   <signal>clicked()</signal>
-   <receiver>LUAEditorSettingsDialog</receiver>
-   <slot>OnCancel()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>368</x>
-     <y>132</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>187</x>
-     <y>102</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>saveButton</sender>
-   <signal>clicked()</signal>
-   <receiver>LUAEditorSettingsDialog</receiver>
-   <slot>OnSave()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>368</x>
-     <y>132</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>187</x>
-     <y>102</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>saveCloseButton</sender>
-   <signal>clicked()</signal>
-   <receiver>LUAEditorSettingsDialog</receiver>
-   <slot>OnSaveClose()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>368</x>
-     <y>132</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>187</x>
-     <y>102</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

@@ -6,7 +6,6 @@
  *
  */
 
-
 #include "EditorDefs.h"
 
 #include "Settings.h"
@@ -24,7 +23,6 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
-
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -35,7 +33,6 @@
 // Editor
 #include "CryEdit.h"
 #include "MainWindow.h"
-
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
@@ -107,9 +104,7 @@ SEditorSettings::SEditorSettings()
     bSettingsManagerMode = false;
 
     undoLevels = 50;
-    m_undoSliceOverrideSaveValue = false;
     bShowDashboardAtStartup = true;
-    m_showCircularDependencyError = true;
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
 
@@ -130,8 +125,7 @@ SEditorSettings::SEditorSettings()
     viewports.bAlwaysShowRadiuses = false;
     viewports.bSync2DViews = false;
     viewports.fDefaultAspectRatio = 800.0f / 600.0f;
-    
-    viewports.bShowSafeFrame = false;
+
     viewports.bHighlightSelectedGeometry = false;
     viewports.bHighlightSelectedVegetation = true;
     viewports.bHighlightMouseOverGeometry = true;
@@ -158,7 +152,6 @@ SEditorSettings::SEditorSettings()
     wheelZoomSpeed = 1;
     invertYRotation = false;
     invertPan = false;
-    fBrMultiplier = 2;
     bPreviewGeometryWindow = true;
     bBackupOnSave = true;
     backupOnSaveMaxCount = 3;
@@ -176,12 +169,12 @@ SEditorSettings::SEditorSettings()
     enableSourceControl = false;
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
-    textEditorForScript = "TextEdit";
+    textEditorForScript = "";
     textEditorForShaders = "TextEdit";
     textEditorForBspaces = "TextEdit";
     textureEditor = "Photoshop";
 #elif defined(AZ_PLATFORM_WINDOWS)
-    textEditorForScript = "notepad++.exe";
+    textEditorForScript = "";
     textEditorForShaders = "notepad++.exe";
     textEditorForBspaces = "notepad++.exe";
     textureEditor = "Photoshop.exe";
@@ -192,8 +185,6 @@ SEditorSettings::SEditorSettings()
     textureEditor = "";
 #endif
     animEditor = "";
-
-    terrainTextureExport = "";
 
     sTextureBrowserSettings.nCellSize = 128;
 
@@ -222,7 +213,6 @@ SEditorSettings::SEditorSettings()
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
 
-    sliceSettings.dynamicByDefault = false;
     levelSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
 }
 
@@ -427,9 +417,7 @@ void SEditorSettings::Save(bool isEditorClosing)
 
     // Save settings to registry.
     SaveValue("Settings", "UndoLevels", undoLevels);
-    SaveValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     SaveValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
-    SaveValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     SaveValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
     SaveValue("Settings", "MuteAudio", bMuteAudio);
     SaveValue("Settings", "AutoBackup", autoBackupEnabled);
@@ -443,7 +431,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "WheelZoomSpeed", wheelZoomSpeed);
     SaveValue("Settings", "InvertYRotation", invertYRotation);
     SaveValue("Settings", "InvertPan", invertPan);
-    SaveValue("Settings", "BrMultiplier", fBrMultiplier);
     SaveValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     SaveValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
 
@@ -472,7 +459,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     SaveValue("Settings", "Sync2DViews", viewports.bSync2DViews);
     SaveValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
-    SaveValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     SaveValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
     SaveValue("Settings", "HighlightSelectedVegetation", viewports.bHighlightSelectedVegetation);
     SaveValue("Settings", "HighlightMouseOverGeometry", viewports.bHighlightMouseOverGeometry);
@@ -492,11 +478,11 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     SaveValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
 
-    SaveValue("Settings", "TextEditorScript", textEditorForScript);
-    SaveValue("Settings", "TextEditorShaders", textEditorForShaders);
-    SaveValue("Settings", "TextEditorBSpaces", textEditorForBspaces);
-    SaveValue("Settings", "TextureEditor", textureEditor);
-    SaveValue("Settings", "AnimationEditor", animEditor);
+    SaveValue("Settings/Editor", "TextEditorScript", textEditorForScript);
+    SaveValue("Settings/Editor", "TextEditorShaders", textEditorForShaders);
+    SaveValue("Settings/Editor", "TextEditorBSpaces", textEditorForBspaces);
+    SaveValue("Settings/Editor", "TextureEditor", textureEditor);
+    SaveValue("Settings/Editor", "AnimationEditor", animEditor);
 
     SaveEnableSourceControlFlag(true);
 
@@ -510,8 +496,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings\\Snap", "GridUserDefined", snap.bGridUserDefined);
     SaveValue("Settings\\Snap", "GridGetFromSelected", snap.bGridGetFromSelected);
     //////////////////////////////////////////////////////////////////////////
-
-    SaveValue("Settings", "TerrainTextureExport", terrainTextureExport);
 
     //////////////////////////////////////////////////////////////////////////
     // Texture browser settings
@@ -571,17 +555,9 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings\\SmartFileOpen", "DlgRect.Right", smartOpenSettings.rect.right());
     SaveValue("Settings\\SmartFileOpen", "DlgRect.Bottom", smartOpenSettings.rect.bottom());
 
-    //////////////////////////////////////////////////////////////////////////
-    // Slice settings
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
-
     s_editorSettings()->sync();
 
     // --- Settings Registry values
-
-    // Prefab System UI
-    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
@@ -600,12 +576,7 @@ void SEditorSettings::Load()
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     levelSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
 
-    // Load from Settings Registry
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
     const int settingsVersion = s_editorSettings()->value(QStringLiteral("Settings/EditorSettingsVersion"), 0).toInt();
-
     if (settingsVersion != EditorSettingsVersion)
     {
         s_editorSettings()->setValue(QStringLiteral("Settings/EditorSettingsVersion"), EditorSettingsVersion);
@@ -616,9 +587,7 @@ void SEditorSettings::Load()
     QString     strPlaceholderString;
     // Load settings from registry.
     LoadValue("Settings", "UndoLevels", undoLevels);
-    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     LoadValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
-    LoadValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     LoadValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
     LoadValue("Settings", "MuteAudio", bMuteAudio);
     LoadValue("Settings", "AutoBackup", autoBackupEnabled);
@@ -632,7 +601,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "WheelZoomSpeed", wheelZoomSpeed);
     LoadValue("Settings", "InvertYRotation", invertYRotation);
     LoadValue("Settings", "InvertPan", invertPan);
-    LoadValue("Settings", "BrMultiplier", fBrMultiplier);
     LoadValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     LoadValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
 
@@ -667,7 +635,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "AlwaysShowRadiuses", viewports.bAlwaysShowRadiuses);
     LoadValue("Settings", "Sync2DViews", viewports.bSync2DViews);
     LoadValue("Settings", "AspectRatio", viewports.fDefaultAspectRatio);
-    LoadValue("Settings", "ShowSafeFrame", viewports.bShowSafeFrame);
     LoadValue("Settings", "HighlightSelectedGeometry", viewports.bHighlightSelectedGeometry);
     LoadValue("Settings", "HighlightSelectedVegetation", viewports.bHighlightSelectedVegetation);
     LoadValue("Settings", "HighlightMouseOverGeometry", viewports.bHighlightMouseOverGeometry);
@@ -687,11 +654,11 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     LoadValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
 
-    LoadValue("Settings", "TextEditorScript", textEditorForScript);
-    LoadValue("Settings", "TextEditorShaders", textEditorForShaders);
-    LoadValue("Settings", "TextEditorBSpaces", textEditorForBspaces);
-    LoadValue("Settings", "TextureEditor", textureEditor);
-    LoadValue("Settings", "AnimationEditor", animEditor);
+    LoadValue("Settings/Editor", "TextEditorScript", textEditorForScript);
+    LoadValue("Settings/Editor", "TextEditorShaders", textEditorForShaders);
+    LoadValue("Settings/Editor", "TextEditorBSpaces", textEditorForBspaces);
+    LoadValue("Settings/Editor", "TextureEditor", textureEditor);
+    LoadValue("Settings/Editor", "AnimationEditor", animEditor);
 
     LoadEnableSourceControlFlag();
 
@@ -705,8 +672,6 @@ void SEditorSettings::Load()
     LoadValue("Settings\\Snap", "GridUserDefined", snap.bGridUserDefined);
     LoadValue("Settings\\Snap", "GridGetFromSelected", snap.bGridGetFromSelected);
     //////////////////////////////////////////////////////////////////////////
-
-    LoadValue("Settings", "TerrainTextureExport", terrainTextureExport);
 
     //////////////////////////////////////////////////////////////////////////
     // Texture browser settings
@@ -790,11 +755,6 @@ void SEditorSettings::Load()
     }
 
     //////////////////////////////////////////////////////////////////////////
-    // Slice settings
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
-
-    //////////////////////////////////////////////////////////////////////////
     // Load paths.
     //////////////////////////////////////////////////////////////////////////
     for (int id = 0; id < EDITOR_PATH_LAST; id++)
@@ -823,7 +783,7 @@ void SEditorSettings::Load()
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
 AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
 AZ_CVAR(int64_t, ed_backgroundSystemTickCap, 33, nullptr, AZ::ConsoleFunctorFlags::Null,"Delay between frame updates (ms) when window is out of focus but not minimized AND background update is disabled.");
-    
+
 void SEditorSettings::PostInitApply()
 {
     if (!gEnv || !gEnv->pConsole)
@@ -876,30 +836,6 @@ void SEditorSettings::LoadDefaultGamePaths()
     searchPaths[EDITOR_PATH_UI_ICONS].push_back(iconsPath.c_str());
 }
 
-//////////////////////////////////////////////////////////////////////////
-bool SEditorSettings::BrowseTerrainTexture(bool bIsSave)
-{
-    QString path;
-
-    if (!terrainTextureExport.isEmpty())
-    {
-        path = Path::GetPath(terrainTextureExport);
-    }
-    else
-    {
-        path = Path::GetEditingGameDataFolder().c_str();
-    }
-
-    if (bIsSave)
-    {
-        return CFileUtil::SelectSaveFile("Bitmap Image File (*.bmp)", "bmp", path, terrainTextureExport);
-    }
-    else
-    {
-        return CFileUtil::SelectFile("Bitmap Image File (*.bmp)", path, terrainTextureExport);
-    }
-}
-
 void EnableSourceControl(bool enable)
 {
     // Source control component
@@ -934,7 +870,7 @@ void SEditorSettings::SaveEnableSourceControlFlag(bool triggerUpdate /*= false*/
 void SEditorSettings::LoadEnableSourceControlFlag()
 {
     constexpr AZStd::string_view enableSourceControlKey = "/Amazon/Settings/EnableSourceControl";
-    
+
     if (const auto* registry = AZ::SettingsRegistry::Get())
     {
         bool potentialValue;
@@ -983,7 +919,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Get
 {
     if (path.find("|") == AZStd::string_view::npos)
     {
-        return { AZStd::string("Invalid Path - could not find separator \"|\"") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
 
     AZStd::string category, attribute;
@@ -1001,7 +938,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
 {
     if (path.find("|") == AZStd::string_view::npos)
     {
-        return { AZStd::string("Invalid Path - could not find separator \"|\"") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
 
     AZStd::string category, attribute;
@@ -1030,7 +968,8 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Set
     }
     else
     {
-        return { AZStd::string("Invalid Value Type - supported types: string, bool, int, float") };
+        return AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome{ AZStd::unexpect,
+            AZStd::string("Invalid Value Type - supported types: string, bool, int, float") };
     }
 
     // Reload the changes in the Settings object used in the Editor

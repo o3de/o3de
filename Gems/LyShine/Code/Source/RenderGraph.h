@@ -64,12 +64,21 @@ namespace LyShine
         RenderNodeType m_type;
     };
 
+    //! This custom allocator class is used to provide runtime type information
+    //! so we can differentiate this allocator from other PoolAllocators 
+    class LyShinePoolAllocator final
+        : public AZ::PoolAllocator
+    {
+    public:
+        AZ_RTTI(LyShinePoolAllocator, "{0FFA2FE4-498A-4FF6-A58A-F49F0E8575EE}", AZ::PoolAllocator);
+    };
+
     // As we build the render graph we allocate a render node for each change in render state
     class PrimitiveListRenderNode : public RenderNode
     {
     public: // functions
         // We use a pool allocator to keep these allocations fast.
-        AZ_CLASS_ALLOCATOR(PrimitiveListRenderNode, AZ::PoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrimitiveListRenderNode, LyShinePoolAllocator);
 
         PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, bool isClampTextureMode, bool isTextureSRGB, bool preMultiplyAlpha, const AZ::RHI::TargetBlendState& blendModeState);
         PrimitiveListRenderNode(const AZ::Data::Instance<AZ::RPI::Image>& texture, const AZ::Data::Instance<AZ::RPI::Image>& maskTexture,
@@ -123,6 +132,10 @@ namespace LyShine
         int             m_totalNumIndices;
 
         LyShine::UiPrimitiveList   m_primitives;
+
+        // Per-frame combined vertex and index buffers
+        AZStd::vector<UiPrimitiveVertex> m_combinedVertices;
+        AZStd::vector<uint16> m_combinedIndices;
     };
 
     // A mask render node handles using one set of render nodes to mask another set of render nodes
@@ -130,7 +143,7 @@ namespace LyShine
     {
     public: // functions
         // We use a pool allocator to keep these allocations fast.
-        AZ_CLASS_ALLOCATOR(MaskRenderNode, AZ::PoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaskRenderNode, LyShinePoolAllocator);
 
         MaskRenderNode(MaskRenderNode* parentMask, bool isMaskingEnabled, bool useAlphaTest, bool drawBehind, bool drawInFront);
         ~MaskRenderNode() override;
@@ -186,7 +199,7 @@ namespace LyShine
     {
     public: // functions
         // We use a pool allocator to keep these allocations fast.
-        AZ_CLASS_ALLOCATOR(RenderTargetRenderNode, AZ::PoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RenderTargetRenderNode, LyShinePoolAllocator);
 
         RenderTargetRenderNode(RenderTargetRenderNode* parentRenderTarget,
             AZ::Data::Instance<AZ::RPI::AttachmentImage> attachmentImage,

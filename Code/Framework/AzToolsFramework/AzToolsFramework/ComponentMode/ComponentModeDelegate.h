@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -19,14 +21,15 @@ namespace AzToolsFramework
     namespace ComponentModeFramework
     {
         /// Utility factory function to create a ComponentModeBuilder for a specific EditorComponent
-        template<typename EditorComponentType, typename EditorComponentModeType>
-        ComponentModeBuilder CreateComponentModeBuilder(const AZ::EntityComponentIdPair& entityComponentIdPair)
+        template<typename EditorComponentType, typename EditorComponentModeType, typename ...Params>
+        ComponentModeBuilder CreateComponentModeBuilder(const AZ::EntityComponentIdPair& entityComponentIdPair, Params&&... params)
         {
-            const auto componentModeBuilderFunc = [entityComponentIdPair]()
-            {
+            const auto componentModeBuilderFunc = AZStd::bind(
+                [entityComponentIdPair](Params&&... params)
+                {
                 return AZStd::make_unique<EditorComponentModeType>(
-                    entityComponentIdPair, AZ::AzTypeInfo<EditorComponentType>::Uuid());
-            };
+                    entityComponentIdPair, AZ::AzTypeInfo<EditorComponentType>::Uuid(), AZStd::forward<Params>(params)...);
+                }, AZStd::forward<Params>(params)...);
 
             return ComponentModeBuilder(
                 entityComponentIdPair.GetComponentId(), AZ::AzTypeInfo<EditorComponentType>::Uuid(), componentModeBuilderFunc);
@@ -34,7 +37,7 @@ namespace AzToolsFramework
 
         /// Helper to provide ComponentMode button in the Entity Inspector and double click
         /// handling in the viewport for entering/exiting ComponentMode.
-        class ComponentModeDelegate
+        class AZTF_API ComponentModeDelegate
             : private ComponentModeDelegateRequestBus::Handler
             , private EntitySelectionEvents::Bus::Handler
             , private EditorEntityVisibilityNotificationBus::Handler
@@ -42,7 +45,7 @@ namespace AzToolsFramework
         {
         public:
             /// @cond
-            AZ_CLASS_ALLOCATOR(ComponentModeDelegate, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComponentModeDelegate, AZ::SystemAllocator);
             AZ_RTTI(ComponentModeDelegate, "{635B28F0-601A-43D2-A42A-02C4A88CD9C2}");
 
             static void Reflect(AZ::ReflectContext* context);
@@ -60,12 +63,14 @@ namespace AzToolsFramework
 
             /// Connect the ComponentModeDelegate to listen for Editor selection events and
             /// simultaneously add a single concrete ComponentMode (common case utility).
-            template<typename EditorComponentType, typename EditorComponentModeType>
+            template<typename EditorComponentType, typename EditorComponentModeType, typename ...Params>
             void ConnectWithSingleComponentMode(
-                const AZ::EntityComponentIdPair& entityComponentIdPair, EditorComponentSelectionRequestsBus::Handler* handler)
+                const AZ::EntityComponentIdPair& entityComponentIdPair,
+                EditorComponentSelectionRequestsBus::Handler* handler,
+                Params&&... params)
             {
                 Connect<EditorComponentType>(entityComponentIdPair, handler);
-                IndividualComponentMode<EditorComponentType, EditorComponentModeType>();
+                IndividualComponentMode<EditorComponentType, EditorComponentModeType>(AZStd::forward<Params>(params)...);
             }
 
             /// Disconnect the ComponentModeDelegate to stop listening for Editor selection events.
@@ -77,6 +82,13 @@ namespace AzToolsFramework
             /// The function to call when this ComponentModeDelegate detects an event to enter ComponentMode.
             void SetAddComponentModeCallback(
                 const AZStd::function<void(const AZ::EntityComponentIdPair&)>& addComponentModeCallback);
+            
+            /// Is the EntityComponentIdPair connected to the ComponentModeDelegate.
+            bool IsConnected() const
+            {
+                return m_entityComponentIdPair != AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId) &&
+                    !m_componentType.IsNull();  
+            }
 
         private:
             void ConnectInternal(
@@ -84,20 +96,23 @@ namespace AzToolsFramework
                 EditorComponentSelectionRequestsBus::Handler* handler);
 
             /// Utility function for the common case of creating a single ComponentMode for a Component.
-            template<typename EditorComponentType, typename EditorComponentModeType>
-            void IndividualComponentMode()
+            template<typename EditorComponentType, typename EditorComponentModeType, typename ...Params>
+            void IndividualComponentMode(Params&&... params)
             {
-                SetAddComponentModeCallback([](const AZ::EntityComponentIdPair& entityComponentIdPair)
-                {
-                    const auto componentModeBuilder =
-                        CreateComponentModeBuilder<EditorComponentType, EditorComponentModeType>(entityComponentIdPair);
+                SetAddComponentModeCallback(AZStd::bind(
+                    [](const AZ::EntityComponentIdPair& entityComponentIdPair, Params&&... params)
+                    {
+                        const auto componentModeBuilder = CreateComponentModeBuilder<EditorComponentType, EditorComponentModeType>(
+                            entityComponentIdPair, AZStd::forward<Params>(params)...);
 
-                    const auto entityAndComponentModeBuilder =
-                        EntityAndComponentModeBuilders(entityComponentIdPair.GetEntityId(), componentModeBuilder);
+                        const auto entityAndComponentModeBuilder =
+                            EntityAndComponentModeBuilders(entityComponentIdPair.GetEntityId(), componentModeBuilder);
 
-                    ComponentModeSystemRequestBus::Broadcast(
-                        &ComponentModeSystemRequests::AddComponentModes, entityAndComponentModeBuilder);
-                });
+                        ComponentModeSystemRequestBus::Broadcast(
+                            &ComponentModeSystemRequests::AddComponentModes, entityAndComponentModeBuilder);
+                    },
+                    AZStd::placeholders::_1,
+                    AZStd::forward<Params>(params)...));
             }
 
             void AddComponentMode();
@@ -137,7 +152,7 @@ namespace AzToolsFramework
 
         /// If this Entity had a Component supporting a ComponentMode, would
         /// it be possible for it to enter it given the current Editor state.
-        bool CouldBeginComponentModeWithEntity(AZ::EntityId entityId);
+        AZTF_API bool CouldBeginComponentModeWithEntity(AZ::EntityId entityId);
 
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

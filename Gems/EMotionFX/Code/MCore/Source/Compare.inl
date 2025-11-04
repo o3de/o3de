@@ -53,8 +53,8 @@ MCORE_INLINE bool Compare<AZ::Quaternion>::CheckIfIsClose(const AZ::Quaternion& 
     float   angleA, angleB;
 
     // convert to an axis and angle representation
-    MCore::ToAxisAngle(a, axisA, angleA);
-    MCore::ToAxisAngle(b, axisB, angleB);
+    a.ConvertToAxisAngle(axisA, angleA);
+    b.ConvertToAxisAngle(axisB, angleB);
 
     // compare the axis and angles
     if (Math::Abs(angleA  - angleB) > threshold)

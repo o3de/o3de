@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/optional.h>
@@ -32,7 +34,7 @@ namespace AzFramework
 namespace AzToolsFramework
 {
     enum class CursorInputMode;
-    
+
     namespace ViewportInteraction
     {
         //! Result of handling mouse interaction.
@@ -59,7 +61,7 @@ namespace AzToolsFramework
         };
 
         //! Interface for internal handling mouse viewport events.
-        class InternalMouseViewportRequests
+        class AZTF_API InternalMouseViewportRequests
         {
         public:
             //! @cond
@@ -82,23 +84,6 @@ namespace AzToolsFramework
             //! @note Manipulators always attempt to intercept the event first.
             MouseInteractionResult InternalHandleAllMouseInteractions(const MouseInteractionEvent& mouseInteraction);
         };
-
-        inline MouseInteractionResult InternalMouseViewportRequests::InternalHandleAllMouseInteractions(
-            const MouseInteractionEvent& mouseInteraction)
-        {
-            if (InternalHandleMouseManipulatorInteraction(mouseInteraction))
-            {
-                return MouseInteractionResult::Manipulator;
-            }
-            else if (InternalHandleMouseViewportInteraction(mouseInteraction))
-            {
-                return MouseInteractionResult::Viewport;
-            }
-            else
-            {
-                return MouseInteractionResult::None;
-            }
-        }
 
         //! Interface for viewport selection behaviors.
         class ViewportDisplayNotifications
@@ -145,6 +130,8 @@ namespace AzToolsFramework
         };
 
         //! The EBusTraits for ViewportInteractionRequests.
+        //! @deprecated ViewportEBusTraits is deprecated, please use ViewportRequestsEBusTraits.
+        //! O3DE_DEPRECATION_NOTICE(GHI-13429)
         class ViewportEBusTraits : public AZ::EBusTraits
         {
         public:
@@ -153,8 +140,11 @@ namespace AzToolsFramework
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         };
 
+        //! The EBusTraits for ViewportInteractionRequests.
+        using ViewportRequestsEBusTraits = ViewportEBusTraits;
+
         //! A bus to listen to just the MouseViewportRequests.
-        using ViewportMouseRequestBus = AZ::EBus<MouseViewportRequests, ViewportEBusTraits>;
+        using ViewportMouseRequestBus = AZ::EBus<MouseViewportRequests, ViewportRequestsEBusTraits>;
 
         //! Requests that can be made to the viewport to query and modify its state.
         class ViewportInteractionRequests
@@ -162,10 +152,9 @@ namespace AzToolsFramework
         public:
             //! Returns the current camera state for this viewport.
             virtual AzFramework::CameraState GetCameraState() = 0;
-            //! Transforms a point in world space to screen space coordinates in Qt Widget space.
-            //! Multiply by DeviceScalingFactor to get the position in viewport pixel space.
+            //! Transforms a point in world space to screen space coordinates in viewport pixel space
             virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
-            //! Transforms a point from Qt widget screen space to world space based on the given clip space depth.
+            //! Transforms a point in viewport pixel space to world space based on the given clip space depth.
             //! Returns the world space position if successful.
             virtual AZ::Vector3 ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition) = 0;
             //! Casts a point in screen space to a ray in world space originating from the viewport camera frustum's near plane.
@@ -179,18 +168,40 @@ namespace AzToolsFramework
         };
 
         //! Type to inherit to implement ViewportInteractionRequests.
-        using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
+        using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
         //! Utility function to return a viewport ray using the ViewportInteractionRequestBus.
-        inline ProjectedViewportRay ViewportScreenToWorldRay(
-            const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint)
-        {
-            ProjectedViewportRay viewportRay{};
-            ViewportInteractionRequestBus::EventResult(
-                viewportRay, viewportId, &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
+        AZTF_API ProjectedViewportRay ViewportScreenToWorldRay(const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint);
 
-            return viewportRay;
-        }
+        //! The EBusTraits for ViewportInteractionNotifications.
+        class ViewportNotificationsEBusTraits : public AZ::EBusTraits
+        {
+        public:
+            using BusIdType = AzFramework::ViewportId; //!< ViewportId - used to address requests to this EBus.
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        };
+
+        //! Notifications for a specific viewport relating to user input/interactions.
+        class ViewportInteractionNotifications
+        {
+        public:
+            //! Notification to indicate when the viewport has gained focus.
+            virtual void OnViewportFocusIn()
+            {
+            }
+
+            //! Notification to indicate when the viewport has lost focus.
+            virtual void OnViewportFocusOut()
+            {
+            }
+
+        protected:
+            ~ViewportInteractionNotifications() = default;
+        };
+
+        //! Type to inherit to implement ViewportInteractionNotifications.
+        using ViewportInteractionNotificationBus = AZ::EBus<ViewportInteractionNotifications, ViewportNotificationsEBusTraits>;
 
         //! Interface to return only viewport specific settings (e.g. snapping).
         class ViewportSettingsRequests
@@ -220,13 +231,15 @@ namespace AzToolsFramework
             virtual bool IconsVisible() const = 0;
             //! Returns if viewport helpers (additional debug drawing) are visible in the viewport.
             virtual bool HelpersVisible() const = 0;
+            //! Returns if viewport helpers are only drawn for selected entities in the viewport.
+            virtual bool OnlyShowHelpersForSelectedEntities() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
         };
 
         //! Type to inherit to implement ViewportSettingsRequests.
-        using ViewportSettingsRequestBus = AZ::EBus<ViewportSettingsRequests, ViewportEBusTraits>;
+        using ViewportSettingsRequestBus = AZ::EBus<ViewportSettingsRequests, ViewportRequestsEBusTraits>;
 
         //! An interface to notify when changes to viewport settings have happened.
         class ViewportSettingNotifications
@@ -238,10 +251,19 @@ namespace AzToolsFramework
             virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
             {
             }
+            virtual void OnGridShowingChanged([[maybe_unused]] bool showing)
+            {
+            }
             virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
             {
             }
             virtual void OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnCameraFovChanged([[maybe_unused]] float fovRadians)
+            {
+            }
+            virtual void OnCameraSpeedScaleChanged([[maybe_unused]] float value)
             {
             }
 
@@ -249,7 +271,7 @@ namespace AzToolsFramework
             ~ViewportSettingNotifications() = default;
         };
 
-        using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;
+        using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportRequestsEBusTraits>;
 
         //! Viewport requests that are only guaranteed to be serviced by the Main Editor viewport.
         class MainEditorViewportInteractionRequests
@@ -265,7 +287,7 @@ namespace AzToolsFramework
         };
 
         //! Type to inherit to implement MainEditorViewportInteractionRequests.
-        using MainEditorViewportInteractionRequestBus = AZ::EBus<MainEditorViewportInteractionRequests, ViewportEBusTraits>;
+        using MainEditorViewportInteractionRequestBus = AZ::EBus<MainEditorViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
         //! Editor entity requests to be made about the viewport.
         class EditorEntityViewportInteractionRequests
@@ -278,7 +300,7 @@ namespace AzToolsFramework
             ~EditorEntityViewportInteractionRequests() = default;
         };
 
-        using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportEBusTraits>;
+        using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
         //! An interface to query editor modifier keys.
         class EditorModifierKeyRequests : public AZ::EBusTraits
@@ -295,12 +317,8 @@ namespace AzToolsFramework
 
         using EditorModifierKeyRequestBus = AZ::EBus<EditorModifierKeyRequests>;
 
-        inline KeyboardModifiers QueryKeyboardModifiers()
-        {
-            KeyboardModifiers keyboardModifiers;
-            EditorModifierKeyRequestBus::BroadcastResult(keyboardModifiers, &EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
-            return keyboardModifiers;
-        }
+        //! Convenience method to call the above EditorModifierKeyRequestBus's QueryKeyModifiers event
+        AZTF_API KeyboardModifiers QueryKeyboardModifiers();
 
         //! An interface to deal with time requests relating to viewports.
         //! @note The bus is global and not per viewport.
@@ -349,17 +367,11 @@ namespace AzToolsFramework
         };
 
         //! Type to inherit to implement MainEditorViewportInteractionRequests.
-        using ViewportMouseCursorRequestBus = AZ::EBus<ViewportMouseCursorRequests, ViewportEBusTraits>;
+        using ViewportMouseCursorRequestBus = AZ::EBus<ViewportMouseCursorRequests, ViewportRequestsEBusTraits>;
     } // namespace ViewportInteraction
 
     //! Utility function to return EntityContextId.
-    inline AzFramework::EntityContextId GetEntityContextId()
-    {
-        auto entityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        return entityContextId;
-    }
+    AZTF_API AzFramework::EntityContextId GetEntityContextId();
 
     //! Performs an intersection test against meshes in the scene, if there is a hit (the ray intersects
     //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
@@ -370,7 +382,7 @@ namespace AzToolsFramework
     //! @param rayLength The length of the ray in meters.
     //! @param defaultDistance The distance to use for the result point if no hit is found.
     //! @return The world position of the intersection point (either from a hit or from the default distance)
-    AZ::Vector3 FindClosestPickIntersection(
+    AZTF_API AZ::Vector3 FindClosestPickIntersection(
         AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength, float defaultDistance);
 
     //! Performs an intersection test against meshes in the scene and returns the his position only if there
@@ -380,7 +392,7 @@ namespace AzToolsFramework
     //! @param screenPoint The starting point of the ray in screen space. (The ray will cast into the screen)
     //! @param rayLength The length of the ray in meters.
     //! @return The world position of the intersection if there is a hit, or nothing if not.
-    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
+    AZTF_API AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
         AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength);
 
     //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
@@ -388,28 +400,38 @@ namespace AzToolsFramework
     //! @param rayRequest Information describing the start/end positions and which entities to raycast against.
     //! @param defaultDistance The distance to use for the result point if no hit is found.
     //! @return The world position of the intersection point (either from a hit or from the default distance)
-    AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, float defaultDistance);
+    AZTF_API AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, float defaultDistance);
 
     //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
     //! @note rayRequest must contain a valid ray/line segment (start/endWorldPosition must not be at the same position).
     //! @param rayRequest Information describing the start/end positions and which entities to raycast against.
     //! @return The world position of the intersection if there is a hit, or nothing if not.
-    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest);
+    AZTF_API AZStd::optional<AZ::Vector3> FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest);
 
     //! Update the in/out parameter rayRequest based on the latest viewport ray.
-    void RefreshRayRequest(
+    AZTF_API void RefreshRayRequest(
         AzFramework::RenderGeometry::RayRequest& rayRequest, const ViewportInteraction::ProjectedViewportRay& viewportRay, float rayLength);
 
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
-    AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
+    AZTF_API AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
         const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
     //! Wrap EBus call to retrieve manipulator line bound width.
     //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
-    float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
+    AZTF_API float ManipulatorLineBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 
     //! Wrap EBus call to retrieve manipulator circle bound width.
     //! @note It is possible to pass AzFramework::InvalidViewportId (the default) to perform a Broadcast as opposed to a targeted Event.
-    float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
+    AZTF_API float ManipulatorCicleBoundWidth(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::MouseViewportRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportInteractionNotifications, AzToolsFramework::ViewportInteraction::ViewportNotificationsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportSettingNotifications, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ViewportInteraction::EditorModifierKeyRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequests, AzToolsFramework::ViewportInteraction::ViewportRequestsEBusTraits);

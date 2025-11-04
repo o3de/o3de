@@ -56,22 +56,25 @@ inline bool IsCloseMatcherP<AZ::Quaternion>::gmock_Impl<const AZ::Quaternion&>::
         return true;
     }
 
-    AZ::Vector3 gotAxis;
-    AZ::Vector3 expectedAxis;
-    float gotAngle;
-    float expectedAngle;
+    // its possible for the stream to be NULL if the result listener "is not interested" in explanation.
+    if ((result_listener) && (result_listener->IsInterested()))
+    {
+        AZ::Vector3 gotAxis;
+        AZ::Vector3 expectedAxis;
+        float gotAngle;
+        float expectedAngle;
 
-    // convert to an axis and angle representation
-    expected.ConvertToAxisAngle(expectedAxis, expectedAngle);
-    compareQuat.ConvertToAxisAngle(gotAxis, gotAngle);
+        // convert to an axis and angle representation
+        expected.ConvertToAxisAngle(expectedAxis, expectedAngle);
+        compareQuat.ConvertToAxisAngle(gotAxis, gotAngle);
 
-    *result_listener << "\n     Got Axis: ";
-    PrintTo(gotAxis, result_listener->stream());
-    *result_listener << ", Got Angle: " << gotAngle << "\n";
-    *result_listener << "Expected Axis: ";
-    PrintTo(expectedAxis, result_listener->stream());
-    *result_listener << ", Expected Angle: " << expectedAngle;
-
+        *result_listener << "\n     Got Axis: ";
+        PrintTo(gotAxis, result_listener->stream());
+        *result_listener << ", Got Angle: " << gotAngle << "\n";
+        *result_listener << "Expected Axis: ";
+        PrintTo(expectedAxis, result_listener->stream());
+        *result_listener << ", Expected Angle: " << expectedAngle;
+    }
     return false;
 }
 

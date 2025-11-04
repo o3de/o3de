@@ -59,16 +59,25 @@ namespace CommandSystem
         AZStd::string filename;
         parameters.GetValue("filename", "", filename);
         
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
+
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {
             filename = EMotionFX::EMotionFXManager::ResolvePath(filename.c_str());
         }
+        // EmotionFX fails semi-permanetnly if it cannot find the asset it needs, so we sync compile it. If this asset is already compiled,
+        // this is essentially a quick returning no-op.  If its still compiling, this will block until its done.
+        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, filename.c_str());
 
         AZ::Data::AssetId actorAssetId;
-        EBUS_EVENT_RESULT(
-            actorAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, filename.c_str(), AZ::Data::s_invalidAssetType, false);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorAssetId,
+            &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+            filename.c_str(),
+            AZ::Data::s_invalidAssetType,
+            false);
         if (!actorAssetId.IsValid())
         {
             outResult = AZStd::string::format("Cannot import actor. Cannot find asset at path %s.", filename.c_str());
@@ -227,7 +236,8 @@ namespace CommandSystem
         AZStd::string filename;
         parameters.GetValue("filename", "", &filename);
         
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         // Resolve any path aliases as part of the filename parameter
         if (filename.starts_with('@'))

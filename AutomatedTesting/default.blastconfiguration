@@ -1,6 +1,0 @@
-<ObjectStream version="3">
-	<Class name="BlastGlobalConfiguration" version="2" type="{0B9DB6DD-0008-4EF6-9D75-141061144353}">
-		<Class name="unsigned int" field="StressSolverIterations" value="180" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-	</Class>
-</ObjectStream>
-

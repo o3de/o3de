@@ -75,7 +75,6 @@ namespace AZ
 
         void DiffuseProbeGridRenderPass::FrameBeginInternal(FramePrepareParams params)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
@@ -93,8 +92,8 @@ namespace AZ
 
             Base::FrameBeginInternal(params);
 
-            // process attachment readback for RealTime grids, if raytracing is supported on this device            
-            if (device->GetFeatures().m_rayTracing)
+            // process attachment readback for RealTime grids, if raytracing is supported on this device
+            if (RHI::RHISystemInterface::Get()->GetRayTracingSupport() != RHI::MultiDevice::NoDevices)
             {
                 for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
                 {
@@ -122,7 +121,7 @@ namespace AZ
                     desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::FragmentShader);
                 }
 
                 // probe irradiance image
@@ -140,7 +139,7 @@ namespace AZ
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeIrradianceImageViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::FragmentShader);
                 }
 
                 // probe distance image
@@ -158,7 +157,7 @@ namespace AZ
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDistanceImageViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::FragmentShader);
                 }
 
                 // probe data image
@@ -176,7 +175,7 @@ namespace AZ
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDataImageViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
                 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentStage::FragmentShader);
                 }
 
                 diffuseProbeGrid->GetTextureReadback().Update(GetName());
@@ -201,7 +200,15 @@ namespace AZ
                 // (see ValidateSetImageView() of ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateRenderObjectSrg();
 
-                diffuseProbeGrid->GetRenderObjectSrg()->Compile();
+                if (!diffuseProbeGrid->GetRenderObjectSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetRenderObjectSrg()->Compile();
+                }
+            }
+
+            if (auto viewSRG = diffuseProbeGridFeatureProcessor->GetViewSrg(m_pipeline, GetPipelineViewTag()))
+            {
+                BindSrg(viewSRG->GetRHIShaderResourceGroup());
             }
 
             Base::CompileResources(context);
@@ -209,8 +216,6 @@ namespace AZ
 
         bool DiffuseProbeGridRenderPass::ShouldRender(const AZStd::shared_ptr<DiffuseProbeGrid>& diffuseProbeGrid)
         {
-            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-
             // check for baked mode with no valid textures
             if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::Baked &&
                 !diffuseProbeGrid->HasValidBakedTextures())
@@ -220,7 +225,7 @@ namespace AZ
 
             // check for RealTime mode without ray tracing
             if (diffuseProbeGrid->GetMode() == DiffuseProbeGridMode::RealTime &&
-                !device->GetFeatures().m_rayTracing)
+                (RHI::RHISystemInterface::Get()->GetRayTracingSupport() == RHI::MultiDevice::NoDevices))
             {
                 return false;
             }

@@ -68,7 +68,7 @@ namespace AZ
                 Name{"SkinnedMeshInputBlendIndices"},
                 Name{"m_sourceBlendIndices"},
                 RHI::ShaderSemantic{Name{"SKIN_JOINTINDICES"}},
-                false, // isOptional
+                true, // isOptional
                 SkinnedMeshInputVertexStreams::BlendIndices
             };
 
@@ -78,7 +78,7 @@ namespace AZ
                 Name{"SkinnedMeshInputBlendWeights"},
                 Name{"m_sourceBlendWeights"},
                 RHI::ShaderSemantic{Name{"SKIN_WEIGHTS"}},
-                false, // isOptional
+                true, // isOptional
                 SkinnedMeshInputVertexStreams::BlendWeights
             };
 
@@ -131,7 +131,8 @@ namespace AZ
             {
                 auto bufferPoolDesc = AZStd::make_unique<RHI::BufferPoolDescriptor>();
                 // Output buffers are both written to during skinning and used as input assembly buffers
-                bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite;
+                bufferPoolDesc->m_bindFlags = RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::ShaderReadWrite |
+                    RHI::BufferBindFlags::CopyRead | RHI::BufferBindFlags::CopyWrite;
                 bufferPoolDesc->m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
 
                 RPI::ResourcePoolAssetCreator creator;

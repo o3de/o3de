@@ -22,7 +22,7 @@ namespace GradientSignal
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(SupportedImageAssetPickerDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SupportedImageAssetPickerDialog, AZ::SystemAllocator);
 
         explicit SupportedImageAssetPickerDialog(AssetSelectionModel& selection, QWidget* parent = nullptr);
 
@@ -36,11 +36,12 @@ namespace GradientSignal
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(StreamingImagePropertyAssetCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StreamingImagePropertyAssetCtrl, AZ::SystemAllocator);
 
         StreamingImagePropertyAssetCtrl(QWidget* parent = nullptr);
 
         void PickAssetSelectionFromDialog(AssetSelectionModel& selection, QWidget* parent) override;
+        bool CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const override;
 
     public Q_SLOTS:
         void OnAutocomplete(const QModelIndex& index) override;
@@ -58,8 +59,9 @@ namespace GradientSignal
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(StreamingImagePropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StreamingImagePropertyHandler, AZ::SystemAllocator);
 
+        AZ::TypeId GetHandledType() const override;
         AZ::u32 GetHandlerName() const override;
         bool IsDefaultHandler() const override;
         QWidget* GetFirstInTabOrder(StreamingImagePropertyAssetCtrl* widget) override;
@@ -70,6 +72,7 @@ namespace GradientSignal
         void ConsumeAttribute(StreamingImagePropertyAssetCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, StreamingImagePropertyAssetCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, StreamingImagePropertyAssetCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)  override;
+        AZ::Data::Asset<AZ::Data::AssetData>* CastTo(void* instance, const AzToolsFramework::InstanceDataNode* node, const AZ::Uuid& fromId, const AZ::Uuid& toId) const override;
 
         static void Register();
     };

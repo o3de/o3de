@@ -74,6 +74,17 @@ namespace AZ
                 {
                     return Color(red - rhs.red, green - rhs.green, blue - rhs.blue, alpha - rhs.alpha);
                 }
+
+                bool operator==(const Color& rhs) const
+                {
+                    const constexpr float g_sceneUtilityEqualityEpsilon = 0.001f;
+                    return IsClose(rhs, g_sceneUtilityEqualityEpsilon);
+                }
+
+                bool operator!=(const Color& rhs) const
+                {
+                    return !(*this == rhs);
+                }
             };
 
             class IMeshVertexColorData

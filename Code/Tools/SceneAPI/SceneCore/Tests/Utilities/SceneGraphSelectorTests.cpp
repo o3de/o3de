@@ -62,23 +62,43 @@ namespace AZ
                     EXPECT_CALL(m_testNodeSelectionList, GetUnselectedNodeCount())
                         .WillRepeatedly(Return(unselectedNodes.size()));
 
-                    for (size_t i = 0; i < selectedNodes.size(); ++i)
+                    auto enumerateSelectedNodesInvoke =
+                        [&selectedNodes](const DataTypes::ISceneNodeSelectionList::EnumerateNodesCallback& callback)
                     {
-                        EXPECT_CALL(m_testNodeSelectionList, GetSelectedNode(Eq(i)))
-                            .WillRepeatedly(ReturnRef(selectedNodes[i]));
-                    }
-
-                    for (size_t i = 0; i < unselectedNodes.size(); ++i)
-                    {
-                        EXPECT_CALL(m_testNodeSelectionList, GetUnselectedNode(Eq(i)))
-                            .WillRepeatedly(ReturnRef(unselectedNodes[i]));
-                    }
-
-                    auto selectedNodeInvoke = [&selectedNodes](const AZStd::string& name) -> size_t
+                        for (auto& node : selectedNodes)
                         {
-                            size_t index = selectedNodes.size();
+                            if (!callback(node))
+                            {
+                                break;
+                            }
+                        }
+                    };
+                    EXPECT_CALL(m_testNodeSelectionList, EnumerateSelectedNodes(_))
+                        .WillRepeatedly(Invoke(enumerateSelectedNodesInvoke));
+
+                    auto enumerateUnselectedNodesInvoke =
+                        [&unselectedNodes](const DataTypes::ISceneNodeSelectionList::EnumerateNodesCallback& callback)
+                    {
+                        for (auto& node : unselectedNodes)
+                        {
+                            if (!callback(node))
+                            {
+                                break;
+                            }
+                        }
+                    };
+                    EXPECT_CALL(m_testNodeSelectionList, EnumerateUnselectedNodes(_))
+                        .WillRepeatedly(Invoke(enumerateUnselectedNodesInvoke));
+
+                    auto isSelectedNodeInvoke = [&selectedNodes](const AZStd::string& name)
+                    {
+                        return (AZStd::find(selectedNodes.begin(), selectedNodes.end(), name) != selectedNodes.end());
+                    };
+                    EXPECT_CALL(m_testNodeSelectionList, IsSelectedNode(_)).WillRepeatedly(Invoke(isSelectedNodeInvoke));
+
+                    auto selectedNodeInvoke = [&selectedNodes](const AZStd::string& name)
+                        {
                             selectedNodes.push_back(name);
-                            return index;
                         };
                     EXPECT_CALL(m_testNodeSelectionList, AddSelectedNode(_))
                         .WillRepeatedly(Invoke(selectedNodeInvoke));
@@ -129,18 +149,13 @@ namespace AZ
                 NiceMock<TestNodeSelectionList> m_testNodeSelectionList;
             };
 
-            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_EmptySelectedAndEmptyUnselectedNodes_AllTargetNodes)
+            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_EmptySelectedAndEmptyUnselectedNodes_NoTargetNodes)
             {
                 AZStd::vector<AZStd::string> selectedNodes;
                 AZStd::vector<AZStd::string> unselectedNodes;
                 CreateMeshGroup(selectedNodes, unselectedNodes);
                 auto targetNodes = SceneGraphSelector::GenerateTargetNodes(m_graph, m_testNodeSelectionList, IsValidTestNodeType);
-                EXPECT_EQ(targetNodes.size(), 5);
-                EXPECT_STREQ("A", targetNodes[0].c_str());
-                EXPECT_STREQ("A.B", targetNodes[1].c_str());
-                EXPECT_STREQ("A.C", targetNodes[2].c_str());
-                EXPECT_STREQ("A.D", targetNodes[3].c_str());
-                EXPECT_STREQ("A.D.E", targetNodes[4].c_str());
+                EXPECT_EQ(targetNodes.size(), 0);
             }
 
             TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_OnlySelectedRootNode_AllNodesInTargetNodes)
@@ -166,7 +181,7 @@ namespace AZ
                 EXPECT_TRUE(targetNodes.empty());
             }
 
-            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_NonemptySelectedAndEmptyUnselectedNodes_AllNodesInTargetNodes)
+            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_NonemptySelectedIncludingRootNodeAndEmptyUnselectedNodes_AllNodesInTargetNodes)
             {
                 AZStd::vector<AZStd::string> selectedNodes = { "A", "A.B", "A.D" };
                 AZStd::vector<AZStd::string> unselectedNodes;
@@ -180,13 +195,49 @@ namespace AZ
                 EXPECT_STREQ("A.D.E", targetNodes[4].c_str());
             }
 
-            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_EmptySelectedAndNonemptyUnselectedNodes_NoTargetNodes)
+            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_NonemptySelectedExcludingRootNodeAndEmptyUnselectedNodes_NodeAandADandADE)
+            {
+                AZStd::vector<AZStd::string> selectedNodes = { "A.B", "A.D" };
+                AZStd::vector<AZStd::string> unselectedNodes;
+                CreateMeshGroup(selectedNodes, unselectedNodes);
+                auto targetNodes = SceneGraphSelector::GenerateTargetNodes(m_graph, m_testNodeSelectionList, IsValidTestNodeType);
+                EXPECT_EQ(targetNodes.size(), 3);
+                EXPECT_STREQ("A.B", targetNodes[0].c_str());
+                EXPECT_STREQ("A.D", targetNodes[1].c_str());
+                EXPECT_STREQ("A.D.E", targetNodes[2].c_str());
+            }
+
+            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_EmptySelectedAndNonemptyUnselectedNodesIncludingRootNode_NoTargetNodes)
             {
                 AZStd::vector<AZStd::string> selectedNodes;
                 AZStd::vector<AZStd::string> unselectedNodes = { "A", "A.B", "A.D" };
                 CreateMeshGroup(selectedNodes, unselectedNodes);
                 auto targetNodes = SceneGraphSelector::GenerateTargetNodes(m_graph, m_testNodeSelectionList, IsValidTestNodeType);
                 EXPECT_TRUE(targetNodes.empty());
+            }
+
+            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_EmptySelectedAndNonemptyUnselectedNodesExcludingRootNode_NodeAandAC)
+            {
+                AZStd::vector<AZStd::string> selectedNodes;
+                AZStd::vector<AZStd::string> unselectedNodes = { "A.B", "A.D" };
+                CreateMeshGroup(selectedNodes, unselectedNodes);
+                auto targetNodes = SceneGraphSelector::GenerateTargetNodes(m_graph, m_testNodeSelectionList, IsValidTestNodeType);
+                EXPECT_EQ(targetNodes.size(), 2);
+                EXPECT_STREQ("A", targetNodes[0].c_str());
+                EXPECT_STREQ("A.C", targetNodes[1].c_str());
+            }
+
+            TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_DuplicateNodeRemovedFromSelected_MissNodeADotD)
+            {
+                AZStd::vector<AZStd::string> selectedNodes = { "A", "A.B", "A.C", "A.D", "A.D.E" };
+                AZStd::vector<AZStd::string> unselectedNodes = { "A.D" };
+                CreateMeshGroup(selectedNodes, unselectedNodes);
+                auto targetNodes = SceneGraphSelector::GenerateTargetNodes(m_graph, m_testNodeSelectionList, IsValidTestNodeType);
+                EXPECT_EQ(targetNodes.size(), 4);
+                EXPECT_STREQ("A", targetNodes[0].c_str());
+                EXPECT_STREQ("A.B", targetNodes[1].c_str());
+                EXPECT_STREQ("A.C", targetNodes[2].c_str());
+                EXPECT_STREQ("A.D.E", targetNodes[3].c_str());
             }
 
             TEST_F(SceneGraphSelectorTest, GenerateTargetNodes_SelectedParentNodeUnselectedChildNode_NodeAandAB)
@@ -296,11 +347,11 @@ namespace AZ
                 CreateMeshGroup(selectedNodes, unselectedNodes);
 
                 SceneGraphSelector::UpdateNodeSelection(m_graph, m_testNodeSelectionList);
-                EXPECT_EQ(5, selectedNodes.size());
-                EXPECT_EQ(0, unselectedNodes.size());
+                EXPECT_EQ(0, selectedNodes.size());
+                EXPECT_EQ(5, unselectedNodes.size());
             }
 
-            TEST_F(SceneGraphSelectorTest, UpdateNodeSelection_UnselectedNodeA_AllNodesUnselectedExceptRoot)
+            TEST_F(SceneGraphSelectorTest, UpdateNodeSelection_UnselectedNodeA_AllNodesInUnselected)
             {
                 AZStd::vector<AZStd::string> selectedNodes;
                 AZStd::vector<AZStd::string> unselectedNodes = { "A" };
@@ -309,6 +360,49 @@ namespace AZ
                 SceneGraphSelector::UpdateNodeSelection(m_graph, m_testNodeSelectionList);
                 EXPECT_EQ(0, selectedNodes.size());
                 EXPECT_EQ(5, unselectedNodes.size());
+            }
+
+            TEST_F(SceneGraphSelectorTest, UpdateNodeSelection_NonemptySelectedExcludingRootNodeAndEmptyUnselectedNodes__ABandADandADEFoundInSelectedNodes)
+            {
+                AZStd::vector<AZStd::string> selectedNodes = { "A.B", "A.D" };
+                AZStd::vector<AZStd::string> unselectedNodes;
+                CreateMeshGroup(selectedNodes, unselectedNodes);
+
+                SceneGraphSelector::UpdateNodeSelection(m_graph, m_testNodeSelectionList);
+                EXPECT_EQ(3, selectedNodes.size());
+                EXPECT_EQ(2, unselectedNodes.size());
+                EXPECT_STREQ("A.B", selectedNodes[0].c_str());
+                EXPECT_STREQ("A.D", selectedNodes[1].c_str());
+                EXPECT_STREQ("A.D.E", selectedNodes[2].c_str());
+                EXPECT_STREQ("A", unselectedNodes[0].c_str());
+                EXPECT_STREQ("A.C", unselectedNodes[1].c_str());
+            }
+
+            TEST_F(SceneGraphSelectorTest, UpdateNodeSelection_EmptySelectedAndNonemptyUnselectedNodesIncludingRootNode_AllNodesInUnselected)
+            {
+                AZStd::vector<AZStd::string> selectedNodes;
+                AZStd::vector<AZStd::string> unselectedNodes = { "A", "A.B", "A.D" };
+                CreateMeshGroup(selectedNodes, unselectedNodes);
+
+                SceneGraphSelector::UpdateNodeSelection(m_graph, m_testNodeSelectionList);
+                EXPECT_EQ(0, selectedNodes.size());
+                EXPECT_EQ(5, unselectedNodes.size());
+            }
+
+            TEST_F(SceneGraphSelectorTest, UpdateNodeSelection_EmptySelectedAndNonemptyUnselectedNodesExcludingRootNode_AandACFoundInSelectedNodes)
+            {
+                AZStd::vector<AZStd::string> selectedNodes;
+                AZStd::vector<AZStd::string> unselectedNodes = { "A.B", "A.D" };
+                CreateMeshGroup(selectedNodes, unselectedNodes);
+
+                SceneGraphSelector::UpdateNodeSelection(m_graph, m_testNodeSelectionList);
+                EXPECT_EQ(2, selectedNodes.size());
+                EXPECT_EQ(3, unselectedNodes.size());
+                EXPECT_STREQ("A", selectedNodes[0].c_str());
+                EXPECT_STREQ("A.C", selectedNodes[1].c_str());
+                EXPECT_STREQ("A.B", unselectedNodes[0].c_str());
+                EXPECT_STREQ("A.D", unselectedNodes[1].c_str());
+                EXPECT_STREQ("A.D.E", unselectedNodes[2].c_str());
             }
 
             TEST_F(SceneGraphSelectorTest, UpdateNodeSelection_DuplicateEntryRemovedFromSelected_ADotDNotFoundInSelectedNodes)

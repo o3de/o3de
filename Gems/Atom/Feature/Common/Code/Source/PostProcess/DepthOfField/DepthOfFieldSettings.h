@@ -61,7 +61,7 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::DepthOfFieldSettings, "{64782D63-80E0-4935-9E26-47EFC735305D}",
                 AZ::Render::DepthOfFieldSettingsInterface, AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(DepthOfFieldSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthOfFieldSettings, SystemAllocator);
 
             DepthOfFieldSettings(PostProcessFeatureProcessor* featureProcessor);
             ~DepthOfFieldSettings() = default;

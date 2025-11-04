@@ -6,4 +6,5 @@
 
 set(FILES
     Tests/Clients/CompressionTest.cpp
+    Tests/Clients/CompressionLZ4Test.cpp
 )

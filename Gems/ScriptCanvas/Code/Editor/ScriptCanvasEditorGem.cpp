@@ -140,7 +140,10 @@ namespace {
     } dummy;
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasGem, ScriptCanvas::ScriptCanvasModule)
-
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), ScriptCanvas::ScriptCanvasModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvas_Editor, ScriptCanvas::ScriptCanvasModule)
+#endif
 
 #endif // SCRIPTCANVAS_EDITOR

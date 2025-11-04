@@ -168,7 +168,7 @@ namespace AZ
 
         bool MeshletsRenderObject::ProcessBuffersData(float* position, uint32_t vtxNum)
         {
-            uint32_t badVertices = 0;
+            [[maybe_unused]] uint32_t badVertices = 0;
             const float maxVertexSizeSqr = 99.9f * 99.9f;  // under 100 meters
             for (uint32_t vtx = 0; vtx < vtxNum; ++vtx, position += 3)
             {
@@ -409,7 +409,7 @@ namespace AZ
                         bufferDesc.m_viewOffsetInBytes = meshRenderData.ComputeBuffersDescriptors[mappedIdx].m_viewOffsetInBytes;
 
                         meshRenderData.IndexBufferView = RHI::IndexBufferView(
-                            meshRenderData.ComputeBuffersViews[mappedIdx]->GetBuffer(),
+                            *meshRenderData.ComputeBuffersViews[mappedIdx]->GetBuffer(),
                             bufferDesc.m_viewOffsetInBytes,
                             (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize,
                             (bufferDesc.m_elementFormat == RHI::Format::R32_UINT) ? RHI::IndexFormat::Uint32 : RHI::IndexFormat::Uint16);

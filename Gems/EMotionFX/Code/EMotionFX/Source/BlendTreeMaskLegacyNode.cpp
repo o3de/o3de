@@ -23,8 +23,8 @@ namespace EMotionFX
 {
     size_t BlendTreeMaskLegacyNode::s_numMasks = 4;
 
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskLegacyNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskLegacyNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskLegacyNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskLegacyNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeMaskLegacyNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -192,7 +192,7 @@ namespace EMotionFX
             }
 
             // post update the input node first
-            inputNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
         }
 
         // request the reference counted data inside the unique data
@@ -368,30 +368,30 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("ActorNodes", 0x70504714), &BlendTreeMaskLegacyNode::m_mask0, "Mask 1", "The mask to apply on the Pose 1 input port.")
+            ->DataElement(AZ_CRC_CE("ActorNodes"), &BlendTreeMaskLegacyNode::m_mask0, "Mask 1", "The mask to apply on the Pose 1 input port.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMaskLegacyNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &BlendTreeMaskLegacyNode::GetMask0JointName)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC("ActorJointElement", 0xedc8946c))
-            ->DataElement(AZ_CRC("ActorNodes", 0x70504714), &BlendTreeMaskLegacyNode::m_mask1, "Mask 2", "The mask to apply on the Pose 2 input port.")
+                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("ActorJointElement"))
+            ->DataElement(AZ_CRC_CE("ActorNodes"), &BlendTreeMaskLegacyNode::m_mask1, "Mask 2", "The mask to apply on the Pose 2 input port.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMaskLegacyNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &BlendTreeMaskLegacyNode::GetMask1JointName)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC("ActorJointElement", 0xedc8946c))
-            ->DataElement(AZ_CRC("ActorNodes", 0x70504714), &BlendTreeMaskLegacyNode::m_mask2, "Mask 3", "The mask to apply on the Pose 3 input port.")
+                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("ActorJointElement"))
+            ->DataElement(AZ_CRC_CE("ActorNodes"), &BlendTreeMaskLegacyNode::m_mask2, "Mask 3", "The mask to apply on the Pose 3 input port.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMaskLegacyNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &BlendTreeMaskLegacyNode::GetMask2JointName)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC("ActorJointElement", 0xedc8946c))
-            ->DataElement(AZ_CRC("ActorNodes", 0x70504714), &BlendTreeMaskLegacyNode::m_mask3, "Mask 4", "The mask to apply on the Pose 4 input port.")
+                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("ActorJointElement"))
+            ->DataElement(AZ_CRC_CE("ActorNodes"), &BlendTreeMaskLegacyNode::m_mask3, "Mask 4", "The mask to apply on the Pose 4 input port.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMaskLegacyNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &BlendTreeMaskLegacyNode::GetMask3JointName)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC("ActorJointElement", 0xedc8946c))
+                ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("ActorJointElement"))
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMaskLegacyNode::m_outputEvents0, "Output Events 1", "Output events of the first input port?")
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMaskLegacyNode::m_outputEvents1, "Output Events 2", "Output events of the second input port?")
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMaskLegacyNode::m_outputEvents2, "Output Events 3", "Output events of the third input port?")

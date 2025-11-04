@@ -11,6 +11,10 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvasDeveloper/ScriptCanvasDeveloperComponent.h>
 
+#if defined(IMGUI_ENABLED)
+#include <imgui/imgui.h>
+#endif
+
 namespace ScriptCanvasDeveloperComponentCpp
 {
     bool GetListEntryFromAZStdStringVector(void* data, int idx, const char** out_text)
@@ -45,7 +49,7 @@ namespace ScriptCanvas::Developer
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ScriptCanvasDeveloperService", 0xd2edba67));
+        provided.push_back(AZ_CRC_CE("ScriptCanvasDeveloperService"));
     }
 
 
@@ -58,18 +62,16 @@ namespace ScriptCanvas::Developer
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif // IMGUI_ENABLED
-
     }
 
     void SystemComponent::Deactivate()
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
-#endif // IMGUI_ENABLED
+#endif 
     }
 
 #ifdef IMGUI_ENABLED
-
     void SystemComponent::FullPerformanceWindow()
     {
         GraphHistoryListBox();
@@ -82,16 +84,17 @@ namespace ScriptCanvas::Developer
         const int k_HeightInItemCount = 30;
         ImGui::ListBox(":Graph", &index, &ScriptCanvasDeveloperComponentCpp::GetListEntryFromAZStdStringVector, &scriptHistory, aznumeric_cast<int>(scriptHistory.size()), k_HeightInItemCount);
     }
+#endif // IMGUI_ENABLED
 
     void SystemComponent::OnImGuiMainMenuUpdate()
     {
+#ifdef IMGUI_ENABLED
+
         if (ImGui::BeginMenu("Script Canvas"))
         {
             FullPerformanceWindow();
             ImGui::EndMenu();
         }
+#endif
     }
-
-#endif // IMGUI_ENABLED
-
 }

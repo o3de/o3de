@@ -20,9 +20,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlendNNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlendNNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeight, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlendNNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlendNNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeight, AnimGraphAllocator)
 
     BlendTreeBlendNNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -491,7 +491,7 @@ namespace EMotionFX
         if (con)
         {
             con->GetSourceNode()->FindOrCreateUniqueNodeData(animGraphInstance)->SetGlobalWeight(uniqueData->GetGlobalWeight());
-            con->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, con->GetSourceNode(), timePassedInSeconds);
         }
 
         // get two nodes that we receive input poses from, and get the blend weight
@@ -557,12 +557,12 @@ namespace EMotionFX
         // Top-down update the relevant nodes.
         if (nodeA)
         {
-            nodeA->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, nodeA, timePassedInSeconds);
         }
 
         if (nodeB && nodeA != nodeB)
         {
-            nodeB->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, nodeB, timePassedInSeconds);
         }
     }
 
@@ -585,7 +585,7 @@ namespace EMotionFX
         BlendTreeConnection* connection = m_inputPorts[INPUTPORT_WEIGHT].m_connection;
         if (connection)
         {
-            connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, connection->GetSourceNode(), timePassedInSeconds);
         }
 
         // get two nodes that we receive input poses from, and get the blend weight
@@ -608,10 +608,10 @@ namespace EMotionFX
             return;
         }
 
-        nodeA->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, nodeA, timePassedInSeconds);
         if (nodeB && nodeA != nodeB)
         {
-            nodeB->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, nodeB, timePassedInSeconds);
         }
 
         // request the reference counted data inside the unique data
@@ -645,7 +645,7 @@ namespace EMotionFX
         data->SetTrajectoryDeltaMirrored(delta);
     }
 
-    bool BlendTreeBlendNNode::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    static bool BlendTreeBlendNNodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
@@ -667,7 +667,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<BlendTreeBlendNNode, AnimGraphNode>()
-            ->Version(2, VersionConverter)
+            ->Version(2, &BlendTreeBlendNNodeVersionConverter)
             ->Field("syncMode", &BlendTreeBlendNNode::m_syncMode)
             ->Field("eventMode", &BlendTreeBlendNNode::m_eventMode)
             ->Field("paramWeights", &BlendTreeBlendNNode::m_paramWeights);
@@ -684,12 +684,12 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeBlendNNode::m_syncMode)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeBlendNNode::m_eventMode)
-            ->DataElement(AZ_CRC("BlendNParamWeightsContainerHandler", 0x311f6bb3), &BlendTreeBlendNNode::m_paramWeights, "Blend weight triggers", "The values of the input weight at which an input pose will weigh 100%")
-            ->Attribute(AZ_CRC("BlendTreeBlendNNodeParamWeightsElement", 0x7eae1990), "")
+            ->DataElement(AZ_CRC_CE("BlendNParamWeightsContainerHandler"), &BlendTreeBlendNNode::m_paramWeights, "Blend weight triggers", "The values of the input weight at which an input pose will weigh 100%")
+            ->Attribute(AZ_CRC_CE("BlendTreeBlendNNodeParamWeightsElement"), "")
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeBlendNNode::UpdateParamWeightRanges)
-            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("BlendNParamWeightsElementHandler", 0xec71620d));
+            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC_CE("BlendNParamWeightsElementHandler"));
     }
 
     void BlendTreeBlendNNode::SetSyncMode(ESyncMode syncMode)

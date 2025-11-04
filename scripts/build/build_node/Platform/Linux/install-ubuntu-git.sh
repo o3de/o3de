@@ -33,6 +33,9 @@ then
 elif [ "$UBUNTU_DISTRO" == "jammy" ]
 then
     echo "Setup for Ubuntu 22.04 LTS ($UBUNTU_DISTRO)"
+elif [ "$UBUNTU_DISTRO" == "noble" ]
+then
+    echo "Setup for Ubuntu 24.04 LTS ($UBUNTU_DISTRO)"
 else
     echo "Unsupported version of Ubuntu $UBUNTU_DISTRO"
     exit 1

@@ -10,10 +10,14 @@
 
 #include "Include/IPreferencesPage.h"
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <QIcon>
+
+namespace AZ
+{
+    class SerializeContext;
+}
 
 class CEditorPreferencesPage_ViewportManipulator : public IPreferencesPage
 {

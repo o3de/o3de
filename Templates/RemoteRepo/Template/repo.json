@@ -1,0 +1,14 @@
+{
+    "repo_name": "${Name}",
+    "repo_uri": "${RepoURI}",
+    "$schemaVersion": "1.0.0",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
+    "summary": "${Summary}",
+    "additional_info": "${AdditionalInfo}",
+    "last_updated": "",
+    "gems_data": [],
+    "projects_data": [],
+    "templates_data": [],
+    "repos": []
+}

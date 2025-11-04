@@ -214,12 +214,12 @@ namespace AzFramework
         return result;
     }
 
-    bool SpawnableIndexEntityIterator::operator==(const SpawnableIndexEntityIterator& rhs)
+    bool SpawnableIndexEntityIterator::operator==(const SpawnableIndexEntityIterator& rhs) const
     {
         return m_value.m_entity == rhs.m_value.m_entity && m_value.m_index == rhs.m_value.m_index;
     }
 
-    bool SpawnableIndexEntityIterator::operator!=(const SpawnableIndexEntityIterator& rhs)
+    bool SpawnableIndexEntityIterator::operator!=(const SpawnableIndexEntityIterator& rhs) const
     {
         return m_value.m_entity != rhs.m_value.m_entity || m_value.m_index != rhs.m_value.m_index;
     }
@@ -379,9 +379,11 @@ namespace AzFramework
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EntitySpawnTicket>(
-                    "EntitySpawnTicket",
-                    "EntitySpawnTicket is an object used to spawn, identify, and track the spawned entities associated with the ticket.");
+                // Hide EntitySpawnTicket in editContext, as there is no proper edit time constructor
+                editContext->Class<EntitySpawnTicket>("EntitySpawnTicket",
+                        "EntitySpawnTicket is an object used to spawn, identify, and track the spawned entities associated with the ticket.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
             }
         }
 

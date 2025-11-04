@@ -1,6 +1,0 @@
-<download name="ocean_trackview" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="12227" md5="ec75160df41df7010fb1135ec0b3e17f"/>
- </files>
-</download>

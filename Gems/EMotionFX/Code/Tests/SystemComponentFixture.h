@@ -17,10 +17,10 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Application/Application.h>
@@ -42,7 +42,7 @@ namespace EMotionFX
     {
     public:
         AZ_RTTI(EMotionFXTestModule, "{32567457-5341-4D8D-91A9-E48D8395DE65}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(EMotionFXTestModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EMotionFXTestModule, AZ::OSAllocator);
 
         EMotionFXTestModule()
         {
@@ -55,6 +55,7 @@ namespace EMotionFX
         : public AzFramework::Application
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentFixtureApp, AZ::SystemAllocator)
 
         ComponentFixtureApp()
         {
@@ -105,25 +106,27 @@ namespace EMotionFX
     */
     template<class... Components>
     class ComponentFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             PreStart();
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_createEditContext = true;
             startupParameters.m_loadAssetCatalog = false;
+            startupParameters.m_loadSettingsRegistry = false;
 
             // Add EMotionFX as an active gem within the Settings Registry for unit test
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
                 AZ::Test::AddActiveGem("EMotionFX", *settingsRegistry);
             }
+
             m_app.Start(AZ::ComponentApplication::Descriptor{}, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -146,15 +149,15 @@ namespace EMotionFX
             // Clear the queue of messages from unit tests on our buses
             EMotionFX::Integration::ActorNotificationBus::ClearQueuedEvents();
 
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            m_app.Stop();
+
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         ~ComponentFixture() override
         {
-            if (GetSystemEntity()->GetState() == AZ::Entity::State::Active)
-            {
-                GetSystemEntity()->Deactivate();
-            }
+            // note to future maintainers, 
+            // The System Entity is destroyed in m_app.Stop(), no need to manually destroy it here.
         }
 
         AZ::SerializeContext* GetSerializeContext()
@@ -212,9 +215,9 @@ namespace EMotionFX
     };
 
     using SystemComponentFixture = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         Physics::MaterialSystemComponent,
         EMotionFX::Integration::SystemComponent
@@ -223,9 +226,9 @@ namespace EMotionFX
     // Use this fixture if you want to load asset catalog. Some assets (reference anim graph for example)
     // can only be loaded when asset catalog is loaded.
     using SystemComponentFixtureWithCatalog = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AzFramework::AssetCatalogComponent,
         Physics::MaterialSystemComponent,

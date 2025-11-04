@@ -19,6 +19,7 @@
 #include <QLineEdit>
 #include <QStandardPaths>
 #include <QScrollArea>
+#include <QRegularExpression>
 
 namespace O3DE::ProjectManager
 {
@@ -41,13 +42,16 @@ namespace O3DE::ProjectManager
         scrollArea->setWidget(scrollWidget);
 
         m_verticalLayout = new QVBoxLayout();
-        m_verticalLayout->setMargin(0);
+        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
         scrollWidget->setLayout(m_verticalLayout);
 
-        m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
+        m_projectName = new FormLineEditWidget(tr("Project Name"), "", this);
         connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);
         m_verticalLayout->addWidget(m_projectName);
+
+        m_projectVersion = new FormLineEditWidget(tr("Project Version"), "1.0.0", this);
+        m_verticalLayout->addWidget(m_projectVersion);
 
         m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
         connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectPathUpdated);
@@ -84,13 +88,14 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_projectName = m_projectName->lineEdit()->text();
+        projectInfo.m_version = m_projectVersion->lineEdit()->text();
         // currently we don't have separate fields for changing the project name and display name 
         projectInfo.m_displayName = projectInfo.m_projectName;
         projectInfo.m_path = m_projectPath->lineEdit()->text();
         return projectInfo;
     }
 
-    bool ProjectSettingsScreen::ValidateProjectName()
+    bool ProjectSettingsScreen::ValidateProjectName() const
     {
         bool projectNameIsValid = true;
         if (m_projectName->lineEdit()->text().isEmpty())
@@ -102,8 +107,10 @@ namespace O3DE::ProjectManager
         {
             // this validation should roughly match the utils.validate_identifier which the cli
             // uses to validate project names
-            QRegExp validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
-            const bool result = validProjectNameRegex.exactMatch(m_projectName->lineEdit()->text());
+            QRegularExpression validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
+            const QString& text = m_projectName->lineEdit()->text();
+            QRegularExpressionMatch match = validProjectNameRegex.match(text);
+            const bool result = match.hasMatch() && match.capturedLength() == text.length();
             if (!result)
             {
                 projectNameIsValid = false;
@@ -116,7 +123,7 @@ namespace O3DE::ProjectManager
         return projectNameIsValid;
     }
 
-    bool ProjectSettingsScreen::ValidateProjectPath()
+    bool ProjectSettingsScreen::ValidateProjectPath() const
     {
         bool projectPathIsValid = true;
         QDir path(m_projectPath->lineEdit()->text());
@@ -145,8 +152,14 @@ namespace O3DE::ProjectManager
         ValidateProjectName() && ValidateProjectPath();
     }
 
-    bool ProjectSettingsScreen::Validate()
+    AZ::Outcome<void, QString> ProjectSettingsScreen::Validate() const
     {
-        return ValidateProjectName() && ValidateProjectPath();
+        if (ValidateProjectName() && ValidateProjectPath())
+        {
+            return AZ::Success();
+        }
+
+        // Returning empty string to use the default error message
+        return AZ::Failure<QString>("");
     }
 } // namespace O3DE::ProjectManager

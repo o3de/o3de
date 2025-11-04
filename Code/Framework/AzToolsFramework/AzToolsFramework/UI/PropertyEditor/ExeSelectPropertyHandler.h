@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -18,12 +20,12 @@
 
 namespace AzToolsFramework
 {
-    class ExeSelectPropertyCtrl : public QWidget
+    class AZTF_API ExeSelectPropertyCtrl : public QWidget
     {
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(ExeSelectPropertyCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExeSelectPropertyCtrl, AZ::SystemAllocator);
 
         ExeSelectPropertyCtrl(QWidget* pParent = nullptr);
 
@@ -45,12 +47,12 @@ namespace AzToolsFramework
         AzQtComponents::BrowseEdit* m_browseEdit = nullptr;
     };
 
-    class ExeSelectPropertyHandler
+    class AZTF_API ExeSelectPropertyHandler
         : QObject
         , public AzToolsFramework::PropertyHandler<AZStd::string, ExeSelectPropertyCtrl>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExeSelectPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExeSelectPropertyHandler, AZ::SystemAllocator);
 
         ExeSelectPropertyHandler();
 
@@ -64,5 +66,5 @@ namespace AzToolsFramework
             size_t index, ExeSelectPropertyCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
     };
 
-    void RegisterExeSelectPropertyHandler();
+    AZTF_API void RegisterExeSelectPropertyHandler();
 } // namespace AzToolsFramework

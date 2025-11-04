@@ -30,6 +30,7 @@ namespace AssetProcessor
             const AZStd::string& assetDbName,
             QString name,
             bool isFolder,
+            const AZ::s64 scanFolderID,
             AZ::s64 analysisJobDuration = -1);
 
         ~SourceAssetTreeItemData() override {}

@@ -25,9 +25,7 @@
                             "DESCRIPTOR_HEAP_TYPE_SAMPLER": [2048, 2048],
                             "DESCRIPTOR_HEAP_TYPE_RTV": [2048, 0],
                             "DESCRIPTOR_HEAP_TYPE_DSV": [2048, 0]
-                        },
-                        "NumShaderVisibleCbvSrvUavStaticHandles": 2000,
-                        "AllowDescriptorHeapCompaction": true
+                        }
                     },
                     "vulkan":
                     {

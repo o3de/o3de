@@ -6,14 +6,15 @@
  *
  */
 
+#include <AzCore/std/limits.h>
 #include <AzNetworking/Serialization/HashSerializer.h>
 #include <AzNetworking/Utilities/QuantizedValues.h>
 
 namespace AzNetworking
 {
     // This gives us a hash sensitivity of around 1/512th of a unit, and will detect errors within a range of -4,194,304 to +4,194,304
-    static const int32_t FloatHashMinValue = (INT_MIN >> 9);
-    static const int32_t FloatHashMaxValue = (INT_MAX >> 9);
+    static constexpr int32_t FloatHashMinValue = (AZStd::numeric_limits<int>::min() >> 9);
+    static constexpr int32_t FloatHashMaxValue = (AZStd::numeric_limits<int>::max() >> 9);
 
     HashSerializer::HashSerializer()
     {
@@ -44,12 +45,6 @@ namespace AzNetworking
         return true;
     }
 
-    bool HashSerializer::Serialize(char& value, [[maybe_unused]] const char* name, [[maybe_unused]] char minValue, [[maybe_unused]] char maxValue)
-    {
-        m_hash = AZ::TypeHash64(value, m_hash);
-        return true;
-    }
-
     bool HashSerializer::Serialize(int8_t& value, [[maybe_unused]] const char* name, [[maybe_unused]] int8_t minValue, [[maybe_unused]] int8_t maxValue)
     {
         m_hash = AZ::TypeHash64(value, m_hash);
@@ -68,7 +63,13 @@ namespace AzNetworking
         return true;
     }
 
-    bool HashSerializer::Serialize(int64_t& value, [[maybe_unused]] const char* name, [[maybe_unused]] int64_t minValue, [[maybe_unused]] int64_t maxValue)
+    bool HashSerializer::Serialize(long& value, [[maybe_unused]] const char* name, [[maybe_unused]] long minValue, [[maybe_unused]] long maxValue)
+    {
+        m_hash = AZ::TypeHash64(value, m_hash);
+        return true;
+    }
+
+    bool HashSerializer::Serialize(AZ::s64& value, [[maybe_unused]] const char* name, [[maybe_unused]] AZ::s64 minValue, [[maybe_unused]] AZ::s64 maxValue)
     {
         m_hash = AZ::TypeHash64(value, m_hash);
         return true;
@@ -92,7 +93,13 @@ namespace AzNetworking
         return true;
     }
 
-    bool HashSerializer::Serialize(uint64_t& value, [[maybe_unused]] const char* name, [[maybe_unused]] uint64_t minValue, [[maybe_unused]] uint64_t maxValue)
+    bool HashSerializer::Serialize(unsigned long& value, [[maybe_unused]] const char* name, [[maybe_unused]] unsigned long minValue, [[maybe_unused]] unsigned long maxValue)
+    {
+        m_hash = AZ::TypeHash64(value, m_hash);
+        return true;
+    }
+
+    bool HashSerializer::Serialize(AZ::u64& value, [[maybe_unused]] const char* name, [[maybe_unused]] AZ::u64 minValue, [[maybe_unused]] AZ::u64 maxValue)
     {
         m_hash = AZ::TypeHash64(value, m_hash);
         return true;

@@ -10,7 +10,7 @@
 # -------------------------------------------------------------------------
 """Common constants for the dccsi wing pro ide integration
 
-:file: < DCCsi >/Tools/IDE/Wing/constants.py
+:file: DccScriptingInterface\\Tools\\IDE\\Wing\\constants.py
 :Status: Prototype
 :Version: 0.0.1
 """
@@ -23,8 +23,9 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 # -------------------------------------------------------------------------
 # dccsi imports here
+from DccScriptingInterface.Tools.IDE.Wing import USER_HOME
 # wing is a x86 program, this pulls the constant for that (not a Path object)
-from DccScriptingInterface.constants import PATH_PROGRAMFILES_X86
+from DccScriptingInterface.Tools.IDE.Wing import PATH_PROGRAMFILES_X86
 from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING
 # -------------------------------------------------------------------------
 # wing pro ide constants here
@@ -35,15 +36,14 @@ ENVAR_DCCSI_CONFIG_IDE_WING = 'DCCSI_CONFIG_IDE_WING'
 ENVAR_DCCSI_WING_VERSION_MAJOR = 'DCCSI_WING_VERSION_MAJOR'
 
 # the default supported version of wing pro is 8
-SLUG_DCCSI_WING_VERSION_MAJOR = int(8)
+from DccScriptingInterface.Tools.IDE.Wing import SLUG_DCCSI_WING_VERSION_MAJOR
 
 # str slug for the default wing type
 # in the future, add support for wing personal and maybe wing 101 versions
-SLUG_DCCSI_WING_TYPE = 'Wing Pro'
+from DccScriptingInterface.Tools.IDE.Wing import SLUG_DCCSI_WING_TYPE
 
 # path string constructor, dccsi default WINGHOME location
-PATH_WINGHOME = (f'{PATH_PROGRAMFILES_X86}' +
-                f'\\{SLUG_DCCSI_WING_TYPE} {SLUG_DCCSI_WING_VERSION_MAJOR}')
+from DccScriptingInterface.Tools.IDE.Wing import PATH_WINGHOME
 
 # wing native hook for it's home location, used in wingstub.py
 ENVAR_WINGHOME = 'WINGHOME'
@@ -70,4 +70,10 @@ ENVAR_WING_PROJ = 'WING_PROJ'
 PATH_DCCSI_TOOLS_IDE_WING_PROJ = (f'{PATH_DCCSI_TOOLS_IDE_WING}' +
                                   f'\\.solutions' +
                                   f'\\DCCsi_{SLUG_DCCSI_WING_VERSION_MAJOR}x.wpr')
+
+# envar to get/set the userhome wing appdata folder
+ENVAR_WING_APPDATA = 'WING_APPDATA'
+
+# path string constructor, userhome where wingstubdb.py can live
+from DccScriptingInterface.Tools.IDE.Wing import PATH_WING_APPDATA
 # --- END -----------------------------------------------------------------

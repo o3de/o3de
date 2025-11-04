@@ -31,7 +31,7 @@ namespace LandscapeCanvas
     class BaseNode : public GraphModel::Node
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseNode, AZ::SystemAllocator);
         AZ_RTTI(BaseNode, "{94ECF2FF-C46C-4CCA-878C-5C47B943B6B7}", Node);
 
         using BaseNodePtr = AZStd::shared_ptr<BaseNode>;
@@ -46,6 +46,7 @@ namespace LandscapeCanvas
             GradientModifier,
             TerrainArea,
             TerrainExtender,
+            TerrainSurfaceExtender,
             VegetationAreaModifier,
             VegetationAreaFilter,
             VegetationAreaSelector
@@ -61,6 +62,9 @@ namespace LandscapeCanvas
         const AZ::EntityId& GetVegetationEntityId() const { return m_vegetationEntityId; }
         void SetVegetationEntityId(const AZ::EntityId& entityId);
 
+        /// Refresh the name in the entity name property slot
+        void RefreshEntityName();
+
         const AZ::ComponentId& GetComponentId() const { return m_componentId; }
         void SetComponentId(const AZ::ComponentId& componentId);
 
@@ -72,6 +76,10 @@ namespace LandscapeCanvas
 
         /// Returns whether or not this node is a Vegetation Area Extender (Filter/Modifier/Selector)
         bool IsAreaExtender() const;
+
+        /// Override the PostLoadSetup calls to ensure the entity name is refreshed correctly.
+        void PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
+        void PostLoadSetup() override;
 
     protected:
         /// Create the property slot on our node to show the Entity name

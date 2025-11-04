@@ -8,8 +8,14 @@
 
 #pragma once
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#ifndef ENABLE_SHADOWS
+#define ENABLE_SHADOWS              1
+#endif
+
+#if ENABLE_SHADOWS
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 #include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
 #include <Atom/RPI/Math.azsli>
 #include "BicubicPcfFilters.azsli"
@@ -143,10 +149,10 @@ float ProjectedShadow::GetVisibilityPcf()
 
     SampleShadowMapBicubicParameters param;
     param.shadowMap = PassSrg::m_projectedShadowmaps;
-    param.shadowPos = float3(atlasPosition.xy * ViewSrg::m_invShadowmapAtlasSize, atlasPosition.z);
-    param.shadowMapSize = ViewSrg::m_shadowmapAtlasSize;
-    param.invShadowMapSize = ViewSrg::m_invShadowmapAtlasSize;
-    param.comparisonValue = m_shadowPosition.z - m_bias;
+    param.shadowPos = real3(atlasPosition.xy * ViewSrg::m_invShadowmapAtlasSize, atlasPosition.z);
+    param.shadowMapSize = real(ViewSrg::m_shadowmapAtlasSize);
+    param.invShadowMapSize = real(ViewSrg::m_invShadowmapAtlasSize);
+    param.comparisonValue = real(m_shadowPosition.z - m_bias);
     param.samplerState = SceneSrg::m_hwPcfSampler;
 
     if (filteringSampleCount <= 4)       
@@ -180,10 +186,10 @@ float ProjectedShadow::GetVisibilityEsm()
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
     {
         const float3 coefficients = float3(
-            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f_n,
-            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_nf,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f_n,
             ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f);
-        if (coefficients.x == 0.) 
+        if (coefficients.x == 0.)
         {
             return 1.;
         }
@@ -196,8 +202,7 @@ float ProjectedShadow::GetVisibilityEsm()
         const float esmExponent = ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent;
         const float ratio = SampleESM(shadowmap, PassSrg::LinearSampler, uv, depth, esmExponent);
 
-        // pow() mitigates light bleeding to shadows from near shadow casters.
-        return saturate( pow(ratio, 8) );
+        return saturate(ratio);
     }
 
     return 1.;
@@ -220,8 +225,8 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
     {
         const float3 coefficients = float3(
-            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f_n,
-            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_n_f,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_nf,
+            ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f_n,
             ViewSrg::m_projectedFilterParams[m_shadowIndex].m_f);
         if (coefficients.x == 0.)
         {
@@ -239,12 +244,7 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         static const float pcfFallbackThreshold = 1.04;
         if (ratio > pcfFallbackThreshold)
         {
-            ratio = PCFFallbackForESM(shadowmap, uv, depth, esmExponent);
-        }
-        else
-        {
-            // pow() mitigates light bleeding to shadows from near shadow casters.
-            ratio = pow(ratio, 8);
+            ratio = GetVisibilityPcf();
         }
         return saturate(ratio);
     }
@@ -270,7 +270,7 @@ float ProjectedShadow::GetThickness()
     {
         const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);
 
-        const float depthValue = shadowmap.SampleLevel(PassSrg::LinearSampler,
+        const float depthValue = shadowmap.SampleLevel(PassSrg::PointSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
             /*LOD=*/0
             ).r;
@@ -301,7 +301,7 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
     {
         float3 atlasPosition = GetAtlasPosition(shadowPosition.xy);
         const float depthInShadowmap = shadowmap.SampleLevel(
-            PassSrg::LinearSampler,
+            PassSrg::PointSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z), /*LOD=*/0).r;
         const float depthDiff = depthInShadowmap - shadowPosition.z;
 
@@ -338,3 +338,5 @@ float3 ProjectedShadow::GetAtlasPosition(float2 texturePosition)
 
     return float3(coordInTexture, slice);
 }
+
+#endif // ENABLE_SHADOWS

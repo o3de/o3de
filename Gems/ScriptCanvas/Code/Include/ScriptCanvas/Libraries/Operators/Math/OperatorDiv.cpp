@@ -104,6 +104,30 @@ namespace ScriptCanvas
             };
 
             template <>
+            struct OperatorDivImpl<Data::VectorNType>
+            {
+                OperatorDivImpl(Node* node)
+                    : m_node(node)
+                {}
+
+                Data::VectorNType operator()(const Data::VectorNType& a, const Datum& b)
+                {
+                    const Data::VectorNType* divisor = b.GetAs<Data::VectorNType>();
+                    if (!divisor || divisor->IsZero())
+                    {
+                        // Divide by zero
+                        SCRIPTCANVAS_REPORT_ERROR((*m_node), "Divide by Zero");
+                        return Data::VectorNType(0);
+                    }
+
+                    return a / (*divisor);
+                }
+
+            private:
+                Node* m_node;
+            };
+
+            template <>
             struct OperatorDivImpl<Data::ColorType>
             {
                 OperatorDivImpl(Node* node)
@@ -174,6 +198,7 @@ namespace ScriptCanvas
                     Data::Type::Vector2(),
                     Data::Type::Vector3(),
                     Data::Type::Vector4(),
+                    Data::Type::VectorN()
                 };
             }
 
@@ -192,6 +217,9 @@ namespace ScriptCanvas
                     break;
                 case Data::eType::Vector4:
                     OperatorEvaluator::Evaluate<Data::Vector4Type>(OperatorDivImpl<Data::Vector4Type>(this), operands, result);
+                    break;
+                case Data::eType::VectorN:
+                    OperatorEvaluator::Evaluate<Data::VectorNType>(OperatorDivImpl<Data::VectorNType>(this), operands, result);
                     break;
                 default:
                     AZ_Assert(false, "Division operator not defined for type: %s", Data::ToAZType(type).ToString<AZStd::string>().c_str());

@@ -14,6 +14,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
             AZ::AssetProcessor
+        LABELS REQUIRES_tiaf
+    )
+
+    ly_add_pytest(
+        NAME SceneProcessingTests.ScriptingTests
+        PATH ${CMAKE_CURRENT_LIST_DIR}/scene_scripting_tests.py
+        TEST_SUITE sandbox
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessorBatch
     )
     
     ly_add_pytest(

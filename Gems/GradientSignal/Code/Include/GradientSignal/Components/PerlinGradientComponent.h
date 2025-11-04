@@ -34,7 +34,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(PerlinGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PerlinGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(PerlinGradientConfig, "{A746CFD0-7288-42F4-837D-1CDE2EAA6923}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         int m_randomSeed = 1;

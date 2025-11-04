@@ -23,6 +23,7 @@ namespace AZ
             m_skinningMethodOptionIndex = layout->FindShaderOptionIndex(AZ::Name("o_skinningMethod"));
             m_skinningMethodLinearSkinningValue = layout->FindValue(m_skinningMethodOptionIndex, AZ::Name("SkinningMethod::LinearSkinning"));
             m_skinningMethodDualQuaternionValue = layout->FindValue(m_skinningMethodOptionIndex, AZ::Name("SkinningMethod::DualQuaternion"));
+            m_skinningMethodNoSkinningValue = layout->FindValue(m_skinningMethodOptionIndex, AZ::Name("SkinningMethod::NoSkinning"));
 
             m_applyMorphTargetOptionIndex = layout->FindShaderOptionIndex(AZ::Name("o_applyMorphTargets"));
             m_applyMorphTargetFalseValue = layout->FindValue(m_applyMorphTargetOptionIndex, AZ::Name("false"));
@@ -43,6 +44,9 @@ namespace AZ
             {
             case SkinningMethod::DualQuaternion:
                 shaderOptionGroup.SetValue(m_skinningMethodOptionIndex, m_skinningMethodDualQuaternionValue);
+                break;
+            case SkinningMethod::NoSkinning:
+                shaderOptionGroup.SetValue(m_skinningMethodOptionIndex, m_skinningMethodNoSkinningValue);
                 break;
             case SkinningMethod::LinearSkinning:
             default:

@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "09_moderate_red.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "09_moderate_red_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "09_moderate_red.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "09_moderate_red_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

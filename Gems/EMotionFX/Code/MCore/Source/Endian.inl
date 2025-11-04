@@ -327,25 +327,6 @@ MCORE_INLINE void Endian::Convert16BitQuaternion(MCore::Compressed16BitQuaternio
 }
 
 
-// convert an RGBAColor
-MCORE_INLINE void Endian::ConvertRGBAColor(MCore::RGBAColor* value, Endian::EEndianType sourceEndianType, uint32 count)
-{
-    // convert into the new endian, depending on the platform we are running on
-    switch (sourceEndianType)
-    {
-    case ENDIAN_LITTLE:
-        MCORE_FROM_LITTLE_ENDIAN32  ((uint8*)value, count << 2);
-        break;
-    case ENDIAN_BIG:
-        MCORE_FROM_BIG_ENDIAN32     ((uint8*)value, count << 2);
-        break;
-    default:
-        ;
-    }
-    ;
-}
-
-
 //-----------------------------------------------------------------------
 
 // convert a float into another endian type
@@ -500,21 +481,6 @@ MCORE_INLINE void Endian::Convert16BitQuaternion(MCore::Compressed16BitQuaternio
     ConvertSignedInt16((int16*)value, count << 2);
 }
 
-
-// convert a RGBAColor into another endian type
-MCORE_INLINE void Endian::ConvertRGBAColor(MCore::RGBAColor* value, EEndianType sourceEndianType, EEndianType targetEndianType, uint32 count)
-{
-    // if we don't need to convert anything
-    if (sourceEndianType == targetEndianType)
-    {
-        return;
-    }
-
-    // perform conversion
-    ConvertFloat((float*)value, count << 2);
-}
-
-
 // convert a Vector2
 MCORE_INLINE void Endian::ConvertVector2(AZ::Vector2* value, uint32 count)
 {
@@ -549,14 +515,6 @@ MCORE_INLINE void Endian::Convert16BitQuaternion(MCore::Compressed16BitQuaternio
     ConvertSignedInt16((int16*)value, count << 2);
 }
 
-
-// convert a RGBAColor
-MCORE_INLINE void Endian::ConvertRGBAColor(MCore::RGBAColor* value, uint32 count)
-{
-    ConvertFloat((float*)value, count << 2);
-}
-
-//-----------------------------------------------------------------------
 
 // convert a float into another endian type
 MCORE_INLINE void Endian::ConvertFloatTo(float* value, EEndianType targetEndianType, uint32 count)
@@ -767,23 +725,3 @@ MCORE_INLINE void Endian::Convert16BitQuaternionTo(MCore::Compressed16BitQuatern
     ConvertSignedInt16((int16*)value, count << 2);
 }
 
-
-// convert a RGBAColor into another endian type
-MCORE_INLINE void Endian::ConvertRGBAColorTo(MCore::RGBAColor* value, EEndianType targetEndianType, uint32 count)
-{
-    // do nothing if we are already in the right endian
-    #if !defined(AZ_BIG_ENDIAN) // LITTLE_ENDIAN
-    if (targetEndianType == MCore::Endian::ENDIAN_LITTLE)
-    {
-        return;
-    }
-    #else
-    if (targetEndianType == MCore::Endian::ENDIAN_BIG)
-    {
-        return;
-    }
-    #endif
-
-    // perform conversion
-    ConvertFloat((float*)value, count << 2);
-}

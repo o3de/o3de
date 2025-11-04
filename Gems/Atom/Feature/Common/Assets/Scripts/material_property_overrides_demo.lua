@@ -135,7 +135,7 @@ end
 function PropertyValueTest:OnTick(deltaTime, timePoint)
 
     if(nil == self.assignmentIds) then
-        local originalAssignments = MaterialComponentRequestBus.Event.GetDefautMaterialMap(self.entityId)
+        local originalAssignments = MaterialComponentRequestBus.Event.GetDefaultMaterialMap(self.entityId)
         if(nil == originalAssignments or #originalAssignments <= 1) then -- There is always 1 entry for the default assignment; a loaded model will have at least 2 assignments
             return
         end

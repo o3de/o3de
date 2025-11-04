@@ -18,7 +18,7 @@
 
 namespace AzToolsFramework
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorDefaultSelection, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorDefaultSelection, AZ::SystemAllocator)
 
     EditorDefaultSelection::EditorDefaultSelection(
         const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
@@ -33,7 +33,7 @@ namespace AzToolsFramework
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
-        m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
+        m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::GetMainManipulatorManagerId());
         m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
         m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
     }

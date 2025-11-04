@@ -138,7 +138,7 @@ namespace AZ::AtomBridge
         void SetColor(const AZ::Color& color) override;
         void SetAlpha(float a) override;
         void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
-        void DrawQuad(float width, float height) override;
+        void DrawQuad(float width, float height, bool drawShaded) override;
         void DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
         void DrawWireQuad(float width, float height) override;
         void DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
@@ -176,7 +176,7 @@ namespace AZ::AtomBridge
         void DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius) override;
         void DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
         void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded) override;
-        void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
+        void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, bool drawShaded) override;
         void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float headScale = 1.0f, bool dualEndedArrow = false) override;
         void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int srcOffsetY = 0) override;
         void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false) override;

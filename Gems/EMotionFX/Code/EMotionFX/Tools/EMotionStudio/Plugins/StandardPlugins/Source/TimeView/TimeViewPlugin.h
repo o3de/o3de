@@ -17,6 +17,7 @@
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeTrack.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewShared.h>
 #include <QScrollArea>
+#include <QSplitter>
 #endif
 
 namespace EMStudio
@@ -49,7 +50,7 @@ namespace EMStudio
     {
         Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(TimeViewPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
-        
+
         friend class TrackDataHeaderWidget;
         friend class TrackDataWidget;
         friend class TimeViewWidget;
@@ -68,6 +69,7 @@ namespace EMStudio
 
         // overloaded
         const char* GetName() const override;
+        void Reflect(AZ::ReflectContext* context) override;
         uint32 GetClassID() const override;
         bool GetIsClosable() const override             { return true; }
         bool GetIsFloatable() const override            { return true; }
@@ -76,8 +78,6 @@ namespace EMStudio
         // overloaded main init function
         bool Init() override;
         EMStudioPlugin* Clone() const override { return new TimeViewPlugin(); }
-
-        void OnBeforeRemovePlugin(uint32 classID) override;
 
         void ProcessFrame(float timePassedInSeconds) override;
 
@@ -157,6 +157,9 @@ namespace EMStudio
 
         uint32 CalcContentHeight() const;
 
+        bool CheckIfMotionEventPresetReadyToDrop();
+        void OnEventPresetDroppedOnTrackData(QPoint mousePos);
+
     public slots:
         void ReInit();
 
@@ -178,6 +181,7 @@ namespace EMStudio
         void OnClickNodeHistoryNode();
         void MotionEventTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)            { UnselectAllElements(); CommandSystem::CommandHelperMotionEventTrackChanged(eventNr, startTime, endTime, oldTrackName, newTrackName); }
         void OnManualTimeChange(float timeValue);
+        void toggleMotionEventPresetsPane();
 
     signals:
         void SelectionChanged();
@@ -201,23 +205,27 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(UpdateInterfaceCallback);
         AZStd::vector<MCore::Command::Callback*> m_commandCallbacks;
 
-        TrackDataHeaderWidget* m_trackDataHeaderWidget;
-        TrackDataWidget*    m_trackDataWidget;
-        TrackHeaderWidget*  m_trackHeaderWidget;
-        TimeInfoWidget*     m_timeInfoWidget;
-        TimeViewToolBar*    m_timeViewToolBar;
-        QWidget*            m_mainWidget;
+        TrackDataHeaderWidget*      m_trackDataHeaderWidget{nullptr};
+        TrackDataWidget*            m_trackDataWidget{nullptr};
+        TrackHeaderWidget*          m_trackHeaderWidget{nullptr};
+        TimeInfoWidget*             m_timeInfoWidget{nullptr};
+        TimeViewToolBar*            m_timeViewToolBar{nullptr};
+        MotionEventPresetsWidget*   m_motionEventsPresetsWidget{nullptr};
+        QWidget*                    m_mainWidget{nullptr};
+        QSplitter*                  m_paneSplitter{nullptr}; // motion presets pane
+
+        QAction*                    m_togglePresetsView{nullptr};
 
         TimeViewMode m_mode = TimeViewMode::None;
-        EMotionFX::Motion*                  m_motion;
-        MotionEventsPlugin*                 m_motionEventsPlugin;
-        MotionSetsWindowPlugin*             m_motionSetPlugin;
+        EMotionFX::Motion*                  m_motion{nullptr};
+        MotionEventsPlugin*                 m_motionEventsPlugin{nullptr};
+        MotionSetsWindowPlugin*             m_motionSetPlugin{nullptr};
         AZStd::vector<EventSelectionItem>    m_selectedEvents;
 
-        EMotionFX::Recorder::ActorInstanceData* m_actorInstanceData;
-        EMotionFX::Recorder::NodeHistoryItem*   m_nodeHistoryItem;
-        EMotionFX::Recorder::EventHistoryItem*  m_eventHistoryItem;
-        EMotionFX::AnimGraphNode*              m_eventEmitterNode;
+        EMotionFX::Recorder::ActorInstanceData* m_actorInstanceData{nullptr};
+        EMotionFX::Recorder::NodeHistoryItem*   m_nodeHistoryItem{nullptr};
+        EMotionFX::Recorder::EventHistoryItem*  m_eventHistoryItem{nullptr};
+        EMotionFX::AnimGraphNode*              m_eventEmitterNode{nullptr};
 
         struct MotionInfo
         {
@@ -233,28 +241,28 @@ namespace EMStudio
         AZStd::vector<MotionInfo*>   m_motionInfos;
         AZStd::vector<TimeTrack*>    m_tracks;
 
-        double              m_pixelsPerSecond;   // pixels per second
-        double              m_scrollX;           // horizontal scroll offset
-        double              m_curTime;           // current time
-        double              m_fps;               // the frame rate, used to snap time values to and to calculate frame numbers
-        double              m_curMouseX;
-        double              m_curMouseY;
-        double              m_maxTime;           // the end time of the full time bar
-        double              m_maxHeight;
+        double              m_pixelsPerSecond{60};   // pixels per second
+        double              m_scrollX{0};            // horizontal scroll offset
+        double              m_curTime{0};            // current time
+        double              m_fps{32};               // the frame rate, used to snap time values to and to calculate frame numbers
+        double              m_curMouseX{0};
+        double              m_curMouseY{0};
+        double              m_maxTime{0};            // the end time of the full time bar
+        double              m_maxHeight{0};
         double              m_lastMaxHeight;
-        double              m_timeScale;         // the time zoom scale factor
-        double              m_maxScale;
-        double              m_minScale;
-        float               m_totalTime;
+        double              m_timeScale{1};          // the time zoom scale factor
+        double              m_maxScale{100};
+        double              m_minScale{0.25};
+        float               m_totalTime{FLT_MAX};
 
-        double              m_targetTimeScale;
-        double              m_targetScrollX;
+        double              m_targetTimeScale{1};
+        double              m_targetScrollX{0};
 
-        bool                m_isAnimating;
-        bool                m_dirty;
+        bool                m_isAnimating{false};
+        bool                m_dirty{true};
 
-        QCursor*            m_zoomInCursor;
-        QCursor*            m_zoomOutCursor;
+        QCursor*            m_zoomInCursor{nullptr};
+        QCursor*            m_zoomOutCursor{nullptr};
 
         QPen                m_penCurTimeHandle;
         QPen                m_penTimeHandles;

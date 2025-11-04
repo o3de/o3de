@@ -171,9 +171,8 @@ class LinuxLauncher(Launcher):
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/project_path={self.workspace.paths.project()}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={host_ip}"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
-
-        self.workspace.settings.modify_platform_setting("r_ShaderCompilerServer", host_ip)
-        self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", host_ip)
+        self.args.append(f'--log_RemoteConsoleAllowedAddresses={host_ip}')
+        self.args.append("--log_IncludeTime=1")
 
 
 class DedicatedLinuxLauncher(LinuxLauncher):
@@ -228,40 +227,25 @@ class LinuxEditor(LinuxLauncher):
         return os.path.join(self.workspace.paths.build_directory(), "Editor")
 
 
-class LinuxGenericLauncher(LinuxLauncher):
+class LinuxAtomToolsLauncher(LinuxLauncher):
 
-    def __init__(self, build, exe_file_name, args=None):
-        super(LinuxLauncher, self).__init__(build, args)
-        self.exe_file_name = exe_file_name
-        self.expected_executable_path = os.path.join(
-            self.workspace.paths.build_directory(), f"{self.exe_file_name}")
-
-        if not os.path.exists(self.expected_executable_path):
-            raise ProcessNotStartedError(
-                f"Unable to locate executable '{self.exe_file_name}' "
-                f"in path: '{self.expected_executable_path}'")
+    def __init__(self, build, app_file_name, args=None):
+        super(LinuxAtomToolsLauncher, self).__init__(build, args)
+        self.app_file_name = app_file_name
+        self.expected_executable_path = ""
 
     def binary_path(self):
         """
-        Return full path to the executable file for this build's configuration and project
+        Return full path to the Atom Tools application file for this build's configuration and project
         Relies on the build_directory() in self.workspace.paths to be accurate
 
         :return: full path to the given exe file
         """
         assert self.workspace.project is not None, (
             'Project cannot be NoneType - please specify a project name string.')
+        self.expected_executable_path = os.path.join(
+            self.workspace.paths.build_directory(), f"{self.app_file_name}")
+        if not os.path.isfile(self.expected_executable_path):
+            raise ly_test_tools.launchers.exceptions.SetupError(
+                f'Invalid application path supplied: {self.expected_executable_path}')
         return self.expected_executable_path
-
-
-class LinuxMaterialEditor(LinuxLauncher):
-
-    def __init__(self, build, args=None):
-        super(LinuxMaterialEditor, self).__init__(build, args)
-
-    def binary_path(self):
-        """
-        Return full path to the MaterialEditor for this build's configuration and project
-        :return: full path to MaterialEditor
-        """
-        assert self.workspace.project is not None
-        return os.path.join(self.workspace.paths.build_directory(), "MaterialEditor")

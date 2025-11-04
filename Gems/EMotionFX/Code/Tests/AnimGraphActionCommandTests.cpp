@@ -37,6 +37,12 @@ namespace EMotionFX
             m_motionNodeAnimGraph->InitAfterLoading();
         }
 
+        void TearDown() override
+        {
+            m_motionNodeAnimGraph.reset();
+            AnimGraphFixture::TearDown();
+        }
+
         AZStd::unique_ptr<TwoMotionNodeAnimGraph> m_motionNodeAnimGraph;
         AnimGraphNode* m_stateA = nullptr;
         AnimGraphNode* m_stateB = nullptr;

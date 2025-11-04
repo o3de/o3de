@@ -83,22 +83,22 @@ namespace ScriptCanvasTests
 
         if (!reporter.IsGraphLoaded())
         {
-            ADD_FAILURE() << "Graph was not successfully loaded.";
+            ADD_FAILURE() << "Graph was not successfully loaded.\n" << reporter.GetFilePath().c_str();
         }
         else if (reporter.ExpectsParseError())
         {
             if (!reporter.IsParseAttemptMade())
             {
-                ADD_FAILURE() << "Expected a parse error but the graph never attempted to be parsed";
+                ADD_FAILURE() << "Expected a parse error but the graph never attempted to be parsed\n" << reporter.GetFilePath().c_str();
             }
             else if (reporter.IsCompiled())
             {
-                ADD_FAILURE() << "Expected a parse error but graph compiled successfully";
+                ADD_FAILURE() << "Expected a parse error but graph compiled successfully\n" << reporter.GetFilePath().c_str();
             }
         }
         else if (!reporter.IsCompiled())
         {
-            ADD_FAILURE() << "Graph failed to compile";
+            ADD_FAILURE() << "Graph failed to compile\n" << reporter.GetFilePath().c_str();
         }
         else if (reporter.IsReportFinished())
         {
@@ -114,12 +114,12 @@ namespace ScriptCanvasTests
 
                 if (!reporter.IsActivated())
                 {
-                    ADD_FAILURE() << "Graph did not activate";
+                    ADD_FAILURE() << "Graph did not activate\n" << reporter.GetFilePath().c_str();
                 }
 
                 if (!reporter.IsDeactivated())
                 {
-                    ADD_FAILURE() << "Graph did not deactivate";
+                    ADD_FAILURE() << "Graph did not deactivate\n" << reporter.GetFilePath().c_str();
                     reportCheckpoints = true;
                 }
 
@@ -127,13 +127,13 @@ namespace ScriptCanvasTests
                 {
                     if (!reporter.IsComplete())
                     {
-                        ADD_FAILURE() << "Graph was not marked complete";
+                        ADD_FAILURE() << "Graph was not marked complete\n" << reporter.GetFilePath().c_str();
                         reportCheckpoints = true;
                     }
 
                     if (!reporter.IsErrorFree())
                     {
-                        ADD_FAILURE() << "Graph execution had errors";
+                        ADD_FAILURE() << "Graph execution had errors\n" << reporter.GetFilePath().c_str();
                         reportCheckpoints = true;
 
                         const auto& failures = reporter.GetFailure();
@@ -147,7 +147,7 @@ namespace ScriptCanvasTests
                 {
                     if (reporter.IsErrorFree())
                     {
-                        ADD_FAILURE() << "Graph expected error, but didn't report any";
+                        ADD_FAILURE() << "Graph expected error, but didn't report any\n" << reporter.GetFilePath().c_str();
                         reportCheckpoints = true;
                     }
                 }
@@ -158,7 +158,7 @@ namespace ScriptCanvasTests
                 const auto& checkpoints = reporter.GetCheckpoints();
                 if (checkpoints.empty())
                 {
-                    ADD_FAILURE() << "No checkpoints or other unit test nodes found, using them can help parse graph test failures";
+                    ADD_FAILURE() << "No checkpoints or other unit test nodes found, using them can help parse graph test failures\n" << reporter.GetFilePath().c_str();
                 }
                 else
                 {
@@ -224,7 +224,7 @@ namespace ScriptCanvasTests
         }
         else
         {
-            ADD_FAILURE() << "Graph report did not finish";
+            ADD_FAILURE() << "Graph report did not finish\n" << reporter.GetFilePath().c_str();
         }
     }
 

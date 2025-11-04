@@ -11,18 +11,19 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     enum class SimulationType
     {
         Kinematic, ///< For ragdoll nodes controlled directly by animation.
-        Dynamic ///< For ragdoll nodes driven by the physics simulation.
+        Simulated ///< For ragdoll nodes driven by the physics simulation.
     };
 
     /// Contains pose and velocity information, simulation type and joint strength properties for a node in the ragdoll
     /// for data transfer between physics and other systems.
-    struct RagdollNodeState
+    struct AZF_API RagdollNodeState
     {
         RagdollNodeState() {}
 
@@ -126,3 +127,6 @@ namespace AzFramework
 
     using RagdollPhysicsNotificationBus = AZ::EBus<RagdollPhysicsNotifications>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::RagdollPhysicsRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZF_API, AzFramework::RagdollPhysicsNotifications);

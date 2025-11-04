@@ -11,13 +11,14 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     class ManipulatorView;
 
     //! A manipulator to expose where on a line a user is moving their mouse.
-    class LineSegmentSelectionManipulator
+    class AZTF_API LineSegmentSelectionManipulator
         : public BaseManipulator
         , public ManipulatorSpace
     {
@@ -26,7 +27,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(LineSegmentSelectionManipulator, "{8BA5A9E4-72B4-4B48-BD54-D9DB58EDDA72}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(LineSegmentSelectionManipulator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LineSegmentSelectionManipulator, AZ::SystemAllocator);
 
         LineSegmentSelectionManipulator(const LineSegmentSelectionManipulator&) = delete;
         LineSegmentSelectionManipulator& operator=(const LineSegmentSelectionManipulator&) = delete;
@@ -94,7 +95,7 @@ namespace AzToolsFramework
         AZStd::unique_ptr<ManipulatorView> m_manipulatorView = nullptr; //!< Look of manipulator.
     };
 
-    LineSegmentSelectionManipulator::Action CalculateManipulationDataAction(
+    AZTF_API LineSegmentSelectionManipulator::Action CalculateManipulationDataAction(
         const AZ::Transform& worldFromLocal,
         const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& rayOrigin,

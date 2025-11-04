@@ -15,6 +15,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -32,7 +33,7 @@ namespace AzFramework
         * Currently used to request synchronous asset compilation, provide notifications
         * when assets are updated, and to query asset status
         */
-        class AssetSystemComponent
+        class AZF_API AssetSystemComponent
             : public AZ::Component
             , private AssetSystemRequestBus::Handler
             , private AZ::SystemTickBus::Handler
@@ -58,7 +59,7 @@ namespace AzFramework
             static void Reflect(AZ::ReflectContext* context);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-            
+
         private:
             AssetSystemComponent(const AssetSystemComponent&) = delete;
             void EnableSocketConnection();
@@ -128,7 +129,7 @@ namespace AzFramework
             //! in the calling code.
             //! returns true if successfully connected, false if not
             bool ConnectFromAssetProcessor(const ConnectionSettings& connectionSettings);
-            
+
             AssetStatus CompileAssetSync(const AZStd::string& assetPath) override;
             AssetStatus CompileAssetSync_FlushIO(const AZStd::string& assetPath) override;
 
@@ -147,6 +148,7 @@ namespace AzFramework
             bool EscalateAssetBySearchTerm(AZStd::string_view searchTerm) override;
 
             void ShowAssetProcessor() override;
+            void UpdateSourceControlStatus(bool newStatus) override;
             void ShowInAssetProcessor(const AZStd::string& assetPath) override;
 
             void GetUnresolvedProductReferences(AZ::Data::AssetId assetId, AZ::u32& unresolvedAssetIdReferences, AZ::u32& unresolvedPathReferences) override;
@@ -160,6 +162,7 @@ namespace AzFramework
 
             AZStd::unique_ptr<SocketConnection> m_socketConn = nullptr;
             SocketConnection::TMessageCallbackHandle m_cbHandle = 0;
+            SocketConnection::TMessageCallbackHandle m_bulkMessageHandle = 0;
             AZStd::string m_assetProcessorBranchToken;
             AZStd::string m_assetProcessorProjectName;
             AZStd::string m_assetProcessorPlatform;
@@ -167,6 +170,10 @@ namespace AzFramework
             AZStd::string m_assetProcessorIP;
             AZ::u16 m_assetProcessorPort = 45643;
             bool m_configured = false;
+
+            // set to false in tools like asset builders which are responsible for building assets themselves
+            // and thus should not be allowed to send blocking requests that would cause a deadlock.
+            bool m_allowSyncRequests = true;
         };
     } // namespace AssetSystem
 } // namespace AzFramework

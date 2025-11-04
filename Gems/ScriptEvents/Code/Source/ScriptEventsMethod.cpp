@@ -128,11 +128,20 @@ namespace ScriptEvents
                 return outcome;
             }
 
-            if (parameter.GetName().compare(parameterName) == 0)
+            int duplicateCount = 0;
+            for (auto item = m_parameters.begin(); item != m_parameters.end(); item++)
             {
-                return AZ::Failure(AZStd::string::format(
-                    "Cannot have duplicate parameter names (%d: %s) make sure each parameter name is unique", parameterIndex,
-                    parameterName.c_str()));
+                if (item->GetName().compare(parameterName) == 0)
+                {
+                    duplicateCount++;
+                }
+                if (duplicateCount > 1)
+                {
+                    return AZ::Failure(AZStd::string::format(
+                        "Cannot have duplicate parameter names (%d: %s) make sure each parameter name is unique",
+                        parameterIndex,
+                        parameterName.c_str()));
+                }
             }
 
             parameterName = parameter.GetName();

@@ -19,7 +19,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(MeshletsEditorModule, "{19bbf909-a4fc-48ec-915a-316046feb2f9}", MeshletsModuleInterface);
-            AZ_CLASS_ALLOCATOR(MeshletsEditorModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshletsEditorModule, AZ::SystemAllocator);
 
             MeshletsEditorModule()
             {
@@ -46,5 +46,8 @@ namespace AZ
     } // namespace Meshlets
 } // namespace AZ
 
-
-AZ_DECLARE_MODULE_CLASS(Gem_Meshlets, AZ::Meshlets::MeshletsEditorModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), AZ::Meshlets::MeshletsEditorModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Meshlets_Editor, AZ::Meshlets::MeshletsEditorModule)
+#endif

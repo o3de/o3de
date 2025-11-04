@@ -222,6 +222,23 @@ namespace AZStd
 
         AZ_FORCE_INLINE bool operator == (this_type rhs) const { return m_node == rhs.m_node; }
         AZ_FORCE_INLINE bool operator != (this_type rhs) const { return m_node != rhs.m_node;  }
+
+        // workaround MSVC C++17 reverse_iterator implementation, where it requires iterators supplied to reverse_iterator
+        // to have all the comparison operators and the subscript operator[] implemented due to checking
+        // those operators in a no-except block
+        // When real C++ concepts are enabled, it properly removes the reverse_iterator comparison operators
+        // and subscript operators from the candidate set
+        // The workaround is to declare the operator functions, but don't define them.
+        bool operator<(this_type rhs) const;
+        bool operator>(this_type rhs) const;
+        bool operator<=(this_type rhs) const;
+        bool operator>=(this_type rhs) const;
+        reference operator[](size_t) const;
+        rbtree_const_iterator operator+(difference_type) const;
+        rbtree_const_iterator& operator+=(difference_type);
+        rbtree_const_iterator operator-(difference_type) const;
+        rbtree_const_iterator& operator-=(difference_type);
+
     protected:
         node_ptr_type m_node;
     };
@@ -238,6 +255,7 @@ namespace AZStd
     public:
         typedef T*                          pointer;
         typedef T&                          reference;
+        using difference_type = typename base_type::difference_type;
 
         typedef typename base_type::base_node_ptr_type  base_node_ptr_type;
         typedef typename base_type::node_ptr_type       node_ptr_type;
@@ -263,6 +281,18 @@ namespace AZStd
             --*this;
             return temp;
         }
+
+        // workaround MSVC C++17 reverse_iterator implementation, where it requires iterators supplied to reverse_iterator
+        // to have all the comparison operators and the subscript operator[] implemented due to checking
+        // those operators in a no-except block
+        // When real C++ concepts are enabled, it properly removes the reverse_iterator comparison operators
+        // and subscript operators from the candidate set
+        // The workaround is to declare the operator functions, but don't define them.
+        reference operator[](size_t) const;
+        rbtree_iterator operator+(difference_type) const;
+        rbtree_iterator& operator+=(difference_type);
+        rbtree_iterator operator-(difference_type) const;
+        rbtree_iterator& operator-=(difference_type);
     };
 
     template <class Allocator, class NodeType>
@@ -553,7 +583,7 @@ namespace AZStd
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
-                deallocate_node(newNode, allocator::allow_memory_leaks());
+                deallocate_node(newNode);
             }
             return result;
         }
@@ -573,7 +603,7 @@ namespace AZStd
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
-                deallocate_node(newNode, allocator::allow_memory_leaks());
+                deallocate_node(newNode);
             }
             return result;
         }
@@ -588,7 +618,7 @@ namespace AZStd
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
-                deallocate_node(newNode, allocator::allow_memory_leaks());
+                deallocate_node(newNode);
             }
             return result;
         }
@@ -722,7 +752,7 @@ namespace AZStd
             {
                 pointer toDestroy = &newNode->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
-                deallocate_node(newNode, allocator::allow_memory_leaks());
+                deallocate_node(newNode);
             }
             return result;
         }
@@ -766,14 +796,14 @@ namespace AZStd
         template <class InsertReturnType, class NodeHandle>
         InsertReturnType node_handle_insert_unique(NodeHandle&& nodeHandle);
         template <class NodeHandle>
-        auto node_handle_insert_unique(const iterator hint, NodeHandle&& nodeHandle) -> iterator;
+        auto node_handle_insert_unique(const_iterator hint, NodeHandle&& nodeHandle) -> iterator;
 
         //! Returns an iterator pointing to the inserted element.
         //! If the nodeHandle is empty the end() iterator is returned
         template <class NodeHandle>
         auto node_handle_insert_equal(NodeHandle&& nodeHandle) -> iterator;
         template <class NodeHandle>
-        auto node_handle_insert_equal(const iterator hint, NodeHandle&& nodeHandle) -> iterator;
+        auto node_handle_insert_equal(const_iterator hint, NodeHandle&& nodeHandle) -> iterator;
 
         //! Searches for an element which matches the value of key and extracts it from the hash_table
         //! @return A NodeHandle which can be used to insert the an element between unique and non-unique containers of the same type
@@ -799,7 +829,7 @@ namespace AZStd
 
             pointer toDestroy = &nodeToErase->m_value;
             Internal::destroy<pointer>::single(toDestroy);
-            deallocate_node(nodeToErase, allocator::allow_memory_leaks());
+            deallocate_node(nodeToErase);
             --m_numElements;
             return next;
         }
@@ -1036,7 +1066,7 @@ namespace AZStd
                 if (m_numElements > 0)
                 {
                     // create temp list with all elements relocated.
-                    this_type templist(begin(), end(), allocator);
+                    this_type templist(*this, allocator);
                     clear();
                     m_allocator = allocator;
                     swap(templist);
@@ -1110,7 +1140,7 @@ namespace AZStd
     private:
         inline base_node_ptr_type create_node(const value_type& value)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
             AZSTD_CONTAINER_ASSERT(newNode != NULL, "AZStd::rb_tree::create_node - failed to allocate node!");
 
             // copy construct
@@ -1125,7 +1155,7 @@ namespace AZStd
         template<class ... InputArguments>
         inline base_node_ptr_type create_node(InputArguments&& ... arguments)
         {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
+            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(static_cast<void*>(m_allocator.allocate(sizeof(node_type), alignof(node_type))));
             AZSTD_CONTAINER_ASSERT(newNode, "AZStd::rb_tree::create_node - failed to allocate node!");
 
             pointer ptr = &newNode->m_value;
@@ -1587,7 +1617,7 @@ namespace AZStd
 #endif
                 pointer toDestroy = &nodeToErase->m_value;
                 Internal::destroy<pointer>::single(toDestroy);
-                deallocate_node(nodeToErase, allocator::allow_memory_leaks());
+                deallocate_node(nodeToErase);
                 node = y;
             }
         }
@@ -1609,12 +1639,7 @@ namespace AZStd
             }
         }
 
-        AZ_FORCE_INLINE void    deallocate_node(node_ptr_type node, const true_type& /* allocator::allow_memory_leaks */)
-        {
-            (void)node;
-        }
-
-        AZ_FORCE_INLINE void    deallocate_node(node_ptr_type node, const false_type& /* !allocator::allow_memory_leaks */)
+        AZ_FORCE_INLINE void    deallocate_node(node_ptr_type node)
         {
             m_allocator.deallocate(node, sizeof(node_type), alignment_of<node_type>::value);
         }
@@ -2011,7 +2036,7 @@ namespace AZStd
 
     template <class Traits>
     template <class NodeHandle>
-    inline auto rbtree<Traits>::node_handle_insert_unique(const iterator hint, NodeHandle&& nodeHandle) -> iterator
+    inline auto rbtree<Traits>::node_handle_insert_unique(const_iterator hint, NodeHandle&& nodeHandle) -> iterator
     {
         if (nodeHandle.empty())
         {
@@ -2042,7 +2067,7 @@ namespace AZStd
     }
     template <class Traits>
     template <class NodeHandle>
-    inline auto rbtree<Traits>::node_handle_insert_equal(const iterator hint, NodeHandle&& nodeHandle) -> iterator
+    inline auto rbtree<Traits>::node_handle_insert_equal(const_iterator hint, NodeHandle&& nodeHandle) -> iterator
     {
         if (nodeHandle.empty())
         {

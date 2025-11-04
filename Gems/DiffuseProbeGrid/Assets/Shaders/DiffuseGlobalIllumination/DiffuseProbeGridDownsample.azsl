@@ -6,8 +6,8 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
@@ -31,8 +31,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     // scale multiplier of the downsampled size to the fullscreen size (e.g., 4)
     uint m_outputImageScale;
 }
-
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 // Vertex Shader
 VSOutput MainVS(VSInput input)

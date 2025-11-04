@@ -113,7 +113,7 @@ namespace LmbrCentral
         for (const Tag& tag : m_tags)
         {
             TagGlobalRequestBus::MultiHandler::BusConnect(tag);
-            EBUS_EVENT_ID(tag, TagGlobalNotificationBus, OnEntityTagAdded, GetEntityId());
+            TagGlobalNotificationBus::Event(tag, &TagGlobalNotificationBus::Events::OnEntityTagAdded, GetEntityId());
         }
         TagComponentRequestBus::Handler::BusConnect(GetEntityId());
     }
@@ -124,7 +124,7 @@ namespace LmbrCentral
         for (const Tag& tag : m_tags)
         {
             TagGlobalRequestBus::MultiHandler::BusDisconnect(tag);
-            EBUS_EVENT_ID(tag, TagGlobalNotificationBus, OnEntityTagRemoved, GetEntityId());
+            TagGlobalNotificationBus::Event(tag, &TagGlobalNotificationBus::Events::OnEntityTagRemoved, GetEntityId());
         }
     }
 
@@ -148,8 +148,8 @@ namespace LmbrCentral
     {
         if (m_tags.insert(tag).second)
         {
-            EBUS_EVENT_ID(GetEntityId(), TagComponentNotificationsBus, OnTagAdded, tag);
-            EBUS_EVENT_ID(tag, TagGlobalNotificationBus, OnEntityTagAdded, GetEntityId());
+            TagComponentNotificationsBus::Event(GetEntityId(), &TagComponentNotificationsBus::Events::OnTagAdded, tag);
+            TagGlobalNotificationBus::Event(tag, &TagGlobalNotificationBus::Events::OnEntityTagAdded, GetEntityId());
             TagGlobalRequestBus::MultiHandler::BusConnect(tag);
         }
     }
@@ -166,8 +166,8 @@ namespace LmbrCentral
     {
         if (m_tags.erase(tag) > 0)
         {
-            EBUS_EVENT_ID(GetEntityId(), TagComponentNotificationsBus, OnTagRemoved, tag);
-            EBUS_EVENT_ID(tag, TagGlobalNotificationBus, OnEntityTagRemoved, GetEntityId());
+            TagComponentNotificationsBus::Event(GetEntityId(), &TagComponentNotificationsBus::Events::OnTagRemoved, tag);
+            TagGlobalNotificationBus::Event(tag, &TagGlobalNotificationBus::Events::OnEntityTagRemoved, GetEntityId());
             TagGlobalRequestBus::MultiHandler::BusDisconnect(tag);
         }
     }

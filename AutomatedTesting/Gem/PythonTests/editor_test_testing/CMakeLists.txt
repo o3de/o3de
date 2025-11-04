@@ -7,17 +7,18 @@
 #
 
 # disabled to investigate https://github.com/o3de/o3de/issues/11528
-# if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-#    ly_add_pytest(
-#        NAME AutomatedTesting::EditorTestTesting
-#        TEST_SUITE main
-#        TEST_SERIAL
-#        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
-#        RUNTIME_DEPENDENCIES
-#            Legacy::Editor
-#            AZ::AssetProcessor
-#            AutomatedTesting.Assets
-#        COMPONENT
-#            TestTools
-#    )
-# endif()
+ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_pytest(
+        NAME AutomatedTesting::EditorTestTesting
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            TestTools
+        LABELS REQUIRES_tiaf
+    )
+ endif()

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/SkinMetaAsset.h>
 
 namespace AZ
@@ -16,7 +17,7 @@ namespace AZ
     namespace RPI
     {
         //! Constructs an instance of a SkinMetaAsset
-        class SkinMetaAssetCreator
+        class ATOM_RPI_REFLECT_API SkinMetaAssetCreator
             : public AssetCreator<SkinMetaAsset>
         {
         public:

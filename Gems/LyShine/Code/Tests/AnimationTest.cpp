@@ -55,7 +55,7 @@ namespace UnitTest
             UiAnimationNotificationBus::Handler::BusDisconnect(m_busId);
         }
 
-        void OnUiAnimationEvent([[maybe_unused]] IUiAnimationListener::EUiAnimationEvent uiAnimationEvent, AZStd::string animSequenceName) {};
+        void OnUiAnimationEvent([[maybe_unused]] IUiAnimationListener::EUiAnimationEvent uiAnimationEvent, [[maybe_unused]] AZStd::string animSequenceName) {};
         void OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, AZStd::string animSequenceName)
         {
             m_recievedEvents.push_back(EventInfo{ eventName, valueName, animSequenceName });
@@ -101,8 +101,7 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-            appDesc.m_stackRecordLevels = 20;
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;
 
             m_application = aznew LyShineAnimationTestApplication();
             m_systemEntity = m_application->Create(appDesc);

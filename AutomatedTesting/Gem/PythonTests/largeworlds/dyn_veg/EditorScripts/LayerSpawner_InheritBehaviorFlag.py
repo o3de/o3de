@@ -77,7 +77,7 @@ def LayerSpawner_InheritBehaviorFlag():
     veg_1.create_entity(
         position, ["Vegetation Layer Spawner", "Shape Reference", "Vegetation Asset List"]
     )
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "SpawnerInheritBehavior_PinkFlower")[0]
     set_prefab_asset(veg_1, 2, pink_flower_prefab)
     veg_1.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)
@@ -87,7 +87,7 @@ def LayerSpawner_InheritBehaviorFlag():
     veg_2.create_entity(
         position, ["Vegetation Layer Spawner", "Shape Reference", "Vegetation Asset List"]
     )
-    purple_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    purple_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     purple_flower_prefab = dynveg.create_temp_mesh_prefab(purple_flower_asset_path, "temp_PurpleFlower")[0]
     set_prefab_asset(veg_2, 2, purple_flower_prefab)
     veg_2.get_set_test(1, "Configuration|Shape Entity Id", blender_entity.id)

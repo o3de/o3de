@@ -10,6 +10,7 @@
 
 #include <ScriptCanvas/Data/NumericData.h>
 
+
 namespace ScriptCanvas
 {
     namespace ColorFunctions
@@ -29,3 +30,5 @@ namespace ScriptCanvas
         ColorType One();
     } // namespace ColorFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Color.generated.h>

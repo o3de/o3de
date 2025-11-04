@@ -16,7 +16,7 @@ namespace AzQtComponents
     {
         // this will be the context ID (used to connect to the drag and drop bus) if you care about events 
         // that cover the entire main window.
-        static const AZ::u32 EditorMainWindow = AZ_CRC("EditorMainWindow", 0x82a58b05);
+        static const AZ::u32 EditorMainWindow = AZ_CRC_CE("EditorMainWindow");
     }
 
 }

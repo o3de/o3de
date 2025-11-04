@@ -11,6 +11,7 @@
 #include "Not.h"
 #include "Or.h"
 #include "WeightedRandomSequencer.h"
+#include "TargetedSequencer.h"
 
 #include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
 

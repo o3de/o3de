@@ -528,7 +528,7 @@ namespace AZStd
     template <class Key, class Hasher, class EqualKey, class Allocator>
     AZ_FORCE_INLINE bool operator==(const unordered_multiset<Key, Hasher, EqualKey, Allocator>& a, const unordered_multiset<Key, Hasher, EqualKey, Allocator>& b)
     {
-        return (a.size() == b.size() && equal(a.begin(), a.end(), b.begin()));
+        return (a.size() == b.size() && AZStd::equal(a.begin(), a.end(), b.begin(), b.end()));
     }
 
     template <class Key, class Hasher, class EqualKey, class Allocator>

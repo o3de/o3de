@@ -19,7 +19,7 @@ namespace AutomatedTesting
     {
     public:
         AZ_RTTI(AutomatedTestingModule, "{3D6F59F6-013F-46F8-A840-5C2C43FA6AFB}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AutomatedTestingModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AutomatedTestingModule, AZ::SystemAllocator);
 
         AutomatedTestingModule()
             : AZ::Module()
@@ -44,7 +44,8 @@ namespace AutomatedTesting
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AutomatedTesting::AutomatedTestingModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_AutomatedTesting, AutomatedTesting::AutomatedTestingModule)
+#endif

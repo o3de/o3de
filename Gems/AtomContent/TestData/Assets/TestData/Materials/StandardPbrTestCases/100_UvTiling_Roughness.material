@@ -1,0 +1,9 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "parentMaterial": "UvTilingBase.material",
+    "propertyValues": {
+        "metallic.factor": 1.0,
+        "roughness.textureMap": "../../Objects/cube/cube_diff.tif"
+    }
+}

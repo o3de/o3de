@@ -317,7 +317,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(EditColliderCommandTests,
+    INSTANTIATE_TEST_SUITE_P(EditColliderCommandTests,
         EditColliderCommandFixture,
         ::testing::ValuesIn(editColliderCommandTestParameters)
     );

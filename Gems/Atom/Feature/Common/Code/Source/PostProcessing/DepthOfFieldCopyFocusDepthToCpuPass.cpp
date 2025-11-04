@@ -26,6 +26,10 @@ namespace AZ
         DepthOfFieldCopyFocusDepthToCpuPass::DepthOfFieldCopyFocusDepthToCpuPass(const RPI::PassDescriptor& descriptor)
             : Pass(descriptor)
         {
+            m_fence = aznew RHI::Fence;
+            AZ_Assert(m_fence != nullptr, "DepthOfFieldCopyFocusDepthToCpuPass failed to create a fence");
+            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(RHI::MultiDevice::AllDevices, RHI::FenceState::Reset);
+            AZ_Assert(result == RHI::ResultCode::Success, "DepthOfFieldCopyFocusDepthToCpuPass failed to init fence");
         }
 
         void DepthOfFieldCopyFocusDepthToCpuPass::SetBufferRef(RPI::Ptr<RPI::Buffer> bufferRef)
@@ -35,17 +39,7 @@ namespace AZ
 
         float DepthOfFieldCopyFocusDepthToCpuPass::GetFocusDepth()
         {
-            float depth = 0.0f;
-            if (m_readbackBuffer)
-            {
-                void* buf = m_readbackBuffer->Map(m_copyDescriptor.m_size, 0);
-                if (buf)
-                {
-                    memcpy(&depth, buf, sizeof(depth));
-                    m_readbackBuffer->Unmap();
-                }
-            }
-            return depth;
+            return m_lastFocusDepth;
         }
 
         void DepthOfFieldCopyFocusDepthToCpuPass::BuildInternal()
@@ -88,6 +82,7 @@ namespace AZ
             desc.m_bufferViewDescriptor = m_bufferRef->GetBufferViewDescriptor();
             desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
             frameGraph.UseCopyAttachment(desc, AZ::RHI::ScopeAttachmentAccess::Read);
+            frameGraph.SignalFence(*m_fence);
         }
 
         void DepthOfFieldCopyFocusDepthToCpuPass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -97,7 +92,24 @@ namespace AZ
 
         void DepthOfFieldCopyFocusDepthToCpuPass::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
         {
-            context.GetCommandList()->Submit(m_copyDescriptor);
+            auto deviceIndex = context.GetDeviceIndex();
+            m_fence->GetDeviceFence(deviceIndex)->WaitOnCpuAsync([this, deviceIndex]()
+            {
+                if (m_readbackBuffer)
+                {
+                    auto buf = m_readbackBuffer->Map(m_copyDescriptor.m_size, 0);
+                    if (buf[deviceIndex] != nullptr)
+                    {
+                        memcpy(&m_lastFocusDepth, buf[deviceIndex], sizeof(m_lastFocusDepth));
+                        m_readbackBuffer->Unmap();
+                    }
+                }
+
+                m_fence->Reset();
+            }
+            );
+
+            context.GetCommandList()->Submit(m_copyDescriptor.GetDeviceCopyBufferDescriptor(context.GetDeviceIndex()));
         }
 
     }   // namespace RPI

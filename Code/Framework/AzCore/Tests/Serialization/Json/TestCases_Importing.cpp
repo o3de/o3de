@@ -157,7 +157,7 @@ namespace JsonSerializationTests
 
             TestResolveImports(importerObj);
 
-            importerObj->AddImportDirective(rapidjson::Pointer("/object_2"), "object.json");
+            importerObj->AddImportDirective(rapidjson::Pointer("/object_2"), "object.json", "object.json");
 
             rapidjson::Document expectedOutput;
             expectedOutput.Parse(expectedRestoredValue);

@@ -7,6 +7,8 @@
  */
 
 #include "SQLiteQuery.h"
+
+#include <AssetDatabase/PathOrUuid.h>
 #include <AzToolsFramework/SQLite/SQLiteQueryLogBus.h>
 
 namespace AzToolsFramework
@@ -28,6 +30,11 @@ namespace AzToolsFramework
             bool Bind(Statement* statement, int index, const AZ::Uuid& value)
             {
                 return statement->BindValueUuid(index, value);
+            }
+
+            bool Bind(Statement* statement, int index, const AssetDatabase::PathOrUuid& value)
+            {
+                return statement->BindValuePathOrUuid(index, value);
             }
 
             bool Bind(Statement* statement, int index, double value)
@@ -77,3 +84,9 @@ std::ostream& std::operator<<(ostream& out, const AzToolsFramework::SQLite::SqlB
 {
     return out << "[Blob]";
 }
+
+std::ostream& std::operator<<(ostream& out, const AzToolsFramework::AssetDatabase::PathOrUuid& pathOrUuid)
+{
+    return out << pathOrUuid.ToString().c_str();
+}
+

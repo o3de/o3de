@@ -24,14 +24,10 @@ namespace TestImpact
         //! Compiles the native command line usage to a string.
         static AZStd::string GetCommandLineUsageString();
 
-        //! Returns the test sharding policy to use.
-        Policy::TestSharding GetTestShardingPolicy() const;
-
         //! Returns the maximum number of test targets to be in flight at any given time.
         const AZStd::optional<size_t>& GetMaxConcurrency() const;
 
     private:
-        Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;
         AZStd::optional<size_t> m_maxConcurrency;
     };
 } // namespace TestImpact

@@ -1,30 +1,18 @@
 {
-    "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "textureMap": "Textures/_Primitives/Middle_Gray_Checker.tif"
-        },
-        "emissive": {
-            "color": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ]
-        },
-        "normal": {
-            "textureMap": "Textures/_Primitives/Middle_Gray_Checker_ddn.tif"
-        },
-        "opacity": {
-            "factor": 1.0
-        },
-        "roughness": {
-            "lowerBound": 0.25,
-            "textureMap": "Textures/_Primitives/Middle_Gray_Checker_spec.tif",
-            "upperBound": 0.75
-        }
+    "propertyValues": {
+        "baseColor.textureMap": "../../Textures/_Primitives/Middle_Gray_Checker.tif",
+        "emissive.color": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "normal.textureMap": "../../Textures/_Primitives/Middle_Gray_Checker_ddn.tif",
+        "opacity.factor": 1.0,
+        "roughness.lowerBound": 0.25,
+        "roughness.textureMap": "../../Textures/_Primitives/Middle_Gray_Checker_spec.tif",
+        "roughness.upperBound": 0.75
     }
 }

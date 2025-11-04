@@ -29,9 +29,6 @@ set(FILES
     Behaviors/RootMotionExtractionRuleBehavior.cpp
     Rules/ActorPhysicsSetupRule.h
     Rules/ActorPhysicsSetupRule.cpp
-    Rules/IActorScaleRule.h
-    Rules/ActorScaleRule.h
-    Rules/ActorScaleRule.cpp
     Rules/ExternalToolRule.h
     Rules/ExternalToolRule.inl
     Rules/MetaDataRule.h
@@ -42,9 +39,6 @@ set(FILES
     Rules/MotionCompressionSettingsRule.cpp
     Rules/MotionMetaDataRule.h
     Rules/MotionMetaDataRule.cpp
-    Rules/IMotionScaleRule.h
-    Rules/MotionScaleRule.h
-    Rules/MotionScaleRule.cpp
     Rules/MotionSamplingRule.cpp
     Rules/MotionSamplingRule.h
     Rules/SimulatedObjectSetupRule.h
@@ -65,6 +59,4 @@ set(FILES
     Data/LodNodeSelectionList.cpp
     Utilities/LODSelector.h
     Utilities/LODSelector.cpp
-    Utilities/LegacyPhysicsMaterialFbxManifestConversion.h
-    Utilities/LegacyPhysicsMaterialFbxManifestConversion.cpp
 )

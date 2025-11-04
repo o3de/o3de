@@ -25,6 +25,9 @@ namespace AzFramework
         virtual ~XcbEventHandler() = default;
 
         virtual void HandleXcbEvent(xcb_generic_event_t* event) = 0;
+
+        // Resets previous keyboard, mouse, joystick, etc. events.
+        virtual void ResetStoredInputStates() {};
     };
 
     class XcbEventHandlerBusTraits : public AZ::EBusTraits

@@ -28,7 +28,7 @@ namespace LUAEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(FindResultsHighlighter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindResultsHighlighter, AZ::SystemAllocator);
 
         FindResultsHighlighter(QTextDocument* parent) : QSyntaxHighlighter(parent) {}
         ~FindResultsHighlighter() {}
@@ -48,7 +48,7 @@ namespace LUAEditor
     class FindResultsBlockInfo : public QTextBlockUserData
     {
     public:
-        AZ_CLASS_ALLOCATOR(FindResultsBlockInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindResultsBlockInfo, AZ::SystemAllocator);
         typedef AZStd::function<void(const AZStd::string&, const AZStd::string&)> AssignAssetIdType;
 
         FindResultsBlockInfo(const AZStd::string& assetId, const char* assetName, int lineNumber, int firstMatchPosition, AssignAssetIdType assignAssetId) 
@@ -79,7 +79,7 @@ namespace LUAEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(FindResults, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindResults, AZ::SystemAllocator);
 
         FindResults(QWidget *parent = 0);
         ~FindResults();

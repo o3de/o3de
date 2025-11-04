@@ -10,6 +10,7 @@
 #include <RHI/Device.h>
 #include <RHI/QueryPool.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -41,7 +42,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::Query& query)
+        RHI::ResultCode QueryPool::InitQueryInternal([[maybe_unused]] RHI::DeviceQuery& query)
         {
             // Nothing to initialize
             return RHI::ResultCode::Success;
@@ -73,7 +74,8 @@ namespace AZ
             createInfo.queryCount = descriptor.m_queriesCount;
             createInfo.pipelineStatistics = ConvertQueryPipelineStatisticMask(descriptor.m_pipelineStatisticsMask);
 
-            auto vkResult = device.GetContext().CreateQueryPool(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeQueryPool);
+            auto vkResult =
+                device.GetContext().CreateQueryPool(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeQueryPool);
 
             return ConvertResult(vkResult);
         }

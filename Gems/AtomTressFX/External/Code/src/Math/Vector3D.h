@@ -63,9 +63,8 @@ namespace AMD
             m[2] = z;
         };
         Vector3(float* xyz);
-        Vector3(const Vector3& other);
+
         Vector3(const Vector3& begin, const Vector3& end);
-        ~Vector3() {};
 
     public:
         Vector3& Normalize();
@@ -87,7 +86,6 @@ namespace AMD
         const float& operator[](unsigned int i) const { return m[i]; }
         float& operator[](unsigned int i) { return m[i]; }
 
-        Vector3& operator=(const Vector3& other);
         Vector3& operator=(float val);
         Vector3& operator=(float* xyz);
         bool operator!=(float val) const;

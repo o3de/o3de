@@ -112,8 +112,7 @@ namespace AzPhysics
         //! and only if the SceneConfiguration::m_enableActiveActors is true.
         //! This will not trigger if the scene is not Enabled (Scene::IsEnabled() must return true to trigger).
         //! When triggered, the event will send a handle of the Scene that triggered the event and a list of SimulatedBodyHandles that were updated in this tick.
-        //! @note There may be a performance penalty for enabling the Active Actor Notification.
-        using OnSceneActiveSimulatedBodiesEvent = AZ::Event<AzPhysics::SceneHandle, const AzPhysics::SimulatedBodyHandleList&>;
+        using OnSceneActiveSimulatedBodiesEvent = AZ::Event<AzPhysics::SceneHandle, const AzPhysics::SimulatedBodyHandleList&, float>;
 
         //! Event triggers with an ordered list of all the collision Begin/Persist/End events that happened during a single sub simulation step.
         //! When triggered the event will send a handle to the Scene that triggers the event and the list of collision events that occurred.

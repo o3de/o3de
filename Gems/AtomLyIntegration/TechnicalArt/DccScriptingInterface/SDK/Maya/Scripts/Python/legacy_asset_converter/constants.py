@@ -19,13 +19,13 @@ DIRECTORY_EXCLUSION_LIST = ['.mayaSwatches']
 
 LUMBERYARD_DATA_FILES = ['.mtl', '.assetinfo', '.material']
 
-EXPORT_MATERIAL_TYPES = ['Illum']
+EXPORT_MATERIAL_TYPES = ['Illum', 'Vegetation', 'Glass']
 
 PREFERRED_IMAGE_FORMAT = '.tif'
 
 TRANSFER_EXTENSIONS = ['.fbx', '.assetinfo']
 
-IMAGE_KEYS = {
+FILE_MASKS = {
     'ddn': ['ddn'],
     'ddna': ['ddna'],
     'diffuse': ['diffuse', 'diff', 'dif', 'd'],

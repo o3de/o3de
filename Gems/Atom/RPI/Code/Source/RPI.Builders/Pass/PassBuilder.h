@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {

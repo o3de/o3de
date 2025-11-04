@@ -21,7 +21,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
 #include <Tests/UI/UIFixture.h>
 
@@ -63,11 +63,11 @@ namespace EMotionFX
         parameterWindow->OnAddParameter();
 
         // Find parameter window.
-        EMStudio::ParameterCreateEditDialog* parameterCreateDialog = qobject_cast<EMStudio::ParameterCreateEditDialog*>(FindTopLevelWidget("ParameterCreateEditDialog"));
-        ASSERT_NE(parameterCreateDialog, nullptr) << "Cannot find anim graph parameter create/edit dialog. Is the anim graph selected?";
+        EMStudio::ParameterCreateEditWidget* parameterCreateWidget = qobject_cast<EMStudio::ParameterCreateEditWidget*>(FindTopLevelWidget("ParameterCreateEditWidget"));
+        ASSERT_NE(parameterCreateWidget, nullptr) << "Cannot find anim graph parameter create/edit widget. Is the anim graph selected?";
 
         // Find the Create button
-        QPushButton* createButton = parameterCreateDialog->findChild<QPushButton*>("EMFX.ParameterCreateEditDialog.CreateApplyButton");
+        QPushButton* createButton = parameterCreateWidget->findChild<QPushButton*>("EMFX.ParameterCreateEditWidget.CreateApplyButton");
         EXPECT_TRUE(createButton)<< "Cannot find Create Button";
 
         // Send the left button click directly to the button
@@ -90,25 +90,16 @@ namespace EMotionFX
 
         parameterNodeItem->setSelected(true);
 
-        const QRect rect = treeWidget->visualItemRect(parameterNodeItem);
-        BringUpContextMenu(treeWidget, rect);
-
-        QMenu* contextMenu = parameterWindow->findChild<QMenu*>("EMFX.ParameterWindow.ContextMenu");
-        EXPECT_TRUE(contextMenu) << "No context menu available";
-        QAction* editAction;
-        EXPECT_TRUE(UIFixture::GetActionFromContextMenu(editAction, contextMenu, "Edit")) << "Cannot find the Edit action";
-        editAction->trigger();
-
         // Check that the values we are interested are set to their initial value
         EXPECT_TRUE(parameter->GetHasMinValue()) << "MinValue should be true";
         EXPECT_TRUE(parameter->GetHasMaxValue()) << "MaxValue should be true";
 
-        // Find parameter window.
-        parameterCreateDialog = qobject_cast<EMStudio::ParameterCreateEditDialog*>(FindTopLevelWidget("ParameterCreateEditDialog"));
-        ASSERT_NE(parameterCreateDialog, nullptr) << "Cannot find anim graph parameter create/edit dialog. Is the anim graph selected?";
+        // Find parameter widget.
+        parameterCreateWidget = qobject_cast<EMStudio::ParameterCreateEditWidget*>(FindTopLevelWidget("ParameterCreateEditWidget"));
+        ASSERT_NE(parameterCreateWidget, nullptr) << "Cannot find anim graph parameter create/edit widget. Is the anim graph selected?";
         
         // Get the parameter widget that holds ReflectedPropertyEditor
-        AzToolsFramework::ReflectedPropertyEditor * parameterWidget = parameterCreateDialog->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.ParameterCreateEditDialog.ReflectedPropertyEditor.ParameterEditorWidget");
+        AzToolsFramework::ReflectedPropertyEditor * parameterWidget = parameterCreateWidget->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.ParameterCreateEditWidget.ReflectedPropertyEditor.ParameterEditorWidget");
         ASSERT_TRUE(parameterWidget) << "Cannot find the parameterWidget";
 
         AzToolsFramework::PropertyRowWidget* minimumWidget = reinterpret_cast<AzToolsFramework::PropertyRowWidget*>(GetNamedPropertyRowWidgetFromReflectedPropertyEditor(parameterWidget, "Has minimum"));
@@ -130,7 +121,7 @@ namespace EMotionFX
         checkBox->click();
 
         // Find the Apply button, until the changes are applied the values will not be updated
-        QPushButton* applyButton = parameterCreateDialog->findChild<QPushButton*>("EMFX.ParameterCreateEditDialog.CreateApplyButton");
+        QPushButton* applyButton = parameterCreateWidget->findChild<QPushButton*>("EMFX.ParameterCreateEditWidget.CreateApplyButton");
         EXPECT_TRUE(applyButton) << "Cannot find Apply Button";
 
         // Send the left button click directly to the button
@@ -175,33 +166,22 @@ namespace EMotionFX
         ASSERT_NE(parameterNodeItem, nullptr) << "Cannot select parameter group.";
         parameterNodeItem->setSelected(true);
 
-        // Navigate to and execute the edit parameter action.
-        const QRect rect = treeWidget->visualItemRect(parameterNodeItem);
-        BringUpContextMenu(treeWidget, rect);
-        QMenu* contextMenu = parameterWindow->findChild<QMenu*>("EMFX.ParameterWindow.ContextMenu");
-        ASSERT_NE(contextMenu, nullptr) << "No context menu available.";
-        QAction* editAction = nullptr;
-        ASSERT_TRUE(UIFixture::GetActionFromContextMenu(editAction, contextMenu, "Edit")) << "Cannot find the Edit action.";
-        editAction->trigger();
-
         // Find edit parameter window and the line edit control for the name.
-        EMStudio::ParameterCreateEditDialog* parameterCreateDialog = qobject_cast<EMStudio::ParameterCreateEditDialog*>(FindTopLevelWidget("ParameterCreateEditDialog"));
-        ASSERT_NE(parameterCreateDialog, nullptr) << "Cannot find the edit parameter window.";
-        AzToolsFramework::ReflectedPropertyEditor* parameterWidget = parameterCreateDialog->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.ParameterCreateEditDialog.ReflectedPropertyEditor.ParameterEditorWidget");
+        EMStudio::ParameterCreateEditWidget* parameterCreateWidget = qobject_cast<EMStudio::ParameterCreateEditWidget*>(FindTopLevelWidget("ParameterCreateEditWidget"));
+        ASSERT_NE(parameterCreateWidget, nullptr) << "Cannot find the edit parameter window.";
+        AzToolsFramework::ReflectedPropertyEditor* parameterWidget = parameterCreateWidget->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.ParameterCreateEditWidget.ReflectedPropertyEditor.ParameterEditorWidget");
         ASSERT_NE(parameterWidget, nullptr) << "Cannot find the reflected property editor.";
         AzToolsFramework::PropertyRowWidget* nameWidget = reinterpret_cast<AzToolsFramework::PropertyRowWidget*>(GetNamedPropertyRowWidgetFromReflectedPropertyEditor(parameterWidget, "Name"));
         ASSERT_NE(nameWidget, nullptr) << "Name widget not found";
         AzToolsFramework::PropertyStringLineEditCtrl* lineEditCtrl = reinterpret_cast< AzToolsFramework::PropertyStringLineEditCtrl* >(nameWidget->GetChildWidget());
         ASSERT_NE(lineEditCtrl, nullptr) << "Line edit control not found.";
-        QLineEdit* lineEdit = lineEditCtrl->GetLineEdit();
-        ASSERT_NE(lineEdit, nullptr) << "Line edit not found.";
 
         // Change the group name by editing the line edit.
         const AZStd::string changedGroupName = "Changed Group Name";
-        lineEdit->setText(changedGroupName.c_str());
+        lineEditCtrl->UpdateValue(changedGroupName.c_str());
 
         // Find and click the apply button.
-        QPushButton* applyButton = parameterCreateDialog->findChild<QPushButton*>("EMFX.ParameterCreateEditDialog.CreateApplyButton");
+        QPushButton* applyButton = parameterCreateWidget->findChild<QPushButton*>("EMFX.ParameterCreateEditWidget.CreateApplyButton");
         EXPECT_NE(applyButton, nullptr) << "Cannot find Apply button.";
         QTest::mouseClick(applyButton, Qt::LeftButton);
 

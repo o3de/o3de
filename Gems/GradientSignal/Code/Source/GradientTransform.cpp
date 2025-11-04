@@ -17,6 +17,7 @@ namespace GradientSignal
         const AZ::Aabb& shapeBounds, const AZ::Matrix3x4& transform, bool use3d,
         float frequencyZoom, GradientSignal::WrappingType wrappingType)
         : m_shapeBounds(shapeBounds)
+        , m_transform(transform)
         , m_inverseTransform(transform.GetInverseFull())
         , m_frequencyZoom(frequencyZoom)
         , m_wrappingType(wrappingType)
@@ -48,10 +49,10 @@ namespace GradientSignal
             AZ::IsClose(0.0f, m_shapeBounds.GetZExtent()) ? 0.0f : (1.0f / m_shapeBounds.GetZExtent()));
     }
 
-    void GradientTransform::TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
+    void GradientTransform::TransformLocalPositionToUVW(
+        const AZ::Vector3& inLocalPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
     {
-        // Transform coordinate into "local" relative space of shape bounds, and set W to 0 if this is a 2D gradient.
-        outUVW = m_inverseTransform * inPosition;
+        outUVW = inLocalPosition;
 
         // For most wrapping types, we always accept the point, but for ClampToZero we only accept it if it's within
         // the shape bounds. We don't use m_shapeBounds.Contains() here because Contains() is inclusive on all edges.
@@ -84,13 +85,31 @@ namespace GradientSignal
         outUVW *= m_frequencyZoom;
     }
 
-    void GradientTransform::TransformPositionToUVWNormalized(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
+    void GradientTransform::TransformLocalPositionToUVWNormalized(
+        const AZ::Vector3& inLocalPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
     {
-        TransformPositionToUVW(inPosition, outUVW, wasPointRejected);
+        TransformLocalPositionToUVW(inLocalPosition, outUVW, wasPointRejected);
 
         // This effectively does AZ::LerpInverse(bounds.GetMin(), bounds.GetMax(), point) if shouldNormalize is true,
         // and just returns outUVW if shouldNormalize is false.
         outUVW = m_normalizeExtentsReciprocal * (outUVW - m_shapeBounds.GetMin());
+    }
+
+    void GradientTransform::TransformPositionToUVW(const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
+    {
+        // Transform coordinate into "local" relative space of shape bounds, and set W to 0 if this is a 2D gradient.
+        AZ::Vector3 inLocalPosition = m_inverseTransform * inPosition;
+
+        TransformLocalPositionToUVW(inLocalPosition, outUVW, wasPointRejected);
+    }
+
+    void GradientTransform::TransformPositionToUVWNormalized(
+        const AZ::Vector3& inPosition, AZ::Vector3& outUVW, bool& wasPointRejected) const
+    {
+        // Transform coordinate into "local" relative space of shape bounds, and set W to 0 if this is a 2D gradient.
+        AZ::Vector3 inLocalPosition = m_inverseTransform * inPosition;
+
+        TransformLocalPositionToUVWNormalized(inLocalPosition, outUVW, wasPointRejected);
     }
 
     WrappingType GradientTransform::GetWrappingType() const
@@ -101,6 +120,37 @@ namespace GradientSignal
     AZ::Aabb GradientTransform::GetBounds() const
     {
         return m_shapeBounds;
+    }
+
+    AZ::Vector3 GradientTransform::GetScale() const
+    {
+        return m_transform.RetrieveScale();
+    }
+
+    float GradientTransform::GetFrequencyZoom() const
+    {
+        return m_frequencyZoom;
+    }
+
+    AZ::Matrix3x4 GradientTransform::GetTransformMatrix() const
+    {
+        return m_transform;
+    }
+
+    void GradientTransform::GetMinMaxUvwValues(AZ::Vector3& minUvw, AZ::Vector3& maxUvw) const
+    {
+        // Get the UVW values at the min & max corners.
+        bool wasPointRejected;
+        TransformLocalPositionToUVW(m_shapeBounds.GetMin(), minUvw, wasPointRejected);
+        TransformLocalPositionToUVW(m_shapeBounds.GetMax(), maxUvw, wasPointRejected);
+    }
+
+    void GradientTransform::GetMinMaxUvwValuesNormalized(AZ::Vector3& minUvw, AZ::Vector3& maxUvw) const
+    {
+        // Get the normalized UVW values at the min & max corners.
+        bool wasPointRejected;
+        TransformLocalPositionToUVWNormalized(m_shapeBounds.GetMin(), minUvw, wasPointRejected);
+        TransformLocalPositionToUVWNormalized(m_shapeBounds.GetMax(), maxUvw, wasPointRejected);
     }
 
     AZ::Vector3 GradientTransform::NoTransform(const AZ::Vector3& point, const AZ::Aabb& /*bounds*/)

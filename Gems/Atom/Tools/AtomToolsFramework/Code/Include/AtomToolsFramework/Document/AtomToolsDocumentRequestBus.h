@@ -67,8 +67,8 @@ namespace AtomToolsFramework
         //! Document has changes pending
         virtual bool IsModified() const = 0;
 
-        //! Can the document be saved
-        virtual bool CanSave() const = 0;
+        //! Can the document be saved as a child or derived document
+        virtual bool CanSaveAsChild() const = 0;
 
         //! Returns true if there are reversible modifications to the document
         virtual bool CanUndo() const = 0;

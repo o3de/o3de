@@ -7,21 +7,22 @@
  */
 
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/IO/Path/Path.h>
 
-using namespace AzFramework;
-
+// this is an intentional relative local include so that it can be shared between two unrelated projects
+// namely this one test file as well as the one shot executable that these tests invoke.
+#include "ProcessLaunchTestTokens.h"
 
 namespace UnitTest
 {
     class ProcessLaunchParseTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         using ParsedArgMap = AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>>;
@@ -35,7 +36,7 @@ namespace UnitTest
         AZStd::string currentSwitch;
         bool inSwitches{ false };
         AZStd::vector<AZStd::string> parsedLines;
-        AzFramework::StringFunc::Tokenize(processOutput.c_str(), parsedLines, "\r\n");
+        AZ::StringFunc::Tokenize(processOutput.c_str(), parsedLines, "\r\n");
 
         for (const AZStd::string& thisLine : parsedLines)
         {
@@ -75,7 +76,7 @@ namespace UnitTest
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
-        processLaunchInfo.m_commandlineParameters.emplace<AZStd::string>(AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"));
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::string>((AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native());
 
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
@@ -83,6 +84,58 @@ namespace UnitTest
 
         EXPECT_EQ(launchReturn, true);
         EXPECT_EQ(processOutput.outputResult.empty(), false);
+    }
+
+    TEST_F(ProcessLaunchParseTests, LaunchProcessAndRetrieveOutput_LargeDataNoError_ContainsEntireOutput)
+    {
+        using namespace ProcessLaunchTestInternal;
+
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
+            AZStd::vector<AZStd::string>{(AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native(), "-plentyOfOutput"});
+
+        processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
+        processLaunchInfo.m_showWindow = false;
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+
+        EXPECT_TRUE(launchReturn);
+        EXPECT_FALSE(processOutput.outputResult.empty());
+        EXPECT_FALSE(processOutput.HasError());
+
+        const auto& output = processOutput.outputResult;
+        EXPECT_EQ(output.length(), s_numOutputBytesInPlentyMode);
+        EXPECT_TRUE(output.starts_with(s_beginToken));
+        EXPECT_TRUE(output.ends_with(s_endToken));
+    }
+    
+    // this also tests that it can separately read error and stdout, and that the stream way of doing it works.
+    TEST_F(ProcessLaunchParseTests, LaunchProcessAndRetrieveOutput_LargeDataWithError_ContainsEntireOutput)
+    {
+        using namespace ProcessLaunchTestInternal;
+
+        AzFramework::ProcessOutput processOutput;
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
+            AZStd::vector<AZStd::string>{(AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native(), "-plentyOfOutput", "-exitCode", "1"});
+
+        processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
+        processLaunchInfo.m_showWindow = false;
+        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
+
+        EXPECT_TRUE(launchReturn);
+        EXPECT_TRUE(processOutput.HasOutput());
+        EXPECT_TRUE(processOutput.HasError());
+
+        EXPECT_EQ(processOutput.outputResult.length(), s_numOutputBytesInPlentyMode);
+        EXPECT_TRUE(processOutput.outputResult.starts_with(s_beginToken));
+        EXPECT_TRUE(processOutput.outputResult.ends_with(s_endToken));
+
+        EXPECT_EQ(processOutput.errorResult.length(), s_numOutputBytesInPlentyMode);
+        EXPECT_TRUE(processOutput.errorResult.starts_with(s_beginToken));
+        EXPECT_TRUE(processOutput.errorResult.ends_with(s_endToken));
     }
    
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_BasicParameter_Success)
@@ -92,7 +145,7 @@ namespace UnitTest
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
-            AZStd::vector<AZStd::string>{AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"), "-param1", "param1val","-param2", "param2val"});
+            AZStd::vector<AZStd::string>{(AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native(), "-param1", "param1val", "-param2", "param2val"});
 
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
@@ -124,7 +177,7 @@ namespace UnitTest
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
-            AZStd::vector<AZStd::string>{AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"), "-param1", "param,1val","-param2", "param2v,al"});
+            AZStd::vector<AZStd::string>{(AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native(), "-param1", "param,1val", "-param2", "param2v,al"});
 
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
@@ -150,7 +203,7 @@ namespace UnitTest
         EXPECT_EQ(param2[0], "param2v");
         EXPECT_EQ(param2[1], "al");
     }
-    
+
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_WithSpaces_Success)
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
@@ -158,7 +211,7 @@ namespace UnitTest
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(AZStd::vector<AZStd::string>{
-            AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"), "-param1", R"("param 1val")", R"(-param2="param2v al")" });
+            (AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native(), "-param1", R"("param 1val")", R"(-param2="param2v al")" });
 
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
@@ -190,7 +243,7 @@ namespace UnitTest
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(AZStd::vector<AZStd::string>{
-            AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest"), "-param1", R"("param, 1val")", R"(-param2="param,2v al")" });
+            (AZ::IO::Path(AZ::Test::GetCurrentExecutablePath()) / "ProcessLaunchTest").Native(), "-param1", R"("param, 1val")", R"(-param2="param,2v al")" });
 
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;

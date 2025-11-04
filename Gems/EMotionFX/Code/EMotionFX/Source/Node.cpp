@@ -15,10 +15,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Node, NodeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Node, NodeAllocator)
 
     Node::Node(const char* name, Skeleton* skeleton)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_parentIndex        = InvalidIndex;
         m_nodeIndex          = InvalidIndex;     // hasn't been set yet
@@ -39,7 +39,7 @@ namespace EMotionFX
 
 
     Node::Node(uint32 nameID, Skeleton* skeleton)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_parentIndex        = InvalidIndex;
         m_nodeIndex          = InvalidIndex;     // hasn't been set yet

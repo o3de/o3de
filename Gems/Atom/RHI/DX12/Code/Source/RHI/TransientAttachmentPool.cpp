@@ -5,15 +5,18 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/TransientAttachmentPool.h>
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
+#include <Atom/RHI/RHIBus.h>
+#include <AzCore/std/sort.h>
 #include <RHI/Buffer.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/Scope.h>
-#include <AzCore/std/sort.h>
+#include <RHI/TransientAttachmentPool.h>
+
+#include <Atom/RHI.Reflect/DX12/DX12Bus.h>
 
 //#define DX12_TRANSIENT_ATTACHMENT_POOL_DEBUG_LOG
 
@@ -43,10 +46,24 @@ namespace AZ
                 AliasedAttachmentAllocator::Descriptor heapAllocatorDesc;
                 heapAllocatorDesc.m_cacheSize = ObjectCacheSize;
                 heapAllocatorDesc.m_heapFlags = D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
-                heapAllocatorDesc.m_budgetInBytes = descriptor.m_bufferBudgetInBytes + descriptor.m_imageBudgetInBytes + descriptor.m_renderTargetBudgetInBytes;
-                heapAllocatorDesc.m_alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+
+                DX12RequirementBus::Broadcast(
+                    &DX12RequirementBus::Events::CollectTransientAttachmentPoolHeapFlags, heapAllocatorDesc.m_heapFlags);
+
+                heapAllocatorDesc.m_budgetInBytes =
+                    descriptor.m_bufferBudgetInBytes + descriptor.m_imageBudgetInBytes + descriptor.m_renderTargetBudgetInBytes;
                 heapAllocatorDesc.m_resourceTypeMask = RHI::AliasedResourceTypeFlags::All;
                 heapAllocatorDesc.m_allocationParameters = descriptor.m_heapParameters;
+                struct
+                {
+                    size_t m_alignment = 0;
+                    void operator=(size_t value)
+                    {
+                        m_alignment = AZStd::max(m_alignment, value);
+                    }
+                } alignment;
+                RHI::RHIRequirementRequestBus::BroadcastResult(alignment, &RHI::RHIRequirementsRequest::GetRequiredAlignment, device);
+                heapAllocatorDesc.m_alignment = AZStd::max<size_t>(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT, alignment.m_alignment);
 
                 RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
                 allocator->SetName(Name("TransientAttachmentPool_[Shared]"));
@@ -214,7 +231,7 @@ namespace AZ
             }
         }
 
-        RHI::Image* TransientAttachmentPool::ActivateImage(const RHI::TransientImageDescriptor& descriptor)
+        RHI::DeviceImage* TransientAttachmentPool::ActivateImage(const RHI::TransientImageDescriptor& descriptor)
         {
             AliasedAttachmentAllocator* allocator = nullptr;
             if (RHI::CheckBitsAny(descriptor.m_imageDescriptor.m_bindFlags, RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil))
@@ -227,7 +244,7 @@ namespace AZ
             }
 
             AZ_Assert(allocator, "No image heap allocator to allocate an image. Make sure you specified one at pool creation time");
-            RHI::Image* image = allocator->ActivateImage(descriptor, *m_currentScope);
+            RHI::DeviceImage* image = allocator->ActivateImage(descriptor, *m_currentScope);
             AZ_Assert(
                 RHI::CheckBitsAll(GetCompileFlags(), RHI::TransientAttachmentPoolCompileFlags::DontAllocateResources) || image,
                 "Failed to allocate image. Allocator %s is not big enough", allocator->GetName().GetCStr());
@@ -244,10 +261,10 @@ namespace AZ
             m_imageToAllocatorMap.erase(findIt);
         }
 
-        RHI::Buffer* TransientAttachmentPool::ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor)
+        RHI::DeviceBuffer* TransientAttachmentPool::ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor)
         {
             AZ_Assert(m_bufferAllocator, "No buffer heap allocator to allocate a transient buffer. Make sure you specified one at pool creation time");
-            RHI::Buffer* buffer = m_bufferAllocator->ActivateBuffer(descriptor, *m_currentScope);
+            RHI::DeviceBuffer* buffer = m_bufferAllocator->ActivateBuffer(descriptor, *m_currentScope);
             AZ_Assert(RHI::CheckBitsAll(GetCompileFlags(), RHI::TransientAttachmentPoolCompileFlags::DontAllocateResources) || buffer, "Failed to allocate buffer. Allocator is not big enough.");
             return buffer;
         }

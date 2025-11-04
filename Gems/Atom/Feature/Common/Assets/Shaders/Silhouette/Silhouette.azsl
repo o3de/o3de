@@ -1,0 +1,79 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <viewsrg_all.srgi>
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    Texture2DMS<float4> m_silhouettes;
+}
+
+PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
+{
+    PSOutput OUT;
+
+    const int NUM_SAMPLES = 7;
+    const real outline_opacity = 0.7;
+    const real2 Silhouette_Width = 3.0;
+
+    static const real2 poison_disk[7] =
+    {
+        float2(0.3423616, -0.8391063),
+        float2(0.5596238, 0.2984108),
+        float2(-0.4140021, 0.5529465),
+        float2(-0.9800305, -0.07626212),
+        float2(0.8866654, -0.4241928),
+        float2(0.1116031, 0.8037254),
+        float2(-0.6169758, -0.6663036),
+    };
+
+    uint width, height, samples;
+    PassSrg::m_silhouettes.GetDimensions(width, height, samples);
+    real2 scale = Silhouette_Width;
+
+    real4 pixelSample = PassSrg::m_silhouettes.Load(IN.m_position.xy, sampleIndex);
+    if(dot(pixelSample.xyz, pixelSample.xyz) > 0.0)
+    {
+        // this is a silhouette pixel
+        pixelSample.a = smoothstep(0.02, 0.98, pixelSample.a);  // make fully transparent at 0.02, opaque at 0.98
+    }
+    else if (pixelSample.a < 0.001)
+    {
+        // this is a potential outline pixel 
+        for (int i = 0; i < NUM_SAMPLES; ++i)
+        {
+            real2 kernel = poison_disk[i];
+            int2 offset = int2(kernel*scale);
+            real4 sampleColor = PassSrg::m_silhouettes.Load(IN.m_position.xy + offset, sampleIndex);
+            pixelSample = max(pixelSample, sampleColor);
+        }
+
+        if(pixelSample.a == 0.0)
+        {
+            discard;
+        }
+
+        pixelSample.a = outline_opacity * step(0.001, pixelSample.a);
+    }
+
+    OUT.m_color = pixelSample;
+
+    return OUT;
+}

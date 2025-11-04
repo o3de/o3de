@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 
@@ -30,7 +30,7 @@ namespace AZ
 
         public:
             AZ_RTTI(LuminanceHistogramGeneratorPass, "{062D0696-B159-491C-9ECC-AA02767ED4CF}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(LuminanceHistogramGeneratorPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LuminanceHistogramGeneratorPass, SystemAllocator);
             ~LuminanceHistogramGeneratorPass() = default;
 
             static RPI::Ptr<LuminanceHistogramGeneratorPass> Create(const RPI::PassDescriptor& descriptor);

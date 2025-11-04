@@ -39,7 +39,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BoundShapeBox, "{6BF78BC6-5100-41A1-84E1-6F4E552E2FC5}", BoundRequestShapeBase);
-            AZ_CLASS_ALLOCATOR(BoundShapeBox, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BoundShapeBox, AZ::SystemAllocator);
 
             AZStd::shared_ptr<BoundShapeInterface> MakeShapeInterface(RegisteredBoundId id) const override
             {
@@ -57,7 +57,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BoundShapeSphere, "{786168B7-46BB-4C0E-9642-5A7B94BF00FA}", BoundRequestShapeBase);
-            AZ_CLASS_ALLOCATOR(BoundShapeSphere, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BoundShapeSphere, AZ::SystemAllocator);
 
             AZStd::shared_ptr<BoundShapeInterface> MakeShapeInterface(RegisteredBoundId id) const override
             {
@@ -74,7 +74,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BoundShapeCylinder, "{3D9A8328-4371-4EC5-BEC2-783998B19200}", BoundRequestShapeBase);
-            AZ_CLASS_ALLOCATOR(BoundShapeCylinder, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BoundShapeCylinder, AZ::SystemAllocator);
 
             AZStd::shared_ptr<BoundShapeInterface> MakeShapeInterface(RegisteredBoundId id) const override
             {
@@ -93,7 +93,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BoundShapeCone, "{68D67118-EAC9-4384-BE99-2CAB72A0450A}", BoundRequestShapeBase);
-            AZ_CLASS_ALLOCATOR(BoundShapeCone, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BoundShapeCone, AZ::SystemAllocator);
 
             AZStd::shared_ptr<BoundShapeInterface> MakeShapeInterface(RegisteredBoundId id) const override
             {
@@ -115,7 +115,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BoundShapeQuad, "{D1F73C4B-3B42-4493-B1D1-38EE59F2C7F3}", BoundRequestShapeBase)
-            AZ_CLASS_ALLOCATOR(BoundShapeQuad, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(BoundShapeQuad, AZ::SystemAllocator)
 
             AZStd::shared_ptr<BoundShapeInterface> MakeShapeInterface(RegisteredBoundId id) const override
             {
@@ -135,7 +135,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BoundShapeLineSegment, "{BC5DCB8B-E9F7-41BB-AD93-00D3EAB108D3}", BoundRequestShapeBase)
-            AZ_CLASS_ALLOCATOR(BoundShapeLineSegment, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(BoundShapeLineSegment, AZ::SystemAllocator)
 
             AZStd::shared_ptr<BoundShapeInterface> MakeShapeInterface(RegisteredBoundId id) const override
             {
@@ -155,7 +155,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BoundShapeTorus, "{2EF456F8-87D4-44CD-9929-FC45981289D4}", BoundRequestShapeBase)
-            AZ_CLASS_ALLOCATOR(BoundShapeTorus, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(BoundShapeTorus, AZ::SystemAllocator)
 
             AZStd::shared_ptr<BoundShapeInterface> MakeShapeInterface(RegisteredBoundId id) const override
             {
@@ -176,7 +176,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(BoundShapeSpline, "{65CBF85A-5126-4F2A-AA2E-047367435DEC}", BoundRequestShapeBase)
-            AZ_CLASS_ALLOCATOR(BoundShapeSpline, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(BoundShapeSpline, AZ::SystemAllocator)
 
             AZStd::shared_ptr<BoundShapeInterface> MakeShapeInterface(RegisteredBoundId id) const override
             {

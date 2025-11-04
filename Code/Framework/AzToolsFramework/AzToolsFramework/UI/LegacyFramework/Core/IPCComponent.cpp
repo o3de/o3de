@@ -227,7 +227,7 @@ namespace LegacyFramework
                 m_CommandsWaitingToExecute.push_back(WaitingIPCCommand(command.c_str(), contents.c_str()));
             }
 
-            EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &IPCComponent::ExecuteIPCHandlers, this);
+            AZ::SystemTickBus::QueueFunction(&IPCComponent::ExecuteIPCHandlers, this);
         }
     }
 

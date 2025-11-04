@@ -7,17 +7,98 @@
  */
 #include "EditorDisabledCompositionComponent.h"
 
+#include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
+        AZ_CLASS_ALLOCATOR_IMPL(EditorDisabledCompositionComponentSerializer, AZ::SystemAllocator);
+
+        AZ::JsonSerializationResult::Result EditorDisabledCompositionComponentSerializer::Load(
+            void* outputValue,
+            [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
+            const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context)
+        {
+            namespace JSR = AZ::JsonSerializationResult;
+
+            AZ_Assert(
+                azrtti_typeid<EditorDisabledCompositionComponent>() == outputValueTypeId,
+                "Unable to deserialize EditorDisabledCompositionComponent from JSON because the provided type is %s.",
+                outputValueTypeId.ToString<AZStd::string>().c_str());
+
+            auto componentInstance = reinterpret_cast<EditorDisabledCompositionComponent*>(outputValue);
+            AZ_Assert(componentInstance, "Output value for EditorDisabledCompositionComponentSerializer can't be null.");
+
+            JSR::ResultCode result(JSR::Tasks::ReadField);
+            {
+                JSR::ResultCode disabledComponentsResult(JSR::Tasks::ReadField);
+
+                AZStd::unordered_map<AZStd::string, AZ::Component*> componentMap;
+
+                auto disabledComponentsIter = inputValue.FindMember("DisabledComponents");
+                if (disabledComponentsIter != inputValue.MemberEnd())
+                {
+                    if (disabledComponentsIter->value.IsArray())
+                    {
+                        // If the serialized data is an array type, then convert the data to a map.
+                        AZ::Entity::ComponentArrayType componentVector;
+                        disabledComponentsResult = ContinueLoadingFromJsonObjectField(
+                            &componentVector, azrtti_typeid<decltype(componentVector)>(), inputValue, "DisabledComponents", context);
+
+                        AZ::EntityUtils::ConvertComponentVectorToMap(componentVector, componentMap);
+                    }
+                    else
+                    {
+                        disabledComponentsResult = ContinueLoadingFromJsonObjectField(
+                            &componentMap, azrtti_typeid<decltype(componentMap)>(), inputValue, "DisabledComponents", context);
+                    }
+
+                    static AZ::TypeId genericComponentWrapperTypeId = azrtti_typeid<GenericComponentWrapper>();
+
+                    for (auto& [componentKey, component] : componentMap)
+                    {
+                        // If the component didn't serialize (i.e. is null) or the underlying type is GenericComponentWrapper,
+                        // the template is null and the component should not be added.
+                        if (component && component->GetUnderlyingComponentType() != genericComponentWrapperTypeId)
+                        {
+                            // When a component is first added into the disabledComponents list, it will already have
+                            // a serialized identifier set, which is then used as the componentKey.
+                            // When serializing the component back in, the identifier isn't serialized with the component itself,
+                            // so we need to set it manually with the componentKey to restore the state back to what it was
+                            // at the original point of serialization.
+                            component->SetSerializedIdentifier(componentKey);
+
+                            componentInstance->m_disabledComponents.emplace(componentKey, component);
+                        }
+                    }
+                }
+
+                result.Combine(disabledComponentsResult);
+            }
+
+            {
+                JSR::ResultCode componentIdResult = ContinueLoadingFromJsonObjectField(
+                    &componentInstance->m_id, azrtti_typeid<decltype(componentInstance->m_id)>(), inputValue, "Id", context);
+                result.Combine(componentIdResult);
+            }
+
+            return context.Report(
+                result,
+                result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded EditorDisabledCompositionComponent information."
+                                                                  : "Failed to load EditorDisabledCompositionComponent information.");
+        }
+
         void EditorDisabledCompositionComponent::Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorDisabledCompositionComponent, EditorComponentBase>()
+                    ->Version(1)
                     ->Field("DisabledComponents", &EditorDisabledCompositionComponent::m_disabledComponents)
                     ;
 
@@ -32,46 +113,87 @@ namespace AzToolsFramework
                         ;
                 }
             }
+
+            if (auto jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+            {
+                jsonRegistration->Serializer<EditorDisabledCompositionComponentSerializer>()->HandlesType<EditorDisabledCompositionComponent>();
+            }
         }
 
         void EditorDisabledCompositionComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorDisabledCompositionService", 0x277e3445));
+            services.push_back(AZ_CRC_CE("EditorDisabledCompositionService"));
         }
 
         void EditorDisabledCompositionComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorDisabledCompositionService", 0x277e3445));
+            services.push_back(AZ_CRC_CE("EditorDisabledCompositionService"));
         }
 
-        void EditorDisabledCompositionComponent::GetDisabledComponents(AZStd::vector<AZ::Component*>& components)
+        void EditorDisabledCompositionComponent::GetDisabledComponents(AZ::Entity::ComponentArrayType& components)
         {
-            components.insert(components.end(), m_disabledComponents.begin(), m_disabledComponents.end());
+            for (auto const& pair : m_disabledComponents)
+            {
+                components.insert(components.end(), pair.second);
+            }
         }
 
         void EditorDisabledCompositionComponent::AddDisabledComponent(AZ::Component* componentToAdd)
         {
-            AZ_Assert(componentToAdd, "Unable to add a disabled component that is nullptr");
-            if (componentToAdd && AZStd::find(m_disabledComponents.begin(), m_disabledComponents.end(), componentToAdd) == m_disabledComponents.end())
+            if (!componentToAdd)
             {
-                m_disabledComponents.push_back(componentToAdd);
+                AZ_Assert(false, "Unable to add a disabled component that is nullptr.");
+                return;
+            }
+
+            AZStd::string componentAlias = componentToAdd->GetSerializedIdentifier();
+
+            if (!componentAlias.empty() && m_disabledComponents.find(componentAlias) == m_disabledComponents.end())
+            {
+                m_disabledComponents.emplace(AZStd::move(componentAlias), componentToAdd);
             }
         }
 
         void EditorDisabledCompositionComponent::RemoveDisabledComponent(AZ::Component* componentToRemove)
         {
-            AZ_Assert(componentToRemove, "Unable to remove a disabled component that is nullptr");
-            if (componentToRemove)
+            if (!componentToRemove)
             {
-                m_disabledComponents.erase(AZStd::remove(m_disabledComponents.begin(), m_disabledComponents.end(), componentToRemove), m_disabledComponents.end());
+                AZ_Assert(false, "Unable to remove a disabled component that is nullptr.");
+                return;
+            }
+
+            AZStd::string componentAlias = componentToRemove->GetSerializedIdentifier();
+
+            if (!componentAlias.empty())
+            {
+                m_disabledComponents.erase(componentAlias);
             }
         };
 
+        bool EditorDisabledCompositionComponent::IsComponentDisabled(const AZ::Component* componentToCheck)
+        {
+            if (!componentToCheck)
+            {
+                AZ_Assert(false, "Unable to check a component that is nullptr.");
+                return false;
+            }
+
+            AZStd::string componentAlias = componentToCheck->GetSerializedIdentifier();
+
+            if (componentAlias.empty())
+            {
+                return false;
+            }
+
+            auto componentIt = m_disabledComponents.find(componentAlias);
+            return componentIt != m_disabledComponents.end() && componentIt->second == componentToCheck;
+        }
+
         EditorDisabledCompositionComponent::~EditorDisabledCompositionComponent()
         {
-            for (auto disabledComponent : m_disabledComponents)
+            for (auto& pair : m_disabledComponents)
             {
-                delete disabledComponent;
+                delete pair.second;
             }
             m_disabledComponents.clear();
 
@@ -88,12 +210,18 @@ namespace AzToolsFramework
             // This is a special case for certain EditorComponents only!
             EditorDisabledCompositionRequestBus::Handler::BusConnect(GetEntityId());
 
-            // Set the entity* for each disabled component
-            for (auto disabledComponent : m_disabledComponents)
+            // Set the entity for each disabled component.
+            for (auto const& [componentAlias, disabledComponent] : m_disabledComponents)
             {
-                auto editorComponentBaseComponent = azrtti_cast<Components::EditorComponentBase*>(disabledComponent);
-                AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
-                editorComponentBaseComponent->SetEntity(GetEntity());
+                // It's possible to get null components in the list if errors occur during serialization.
+                // Guard against that case so that the code won't crash.
+                if (disabledComponent)
+                {
+                    auto editorComponentBaseComponent = azrtti_cast<Components::EditorComponentBase*>(disabledComponent);
+                    AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
+
+                    editorComponentBaseComponent->SetEntity(GetEntity());
+                }
             }
         }
 

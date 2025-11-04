@@ -1,0 +1,143 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobilePipelineTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "PipelineOutput",
+                        "Slot": "PipelineOutput"
+                    }
+                ]
+            },
+            "PassRequests": [
+                {
+                    "Name": "MorphTargetPass",
+                    "TemplateName": "MorphTargetPassTemplate"
+                },
+                {
+                    "Name": "SkinningPass",
+                    "TemplateName": "SkinningPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshOutputStream",
+                            "AttachmentRef": {
+                                "Pass": "MorphTargetPass",
+                                "Attachment": "MorphTargetDeltaOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Shadows",
+                    "TemplateName": "MobileShadowParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "SkinningPass",
+                                "Attachment": "SkinnedMeshOutputStream"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+                // First subpass group that contains the Forward, Skybox, Silhoutte gather and Resolve passes
+                {
+                    "Name": "Subpass1",
+                    "TemplateName": "MobileSubpass1ParentPassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Shadows",
+                                "Attachment": "ProjectedShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+                // This parent contains two subpass groups plus all the other passes. The subpass groups could be merged into one
+                // if no extra passes between them are enabled.
+                {
+                    "Name": "Subpasses",
+                    "TemplateName": "SubpassesParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "LightingInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Subpass1",
+                                "Attachment": "LightingOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Subpass1",
+                                "Attachment": "DepthStencilOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "PipelineOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "CopyToSwapChain",
+                    "TemplateName": "FullscreenCopyTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Subpasses",
+                                "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "PipelineOutput"
+                            }
+                        }
+                    ]
+                }          
+            ]
+        }
+    }
+}

@@ -14,8 +14,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeNameLineEdit, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeNameHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeNameLineEdit, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeNameHandler, EditorAllocator)
 
     AnimGraphNodeNameLineEdit::AnimGraphNodeNameLineEdit(QWidget* parent)
         : LineEditValidatable(parent)
@@ -55,7 +55,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphNodeNameHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphNodeName", 0x15120d7d);
+        return AZ_CRC_CE("AnimGraphNodeName");
     }
 
 
@@ -65,7 +65,8 @@ namespace EMotionFX
 
         connect(lineEdit, &AnimGraphNodeNameLineEdit::TextEditingFinished, this, [lineEdit]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, lineEdit);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, lineEdit);
         });
 
         return lineEdit;
@@ -76,7 +77,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstancePointer());
+            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstance());
             GUI->SetNode(m_node);
         }
 

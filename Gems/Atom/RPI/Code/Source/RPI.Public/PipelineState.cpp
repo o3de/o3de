@@ -51,16 +51,8 @@ namespace AZ
 
         void PipelineStateForDraw::Init(const Data::Instance<RPI::Shader>& shader, const ShaderOptionList* optionAndValues)
         {
-            // Reset some variables
-            m_pipelineState = nullptr;
-            m_shaderVariantId = ShaderVariantId{};
-
-            // Reset some flags
-            m_dirty = true;
-            m_isShaderVariantReady = true;
-                        
             // Get shader variant from the shader
-            auto shaderVariant = shader->GetRootVariant();
+            ShaderVariantId shaderVariant = {};
             if (optionAndValues)
             {
                 RPI::ShaderOptionGroup shaderOptionGroup = shader->CreateShaderOptionGroup();
@@ -69,32 +61,36 @@ namespace AZ
                 {
                     shaderOptionGroup.SetValue(optionAndValue.first, optionAndValue.second);
                 }
-                m_shaderVariantId = shaderOptionGroup.GetShaderVariantId();
-                shaderVariant = shader->GetVariant(m_shaderVariantId);
-                m_isShaderVariantReady = shaderVariant.IsFullyBaked();
+                shaderVariant = shaderOptionGroup.GetShaderVariantId();
             }
+            Init(shader, shaderVariant);
+        }
 
-            // Fill the descriptor with data from shader variant
-            shaderVariant.ConfigurePipelineState(m_descriptor);
+        void PipelineStateForDraw::Init(const Data::Instance<Shader>& shader, const ShaderVariantId& shaderVariantId)
+        {
+            // Reset some variables
+            m_pipelineState = nullptr;
 
-            // Connect to shader reload notification bus to rebuilt pipeline state when shader or shader variant changed. 
+            // Cache shader so it can be used for create RHI::PipelineState later
+            m_shader = shader;
+
+            UpdateShaderVaraintId(shaderVariantId);
+            
+            // Connect to shader reload notification bus to rebuilt pipeline state when shader or shader variant changed.
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             ShaderReloadNotificationBus::MultiHandler::BusConnect(shader->GetAsset().GetId());
 
             m_initDataFromShader = true;
-
-            // Cache shader so it can be used for create RHI::PipelineState later
-            m_shader = shader;
         }
 
         void PipelineStateForDraw::RefreshShaderVariant()
         {
             auto shaderVariant = m_shader->GetVariant(m_shaderVariantId);
-            m_isShaderVariantReady = shaderVariant.IsFullyBaked();
+            m_isShaderVariantReady = !shaderVariant.UseKeyFallback();
 
             auto multisampleState = m_descriptor.m_renderStates.m_multisampleState;
 
-            shaderVariant.ConfigurePipelineState(m_descriptor);
+            shaderVariant.ConfigurePipelineState(m_descriptor, m_shaderVariantId);
 
             // Recover multisampleState if it was set from output data
             if (m_hasOutputData)
@@ -199,6 +195,19 @@ namespace AZ
             return m_descriptor.m_inputStreamLayout;
         }
 
+        void PipelineStateForDraw::UpdateShaderVaraintId(const ShaderVariantId& shaderVariantId)
+        {
+            m_dirty = true;
+
+            // Get shader variant from the shader
+            m_shaderVariantId = shaderVariantId;
+            ShaderVariant shaderVariant = m_shader->GetVariant(m_shaderVariantId);
+            m_isShaderVariantReady = !shaderVariant.UseKeyFallback();
+
+            // Fill the descriptor with data from shader variant
+            shaderVariant.ConfigurePipelineState(m_descriptor, m_shaderVariantId);
+        }
+
         const RHI::PipelineStateDescriptorForDraw& PipelineStateForDraw::ConstDescriptor() const
         {
             return m_descriptor;
@@ -232,6 +241,11 @@ namespace AZ
             m_isShaderVariantReady = false;
                         
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
+        }
+
+        const ShaderVariantId& PipelineStateForDraw::GetShaderVariantId() const
+        {
+            return m_shaderVariantId;
         }
     }
 }

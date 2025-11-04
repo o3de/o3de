@@ -9,8 +9,8 @@
 
 #include <EditorPythonBindings/EditorPythonBindingsSymbols.h>
 
-#include <Source/PythonUtility.h>
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
+#include <EditorPythonBindings/PythonUtility.h>
 #include <pybind11/pybind11.h>
 
 #include <AzCore/Component/Component.h>

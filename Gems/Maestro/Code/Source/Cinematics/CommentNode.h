@@ -6,49 +6,47 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_COMMENTNODE_H
-#define CRYINCLUDE_CRYMOVIE_COMMENTNODE_H
 #pragma once
-
 
 #include "AnimNode.h"
 
-class CCommentContext;
-
-class CCommentNode
-    : public CAnimNode
+namespace Maestro
 {
-public:
-    AZ_CLASS_ALLOCATOR(CCommentNode, AZ::SystemAllocator, 0);
-    AZ_RTTI(CCommentNode, "{9FCBF56F-B7B3-4519-B3D2-9B7E5F7E6210}", CAnimNode);
 
-    CCommentNode(const int id);
-    CCommentNode();
+    class CCommentContext;
 
-    static void Initialize();
+    class CCommentNode : public CAnimNode
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CCommentNode, AZ::SystemAllocator);
+        AZ_RTTI(CCommentNode, "{9FCBF56F-B7B3-4519-B3D2-9B7E5F7E6210}", CAnimNode);
 
-    //-----------------------------------------------------------------------------
-    //! Overrides from CAnimNode
-    virtual void Animate(SAnimContext& ac);
+        CCommentNode(const int id);
+        CCommentNode();
 
-    virtual void CreateDefaultTracks();
+        static void Initialize();
 
-    virtual void OnReset();
+        //-----------------------------------------------------------------------------
+        //! Overrides from CAnimNode
+        void Animate(SAnimContext& ac) override;
 
-    virtual void Activate(bool bActivate);
+        void CreateDefaultTracks() override;
 
-    virtual void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+        void OnReset() override;
 
-    //-----------------------------------------------------------------------------
-    //! Overrides from IAnimNode
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+        void Activate(bool bActivate) override;
 
-    static void Reflect(AZ::ReflectContext* context);
+        void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
-protected:
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
-};
+        //-----------------------------------------------------------------------------
+        //! Overrides from IAnimNode
+        unsigned int GetParamCount() const override;
+        CAnimParamType GetParamType(unsigned int nIndex) const override;
 
-#endif // CRYINCLUDE_CRYMOVIE_COMMENTNODE_H
+        static void Reflect(AZ::ReflectContext* context);
+
+    protected:
+        bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
+    };
+
+} // namespace Maestro

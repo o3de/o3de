@@ -33,7 +33,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CylinderShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(CylinderShape, AZ::SystemAllocator)
         AZ_RTTI(CylinderShape, "{B45EFEF2-631F-43D3-B538-A3FE68350231}")
 
         static void Reflect(AZ::ReflectContext* context);
@@ -43,25 +43,24 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponentRequestsBus::Handler
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("Cylinder", 0x9b045bea); }
-        bool IsPointInside(const AZ::Vector3& point) override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("Cylinder"); }
+        bool IsPointInside(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
 
         // CylinderShapeComponentRequestsBus::Handler
-        CylinderShapeConfig GetCylinderConfiguration() override { return m_cylinderShapeConfig; }
+        const CylinderShapeConfig& GetCylinderConfiguration() const override { return m_cylinderShapeConfig; }
         void SetHeight(float height) override;
         void SetRadius(float radius) override;
-        float GetHeight() override;
-        float GetRadius() override;
+        float GetHeight() const override;
+        float GetRadius() const override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        const CylinderShapeConfig& GetCylinderConfiguration() const { return m_cylinderShapeConfig; }
         void SetCylinderConfiguration(const CylinderShapeConfig& cylinderShapeConfig) { m_cylinderShapeConfig = cylinderShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 
@@ -88,7 +87,7 @@ namespace LmbrCentral
         };
 
         CylinderShapeConfig m_cylinderShapeConfig; ///< Underlying cylinder configuration.
-        CylinderIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        mutable CylinderIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current World transform.
         AZ::EntityId m_entityId; ///< The Id of the entity the shape is attached to.
         mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety

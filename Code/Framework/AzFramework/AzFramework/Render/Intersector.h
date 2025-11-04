@@ -15,6 +15,7 @@
 #include <AzFramework/Render/GeometryIntersectionBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzFramework/Render/IntersectorInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -22,7 +23,7 @@ namespace AzFramework
     {
         //! Implementation of IntersectorBus interface, this class contains a cached AABB list of the connected
         //! entities to the intersection bus and calculates efficient ray intersections against them.
-        class Intersector final
+        class AZF_API Intersector final
             : public IntersectorBus::Handler
             , protected IntersectionNotificationBus::Handler
         {

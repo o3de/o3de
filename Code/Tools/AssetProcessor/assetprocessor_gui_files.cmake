@@ -27,6 +27,8 @@ set(FILES
     native/ui/CacheServerData.cpp
     native/ui/ConnectionEditDialog.h
     native/ui/ConnectionEditDialog.cpp
+    native/ui/GoToButtonDelegate.h
+    native/ui/GoToButtonDelegate.cpp
     native/ui/GoToButton.h
     native/ui/GoToButton.cpp
     native/ui/GoToButton.ui
@@ -45,6 +47,8 @@ set(FILES
     native/ui/BuilderInfoPatternsModel.cpp
     native/ui/BuilderInfoMetricsModel.h
     native/ui/BuilderInfoMetricsModel.cpp
+    native/ui/EnabledRelocationTypesModel.h
+    native/ui/EnabledRelocationTypesModel.cpp
     native/ui/MessageWindow.h
     native/ui/MessageWindow.cpp
     native/ui/MessageWindow.ui

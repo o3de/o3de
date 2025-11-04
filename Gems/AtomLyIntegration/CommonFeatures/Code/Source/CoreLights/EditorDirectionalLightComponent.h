@@ -9,6 +9,7 @@
 #pragma once
 
 #include <CoreLights/DirectionalLightComponent.h>
+#include <Atom/Feature/CoreLights/DirectionalLightShadowNotificationBus.h>
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <AtomLyIntegration/CommonFeatures/CoreLights/DirectionalLightComponentConfig.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -19,6 +20,7 @@ namespace AZ
     {
         class EditorDirectionalLightComponent final
             : public EditorRenderComponentAdapter<DirectionalLightComponentController, DirectionalLightComponent, DirectionalLightComponentConfig>
+            , public ShadowingDirectionalLightNotificationsBus::Handler
             , private AzFramework::EntityDebugDisplayEventBus::Handler
         {
         public:
@@ -36,6 +38,9 @@ namespace AZ
 
             //! EditorRenderComponentAdapter overrides...
             AZ::u32 OnConfigurationChanged() override;
+
+            // ShadowingDirectionalLightNotificationsBus overrides
+            void OnShadowingDirectionalLightChanged(const DirectionalLightFeatureProcessorInterface::LightHandle& handle) override;
 
             //! AzFramework::EntityDebugDisplayEventBus::Handler overrides...
             void DisplayEntityViewport(

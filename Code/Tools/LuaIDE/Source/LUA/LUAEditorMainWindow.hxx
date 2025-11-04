@@ -14,6 +14,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/map.h>
 
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/UI/LegacyFramework/UIFrameworkAPI.h>
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
@@ -56,7 +57,7 @@ namespace LUA
 }
 class ClassReferenceFilterModel;
 
-#include <QtWidgets/QMainWindow>
+#include <QMainWindow>
 #endif
 
 namespace LUAEditor
@@ -101,6 +102,8 @@ namespace LUAEditor
         DebugAttachmentButtonAction* m_pDebugAttachmentButton;
         bool m_bAutocompleteEnabled;
         int m_SkinChoice;
+        AzFramework::RemoteToolsEndpointStatusEvent::Handler m_remoteToolsEndpointJoinedHandler;
+        AzFramework::RemoteToolsEndpointStatusEvent::Handler m_remoteToolsEndpointLeftHandler;
 
     Q_SIGNALS:
         void OnReferenceDataChanged();
@@ -113,7 +116,7 @@ namespace LUAEditor
         void OnMenuCloseCurrentWindow();
 
         //file menu
-        void assetBrowserPressed();
+        void OnFileMenuOpen();
         void OnFileMenuNew();
         void OnFileMenuSave();
         void OnFileMenuSaveAs();
@@ -169,6 +172,7 @@ namespace LUAEditor
         // help menu
         void OnLuaDocumentation();
 
+        void OnRemoteToolsEndpointListChanged();
         void OnDebugExecute();
         void OnDebugExecuteOnTarget();
 
@@ -209,10 +213,13 @@ namespace LUAEditor
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_filterModel;
         QSharedPointer<AzToolsFramework::AssetBrowser::CompositeFilter> CreateFilter();
 
+        QAction* m_actionClearRecentFiles;
+
         void LogLineSelectionChanged(const AzToolsFramework::Logging::LogLine& logLine);
 
         void OnOptionsMenuRequested();
 
+        void UpdateOpenRecentMenu();
     public:
 
         void SetupLuaFilesPanel();
@@ -399,13 +406,14 @@ namespace LUAEditor
         void SetCurrentFindListWidget(int index);
         LUAViewWidget* GetCurrentView();
         AZStd::vector<LUAViewWidget*> GetAllViews();
+        bool HasAtLeastOneFileOpen() const;
     };
 
     class LUAEditorMainWindowLayout : public QLayout
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(LUAEditorMainWindowLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorMainWindowLayout, AZ::SystemAllocator);
         LUAEditorMainWindowLayout(QWidget *pParent);
         virtual ~LUAEditorMainWindowLayout();
         virtual void addItem(QLayoutItem *);
@@ -426,7 +434,7 @@ namespace LUAEditor
     {
     public:
         AZ_RTTI(LUAEditorMainWindowSavedState, "{AEB8E5D6-4F2F-49A2-BB09-795614ABAAFF}", AzToolsFramework::MainWindowSavedState);
-        AZ_CLASS_ALLOCATOR(LUAEditorMainWindowSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorMainWindowSavedState, AZ::SystemAllocator);
 
         AZStd::vector<AZStd::string> m_openAssetIds;
         bool m_bAutocompleteEnabled;

@@ -139,6 +139,109 @@ namespace AZ
             }
             
         }
+    
+        RHI::Format ConvertPixelFormat(MTLPixelFormat format)
+        {
+            switch (format)
+            {
+            case MTLPixelFormatInvalid:
+                return RHI::Format::Unknown;
+            case MTLPixelFormatRGBA32Float:
+                return RHI::Format::R32G32B32A32_FLOAT;
+            case MTLPixelFormatRGBA32Uint:
+                return RHI::Format::R32G32B32A32_UINT;
+            case MTLPixelFormatRGBA32Sint:
+                return RHI::Format::R32G32B32A32_SINT;
+            case MTLPixelFormatRGBA16Float:
+                return RHI::Format::R16G16B16A16_FLOAT;
+            case MTLPixelFormatRGBA16Unorm:
+                return RHI::Format::R16G16B16A16_UNORM;
+            case MTLPixelFormatRGBA16Uint:
+                return RHI::Format::R16G16B16A16_UINT;
+            case MTLPixelFormatRGBA16Snorm:
+                return RHI::Format::R16G16B16A16_SNORM;
+            case MTLPixelFormatRGBA16Sint:
+                return RHI::Format::R16G16B16A16_SINT;
+            case MTLPixelFormatRG32Float:
+                return RHI::Format::R32G32_FLOAT;
+            case MTLPixelFormatRG32Uint:
+                return RHI::Format::R32G32_UINT;
+            case MTLPixelFormatRG32Sint:
+                return RHI::Format::R32G32_SINT;
+            case MTLPixelFormatDepth32Float_Stencil8:
+                return RHI::Format::D32_FLOAT_S8X24_UINT;
+            case MTLPixelFormatRGB10A2Unorm:
+                return RHI::Format::R10G10B10A2_UNORM;
+            case MTLPixelFormatRGB10A2Uint:
+                return RHI::Format::R10G10B10A2_UINT;
+            case MTLPixelFormatRG11B10Float:
+                return RHI::Format::R11G11B10_FLOAT;
+            case MTLPixelFormatRGBA8Unorm:
+                return RHI::Format::R8G8B8A8_UNORM;
+            case MTLPixelFormatRGBA8Unorm_sRGB:
+                return RHI::Format::R8G8B8A8_UNORM_SRGB;
+            case MTLPixelFormatRGBA8Uint:
+                return RHI::Format::R8G8B8A8_UINT;
+            case MTLPixelFormatRGBA8Snorm:
+                return RHI::Format::R8G8B8A8_SNORM;
+            case MTLPixelFormatRGBA8Sint:
+                return RHI::Format::R8G8B8A8_SINT;
+            case MTLPixelFormatRG16Float:
+                return RHI::Format::R16G16_FLOAT;
+            case MTLPixelFormatRG16Unorm:
+                return RHI::Format::R16G16_UNORM;
+            case MTLPixelFormatRG16Uint:
+                return RHI::Format::R16G16_UINT;
+            case MTLPixelFormatRG16Snorm:
+                return RHI::Format::R16G16_SNORM;
+            case MTLPixelFormatRG16Sint:
+                return RHI::Format::R16G16_SINT;
+            case MTLPixelFormatDepth32Float:
+                return RHI::Format::D32_FLOAT;
+            case MTLPixelFormatR32Float:
+                return RHI::Format::R32_FLOAT;
+            case MTLPixelFormatR32Uint:
+                return RHI::Format::R32_UINT;
+            case MTLPixelFormatR32Sint:
+                return RHI::Format::R32_SINT;
+            case MTLPixelFormatRG8Unorm:
+                return RHI::Format::R8G8_UNORM;
+            case MTLPixelFormatRG8Uint:
+                return RHI::Format::R8G8_UINT;
+            case MTLPixelFormatRG8Snorm:
+                return RHI::Format::R8G8_SNORM;
+            case MTLPixelFormatRG8Sint:
+                return RHI::Format::R8G8_SINT;
+            case MTLPixelFormatR16Float:
+                return RHI::Format::R16_FLOAT;
+            case MTLPixelFormatR16Unorm:
+                return RHI::Format::R16_UNORM;
+            case MTLPixelFormatR16Uint:
+                return RHI::Format::R16_UINT;
+            case MTLPixelFormatR16Snorm:
+                return RHI::Format::R16_SNORM;
+            case MTLPixelFormatR16Sint:
+                return RHI::Format::R16_SINT;
+            case MTLPixelFormatR8Unorm:
+                return RHI::Format::R8_UNORM;
+            case MTLPixelFormatR8Uint:
+                return RHI::Format::R8_UINT;
+            case MTLPixelFormatR8Snorm:
+                return RHI::Format::R8_SNORM;
+            case MTLPixelFormatR8Sint:
+                return RHI::Format::R8_SINT;
+            case MTLPixelFormatA8Unorm:
+                return RHI::Format::A8_UNORM;
+            case MTLPixelFormatRGB9E5Float:
+                return RHI::Format::R9G9B9E5_SHAREDEXP;
+            case MTLPixelFormatBGRA8Unorm:
+                return RHI::Format::B8G8R8A8_UNORM;
+            case MTLPixelFormatBGRA8Unorm_sRGB:
+                return RHI::Format::B8G8R8A8_UNORM_SRGB;
+            default:
+                return RHI::Format::Unknown;
+            }
+        }
         
         MTLStorageMode ConvertTextureStorageMode(RHI::ImageBindFlags imageFlags, const bool isMsaa)
         {
@@ -215,7 +318,7 @@ namespace AZ
             {
                 usageFlags |= MTLTextureUsageRenderTarget;
             }
-            if (RHI::CheckBitsAll(imageFlags, RHI::ImageBindFlags::DepthStencil))
+            if (RHI::CheckBitsAny(imageFlags, RHI::ImageBindFlags::DepthStencil))
             {
                 usageFlags |= MTLTextureUsageRenderTarget;
             }
@@ -241,13 +344,13 @@ namespace AZ
             return usageFlags;
         }
         
-        MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap)
+        MTLTextureType ConvertTextureType(RHI::ImageDimension dimension, int arraySize, bool isCubeMap, bool isViewArray)
         {
             if(isCubeMap)
             {
                 AZ_Assert(arraySize % RHI::ImageDescriptor::NumCubeMapSlices == 0, "Incorrect array layers for Cube or CubeArray.");
                 int numCubeMaps = arraySize / RHI::ImageDescriptor::NumCubeMapSlices;
-                if(numCubeMaps>1)
+                if(numCubeMaps>1 || isViewArray)
                 {
                     return MTLTextureTypeCubeArray;
                 }
@@ -260,7 +363,7 @@ namespace AZ
             {
                 case RHI::ImageDimension::Image1D:
                 {
-                    if(arraySize>1)
+                    if(arraySize>1 || isViewArray)
                     {
                         return MTLTextureType1DArray;
                     }
@@ -271,7 +374,7 @@ namespace AZ
                 }
                 case RHI::ImageDimension::Image2D:
                 {
-                    if(arraySize>1)
+                    if(arraySize>1 || isViewArray)
                     {
                         return MTLTextureType2DArray;
                     }
@@ -293,6 +396,14 @@ namespace AZ
             }
         }
         
+        bool IsTextureTypeAnArray(MTLTextureType textureType)
+        {
+            return textureType == MTLTextureType1DArray ||
+                    textureType == MTLTextureType2DArray ||
+                    textureType == MTLTextureTypeCubeArray ||
+                    textureType == MTLTextureType2DMultisampleArray;
+        }
+    
         uint32_t GetArrayLength(int arraySize, bool isCubeMap)
         {            
             if(arraySize>1)
@@ -372,7 +483,7 @@ namespace AZ
         ResourceDescriptor ConvertBufferDescriptor(const RHI::BufferDescriptor& descriptor, RHI::HeapMemoryLevel heapMemoryLevel)
         {
             ResourceDescriptor resourceDesc;
-            resourceDesc.m_width = descriptor.m_byteCount;
+            resourceDesc.m_width = static_cast<uint32_t>(descriptor.m_byteCount);
             resourceDesc.m_mtlStorageMode = ConvertBufferStorageMode(descriptor, heapMemoryLevel);
             resourceDesc.m_mtlCPUCacheMode = ConvertBufferCPUCacheMode();
             resourceDesc.m_mtlHazardTrackingMode = ConvertBufferHazardTrackingMode();
@@ -908,6 +1019,7 @@ namespace AZ
             rasterizerState.m_depthSlopeScale = raster.m_depthBiasSlopeScale;
             rasterizerState.m_triangleFillMode = ConvertFillMode(raster.m_fillMode);
             rasterizerState.m_depthClipMode = raster.m_depthClipEnable ? MTLDepthClipModeClip:MTLDepthClipModeClamp;
+            rasterizerState.UpdateHash();
         }
         
         bool IsDepthStencilMerged(RHI::Format format)
@@ -947,27 +1059,50 @@ namespace AZ
             }
         }
 
+        MTLBindingAccess GetBindingAccess(RHI::ShaderInputImageAccess accessType)
+        {
+#if defined(__IPHONE_17_0) || defined(__MAC_14_0)
+            MTLBindingAccess mtlBindingAccess = MTLBindingAccessReadOnly;
+#else
+            MTLBindingAccess mtlBindingAccess = MTLArgumentAccessReadOnly;
+#endif
+            
+            if(accessType == RHI::ShaderInputImageAccess::ReadWrite)
+            {
+#if defined(__IPHONE_17_0) || defined(__MAC_14_0)
+            mtlBindingAccess = MTLBindingAccessReadWrite;
+#else
+            mtlBindingAccess = MTLArgumentAccessReadWrite;
+#endif
+            }
+            return mtlBindingAccess;
+        }
+    
+        MTLBindingAccess GetBindingAccess(RHI::ShaderInputBufferAccess accessType)
+        {
+#if defined(__IPHONE_17_0) || defined(__MAC_14_0)
+            MTLBindingAccess mtlBindingAccess = MTLBindingAccessReadOnly;
+#else
+            MTLBindingAccess mtlBindingAccess = MTLArgumentAccessReadOnly;
+#endif
+            
+            if(accessType == RHI::ShaderInputBufferAccess::ReadWrite)
+            {
+#if defined(__IPHONE_17_0) || defined(__MAC_14_0)
+            mtlBindingAccess = MTLBindingAccessReadWrite;
+#else
+            mtlBindingAccess = MTLArgumentAccessReadWrite;
+#endif
+            }
+            return mtlBindingAccess;
+        }
+    
         void ConvertImageArgumentDescriptor(MTLArgumentDescriptor* imgArgDescriptor, const RHI::ShaderInputImageDescriptor& shaderInputImage)
         {
             imgArgDescriptor.dataType = MTLDataTypeTexture;
             imgArgDescriptor.index = shaderInputImage.m_registerId;
-            switch(shaderInputImage.m_access)
-            {
-                case RHI::ShaderInputImageAccess::Read:
-                {
-                    imgArgDescriptor.access = MTLArgumentAccessReadOnly;
-                    break;
-                }
-                case RHI::ShaderInputImageAccess::ReadWrite:
-                {
-                    imgArgDescriptor.access = MTLArgumentAccessReadWrite;
-                    break;
-                }
-                default:
-                {
-                    AZ_Assert(false, "Invalid usage type.");
-                }
-            }
+            imgArgDescriptor.access = GetBindingAccess(shaderInputImage.m_access);
+
             switch(shaderInputImage.m_type)
             {
                 case RHI::ShaderInputImageType::Image1D:
@@ -1023,24 +1158,8 @@ namespace AZ
             AZ_Assert(bufferArgDescriptor, "bufferArgDescriptor is null");
             
             bufferArgDescriptor.index = shaderInputBuffer.m_registerId;
-            switch(shaderInputBuffer.m_access)
-            {
-                case RHI::ShaderInputBufferAccess::Constant:
-                case RHI::ShaderInputBufferAccess::Read:
-                {
-                    bufferArgDescriptor.access = MTLArgumentAccessReadOnly;
-                    break;
-                }
-                case RHI::ShaderInputBufferAccess::ReadWrite:
-                {
-                    bufferArgDescriptor.access = MTLArgumentAccessReadWrite;
-                    break;
-                }
-                default:
-                {
-                    AZ_Assert(false, "Invalid usage type.");
-                }
-            }
+            bufferArgDescriptor.access = GetBindingAccess(shaderInputBuffer.m_access);
+
             bufferArgDescriptor.arrayLength = shaderInputBuffer.m_count;
             
             if(shaderInputBuffer.m_type == RHI::ShaderInputBufferType::Typed)
@@ -1394,7 +1513,7 @@ namespace AZ
     
         MTLResourceUsage GetImageResourceUsage(RHI::ShaderInputImageAccess imageAccess)
         {
-            MTLResourceUsage mtlResourceUsage = MTLResourceUsageSample | MTLResourceUsageRead;
+            MTLResourceUsage mtlResourceUsage = MTLResourceUsageRead;
             if(imageAccess == RHI::ShaderInputImageAccess::ReadWrite)
             {
                 mtlResourceUsage |= MTLResourceUsageWrite;

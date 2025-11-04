@@ -6,12 +6,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- // {END_LICENSE}
+// {END_LICENSE}
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
 #include "${Name}SystemComponent.h"
+
+#include <${Name}/${Name}TypeIds.h>
 
 namespace ${SanitizedCppName}
 {
@@ -19,8 +21,8 @@ namespace ${SanitizedCppName}
         : public AZ::Module
     {
     public:
-        AZ_RTTI(${SanitizedCppName}Module, "${ModuleClassId}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator, 0);
+        AZ_RTTI(${SanitizedCppName}Module, ${SanitizedCppName}ModuleTypeId, AZ::Module);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator);
 
         ${SanitizedCppName}Module()
             : AZ::Module()
@@ -43,4 +45,8 @@ namespace ${SanitizedCppName}
     };
 }// namespace ${SanitizedCppName}
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ${SanitizedCppName}::${SanitizedCppName}Module)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}, ${SanitizedCppName}::${SanitizedCppName}Module)
+#endif

@@ -10,66 +10,46 @@
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
-#include <RHI/FrameGraphExecuteGroupBase.h>
-#include <RHI/RenderPassBuilder.h>
+#include <RHI/Scope.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        class Device;
-        class FrameBuffer;
-        class Scope;
-        class SwapChain;
-        struct RenderPassContext;
-
-        //! Execute group for one scope that uses one or more secondary command lists to
-        //! record it's work. Renderpass and framebuffers are handled by the FrameGraphExecuteGroupHandler.
-        class FrameGraphExecuteGroup final
-            : public FrameGraphExecuteGroupBase
+        //! Base class for the Execute group classes.
+        //! It encapsulates the common functionality for Execute groups
+        //! like the work request that will be used and the hardwareQueueClass for
+        //! all scopes in the group.
+        class FrameGraphExecuteGroup
+            : public RHI::FrameGraphExecuteGroup
         {
-            using Base = FrameGraphExecuteGroupBase;
-
+            using Base = RHI::FrameGraphExecuteGroup;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::SystemAllocator, 0);
-            AZ_RTTI(FrameGraphExecuteGroup, "{D3BDC3AC-06A7-4067-9E71-0DBB3A80B188}", Base);
-
             FrameGraphExecuteGroup() = default;
-            ~FrameGraphExecuteGroup() = default;
+            AZ_RTTI(FrameGraphExecuteGroup, "{8F39B46F-37D3-4026-AB1A-A78F646F311B}", Base);
 
-            void Init(Device& device,
-                const Scope& scope,
-                uint32_t commandListCount,
-                RHI::JobPolicy globalJobPolicy);
+            void InitBase(Device& device, const RHI::GraphGroupId& groupId, RHI::HardwareQueueClass hardwareQueueClass);
 
-            //////////////////////////////////////////////////////////////////////////
-            // FrameGraphExecuteGroupBase
-            AZStd::span<const Scope* const> GetScopes() const override;
-            AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const override;
-            //////////////////////////////////////////////////////////////////////////
+            Device& GetDevice() const;
 
-            //! Set the render context and subpass that will be used by this execute group.
-            void SetRenderContext(const RenderPassContext& renderPassContext, uint32_t subpassIndex = 0);
+            const ExecuteWorkRequest& GetWorkRequest() const;
 
-        private:
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::ExecuteContextGroupBase
-            void BeginInternal() override;
-            void BeginContextInternal(
-                RHI::FrameGraphExecuteContext& context,
-                uint32_t contextIndex) override;
-            void EndContextInternal(
-                RHI::FrameGraphExecuteContext& context,
-                uint32_t contextIndex) override;
-            void EndInternal() override;
-            //////////////////////////////////////////////////////////////////////////
+            RHI::HardwareQueueClass GetHardwareQueueClass() const;
 
-            const Scope* m_scope = nullptr;
-            AZStd::vector<RHI::Ptr<CommandList>> m_secondaryCommands;
-            // Render context that contains the framebuffer that this group will use.
-            RenderPassContext m_renderPassContext;
-            // Subpass that the group will use.
-            uint32_t m_subpassIndex = 0;
+            const RHI::GraphGroupId& GetGroupId() const;
+
+            virtual AZStd::span<const Scope* const> GetScopes() const = 0;
+            virtual AZStd::span<Scope* const> GetScopes() = 0;
+
+            virtual AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const = 0;
+
+        protected:
+            RHI::Ptr<CommandList> AcquireCommandList(VkCommandBufferLevel level) const;
+
+            Device* m_device = nullptr;
+            RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
+            ExecuteWorkRequest m_workRequest;
+            RHI::GraphGroupId m_groupId;
         };
     }
 }

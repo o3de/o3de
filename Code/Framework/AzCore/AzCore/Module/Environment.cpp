@@ -10,8 +10,8 @@
 
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Math/Crc.h>
 #include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/Math/CrcInternal.h>
 
 namespace AZ
 {
@@ -24,10 +24,9 @@ namespace AZ
         class OSStdAllocator
         {
         public:
-            using pointer_type = void *;
+            using pointer = void*;
             using size_type = AZStd::size_t;
             using difference_type = AZStd::ptrdiff_t;
-            using allow_memory_leaks = AZStd::false_type;         ///< Regular allocators should not leak.
 
             OSStdAllocator(Environment::AllocatorInterface* allocator)
                 : m_name("GlobalEnvironmentAllocator")
@@ -41,18 +40,18 @@ namespace AZ
             {
             }
 
-            pointer_type allocate(size_t byteSize, size_t alignment, int flags = 0)
+            pointer allocate(size_t byteSize, size_t alignment, int flags = 0)
             {
                 (void)flags;
                 return m_allocator->Allocate(byteSize, alignment);
             }
-            size_type resize(pointer_type ptr, size_type newSize)
+            size_type resize(pointer ptr, size_type newSize)
             {
                 (void)ptr;
                 (void)newSize;
                 return 0; // no resize
             }
-            void deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+            void deallocate(pointer ptr, size_type byteSize, size_type alignment)
             {
                 (void)byteSize;
                 (void)alignment;
@@ -76,7 +75,7 @@ namespace AZ
         bool operator==(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return true; }
         bool operator!=(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return false; }
 
-        O3DEKERNEL_API void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
+        AZCORE_API void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
         {
             const bool releaseByUseCount = (--m_useCount == 0);
             // We take over the lock, and release it before potentially destroying/freeing ourselves
@@ -355,30 +354,36 @@ namespace AZ
             return &environment;
         }
 
-        O3DEKERNEL_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
+        AZCORE_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
         {
             return EnvironmentImpl::Get()->AddAndAllocateVariable(guid, byteSize, alignment, addedVariableLock);
         }
 
-        O3DEKERNEL_API EnvironmentVariableResult GetVariable(u32 guid)
+        AZCORE_API EnvironmentVariableResult GetVariable(u32 guid)
         {
             return EnvironmentImpl::Get()->GetVariable(guid);
         }
 
-        O3DEKERNEL_API Environment::AllocatorInterface* GetAllocator()
+        AZCORE_API Environment::AllocatorInterface* GetAllocator()
         {
             return EnvironmentImpl::Get()->GetAllocator();
         }
 
-        O3DEKERNEL_API u32 EnvironmentVariableNameToId(const char* uniqueName)
+        AZCORE_API u32 EnvironmentVariableNameToId(const char* uniqueName)
         {
-            return Crc32(uniqueName);
+            AZStd::string_view uniqueNameView(uniqueName);
+            u32 result {0};
+            if (!uniqueNameView.empty())
+            {
+                Internal::Crc32Set(uniqueNameView.data(), uniqueNameView.size(), true, result);
+            }
+            return result;
         }
     } // namespace Internal
 
     namespace Environment
     {
-        O3DEKERNEL_API EnvironmentInstance GetInstance()
+        AZCORE_API EnvironmentInstance GetInstance()
         {
             return Internal::EnvironmentImpl::Get();
         }

@@ -23,7 +23,6 @@ namespace Multiplayer
     AZ_CVAR(uint32_t, sv_MaxEntitiesToReplicate, 256, nullptr, AZ::ConsoleFunctorFlags::Null, "The default max number of entities to replicate to a client connection");
     AZ_CVAR(uint32_t, sv_PacketsToIntegrateQos, 1000, nullptr, AZ::ConsoleFunctorFlags::Null, "The number of packets to accumulate before updating connection quality of service metrics");
     AZ_CVAR(float, sv_BadConnectionThreshold, 0.25f, nullptr, AZ::ConsoleFunctorFlags::Null, "The loss percentage beyond which we consider our network bad");
-    AZ_CVAR(AZ::TimeMs, sv_ClientReplicationWindowUpdateMs, AZ::TimeMs{ 300 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Rate for replication window updates.");
     AZ_CVAR(float, sv_ClientAwarenessRadius, 500.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "The maximum distance entities can be from the client and still be relevant");
 
     const char* GetConnectionStateString(bool isPoor)
@@ -54,22 +53,14 @@ namespace Multiplayer
 
     ServerToClientReplicationWindow::ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection)
         : m_controlledEntity(controlledEntity)
-        , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
-        , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
         , m_connection(connection)
         , m_lastCheckedSentPackets(connection->GetMetrics().m_packetsSent)
         , m_lastCheckedLostPackets(connection->GetMetrics().m_packetsLost)
-        , m_updateWindowEvent([this]() { UpdateWindow(); }, AZ::Name("Server to client replication window update event"))
     {
         AZ::Entity* entity = m_controlledEntity.GetEntity();
         AZ_Assert(entity, "Invalid controlled entity provided to replication window");
         m_controlledEntityTransform = entity ? entity->GetTransform() : nullptr;
         AZ_Assert(m_controlledEntityTransform, "Controlled player entity must have a transform");
-
-        m_updateWindowEvent.Enqueue(sv_ClientReplicationWindowUpdateMs, true);
-
-        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityActivatedEventHandler(m_entityActivatedEventHandler);
-        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityDeactivatedEventHandler(m_entityDeactivatedEventHandler);
     }
 
     bool ServerToClientReplicationWindow::ReplicationSetUpdateReady()
@@ -123,18 +114,23 @@ namespace Multiplayer
 
         AZStd::vector<AzFramework::VisibilityEntry*> gatheredEntries;
         AZ::Sphere awarenessSphere = AZ::Sphere(controlledEntityPosition, sv_ClientAwarenessRadius);
-        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(awarenessSphere, [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
-            {
-                gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
-                for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+        AzFramework::IVisibilitySystem* visibilitySystem = AZ::Interface<AzFramework::IVisibilitySystem>::Get();
+        if (visibilitySystem)
+        {
+            visibilitySystem->GetDefaultVisibilityScene()->Enumerate(
+                awarenessSphere,
+                [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
                 {
-                    if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                    gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
+                    for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
                     {
-                        gatheredEntries.push_back(visEntry);
+                        if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                        {
+                            gatheredEntries.push_back(visEntry);
+                        }
                     }
-                }
-            }
-        );
+                });
+        }
 
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();        
         IFilterEntityManager* filterEntityManager = AZ::Interface<IFilterEntityManager>::Get();
@@ -170,6 +166,7 @@ namespace Multiplayer
         {
             if (entityHandle.Exists())
             {
+                AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Encountered forced relevant entity that is not in an authority role");
                 m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f }; // Always replicate entities with forced relevancy
             }
         }
@@ -250,39 +247,36 @@ namespace Multiplayer
         //}
     }
 
-    void ServerToClientReplicationWindow::OnEntityActivated(AZ::Entity* entity)
+    bool ServerToClientReplicationWindow::AddEntity(AZ::Entity* entity)
     {
         ConstNetworkEntityHandle entityHandle(entity);
-        NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
-        if (netBindComponent != nullptr)
-        {
-            if (netBindComponent->HasController())
-            {
-                if (IFilterEntityManager* filter = AZ::Interface<IFilterEntityManager>::Get())
-                {
-                    if (filter->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
-                    {
-                        return;
-                    }
-                }
 
-                AZ::TransformInterface* transformInterface = entity->GetTransform();
-                if (transformInterface != nullptr)
-                {
-                    const AZ::Vector3 clientPosition = m_controlledEntityTransform->GetWorldTranslation();
-                    float distSq = clientPosition.GetDistanceSq(transformInterface->GetWorldTranslation());
-                    float awarenessSq = sv_ClientAwarenessRadius * sv_ClientAwarenessRadius;
-                    // Make sure we would be in the awareness radius
-                    if (distSq < awarenessSq)
-                    {
-                        AddEntityToReplicationSet(entityHandle, 1.0f, distSq);
-                    }
-                }
+        if (IFilterEntityManager* filter = AZ::Interface<IFilterEntityManager>::Get())
+        {
+            if (filter->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
+            {
+                return false;
             }
         }
+
+        AZ::TransformInterface* transformInterface = entity->GetTransform();
+        if (transformInterface != nullptr)
+        {
+            const AZ::Vector3 clientPosition = m_controlledEntityTransform->GetWorldTranslation();
+            float distSq = clientPosition.GetDistanceSq(transformInterface->GetWorldTranslation());
+            float awarenessSq = sv_ClientAwarenessRadius * sv_ClientAwarenessRadius;
+            // Make sure we would be in the awareness radius
+            if (distSq < awarenessSq)
+            {
+                AddEntityToReplicationSet(entityHandle, 1.0f, distSq);
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    void ServerToClientReplicationWindow::OnEntityDeactivated(AZ::Entity* entity)
+    void ServerToClientReplicationWindow::RemoveEntity(AZ::Entity* entity)
     {
         ConstNetworkEntityHandle entityHandle(entity);
         if (entityHandle.GetNetBindComponent() != nullptr)

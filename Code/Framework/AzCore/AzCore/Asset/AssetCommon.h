@@ -42,17 +42,12 @@ namespace AZ
 
         typedef Uuid AssetType;
 
-        namespace AssetInternal
-        {
-            bool IsValidAssetType(const AssetType& type, AZ::SerializeContext* serializeContext = nullptr);
-        }
-
         /**
          * Asset ID types
          */
         typedef AssetData*  AssetPtr;
 
-        struct AssetId
+        struct AZCORE_API AssetId
         {
             AZ_TYPE_INFO(AssetId, "{652ED536-3402-439B-AEBE-4A5DBC554085}");
 
@@ -109,7 +104,7 @@ namespace AZ
         /**
          * Base class for all asset types.
          */
-        class AssetData
+        class AZCORE_API AssetData
         {
             template<class T>
             friend class Asset;
@@ -129,7 +124,7 @@ namespace AZ
                 Error,              ///< Asset attempted to load, but it or a strict dependency failed.
             };
 
-            AZ_CLASS_ALLOCATOR(AssetData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetData, SystemAllocator);
             AZ_RTTI(AssetData, "{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}");
 
             AssetData(const AssetId& assetId = AssetId(), AssetStatus status = AssetStatus::NotLoaded)
@@ -220,15 +215,14 @@ namespace AZ
          * Setting for each reference (Asset<T>) to control loading of referenced assets during serialization.
          */
         AZ_ENUM_WITH_UNDERLYING_TYPE(AssetLoadBehavior, u8,
-            (PreLoad, 0),          ///< Serializer will "Pre load" dependencies, asset containers may load in parallel but will not signal AssetReady
-            (QueueLoad, 1),        ///< Serializer will queue an asynchronous load of the referenced asset and return the object to the user. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-            (NoLoad, 2),           ///< Serializer will load reference information, but asset loading will be left to the user. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-                                   ///< AssetContainers will skip NoLoad dependencies
+            (PreLoad, 0),          ///< Specifies the asset should be loaded automatically and that it will be required to finish loading before the parent (asset depending on this asset) can be considered "ready" (OnReady only fires when the asset and all it's PreLoad dependencies are loaded)
+            (QueueLoad, 1),        ///< Specifies the asset should be loaded automatically but the parent (asset depending on this asset) will not wait for it and can be considered ready without this asset. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
+            (NoLoad, 2),           ///< Specifies the asset should not be loaded automatically. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
             Count,
             (Default, QueueLoad)
         );
 
-        struct AssetFilterInfo
+        struct AZCORE_API AssetFilterInfo
         {
             AssetId m_assetId;
             AssetType m_assetType;
@@ -250,7 +244,7 @@ namespace AZ
             LoadAll = 1
         };
 
-        struct AssetLoadParameters
+        struct AZCORE_API AssetLoadParameters
         {
             AssetLoadParameters() : m_assetLoadFilterCB() {}
 
@@ -510,15 +504,14 @@ namespace AZ
 
         namespace AssetInternal
         {
-            Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior);
-            Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior,
-                const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
-            AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
-            void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
-            bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
-            bool SaveAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
-            Asset<AssetData> GetAssetData(const AssetId& id, AssetLoadBehavior assetReferenceLoadBehavior);
-            AssetId ResolveAssetId(const AssetId& id);
+            AZCORE_API Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior);
+            AZCORE_API Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior, const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
+            AZCORE_API AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
+            AZCORE_API void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
+            AZCORE_API bool ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
+            AZCORE_API bool SaveAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
+            AZCORE_API Asset<AssetData> GetAssetData(const AssetId& id, AssetLoadBehavior assetReferenceLoadBehavior);
+            AZCORE_API AssetId ResolveAssetId(const AssetId& id);
         }
 
         /**
@@ -632,11 +625,11 @@ namespace AZ
         /*
          * AssetBusCallbacks is a utility class that maps AssetBus events to user callbacks
          */
-        class AssetBusCallbacks
+        class AZCORE_API AssetBusCallbacks
             : public AssetBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetBusCallbacks, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBusCallbacks, AZ::SystemAllocator);
 
             using AssetReadyCB = AZStd::function<void (Asset<AssetData> /*asset*/, AssetBusCallbacks& /*callbacks*/)>;
             using AssetMovedCB = AZStd::function<void (Asset<AssetData> /*asset*/, void* /*oldDataPointer*/, AssetBusCallbacks& /*callbacks*/)>;
@@ -727,7 +720,7 @@ namespace AZ
                 result = StringType::format("%s:%x", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             case SubIdDisplayType::Decimal:
-                result = StringType::format("%s:%d", m_guid.ToString<StringType>().c_str(), m_subId);
+                result = StringType::format("%s:%u", m_guid.ToString<StringType>().c_str(), m_subId);
                 break;
             }
         }
@@ -1225,7 +1218,7 @@ namespace AZ
         //=========================================================================
 
         /// Indiscriminately skips all asset references.
-        bool AssetFilterNoAssetLoading(const AssetFilterInfo& filterInfo);
+        AZCORE_API bool AssetFilterNoAssetLoading(const AssetFilterInfo& filterInfo);
 
         // Shared ProductDependency concepts between AP and LY
         namespace ProductDependencyInfo
@@ -1241,8 +1234,8 @@ namespace AZ
                 Unused
             };
             using ProductDependencyFlags = AZStd::bitset<64>;
-            AZ::Data::AssetLoadBehavior LoadBehaviorFromFlags(const ProductDependencyFlags& dependencyFlags);
-            AZ::Data::ProductDependencyInfo::ProductDependencyFlags CreateFlags(AZ::Data::AssetLoadBehavior autoLoadBehavior);
+            AZCORE_API AZ::Data::AssetLoadBehavior LoadBehaviorFromFlags(const ProductDependencyFlags& dependencyFlags);
+            AZCORE_API AZ::Data::ProductDependencyInfo::ProductDependencyFlags CreateFlags(AZ::Data::AssetLoadBehavior autoLoadBehavior);
         } // namespace ProductDependencyInfo
     }  // namespace Data
 
@@ -1255,7 +1248,7 @@ namespace AZStd
 {
     // hash specialization
     template <>
-    struct hash<AZ::Data::AssetId>
+    struct AZCORE_API hash<AZ::Data::AssetId>
     {
         typedef AZ::Uuid    argument_type;
         typedef size_t      result_type;
@@ -1267,3 +1260,4 @@ namespace AZStd
     };
 }
 
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZCORE_API, AZ::Data::AssetEvents);

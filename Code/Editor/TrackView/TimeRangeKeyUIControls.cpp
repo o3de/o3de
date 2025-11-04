@@ -9,6 +9,9 @@
 
 #include "EditorDefs.h"
 
+// AzCore
+#include <AzCore/std/algorithm.h>
+
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimParamType.h>  // for AnimParamType
 
@@ -16,8 +19,7 @@
 #include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"              // for CTrackViewKeyUIControls// Editor
 
-//////////////////////////////////////////////////////////////////////////
-bool CTimeRangeKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
+bool CTimeRangeKeyUIControls::OnKeySelectionChange(const CTrackViewKeyBundle& selectedKeys)
 {
     if (!selectedKeys.AreAllKeysOfSameType())
     {
@@ -74,10 +76,10 @@ void CTimeRangeKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& s
             // Clamp values
             if (!timeRangeKey.m_bLoop)
             {
-                timeRangeKey.m_endTime = std::min(timeRangeKey.m_duration, timeRangeKey.m_endTime);
+                timeRangeKey.m_endTime = AZStd::min(timeRangeKey.m_duration, timeRangeKey.m_endTime);
             }
-            timeRangeKey.m_startTime = std::min(timeRangeKey.m_duration, timeRangeKey.m_startTime);
-            timeRangeKey.m_startTime = std::min(timeRangeKey.m_endTime, timeRangeKey.m_startTime);
+            timeRangeKey.m_startTime = AZStd::min(timeRangeKey.m_duration, timeRangeKey.m_startTime);
+            timeRangeKey.m_startTime = AZStd::min(timeRangeKey.m_endTime, timeRangeKey.m_startTime);
 
             keyHandle.SetKey(&timeRangeKey);
         }

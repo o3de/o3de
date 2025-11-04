@@ -9,12 +9,12 @@
 --
 ----------------------------------------------------------------------------------------------------
 
-g_screenshotOutputFolder = GetScreenshotOutputPath(true)
-Print('Saving screenshots to ' .. NormalizePath(g_screenshotOutputFolder))
+g_screenshotOutputFolder = '@user@/ScriptAutomation/Screenshots/'
+Print('Saving screenshots to ' .. ResolvePath(g_screenshotOutputFolder))
 
 ResizeViewport(800, 600)
 
 IdleFrames(100) -- wait for assets to load into the level
 ExecuteConsoleCommand("r_displayInfo=0")
 IdleFrames(1) -- wait 1 frame for the info text to hide
-CaptureScreenshot(g_screenshotOutputFolder .. '/ScriptAutomation_CaptureScreenshotTest.png')
+CaptureScreenshot('ScriptAutomation_CaptureScreenshotTest.png')

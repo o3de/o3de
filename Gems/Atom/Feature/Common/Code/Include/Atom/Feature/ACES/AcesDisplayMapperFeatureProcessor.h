@@ -10,12 +10,13 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
+#include <Atom/Feature/Base.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h>
 #include <ACES/Aces.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
 
+#include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI/ImageView.h>
 
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -52,10 +53,11 @@ namespace AZ
          *  This class create display mapper shader input parameters by using
          *  the ACES reference implementation.
          */
-        class AcesDisplayMapperFeatureProcessor final
+        class ATOM_FEATURE_COMMON_API AcesDisplayMapperFeatureProcessor final
             : public DisplayMapperFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(AcesDisplayMapperFeatureProcessor, AZ::SystemAllocator)
             enum OutputDeviceTransformFlags
             {
                 AlterSurround = 0x1, // Apply gamma adjustment to compensate for dim surround
@@ -87,7 +89,8 @@ namespace AZ
             void GetLutFromAssetLocation(DisplayMapperAssetLut& displayMapperAssetLut, const AZStd::string& assetPath) override;
             void GetLutFromAssetId(DisplayMapperAssetLut& displayMapperAssetLut, const AZ::Data::AssetId) override;
             void RegisterDisplayMapperConfiguration(const DisplayMapperConfigurationDescriptor& config) override;
-            DisplayMapperConfigurationDescriptor GetDisplayMapperConfiguration() override;
+            void UnregisterDisplayMapperConfiguration() override;
+            const DisplayMapperConfigurationDescriptor* GetDisplayMapperConfiguration() override;
 
         private:
             AcesDisplayMapperFeatureProcessor(const AcesDisplayMapperFeatureProcessor&) = delete;
@@ -105,12 +108,12 @@ namespace AZ
             static const int ImagePoolBudget = 1 << 20; // 1 Megabyte
 
             // LUTs that are baked through shaders
-            RHI::Ptr<RHI::ImagePool>                                    m_displayMapperImagePool;
+            RHI::Ptr<RHI::ImagePool> m_displayMapperImagePool;
             AZStd::unordered_map<AZ::Name, DisplayMapperLut>            m_ownedLuts;
             // LUTs loaded from assets
             AZStd::unordered_map<AZStd::string, DisplayMapperAssetLut>  m_assetLuts;
             // DisplayMapper configurations per scene
-            DisplayMapperConfigurationDescriptor m_displayMapperConfiguration;
+            AZStd::optional<DisplayMapperConfigurationDescriptor> m_displayMapperConfiguration;
 
             void InitializeImagePool();
             // Initialize a LUT image with the given name.

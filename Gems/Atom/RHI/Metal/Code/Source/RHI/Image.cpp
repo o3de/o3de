@@ -35,7 +35,7 @@ namespace AZ
         }
     
         void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange,
-                    RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                    RHI::DeviceImageSubresourceLayout* subresourceLayouts,
                     size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
@@ -48,15 +48,15 @@ namespace AZ
                     RHI::ImageSubresource subresource;
                     subresource.m_arraySlice = arraySlice;
                     subresource.m_mipSlice = mipSlice;
-                    RHI::ImageSubresourceLayout subresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, subresource);
+                    RHI::DeviceImageSubresourceLayout subresourceLayout = RHI::GetImageSubresourceLayout(imageDescriptor, subresource);
 
                     if (subresourceLayouts)
                     {
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        RHI::ImageSubresourceLayoutPlaced& layout = subresourceLayouts[subresourceIndex];
+                        RHI::DeviceImageSubresourceLayout& layout = subresourceLayouts[subresourceIndex];
                         layout.m_bytesPerRow = subresourceLayout.m_bytesPerRow;
                         layout.m_bytesPerImage = subresourceLayout.m_rowCount * subresourceLayout.m_bytesPerRow;
-                        layout.m_offset = subresourceByteCount;
+                        layout.m_offset = static_cast<uint32_t>(subresourceByteCount);
                         layout.m_rowCount = subresourceLayout.m_rowCount;
                         layout.m_size = subresourceLayout.m_size;
                     }

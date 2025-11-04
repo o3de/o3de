@@ -5,15 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-
-#ifndef CRYINCLUDE_EDITOR_DIALOGS_PYTHONSCRIPTSDIALOG_H
-#define CRYINCLUDE_EDITOR_DIALOGS_PYTHONSCRIPTSDIALOG_H
 #pragma once
 
-
 #if !defined(Q_MOC_RUN)
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Math/Guid.h>
+
 #include <QWidget>
+#include <QString>
 #include <QScopedPointer>
 #endif
 
@@ -27,7 +26,7 @@ class CPythonScriptsDialog
     Q_OBJECT
 public:
     explicit CPythonScriptsDialog(QWidget* parent = nullptr);
-    ~CPythonScriptsDialog();
+    ~CPythonScriptsDialog() override;
 
     static const GUID& GetClassID()
     {
@@ -45,11 +44,8 @@ private slots:
     void OnExecute();
 
 protected:
-    void ScanFolderForScripts(QString path, QStringList& scriptFolders) const;
+    void ScanFolderForScripts(QString path, AZStd::vector<QString>& scriptFolders) const;
 
 private:
     QScopedPointer<Ui::CPythonScriptsDialog> ui;
 };
-
-
-#endif // CRYINCLUDE_EDITOR_DIALOGS_PYTHONSCRIPTSDIALOG_H

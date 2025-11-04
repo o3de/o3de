@@ -12,7 +12,7 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::u32 InputDeviceGamepad::GetMaxSupportedGamepads()
+    AZ::u32 InputDeviceGamepad::GetMaxSupportedGamepads() const
     {
         return 0;
     }

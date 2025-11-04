@@ -14,7 +14,7 @@ import ly_test_tools
 
 from ly_test_tools._internal.managers.platforms.mac import (
     _MacResourceLocator, MacWorkspaceManager,
-    CACHE_DIR, CONFIG_FILE)
+    CACHE_DIR)
 from ly_test_tools import MAC
 
 pytestmark = pytest.mark.SUITE_smoke
@@ -32,15 +32,6 @@ mock_output_path = 'mock_output_path'
 @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_project_json',
             mock.MagicMock(return_value=mock_project))
 class TestMacResourceLocator(object):
-
-    def test_PlatformConfigFile_HasPath_ReturnsPath(self):
-        mac_resource_locator = ly_test_tools._internal.managers.platforms.mac._MacResourceLocator(mock_build_directory,
-                                                                                                  mock_project)
-        expected = os.path.join(
-            mac_resource_locator.engine_root(),
-            CONFIG_FILE)
-
-        assert mac_resource_locator.platform_config_file() == expected
 
     def test_PlatformCache_HasPath_ReturnsPath(self):
         mac_resource_locator = ly_test_tools._internal.managers.platforms.mac._MacResourceLocator(mock_build_directory,

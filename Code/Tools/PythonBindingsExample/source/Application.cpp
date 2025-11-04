@@ -41,8 +41,8 @@ namespace PythonBindingsExample
         // prepare the Python binding gem(s)
         Start(Descriptor());
 
-        AZ::SerializeContext* context;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::SerializeContext* context = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "Application did not start; detected no serialize context");
 
         AZ_TracePrintf("Python Bindings", "Init() \n");

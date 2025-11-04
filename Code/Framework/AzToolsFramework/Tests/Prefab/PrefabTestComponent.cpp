@@ -42,4 +42,23 @@ namespace UnitTest
                 ->Field("ReflectedType", &PrefabTestComponentWithUnReflectedTypeMember::m_reflectedType);
         }
     }
+
+    void PrefabNonEditorComponent::Reflect(AZ::ReflectContext* reflection)
+    {
+        AZ::SerializeContext* serializeContext = AZ::RttiCast<AZ::SerializeContext*>(reflection);
+
+        if (serializeContext)
+        {
+            serializeContext->Class<PrefabNonEditorComponent, AZ::Component>()
+                ->Field("IntProperty", &PrefabNonEditorComponent::m_intProperty);
+        }
+    }
+
+    void PrefabNonEditorComponent::Activate()
+    {
+    }
+
+    void PrefabNonEditorComponent::Deactivate()
+    {
+    }
 }

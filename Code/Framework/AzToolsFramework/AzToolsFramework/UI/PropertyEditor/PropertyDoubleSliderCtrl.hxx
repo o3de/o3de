@@ -6,10 +6,10 @@
  *
  */
 
-#ifndef PROPERTY_DOUBLESLIDER_CTRL
-#define PROPERTY_DOUBLESLIDER_CTRL
-
 #pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -21,12 +21,12 @@
 
 namespace AzToolsFramework
 {
-    class PropertyDoubleSliderCtrl
+    class AZTF_API PropertyDoubleSliderCtrl
         : public QWidget
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyDoubleSliderCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyDoubleSliderCtrl, AZ::SystemAllocator);
 
         explicit PropertyDoubleSliderCtrl(QWidget* parent = nullptr);
 
@@ -56,6 +56,8 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
+        void ClearSavedState();
+
         void onValueChange();
     signals:
         void valueChanged(double val);
@@ -75,18 +77,21 @@ namespace AzToolsFramework
         QWidget* GetFirstInTabOrder(PropertyDoubleSliderCtrl* widget) override { return widget->GetFirstInTabOrder(); }
         QWidget* GetLastInTabOrder(PropertyDoubleSliderCtrl* widget) override { return widget->GetLastInTabOrder(); }
         void UpdateWidgetInternalTabbing(PropertyDoubleSliderCtrl* widget) override { widget->UpdateTabOrder(); }
+
+        void BeforeConsumeAttributes(PropertyDoubleSliderCtrl* widget, InstanceDataNode* /*attrValue*/) override
+        {
+            widget->ClearSavedState();
+        }
     };
 
-
-
-    class doublePropertySliderHandler
+    class AZTF_API doublePropertySliderHandler
         : QObject
         , public DoubleSliderHandlerCommon<double>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(doublePropertySliderHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(doublePropertySliderHandler, AZ::SystemAllocator);
 
         // common to all double sliders
         static void ConsumeAttributeCommon(PropertyDoubleSliderCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
@@ -98,14 +103,14 @@ namespace AzToolsFramework
         bool ModifyTooltip(QWidget* widget, QString& toolTipString) override;
     };
 
-    class floatPropertySliderHandler
+    class AZTF_API floatPropertySliderHandler
         : QObject
         , public DoubleSliderHandlerCommon<float>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(floatPropertySliderHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(floatPropertySliderHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         void ConsumeAttribute(PropertyDoubleSliderCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
@@ -115,7 +120,5 @@ namespace AzToolsFramework
     };
 
 
-    void RegisterDoubleSliderHandlers();
+    AZTF_API void RegisterDoubleSliderHandlers();
 }
-
-#endif

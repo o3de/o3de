@@ -11,4 +11,5 @@ set(LY_BUILD_DEPENDENCIES
         d3d12
         dxgi
         dxguid
+        version.lib
 )

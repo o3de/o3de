@@ -154,7 +154,7 @@ ScriptContext*  ScriptSystemComponent::AddContext(ScriptContext* context, int ga
         if (context->GetId() != ScriptContextIds::CryScriptContextId)
         {
             BehaviorContext* behaviorContext = nullptr;
-            EBUS_EVENT_RESULT(behaviorContext, ComponentApplicationBus, GetBehaviorContext);
+            ComponentApplicationBus::BroadcastResult(behaviorContext, &ComponentApplicationBus::Events::GetBehaviorContext);
             if (behaviorContext)
             {
                 context->BindTo(behaviorContext);
@@ -193,7 +193,7 @@ ScriptContext* ScriptSystemComponent::AddContextWithId(ScriptContextId id)
     {
         // Reflect script classes
         ComponentApplication* app = nullptr;
-        EBUS_EVENT_RESULT(app, ComponentApplicationBus, GetApplication);
+        ComponentApplicationBus::BroadcastResult(app, &ComponentApplicationBus::Events::GetApplication);
         if (app && app->GetDescriptor().m_enableScriptReflection)
         {
             if (app->GetBehaviorContext())
@@ -484,7 +484,8 @@ int ScriptSystemComponent::DefaultRequireHook(lua_State* lua, ScriptContext* con
     }
 
     Data::AssetId scriptId;
-    EBUS_EVENT_RESULT(scriptId, Data::AssetCatalogRequestBus, GetAssetIdByPath, filePath.c_str(), azrtti_typeid<ScriptAsset>(), false);
+    Data::AssetCatalogRequestBus::BroadcastResult(
+        scriptId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, filePath.c_str(), azrtti_typeid<ScriptAsset>(), false);
     if (!scriptId.IsValid())
     {
         lua_pushfstring(lua, "Module \"%s\" has not been registered with the Asset Database.", filePath.c_str());
@@ -735,7 +736,7 @@ void ScriptSystemComponent::GetHandledAssetTypes(AZStd::vector<Data::AssetType>&
 //=========================================================================
 void ScriptSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
 {
-    provided.push_back(AZ_CRC("ScriptService", 0x787235ab));
+    provided.push_back(AZ_CRC_CE("ScriptService"));
 }
 
 //=========================================================================
@@ -743,7 +744,7 @@ void ScriptSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyA
 //=========================================================================
 void ScriptSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
 {
-    incompatible.push_back(AZ_CRC("ScriptService", 0x787235ab));
+    incompatible.push_back(AZ_CRC_CE("ScriptService"));
 }
 
 //=========================================================================
@@ -751,7 +752,7 @@ void ScriptSystemComponent::GetIncompatibleServices(ComponentDescriptor::Depende
 //=========================================================================
 void ScriptSystemComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
 {
-    dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+    dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
 }
 
 //=========================================================================
@@ -868,7 +869,7 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
         
         serializeContext->Class<ScriptSystemComponent, AZ::Component>()
             ->Version(1)
-            // ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))
+            // ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
             ->Field("garbageCollectorSteps", &ScriptSystemComponent::m_defaultGarbageCollectorSteps)
             ;
 
@@ -878,7 +879,6 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
                 "Script System", "Initializes and maintains script contexts")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
         }
     }

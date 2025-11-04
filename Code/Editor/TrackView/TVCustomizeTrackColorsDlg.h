@@ -10,13 +10,18 @@
 // Description : A dialog for customizing track colors
 
 
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TVCUSTOMIZETRACKCOLORSDLG_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TVCUSTOMIZETRACKCOLORSDLG_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <QColor>
 #include <QDialog>
+#include <QScopedPointer>
 #endif
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/limits.h>
+#include <IXml.h>
+#include <IMovieSystem.h>
 
 namespace Ui
 {
@@ -33,7 +38,7 @@ class CTVCustomizeTrackColorsDlg
     friend class CTrackViewDialog;
 public:
     CTVCustomizeTrackColorsDlg(QWidget* pParent = nullptr);
-    virtual ~CTVCustomizeTrackColorsDlg();
+    ~CTVCustomizeTrackColorsDlg() override;
 
     static QColor GetTrackColor(CAnimParamType paramType)
     {
@@ -42,15 +47,11 @@ public:
         {
             return itr->second;
         }
-        else
-        {
-            return s_colorForOthers;
-        }
+        return s_colorForOthers;
     }
-    static QColor GetColorForDisabledTracks()
-    { return s_colorForDisabled; }
-    static QColor GetColorForMutedTracks()
-    { return s_colorForMuted; }
+
+    static QColor GetColorForDisabledTracks() { return s_colorForDisabled; }
+    static QColor GetColorForMutedTracks() { return s_colorForMuted; }
 
 private:
 
@@ -59,7 +60,7 @@ private:
         QRgb rgb = std::numeric_limits<unsigned int>::max();
         xmlNode->getAttr("color", rgb);
         colorOut.setRgb(rgb);
-    };
+    }
 
     virtual void OnInitDialog();
     void OnApply();
@@ -79,10 +80,8 @@ private:
 
     QScopedPointer<Ui::TVCustomizeTrackColorsDialog> m_ui;
 
-    static std::map<CAnimParamType, QColor> s_trackColors;
+    static AZStd::map<CAnimParamType, QColor> s_trackColors;
     static QColor s_colorForDisabled;
     static QColor s_colorForMuted;
     static QColor s_colorForOthers;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TVCUSTOMIZETRACKCOLORSDLG_H

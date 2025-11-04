@@ -37,7 +37,7 @@ namespace AZ
 
             public:
                 AZ_RTTI(HairPPLLRasterPass, "{6614D7DD-24EE-4A2B-B314-7C035E2FB3C4}", HairGeometryRasterPass);
-                AZ_CLASS_ALLOCATOR(HairPPLLRasterPass, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairPPLLRasterPass, SystemAllocator);
 
                 //! Creates a HairPPLLRasterPass
                 static RPI::Ptr<HairPPLLRasterPass> Create(const RPI::PassDescriptor& descriptor);
@@ -47,6 +47,7 @@ namespace AZ
 
                 // Pass behavior overrides
                 void BuildInternal() override;
+                void InitializeInternal() override;                
             };
 
         } // namespace Hair

@@ -21,7 +21,7 @@ namespace AZ
         {
             using Base = RHI::AliasingBarrierTracker;
         public:
-            AZ_CLASS_ALLOCATOR(AliasingBarrierTracker, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasingBarrierTracker, AZ::SystemAllocator);
             AZ_RTTI(AliasingBarrierTracker, "{58BB64EA-B087-4008-9940-539486EEE71A}", Base);
 
         private:

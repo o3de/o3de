@@ -33,9 +33,17 @@ namespace AZ
             //   reflection probe volume nesting in the content.
             // - New stencil bits for other purposes should be added to the most signficant bits and masked out of the Reflection passes.
             //   This is necessary to allow the most amount of bits to be used by the ReflectionProbeStencilPass for nested probe volumes.
-            // - The Reflection passes currently use 0x7F for the ReadMask and WriteMask to exclude the UseDiffuseGIPass stencil bit (see below).
+            // - The Reflection passes currently use 0x3F for the ReadMask and WriteMask to exclude the stencil bits below.
             //   If other stencil bits are added then these masks will need to be updated.
             const uint32_t UseIBLSpecularPass = 0x3;
+
+            // BlockSilhouettes
+            // 
+            // The MeshFeatureProcessor sets this stencil bit on any geometry that should block silhouettes in the SilhouetteGather pass. 
+            //
+            // Used in pass range: Forward -> Silhouette
+            // This setting needs to match the Stencil ReadMask in SilhouetteGather.shader
+            const uint32_t BlockSilhouettes = 0x40;
 
             // UseDiffuseGIPass
             // 

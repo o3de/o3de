@@ -12,6 +12,8 @@
 #define CRYINCLUDE_EDITOR_SETTINGS_H
 #include "SettingsManager.h"
 
+#include "SandboxAPI.h"
+
 #include <QColor>
 #include <QFont>
 #include <QRect>
@@ -118,8 +120,6 @@ struct SViewportsSettings
     bool bSync2DViews;
     //! Camera Aspect Ratio for perspective View.
     float fDefaultAspectRatio;
-    //! Show safe frame.
-    bool bShowSafeFrame;
     //! To highlight selected geometry.
     bool bHighlightSelectedGeometry;
     //! To highlight selected vegetation.
@@ -196,11 +196,6 @@ struct SExperimentalFeaturesSettings
 };
 
 //////////////////////////////////////////////////////////////////////////
-struct SSliceSettings
-{
-    bool dynamicByDefault;
-};
-
 struct SLevelSaveSettings
 {
     AzToolsFramework::Prefab::SaveAllPrefabsPreference saveAllPrefabsPreference;
@@ -247,11 +242,10 @@ struct SSmartOpenDialogSettings
 /** Various editor settings.
 */
 AZ_CVAR_EXTERNED(int64_t, ed_backgroundSystemTickCap);
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
 struct SANDBOX_API SEditorSettings
     : AzToolsFramework::EditorSettingsAPIBus::Handler
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SEditorSettings();
     ~SEditorSettings() = default;
     void    Save(bool isEditorClosing = false);
@@ -272,7 +266,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     void ConvertPath(const AZStd::string_view sourcePath, AZStd::string& category, AZStd::string& attribute);
 
     // needs to be called after crysystem has been loaded
-    void    LoadDefaultGamePaths();
+    void LoadDefaultGamePaths();
 
     // need to expose updating of the source control enable/disable flag
     // because its state is updateable through the main status bar
@@ -281,15 +275,11 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     void PostInitApply();
 
-    bool BrowseTerrainTexture(bool bIsSave);
-
     //////////////////////////////////////////////////////////////////////////
     // Variables.
     //////////////////////////////////////////////////////////////////////////
     int undoLevels;
-    bool m_undoSliceOverrideSaveValue;
     bool bShowDashboardAtStartup;
-    bool m_showCircularDependencyError;
     bool bAutoloadLastLevelAtStartup;
     bool bMuteAudio;
 
@@ -314,7 +304,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     //////////////////////////////////////////////////////////////////////////
     SViewportsSettings viewports;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     SToolViewSettings toolViewSettings;
 
     //////////////////////////////////////////////////////////////////////////
@@ -372,15 +361,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SGUI_Settings gui;
 
-    //! Terrain Texture Export/Import filename.
-    QString terrainTextureExport;
-
-    // Read only parameter.
-    // Refects the status of GetIEditor()->GetOperationMode
-    // To change current operation mode use GetIEditor()->SetOperationMode
-    // see EOperationMode
-    int operationMode;
-
     // For the texture browser configurations.
     STextureBrowserSettings sTextureBrowserSettings;
 
@@ -391,9 +371,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SAssetBrowserSettings sAssetBrowserSettings;
 
     SSelectObjectDialogSettings selectObjectDialog;
-
-    // For Terrain Texture Generation Multiplier.
-    float fBrMultiplier;
 
     AzToolsFramework::ConsoleColorTheme consoleBackgroundColorTheme;
 
@@ -407,7 +384,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     // Object Highlight Settings
     SObjectColors objectColorSettings;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     SSmartOpenDialogSettings smartOpenSettings;
 
@@ -422,11 +398,16 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     int backgroundUpdatePeriod;
     const char* g_TemporaryLevelName;
 
-    SSliceSettings sliceSettings;
-
     SLevelSaveSettings levelSaveSettings;
 
-    bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
+    // Legacy - remove once all references have been removed.
+    struct SSliceSettings
+    {
+        bool dynamicByDefault;
+    };
+
+    SSliceSettings sliceSettings;
+    bool prefabSystem = true;
 
 private:
     void SaveValue(const char* sSection, const char* sKey, int value);

@@ -13,6 +13,6 @@
 namespace AZStd
 {
     // explicit specialization
-    template class basic_string<char>;
+    template class AZCORE_API_EXPORT basic_string<char>;
     //template class basic_string<wchar_t>;
 }

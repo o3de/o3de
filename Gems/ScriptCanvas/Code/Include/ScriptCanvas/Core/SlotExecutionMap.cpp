@@ -165,6 +165,36 @@ namespace ScriptCanvas
             return iter != m_ins.end() ? iter : nullptr;
         }
 
+        const Out* Map::FindOutFromOutputSlot(const SlotId& slotID) const
+        {
+            for (const In& in : m_ins)
+            {
+                for (const Out& out : in.outs)
+                {
+                    for (const Output& output : out.outputs)
+                    {
+                        if (output.slotId == slotID)
+                        {
+                            return &out;
+                        }
+                    }
+                }
+            }
+
+            for (const Out& latent : m_latents)
+            {
+                for (const Output& output : latent.outputs)
+                {
+                    if (output.slotId == slotID)
+                    {
+                        return &latent;
+                    }
+                }
+            }
+
+            return nullptr;
+        }
+
         const In* Map::FindInFromSlotId(SlotId slotId) const
         {
             return FindInBySlotId(slotId, *const_cast<Ins*>(&m_ins));

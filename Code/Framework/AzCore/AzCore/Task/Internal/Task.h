@@ -105,10 +105,10 @@ namespace AZ::Internal
     // data, in which case the data is inlined in this structure. Attempting to capture more data
     // will result in a compile failure, so use indirection and capture a pointer/reference to your
     // data if you run into this.
-    class alignas(alignof(max_align_t)) Task final
+    class AZCORE_API alignas(alignof(max_align_t)) Task final
     {
     public:
-        AZ_CLASS_ALLOCATOR(Task, ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Task, ThreadPoolAllocator);
 
         // The inline buffer allows the Task to span two cache lines. Lambdas can capture 56
         // bytes of data (7 pointers/references on a 64-bit machine).

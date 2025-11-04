@@ -24,7 +24,7 @@ import ly_test_tools.environment.file_system
 import ly_test_tools.launchers.launcher_helper
 import ly_test_tools.launchers.platforms.base
 import ly_test_tools.environment.watchdog
-from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM, HOST_OS_DEDICATED_SERVER, HOST_OS_GENERIC_EXECUTABLE
+from ly_test_tools import ALL_PLATFORM_OPTIONS, HOST_OS_PLATFORM
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +45,7 @@ def pytest_addoption(parser):
                      help="An existing CMake binary output directory which contains the lumberyard executables,"
                           "such as: D:/ly/dev/windows_vs2017/bin/profile/")
 
+
 def pytest_configure(config):
     """
     Save custom CLI options during Pytest configuration, so they are later accessible without using fixtures
@@ -53,6 +54,10 @@ def pytest_configure(config):
     """
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
+
+    # patch to work around https://github.com/pytest-dev/pytest/issues/10604
+    monkeypatch_pytest()
+
 
 def _get_build_directory(config):
     """
@@ -253,20 +258,6 @@ def _launcher(request, workspace, launcher_platform, level=""):
     return launcher
 
 
-@pytest.fixture(scope="function")
-def material_editor(workspace, request, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-    return _material_editor(
-        request=request,
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM))
-
-
-def _material_editor(request, workspace, launcher_platform):
-    """Separate implementation to call directly during unit tests"""
-    return ly_test_tools.launchers.launcher_helper.create_material_editor(workspace, launcher_platform)
-
-
 @pytest.fixture
 def automatic_process_killer(request):
     # type: (_pytest.fixtures.SubRequest) -> ly_process_killer
@@ -364,9 +355,15 @@ def _workspace(request,  # type: _pytest.fixtures.SubRequest
         workspace.artifact_manager.set_dest_path()  # Reset log name for this test
         helpers.teardown_builtin_workspace(workspace)
 
+    artifact_folder_count = request.session.testscollected  # Amount of folders to create for test_name.
+    # Skip workspace logging if batch or parallel test by checking the list of test names
+    if hasattr(request.node.cls, '_runners'):
+        for runner in request.node.cls._runners:
+            for func in runner.result_pytestfuncs:
+                if test_method == func.originalname:
+                    return workspace
     request.addfinalizer(teardown)
 
-    artifact_folder_count = request.session.testscollected  # Amount of folders to create for test_name.
     helpers.setup_builtin_workspace(workspace, test_name, artifact_folder_count)
 
     # Must be called after helpers.setup_builtin_workspace() above:
@@ -425,3 +422,56 @@ def _asset_processor_platform(request):
         raise ValueError(
             f'asset_processor_platform: "{ap_platform}" is not valid. '
             f'Please select from one of the following: {ALL_PLATFORM_OPTIONS}')
+
+
+def monkeypatch_pytest():
+    """
+    Patches a file creation race condition in _pytest.junitxml.LogXML.pytest_sessionfinish
+    """
+    import types
+    import _pytest.junitxml
+    import platform
+    import xml.etree.ElementTree as ET
+    from _pytest import timing
+
+    # patch code from pytest 7.2.0, fetched at commit 7431750
+    def pytest_sessionfinish(self) -> None:
+        dirname = os.path.dirname(os.path.abspath(self.logfile))
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname, exist_ok=True)  # our patch
+
+        with open(self.logfile, "w", encoding="utf-8") as logfile:
+            suite_stop_time = timing.time()
+            suite_time_delta = suite_stop_time - self.suite_start_time
+
+            numtests = (
+                    self.stats["passed"]
+                    + self.stats["failure"]
+                    + self.stats["skipped"]
+                    + self.stats["error"]
+                    - self.cnt_double_fail_tests
+            )
+            logfile.write('<?xml version="1.0" encoding="utf-8"?>')
+
+            suite_node = ET.Element(
+                "testsuite",
+                name=self.suite_name,
+                errors=str(self.stats["error"]),
+                failures=str(self.stats["failure"]),
+                skipped=str(self.stats["skipped"]),
+                tests=str(numtests),
+                time="%.3f" % suite_time_delta,
+                timestamp=datetime.fromtimestamp(self.suite_start_time).isoformat(),
+                hostname=platform.node(),
+            )
+            global_properties = self._get_global_properties_node()
+            if global_properties is not None:
+                suite_node.append(global_properties)
+            for node_reporter in self.node_reporters_ordered:
+                suite_node.append(node_reporter.to_xml())
+            testsuites = ET.Element("testsuites")
+            testsuites.append(suite_node)
+            logfile.write(ET.tostring(testsuites, encoding="unicode"))
+
+    # override
+    _pytest.junitxml.LogXML.pytest_sessionfinish = pytest_sessionfinish

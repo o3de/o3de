@@ -49,7 +49,7 @@ namespace Vegetation
                     ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SurfaceAltitudeFilterConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
                     ->DataElement(0, &SurfaceAltitudeFilterConfig::m_shapeEntityId, "Pin To Shape Entity Id", "Shape bounds override min/max altitude if specified.")
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("ShapeService", 0xe86aa5fe))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ->DataElement(0, &SurfaceAltitudeFilterConfig::m_altitudeMin, "Altitude Min", "Minimum acceptable surface altitude.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &SurfaceAltitudeFilterConfig::IsShapeValid)
                     ->DataElement(0, &SurfaceAltitudeFilterConfig::m_altitudeMax, "Altitude Max", "Maximum acceptable surface altitude.")
@@ -82,18 +82,18 @@ namespace Vegetation
 
     void SurfaceAltitudeFilterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationFilterService", 0x9f97cc97));
-        services.push_back(AZ_CRC("VegetationSurfaceAltitudeFilterService", 0xac586965));
+        services.push_back(AZ_CRC_CE("VegetationFilterService"));
+        services.push_back(AZ_CRC_CE("VegetationSurfaceAltitudeFilterService"));
     }
 
     void SurfaceAltitudeFilterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSurfaceAltitudeFilterService", 0xac586965));
+        services.push_back(AZ_CRC_CE("VegetationSurfaceAltitudeFilterService"));
     }
 
     void SurfaceAltitudeFilterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void SurfaceAltitudeFilterComponent::Reflect(AZ::ReflectContext* context)
@@ -175,7 +175,7 @@ namespace Vegetation
 
     bool SurfaceAltitudeFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->m_altitudeFilterOverrideEnabled;
         const float min = useOverrides ? instanceData.m_descriptorPtr->m_altitudeFilterMin : m_configuration.m_altitudeMin;

@@ -27,7 +27,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AtomToolsDocumentInspector, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsDocumentInspector, AZ::SystemAllocator);
 
         AtomToolsDocumentInspector(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~AtomToolsDocumentInspector() override;

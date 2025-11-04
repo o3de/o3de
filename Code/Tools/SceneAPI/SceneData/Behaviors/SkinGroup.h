@@ -28,8 +28,8 @@ namespace AZ
             public:
                 AZ_COMPONENT(SkinGroup, "{348566F7-7113-4CEB-ADF8-C1CC686CD3BD}", SceneCore::BehaviorComponent);
 
-                static Crc32 s_skinVirtualType;
-                static const char* s_skinVirtualTypeName;
+                constexpr static const char* s_skinVirtualTypeName = "Skin";
+                constexpr static Crc32 s_skinVirtualType = AZ_CRC_CE(s_skinVirtualTypeName);
 
                 ~SkinGroup() override = default;
 
@@ -42,10 +42,15 @@ namespace AZ
                 Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
 
-                void GetVirtualTypes(AZStd::set<Crc32>& types, const Containers::Scene& scene,
+                void GetVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types, const Containers::Scene& scene,
                     Containers::SceneGraph::NodeIndex node) override;
-                void GetAllVirtualTypes(AZStd::set<Crc32>& types) override;
+                void GetAllVirtualTypes(Events::GraphMetaInfo::VirtualTypesSet& types) override;
                 void GetVirtualTypeName(AZStd::string& name, Crc32 type) override;
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "SkinGroup";
+                }
+
 
             private:
                 Events::ProcessingResult BuildDefault(Containers::Scene& scene) const;
@@ -53,7 +58,7 @@ namespace AZ
 
                 bool SceneHasSkinGroup(const Containers::Scene& scene) const;
 
-                static const int s_rigsPreferredTabOrder;
+                static constexpr int s_rigsPreferredTabOrder{ 1 };
             };
         } // namespace Behaviors
     } // namespace SceneAPI

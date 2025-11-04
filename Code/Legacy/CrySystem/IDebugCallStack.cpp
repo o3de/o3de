@@ -176,7 +176,7 @@ AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
         const char* logfile = gEnv->pLog->GetFileName();
         if (logfile)
         {
-            sprintf (s, "LogFile: %s\n", logfile);
+            azsnprintf (s, AZ_ARRAY_SIZE(s), "LogFile: %s\n", logfile);
             azstrcat(str, length, s);
         }
     }

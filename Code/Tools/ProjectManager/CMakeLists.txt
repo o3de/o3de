@@ -47,6 +47,10 @@ ly_add_target(
             AZ::AzToolsFramework
 )
 
+if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+    ly_target_link_libraries(ProjectManager.Static PRIVATE AZ::ToolsCrashHandler)
+endif()
+
 ly_add_target(
     NAME ProjectManager APPLICATION
     OUTPUT_NAME o3de
@@ -67,6 +71,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzQtComponents
+            AZ::AzToolsFramework
             AZ::ProjectManager.Static
 )
 
@@ -94,10 +99,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFrameworkTestShared
                 AZ::AzQtComponents
                 AZ::ProjectManager.Static
+                AZ::AzToolsFramework
     )
 
     ly_add_googletest(
         NAME AZ::ProjectManager.Tests
+        LABELS REQUIRES_tiaf
         TEST_COMMAND $<TARGET_FILE:AZ::ProjectManager.Tests> --unittest
     )
 

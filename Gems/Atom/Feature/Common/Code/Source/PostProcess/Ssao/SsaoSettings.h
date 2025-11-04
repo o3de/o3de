@@ -35,7 +35,7 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::SsaoSettings, "{6CFCBD33-7419-4BFC-A7E8-30D29373EE29}",
                 AZ::Render::SsaoSettingsInterface, AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(SsaoSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SsaoSettings, SystemAllocator);
 
             SsaoSettings(PostProcessFeatureProcessor* featureProcessor);
             ~SsaoSettings() = default;

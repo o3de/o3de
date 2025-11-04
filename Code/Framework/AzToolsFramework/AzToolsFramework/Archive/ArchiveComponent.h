@@ -17,12 +17,13 @@
 #include <AzCore/std/containers/unordered_set.h>
 
 #include <AzFramework/Archive/IArchive.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 
 namespace AzToolsFramework
 {
     // the ArchiveComponent's job is to create and manipulate zip archives.
-    class ArchiveComponent
+    class AZTF_API ArchiveComponent
         : public AZ::Component
         , private ArchiveCommandsBus::Handler
     {
@@ -75,7 +76,6 @@ namespace AzToolsFramework
     private:
         AZ::IO::FileIOBase* m_fileIO = nullptr;
         AZ::IO::IArchive* m_archive = nullptr;
-        AZStd::vector<AZStd::thread> m_threads;
 
         bool CheckParamsForAdd(const AZStd::string& directory, const AZStd::string& file);
         bool CheckParamsForExtract(const AZStd::string& archive, const AZStd::string& directory);

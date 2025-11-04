@@ -14,8 +14,7 @@
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
-
-AZ_DECLARE_BUDGET(Terrain);
+#include <TerrainProfiler.h>
 
 namespace Terrain
 {
@@ -68,7 +67,7 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainAreaService"));
+        services.push_back(AZ_CRC_CE("TerrainAreaService"));
     }
 
     void TerrainSurfaceGradientListComponent::Reflect(AZ::ReflectContext* context)
@@ -125,7 +124,7 @@ namespace Terrain
         // Since this surface data will no longer exist, notify the terrain system to refresh the area.
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
     }
 
     bool TerrainSurfaceGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -177,7 +176,7 @@ namespace Terrain
         AZStd::span<const AZ::Vector3> inPositionList,
         AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList) const
     {
-        AZ_PROFILE_FUNCTION(Terrain);
+        TERRAIN_PROFILE_FUNCTION_VERBOSE
 
         AZ_Assert(
             inPositionList.size() == outSurfaceWeightsList.size(), "The position list size doesn't match the outSurfaceWeights list size.");
@@ -190,10 +189,15 @@ namespace Terrain
             return;
         }
 
-        AZStd::vector<float> gradientValues(inPositionList.size());
+        AZStd::vector<float> gradientValues;
+
+        gradientValues.resize_no_construct(inPositionList.size());
 
         for (const auto& mapping : m_configuration.m_gradientSurfaceMappings)
         {
+            // Clear out the gradient values before every GetValues call to ensure we don't accidentally end up with stale data.
+            AZStd::fill(gradientValues.begin(), gradientValues.end(), 0.0f);
+
             GradientSignal::GradientRequestBus::Event(
                 mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValues, inPositionList, gradientValues);
 
@@ -216,14 +220,14 @@ namespace Terrain
             TerrainSystemServiceRequestBus::Broadcast(
                 &TerrainSystemServiceRequestBus::Events::RefreshRegion,
                 dirtyRegion,
-                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
         }
         else
         {
             TerrainSystemServiceRequestBus::Broadcast(
                 &TerrainSystemServiceRequestBus::Events::RefreshArea,
                 GetEntityId(),
-                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+                AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
         }
     }
 

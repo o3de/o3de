@@ -13,6 +13,7 @@
 #include <RHI/MemoryView.h>
 #include <RHI/MetalView_Platform.h>
 #include <RHI/PhysicalDevice.h>
+#include <Atom/RHI/RHIBus.h>
 
 namespace Platform
 {
@@ -41,6 +42,8 @@ namespace Platform
                 physicalDeviceList.emplace_back(physicalDevice);
             }
         }
+        AZ::RHI::RHIRequirementRequestBus::Broadcast(
+            &AZ::RHI::RHIRequirementsRequest::FilterSupportedPhysicalDevices, physicalDeviceList, AZ::RHI::APIIndex::Metal);
         return physicalDeviceList;
     }
     
@@ -122,7 +125,7 @@ namespace Platform
         return reinterpret_cast<RHIMetalView*>([nativeWindow.contentViewController view]);
     }
 
-    void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)
+    void PublishBufferCpuChangeOnGpu(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize)
     {
         if(mtlBuffer.storageMode == MTLStorageModeManaged)
         {
@@ -130,7 +133,7 @@ namespace Platform
         }
     }
 
-    void SynchronizeBufferOnGPU(id<MTLBlitCommandEncoder> blitEncoder, id<MTLBuffer> mtlBuffer)
+    void PublishBufferGpuChangeOnCpu(id<MTLBlitCommandEncoder> blitEncoder, id<MTLBuffer> mtlBuffer)
     {
         if(blitEncoder && mtlBuffer.storageMode == MTLStorageModeManaged)
         {
@@ -138,7 +141,7 @@ namespace Platform
         }
     }
 
-    void SynchronizeTextureOnGPU(id<MTLBlitCommandEncoder> blitEncoder, id<MTLTexture> mtlTexture)
+    void PublishTextureGpuChangeOnCpu(id<MTLBlitCommandEncoder> blitEncoder, id<MTLTexture> mtlTexture)
     {
         if(blitEncoder && mtlTexture.storageMode == MTLStorageModeManaged)
         {
@@ -146,7 +149,7 @@ namespace Platform
         }
     }
 
-    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::BufferMapRequest& request, AZ::RHI::BufferMapResponse& response)
+    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::DeviceBufferMapRequest& request, AZ::RHI::DeviceBufferMapResponse& response)
     {
         AZ::Metal::Buffer& buffer = *static_cast<AZ::Metal::Buffer*>(request.m_buffer);
         MTLStorageMode mtlStorageMode = buffer.GetMemoryView().GetStorageMode();
@@ -164,7 +167,7 @@ namespace Platform
                 }
                 mappedData += request.m_byteOffset;                
                 response.m_data = mappedData;
-                buffer.SetMapRequestOffset(request.m_byteOffset);
+                buffer.SetMapRequestOffset(static_cast<uint32_t>(request.m_byteOffset));
                 break;
             }
             default:
@@ -176,11 +179,11 @@ namespace Platform
         return AZ::RHI::ResultCode::Success;
     }
 
-    void UnMapBufferInternal(AZ::RHI::Buffer& bufferBase)
+    void UnMapBufferInternal(AZ::RHI::DeviceBuffer& bufferBase)
     {
         AZ::Metal::Buffer& buffer = static_cast<AZ::Metal::Buffer&>(bufferBase);
         //Ony need to handle MTLStorageModeManaged memory.
-        SynchronizeBufferOnCPU(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(),
+        PublishBufferCpuChangeOnGpu(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(),
                                buffer.GetMemoryView().GetOffset() + buffer.GetMapRequestOffset(),
                                buffer.GetMemoryView().GetSize());
     }

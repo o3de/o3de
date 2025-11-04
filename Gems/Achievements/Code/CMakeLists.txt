@@ -9,7 +9,7 @@
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME Achievements.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
@@ -28,7 +28,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Achievements ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         achievements_shared_files.cmake
@@ -39,8 +39,17 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Achievements.Static
+            Gem::${gem_name}.Static
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AchievementsModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # we'll load the above "Gem::Achievements" module in clients only.
-ly_create_alias(NAME Achievements.Clients NAMESPACE Gem TARGETS Gem::Achievements)
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})

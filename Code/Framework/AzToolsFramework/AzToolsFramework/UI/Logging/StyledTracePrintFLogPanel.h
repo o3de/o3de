@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include "StyledLogPanel.h"
 #include "LogLine.h"
@@ -20,12 +22,12 @@ namespace AzToolsFramework
 {
     namespace LogPanel
     {
-        class StyledTracePrintFLogPanel
+        class AZTF_API StyledTracePrintFLogPanel
             : public StyledLogPanel
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(StyledTracePrintFLogPanel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StyledTracePrintFLogPanel, AZ::SystemAllocator);
 
             StyledTracePrintFLogPanel(QWidget* pParent = nullptr);
 
@@ -33,13 +35,13 @@ namespace AzToolsFramework
             QWidget* CreateTab(const TabSettings& settings) override;
         };
 
-        class StyledTracePrintFLogTab
+        class AZTF_API StyledTracePrintFLogTab
             : public StyledLogTab
             , protected AZ::Debug::TraceMessageBus::Handler
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(StyledTracePrintFLogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StyledTracePrintFLogTab, AZ::SystemAllocator);
             StyledTracePrintFLogTab(const TabSettings& in_settings, QWidget* parent = nullptr);
             virtual ~StyledTracePrintFLogTab();
 

@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class CommandLineTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -62,7 +62,7 @@ namespace UnitTest
 
     TEST_F(CommandLineTests, CommandLineParser_MiscValues_Simple)
     {
-        AZ::CommandLine cmd{ "-" };
+        AZ::CommandLine cmd{ AZ::Settings::CommandLineOptionPrefixArray{ "-" } };
 
         const char* argValues[] = {
             "programname.exe", "-switch1", "test", "miscvalue1", "miscvalue2"
@@ -80,7 +80,7 @@ namespace UnitTest
 
     TEST_F(CommandLineTests, CommandLineParser_Complex)
     {
-        AZ::CommandLine cmd{ "-/" };
+        AZ::CommandLine cmd{ AZ::Settings::CommandLineOptionPrefixArray{ "--", "-", "/" } };
 
         const char* argValues[] = {
             "programname.exe", "-switch1", "test", "--switch1", "test2", "/switch2", "otherswitch", "miscvalue", "/switch3=abc,def", "miscvalue2", "/switch3", "hij,klm"
@@ -107,7 +107,7 @@ namespace UnitTest
 
     TEST_F(CommandLineTests, CommandLineParser_WhitespaceTolerant)
     {
-        AZ::CommandLine cmd{ "-/" };
+        AZ::CommandLine cmd{ AZ::Settings::CommandLineOptionPrefixArray{ "--", "-", "/" } };
 
         const char* argValues[] = {
             "programname.exe", "/switch1 ", "test ", " /switch1", " test2", " --switch1", " abc, def ", " /switch1 = abc, def " 
@@ -128,7 +128,7 @@ namespace UnitTest
 
     TEST_F(CommandLineTests, CommandLineParser_CustomCommandOption_IsUsedInsteadOfDefault)
     {
-        AZ::CommandLine cmd{ "+" };
+        AZ::CommandLine cmd{ AZ::Settings::CommandLineOptionPrefixArray{ "+" } };
 
         const char* argValues[] =
         {
@@ -142,7 +142,7 @@ namespace UnitTest
         EXPECT_FALSE(cmd.HasSwitch("fakeswitch2"));
         EXPECT_FALSE(cmd.HasSwitch("fakeswitch3"));
         EXPECT_TRUE(cmd.HasSwitch("realswitch1"));
-        EXPECT_TRUE(cmd.HasSwitch("realswitch2"));
+        EXPECT_TRUE(cmd.HasSwitch("-realswitch2"));
         EXPECT_EQ(7, cmd.GetNumMiscValues());
         EXPECT_EQ("-fakeswitch1", cmd.GetMiscValue(0));
         EXPECT_EQ("test", cmd.GetMiscValue(1));
@@ -152,10 +152,10 @@ namespace UnitTest
         EXPECT_EQ("/fakeswitch3=abc,def", cmd.GetMiscValue(5));
         EXPECT_EQ("miscvalue2", cmd.GetMiscValue(6));
         EXPECT_EQ(1, cmd.GetNumSwitchValues("realswitch1"));
-        EXPECT_EQ(2, cmd.GetNumSwitchValues("realswitch2"));
+        EXPECT_EQ(2, cmd.GetNumSwitchValues("-realswitch2"));
         EXPECT_EQ("othervalue", cmd.GetSwitchValue("realswitch1", 0));
-        EXPECT_EQ("More", cmd.GetSwitchValue("realswitch2", 0));
-        EXPECT_EQ("Real", cmd.GetSwitchValue("realswitch2", 1));
+        EXPECT_EQ("More", cmd.GetSwitchValue("-realswitch2", 0));
+        EXPECT_EQ("Real", cmd.GetSwitchValue("-realswitch2", 1));
 
     }
 
@@ -375,7 +375,7 @@ namespace UnitTest
 
     TEST_F(CommandLineTests, CommandLineParser_DumpingCommandLineAndParsingAgain_ResultsInEquivalentCommandLine)
     {
-        AZ::CommandLine origCommandLine{ "-/" };
+        AZ::CommandLine origCommandLine{ AZ::Settings::CommandLineOptionPrefixArray{ "-", "/" } };
 
         const char* argValues[] =
         {
@@ -386,7 +386,7 @@ namespace UnitTest
         AZ::CommandLine::ParamContainer dumpedCommandLine;
         origCommandLine.Dump(dumpedCommandLine);
 
-        AZ::CommandLine newCommandLine{ "-/" };
+        AZ::CommandLine newCommandLine{ AZ::Settings::CommandLineOptionPrefixArray{ "-", "/" } };
         newCommandLine.Parse(dumpedCommandLine);
 
         AZStd::initializer_list<AZ::CommandLine> commandLines{ origCommandLine, newCommandLine };
@@ -413,7 +413,7 @@ namespace UnitTest
 
     TEST_F(CommandLineTests, CommandLineParser_GetSwitchValue_WithNoArgument_ReturnsLastValue)
     {
-        AZ::CommandLine commandLine{ "-" };
+        AZ::CommandLine commandLine{ AZ::Settings::CommandLineOptionPrefixArray{ "--", "-" } };
 
         constexpr AZStd::string_view argValues[] =
         {
@@ -426,6 +426,72 @@ namespace UnitTest
         EXPECT_STREQ("2", commandLine.GetSwitchValue("foo").c_str());
         EXPECT_STREQ("2", commandLine.GetSwitchValue("foo", 1).c_str());
         EXPECT_STREQ("1", commandLine.GetSwitchValue("foo", 0).c_str());
-
     }
+
+    TEST_F(CommandLineTests, ArgumentsParsed_AfterDoubleDash_ArePositionalArgumentsOnly)
+    {
+        AZ::CommandLine commandLine{ AZ::Settings::CommandLineOptionPrefixArray{ "--", "-" } };
+
+        constexpr AZStd::string_view argValues[] =
+        {
+            "programname.exe", "--foo=1", "--", "--foo=2", "bar", "--", "baz"
+        };
+
+        commandLine.Parse(argValues);
+
+        EXPECT_EQ(commandLine.GetNumSwitchValues("foo"), 1);
+        EXPECT_EQ("1", commandLine.GetSwitchValue("foo"));
+        ASSERT_EQ(5, commandLine.GetNumMiscValues());
+        // The first Misc entry is the executable name "programname.exe"
+        // ignore checking that entry since it is not relevant to this test
+        EXPECT_EQ("--foo=2",commandLine.GetMiscValue(1));
+        EXPECT_EQ("bar", commandLine.GetMiscValue(2));
+        EXPECT_EQ("--", commandLine.GetMiscValue(3));
+        EXPECT_EQ("baz", commandLine.GetMiscValue(4));
+    }
+
+    class CommandLineParserTests
+        : public LeakDetectionFixture
+    {
+    };
+        TEST_F(CommandLineParserTests, CanParseAllTokensAfterOptionAsValue)
+        {
+            AZ::Settings::CommandLineParserSettings parserSettings;
+
+            struct Argument
+            {
+                AZStd::string m_option;
+                AZStd::string m_value;
+            };
+            AZStd::vector<Argument> parsedArguments;
+            parserSettings.m_parseCommandLineEntryFunc = [&parsedArguments](const AZ::Settings::CommandLineArgument& argument)
+            {
+                parsedArguments.push_back(Argument{ argument.m_option, argument.m_value });
+                return true;
+            };
+
+            constexpr AZStd::string_view argValues[] =
+            {
+                "programname.exe", "--foo=1", "--", "--foo=2", "bar", "--", "baz"
+            };
+
+            auto parseOutcome = AZ::Settings::ParseCommandLine(argValues, parserSettings);
+            EXPECT_TRUE(parseOutcome);
+
+            ASSERT_EQ(6, parsedArguments.size());
+
+            EXPECT_TRUE(parsedArguments[0].m_option.empty());
+            EXPECT_EQ("programname.exe", parsedArguments[0].m_value);
+            EXPECT_EQ("foo", parsedArguments[1].m_option);
+            EXPECT_EQ("1", parsedArguments[1].m_value);
+            EXPECT_TRUE(parsedArguments[2].m_option.empty());
+            EXPECT_EQ("--foo=2", parsedArguments[2].m_value);
+            EXPECT_TRUE(parsedArguments[3].m_option.empty());
+            EXPECT_EQ("bar", parsedArguments[3].m_value);
+            EXPECT_TRUE(parsedArguments[4].m_option.empty());
+            EXPECT_EQ("--", parsedArguments[4].m_value);
+            EXPECT_TRUE(parsedArguments[5].m_option.empty());
+            EXPECT_EQ("baz", parsedArguments[5].m_value);
+        }
+
 }   // namespace UnitTest

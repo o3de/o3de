@@ -27,24 +27,6 @@
                 "o_enableShadows": "false",
                 "o_enableSun": "false" 
             }
-        },
-        {
-            "StableId": 4,
-            "Options" : 
-            {
-                "o_enableFastSky": "false",
-                "o_enableShadows": "false",
-                "o_enableSun": "true" 
-            }
-        },
-        {
-            "StableId": 5,
-            "Options" : 
-            {
-                "o_enableFastSky": "true",
-                "o_enableShadows": "true",
-                "o_enableSun": "true" 
-            }
         }
     ]
 }

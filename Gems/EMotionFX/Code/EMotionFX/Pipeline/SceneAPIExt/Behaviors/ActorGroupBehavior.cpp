@@ -32,7 +32,6 @@
 #include <SceneAPIExt/Behaviors/LodRuleBehavior.h>
 #include <SceneAPIExt/Rules/ActorPhysicsSetupRule.h>
 #include <SceneAPIExt/Rules/SimulatedObjectSetupRule.h>
-#include <SceneAPIExt/Rules/ActorScaleRule.h>
 #include <SceneAPIExt/Rules/MetaDataRule.h>
 #include <SceneAPIExt/Rules/MorphTargetRule.h>
 #include <SceneAPIExt/Rules/LodRule.h>
@@ -44,14 +43,11 @@ namespace EMotionFX
     {
         namespace Behavior
         {
-            const int ActorGroupBehavior::s_animationsPreferredTabOrder = 3;
-
             void ActorGroupBehavior::Reflect(AZ::ReflectContext* context)
             {
                 Group::ActorGroup::Reflect(context);
                 Rule::ActorPhysicsSetupRule::Reflect(context);
                 Rule::SimulatedObjectSetupRule::Reflect(context);
-                Rule::ActorScaleRule::Reflect(context);
                 Rule::MetaDataRule::Reflect(context);
                 Rule::MorphTargetRule::Reflect(context);
                 Rule::LodRule::Reflect(context);
@@ -68,10 +64,12 @@ namespace EMotionFX
             {
                 AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusConnect();
                 AZ::SceneAPI::Events::AssetImportRequestBus::Handler::BusConnect();
+                AZ::SceneAPI::Events::GraphMetaInfoBus::Handler::BusConnect();
             }
 
             void ActorGroupBehavior::Deactivate()
             {
+                AZ::SceneAPI::Events::GraphMetaInfoBus::Handler::BusDisconnect();
                 AZ::SceneAPI::Events::AssetImportRequestBus::Handler::BusDisconnect();
                 AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusDisconnect();
             }
@@ -81,7 +79,7 @@ namespace EMotionFX
                 const bool hasRequiredData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBoneData>(scene, false);
                 if (SceneHasActorGroup(scene) || hasRequiredData)
                 {
-                    categories.emplace_back("Actors", Group::ActorGroup::TYPEINFO_Uuid(), s_animationsPreferredTabOrder);
+                    categories.emplace_back("Actors", Group::ActorGroup::TYPEINFO_Uuid(), s_actorsPreferredTabOrder);
                 }
             }
 
@@ -106,10 +104,6 @@ namespace EMotionFX
                         {
                             AZ_WarningOnce("EMotionFX", false, "Empty rule found in the ruleContainer, ignoring it. Check the .assetinfo file for invalid data.");
                         }
-                    }
-                    if (existingRules.find(Rule::ActorScaleRule::TYPEINFO_Uuid()) == existingRules.end())
-                    {
-                        modifiers.push_back(Rule::ActorScaleRule::TYPEINFO_Uuid());
                     }
                     if (existingRules.find(azrtti_typeid<AZ::SceneAPI::SceneData::CoordinateSystemRule>()) == existingRules.end())
                     {
@@ -192,7 +186,8 @@ namespace EMotionFX
                 // in the same way again. To guarantee the same uuid, generate a stable one instead.
                 group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, Group::ActorGroup::TYPEINFO_Uuid()));
 
-                EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
+                AZ::SceneAPI::Events::ManifestMetaInfoBus::Broadcast(
+                    &AZ::SceneAPI::Events::ManifestMetaInfoBus::Events::InitializeObject, scene, *group);
                 scene.GetManifest().AddEntry(AZStd::move(group));
 
                 return AZ::SceneAPI::Events::ProcessingResult::Success;
@@ -245,6 +240,17 @@ namespace EMotionFX
                 auto actorGroup = AZStd::find_if(manifestData.begin(), manifestData.end(), AZ::SceneAPI::Containers::DerivedTypeFilter<Group::IActorGroup>());
                 return actorGroup != manifestData.end();
             }
+
+            void ActorGroupBehavior::GetAppliedPolicyNames(AZStd::set<AZStd::string>& appliedPolicies, const AZ::SceneAPI::Containers::Scene& scene) const
+            {
+                if (SceneHasActorGroup(scene))
+                {
+                    AZStd::string policyName;
+                    GetPolicyName(policyName);
+                    appliedPolicies.insert(AZStd::move(policyName));
+                }
+            }
+
         } // Behavior
     } // Pipeline
 } // EMotionFX

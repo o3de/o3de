@@ -14,7 +14,7 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(RenderActorInstance, EMotionFXAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(RenderActorInstance, EMotionFXAllocator);
 
         RenderActorInstance::RenderActorInstance(const AZ::Data::Asset<ActorAsset>& actorAsset,
             ActorInstance* actorInstance, AZ::EntityId entityId)
@@ -32,11 +32,6 @@ namespace EMotionFX
         void RenderActorInstance::SetSkinningMethod(SkinningMethod skinningMethod)
         {
             m_skinningMethod = skinningMethod;
-        }
-
-        void RenderActorInstance::SetOnMaterialChangedCallback(MaterialChangedFunction callback)
-        {
-            m_onMaterialChangedCallback = callback;
         }
 
         const AZ::Aabb& RenderActorInstance::GetWorldAABB() const

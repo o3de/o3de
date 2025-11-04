@@ -169,17 +169,13 @@ namespace EMotionFX
 
 
         /**
-         * The raycast request bus, which EMotion FX calls in order to perform ray cast tests.
+         * The raycast request interface, which EMotion FX calls in order to perform ray cast tests.
          * This allows you to perform custom filtering.
          */
-        class RaycastRequests : public AZ::EBusTraits
+        class IRaycastRequests
         {
         public:
-            // Enable multi-threaded access by locking primitive using a mutex when connecting handlers to the EBus or executing events.
-            using MutexType = AZStd::recursive_mutex;
-
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+            AZ_TYPE_INFO(IRaycastRequests, "{DDA90B91-6F1D-4C83-A0E1-9DE1540B0968}");
 
             enum class UsecaseHint : AZ::u32
             {
@@ -214,7 +210,6 @@ namespace EMotionFX
             virtual void EnableRayRequests() {}
             virtual void DisableRayRequests() {}
         }; 
-        using RaycastRequestBus = AZ::EBus<RaycastRequests>;
 
     } // namespace Integration
 } // namespace EMotionFX

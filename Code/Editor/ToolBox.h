@@ -17,8 +17,6 @@
 #define TOOLBOXMACROS_NODE "toolboxmacros"
 #define INVALID_TOOLBAR_ID -1
 
-#include "ToolbarManager.h"
-
 class ActionManager;
 
 class CToolBoxManager;
@@ -128,7 +126,7 @@ public:
     // Save macros configuration to registry.
     void Save() const;
     // Load macros configuration from registry.
-    void Load(ActionManager* actionManager = nullptr);
+    void Load();
 
     //! Get the number of managed macros.
     int GetMacroCount(bool bToolbox) const;
@@ -153,14 +151,11 @@ public:
 
     void GetSaveFilePath(QString& path) const;
 
-    const std::vector<AmazonToolbar>& GetToolbars() const;
-
 private:
-    void Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolbox, ActionManager* actionManager);
+    void Load(QString xmlpath, bool bToolbox);
 
     std::vector<CToolBoxMacro*> m_macros;
     std::vector<CToolBoxMacro*> m_shelveMacros;
-    std::vector<AmazonToolbar> m_toolbars;
 };
 
 #endif // CRYINCLUDE_EDITOR_TOOLBOX_H

@@ -8,10 +8,10 @@
             "PassClass": "BlendColorGradingLutsPass",
             "PassData": {
                 "$type": "ComputePassData",
-                "Make Fullscreen Pass": false,
-                "Target Thread Count X": 32,
-                "Target Thread Count Y": 32,
-                "Target Thread Count Z": 32,
+                "FullscreenDispatch": false,
+                "ThreadCountX": 32,
+                "ThreadCountY": 32,
+                "ThreadCountZ": 32,
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/BlendColorGradingLuts.shader" 
                 }

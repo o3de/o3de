@@ -89,7 +89,6 @@
 /////////////////////////////////////////////////////////////////////////////
 #include <platform.h>
 #include <Cry_Math.h>
-#include <Cry_Geo.h>
 #include <Range.h>
 #include <StlUtils.h>
 
@@ -115,7 +114,7 @@
 // Utility classes.
 #include "Util/EditorUtils.h"
 #include "Util/FileEnum.h"
-#include "Util/Math.h"
+#include <Editor/Util/EditorUtils.h>
 #include "Util/AffineParts.h"
 
 // Xml support.

@@ -1031,12 +1031,12 @@ namespace AZStd
     {
         inline namespace string_view_literals
         {
-            constexpr string_view operator "" _sv(const char* str, size_t len) noexcept
+            constexpr string_view operator ""_sv(const char* str, size_t len) noexcept
             {
                 return string_view{ str, len };
             }
 
-            constexpr wstring_view operator "" _sv(const wchar_t* str, size_t len) noexcept
+            constexpr wstring_view operator ""_sv(const wchar_t* str, size_t len) noexcept
             {
                 return wstring_view{ str, len };
             }
@@ -1094,7 +1094,7 @@ namespace AZStd::ranges
 
 //! Use this macro to simplify safe printing of a string_view which may not be null-terminated.
 //! Example: AZStd::string::format("Safely formatted: %.*s", AZ_STRING_ARG(myString));
-#define AZ_STRING_ARG(str) aznumeric_cast<int>(str.size()), str.data()
+#define AZ_STRING_ARG(str) static_cast<int>(str.size()), str.data()
 
 //! Can be used with AZ_STRING_ARG for convenience, rather than manually including "%.*s" in format strings
 //! Example: AZStd::string::format("Safely formatted: " AZ_STRING_FORMAT, AZ_STRING_ARG(myString));

@@ -1,0 +1,32 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once 
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include "../MaterialInputs/SilhouetteInput.azsli"
+
+struct MaterialParameters {
+    float4 m_color;
+    float m_alpha;
+    float m_depthBias;
+    float m_outlineSize;
+    float m_padding0;
+    float3x3 m_uvMatrix;
+};
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    MaterialParameters m_params;
+}
+
+const MaterialParameters GetMaterialParameters()
+{
+    return MaterialSrg::m_params;
+}
+

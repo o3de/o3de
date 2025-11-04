@@ -16,7 +16,7 @@ using namespace AZStd;
 
 namespace UnitTest
 {
-    using HashedContainers = AllocatorsFixture;
+    using HashedContainers = LeakDetectionFixture;
 
     TEST_F(HashedContainers, LRUCacheBasic)
     {

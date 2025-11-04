@@ -30,7 +30,7 @@ namespace MaterialEditor
     {
     public:
         AZ_RTTI(MaterialDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
-        AZ_CLASS_ALLOCATOR(MaterialDocument, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialDocument, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(MaterialDocument);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -47,6 +47,7 @@ namespace MaterialEditor
         bool SaveAsCopy(const AZStd::string& savePath) override;
         bool SaveAsChild(const AZStd::string& savePath) override;
         bool IsModified() const override;
+        bool CanSaveAsChild() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
 

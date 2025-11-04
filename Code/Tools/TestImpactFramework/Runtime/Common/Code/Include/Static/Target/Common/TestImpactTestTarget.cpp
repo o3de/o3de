@@ -13,22 +13,27 @@ namespace TestImpact
     TestTarget::TestTarget(
         TargetDescriptor&& descriptor, TestTargetMeta&& testMetaData)
         : Target(AZStd::move(descriptor))
-        , testTargetMeta(AZStd::move(testMetaData))
+        , m_testTargetMeta(AZStd::move(testMetaData))
     {
     }
 
     const AZStd::string& TestTarget::GetSuite() const
     {
-        return testTargetMeta.m_suiteMeta.m_name;
+        return m_testTargetMeta.m_suiteMeta.m_name;
     }
 
     AZStd::chrono::milliseconds TestTarget::GetTimeout() const
     {
-        return testTargetMeta.m_suiteMeta.m_timeout;
+        return m_testTargetMeta.m_suiteMeta.m_timeout;
     }
     
     const AZStd::string& TestTarget::GetNamespace() const
     {
-        return testTargetMeta.m_namespace;
+        return m_testTargetMeta.m_namespace;
+    }
+
+    const SuiteLabelSet& TestTarget::GetSuiteLabelSet() const
+    {
+        return m_testTargetMeta.m_suiteMeta.m_labelSet;
     }
 } // namespace TestImpact

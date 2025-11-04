@@ -632,21 +632,21 @@ namespace AZ
          * @return True if there are any handlers connected to the
          * EBus. Otherwise, false.
          */
-        static inline bool HasHandlers();
+        static bool HasHandlers();
 
         /**
          * Returns whether handlers are connected to this specific address.
          * @return True if there are any handlers connected at the address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusIdType& id);
+        static bool HasHandlers(const BusIdType& id);
 
         /**
          * Returns whether handlers are connected to the specific cached address.
          * @return True if there are any handlers connected at the cached address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusPtr& ptr);
+        static bool HasHandlers(const BusPtr& ptr);
 
         /**
          * Gets the ID of the address that is currently receiving an event.
@@ -1038,12 +1038,6 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
     // EBus implementations
 
-    namespace Internal
-    {
-        template <class C>
-        AZ_THREAD_LOCAL C* EBusCallstackStorage<C, true>::s_entry = nullptr;
-    }
-
     //=========================================================================
     // Context::Context
     //=========================================================================
@@ -1392,130 +1386,6 @@ AZ_POP_DISABLE_WARNING
 
     namespace Internal
     {
-        //////////////////////////////////////////////////////////////////////////
-        // NonIdHandler
-        template <typename Interface, typename Traits, typename ContainerType>
-        void NonIdHandler<Interface, Traits, ContainerType>::BusConnect()
-        {
-            typename BusType::Context& context = BusType::GetOrCreateContext();
-            typename BusType::Context::ConnectLockGuard contextLock(context.m_contextMutex);
-            if (!BusIsConnected())
-            {
-                typename Traits::BusIdType id;
-                m_node = this;
-                BusType::ConnectInternal(context, m_node, contextLock, id);
-            }
-        }
-        template <typename Interface, typename Traits, typename ContainerType>
-        void NonIdHandler<Interface, Traits, ContainerType>::BusDisconnect()
-        {
-            if (typename BusType::Context* context = BusType::GetContext())
-            {
-                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
-                if (BusIsConnected())
-                {
-                    BusType::DisconnectInternal(*context, m_node);
-                }
-            }
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // IdHandler
-        template <typename Interface, typename Traits, typename ContainerType>
-        void IdHandler<Interface, Traits, ContainerType>::BusConnect(const IdType& id)
-        {
-            typename BusType::Context& context = BusType::GetOrCreateContext();
-            typename BusType::Context::ConnectLockGuard contextLock(context.m_contextMutex);
-            if (BusIsConnected())
-            {
-                // Connecting on the BusId that is already connected is a no-op
-                if (m_node.GetBusId() == id)
-                {
-                    return;
-                }
-                AZ_Assert(false, "Connecting to a different id on this bus without disconnecting first! Please ensure you call BusDisconnect before calling BusConnect again, or if multiple connections are desired you must use a MultiHandler instead.");
-                BusType::DisconnectInternal(context, m_node);
-            }
-
-            m_node = this;
-            BusType::ConnectInternal(context, m_node, contextLock, id);
-        }
-        template <typename Interface, typename Traits, typename ContainerType>
-        void IdHandler<Interface, Traits, ContainerType>::BusDisconnect(const IdType& id)
-        {
-            if (typename BusType::Context* context = BusType::GetContext())
-            {
-                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
-                if (BusIsConnectedId(id))
-                {
-                    BusType::DisconnectInternal(*context, m_node);
-                }
-            }
-        }
-        template <typename Interface, typename Traits, typename ContainerType>
-        void IdHandler<Interface, Traits, ContainerType>::BusDisconnect()
-        {
-            if (typename BusType::Context* context = BusType::GetContext())
-            {
-                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
-                if (BusIsConnected())
-                {
-                    BusType::DisconnectInternal(*context, m_node);
-                }
-            }
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // MultiHandler
-        template <typename Interface, typename Traits, typename ContainerType>
-        void MultiHandler<Interface, Traits, ContainerType>::BusConnect(const IdType& id)
-        {
-            typename BusType::Context& context = BusType::GetOrCreateContext();
-            typename BusType::Context::ConnectLockGuard contextLock(context.m_contextMutex);
-            if (m_handlerNodes.find(id) == m_handlerNodes.end())
-            {
-                void* handlerNodeAddr = m_handlerNodes.get_allocator().allocate(sizeof(HandlerNode), AZStd::alignment_of<HandlerNode>::value);
-                auto handlerNode = new(handlerNodeAddr) HandlerNode(this);
-                m_handlerNodes.emplace(id, AZStd::move(handlerNode));
-                BusType::ConnectInternal(context, *handlerNode, contextLock, id);
-            }
-        }
-        template <typename Interface, typename Traits, typename ContainerType>
-        void MultiHandler<Interface, Traits, ContainerType>::BusDisconnect(const IdType& id)
-        {
-            if (typename BusType::Context* context = BusType::GetContext())
-            {
-                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
-                auto nodeIt = m_handlerNodes.find(id);
-                if (nodeIt != m_handlerNodes.end())
-                {
-                    HandlerNode* handlerNode = nodeIt->second;
-                    BusType::DisconnectInternal(*context, *handlerNode);
-                    m_handlerNodes.erase(nodeIt);
-                    handlerNode->~HandlerNode();
-                    m_handlerNodes.get_allocator().deallocate(handlerNode, sizeof(HandlerNode), alignof(HandlerNode));
-                }
-            }
-        }
-        template <typename Interface, typename Traits, typename ContainerType>
-        void MultiHandler<Interface, Traits, ContainerType>::BusDisconnect()
-        {
-            decltype(m_handlerNodes) handlerNodesToDisconnect;
-            if (typename BusType::Context* context = BusType::GetContext())
-            {
-                typename BusType::Context::ConnectLockGuard contextLock(context->m_contextMutex);
-                handlerNodesToDisconnect = AZStd::move(m_handlerNodes);
-
-                for (const auto& nodePair : handlerNodesToDisconnect)
-                {
-                    BusType::DisconnectInternal(*context, *nodePair.second);
-
-                    nodePair.second->~HandlerNode();
-                    handlerNodesToDisconnect.get_allocator().deallocate(nodePair.second, sizeof(HandlerNode), AZStd::alignment_of<HandlerNode>::value);
-                }
-            }
-        }
-
         template <class EBus, class TargetEBus, class BusIdType>
         struct EBusRouterQueueEventForwarder
         {
@@ -1999,3 +1869,188 @@ AZ_POP_DISABLE_WARNING
         }
     } // namespace Internal
 }
+
+// The following allow heavily-used busses to be declared extern, in order to speed up compile time where the same header
+// with the same bus is included in many different source files.
+// to use it, declare the EBus extern using DECLARE_EBUS_EXTERN or DECLARE_EBUS_EXTERN_WITH_TRAITS in the header file
+// and then use DECLARE_EBUS_INSTANTIATION or DECLARE_EBUS_INSTANTIATION_WITH_TRAITS in a file that everything that includes the header
+// will link to (for example, in a static library, dynamic library with export library, or .inl that everyone must include in a compile unit).
+
+// The following must be declared AT GLOBAL SCOPE and the namespace AZ is assumed due to the rule that extern template declarations must occur
+// in their enclosing scope.
+
+//! Externs an EBus class template with both the interface and bus traits arguments
+#define DECLARE_EBUS_EXTERN_WITH_TRAITS(a,b) \
+namespace AZ \
+{ \
+   extern template class EBus<a, b>; \
+}
+
+//! Externs an EBus class template using only the interface argument
+//! for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_EXTERN(a) \
+namespace AZ \
+{ \
+   extern template class EBus<a, a>; \
+}
+
+//! Instantiates an EBus class template with both the interface and bus traits arguments
+#define DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(a,b) \
+namespace AZ \
+{ \
+   template class EBus<a, b>; \
+}
+
+//! Instantiates an EBus class template using only the interface argument
+//! for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_INSTANTIATION(a) \
+namespace AZ \
+{ \
+   template class EBus<a, a>; \
+}
+
+#if defined(AZ_MONOLITHIC_BUILD)
+
+//! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern using only the
+//! interface argument for both the EBus Interface and BusTraits template parameters
+#define AZ_DECLARE_EBUS_SINGLE_ADDRESS(_API, a) \
+namespace AZ \
+{ \
+    extern template class EBus<a, a>; \
+}
+ 
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(_API, a) \
+namespace AZ \
+{ \
+    template class EBus<a, a>; \
+}
+ 
+//! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
+//! library, as extern using only the interface argument for both the EBus Interface and BusTraits template parameters
+#define AZ_DECLARE_EBUS_MULTI_ADDRESS(_API, a) \
+namespace AZ \
+{ \
+    extern template class EBus<a, a>; \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(_API, a) \
+namespace AZ \
+{ \
+    template class EBus<a, a>; \
+}
+
+//! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern with both the
+//! interface and bus traits arguments
+#define AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
+namespace AZ \
+{ \
+    extern template class EBus<a, b>; \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
+namespace AZ \
+{ \
+    template class EBus<a, b>; \
+}
+
+//! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
+//! library, as extern with both the interface and bus traits arguments
+#define AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
+namespace AZ \
+{ \
+    extern template class EBus<a, b>; \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define AZ_INSTANTIATE_EBUS_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
+namespace AZ \
+{ \
+    template class EBus<a, b>; \
+}
+
+#else
+
+//! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern using only the
+//! interface argument for both the EBus Interface and BusTraits template parameters
+#define AZ_DECLARE_EBUS_SINGLE_ADDRESS(_API, a) \
+namespace AZ \
+{ \
+   extern template class _API EBus<a, a>; \
+   extern template class _API Internal::NonIdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template struct _API Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(_API, a) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, a>; \
+   template class AZ_DLL_EXPORT Internal::NonIdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+}
+
+//! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
+//! library, as extern using only the interface argument for both the EBus Interface and BusTraits template parameters
+#define AZ_DECLARE_EBUS_MULTI_ADDRESS(_API, a) \
+namespace AZ \
+{ \
+   extern template class _API EBus<a, a>;  \
+   extern template class _API Internal::IdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template class _API Internal::MultiHandler<a, a, EBus<a, a>::BusesContainer>; \
+   extern template struct _API Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(_API, a) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, a>; \
+   template class AZ_DLL_EXPORT Internal::IdHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template class AZ_DLL_EXPORT Internal::MultiHandler<a, a, EBus<a, a>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, a>, true>; \
+}
+
+//! Declares an EBus class template, which uses EBusAddressPolicy::Single and is instantiated in a shared library, as extern with both the
+//! interface and bus traits arguments
+#define AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
+namespace AZ \
+{ \
+   extern template class _API EBus<a, b>;     \
+   extern template class _API Internal::NonIdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template struct _API Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(_API, a, b) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, b>; \
+   template class AZ_DLL_EXPORT Internal::NonIdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+}
+
+//! Declares an EBus class template, which uses an address policy different from EBusAddressPolicy::Single and is instantiated in a shared
+//! library, as extern with both the interface and bus traits arguments
+#define AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
+namespace AZ \
+{ \
+   extern template class _API EBus<a, b>;  \
+   extern template class _API Internal::IdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template class _API Internal::MultiHandler<a, b, EBus<a, b>::BusesContainer>; \
+   extern template struct _API Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+}
+
+//! Explicitly instantiates an EBus which was declared with the function directly above
+#define AZ_INSTANTIATE_EBUS_MULTI_ADDRESS_WITH_TRAITS(_API, a, b) \
+namespace AZ \
+{ \
+   template class AZ_DLL_EXPORT EBus<a, b>; \
+   template class AZ_DLL_EXPORT Internal::IdHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template class AZ_DLL_EXPORT Internal::MultiHandler<a, b, EBus<a, b>::BusesContainer>; \
+   template struct AZ_DLL_EXPORT Internal::EBusCallstackStorage<Internal::CallstackEntryBase<a, b>, true>; \
+}
+
+#endif //defined(AZ_MONOLITHIC_BUILD)

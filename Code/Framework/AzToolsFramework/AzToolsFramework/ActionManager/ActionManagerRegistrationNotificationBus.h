@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -25,6 +26,9 @@ namespace AzToolsFramework
 
         //! Synchronization signal to register Action Contexts.
         virtual void OnActionContextRegistrationHook() {}
+
+        //! Synchronization signal to register Action Context Modes.
+        virtual void OnActionContextModeRegistrationHook() {}
 
         //! Synchronization signal to register Action Updaters.
         virtual void OnActionUpdaterRegistrationHook() {}
@@ -47,6 +51,9 @@ namespace AzToolsFramework
         //! Synchronization signal to register Widget Actions.
         virtual void OnWidgetActionRegistrationHook() {}
 
+        //! Synchronization signal to bind Actions to Action Context Modes.
+        virtual void OnActionContextModeBindingHook() {}
+
         //! Synchronization signal to add actions/widgets to Menus.
         virtual void OnMenuBindingHook() {}
 
@@ -63,3 +70,5 @@ namespace AzToolsFramework
     using ActionManagerRegistrationNotificationBus = AZ::EBus<ActionManagerRegistrationNotifications>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ActionManagerRegistrationNotifications)

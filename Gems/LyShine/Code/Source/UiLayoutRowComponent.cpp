@@ -128,7 +128,7 @@ AZ::Vector2 UiLayoutRowComponent::GetSizeToFitChildElements(const AZ::Vector2& c
 
     // Check if anchors are together
     UiTransform2dInterface::Anchors anchors;
-    EBUS_EVENT_ID_RESULT(anchors, GetEntityId(), UiTransform2dBus, GetAnchors);
+    UiTransform2dBus::EventResult(anchors, GetEntityId(), &UiTransform2dBus::Events::GetAnchors);
     if (anchors.m_top == anchors.m_bottom)
     {
         size.SetY(numChildElements > 0 ? childElementSize.GetY() : 0.0f);
@@ -137,7 +137,7 @@ AZ::Vector2 UiLayoutRowComponent::GetSizeToFitChildElements(const AZ::Vector2& c
     {
         // Anchors are apart, so height remains untouched
         AZ::Vector2 curSize(0.0f, 0.0f);
-        EBUS_EVENT_ID_RESULT(curSize, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+        UiTransformBus::EventResult(curSize, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
         size.SetY(curSize.GetY());
     }
 
@@ -327,7 +327,7 @@ void UiLayoutRowComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiLayoutRow.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiLayoutRow.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::LayoutPadding, &UiLayoutRowComponent::m_padding, "Padding", "The layout padding")
@@ -473,7 +473,7 @@ void UiLayoutRowComponent::ApplyLayoutWidth(float availableWidth)
         UiTransform2dInterface::Anchors anchors(0.0f, 0.0f, 0.0f, 0.0f);
 
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, GetEntityId(), UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, GetEntityId(), &UiElementBus::Events::GetChildEntityIds);
 
         float curX = alignmentOffset;
         switch (m_order)
@@ -493,11 +493,11 @@ void UiLayoutRowComponent::ApplyLayoutWidth(float availableWidth)
         for (auto child : childEntityIds)
         {
             // Set the anchors
-            EBUS_EVENT_ID(child, UiTransform2dBus, SetAnchors, anchors, false, false);
+            UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
 
             // Set the offsets
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, child, UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, child, &UiTransform2dBus::Events::GetOffsets);
             switch (m_order)
             {
             case UiLayoutInterface::HorizontalOrder::LeftToRight:
@@ -516,7 +516,7 @@ void UiLayoutRowComponent::ApplyLayoutWidth(float availableWidth)
                 AZ_Assert(0, "Unrecognized HorizontalOrder type in UiLayoutRowComponent");
                 break;
             }
-            EBUS_EVENT_ID(child, UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetOffsets, offsets);
 
             childIndex++;
         }
@@ -534,7 +534,7 @@ void UiLayoutRowComponent::ApplyLayoutHeight(float availableHeight)
     {
         // Set the child elements' transform properties based on the calculated child heights
         AZStd::vector<AZ::EntityId> childEntityIds;
-        EBUS_EVENT_ID_RESULT(childEntityIds, GetEntityId(), UiElementBus, GetChildEntityIds);
+        UiElementBus::EventResult(childEntityIds, GetEntityId(), &UiElementBus::Events::GetChildEntityIds);
 
         int childIndex = 0;
         for (auto child : childEntityIds)
@@ -547,12 +547,12 @@ void UiLayoutRowComponent::ApplyLayoutHeight(float availableHeight)
 
             // Set the offsets
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, child, UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, child, &UiTransform2dBus::Events::GetOffsets);
 
             offsets.m_top = m_padding.m_top + alignmentOffset;
             offsets.m_bottom = offsets.m_top + height;
 
-            EBUS_EVENT_ID(child, UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(child, &UiTransform2dBus::Events::SetOffsets, offsets);
 
             childIndex++;
         }

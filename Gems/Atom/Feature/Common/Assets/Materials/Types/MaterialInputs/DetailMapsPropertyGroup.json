@@ -168,7 +168,17 @@
                                 "translateYProperty": "offsetV",
                                 "rotateDegreesProperty": "rotateDegrees",
                                 "float3x3ShaderInput": "m_detailUvMatrix",
-                                "float3x3InverseShaderInput": "m_detailUvMatrixInverse"
+                                "float3x3InverseShaderInput": "m_detailUvMatrixInverse",
+                                "shaderParameters": [
+                                    {
+                                        "name": "m_detailUvMatrix",
+                                        "type": "float3x3"
+                                    },
+                                    {
+                                        "name": "m_detailUvMatrixInverse",
+                                        "type": "float3x3"
+                                    }
+                                ]
                             }
                         }
                     ]

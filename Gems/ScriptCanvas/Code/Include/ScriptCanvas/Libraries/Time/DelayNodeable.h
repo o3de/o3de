@@ -27,6 +27,7 @@ namespace ScriptCanvas
                 , public AZ::TickBus::Handler
             {
             public:
+                AZ_CLASS_ALLOCATOR(DelayNodeable, AZ::SystemAllocator)
                 SCRIPTCANVAS_NODE(DelayNodeable);
 
             protected:

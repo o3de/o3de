@@ -50,6 +50,7 @@ namespace AZ
             BufferContainer         m_buffers;
             SrgConstantContainer    m_srgConstantData;
             uint32_t                m_srgConstantDataRegisterId = RHI::UndefinedRegisterSlot;
+            uint32_t                m_srgConstantDataSpaceId = RHI::UndefinedRegisterSlot;
         };
 
         struct FunctionData

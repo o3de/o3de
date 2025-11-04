@@ -12,7 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Libraries/UnitTesting/UnitTestBus.h>
@@ -94,6 +94,8 @@ namespace ScriptCanvasEditor
 
         AZStd::sys_time_t GetTranslateDuration() const;
 
+        const AZ::IO::Path& GetFilePath() const;
+
         bool IsActivated() const;
 
         bool IsCompiled() const;
@@ -136,6 +138,8 @@ namespace ScriptCanvasEditor
 
         void SetProcessOnly(bool processOnly);
 
+        void SetFilePath(const AZ::IO::PathView& filePath);
+
         // Bus::Handler
         void AddFailure(const Report& report) override;
 
@@ -169,11 +173,12 @@ namespace ScriptCanvasEditor
         // ExecutionNotificationsBus
         // IsGraphObserved is needed for unit testing code support only, no other event is
         void GraphActivated(const GraphActivation&) override {}
-        void GraphDeactivated(const GraphActivation&) override {}
-        bool IsGraphObserved(const ExecutionState& executionState) override;
+        void GraphDeactivated(const GraphDeactivation&) override {}
+        bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier) override;
         bool IsVariableObserved(const VariableId&) override { return false; }
         void NodeSignaledOutput(const OutputSignal&) override {}
         void NodeSignaledInput(const InputSignal&) override {}
+        void GraphSignaledReturn(const ReturnSignal&) override {};
         void NodeStateUpdated(const NodeStateChange&) override {}
         void RuntimeError(const ExecutionState& executionState, const AZStd::string_view& description) override;
         void VariableChanged(const VariableChange&) override {}
@@ -190,6 +195,7 @@ namespace ScriptCanvasEditor
         bool m_isParseAttemptMade = false;
         bool m_isReportFinished = false;
         bool m_processOnly = false;
+        AZ::IO::Path m_filePath;
         ExecutionConfiguration m_configuration = ExecutionConfiguration::Release;
         ExecutionMode m_mode;
         Execution::PerformanceTrackingReport m_performanceReport;

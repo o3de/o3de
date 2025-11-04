@@ -58,10 +58,12 @@ namespace Terrain
         {
             const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
 
+            auto arguments{m_dispatchItem.GetArguments()};
             clipmapManager.GetMacroDispatchThreadNum(
-                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX,
-                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY,
-                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ);
+                arguments.m_direct.m_totalNumberOfThreadsX,
+                arguments.m_direct.m_totalNumberOfThreadsY,
+                arguments.m_direct.m_totalNumberOfThreadsZ);
+            m_dispatchItem.SetArguments(arguments);
 
             auto terrainSrg = terrainFeatureProcessor->GetTerrainShaderResourceGroup();
             if (terrainSrg)
@@ -182,10 +184,12 @@ namespace Terrain
         {
             const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
 
-            clipmapManager.GetDetailDispatchThreadNum(
-                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX,
-                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY,
-                m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ);
+            auto arguments{m_dispatchItem.GetArguments()};
+            clipmapManager.GetMacroDispatchThreadNum(
+                arguments.m_direct.m_totalNumberOfThreadsX,
+                arguments.m_direct.m_totalNumberOfThreadsY,
+                arguments.m_direct.m_totalNumberOfThreadsZ);
+            m_dispatchItem.SetArguments(arguments);
 
             auto terrainSrg = terrainFeatureProcessor->GetTerrainShaderResourceGroup();
             if (terrainSrg)

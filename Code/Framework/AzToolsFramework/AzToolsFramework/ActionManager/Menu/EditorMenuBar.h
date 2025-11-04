@@ -15,6 +15,8 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 class QMainWindow;
 class QWidget;
 
@@ -23,10 +25,10 @@ namespace AzToolsFramework
     class MenuManagerInterface;
     class MenuManagerInternalInterface;
 
-    class EditorMenuBar final
+    class AZTF_API EditorMenuBar final
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorMenuBar, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorMenuBar, AZ::SystemAllocator);
         AZ_RTTI(EditorMenuBar, "{6242037D-9BC5-41A1-91BE-441B33875DC6}");
 
         EditorMenuBar() = default;

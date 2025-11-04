@@ -1,0 +1,16 @@
+{
+    "O3DE": {
+        "Atom": {
+            "Feature": {
+                "SplashScreenEnable": false,
+                "SplashScreen": {
+                    "$type": "AZ::Render::SplashScreenSettings",
+                    // Sample context only.
+                    //"ImagePath" : "Textures/SplashScreen.jpg.streamingimage",
+                    "DurationSeconds" : 10.0,
+                    "Fading" : true
+                }
+            }
+        }
+    }
+}

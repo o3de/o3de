@@ -9,13 +9,14 @@
 #pragma once
 
 #include <Atom/RHI/ObjectCollector.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <RHI/AsyncUploadQueue.h>
+#include <RHI/BindlessArgumentBuffer.h>
 #include <RHI/BufferMemoryAllocator.h>
 #include <RHI/CommandListPool.h>
 #include <RHI/Conversions.h>
@@ -29,6 +30,7 @@
 #include <RHI/MetalViewController.h>
 #include <RHI/MetalView_Platform.h>
 #include <RHI/NullDescriptorManager.h>
+#include <RHI/ClearAttachments.h>
 
 namespace AZ
 {
@@ -39,7 +41,7 @@ namespace AZ
         {
             using Base = RHI::Device;
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
             AZ_RTTI(Device, "{04DA2F69-1E6F-42A1-B4F0-7ADC127A5AAB}", Base);
 
             static RHI::Ptr<Device> Create();
@@ -108,7 +110,6 @@ namespace AZ
             //! Acquires a new command list for the frame given the hardware queue class. The command list is
             //! automatically reclaimed after the current frame has flushed through the GPU.
             CommandList* AcquireCommandList(RHI::HardwareQueueClass hardwareQueueClass);
-
             
              //! Queues the backing Memory instance of a MemoryView for release (by taking a reference) after the
              //! current frame has flushed through the GPU. The reference on the MemoryView itself is not released.             
@@ -152,13 +153,18 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor & descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
-
+            
+            BindlessArgumentBuffer& GetBindlessArgumentBuffer();
+            
+            RHI::ResultCode ClearRenderAttachments(CommandList& commandList, MTLRenderPassDescriptor* renderpassDesc, const AZStd::vector<ClearAttachments::ClearData>& clearAttachmentData);
+            
         private:
             Device();
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
+            AZ::RHI::ResultCode InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc) override;
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
             void UpdateCpuTimingStatisticsInternal() const override;
@@ -166,10 +172,12 @@ namespace AZ
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
+            AZStd::pair<uint64_t, uint64_t> GetCalibratedTimestamp([[maybe_unused]] RHI::HardwareQueueClass queueClass) override { return {0ull, 0ull}; }
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
             RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
+            RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] RHI::ShadingRate rate) const override { return RHI::ShadingRateImageValue{}; }
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeatures();            
@@ -197,6 +205,13 @@ namespace AZ
             
             NullDescriptorManager m_nullDescriptorManager;
             NSCache* m_samplerCache;
+                
+            // This object helps manage the global bindless argument buffer that stores
+            // all the bindless views
+            BindlessArgumentBuffer m_bindlessArgumentBuffer;
+
+            // Used for clearing attachments when using subpasses.
+            ClearAttachments m_clearAttachments;
         };
     }
 }

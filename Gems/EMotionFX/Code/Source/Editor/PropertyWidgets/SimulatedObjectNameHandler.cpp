@@ -13,8 +13,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectNameLineEdit, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectNameHandler, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectNameLineEdit, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectNameHandler, AZ::SystemAllocator)
 
     SimulatedObjectNameLineEdit::SimulatedObjectNameLineEdit(QWidget* parent)
         : LineEditValidatable(parent)
@@ -32,7 +32,8 @@ namespace EMotionFX
         });
 
         connect(this, &LineEditValidatable::TextEditingFinished, this, [this]() {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
         });
     }
@@ -52,7 +53,7 @@ namespace EMotionFX
 
     AZ::u32 SimulatedObjectNameHandler::GetHandlerName() const
     {
-        return AZ_CRC("SimulatedObjectName", 0xd11d7db9);
+        return AZ_CRC_CE("SimulatedObjectName");
     }
 
     QWidget* SimulatedObjectNameHandler::CreateGUI(QWidget* parent)

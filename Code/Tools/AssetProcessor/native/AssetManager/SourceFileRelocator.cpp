@@ -21,6 +21,17 @@
 
 namespace AssetProcessor
 {
+    // note that this will be true if EITHER the source control is valid, connected, and working
+    // OR if source control is completely disabled and thus will just transparently pass thru to the file system
+    // it will only return false if the source control plugin is ACTIVE but is failing to function due to a configuration
+    // problem, or the executable being missing.
+    bool IsSourceControlValid()
+    {
+        using SCRequest = AzToolsFramework::SourceControlConnectionRequestBus;
+        AzToolsFramework::SourceControlState state = AzToolsFramework::SourceControlState::Disabled;
+        SCRequest::BroadcastResult(state, &SCRequest::Events::GetSourceControlState);
+        return (state != AzToolsFramework::SourceControlState::ConfigurationInvalid);
+    }
 
     bool WaitForSourceControl(AZStd::binary_semaphore& waitSignal)
     {
@@ -164,23 +175,45 @@ Please note that only those seed files will get updated that are active for your
     }
 
     QHash<QString, int> SourceFileRelocator::GetSources(QStringList pathMatches, const ScanFolderInfo* scanFolderInfo,
-        SourceFileRelocationContainer& sources) const
+        SourceFileRelocationContainer& sources,
+        bool allowNonDatabaseFiles) const
     {
+        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
         QHash<QString, int> sourceIndexMap;
         QSet<QString> filesNotInAssetDatabase;
         for (auto& file : pathMatches)
         {
             QString databaseSourceName;
-
+            int sourcesSize = aznumeric_cast<int>(sources.size());
             PlatformConfiguration::ConvertToRelativePath(file, scanFolderInfo, databaseSourceName);
             filesNotInAssetDatabase.insert(databaseSourceName);
-            m_stateData->QuerySourceBySourceNameScanFolderID(databaseSourceName.toUtf8().constData(), scanFolderInfo->ScanFolderID(), [this, &sources, &scanFolderInfo, &sourceIndexMap, &databaseSourceName, &filesNotInAssetDatabase](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+            m_stateData->QuerySourceBySourceNameScanFolderID(
+                databaseSourceName.toUtf8().constData(),
+                scanFolderInfo->ScanFolderID(),
+                [this, &sources, &scanFolderInfo, &sourceIndexMap, &databaseSourceName, &filesNotInAssetDatabase, uuidInterface](
+                    const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
                 {
-                    sources.emplace_back(entry, GetProductMapForSource(entry.m_sourceID), entry.m_sourceName, scanFolderInfo);
+                    const bool isMetadataType = uuidInterface->IsGenerationEnabledForFile(databaseSourceName.toUtf8().constData());
+                    sources.emplace_back(
+                        entry, GetProductMapForSource(entry.m_sourceID), entry.m_sourceName, scanFolderInfo, isMetadataType);
                     filesNotInAssetDatabase.remove(databaseSourceName);
-                    sourceIndexMap[databaseSourceName] = aznumeric_cast<int> (sources.size() - 1);
+                    sourceIndexMap[databaseSourceName] = aznumeric_cast<int>(sources.size() - 1);
+
                     return true;
                 });
+            // If allowNonDatabaseFiles is true add any source files that have no database entry so that they may be moved/deleted
+            if (sources.size() == sourcesSize && allowNonDatabaseFiles)
+            {
+                AZStd::unordered_map<int, AzToolsFramework::AssetDatabase::ProductDatabaseEntry> products;
+                AzToolsFramework::AssetDatabase::SourceDatabaseEntry entry;
+                entry.m_scanFolderPK = scanFolderInfo->ScanFolderID();
+                entry.m_sourceName = databaseSourceName.toUtf8().constData();
+                sources.emplace_back(entry, products, entry.m_sourceName, scanFolderInfo, false);
+                filesNotInAssetDatabase.remove(databaseSourceName);
+                sourceIndexMap[databaseSourceName] = aznumeric_cast<int>(sources.size() - 1);
+            }
         }
 
         for (const QString& file : filesNotInAssetDatabase)
@@ -226,7 +259,7 @@ Please note that only those seed files will get updated that are active for your
                     if (!metaDataFileEntries.contains(normalizedFilePath))
                     {
                         SourceFileRelocationInfo metaDataFile(file.toUtf8().data(), scanFolderInfo);
-                        metaDataFile.m_isMetaDataFile = true;
+                        metaDataFile.m_metadataIndex = idx;
                         metadataFiles.emplace_back(metaDataFile);
                         metaDataFileEntries.insert(normalizedFilePath);
                     }
@@ -268,7 +301,7 @@ Please note that only those seed files will get updated that are active for your
                         if (sourceFileIndex != sourceIndexMap.end())
                         {
                             SourceFileRelocationInfo metaDataFile(metadaFileCorrectCase.toUtf8().data(), scanFolderInfo);
-                            metaDataFile.m_isMetaDataFile = true;
+                            metaDataFile.m_metadataIndex = idx;
                             metaDataFile.m_sourceFileIndex = sourceFileIndex.value();
                             metadataFiles.emplace_back(metaDataFile);
                             metaDataFileEntries.insert(metadaFileCorrectCase);
@@ -292,7 +325,12 @@ Please note that only those seed files will get updated that are active for your
         return products;
     }
 
-    bool SourceFileRelocator::GetFilesFromSourceControl(SourceFileRelocationContainer& sources, const ScanFolderInfo* scanFolderInfo, QString absolutePath, bool excludeMetaDataFiles) const
+    bool SourceFileRelocator::GetFilesFromSourceControl(
+        SourceFileRelocationContainer& sources,
+        const ScanFolderInfo* scanFolderInfo,
+        QString absolutePath,
+        bool excludeMetaDataFiles,
+        bool allowNonDatabaseFiles) const
     {
         QStringList pathMatches;
         AZStd::binary_semaphore waitSignal;
@@ -309,7 +347,7 @@ Please note that only those seed files will get updated that are active for your
                     }
                 }
 
-                QHash<QString, int> sourceIndexMap = GetSources(pathMatches, scanFolderInfo, sources);
+                QHash<QString, int> sourceIndexMap = GetSources(pathMatches, scanFolderInfo, sources, allowNonDatabaseFiles);
                 HandleMetaDataFiles(pathMatches, sourceIndexMap, scanFolderInfo, sources, excludeMetaDataFiles);
             }
 
@@ -327,8 +365,23 @@ Please note that only those seed files will get updated that are active for your
         return !pathMatches.isEmpty();
     }
 
-    AZ::Outcome<void, AZStd::string> SourceFileRelocator::GetSourcesByPath(const AZStd::string& normalizedSource, SourceFileRelocationContainer& sources, const ScanFolderInfo*& scanFolderInfoOut, bool excludeMetaDataFiles) const
+    AZ::Outcome<void, AZStd::string> SourceFileRelocator::GetSourcesByPath(
+        const AZStd::string& normalizedSource,
+        SourceFileRelocationContainer& sources,
+        const ScanFolderInfo*& scanFolderInfoOut,
+        bool excludeMetaDataFiles,
+        bool allowNonDatabaseFiles) const
     {
+        // nothing below will succeed if source control is active but invalid, so early out with a clear
+        // warning to the user.
+        if (!IsSourceControlValid())
+        {
+            // no point in continuing, it will always fail.
+            return AZ::Failure(AZStd::string("The Source Control plugin is active but the configuration is invalid.\n" 
+                                             "Either disable it by right-clicking the source control icon in the editor status bar,\n"
+                                             "or fix the configuration of it in that same right-click menu.\n"));
+        }
+
         if(normalizedSource.find("**") != AZStd::string::npos)
         {
             return AZ::Failure(AZStd::string("Consecutive wildcards are not allowed.  Please remove extra wildcards from your query.\n"));
@@ -362,7 +415,7 @@ Please note that only those seed files will get updated that are active for your
                     QDir rooted(scanFolderInfo->ScanPath());
                     QString absolutePath = rooted.absoluteFilePath(relativeFileName);
 
-                    if (GetFilesFromSourceControl(sources, scanFolderInfo, absolutePath, excludeMetaDataFiles))
+                    if (GetFilesFromSourceControl(sources, scanFolderInfo, absolutePath, excludeMetaDataFiles, allowNonDatabaseFiles))
                     {
                         if (foundMatch)
                         {
@@ -397,7 +450,8 @@ Please note that only those seed files will get updated that are active for your
                     return AZ::Failure(AZStd::string::format("Path %s points to a folder outside the current project's scan folders.\n", pathOnly.c_str()));
                 }
 
-                fileExists = GetFilesFromSourceControl(sources, scanFolderInfoOut, normalizedSource.c_str(), excludeMetaDataFiles);
+                fileExists = GetFilesFromSourceControl(
+                    sources, scanFolderInfoOut, normalizedSource.c_str(), excludeMetaDataFiles, allowNonDatabaseFiles);
             }
 
             if(sources.empty())
@@ -430,7 +484,8 @@ Please note that only those seed files will get updated that are active for your
                 return AZ::Failure(AZStd::string("Cannot operate on directories.  Please specify a file or use a wildcard to select all files within a directory.\n"));
             }
 
-            fileExists = GetFilesFromSourceControl(sources, scanFolderInfoOut, absoluteSourcePath.c_str(), excludeMetaDataFiles);
+            fileExists = GetFilesFromSourceControl(
+                sources, scanFolderInfoOut, absoluteSourcePath.c_str(), excludeMetaDataFiles, allowNonDatabaseFiles);
 
             if (sources.empty())
             {
@@ -452,8 +507,13 @@ Please note that only those seed files will get updated that are active for your
     {
         for (auto& relocationInfo : relocationContainer)
         {
-            m_stateData->QuerySourceDependencyByDependsOnSource(relocationInfo.m_sourceEntry.m_sourceName.c_str(),
-                nullptr,
+            if (relocationInfo.m_isMetadataEnabledType)
+            {
+                // Metadata enabled files do not use dependency fixup system
+                continue;
+            }
+
+            m_stateData->QuerySourceDependencyByDependsOnSource(relocationInfo.m_sourceEntry.m_sourceGuid, relocationInfo.m_sourceEntry.m_sourceName.c_str(), relocationInfo.m_oldAbsolutePath.c_str(),
                 AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any, [&relocationInfo](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& dependencyEntry)
                 {
                     relocationInfo.m_sourceDependencyEntries.push_back(dependencyEntry);
@@ -619,13 +679,21 @@ Please note that only those seed files will get updated that are active for your
             }
             else
             {
+                const auto& metadataInfo = m_platformConfig->GetMetaDataFileTypeAt(relocationInfo.m_metadataIndex);
                 newDestinationPath = relocationContainer[relocationInfo.m_sourceFileIndex].m_newAbsolutePath;
-                AZStd::string fullFileName;
-                AZ::StringFunc::Path::GetFullFileName(relocationInfo.m_oldAbsolutePath.c_str(), fullFileName);
-                AZ::StringFunc::Path::ReplaceFullName(newDestinationPath, fullFileName.c_str());
+
+                if (!metadataInfo.second.isEmpty())
+                {
+                    // Replace extension
+                    newDestinationPath = AZ::IO::FixedMaxPath(newDestinationPath).ReplaceExtension(metadataInfo.first.toUtf8().constData()).c_str();
+                }
+                else
+                {
+                    // Append extension
+                    newDestinationPath += ".";
+                    newDestinationPath += metadataInfo.first.toUtf8().constData();
+                }
             }
-
-
 
             if (!AzFramework::StringFunc::Path::IsRelative(newDestinationPath.c_str()))
             {
@@ -703,6 +771,84 @@ Please note that only those seed files will get updated that are active for your
         return report;
     }
 
+    AZStd::string SourceFileRelocator::BuildChangeReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks) const
+    {
+        AZStd::string report;
+
+        for (const SourceFileRelocationInfo& relocationInfo : relocationEntries)
+        {
+            if (!relocationInfo.m_sourceDependencyEntries.empty())
+            {
+                AZStd::string reportString = AZStd::string::format("%s:\n", "The following files have a source / job dependency on this file, we will attempt to fix the references but they may still break.");
+                report.append(reportString);
+
+                for (const auto& sourceDependency : relocationInfo.m_sourceDependencyEntries)
+                {
+                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                    m_stateData->QuerySourceBySourceGuid(
+                        sourceDependency.m_sourceGuid,
+                        [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            sourceEntry = entry;
+                            return false;
+                        });
+
+                    report = AZStd::string::format(
+                        "%s\nPATH: %s, TYPE: %d, %s\n",
+                        report.c_str(),
+                        sourceEntry.m_sourceName.c_str(),
+                        sourceDependency.m_typeOfDependency,
+                        sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
+                    AZStd::string fileExtension;
+                    AZ::StringFunc::Path::GetExtension(sourceEntry.m_sourceName.c_str(), fileExtension, false);
+
+                    auto found = m_additionalHelpTextMap.find(fileExtension);
+                    if (found != m_additionalHelpTextMap.end())
+                    {
+                        report.append(found->second);
+                    }
+                }
+            }
+
+            if (!relocationInfo.m_productDependencyEntries.empty())
+            {
+                AZStd::string reportString = AZStd::string::format("%s:\n", "The following files have a product dependency on one or more of the products generated by this file, we will attempt to fix the references but they may still break");
+                report.append(reportString);
+
+                for (const auto& productDependency : relocationInfo.m_productDependencyEntries)
+                {
+                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                    AzToolsFramework::AssetDatabase::ProductDatabaseEntry productEntry;
+                    AzToolsFramework::AssetDatabase::ProductDatabaseEntry thisFilesProductEntry;
+
+                    m_stateData->QuerySourceByProductID(productDependency.m_productPK, [&sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            sourceEntry = entry;
+                            return false;
+                        });
+
+                    m_stateData->QueryProductByProductID(productDependency.m_productPK, [&productEntry](const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
+                        {
+                            productEntry = entry;
+                            return false;
+                        });
+
+                    m_stateData->QueryCombinedBySourceGuidProductSubId(productDependency.m_dependencySourceGuid, productDependency.m_dependencySubID, [&thisFilesProductEntry](const AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& entry)
+                        {
+                            thisFilesProductEntry = static_cast<AzToolsFramework::AssetDatabase::ProductDatabaseEntry>(entry);
+                            return false;
+                        }, AZ::Uuid::CreateNull(), nullptr, productDependency.m_platform.c_str());
+
+                    report = AZStd::string::format("%s\nPATH: %s, DEPENDS ON PRODUCT: %s, ASSETID: %s, TYPE: %d, %s\n", report.c_str(), productEntry.m_productName.c_str(), thisFilesProductEntry.m_productName.c_str(), AZ::Data::AssetId(sourceEntry.m_sourceGuid, productEntry.m_subID).ToString<AZStd::string>().c_str(), productDependency.m_dependencyType, productDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
+                }
+            }
+        }
+
+        report.append(BuildTaskFailureReport(updateTasks));
+
+        return report;
+    }
+
     AZStd::string SourceFileRelocator::BuildReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks, bool isMove, bool updateReference) const
     {
         AZStd::string report;
@@ -711,7 +857,7 @@ Please note that only those seed files will get updated that are active for your
 
         for (const SourceFileRelocationInfo& relocationInfo : relocationEntries)
         {
-            if (relocationInfo.m_isMetaDataFile)
+            if (relocationInfo.m_metadataIndex != SourceFileRelocationInvalidIndex)
             {
                 report.append(AZStd::string::format(
                     "Metadata file CURRENT PATH: %s, NEW PATH: %s\n",
@@ -748,9 +894,18 @@ Please note that only those seed files will get updated that are active for your
 
                 for (const auto& sourceDependency : relocationInfo.m_sourceDependencyEntries)
                 {
-                    report = AZStd::string::format("%s\t\tPATH: %s, TYPE: %d, %s\n", report.c_str(), sourceDependency.m_source.c_str(), sourceDependency.m_typeOfDependency, sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
+                    AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                    m_stateData->QuerySourceBySourceGuid(
+                        sourceDependency.m_sourceGuid,
+                        [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                        {
+                            sourceEntry = entry;
+                            return false;
+                        });
+
+                    report = AZStd::string::format("%s\t\tUUID: %s, TYPE: %d, %s\n", report.c_str(), sourceEntry.m_sourceName.c_str(), sourceDependency.m_typeOfDependency, sourceDependency.m_fromAssetId ? "AssetId-based" : "Path-based");
                     AZStd::string fileExtension;
-                    AZ::StringFunc::Path::GetExtension(sourceDependency.m_source.c_str(), fileExtension, false);
+                    AZ::StringFunc::Path::GetExtension(sourceEntry.m_sourceName.c_str(), fileExtension, false);
 
                     auto found = m_additionalHelpTextMap.find(fileExtension);
                     if (found != m_additionalHelpTextMap.end())
@@ -800,10 +955,16 @@ Please note that only those seed files will get updated that are active for your
         return report;
     }
 
-    AZ::Outcome<RelocationSuccess, MoveFailure> SourceFileRelocator::Move(const AZStd::string& source, const AZStd::string& destination, bool previewOnly, bool allowDependencyBreaking, bool removeEmptyFolders, bool updateReferences, bool excludeMetaDataFiles)
+    AZ::Outcome<RelocationSuccess, MoveFailure> SourceFileRelocator::Move(const AZStd::string& source, const AZStd::string& destination, int flags )
     {
         AZStd::string normalizedSource = source;
         AZStd::string normalizedDestination = destination;
+        bool previewOnly = (flags & RelocationParameters_PreviewOnlyFlag) != 0 ? true : false;
+        bool allowDependencyBreaking = (flags & RelocationParameters_AllowDependencyBreakingFlag) != 0 ? true : false;
+        bool removeEmptyFolders = (flags & RelocationParameters_RemoveEmptyFoldersFlag) != 0 ? true : false;
+        bool updateReferences = (flags & RelocationParameters_UpdateReferencesFlag) != 0 ? true : false;
+        bool excludeMetaDataFiles = (flags & RelocationParameters_ExcludeMetaDataFilesFlag) != 0 ? true : false;
+        bool allowNonDatabaseFiles = (flags & RelocationParameters_AllowNonDatabaseFilesFlag) != 0 ? true : false;
 
         // Just make sure we have uniform slashes, don't normalize because we need to keep slashes at the end of the path and wildcards, etc, which tend to get stripped out by normalize functions
         AZStd::replace(normalizedSource.begin(), normalizedSource.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
@@ -813,7 +974,8 @@ Please note that only those seed files will get updated that are active for your
         const ScanFolderInfo* sourceScanFolderInfo{};
         const ScanFolderInfo* destinationScanFolderInfo{};
 
-        auto result = GetSourcesByPath(normalizedSource, relocationContainer, sourceScanFolderInfo, excludeMetaDataFiles);
+        auto result =
+            GetSourcesByPath(normalizedSource, relocationContainer, sourceScanFolderInfo, excludeMetaDataFiles, allowNonDatabaseFiles);
 
         if (!result.IsSuccess())
         {
@@ -882,14 +1044,19 @@ Please note that only those seed files will get updated that are active for your
             AZStd::move(updateTasks)));
     }
 
-    AZ::Outcome<RelocationSuccess, AZStd::string> SourceFileRelocator::Delete(const AZStd::string& source, bool previewOnly, bool allowDependencyBreaking, bool removeEmptyFolders, bool excludeMetaDataFiles)
+    AZ::Outcome<RelocationSuccess, AZStd::string> SourceFileRelocator::Delete(const AZStd::string& source, int flags)
     {
+        bool previewOnly = (flags & RelocationParameters_PreviewOnlyFlag) != 0 ? true : false;
+        bool allowDependencyBreaking = (flags & RelocationParameters_AllowDependencyBreakingFlag) != 0 ? true : false;
+        bool removeEmptyFolders = (flags & RelocationParameters_RemoveEmptyFoldersFlag) != 0 ? true : false;
+        bool excludeMetaDataFiles = (flags & RelocationParameters_ExcludeMetaDataFilesFlag) != 0 ? true : false;
+        bool allowNonDatabaseFiles = (flags & RelocationParameters_AllowNonDatabaseFilesFlag) != 0 ? true : false;
         AZStd::string normalizedSource = AssetUtilities::NormalizeFilePath(source.c_str()).toUtf8().constData();
 
         SourceFileRelocationContainer relocationContainer;
         const ScanFolderInfo* scanFolderInfo{};
 
-        auto result = GetSourcesByPath(normalizedSource, relocationContainer, scanFolderInfo, excludeMetaDataFiles);
+        auto result = GetSourcesByPath(normalizedSource, relocationContainer, scanFolderInfo, excludeMetaDataFiles, allowNonDatabaseFiles);
 
         if (!result.IsSuccess())
         {
@@ -1345,7 +1512,16 @@ Please note that only those seed files will get updated that are active for your
 
             for (const auto& sourceDependency : relocationInfo.m_sourceDependencyEntries)
             {
-                AZStd::string fullPath = m_platformConfig->FindFirstMatchingFile(sourceDependency.m_source.c_str()).toUtf8().constData();
+                AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                m_stateData->QuerySourceBySourceGuid(
+                    sourceDependency.m_sourceGuid,
+                    [&sourceEntry](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                    {
+                        sourceEntry = entry;
+                        return false;
+                    });
+
+                AZStd::string fullPath = m_platformConfig->FindFirstMatchingFile(sourceEntry.m_sourceName.c_str()).toUtf8().constData();
 
                 fullPath = pathFixupFunc(fullPath.c_str());
 

@@ -24,7 +24,7 @@ namespace GraphCanvas
     {
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetIdNodePropertyDisplay, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetIdNodePropertyDisplay, AZ::SystemAllocator);
         AssetIdNodePropertyDisplay(AssetIdDataInterface* dataInterface);
         virtual ~AssetIdNodePropertyDisplay();
 

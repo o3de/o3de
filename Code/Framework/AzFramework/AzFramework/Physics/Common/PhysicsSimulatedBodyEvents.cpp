@@ -65,5 +65,12 @@ namespace AzPhysics
         {
             Internal::RegisterHandler(sceneHandle, bodyHandle, handler, &SimulatedBody::RegisterOnTriggerExitHandler);
         }
+
+        void RegisterOnSyncTransformHandler(
+            AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle, OnSyncTransform::Handler& handler)
+        {
+            Internal::RegisterHandler(sceneHandle, bodyHandle, handler, &SimulatedBody::RegisterOnSyncTransformHandler);
+        }
+
     } // namespace SimulatedBodyEvents
 }

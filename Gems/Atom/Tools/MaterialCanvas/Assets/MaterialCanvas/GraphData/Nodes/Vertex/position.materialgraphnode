@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{AD1CEDD5-B944-4817-B157-586B0A6C9406}",
+        "category": "Vertex",
+        "title": "Position",
+        "titlePaletteName": "VertexNodeTitlePalette",
+        "description": "The local position of the current vertex or fragment",
+        "slotDataTypeGroups": [
+            "outPosition",
+            "outX|outY|outZ"
+        ],
+        "outputSlots": [
+            {
+                "name": "outPosition",
+                "displayName": "Position",
+                "description": "Position",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_POSITION.z;"
+                    ]
+                }
+            }
+        ]
+    }
+}

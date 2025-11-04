@@ -8,7 +8,7 @@
 
 set(FILES
     Include/${Name}/${Name}Bus.h
+    Include/${Name}/${Name}TypeIds.h
     Source/${Name}SystemComponent.cpp
     Source/${Name}SystemComponent.h
-    enabled_gems.cmake
 )

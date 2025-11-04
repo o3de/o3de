@@ -17,6 +17,7 @@
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -26,12 +27,12 @@ namespace AZ
 
 namespace AzFramework
 {
-    class SpawnableEntitiesManager
+    class AZF_API SpawnableEntitiesManager
         : public SpawnableEntitiesInterface::Registrar
     {
     public:
         AZ_RTTI(AzFramework::SpawnableEntitiesManager, "{6E14333F-128C-464C-94CA-A63B05A5E51C}");
-        AZ_CLASS_ALLOCATOR(SpawnableEntitiesManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SpawnableEntitiesManager, AZ::SystemAllocator);
 
         using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
         
@@ -97,7 +98,7 @@ namespace AzFramework
 
         struct Ticket final
         {
-            AZ_CLASS_ALLOCATOR(Ticket, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Ticket, AZ::ThreadPoolAllocator);
             static constexpr uint32_t Processing = AZStd::numeric_limits<uint32_t>::max();
 
             AZStd::atomic_int64_t m_referenceCount{ 1 };

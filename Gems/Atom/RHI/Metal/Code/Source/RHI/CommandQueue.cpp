@@ -103,7 +103,7 @@ namespace AZ
                 }
             }
             
-            id <MTLCommandBuffer> workRequestCommandBuffer = request.m_commandBuffer->GetMtlCommandBuffer();
+            id<MTLCommandBuffer> workRequestCommandBuffer = request.m_commandBuffer->GetMtlCommandBuffer();
             CommandQueueContext& context = device.GetCommandQueueContext();
             const FenceSet& compiledFences = context.GetCompiledFences();
             
@@ -135,7 +135,7 @@ namespace AZ
                      
                      {
                          AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
-                         for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
+                         for (RHI::DeviceSwapChain* swapChain : request.m_swapChainsToPresent)
                          {
                              static_cast<SwapChain*>(swapChain)->SetCommandBuffer(workRequestCommandBuffer);
                              swapChain->Present();

@@ -128,8 +128,8 @@ namespace UnitTest
             assetTypes.push_back(AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid());
         }
         AZ::Data::AssetHandler::LoadResult LoadAssetData(
-            const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-            AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+            [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+            [[maybe_unused]] AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
             [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB) override
         {
             MockAssetData* temp = reinterpret_cast<MockAssetData*>(asset.GetData());
@@ -192,9 +192,6 @@ namespace UnitTest
             VegetationComponentTests::SetUp();
 
             // Create a real Asset Mananger, and point to ourselves as the handler for Spawnable assets.
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             // Initialize the job manager with 1 thread for the AssetManager to use.
             AZ::JobManagerDesc jobDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -224,9 +221,6 @@ namespace UnitTest
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_jobContext;
             delete m_jobManager;
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             VegetationComponentTests::TearDown();
         }

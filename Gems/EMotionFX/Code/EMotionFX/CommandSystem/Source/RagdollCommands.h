@@ -136,7 +136,7 @@ namespace EMotionFX
         , public ParameterMixinJointName
     {
     public:
-        AZ_RTTI(CommandAddRagdollJoint, "{B2ADE3E1-3A6C-40F2-8D12-BF17F5B3FDB2}", MCore::Command, ParameterMixinActorId, ParameterMixinJointName);
+        AZ_RTTI(CommandAdjustRagdollJoint, "{B2ADE3E1-3A6C-40F2-8D12-BF17F5B3FDB2}", MCore::Command, ParameterMixinActorId, ParameterMixinJointName);
         AZ_CLASS_ALLOCATOR_DECL
 
         explicit CommandAdjustRagdollJoint(MCore::Command* orgCommand = nullptr);

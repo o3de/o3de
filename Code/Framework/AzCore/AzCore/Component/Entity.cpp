@@ -29,6 +29,7 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/time.h>
 #include <AzCore/Platform.h>
 
 #include <AzCore/Debug/Profiler.h>
@@ -107,8 +108,8 @@ namespace AZ
 
         if (m_state == State::Init)
         {
-            EBUS_EVENT(EntitySystemBus, OnEntityDestruction, m_id);
-            EBUS_EVENT_ID(m_id, EntityBus, OnEntityDestruction, m_id);
+            EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityDestruction, m_id);
+            EntityBus::Event(m_id, &EntityBus::Events::OnEntityDestruction, m_id);
             AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
             if (componentApplication != nullptr)
             {
@@ -126,8 +127,8 @@ namespace AZ
 
         if (m_state == State::Init)
         {
-            EBUS_EVENT(EntitySystemBus, OnEntityDestroyed, m_id);
-            EBUS_EVENT_ID(m_id, EntityBus, OnEntityDestroyed, m_id);
+            EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityDestroyed, m_id);
+            EntityBus::Event(m_id, &EntityBus::Events::OnEntityDestroyed, m_id);
             m_stateEvent.Signal(State::Destroying, State::Destroyed);
         }
     }
@@ -183,8 +184,8 @@ namespace AZ
 
         SetState(State::Init);
 
-        EBUS_EVENT_ID(m_id, EntityBus, OnEntityExists, m_id);
-        EBUS_EVENT(EntitySystemBus, OnEntityInitialized, m_id);
+        EntityBus::Event(m_id, &EntityBus::Events::OnEntityExists, m_id);
+        EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityInitialized, m_id);
     }
 
     void Entity::Activate()
@@ -209,8 +210,8 @@ namespace AZ
 
         SetState(State::Active);
 
-        EBUS_EVENT_ID(m_id, EntityBus, OnEntityActivated, m_id);
-        EBUS_EVENT(EntitySystemBus, OnEntityActivated, m_id);
+        EntityBus::Event(m_id, &EntityBus::Events::OnEntityActivated, m_id);
+        EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityActivated, m_id);
         AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
         if (componentApplication != nullptr)
         {
@@ -227,8 +228,8 @@ namespace AZ
         {
             componentApplication->SignalEntityDeactivated(this);
         }
-        EBUS_EVENT_ID(m_id, EntityBus, OnEntityDeactivated, m_id);
-        EBUS_EVENT(EntitySystemBus, OnEntityDeactivated, m_id);
+        EntityBus::Event(m_id, &EntityBus::Events::OnEntityDeactivated, m_id);
+        EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityDeactivated, m_id);
 
         AZ_Assert(m_state == State::Active, "Component should be in Active state to be Deactivated!");
         SetState(State::Deactivating);
@@ -279,7 +280,7 @@ namespace AZ
     Component* Entity::CreateComponent(const Uuid& componentTypeId)
     {
         Component* component = nullptr;
-        EBUS_EVENT_ID_RESULT(component, componentTypeId, ComponentDescriptorBus, CreateComponent);
+        ComponentDescriptorBus::EventResult(component, componentTypeId, &ComponentDescriptorBus::Events::CreateComponent);
         if (component)
         {
             if (!AddComponent(component))
@@ -292,7 +293,7 @@ namespace AZ
         else
         {
             const char* name = nullptr;
-            EBUS_EVENT_ID_RESULT(name, componentTypeId, ComponentDescriptorBus, GetName);
+            ComponentDescriptorBus::EventResult(name, componentTypeId, &ComponentDescriptorBus::Events::GetName);
             AZ_Assert(false, "Failed to create component: %s", (name ? name : componentTypeId.ToString<AZStd::string>().c_str()));
         }
 #endif // AZ_ENABLE_TRACING
@@ -334,6 +335,9 @@ namespace AZ
             }
         }
         component->SetEntity(this);
+
+        component->OnAfterEntitySet();
+
         m_components.push_back(component);
 
         if (m_state == State::Init)
@@ -352,7 +356,7 @@ namespace AZ
         ComponentDescriptor::DependencyArrayType provided;
         ComponentDescriptor::DependencyArrayType incompatible;
         ComponentDescriptor* componentDescriptor = nullptr;
-        EBUS_EVENT_ID_RESULT(componentDescriptor, componentTypeId, ComponentDescriptorBus, GetDescriptor);
+        ComponentDescriptorBus::EventResult(componentDescriptor, componentTypeId, &ComponentDescriptorBus::Events::GetDescriptor);
         if (!componentDescriptor)
         {
             return false;
@@ -367,7 +371,8 @@ namespace AZ
                 provided.clear();
 
                 ComponentDescriptor* subComponentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(subComponentDescriptor, (*componentIt)->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+                ComponentDescriptorBus::EventResult(
+                    subComponentDescriptor, (*componentIt)->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
                 AZ_Assert(subComponentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", (*componentIt)->RTTI_GetTypeName());
                 subComponentDescriptor->GetProvidedServices(provided, (*componentIt));
                 for (auto providedIt = provided.begin(); providedIt != provided.end(); ++providedIt)
@@ -397,7 +402,8 @@ namespace AZ
             {
                 incompatible.clear();
                 ComponentDescriptor* subComponentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(subComponentDescriptor, (*componentIt)->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+                ComponentDescriptorBus::EventResult(
+                    subComponentDescriptor, (*componentIt)->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
                 AZ_Assert(subComponentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", (*componentIt)->RTTI_GetTypeName());
                 subComponentDescriptor->GetIncompatibleServices(incompatible, (*componentIt));
                 for (auto incompatibleIt = incompatible.begin(); incompatibleIt != incompatible.end(); ++incompatibleIt)
@@ -430,7 +436,8 @@ namespace AZ
             {
                 provided.clear();
                 ComponentDescriptor* subComponentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(subComponentDescriptor, (*componentIt)->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+                ComponentDescriptorBus::EventResult(
+                    subComponentDescriptor, (*componentIt)->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
                 AZ_Assert(subComponentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", (*componentIt)->RTTI_GetTypeName());
                 subComponentDescriptor->GetProvidedServices(provided, (*componentIt));
                 for (auto providedIt = provided.begin(); providedIt != provided.end(); ++providedIt)
@@ -530,7 +537,7 @@ namespace AZ
         AZ_Assert(component->GetEntity() == this, "Component belongs to a different entity!");
         ComponentDescriptor::DependencyArrayType provided;
         ComponentDescriptor* componentDescriptor = nullptr;
-        EBUS_EVENT_ID_RESULT(componentDescriptor, component->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+        ComponentDescriptorBus::EventResult(componentDescriptor, component->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
         AZ_Assert(componentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", component->RTTI_GetTypeName());
         componentDescriptor->GetProvidedServices(provided, component);
         if (!provided.empty())
@@ -544,7 +551,8 @@ namespace AZ
                 }
                 ComponentDescriptor::DependencyArrayType subProvided;
                 ComponentDescriptor* subComponentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(subComponentDescriptor, (*componentIt)->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+                ComponentDescriptorBus::EventResult(
+                    subComponentDescriptor, (*componentIt)->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
                 AZ_Assert(componentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", (*componentIt)->RTTI_GetTypeName());
                 subComponentDescriptor->GetProvidedServices(subProvided, (*componentIt));
                 for (auto subProvidedIt = subProvided.begin(); subProvidedIt != subProvided.end(); ++subProvidedIt)
@@ -577,7 +585,8 @@ namespace AZ
                 }
                 ComponentDescriptor::DependencyArrayType required;
                 ComponentDescriptor* subComponentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(subComponentDescriptor, (*componentIt)->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+                ComponentDescriptorBus::EventResult(
+                    subComponentDescriptor, (*componentIt)->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
                 AZ_Assert(subComponentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", (*componentIt)->RTTI_GetTypeName());
                 subComponentDescriptor->GetRequiredServices(required, (*componentIt));
                 for (auto requiredIt = required.begin(); requiredIt != required.end(); ++requiredIt)
@@ -661,9 +670,17 @@ namespace AZ
 
     void Entity::OnNameChanged() const
     {
-        EBUS_EVENT_ID(GetId(), EntityBus, OnEntityNameChanged, m_name);
-        EBUS_EVENT(EntitySystemBus, OnEntityNameChanged, GetId(), m_name);
+        // we only emit on these busses if the entity is active.  This prevents OnEntityNameChanged happening on inactive entities
+        // when for example, another thread is constructing a prefab.  It also prevents spam of these functions from situations where
+        // inactive entities are being constructed or modified in place, such as in undo/redo or scene compilation.
+        // In general, only active entities should have any bearing on the actual scene, such as showing up in the Scene Outliner.
+        if (m_state == State::Active)
+        {
+            EntityBus::Event(GetId(), &EntityBus::Events::OnEntityNameChanged, m_name);
+            EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityNameChanged, GetId(), m_name);
+        }
     }
+
 
     bool Entity::CanAddRemoveComponents() const
     {
@@ -691,7 +708,7 @@ namespace AZ
             for (int i = 0; i < classElement.GetNumSubElements(); ++i)
             {
                 AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                if (elementNode.GetName() == AZ_CRC("Id", 0xbf396750))
+                if (elementNode.GetName() == AZ_CRC_CE("Id"))
                 {
                     u64 oldEntityId;
                     if (elementNode.GetData(oldEntityId))
@@ -734,7 +751,7 @@ namespace AZ
             for (int i = 0; i < classElement.GetNumSubElements(); ++i)
             {
                 AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(i);
-                if (elementNode.GetName() == AZ_CRC("m_refId", 0xb7853eda))
+                if (elementNode.GetName() == AZ_CRC_CE("m_refId"))
                 {
                     u64 oldEntityId;
                     if (elementNode.GetData(oldEntityId))
@@ -958,7 +975,7 @@ namespace AZ
         }
 
         // Shortcut for returning a FailedSortDetails as an AZ::Failure.
-        static FailureValue<Entity::FailedSortDetails> FailureCode(Entity::DependencySortResult code, const char* formatMessage, ...)
+        static auto FailureCode(Entity::DependencySortResult code, const char* formatMessage, ...)
         {
             va_list args;
             va_start(args, formatMessage);
@@ -1026,8 +1043,12 @@ namespace AZ
             // different error message for multiple components of the same type
             if (componentProvidingService->m_underlyingTypeId == componentIncompatibleWithService->m_underlyingTypeId)
             {
-                return AZStd::string::format("Multiple '%s' found, but this component is incompatible with others of the same type.",
-                    componentProvidingService->m_component->RTTI_GetTypeName());
+                return AZStd::string::format(
+                    "Multiple '%s' found, but this component is incompatible with others of the same type. Components with UUID %s "
+                    "and %s are incompatible with each other.",
+                    componentProvidingService->m_component->RTTI_GetTypeName(),
+                    componentProvidingService->m_component->RTTI_GetType().ToString<AZStd::string>().c_str(),
+                    componentIncompatibleWithService->m_component->RTTI_GetType().ToString<AZStd::string>().c_str());
             }
 
             return AZStd::string::format("Components '%s' and '%s' are incompatible.",
@@ -1074,7 +1095,7 @@ namespace AZ
         AZStd::vector<ComponentInfo*> candidateComponents;
 
         // Components in final sorted order
-        AZStd::vector<Component*> sortedComponents;
+        ComponentArrayType sortedComponents;
 
         // Tmp vectors to re-use when querying services
         ComponentDescriptor::DependencyArrayType servicesTmp;
@@ -1317,7 +1338,7 @@ namespace AZ
             processInfo.m_processId = AZ::Platform::GetCurrentProcessId();
             processInfo.m_startTime = AZStd::GetTimeUTCMilliSecond();
             AZ::u32 signature = AZ::Crc32(&processInfo, sizeof(processInfo));
-            processSignature = Environment::CreateVariable<AZ::u32>(AZ_CRC("MachineProcessSignature", 0x47681763), signature);
+            processSignature = Environment::CreateVariable<AZ::u32>(AZ_CRC_CE("MachineProcessSignature"), signature);
         }
         return *processSignature;
     }
@@ -1349,7 +1370,7 @@ namespace AZ
 
         if (!counter)
         {
-            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC("EntityIdMonotonicCounter", 0xbe691c64), 1);
+            counter = Environment::CreateVariable<AZStd::atomic_uint>(AZ_CRC_CE("EntityIdMonotonicCounter"), 1);
         }
 
         AZ::u64 count = counter->fetch_add(1);

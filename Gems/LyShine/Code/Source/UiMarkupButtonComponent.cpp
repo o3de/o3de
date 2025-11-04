@@ -21,9 +21,9 @@ namespace
     AZ::Vector2 GetMousePosition(AZ::EntityId entityId)
     {
         AZ::EntityId canvasId;
-        EBUS_EVENT_ID_RESULT(canvasId, entityId, UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasId, entityId, &UiElementBus::Events::GetCanvasEntityId);
         AZ::Vector2 mousePos = AZ::Vector2::CreateZero();
-        EBUS_EVENT_ID_RESULT(mousePos, canvasId, UiCanvasBus, GetMousePosition);
+        UiCanvasBus::EventResult(mousePos, canvasId, &UiCanvasBus::Events::GetMousePosition);
         return mousePos;
     }
 
@@ -58,7 +58,7 @@ namespace
         // first transform the mousePos from viewport space to "canvas space no-scale-rotate", which is the space that clickableTextRects
         // are stored in.
         AZ::Matrix4x4 transformFromViewport;
-        EBUS_EVENT_ID(entityId, UiTransformBus, GetTransformFromViewport, transformFromViewport);
+        UiTransformBus::Event(entityId, &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
         AZ::Vector3 point3(mousePos.GetX(), mousePos.GetY(), 0.0f);
         point3 = transformFromViewport * point3;
         AZ::Vector2 canvasSpacePosition(point3.GetX(), point3.GetY());
@@ -164,7 +164,7 @@ bool UiMarkupButtonComponent::HandlePressed(AZ::Vector2 point, bool& shouldStayA
         const AZStd::string& action = m_clickableTextRects[clickableRectIndex].action;
         const AZStd::string& data = m_clickableTextRects[clickableRectIndex].data;
         m_clickableRectPressedIndex = clickableRectIndex;
-        EBUS_EVENT_ID(GetEntityId(), UiMarkupButtonNotificationsBus, OnPressed, clickableId, action, data);
+        UiMarkupButtonNotificationsBus::Event(GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnPressed, clickableId, action, data);
     }
 
     return handled;
@@ -185,14 +185,16 @@ bool UiMarkupButtonComponent::HandleReleased(AZ::Vector2 point)
     // event occurred (OnClickableTextChanged resets the pressed index value).
     if (m_clickableRectPressedIndex < 0)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiMarkupButtonNotificationsBus, OnReleased, -1, AZStd::string(), AZStd::string());
+        UiMarkupButtonNotificationsBus::Event(
+            GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnReleased, -1, AZStd::string(), AZStd::string());
     }
     else
     {
         const int pressedClickableId = m_clickableTextRects[m_clickableRectPressedIndex].id;
         const AZStd::string& action = m_clickableTextRects[m_clickableRectPressedIndex].action;
         const AZStd::string& data = m_clickableTextRects[m_clickableRectPressedIndex].data;
-        EBUS_EVENT_ID(GetEntityId(), UiMarkupButtonNotificationsBus, OnReleased, pressedClickableId, action, data);
+        UiMarkupButtonNotificationsBus::Event(
+            GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnReleased, pressedClickableId, action, data);
 
         bool onClickTriggered = false;
         const int releasedClickableRectIndex = FindClickableTextRectIndexFromViewportSpacePoint(GetEntityId(), point, m_clickableTextRects);
@@ -202,7 +204,8 @@ bool UiMarkupButtonComponent::HandleReleased(AZ::Vector2 point)
             const int releasedClickableId = m_clickableTextRects[releasedClickableRectIndex].id;
             if (releasedClickableId == pressedClickableId)
             {
-                EBUS_EVENT_ID(GetEntityId(), UiMarkupButtonNotificationsBus, OnClick, pressedClickableId, action, data);
+                UiMarkupButtonNotificationsBus::Event(
+                    GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnClick, pressedClickableId, action, data);
                 onClickTriggered = true;
             }
         }
@@ -232,7 +235,7 @@ void UiMarkupButtonComponent::Update(float deltaTime)
 void UiMarkupButtonComponent::OnClickableTextChanged()
 {
     m_clickableTextRects.clear();
-    EBUS_EVENT_ID(GetEntityId(), UiClickableTextBus, GetClickableTextRects, m_clickableTextRects);
+    UiClickableTextBus::Event(GetEntityId(), &UiClickableTextBus::Events::GetClickableTextRects, m_clickableTextRects);
 
     // Reset all links back to their non-hover color
     int lastClickableId = -1;
@@ -244,7 +247,7 @@ void UiMarkupButtonComponent::OnClickableTextChanged()
         // previously been set.
         if (lastClickableId != clickableText.id)
         {
-            EBUS_EVENT_ID(GetEntityId(), UiClickableTextBus, SetClickableTextColor, clickableText.id, m_linkColor);
+            UiClickableTextBus::Event(GetEntityId(), &UiClickableTextBus::Events::SetClickableTextColor, clickableText.id, m_linkColor);
             lastClickableId = clickableText.id;
         }
     }
@@ -286,10 +289,10 @@ void UiMarkupButtonComponent::UpdateHover()
     if (m_isHandlingEvents && !m_isPressed)
     {
         AZ::EntityId canvasId;
-        EBUS_EVENT_ID_RESULT(canvasId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
         AZ::EntityId hoverInteractable;
-        EBUS_EVENT_ID_RESULT(hoverInteractable, canvasId, UiCanvasBus, GetHoverInteractable);
+        UiCanvasBus::EventResult(hoverInteractable, canvasId, &UiCanvasBus::Events::GetHoverInteractable);
 
         // Similarly, the hover interactable won't updated while another 
         // element is being pressed - we don't want to update hover state
@@ -345,11 +348,11 @@ void UiMarkupButtonComponent::HandleClickableHoverStart(int clickableRectIndex)
 
     // Set the link color prior to notification being triggered in case listeners want to set
     // the color themselves.
-    EBUS_EVENT_ID(GetEntityId(), UiClickableTextBus, SetClickableTextColor, clickableId, m_linkHoverColor);
+    UiClickableTextBus::Event(GetEntityId(), &UiClickableTextBus::Events::SetClickableTextColor, clickableId, m_linkHoverColor);
 
     const AZStd::string& action = m_clickableTextRects[m_clickableRectHoverIndex].action;
     const AZStd::string& data = m_clickableTextRects[m_clickableRectHoverIndex].data;
-    EBUS_EVENT_ID(GetEntityId(), UiMarkupButtonNotificationsBus, OnHoverStart, clickableId, action, data);
+    UiMarkupButtonNotificationsBus::Event(GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnHoverStart, clickableId, action, data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -361,12 +364,12 @@ void UiMarkupButtonComponent::HandleClickableHoverEnd()
 
         // Set the link color prior to notification being triggered in case listeners want to set
         // the color themselves.
-        EBUS_EVENT_ID(GetEntityId(), UiClickableTextBus, SetClickableTextColor, clickableId, m_linkColor);
+        UiClickableTextBus::Event(GetEntityId(), &UiClickableTextBus::Events::SetClickableTextColor, clickableId, m_linkColor);
 
         const AZStd::string& action = m_clickableTextRects[m_clickableRectHoverIndex].action;
         const AZStd::string& data = m_clickableTextRects[m_clickableRectHoverIndex].data;
         m_clickableRectHoverIndex = -1;
-        EBUS_EVENT_ID(GetEntityId(), UiMarkupButtonNotificationsBus, OnHoverEnd, clickableId, action, data);
+        UiMarkupButtonNotificationsBus::Event(GetEntityId(), &UiMarkupButtonNotificationsBus::Events::OnHoverEnd, clickableId, action, data);
     }
 }
 
@@ -392,7 +395,7 @@ void UiMarkupButtonComponent::OnLinkColorChanged()
         // We also don't want to set the text to the link color if it is currently being hovered.
         if (lastClickableId != clickableText.id && clickableText.id != hoverClickableId)
         {
-            EBUS_EVENT_ID(GetEntityId(), UiClickableTextBus, SetClickableTextColor, clickableText.id, m_linkColor);
+            UiClickableTextBus::Event(GetEntityId(), &UiClickableTextBus::Events::SetClickableTextColor, clickableText.id, m_linkColor);
             lastClickableId = clickableText.id;
         }
     }
@@ -423,7 +426,8 @@ void UiMarkupButtonComponent::OnLinkHoverColorChanged()
             // If it is currently being hovered then set its color to the new link hover color
             if (clickableText.id == hoverClickableId)
             {
-                EBUS_EVENT_ID(GetEntityId(), UiClickableTextBus, SetClickableTextColor, clickableText.id, m_linkHoverColor);
+                UiClickableTextBus::Event(
+                    GetEntityId(), &UiClickableTextBus::Events::SetClickableTextColor, clickableText.id, m_linkHoverColor);
             }
 
             lastClickableId = clickableText.id;
@@ -457,7 +461,7 @@ void UiMarkupButtonComponent::Reflect(AZ::ReflectContext* context)
                 // Need to request markup button component icons for LY ML
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiMarkupButton.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiMarkupButton.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiMarkupButtonComponent::m_linkColor, "Link Color", "Link text color.")

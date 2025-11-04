@@ -43,10 +43,10 @@ namespace AZ
     //! Benchmarks have shown that creating a new Name object can be quite slow when the name doesn't
     //! already exist in the NameDictionary, but is comparable to creating an AZStd::string for names
     //! that already exist.
-    class NameDictionary final
+    class AZCORE_API NameDictionary final
     {
     public:
-        AZ_CLASS_ALLOCATOR(NameDictionary, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NameDictionary, AZ::OSAllocator);
     private:
 
         friend Module;
@@ -55,10 +55,6 @@ namespace AZ
         friend UnitTest::NameDictionaryTester;
         template<class ConcurrentcyTestThreadT>
         friend void UnitTest::RunConcurrencyTest(uint32_t nameCount, uint32_t threadsPerName);
-
-        template<typename T, typename... Args> friend constexpr auto AZStd::construct_at(T*, Args&&... args)
-            -> AZStd::enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>;
-        template<typename T> constexpr friend void AZStd::destroy_at(T*);
 
     public:
         AZ_TYPE_INFO(NameDictionary, "{6DBF9DEA-1F65-44DB-977C-65BA9047E869}");

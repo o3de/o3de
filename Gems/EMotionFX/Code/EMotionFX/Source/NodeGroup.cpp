@@ -12,7 +12,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(NodeGroup, NodeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(NodeGroup, NodeAllocator)
 
 
     NodeGroup::NodeGroup(const AZStd::string& groupName, size_t numNodes, bool enabledOnDefault)

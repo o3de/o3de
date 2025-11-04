@@ -112,19 +112,30 @@ class LicenseScanner:
             print(f'Unable to read file: {filepath}')
             pass
 
-    def create_license_file(self, licenses, filepath='NOTICES.txt'):
+    def create_license_file(self, licenses, filepath='NOTICES.txt', scan_path=[os.curdir]):
         """Creates file with all the provided license file contents.
 
         :param licenses: Dict with package paths and their corresponding license file contents
         :param filepath: Path to write the file
+        :param scan_path: Root path for packages to make relative paths
         """
         license_separator = '------------------------------------'
         with open(filepath, 'w', encoding='utf8') as lf:
             for directory, license in licenses.items():
+                relpath = directory
+                found_path = False
+                for current_scan_path in scan_path:
+                    try:
+                        relpath = os.path.relpath(directory, current_scan_path)
+                        found_path = True
+                    except ValueError:
+                        continue
+                if (not found_path):
+                    print(f'Warning: {directory} is not in any of the provided scan paths {scan_path}, using absolute path instead')
                 if not self.package_info.match(os.path.basename(directory)):
                     license_output = '\n\n'.join([
                         f'{license_separator}',
-                        f'Package path: {os.path.relpath(directory)}',
+                        f'Package path: {relpath}',
                         'License:',
                         f'{license}\n'
                     ])
@@ -174,12 +185,12 @@ def main():
         scanned_path_data = ls.scan(args.scan_path)
 
         if args.license_file_path:
-            ls.create_license_file(scanned_path_data, args.license_file_path)
+            ls.create_license_file(scanned_path_data, args.license_file_path, args.scan_path)
         if args.package_file_path:
             ls.create_package_file(scanned_path_data, args.package_file_path)
         if args.license_file_path and args.package_file_path:
             license_files = ls.create_package_file(scanned_path_data, args.package_file_path, True)
-            ls.create_license_file(license_files, args.license_file_path)
+            ls.create_license_file(license_files, args.license_file_path, args.scan_path)
     except FileNotFoundError as e:
         print(f'Type: {type(e).__name__}, Error: {e}')
         return 1

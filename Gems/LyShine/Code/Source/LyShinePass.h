@@ -26,7 +26,7 @@ namespace LyShine
         using Base = AZ::RPI::ParentPass;
 
     public:
-        AZ_CLASS_ALLOCATOR(LyShinePass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LyShinePass, AZ::SystemAllocator);
         AZ_RTTI(LyShinePass, "C3B812ED-3771-42F4-A96F-EBD94B4D54CA", Base);
 
         virtual ~LyShinePass();
@@ -37,6 +37,7 @@ namespace LyShine
         void ResetInternal() override;
         void BuildInternal() override;
         void CreateChildPassesInternal() override;
+        void SetRenderPipeline(AZ::RPI::RenderPipeline* pipeline) override;
 
         // LyShinePassRequestBus overrides
         void RebuildRttChildren() override;
@@ -69,7 +70,7 @@ namespace LyShine
         friend class LyShinePass;
     public:
         AZ_RTTI(LyShineChildPass, "{41D525F9-09EB-4004-97DC-082078FF8DD2}", RasterPass);
-        AZ_CLASS_ALLOCATOR(LyShineChildPass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LyShineChildPass, AZ::SystemAllocator);
         virtual ~LyShineChildPass();
 
         //! Creates a LyShineChildPass
@@ -94,7 +95,7 @@ namespace LyShine
 
     public:
         AZ_RTTI(RttChildPass, "{54B0574D-2EB3-4054-9E1D-0E0D9C8CB09A}", LyShineChildPass);
-        AZ_CLASS_ALLOCATOR(RttChildPass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RttChildPass, AZ::SystemAllocator);
         virtual ~RttChildPass();
 
         //! Creates a RttChildPass

@@ -9,7 +9,6 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Memory/MemoryComponent.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Physics/Mocks/MockHeightfieldProviderBus.h>

@@ -14,7 +14,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
-#include <AtomToolsFramework/GraphView/GraphViewConfig.h>
+#include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <GraphCanvas/Styling/StyleManager.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
@@ -27,17 +27,18 @@
 
 namespace MaterialCanvas
 {
-    //! MaterialCanvasMainWindow
+    //! MaterialCanvasMainWindow creates and manages all of the graph canvas and viewport related docked windows for Material Canvas. 
     class MaterialCanvasMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        MaterialCanvasMainWindow(const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent = 0);
-        ~MaterialCanvasMainWindow();
+        MaterialCanvasMainWindow(
+            const AZ::Crc32& toolId, AtomToolsFramework::GraphViewSettingsPtr graphViewSettingsPtr, QWidget* parent = 0);
+        ~MaterialCanvasMainWindow() = default;
 
     protected:
         // AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler overrides...
@@ -49,17 +50,20 @@ namespace MaterialCanvas
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
-        AZStd::string GetHelpDialogText() const override;
+        void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const override;
+        void OnSettingsDialogClosed() override;
+        AZStd::string GetHelpUrl() const override;
 
     private:
         AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};
-        AtomToolsFramework::GraphViewConfig m_graphViewConfig;
+        AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
         GraphCanvas::BookmarkDockWidget* m_bookmarkDockWidget = {};
         GraphCanvas::NodePaletteDockWidget* m_nodePalette = {};
         GraphCanvas::StyleManager m_styleManager;
         QTranslator m_translator;
+        mutable AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> m_materialCanvasCompileSettingsGroup;
     };
 } // namespace MaterialCanvas

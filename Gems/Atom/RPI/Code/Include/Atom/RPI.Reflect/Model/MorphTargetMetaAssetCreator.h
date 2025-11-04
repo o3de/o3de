@@ -9,12 +9,13 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
 
 namespace AZ::RPI
 {
     //! Constructs an instance of a MorphTargetMetaAsset
-    class MorphTargetMetaAssetCreator
+    class ATOM_RPI_REFLECT_API MorphTargetMetaAssetCreator
         : public AssetCreator<MorphTargetMetaAsset>
     {
     public:

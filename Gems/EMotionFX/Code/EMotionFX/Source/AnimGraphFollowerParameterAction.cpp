@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphFollowerParameterAction, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphFollowerParameterAction, AnimGraphAllocator)
 
     AnimGraphFollowerParameterAction::AnimGraphFollowerParameterAction()
         : AnimGraphTriggerAction()
@@ -173,9 +173,9 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphFollowerParameterAction::m_refAnimGraphAsset, "Follower anim graph", "Follower anim graph that we want to pick a parameter from")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphFollowerParameterAction::OnAnimGraphAssetChanged)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("AnimGraphParameter", 0x778af55a), &AnimGraphFollowerParameterAction::m_parameterName, "Follower parameter", "The follower parameter that we want to sync to.")
+            ->DataElement(AZ_CRC_CE("AnimGraphParameter"), &AnimGraphFollowerParameterAction::m_parameterName, "Follower parameter", "The follower parameter that we want to sync to.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphFollowerParameterAction::GetRefAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphFollowerParameterAction::GetRefAnimGraph)
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphFollowerParameterAction::m_triggerValue, "Trigger value", "The value that the parameter will be override to.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ;

@@ -35,6 +35,7 @@ namespace AZ
             environmentCubeMapPipelineDesc.m_renderSettings.m_multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
             environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_width = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
             environmentCubeMapPipelineDesc.m_renderSettings.m_size.m_height = RPI::EnvironmentCubeMapPass::CubeMapFaceSize;
+            environmentCubeMapPipelineDesc.m_allowModification = true; // Enable pipeline modification since we need to have GI lighting for the baking
 
             // create a unique name for the pipeline
             AZ::Uuid uuid = AZ::Uuid::CreateRandom();

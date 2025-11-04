@@ -19,7 +19,7 @@ namespace AZ
             return aznew IndirectBufferWriter();
         }
 
-        void IndirectBufferWriter::SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::StreamBufferView& view)
+        void IndirectBufferWriter::SetVertexViewInternal(RHI::IndirectCommandIndex index, const RHI::DeviceStreamBufferView& view)
         {
             const Buffer* buffer = static_cast<const Buffer*>(view.GetBuffer());
             D3D12_VERTEX_BUFFER_VIEW* command = reinterpret_cast<D3D12_VERTEX_BUFFER_VIEW*>(GetCommandTargetMemory(index));
@@ -28,7 +28,7 @@ namespace AZ
             command->StrideInBytes = view.GetByteStride();
         }
 
-        void IndirectBufferWriter::SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::IndexBufferView& indexBufferView)
+        void IndirectBufferWriter::SetIndexViewInternal(RHI::IndirectCommandIndex index, const RHI::DeviceIndexBufferView& indexBufferView)
         {
             const Buffer* indexBuffer = static_cast<const Buffer*>(indexBufferView.GetBuffer());
             D3D12_INDEX_BUFFER_VIEW* command = reinterpret_cast<D3D12_INDEX_BUFFER_VIEW*>(GetCommandTargetMemory(index));
@@ -37,23 +37,23 @@ namespace AZ
             command->SizeInBytes = indexBufferView.GetByteCount();
         }
 
-        void IndirectBufferWriter::DrawInternal(RHI::IndirectCommandIndex index, const RHI::DrawLinear& arguments)
+        void IndirectBufferWriter::DrawInternal(RHI::IndirectCommandIndex index, const RHI::DrawLinear& arguments, const RHI::DrawInstanceArguments& m_drawInstanceArgs)
         {
             D3D12_DRAW_ARGUMENTS* command = reinterpret_cast<D3D12_DRAW_ARGUMENTS*>(GetCommandTargetMemory(index));
             command->VertexCountPerInstance = arguments.m_vertexCount;
-            command->InstanceCount = arguments.m_instanceCount;
+            command->InstanceCount = m_drawInstanceArgs.m_instanceCount;
             command->StartVertexLocation = arguments.m_vertexOffset;
-            command->StartInstanceLocation = arguments.m_instanceOffset;
+            command->StartInstanceLocation = m_drawInstanceArgs.m_instanceOffset;
         }
 
-        void IndirectBufferWriter::DrawIndexedInternal(RHI::IndirectCommandIndex index, const RHI::DrawIndexed& arguments)
+        void IndirectBufferWriter::DrawIndexedInternal(RHI::IndirectCommandIndex index, const RHI::DrawIndexed& arguments, const RHI::DrawInstanceArguments& m_drawInstanceArgs)
         {
             D3D12_DRAW_INDEXED_ARGUMENTS * command = reinterpret_cast<D3D12_DRAW_INDEXED_ARGUMENTS *>(GetCommandTargetMemory(index));
             command->IndexCountPerInstance = arguments.m_indexCount;
-            command->InstanceCount = arguments.m_instanceCount;
+            command->InstanceCount = m_drawInstanceArgs.m_instanceCount;
             command->StartIndexLocation = arguments.m_indexOffset;
             command->BaseVertexLocation = arguments.m_vertexOffset;
-            command->StartInstanceLocation = arguments.m_instanceOffset;
+            command->StartInstanceLocation = m_drawInstanceArgs.m_instanceOffset;
         }
 
         void IndirectBufferWriter::DispatchInternal(RHI::IndirectCommandIndex index, const RHI::DispatchDirect& arguments)

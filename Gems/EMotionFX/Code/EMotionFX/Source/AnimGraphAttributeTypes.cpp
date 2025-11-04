@@ -18,8 +18,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AttributePose, MCore::AttributeAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AttributeMotionInstance, MCore::AttributeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AttributePose, MCore::AttributeAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AttributeMotionInstance, MCore::AttributeAllocator)
 
     // static create
     AttributePose* AttributePose::Create()

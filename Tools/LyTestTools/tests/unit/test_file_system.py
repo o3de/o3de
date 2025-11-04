@@ -546,6 +546,59 @@ class TestDelete(unittest.TestCase):
         self.assertEqual(mock_remove.called, False)
 
 
+class TestRename(unittest.TestCase):
+
+    def setUp(self):
+        self.file1 = 'file1'
+        self.file2 = 'file2'
+
+    def tearDown(self):
+        self.file1 = None
+        self.file2 = None
+
+    @mock.patch('os.path')
+    @mock.patch('os.chmod')
+    @mock.patch('os.rename')
+    def test_Rename_TwoFiles_SuccessfulRename(self, mock_rename, mock_chmod, mock_path):
+        mock_path.exists.side_effect = [True, False]
+
+        self.assertTrue(file_system.rename(self.file1, self.file2))
+        self.assertTrue(mock_rename.called)
+
+    @mock.patch('os.rename')
+    def test_Rename_SourceDoesNotExist_ErrorReported(self, mock_rename):
+        with self.assertLogs('ly_test_tools.environment.file_system', 'ERROR') as captured_logs:
+            with mock.patch('os.path') as mock_path:
+                mock_path.exists.return_value = False
+                self.assertFalse(file_system.rename(self.file1, self.file2))
+        self.assertTrue(mock_path.exists.called)
+        self.assertIn("No file located at:", captured_logs.records[0].getMessage())
+        self.assertFalse(mock_rename.called)
+
+    @mock.patch('os.rename')
+    def test_Rename_DestinationExists_ErrorReported(self, mock_rename):
+        with self.assertLogs('ly_test_tools.environment.file_system', 'ERROR') as captured_logs:
+            with mock.patch('os.path') as mock_path:
+                mock_path.exists.return_value = True
+                self.assertFalse(file_system.rename(self.file1, self.file2))
+        self.assertEqual(2, mock_path.exists.call_count)
+        self.assertIn("File already exists at:", captured_logs.records[0].getMessage())
+        self.assertFalse(mock_rename.called)
+
+    @mock.patch('os.rename')
+    @mock.patch('os.chmod')
+    def test_Rename_PermissionsError_ErrorReported(self, mock_chmod, mock_rename):
+        with self.assertLogs('ly_test_tools.environment.file_system', 'ERROR') as captured_logs:
+            with mock.patch('os.path') as mock_path:
+                mock_path.exists.side_effect = [True, False]
+                mock_path.isfile.return_value = True
+                mock_chmod.side_effect = OSError()
+                self.assertFalse(file_system.rename(self.file1, self.file2))
+        self.assertEqual(2, mock_path.exists.call_count)
+        self.assertIn('Could not rename', captured_logs.records[0].getMessage())
+        self.assertEqual(mock_rename.called, False)
+
+
 class TestDeleteOldest(unittest.TestCase):
 
     def setUp(self):

@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include <MCore/Source/RefCounted.h>
 //#include "Mesh.h"
 //#include "SoftSkinDeformer.h"
 
@@ -30,7 +30,8 @@ namespace EMotionFX
      * will be returned, instead of the normal C++ version.
      */
     class EMFX_API SoftSkinManager
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
         AZ_CLASS_ALLOCATOR_DECL
 

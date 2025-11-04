@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 // Given a depthStencil depth and the fragment XY position, reconstruct the world space position
 // screenCoords - from 0.. dimension of the screen of the current pixel
@@ -35,5 +35,13 @@ float4 WorldPositionFromDepthBuffer(const Texture2D<float2> depthStencilTexture,
 { 
     uint2 dimensions;
     depthStencilTexture.GetDimensions(dimensions.x, dimensions.y);
+    return WorldPositionFromDepthBuffer(dimensions, zDepth, screenCoords);
+}
+
+float4 WorldPositionFromDepthBufferMS(const Texture2DMS<float2> depthStencilTexture, const float zDepth, const float2 screenCoords )
+{ 
+    uint2 dimensions;
+    uint sampleCount;
+    depthStencilTexture.GetDimensions(dimensions.x, dimensions.y, sampleCount);
     return WorldPositionFromDepthBuffer(dimensions, zDepth, screenCoords);
 }

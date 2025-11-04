@@ -127,6 +127,11 @@ namespace ScriptCanvasEditor
         return m_translationDuration;
     }
 
+    AZ_INLINE const AZ::IO::Path& Reporter::GetFilePath() const
+    {
+        return m_filePath;
+    }
+
     AZ_INLINE bool Reporter::IsActivated() const
     {
         return m_graphIsActivated;
@@ -167,9 +172,9 @@ namespace ScriptCanvasEditor
         return m_isGraphLoaded;
     }
 
-    AZ_INLINE bool Reporter::IsGraphObserved(const ExecutionState& executionState)
+    AZ_INLINE bool Reporter::IsGraphObserved([[maybe_unused]] const AZ::EntityId& entityId, const GraphIdentifier& identifier)
     {
-        return m_configuration == ExecutionConfiguration::Traced && executionState.GetAssetId() == m_graph;
+        return m_configuration == ExecutionConfiguration::Traced && identifier.m_assetId == m_graph;
     }
 
     AZ_INLINE void Reporter::RuntimeError([[maybe_unused]] const ExecutionState& executionState, const AZStd::string_view& description)
@@ -288,6 +293,11 @@ namespace ScriptCanvasEditor
     AZ_INLINE void Reporter::SetProcessOnly(bool processOnly)
     {
         m_processOnly = processOnly;
+    }
+
+    AZ_INLINE void Reporter::SetFilePath(const AZ::IO::PathView& filePath)
+    {
+        m_filePath = filePath;
     }
 
     // Handler

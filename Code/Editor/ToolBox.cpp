@@ -22,8 +22,6 @@
 
 // Editor
 #include "Settings.h"
-#include "ActionManager.h"
-
 
 //////////////////////////////////////////////////////////////////////////
 // CToolBoxCommand
@@ -318,16 +316,16 @@ bool CToolBoxManager::SetMacroTitle(int index, const QString& title, bool bToolb
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CToolBoxManager::Load([[maybe_unused]] ActionManager* actionManager)
+void CToolBoxManager::Load()
 {
     Clear();
 
     QString path;
     GetSaveFilePath(path);
-    Load(path, nullptr, true, nullptr);
+    Load(path, true);
 }
 
-void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolbox, ActionManager* actionManager)
+void CToolBoxManager::Load(QString xmlpath, bool bToolbox)
 {
     XmlNodeRef toolBoxNode = XmlHelpers::LoadXmlFromFile(xmlpath.toUtf8().data());
     if (toolBoxNode == nullptr)
@@ -335,43 +333,7 @@ void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolb
         return;
     }
 
-    if (!pToolbar)
-    {
-        GetIEditor()->GetSettingsManager()->AddSettingsNode(toolBoxNode);
-    }
-    else
-    {
-        const char* PRETTY_NAME_ATTR = "prettyName";
-        const char* SHOW_BY_DEFAULT_ATTR = "showByDefault";
-        const char* SHELF_NAME_ATTR = "shelfName";
-
-        QString shelfName = pToolbar->GetName();
-
-        if (toolBoxNode->haveAttr(SHELF_NAME_ATTR))
-        {
-            shelfName = toolBoxNode->getAttr(SHELF_NAME_ATTR);
-        }
-
-        QString prettyName = shelfName;
-
-        if (toolBoxNode->haveAttr(PRETTY_NAME_ATTR))
-        {
-            prettyName = toolBoxNode->getAttr(PRETTY_NAME_ATTR);
-        }
-
-        pToolbar->SetName(shelfName, prettyName);
-
-        if (toolBoxNode->haveAttr(SHOW_BY_DEFAULT_ATTR))
-        {
-            const char* showByDefaultAttrString = toolBoxNode->getAttr(SHOW_BY_DEFAULT_ATTR);
-
-            QString showByDefaultString = QString(showByDefaultAttrString);
-            showByDefaultString = showByDefaultString.trimmed();
-
-            bool hideByDefault = (QString::compare(showByDefaultString, "false", Qt::CaseInsensitive) == 0) || (QString::compare(showByDefaultString, "0") == 0);
-            pToolbar->SetShowByDefault(!hideByDefault);
-        }
-    }
+    GetIEditor()->GetSettingsManager()->AddSettingsNode(toolBoxNode);
 
     AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
     QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
@@ -396,39 +358,6 @@ void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolb
         pMacro->SetShortcutName(shortcutName);
         pMacro->SetIconPath(iconPath.toUtf8().data());
         pMacro->SetToolbarId(-1);
-
-        if (!pToolbar)
-        {
-            continue;
-        }
-
-        AZStd::string shelfPath = PathUtil::GetParentDirectory(xmlpath.toUtf8().data());
-        AZStd::string fullIconPath = enginePath + PathUtil::AddSlash(shelfPath.c_str());
-        fullIconPath.append(iconPath.toUtf8().data());
-
-        pMacro->SetIconPath(fullIconPath.c_str());
-
-        QString toolTip(macroNode->getAttr("tooltip"));
-        pMacro->action()->setToolTip(toolTip);
-
-        int actionId;
-
-        if (pMacro->GetCommandCount() == 0 || pMacro->GetCommandAt(0)->m_type == CToolBoxCommand::eT_INVALID_COMMAND)
-        {
-            actionId = ID_TOOLBAR_SEPARATOR;
-        }
-        else
-        {
-            actionId = bToolbox ? ID_TOOL_FIRST + idx : ID_TOOL_SHELVE_FIRST + idx;
-
-            // ActionManager uses a QSignalMapper internally. We need to disconnect any existing
-            // connections here otherwise the macro will be called more than once.
-            QObject::disconnect(pMacro->action(), &QAction::triggered, nullptr, nullptr);
-
-            actionManager->AddAction(actionId, pMacro->action());
-        }
-
-        pToolbar->AddAction(actionId);
     }
 }
 
@@ -541,11 +470,4 @@ void CToolBoxManager::GetSaveFilePath(QString& outPath) const
 {
     outPath = Path::GetResolvedUserSandboxFolder();
     outPath += "Macros.xml";
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-const std::vector<AmazonToolbar>& CToolBoxManager::GetToolbars() const
-{
-    return m_toolbars;
 }

@@ -28,7 +28,7 @@ namespace AZ
             friend class MergedShaderResourceGroupPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(MergedShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MergedShaderResourceGroup, AZ::SystemAllocator);
             AZ_RTTI(MergedShaderResourceGroup, "{5A98B01F-E5AC-4648-B307-08371FD8AA56}", Base);
 
             ~MergedShaderResourceGroup() = default;
@@ -57,7 +57,7 @@ namespace AZ
             };
 
             // Utility function that merges multiple ShaderResoruceGroup data into one.
-            RHI::ShaderResourceGroupData MergeShaderResourceData(const ShaderResourceGroupArray& srgList) const;
+            RHI::DeviceShaderResourceGroupData MergeShaderResourceData(const ShaderResourceGroupArray& srgList) const;
             // List of the ShaderResourceGroup instances that are being merged.
             ShaderResourceGroupArray m_mergedShaderResourceGroupList = {};
             // Keeps track of the frame iteration for each ShaderResourceGroup when the last compile happens. This is used

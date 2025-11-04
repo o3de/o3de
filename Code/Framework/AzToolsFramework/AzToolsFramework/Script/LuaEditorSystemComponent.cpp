@@ -14,7 +14,10 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <Editor/EditorSettingsAPIBus.h>
+
 #include <QIcon>
+#include <QProcess>
 
 namespace AzToolsFramework
 {
@@ -81,7 +84,8 @@ namespace AzToolsFramework
                         AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
                         &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
                         fullFilepath,
-                        AZ::Crc32());
+                        AZ::Crc32(),
+                        true);
                 }
                 else
                 {
@@ -112,7 +116,8 @@ namespace AzToolsFramework
                         AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
                         &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
                         fullFilepath,
-                        LuaComponentScriptBusId);
+                        LuaComponentScriptBusId,
+                        true);
                 }
                 else
                 {
@@ -130,6 +135,25 @@ namespace AzToolsFramework
         {
             if (AZ::IO::Path(fullSourceFileName).Extension() == LuaExtension)
             {
+                AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome textEditorScriptSettings;
+                AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
+                    textEditorScriptSettings,
+                    &AzToolsFramework::EditorSettingsAPIBus::Handler::GetValue,
+                    "Settings/Editor|TextEditorScript");
+                AZStd::any textEditorScriptSettingsValue = textEditorScriptSettings.GetValue<AZStd::any>();
+                AZStd::string textEditorScriptSettingsString = AZStd::any_cast<AZStd::string>(textEditorScriptSettingsValue);
+
+                if (!textEditorScriptSettingsString.empty())
+                {
+                    const auto startProcess =
+                        [textEditorScriptSettingsString](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid&)
+                    {
+                        QProcess::startDetached(textEditorScriptSettingsString.c_str(), { fullSourceFileNameInCallback });
+                    };
+                    constexpr bool isPrioritized = true;
+                    openers.push_back({ "O3DE_LUA_External_Editor", "Open with external editor...", QIcon(), startProcess, isPrioritized });
+                }
+
                 const auto luaScriptOpener = [](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid&)
                 {
                     AzToolsFramework::EditorRequestBus::Broadcast(
@@ -145,8 +169,7 @@ namespace AzToolsFramework
             const AZ::IO::Path filepath = AZ::IO::Path(fullFilepath);
             if (filepath.Extension() == LuaExtension)
             {
-                const AZStd::string_view& filename = filepath.Stem().Native();
-                const AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(filename);
+                const AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(filepath.Stem().Native());
 
                 const auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
                 if (!outcome.IsSuccess())

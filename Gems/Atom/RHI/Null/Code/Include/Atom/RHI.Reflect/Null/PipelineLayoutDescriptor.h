@@ -10,10 +10,21 @@
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
+
 namespace AZ
 {
     class ReflectContext;
-    
+
     namespace Null
     {
         class PipelineLayoutDescriptor final
@@ -22,7 +33,7 @@ namespace AZ
             using Base = RHI::PipelineLayoutDescriptor;
         public:
             AZ_RTTI(PipelineLayoutDescriptor, "{1A456415-2028-42E5-A771-61A0E41CF39D}", Base);
-            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLayoutDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<PipelineLayoutDescriptor> Create();
@@ -30,14 +41,17 @@ namespace AZ
         private:
 
             PipelineLayoutDescriptor() = default;
-            
+
             //////////////////////////////////////////////////////////////////////////
             // RHI::PipelineLayoutDescriptor overrides
             void ResetInternal() override;
             HashValue64 GetHashInternal(HashValue64 seed) const override;
             //////////////////////////////////////////////////////////////////////////
 
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
         };
     }
 }

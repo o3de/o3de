@@ -23,7 +23,7 @@ namespace EMotionFX
         struct AudioTriggerEvent
         {
             AZ_RTTI(AudioTriggerEvent, "{1AA35052-477B-4F8D-9DE3-6411E96B871D}");
-            AZ_CLASS_ALLOCATOR(AudioTriggerEvent, EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AudioTriggerEvent, EMotionFXAllocator);
 
             AudioTriggerEvent() = default;
             virtual ~AudioTriggerEvent() = default;
@@ -91,18 +91,18 @@ namespace EMotionFX
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("AnimationAudioService", 0xaed4f3ea));
+                provided.push_back(AZ_CRC_CE("AnimationAudioService"));
             }
 
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
-                required.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
-                required.push_back(AZ_CRC("AudioProxyService", 0x7da4c79c));
+                required.push_back(AZ_CRC_CE("EMotionFXActorService"));
+                required.push_back(AZ_CRC_CE("AudioProxyService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("AnimationAudioService", 0xaed4f3ea));
+                incompatible.push_back(AZ_CRC_CE("AnimationAudioService"));
             }
 
         private:

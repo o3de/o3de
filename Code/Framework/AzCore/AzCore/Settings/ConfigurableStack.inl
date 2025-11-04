@@ -149,7 +149,7 @@ namespace AZ
     template<typename StackBaseType>
     auto SerializeGenericTypeInfo<ConfigurableStack<StackBaseType>>::GetGenericInfo() -> ClassInfoType*
     {
-        return GetCurrentSerializeContextModule().CreateGenericClassInfo<ConfigurableStackType>();
+        return GetGlobalSerializeContextModule().CreateGenericClassInfo<ConfigurableStackType>();
     }
 
     template<typename StackBaseType>

@@ -1,5 +1,6 @@
 {
     "gem_name": "Atom_AtomBridge",
+    "version": "0.0.0",
     "display_name": "Atom Bridge",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -21,6 +22,7 @@
         "Atom_Feature_Common",
         "Atom_Component_DebugCamera",
         "AtomImGuiTools",
+        "AtomRenderOptions",
         "CommonFeaturesAtom",
         "EMotionFX_Atom",
         "ImguiAtom",
@@ -32,6 +34,7 @@
         "AtomViewportDisplayIcons",
         "MaterialCanvas",
         "MaterialEditor",
+        "PassCanvas",
         "ShaderManagementConsole"
     ]
 }

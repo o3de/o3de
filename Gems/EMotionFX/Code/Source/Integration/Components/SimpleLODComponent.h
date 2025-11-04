@@ -64,7 +64,7 @@ namespace EMotionFX
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("EMotionFXSimpleLODService", 0xa9b5f358));
+                provided.push_back(AZ_CRC_CE("EMotionFXSimpleLODService"));
             }
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
             {
@@ -72,11 +72,11 @@ namespace EMotionFX
             }
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
-                required.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
+                required.push_back(AZ_CRC_CE("EMotionFXActorService"));
             }
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("EMotionFXSimpleLODService", 0xa9b5f358));
+                incompatible.push_back(AZ_CRC_CE("EMotionFXSimpleLODService"));
             }
             static void Reflect(AZ::ReflectContext* context);
 

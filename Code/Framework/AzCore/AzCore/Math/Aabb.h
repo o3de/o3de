@@ -18,7 +18,7 @@ namespace AZ
 
     //! An axis aligned bounding box.
     //! It is defined as a closed set, i.e. it includes the boundary, so it will always include at least one point.
-    class Aabb
+    class AZCORE_API Aabb
     {
     public:
 

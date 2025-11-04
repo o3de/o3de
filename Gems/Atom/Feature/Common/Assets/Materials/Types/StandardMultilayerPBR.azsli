@@ -1,0 +1,100 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_MaterialInputs.azsli>
+
+// TODO(MaterialPipeline): There is no good reason for StandardMultilayerPBR to have o_opacity_mode, it doesn't support transparency or alpha cutout.
+// It is only needed because the Transparent - Shader needs it, and that shader is part of the "Standard" lighting model. We can't use "Base" lighting 
+// because the material uses things like emission and clear coat. One option would be to add a new "StandardOpaque" lighting model. 
+// But really I think we should get rid of the "lighting model" concept from the material pipeline interface and instead let the .materialtype 
+// communicate the specific combination features it wants, and this would configure preprocessor flags to do something like omit the transparency features.
+option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode;
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE || MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_Common.azsli>
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/MultilayerParallaxDepth.azsli>
+    bool CanHandleParallax()
+    {
+        // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+        // Also, all the debug draw modes avoid parallax (they early-return before parallax code actually) so you can see exactly where the various maps appear on the surface UV space.
+        return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_debugDrawMode == DebugDrawMode::None;
+    }
+#endif
+
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+    #define DEFINE_LAYER_OPTIONS(prefix) \
+    COMMON_OPTIONS_BASE_COLOR(prefix)    \
+    COMMON_OPTIONS_ROUGHNESS(prefix)     \
+    COMMON_OPTIONS_METALLIC(prefix)      \
+    COMMON_OPTIONS_SPECULAR_F0(prefix)   \
+    COMMON_OPTIONS_NORMAL(prefix)        \
+    COMMON_OPTIONS_CLEAR_COAT(prefix)    \
+    COMMON_OPTIONS_OCCLUSION(prefix)     \
+    COMMON_OPTIONS_EMISSIVE(prefix)
+
+    DEFINE_LAYER_OPTIONS(o_layer1_)
+    DEFINE_LAYER_OPTIONS(o_layer2_)
+    DEFINE_LAYER_OPTIONS(o_layer3_)
+    
+    bool ShouldHandleParallax()
+    {
+        return CanHandleParallax();
+    }
+
+    bool NeedsTangentFrame()
+    {
+        return ShouldHandleParallax()
+            || o_layer1_o_normal_useTexture
+            || o_layer2_o_normal_useTexture
+            || o_layer3_o_normal_useTexture
+    #if ENABLE_CLEAR_COAT
+            || o_layer1_o_clearCoat_normal_useTexture
+            || o_layer2_o_clearCoat_normal_useTexture
+            || o_layer3_o_clearCoat_normal_useTexture
+    #endif
+            ;
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_VertexEval.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_PixelGeometryEval.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_SurfaceEval.azsli>
+
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli>
+
+#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+
+    bool ShouldHandleParallax()
+    {
+        // The depth pass shaders need to calculate parallax when the result could affect the depth buffer (or when
+        // parallax could affect texel clipping but we don't have alpha/clipping support in multilayer PBR).
+        return CanHandleParallax() && o_parallax_enablePixelDepthOffset;
+    }
+
+    bool NeedsTangentFrame()
+    {
+        return ShouldHandleParallax();
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_VertexEval.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardMultilayerPBR/StandardMultilayerPBR_PixelGeometryEval.azsli>
+
+    void EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
+    {
+        // do nothing, this is where alpha clip can be done if it's supported
+    }
+
+#else
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
+
+#endif

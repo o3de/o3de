@@ -12,6 +12,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Spawnable/Script/SpawnableScriptAssetRef.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 #include <AzCore/std/containers/unordered_set.h>
 
@@ -19,7 +20,7 @@ namespace AzFramework::Scripts
 {
     //! A helper class for direct calls to SpawnableEntitiesInterface that is
     //! reflected with BehaviorContext for interfacing with Lua API
-    class SpawnableScriptMediator final
+    class AZF_API SpawnableScriptMediator final
         : public AZ::TickBus::Handler
     {
     public:
@@ -83,5 +84,10 @@ namespace AzFramework::Scripts
         AZStd::shared_ptr<CallbackSentinel> m_sentinel;
 
         AZStd::unordered_set<EntitySpawnTicket> m_activeSpawnTickets;
+
+        // Maintain a cache of tickets to at least keep 1 reference in the mediator, some script systems
+        // may do garbage collection which could lead to unintended despawn due to reference 
+        // counts reaching 0
+        AZStd::unordered_set<EntitySpawnTicket> m_cachedSpawnTickets;
     };
 } // namespace AzFramework

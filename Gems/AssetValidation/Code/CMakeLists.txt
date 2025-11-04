@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME AssetValidation.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         assetvalidation_files.cmake
@@ -24,7 +24,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AssetValidation ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         assetvalidation_shared_files.cmake
@@ -35,15 +35,24 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AssetValidation.Static
+            Gem::${gem_name}.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/AssetValidationModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME AssetValidation.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             assetvalidation_tests_files.cmake
@@ -54,16 +63,17 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::AssetValidation.Static
+                Gem::${gem_name}.Static
                 AZ::AzFramework
                 AZ::AzFrameworkTestShared
     )
     ly_add_googletest(
-        NAME Gem::AssetValidation.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()
 
 # AssetValidation should be active in all clients plus tools
-ly_create_alias(NAME AssetValidation.Clients NAMESPACE Gem TARGETS Gem::AssetValidation)
-ly_create_alias(NAME AssetValidation.Tools   NAMESPACE Gem TARGETS Gem::AssetValidation)
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Tools   NAMESPACE Gem TARGETS Gem::${gem_name})
 

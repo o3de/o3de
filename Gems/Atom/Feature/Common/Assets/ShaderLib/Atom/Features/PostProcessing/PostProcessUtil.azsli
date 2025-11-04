@@ -8,41 +8,9 @@
 
 #pragma once
 
-/*
-    Linear to sRGB and back again
-    The following 4 functions are helpful for accurately converting from 
-    Linear colorspace to sRGB colorspace and back again. With both floats and halfs.
-    
-    More information, including the transformations used in this file, can be found here:
-    https://en.wikipedia.org/wiki/SRGB
-*/
-
-float3 LinearToSRGB(float3 col)
-{
-    return (col.xyz < 0.0031308) ? 12.92 * col.xyz : 1.055 * pow(abs(col.xyz), 1.0 / 2.4) - float3( 0.055, 0.055, 0.055 );
-}
-
-float3 SRGBToLinear(float3 col)
-{
-    return (col.xyz < 0.04045) ? col.xyz / 12.92 : pow (abs((col.xyz + float3(0.055, 0.055, 0.055)) / float3(1.055, 1.055, 1.055)), 2.4);
-}
-
-/* AZSL doesn't support function overload for the moment.
-half3 LinearToSRGB(half3 col)
-{
-    return (col < 0.0031308h) ? 12.92h * col : 1.055h * pow(abs(col), 1.0h / 2.4h) - half3(0.055h, 0.055h, 0.055h);
-}
-
-half3 SRGBToLinear(half3 col)
-{
-    return (col.xyz < 0.04045h) ? col.xyz / 12.92h : pow (abs((col.xyz + half3(0.055h, 0.055h, 0.055h)) / half3(1.055h, 1.055h, 1.055h)), 2.4h);
-}
-*/
-
 // Lifted from Legacy LY Renderer
 // Input color must be in linear space
 float GetLuminance( float3 color )
 {
     return dot( color, float3( 0.2126f, 0.7152f, 0.0722f ) );
 }
-

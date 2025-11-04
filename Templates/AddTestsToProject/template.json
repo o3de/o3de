@@ -1,0 +1,42 @@
+{
+    "template_name": "AddTestsToProject",
+    "origin": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0",
+    "display_name": "Add Tests to your Project",
+    "summary": "Adds tests to an existing project.  Point it at your project's root, then open YourProject/Gem/Tests folder for more info",
+    "canonical_tags": [],
+    "user_tags": [
+        "AddTestsToProject"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "Gem/Tests/custom_google_test.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Tests/custom_pytest.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Tests/test_example_pytest.py",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Tests/test_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Tests/testmain.cpp",
+            "isTemplated": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Gem"
+        },
+        {
+            "dir": "Gem/Tests"
+        }
+    ]
+}

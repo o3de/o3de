@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -27,7 +29,7 @@ namespace Physics
 {
     namespace ReflectionUtils
     {
-        void ReflectPhysicsApi(AZ::ReflectContext* context);
+        AZF_API void ReflectPhysicsApi(AZ::ReflectContext* context);
     }
 
     namespace Utils
@@ -42,11 +44,14 @@ namespace Physics
         }
 
         //! Makes the input string unique for the input set
-        void MakeUniqueString(const AZStd::unordered_set<AZStd::string>& stringSet
+        AZF_API void MakeUniqueString(const AZStd::unordered_set<AZStd::string>& stringSet
             , AZStd::string& stringInOut
             , AZ::u64 maxStringLength);
 
         //! Returns true if the tag matches the filter tag, or the filter tag is empty
-        bool FilterTag(AZ::Crc32 tag, AZ::Crc32 filter);
+        AZF_API bool FilterTag(AZ::Crc32 tag, AZ::Crc32 filter);
+
+        //! Returns true if the scale is uniform.
+        AZF_API bool HasUniformScale(const AZ::Vector3& scale);
     }
 }

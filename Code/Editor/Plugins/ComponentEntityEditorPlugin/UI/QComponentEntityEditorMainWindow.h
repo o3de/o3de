@@ -9,9 +9,11 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
+#include <QStackedWidget>
 
-#include <AzCore/Serialization/SerializeContext.h>
-
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 #include <CryCommon/ISystem.h>
 #endif
 
@@ -33,6 +35,8 @@ namespace AzToolsFramework
 class QComponentEntityEditorInspectorWindow
     : public QMainWindow
     , public ISystemEventListener
+    , public AzToolsFramework::ToolsApplicationNotificationBus::Handler
+    , public AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler
 {
     Q_OBJECT
 
@@ -46,6 +50,14 @@ public:
     // Required override.
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
+    // ToolsApplicationNotificationBus overrides...
+    void AfterEntitySelectionChanged(
+        [[maybe_unused]]const AzToolsFramework::EntityIdList& newlySelectedEntities,
+        [[maybe_unused]]const AzToolsFramework::EntityIdList& newlyDeselectedEntities) override;
+
+    // AssetBrowserPreviewRequestBus overrides...
+    void PreviewAsset([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
+
     // you are required to implement this to satisfy the unregister/registerclass requirements on "AzToolsFramework::RegisterViewPane"
     // make sure you pick a unique GUID
     static const GUID& GetClassID()
@@ -58,9 +70,15 @@ public:
         return guid;
     }
 
+    void closeEvent(QCloseEvent* ev) override;
+
     AzToolsFramework::EntityPropertyEditor* GetPropertyEditor() { return m_propertyEditor; }
+    AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget* GetAssetBrowserInspector() { return m_assetBrowserInspector; }
 
 private:
 
     AzToolsFramework::EntityPropertyEditor* m_propertyEditor;
+    AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget* m_assetBrowserInspector;
+
+    QStackedWidget* m_inspectorWidgetStack;
 };

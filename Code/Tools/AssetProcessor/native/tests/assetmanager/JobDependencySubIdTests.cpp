@@ -7,16 +7,27 @@
  */
 
 #include <native/tests/assetmanager/JobDependencySubIdTests.h>
-#include <unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <QApplication>
 
 namespace UnitTests
 {
+    // sets up data such that:
+
+    // SOURCE FILES DATABASE TABLE
+    //    source1 = parent.txt
+    //    source2 = child.txt
+    // JOB DATABASE TABLE
+    //    job1 "Mock Job" (completed)
+    // PRODUCT DATABASE TABLE
+    //    product.txt (subid 0) for job1       - sets hash to input "hashA"
+    //    procuct777.txt (subid 77) for job1   - sets hash to input "HashB"
+    // SOURCE FILE DEPENDENCY TABLE
+    //    JobToJob Dependency - child.txt DEPENDS ON parent.txt - SUBID is either empty, or 777
+
     void JobDependencySubIdTest::CreateTestData(AZ::u64 hashA, AZ::u64 hashB, bool useSubId)
     {
         using namespace AzToolsFramework::AssetDatabase;
-
-        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
 
         SourceDatabaseEntry source1{ m_scanfolder.m_scanFolderID, "parent.txt", AZ::Uuid::CreateRandom(), "fingerprint" };
         SourceDatabaseEntry source2{ m_scanfolder.m_scanFolderID, "child.txt", AZ::Uuid::CreateRandom(), "fingerprint" };
@@ -44,8 +55,8 @@ namespace UnitTests
         ASSERT_TRUE(m_stateData->SetProduct(product2));
 
         SourceFileDependencyEntry dependency1{ AZ::Uuid::CreateRandom(),
-                                               source2.m_sourceName.c_str(),
-                                               source1.m_sourceName.c_str(),
+                                               source2.m_sourceGuid,
+                                               PathOrUuid(source1.m_sourceName),
                                                SourceFileDependencyEntry::DEP_JobToJob,
                                                0,
                                                 useSubId ? AZStd::to_string(product2.m_subID).c_str() : "" };
@@ -55,7 +66,7 @@ namespace UnitTests
 
     void JobDependencySubIdTest::RunTest(bool firstProductChanged, bool secondProductChanged)
     {
-        AZ::IO::Path cacheDir(m_tempDir.GetDirectory());
+        AZ::IO::Path cacheDir(m_databaseLocationListener.GetAssetRootDir());
         cacheDir /= "Cache";
         cacheDir /= "pc";
 
@@ -79,10 +90,6 @@ namespace UnitTests
 
         m_assetProcessorManager->CheckActiveFiles(1);
 
-        // AssessModifiedFile is going to set up a OneShotTimer with a 1ms delay on it.  We have to wait a short time for that timer to
-        // elapse before we can process that event. If we use the alternative processEvents that loops for X milliseconds we could
-        // accidentally process too many events.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
         QCoreApplication::processEvents();
 
         m_assetProcessorManager->CheckActiveFiles(0);
@@ -127,10 +134,6 @@ namespace UnitTests
 
         m_assetProcessorManager->CheckActiveFiles(1);
 
-        // AssessModifiedFile is going to set up a OneShotTimer with a 1ms delay on it.  We have to wait a short time for that timer to
-        // elapse before we can process that event. If we use the alternative processEvents that loops for X milliseconds we could
-        // accidentally process too many events.
-        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
         QCoreApplication::processEvents();
 
         m_assetProcessorManager->CheckActiveFiles(0);

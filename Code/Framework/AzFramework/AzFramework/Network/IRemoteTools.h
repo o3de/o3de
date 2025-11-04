@@ -39,7 +39,7 @@ namespace AzFramework
     class RemoteToolsMessage : public AZStd::intrusive_refcount<size_t>
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoteToolsMessage, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoteToolsMessage, AZ::OSAllocator);
         AZ_RTTI(RemoteToolsMessage, "{8512328C-949D-4F0C-B48D-77C26C207443}");
 
         RemoteToolsMessage() = default;
@@ -84,7 +84,7 @@ namespace AzFramework
 
         //! Reflect RemoteToolsMessage
         //! @param reflection Context to reflect to
-        static void ReflectRemoteToolsMessage(AZ::ReflectContext* reflection);
+        static void Reflect(AZ::ReflectContext* reflection);
 
     protected:
         AZ::u64 m_msgId = 0;
@@ -105,7 +105,7 @@ namespace AzFramework
     {
 
     public:
-        AZ_CLASS_ALLOCATOR(RemoteToolsEndpointInfo, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoteToolsEndpointInfo, AZ::OSAllocator);
         AZ_TYPE_INFO(RemoteToolsEndpointInfo, "{DD0E9B2A-3B25-43B1-951E-CACCEC5D6754}");
 
         explicit RemoteToolsEndpointInfo(AZStd::string displayName = AZStd::string{}, AZ::u32 networkId = 0)
@@ -132,7 +132,7 @@ namespace AzFramework
 
         //! Gets the Persistent ID of this endpoint
         //! @return A Crc32 representing the Persistent ID of this endpoint
-        AZ::u32 GetPersistentId() const;
+        AZ::Crc32 GetPersistentId() const;
 
         //! Gets the AzNetworking Network ID of this endpoint
         //! @return The AzNetworking Network ID for the connection of this endpoint
@@ -142,13 +142,17 @@ namespace AzFramework
         //! @param displayName The string display name of this endpoint
         //! @param persistentId The Crc32 based persistent ID of this endpoint
         //! @param networkId The AzNetworking Network ID for this endpoint's connection
-        void SetInfo(AZStd::string displayName, AZ::u32 persistentId, AZ::u32 networkId);
+        void SetInfo(AZStd::string displayName, AZ::Crc32 persistentId, AZ::u32 networkId);
 
         bool IsIdentityEqualTo(const RemoteToolsEndpointInfo& other) const;
 
+        //! Reflect RemoteToolsEndpointInfo
+        //! @param reflection Context to reflect to
+        static void Reflect(AZ::ReflectContext* reflection);
+
     private:
         AZStd::string m_displayName;
-        AZ::u32 m_persistentId = 0; // this is a CRC key used to identify a RemoteTools target
+        AZ::Crc32 m_persistentId; // this is a CRC key used to identify a RemoteTools target
         AZ::u32 m_networkId = 0; // this is the connection id, used for AzNetworking communications.
     };
 
@@ -156,7 +160,7 @@ namespace AzFramework
     using RemoteToolsEndpointStatusEvent = AZ::Event<RemoteToolsEndpointInfo>;
     using RemoteToolsEndpointConnectedEvent = AZ::Event<bool>;
     using RemoteToolsEndpointChangedEvent = AZ::Event<AZ::u32, AZ::u32>;
-    using ReceivedRemoteToolsMessages = AZStd::fixed_vector<RemoteToolsMessagePointer, 64>;
+    using ReceivedRemoteToolsMessages = AZStd::fixed_vector<RemoteToolsMessagePointer, 128>;
 
     class IRemoteTools
     {
@@ -184,6 +188,11 @@ namespace AzFramework
         //! Useful for situations in which messages must be processed out of band.
         //! @param key The key of the service to clear messages for
         virtual void ClearReceivedMessages(AZ::Crc32 key) = 0;
+
+        //! Will clear pending received messages at the start of the next tick
+        //! Useful if multiple areas of the same service wants to read the messages
+        //! @param key The key of the service to clear messages for
+        virtual void ClearReceivedMessagesForNextTick(AZ::Crc32 key) = 0;
 
         virtual void RegisterRemoteToolsEndpointJoinedHandler(AZ::Crc32 key, RemoteToolsEndpointStatusEvent::Handler& handler) = 0;
 

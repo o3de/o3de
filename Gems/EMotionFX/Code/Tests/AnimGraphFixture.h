@@ -98,5 +98,7 @@ namespace EMotionFX
         AnimGraphStateMachine* m_rootStateMachine = nullptr;
         AnimGraphInstance* m_animGraphInstance = nullptr;
         MotionSet* m_motionSet = nullptr;
+
+        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
     };
 }

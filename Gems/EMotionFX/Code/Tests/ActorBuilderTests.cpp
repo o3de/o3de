@@ -35,9 +35,9 @@ namespace EMotionFX
     // This fixture is responsible for creating the scene description used by
     // the actor builder pipeline tests
     using ActorBuilderPipelineFixtureBase = InitSceneAPIFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AzToolsFramework::Components::PropertyManagerComponent,
         EMotionFX::Integration::SystemComponent,
@@ -77,6 +77,8 @@ namespace EMotionFX
 
         void TearDown() override
         {
+            m_actor.reset();
+
             delete m_scene;
             m_scene = nullptr;
 
@@ -236,5 +238,5 @@ namespace EMotionFX
         EXPECT_TRUE(emfxLocal.IsClose(builderLocal));
     }
 
-    INSTANTIATE_TEST_CASE_P(ActorBuilder_Transforms, ActorBuilderPipelineTransformTestFixture, ::testing::ValuesIn(EMotionFX::Matrix3x4s));
+    INSTANTIATE_TEST_SUITE_P(ActorBuilder_Transforms, ActorBuilderPipelineTransformTestFixture, ::testing::ValuesIn(EMotionFX::Matrix3x4s));
 } // namespace EMotionFX

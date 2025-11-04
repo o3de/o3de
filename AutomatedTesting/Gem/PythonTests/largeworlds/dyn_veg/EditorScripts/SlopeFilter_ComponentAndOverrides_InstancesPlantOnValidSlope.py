@@ -70,7 +70,7 @@ def SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes():
 
     # 2) Create a new entity with required vegetation area components
     center_point = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "Slope_PinkFlower")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", center_point, 32.0, 32.0, 32.0,
                                                                pink_flower_prefab)

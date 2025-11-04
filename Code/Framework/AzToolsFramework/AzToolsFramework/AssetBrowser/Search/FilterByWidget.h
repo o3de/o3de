@@ -7,6 +7,7 @@
  */
 #pragma once
 
+
 /*********************************************************************************************
  * FilterByWidget has been deprecated, use AzQtComponents::FilteredSearchWidget instead.
  *********************************************************************************************/
@@ -15,6 +16,7 @@
 #include <QWidget>
 #include <QScopedPointer>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace Ui
 {
@@ -25,7 +27,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class FilterByWidget
+        class AZTF_API FilterByWidget
             : public QWidget
         {
             Q_OBJECT

@@ -18,11 +18,12 @@
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzFramework/Spawnable/SpawnableMonitor.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
     class Entity;
-}
+} // namespace AZ
 
 namespace AzFramework
 {
@@ -31,7 +32,7 @@ namespace AzFramework
     //! Calls to this container should be done from the same thread, but multiple threads can create their own container for
     //! the same Spawnable. This container is for simple use cases. Complex situations can directly call the
     //! SpawnablesEntitesInterface and use the SpawnableMonitor if needed.
-    class SpawnableEntitiesContainer
+    class AZF_API SpawnableEntitiesContainer
     {
     public:
         using AlertCallback = AZStd::function<void(uint32_t generation)>;
@@ -57,7 +58,8 @@ namespace AzFramework
         [[nodiscard]] uint32_t GetCurrentGeneration() const;
 
         //! Puts in a request to spawn entities using all entities in the provided spawnable as a template.
-        void SpawnAllEntities();
+        //! @param optionalArgs optional arguments for spawning
+        void SpawnAllEntities(SpawnAllEntitiesOptionalArgs optionalArgs = {});
         //! Puts in a request to spawn entities using the entities found in the spawnable at the provided indices as a template.
         //! @param entityIndices A list of indices to the entities in the spawnable.
         void SpawnEntities(AZStd::vector<uint32_t> entityIndices);
@@ -90,7 +92,7 @@ namespace AzFramework
 
         struct ThreadSafeData
         {
-            AZ_CLASS_ALLOCATOR(SpawnableEntitiesContainer::ThreadSafeData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SpawnableEntitiesContainer::ThreadSafeData, AZ::SystemAllocator);
             EntitySpawnTicket m_spawnedEntitiesTicket;
             uint32_t m_generation{ 0 };
         };

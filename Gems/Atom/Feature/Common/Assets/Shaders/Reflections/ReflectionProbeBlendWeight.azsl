@@ -16,8 +16,8 @@
 // to the outer volumes.  Inner volumes always blend at 100% so there is no need to write them
 // to the blend weight texture.
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
 
 #include "ReflectionProbeRenderObjectSrg.azsli"
 
@@ -58,7 +58,11 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {
     // reconstruct world position from depth
     // Note: this is the world position of the rendered object covered by the volume, not the volume itself
-    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, sampleIndex).xyz;
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
+    float depth = PassSrg::m_depth.Load(IN.m_position.xy, sampleIndex).r;
+    float3 positionWS = ReconstructWorldPositionFromDepth(IN.m_position.xy, depth, dimensions, sampleIndex).xyz;
 
     // make sure the pixel belongs to this probe volume
     // this is necessary since it could have the correct stencil value but actually reside 
@@ -76,7 +80,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
         // not inside the inner AABB, so it's in between the inner and outer AABBs
         // compute blend amount based on the distance to the outer AABB
         blendWeight = ComputeLerpBetweenInnerOuterOBBs(
-            ObjectSrg::GetWorldMatrixInverse(),
+            (float3x4)ObjectSrg::GetWorldMatrixInverse(),
             ObjectSrg::m_innerObbHalfLengths,
             ObjectSrg::m_outerObbHalfLengths,
             positionWS);

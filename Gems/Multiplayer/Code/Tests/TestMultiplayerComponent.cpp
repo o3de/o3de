@@ -7,6 +7,7 @@
 #include <Tests/TestMultiplayerComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 
 namespace MultiplayerTest
 {
@@ -33,6 +34,7 @@ namespace MultiplayerTest
 
     void TestMultiplayerComponent::OnInit()
     {
+        m_netBindComponent->AddNetworkActivatedEventHandler(m_networkActivatedHandler);
     }
 
     void TestMultiplayerComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -40,6 +42,10 @@ namespace MultiplayerTest
     }
 
     void TestMultiplayerComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
+    {
+    }
+
+    void TestMultiplayerComponent::OnNetworkActivated()
     {
     }
 
@@ -58,20 +64,32 @@ namespace MultiplayerTest
 
     void TestMultiplayerComponentController::CreateInput(Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
-        auto* networkInput = input.FindComponentInput<TestMultiplayerComponentNetworkInput>();
-        networkInput->m_ownerId = GetParent().GetId();
+        if (auto* networkInput = input.FindComponentInput<TestMultiplayerComponentNetworkInput>(); networkInput)
+        {
+            networkInput->m_ownerId = GetParent().GetId();
+        }
+        
+        if (const auto& component = GetParent(); component.m_createInputCallback)
+        {
+            component.m_createInputCallback(GetNetEntityId(), input, deltaTime);
+        }
     }
 
     void TestMultiplayerComponentController::ProcessInput(Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
         const auto& component = GetParent();
-        [[maybe_unused]] const auto* networkInput = input.FindComponentInput<TestMultiplayerComponentNetworkInput>();
-        AZ_Assert(networkInput->m_ownerId == component.GetId(), "Input Id doesn't match the owner component Id on entity %llu",
-            aznumeric_cast<AZ::u64>(GetEntityId()));
+
+        if (const auto* networkInput = input.FindComponentInput<TestMultiplayerComponentNetworkInput>(); networkInput)
+        {
+            AZ_Assert(
+                networkInput->m_ownerId == component.GetId(),
+                "Input Id doesn't match the owner component Id on entity %llu",
+                aznumeric_cast<AZ::u64>(GetEntityId()));
+        }
 
         if (component.m_processInputCallback)
         {
-            component.m_processInputCallback(GetNetEntityId());
+            component.m_processInputCallback(GetNetEntityId(), input, deltaTime);
         }
     }
 }

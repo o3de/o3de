@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
+#include "MCore/Source/RefCounted.h"
 
 
 namespace EMotionFX
@@ -25,7 +25,8 @@ namespace EMotionFX
      * This class is responsible for updating the transformations of all actor instances, in the right order.
      */
     class EMFX_API ActorUpdateScheduler
-        : public BaseObject
+        : public MCore::RefCounted
+
     {
     public:
         /**
@@ -93,7 +94,7 @@ namespace EMotionFX
          * The constructor.
          */
         ActorUpdateScheduler()
-            : BaseObject()   {}
+            : MCore::RefCounted()   {}
 
         /**
          * The destructor.

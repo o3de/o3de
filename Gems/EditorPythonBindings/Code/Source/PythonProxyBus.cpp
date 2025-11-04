@@ -8,10 +8,10 @@
 
 #include <PythonProxyBus.h>
 
-#include <Source/PythonUtility.h>
+#include <EditorPythonBindings/PythonUtility.h>
 #include <Source/PythonTypeCasters.h>
 
-#include <Source/PythonCommon.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonSymbolsBus.h>
 #include <pybind11/embed.h>
 
@@ -94,7 +94,7 @@ namespace EditorPythonBindings
         class PythonProxyNotificationHandler final
         {
         public:
-            AZ_CLASS_ALLOCATOR(PythonProxyNotificationHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PythonProxyNotificationHandler, AZ::SystemAllocator);
 
             PythonProxyNotificationHandler(AZStd::string_view busName)
             {
@@ -189,13 +189,22 @@ namespace EditorPythonBindings
             {
                 if (!PyCallable_Check(callback.ptr()))
                 {
-                    AZ_Error("python", false, "The callback needs to be a callable python function.");
+                    [[maybe_unused]] AZStd::string ebusName(AZStd::string(m_ebus ? m_ebus->m_name : "invalid ebus"));
+                    AZ_Error("python", false, "The callback for event '%s' on bus '%.*s' needs to be a callable python function.",
+                        eventName.data(),
+                        AZ_STRING_ARG(ebusName));
                     return false;
                 }
 
                 if (!m_handler)
                 {
-                    AZ_Error("python", false, "No EBus connection detected; missing call or failed call to connect()?");
+                    [[maybe_unused]] AZStd::string ebusName(m_ebus ? m_ebus->m_name : "invalid ebus");
+                    AZ_Error(
+                        "python",
+                        false,
+                        "No EBus connection detected for event '%s'. Make sure to call to connect() on the %.*s bus, first.",
+                        eventName.data(),
+                        AZ_STRING_ARG(ebusName));
                     return false;
                 }
 

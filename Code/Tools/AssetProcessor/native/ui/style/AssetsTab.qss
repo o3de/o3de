@@ -121,8 +121,7 @@ QFrame#jobContextLogLabel {
     margin-top: 12px;
 }
 
-QLabel#jobLogPlaceholderLabel,
-QLabel#jobContextLogPlaceholderLabel {
+QLabel#jobLogPlaceholderLabel {
     background-color: rgb(34,34,34);
     padding: 8px;
     padding-top: 16px;

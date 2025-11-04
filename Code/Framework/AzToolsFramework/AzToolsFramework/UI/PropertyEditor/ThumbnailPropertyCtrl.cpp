@@ -75,7 +75,7 @@ namespace AzToolsFramework
 
     void ThumbnailPropertyCtrl::ClearThumbnail()
     {
-        m_key.clear();
+        m_key.reset();
         m_thumbnail->ClearThumbnail();
         m_thumbnailEnlarged->ClearThumbnail();
         UpdateVisibility();

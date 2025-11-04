@@ -33,7 +33,7 @@ namespace UnitTest
         public:
 
             AZ_RTTI(TestPass, "{2056532E-286F-454F-8659-15A289432A63}", AZ::RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(TestPass, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TestPass, AZ::SystemAllocator);
 
             TestPass(const AZ::RPI::PassDescriptor& descriptor)
                 : AZ::RPI::ParentPass(descriptor)
@@ -45,7 +45,7 @@ namespace UnitTest
                 m_drawListTag = drawListTagRegistry->AcquireTag(drawListTagString);
                 m_viewTag = viewTag;
                 m_flags.m_hasDrawListTag = true;
-                m_flags.m_hasPipelineViewTag = true;
+                m_flags.m_bindViewSrg = true;
             }
 
             AZ::RHI::DrawListTag GetDrawListTag() const override

@@ -21,7 +21,7 @@ namespace AtomToolsFramework
     //! PreviewRendererCaptureRequest describes the size, content, and behavior of a scene to be rendered to an image
     struct PreviewRendererCaptureRequest final
     {
-        AZ_CLASS_ALLOCATOR(PreviewRendererCaptureRequest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PreviewRendererCaptureRequest, AZ::SystemAllocator);
 
         int m_size = 512;
         AZStd::shared_ptr<PreviewContent> m_content;

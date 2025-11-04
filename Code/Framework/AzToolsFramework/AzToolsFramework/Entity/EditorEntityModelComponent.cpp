@@ -66,17 +66,17 @@ namespace AzToolsFramework
 
         void EditorEntityModelComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorEntityModelService", 0x9d215543));
+            services.push_back(AZ_CRC_CE("EditorEntityModelService"));
         }
 
         void EditorEntityModelComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorEntityModelService", 0x9d215543));
+            services.push_back(AZ_CRC_CE("EditorEntityModelService"));
         }
 
         void EditorEntityModelComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
         {
-            services.push_back(AZ_CRC("EditorEntityContextService", 0x28d93a43));
+            services.push_back(AZ_CRC_CE("EditorEntityContextService"));
         }
 
         void EditorEntityModelComponent::Activate()

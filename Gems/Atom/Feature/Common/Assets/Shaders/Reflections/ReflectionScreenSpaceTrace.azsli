@@ -6,16 +6,9 @@
  *
  */
 
-#include <scenesrg.srgi>
-#include <viewsrg.srgi>
-
-float ViewSpaceDepth(float depth)
-{
-    float z = 2.0f * depth - 1.0f;
-    float zFar = ViewSrg::GetFarZ();
-    float zNear = ViewSrg::GetNearZ();
-    return 2.0f * zNear * zFar / (zFar + zNear - z * (zFar - zNear));
-}
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/RPI/Math.azsli>
 
 float DistanceSqr(float2 v1, float2 v2) 
 { 
@@ -52,21 +45,24 @@ float DistanceSqr(float2 v1, float2 v2)
 // extensions and optimizations.
 //
 
-static const float Thickness = 0.01f;
 static const uint MaxSteps = 96;
-static const float MaxDistance = 15.0f;
-static const float MaxDepthThreshold = 0.3f;
 static const uint BinarySearchSteps = 16;
 
 bool TraceRayScreenSpace(float3 rayStartVS, float3 rayDirectionVS, uint2 dimensions, out float2 hitCoords)
 {
-    float3 rayEndVS = rayStartVS + rayDirectionVS * MaxDistance;
+    float3 rayEndVS = rayStartVS + rayDirectionVS * PassSrg::m_maxRayDistance;
+
+    // early out if endpoint is behind camera
+    if (rayEndVS.z >= 0.0f)
+    {
+        return false;
+    }
 
     // project into homogeneous clip space
-    float4 H0 = mul(ViewSrg::m_projectionMatrix, float4(rayStartVS, 1.0));
-    float4 H1 = mul(ViewSrg::m_projectionMatrix, float4(rayEndVS, 1.0));
-    float k0 = 1.0 / H0.w;
-    float k1 = 1.0 / H1.w;
+    float4 H0 = mul(ViewSrg::m_projectionMatrix, float4(rayStartVS, 1.0f));
+    float4 H1 = mul(ViewSrg::m_projectionMatrix, float4(rayEndVS, 1.0f));
+    float k0 = 1.0f / H0.w;
+    float k1 = 1.0f / H1.w;
     
     // convert to screen-space endpoints 
     float2 P0 = H0.xy * k0 * 0.5f + 0.5f;
@@ -79,7 +75,12 @@ bool TraceRayScreenSpace(float3 rayStartVS, float3 rayDirectionVS, uint2 dimensi
     float3 Q1 = rayEndVS * k1;
 
     // if the line is degenerate, make it cover at least one pixel
+#ifdef PRE_HLSL_2021
+    // See /o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/PRE_HLSL_2021.md for details.
     P1 += DistanceSqr(P0, P1) < EPSILON ? float2(0.01f, 0.01f) : 0.0f;
+#else
+    P1 += select(DistanceSqr(P0, P1) < EPSILON, float2(0.01f, 0.01f), 0.0f);
+#endif
 
     // store all of the start variables in a single float4
     float4 PQK = float4(P0, Q0.z, k0);
@@ -87,6 +88,14 @@ bool TraceRayScreenSpace(float3 rayStartVS, float3 rayDirectionVS, uint2 dimensi
     // compute the step amount for each variable (SIMD)
     float4 dPQK = float4(P1, Q1.z, k1);
     dPQK -= PQK;
+
+    bool permute = (abs(dPQK.x) < abs(dPQK.y));
+    if (permute)
+    {
+        PQK.xy = PQK.yx;
+        dPQK.xy = dPQK.yx;
+    }
+
     dPQK /= MaxSteps;
 
     // advance by one step before starting the ray march
@@ -94,26 +103,37 @@ bool TraceRayScreenSpace(float3 rayStartVS, float3 rayDirectionVS, uint2 dimensi
 
     // ray march until the expected ray depth is beyond the actual scene depth
     bool foundHit = false;
+    float rayZMin = 0.0f;
+    float rayZMax = 0.0f;
+    float prevRayZMaxEstimate = rayStartVS.z;
     for (uint step = 0; step < MaxSteps; ++step)
     {
         // validate the current screenspace coordinates (stored in PQK.xy)
-        hitCoords = PQK.xy;
+        hitCoords = permute ? PQK.yx : PQK.xy;
         float4 validate = float4(hitCoords.x >= dimensions.x, hitCoords.y >= dimensions.y, hitCoords.x < 0, hitCoords.y < 0);
         if (any(validate))
         {
             break;
         }
+    
+        // retrieve scene depth from the linear viewspace depth buffer
+        float sceneDepth = -PassSrg::m_depthLinear.Load(uint3(hitCoords, 0)).r;
+        if (sceneDepth == 0.0f)
+        {
+            break;
+        }
 
-        // retrieve the scene depth from the depth buffer at the sample coordinates and convert to viewspace depth
-        float sampleDepth = PassSrg::m_depth.Load(int2(hitCoords), 0).r;
-        float sceneDepth = -ViewSpaceDepth(sampleDepth);
-        
-        // compute the expected depth of the ray at this point, by performing the perspective-divide
-        // on the current homogenous z-coordinate (PQK.z) by the current w-coordinate (PQK.w)
-        float rayDepth = PQK.z / PQK.w;
-
-        // a hit occurs when the expected ray depth is beyond the scene depth and within the depth tolerance
-        if (rayDepth < sceneDepth && sceneDepth - rayDepth < MaxDepthThreshold)
+        // compute expected depth, and swap min/max if necessary
+        rayZMin = prevRayZMaxEstimate;
+        rayZMax = (dPQK.z * 0.5f + PQK.z) / (dPQK.w * 0.5f + PQK.w);
+        prevRayZMaxEstimate = rayZMax;
+        if (rayZMin > rayZMax)
+        {
+            swap(rayZMin, rayZMax);
+        }
+    
+        // a hit occurs when the expected ray depth is beyond the scene depth and within the depth threshold (thickness)
+        if ((rayZMin < sceneDepth) && (rayZMax >= sceneDepth - PassSrg::m_maxDepthThreshold))
         {
             foundHit = true;
             break;
@@ -141,18 +161,17 @@ bool TraceRayScreenSpace(float3 rayStartVS, float3 rayDirectionVS, uint2 dimensi
             PQK += dPQK;
 
             // current screen coordinates are stored in PQK.xy
-            hitCoords = PQK.xy;
+            hitCoords = permute ? PQK.yx : PQK.xy;
 
-            // retrieve the scene depth from the depth buffer at the screen coordinates and convert to viewspace depth
-            float sampleDepth = PassSrg::m_depth.Load(int2(hitCoords), 0).r;
-            float sceneDepth = -ViewSpaceDepth(sampleDepth);
-        
+            // retrieve linear depth
+            float sceneDepth = -PassSrg::m_depthLinear.Load(uint3(hitCoords, 0)).r;
+
             // compute the expected depth of the ray at this point, by performing the perspective-divide
             // on the current homogenous z-coordinate (in PQK.z) by the current w-coordinate (in PQK.w)
             float rayDepth = PQK.z / PQK.w;
 
             // determine if the expected ray depth is beyond the scene depth and within the depth tolerance
-            bool exceedsSceneDepth = (rayDepth < sceneDepth && sceneDepth - rayDepth < MaxDepthThreshold);    
+            bool exceedsSceneDepth = (rayDepth < sceneDepth);
         
             // reduce the stride each iteration
             stride *= 0.5f;

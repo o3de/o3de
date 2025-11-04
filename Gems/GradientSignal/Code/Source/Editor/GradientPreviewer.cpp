@@ -64,12 +64,6 @@ namespace GradientSignal
     {
         m_ownerEntityId = ownerEntityId;
 
-        // If there's no bounds entity already set, then default it to the owning entity.
-        if (!m_boundsEntityId.IsValid())
-        {
-            m_boundsEntityId = m_ownerEntityId;
-        }
-
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(ownerEntityId);
         GradientPreviewContextRequestBus::Handler::BusConnect(ownerEntityId);
 
@@ -80,10 +74,20 @@ namespace GradientSignal
     {
         // If the preview shouldn't be active, use an invalid entityId
         m_ownerEntityId = AZ::EntityId();
-        m_boundsEntityId = AZ::EntityId();
 
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
         GradientPreviewContextRequestBus::Handler::BusDisconnect();
+    }
+
+    AZ::EntityId GradientPreviewer::GetActiveBoundsEntityId() const
+    {
+        if (m_boundsEntityId.IsValid())
+        {
+            return m_boundsEntityId;
+        }
+
+        // If there's no bounds entity already set, then default it to the owning entity.
+        return m_ownerEntityId;
     }
 
     bool GradientPreviewer::GetPreviewSettingsVisible() const
@@ -104,17 +108,17 @@ namespace GradientSignal
 
     AZ::u32 GradientPreviewer::GetPreviewPositionVisibility() const
     {
-        return (m_boundsEntityId.IsValid() || !m_previewSettingsVisible)
+        return (GetActiveBoundsEntityId().IsValid() || !m_previewSettingsVisible)
             ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
     }
 
     AZ::u32 GradientPreviewer::GetPreviewSizeVisibility() const
     {
-        if (m_boundsEntityId.IsValid())
+        if (GetActiveBoundsEntityId().IsValid())
         {
             AZ::Aabb bounds = AZ::Aabb::CreateNull();
             LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                bounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+                bounds, GetActiveBoundsEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
             if (bounds.IsValid())
             {
                 return AZ::Edit::PropertyVisibility::Hide;
@@ -125,7 +129,7 @@ namespace GradientSignal
 
     AZ::u32 GradientPreviewer::GetPreviewConstrainToShapeVisibility() const
     {
-        return (m_boundsEntityId.IsValid() && m_previewSettingsVisible)
+        return (GetActiveBoundsEntityId().IsValid() && m_previewSettingsVisible)
             ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
@@ -149,7 +153,7 @@ namespace GradientSignal
 
     AZ::EntityId GradientPreviewer::GetPreviewEntity() const
     {
-        return m_boundsEntityId;
+        return GetActiveBoundsEntityId();
     }
 
     void GradientPreviewer::SetPreviewEntity(AZ::EntityId boundsEntityId)
@@ -162,17 +166,17 @@ namespace GradientSignal
         AZ::Vector3 position = m_previewCenter;
 
         // if a shape entity was supplied, attempt to use its shape bounds or position
-        if (m_boundsEntityId.IsValid())
+        if (GetActiveBoundsEntityId().IsValid())
         {
             AZ::Aabb bounds = AZ::Aabb::CreateNull();
             LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                bounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+                bounds, GetActiveBoundsEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
             if (bounds.IsValid())
             {
                 return bounds;
             }
 
-            AZ::TransformBus::EventResult(position, m_boundsEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
+            AZ::TransformBus::EventResult(position, GetActiveBoundsEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
         }
 
         return AZ::Aabb::CreateCenterHalfExtents(position, m_previewExtents / 2.0f);
@@ -180,7 +184,7 @@ namespace GradientSignal
 
     bool GradientPreviewer::GetConstrainToShape() const
     {
-        return m_constrainToShape && m_boundsEntityId.IsValid();
+        return m_constrainToShape && GetActiveBoundsEntityId().IsValid();
     }
 
     AZ::EntityId GradientPreviewer::GetGradientEntityId() const

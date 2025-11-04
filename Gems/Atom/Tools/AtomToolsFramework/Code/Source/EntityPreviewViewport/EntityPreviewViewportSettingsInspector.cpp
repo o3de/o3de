@@ -10,7 +10,6 @@
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <AtomToolsFramework/AssetSelection/AssetSelectionGrid.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
@@ -24,6 +23,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QtConcurrent/QtConcurrent>
 
 namespace AtomToolsFramework
 {
@@ -34,6 +34,62 @@ namespace AtomToolsFramework
         setObjectName("EntityPreviewViewportSettingsInspector");
         SetGroupSettingsPrefix("/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector");
         Populate();
+
+        // Pre create the model preset dialog so that it is not repopulated every time it's opened.
+        const int modelPresetDialogItemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
+            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/ModelItemSize", 128));
+
+        m_modelPresetDialog.reset(new AssetSelectionGrid("Model Preset Browser", [](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::ModelPreset::Extension);
+        }, QSize(modelPresetDialogItemSize, modelPresetDialogItemSize), GetToolMainWindow()));
+
+        // Pre create the lighting preset dialog so that it is not repopulated every time it's opened.
+        const int lightingPresetDialogItemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
+            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
+
+        m_lightingPresetDialog.reset(new AssetSelectionGrid("Lighting Preset Browser", [](const AZStd::string& path) {
+            return path.ends_with(AZ::Render::LightingPreset::Extension);
+        }, QSize(lightingPresetDialogItemSize, lightingPresetDialogItemSize), GetToolMainWindow()));
+
+        // Prepopulating preset selection widgets with previously registered presets.
+        EntityPreviewViewportSettingsRequestBus::Event(
+            m_toolId,
+            [this](EntityPreviewViewportSettingsRequests* viewportRequests)
+            {
+                m_lightingPresetDialog->AddPath(viewportRequests->GetLastLightingPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredLightingPresetPaths())
+                {
+                    m_lightingPresetDialog->AddPath(path);
+                }
+
+                m_modelPresetDialog->AddPath(viewportRequests->GetLastModelPresetPath());
+                for (const auto& path : viewportRequests->GetRegisteredModelPresetPaths())
+                {
+                    m_modelPresetDialog->AddPath(path);
+                }
+            });
+
+        connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, m_modelPresetPath);
+        });
+
+        connect(m_modelPresetDialog.get(), &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPreset, path);
+        });
+
+        connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathRejected, this, [this]() {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, m_lightingPresetPath);
+        });
+
+        connect(m_lightingPresetDialog.get(), &AssetSelectionGrid::PathSelected, this, [this](const AZStd::string& path) {
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPreset, path);
+        });
+
+        OnViewportSettingsChanged();
         EntityPreviewViewportSettingsNotificationBus::Handler::BusConnect(m_toolId);
     }
 
@@ -41,6 +97,7 @@ namespace AtomToolsFramework
     {
         m_lightingPreset = {};
         m_modelPreset = {};
+
         EntityPreviewViewportSettingsNotificationBus::Handler::BusDisconnect();
     }
 
@@ -99,52 +156,32 @@ namespace AtomToolsFramework
 
     void EntityPreviewViewportSettingsInspector::CreateModelPreset()
     {
-        const AZStd::string defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
-        const AZStd::string savePath = GetSaveFilePath(defaultPath);
+        const AZStd::string savePath =
+            GetSaveFilePathFromDialog({}, { { "Model Preset", AZ::Render::ModelPreset::Extension } }, "Model Preset");
         if (!savePath.empty())
         {
             EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId,
-                [&savePath](EntityPreviewViewportSettingsRequestBus::Events* viewportRequests)
-                {
-                    viewportRequests->SetModelPreset(AZ::Render::ModelPreset());
-                    viewportRequests->SaveModelPreset(savePath);
-                });
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetModelPreset, AZ::Render::ModelPreset());
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveModelPreset, savePath);
+            OnViewportSettingsChanged();
         }
     }
 
     void EntityPreviewViewportSettingsInspector::SelectModelPreset()
     {
-        const int itemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
-            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/ModelItemSize", 128));
-
-        AssetSelectionGrid dialog("Model Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
-            return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
-                AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::ModelPreset::Extension);
-        }, QSize(itemSize, itemSize), GetToolMainWindow());
-
-        AZ::Data::AssetId assetId;
         EntityPreviewViewportSettingsRequestBus::EventResult(
-            assetId, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetAssetId);
-        dialog.SelectAsset(assetId);
+            m_modelPresetPath, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetPath);
 
-        connect(&dialog, &AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
-        });
-
-        connect(&dialog, &AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadModelPresetByAssetId, assetId);
-        });
-
-        dialog.setFixedSize(800, 400);
-        dialog.show();
+        m_modelPresetDialog->SelectPath(m_modelPresetPath);
+        m_modelPresetDialog->setFixedSize(800, 400);
+        m_modelPresetDialog->show();
 
         // Removing fixed size to allow drag resizing
-        dialog.setMinimumSize(0, 0);
-        dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-        dialog.exec();
+        m_modelPresetDialog->setMinimumSize(0, 0);
+        m_modelPresetDialog->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        m_modelPresetDialog->exec();
+        OnViewportSettingsChanged();
     }
 
     void EntityPreviewViewportSettingsInspector::SaveModelPreset()
@@ -153,16 +190,15 @@ namespace AtomToolsFramework
         EntityPreviewViewportSettingsRequestBus::EventResult(
             defaultPath, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastModelPresetPath);
 
-        if (defaultPath.empty())
-        {
-            defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::ModelPreset::Extension);
-        }
-
-        const AZStd::string savePath = GetSaveFilePath(defaultPath);
+        const AZStd::string savePath =
+            GetSaveFilePathFromDialog(defaultPath, { { "Model Preset", AZ::Render::ModelPreset::Extension } }, "Model Preset");
         if (!savePath.empty())
         {
-            EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetModelPreset, m_modelPreset);
-            EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveModelPreset, savePath);
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetModelPreset, m_modelPreset);
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveModelPreset, savePath);
+            OnViewportSettingsChanged();
         }
     }
 
@@ -200,52 +236,32 @@ namespace AtomToolsFramework
 
     void EntityPreviewViewportSettingsInspector::CreateLightingPreset()
     {
-        const AZStd::string defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
-        const AZStd::string savePath = GetSaveFilePath(defaultPath);
+        const AZStd::string savePath =
+            GetSaveFilePathFromDialog({}, { { "Lighting Preset", AZ::Render::LightingPreset::Extension } }, "Lighting Preset");
         if (!savePath.empty())
         {
             EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId,
-                [&savePath](EntityPreviewViewportSettingsRequestBus::Events* viewportRequests)
-                {
-                    viewportRequests->SetLightingPreset(AZ::Render::LightingPreset());
-                    viewportRequests->SaveLightingPreset(savePath);
-                });
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetLightingPreset, AZ::Render::LightingPreset());
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveLightingPreset, savePath);
+            OnViewportSettingsChanged();
         }
     }
 
     void EntityPreviewViewportSettingsInspector::SelectLightingPreset()
     {
-        const int itemSize = aznumeric_cast<int>(GetSettingsValue<AZ::u64>(
-            "/O3DE/AtomToolsFramework/EntityPreviewViewportSettingsInspector/AssetSelectionGrid/LightingItemSize", 128));
-
-        AssetSelectionGrid dialog("Lighting Preset Browser", [](const AZ::Data::AssetInfo& assetInfo) {
-            return assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type() &&
-                AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), AZ::Render::LightingPreset::Extension);
-        }, QSize(itemSize, itemSize), GetToolMainWindow());
-
-        AZ::Data::AssetId assetId;
         EntityPreviewViewportSettingsRequestBus::EventResult(
-            assetId, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetAssetId);
-        dialog.SelectAsset(assetId);
+            m_lightingPresetPath, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetPath);
 
-        connect(&dialog, &AssetSelectionGrid::AssetRejected, this, [this, assetId]() {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
-        });
-
-        connect(&dialog, &AssetSelectionGrid::AssetSelected, this, [this](const AZ::Data::AssetId& assetId) {
-            EntityPreviewViewportSettingsRequestBus::Event(
-                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::LoadLightingPresetByAssetId, assetId);
-        });
-
-        dialog.setFixedSize(800, 400);
-        dialog.show();
+        m_lightingPresetDialog->SelectPath(m_lightingPresetPath);
+        m_lightingPresetDialog->setFixedSize(800, 400);
+        m_lightingPresetDialog->show();
 
         // Removing fixed size to allow drag resizing
-        dialog.setMinimumSize(0, 0);
-        dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-        dialog.exec();
+        m_lightingPresetDialog->setMinimumSize(0, 0);
+        m_lightingPresetDialog->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        m_lightingPresetDialog->exec();
+        OnViewportSettingsChanged();
     }
 
     void EntityPreviewViewportSettingsInspector::SaveLightingPreset()
@@ -254,16 +270,15 @@ namespace AtomToolsFramework
         EntityPreviewViewportSettingsRequestBus::EventResult(
             defaultPath, m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::GetLastLightingPresetPath);
 
-        if (defaultPath.empty())
-        {
-            defaultPath = GetUniqueDefaultSaveFilePath(AZ::Render::LightingPreset::Extension);
-        }
-
-        const AZStd::string savePath = GetSaveFilePath(defaultPath);
+        const AZStd::string savePath =
+            GetSaveFilePathFromDialog(defaultPath, { { "Lighting Preset", AZ::Render::LightingPreset::Extension } }, "Lighting Preset");
         if (!savePath.empty())
         {
-            EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetLightingPreset, m_lightingPreset);
-            EntityPreviewViewportSettingsRequestBus::Event(m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveLightingPreset, savePath);
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SetLightingPreset, m_lightingPreset);
+            EntityPreviewViewportSettingsRequestBus::Event(
+                m_toolId, &EntityPreviewViewportSettingsRequestBus::Events::SaveLightingPreset, savePath);
+            OnViewportSettingsChanged();
         }
     }
 
@@ -302,22 +317,39 @@ namespace AtomToolsFramework
     void EntityPreviewViewportSettingsInspector::Reset()
     {
         LoadSettings();
+        m_wasPropertyEdit = false;
         InspectorWidget::Reset();
     }
 
     void EntityPreviewViewportSettingsInspector::OnViewportSettingsChanged()
     {
-        LoadSettings();
-        RefreshAll();
+        if (!m_wasPropertyEdit)
+        {
+            LoadSettings();
+            RebuildAll();
+        }
+        m_wasPropertyEdit = false;
+    }
+
+    void EntityPreviewViewportSettingsInspector::OnModelPresetAdded(const AZStd::string& path)
+    {
+        m_modelPresetDialog->AddPath(path);
+    }
+
+    void EntityPreviewViewportSettingsInspector::OnLightingPresetAdded(const AZStd::string& path)
+    {
+        m_lightingPresetDialog->AddPath(path);
     }
 
     void EntityPreviewViewportSettingsInspector::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
     {
+        m_wasPropertyEdit = true;
         SaveSettings();
     }
 
     void EntityPreviewViewportSettingsInspector::SetPropertyEditingComplete([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
     {
+        m_wasPropertyEdit = true;
         SaveSettings();
     }
 

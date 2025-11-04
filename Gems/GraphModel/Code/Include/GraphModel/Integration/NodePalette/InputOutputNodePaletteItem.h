@@ -29,11 +29,11 @@ namespace GraphModelIntegration
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(InputOutputNodePaletteItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputOutputNodePaletteItem, AZ::SystemAllocator);
 
         //! Constructor
         //! \param nodeName Name of the node that will show up in the Palette
-        //! \param editorId Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0x0a1dff96))
+        //! \param editorId Unique name of the client system editor (ex: AZ_CRC_CE("ShaderCanvas"))
         //! \param dataType The type of data that the InputGraphNode or OutputGraphNode will represent
         InputOutputNodePaletteItem(AZStd::string_view nodeName, GraphCanvas::EditorId editorId, GraphModel::DataTypePtr dataType)
             : DraggableNodePaletteTreeItem(nodeName, editorId)
@@ -57,7 +57,7 @@ namespace GraphModelIntegration
     {
     public:
         AZ_RTTI((CreateInputOutputNodeMimeEvent, "{16BED069-A386-4E5C-8A5A-0827121991E7}", NodeType), GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateInputOutputNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateInputOutputNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {

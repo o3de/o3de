@@ -1,0 +1,98 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ 
+void CalcPositions(const MaterialParameters params, float3 inPosition, VsSystemValues SV, out float3 worldPos, out float4 clipPos)
+{        
+    float amount = sin(3.14159 * 2 * (SceneSrg::m_time * params.m_animationSpeed + (inPosition.x + inPosition.y + inPosition.z) * params.m_frequency)) * params.m_amplitude;
+    float3 dir = normalize(inPosition);
+
+    float4x4 objectToWorld = GetObjectToWorldMatrix(SV);
+    worldPos = mul(objectToWorld, float4(inPosition + dir * amount, 1.0)).xyz;
+
+    float4x4 viewProjectionMatrix = GetViewProjectionMatrix(SV);
+    clipPos = mul(viewProjectionMatrix, float4(worldPos, 1.0));
+}
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+    {        
+
+        VsOutput output;
+
+        CalcPositions(params, IN.position, SV, output.worldPosition, output.position);
+
+        output.normal = IN.normal;
+        output.tangent = IN.tangent;
+
+        return output;
+    }
+
+    PixelGeometryData EvaluatePixelGeometry(VsOutput IN, VsSystemValues SV, bool isFrontFace, const MaterialParameters params)
+    {
+        PixelGeometryData pgd;
+        pgd.positionWS = IN.worldPosition;
+        pgd.vertexNormal = IN.normal;
+        return pgd;
+    }
+
+    Surface EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params)
+    {
+        Surface surface;
+        
+        surface.lightingChannels = GetLightingChannelMask(SV);
+
+        surface.position = geoData.positionWS.xyz;
+        surface.vertexNormal = geoData.vertexNormal;
+        surface.normal = geoData.vertexNormal;
+        surface.roughnessLinear = params.m_roughness;
+
+        float3 baseColor = params.m_baseColor.rgb;
+        float metallic = params.m_metallic;
+        float specularF0Factor = 0.5f;
+        surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+    
+        surface.CalculateRoughnessA();
+
+        return surface;
+    }
+
+    Surface EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 dxdy, bool useCustomDerivatives)
+    {
+        return EvaluateSurface(IN, SV, geoData, params);
+    }
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli>
+
+#else
+
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV, const MaterialParameters params)
+    {
+        float3 worldPosition;
+
+        VsOutput output;
+        CalcPositions(params, IN.position, SV, worldPosition, output.position);
+        
+#if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
+        output.worldPosition = worldPosition;
+
+        if (o_prevPosition_isBound)
+        {
+            output.worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV), float4(IN.m_optional_prevPosition, 1.0)).xyz;
+        }
+        else
+        {
+            output.worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV), float4(IN.position, 1.0)).xyz;
+        }
+#endif
+        return output;
+    }
+
+#endif

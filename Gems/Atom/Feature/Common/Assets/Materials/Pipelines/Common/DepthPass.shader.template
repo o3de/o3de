@@ -1,0 +1,20 @@
+{
+    "Source" : "",
+
+    "DepthStencilState" : { 
+        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
+    },
+
+    "ProgramSettings" : 
+    {
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type" : "Vertex"
+            }
+        ] 
+    },
+
+    "DrawList" : "depth"
+}

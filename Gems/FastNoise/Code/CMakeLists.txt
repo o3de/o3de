@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME FastNoise.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         fastnoise_files.cmake
@@ -27,7 +27,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME FastNoise ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         fastnoise_shared_files.cmake
@@ -36,19 +36,29 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::FastNoise.Static
+            Gem::${gem_name}.Static
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
         Gem::GradientSignal
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/FastNoiseModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # Clients and Servers use the above module
-ly_create_alias(NAME FastNoise.Clients  NAMESPACE Gem TARGETS FastNoise)
-ly_create_alias(NAME FastNoise.Servers  NAMESPACE Gem TARGETS FastNoise)
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS ${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS ${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS ${gem_name})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME FastNoise.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             fastnoise_editor_files.cmake
@@ -65,13 +75,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::LmbrCentral.Editor
                 Gem::GradientSignal.Editor.Static
             PUBLIC
-                Gem::FastNoise.Static
+                Gem::${gem_name}.Static
                 AZ::AzToolsFramework
                 Gem::SurfaceData
     )
 
     ly_add_target(
-        NAME FastNoise.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             fastnoise_editor_shared_files.cmake
@@ -82,16 +92,25 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::FastNoise.Editor.Static
+                Gem::${gem_name}.Editor.Static
                 Gem::LmbrCentral.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
             Gem::SurfaceData.Editor
     )
 
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/FastNoiseEditorModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
     # builders and tools load the above tool module.
-    ly_create_alias(NAME FastNoise.Builders NAMESPACE Gem TARGETS FastNoise.Editor)
-    ly_create_alias(NAME FastNoise.Tools    NAMESPACE Gem TARGETS FastNoise.Editor)
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS ${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS ${gem_name}.Editor)
 
 
 endif()
@@ -102,7 +121,7 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME FastNoise.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 fastnoise_editor_tests_files.cmake
@@ -115,16 +134,17 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
-                    FastNoise.Editor.Static
+                    ${gem_name}.Editor.Static
                     Gem::LmbrCentral.Editor
         )
         ly_add_googletest(
-            NAME Gem::FastNoise.Editor.Tests
+            NAME Gem::${gem_name}.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 
     ly_add_target(
-        NAME FastNoise.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             fastnoise_tests_files.cmake
@@ -134,18 +154,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::FastNoise.Static
+                Gem::${gem_name}.Static
                 Gem::GradientSignal
                 Gem::GradientSignal.Tests.Static
                 Gem::LmbrCentral
     )
     ly_add_googletest(
-        NAME Gem::FastNoise.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_googlebenchmark(
-        NAME Gem::FastNoise.Benchmarks
-        TARGET Gem::FastNoise.Tests
+        NAME Gem::${gem_name}.Benchmarks
+        TARGET Gem::${gem_name}.Tests
     )
 
 endif()

@@ -52,7 +52,7 @@ namespace EMStudio
     //--------------------------------------------------------------------------
     // class EMStudioManager
     //--------------------------------------------------------------------------
-    AZ_CLASS_ALLOCATOR_IMPL(EMStudioManager, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EMStudioManager, AZ::SystemAllocator)
 
     // constructor
     EMStudioManager::EMStudioManager(QApplication* app, [[maybe_unused]] int& argc, [[maybe_unused]] char* argv[])
@@ -67,8 +67,6 @@ namespace EMStudio
 
         m_app = app;
 
-        AZ::AllocatorInstance<UIAllocator>::Create();
-        
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!serializeContext)
@@ -129,8 +127,6 @@ namespace EMStudio
         delete m_notificationWindowManager;
         delete m_mainWindow;
         delete m_commandManager;
-
-        AZ::AllocatorInstance<UIAllocator>::Destroy();
 
         AZ::Interface<EMStudioManager>::Unregister(this);
     }
@@ -201,7 +197,7 @@ namespace EMStudio
             // Reflect shared data that might be used by multiple plugins.
             RenderOptions::Reflect(serializeContext);
         }
-        
+
         // Register the command event processing callback.
         m_eventProcessingCallback = new EventProcessingCallback();
         EMStudio::GetCommandManager()->RegisterCallback(m_eventProcessingCallback);
@@ -267,17 +263,6 @@ namespace EMStudio
     }
 
 
-    const char* EMStudioManager::ConstructHTMLLink(const char* text, const MCore::RGBAColor& color)
-    {
-        int32 r = aznumeric_cast<int32>(color.m_r * 256);
-        int32 g = aznumeric_cast<int32>(color.m_g * 256);
-        int32 b = aznumeric_cast<int32>(color.m_b * 256);
-
-        m_htmlLinkString = AZStd::string::format("<qt><style>a { color: rgb(%i, %i, %i); } a:hover { color: rgb(40, 40, 40); }</style><a href='%s'>%s</a></qt>", r, g, b, text, text);
-        return m_htmlLinkString.c_str();
-    }
-
-
     void EMStudioManager::MakeTransparentButton(QToolButton* button, const char* iconFileName, const char* toolTipText, uint32 width, uint32 height)
     {
         button->setObjectName("TransparentButton");
@@ -338,7 +323,7 @@ namespace EMStudio
 
     void EMStudioManager::JointSelectionChanged()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         EMotionFX::SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &EMotionFX::SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -399,7 +384,8 @@ namespace EMStudio
         QDir dir(appDataFolder.c_str());
         dir.mkpath(appDataFolder.c_str());
 
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, appDataFolder);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, appDataFolder);
         return appDataFolder.c_str();
     }
 

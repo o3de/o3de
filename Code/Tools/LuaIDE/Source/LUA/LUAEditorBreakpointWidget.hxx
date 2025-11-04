@@ -8,7 +8,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/containers/unordered_set.h>
@@ -28,7 +28,7 @@ namespace LUAEditor
         static const int c_borderSize = 3;
 
     public:
-        AZ_CLASS_ALLOCATOR(LUAEditorBreakpointWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorBreakpointWidget, AZ::SystemAllocator);
 
         LUAEditorBreakpointWidget(QWidget *pParent = nullptr);
         virtual ~LUAEditorBreakpointWidget();

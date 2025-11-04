@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QSortFilterProxyModel>
+#include <QRegularExpression>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -30,7 +31,7 @@ namespace GraphCanvas
     public:
         friend class NodePaletteSortFilterProxyModel;
 
-        AZ_CLASS_ALLOCATOR(NodePaletteAutoCompleteModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteAutoCompleteModel, AZ::SystemAllocator);
 
         NodePaletteAutoCompleteModel(QObject* parent = nullptr);
         ~NodePaletteAutoCompleteModel() = default;
@@ -57,7 +58,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteSortFilterProxyModel, AZ::SystemAllocator);
 
         NodePaletteSortFilterProxyModel(QObject* parent);
 
@@ -92,6 +93,6 @@ namespace GraphCanvas
         AZStd::unordered_set<const GraphCanvas::GraphCanvasTreeItem*> m_sourceSlotFilter;
 
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 }

@@ -18,6 +18,8 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -85,6 +87,8 @@ namespace AzToolsFramework
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
+            m_isDomCachingEnabled = s_DomCachingEnabledDefault;
+
             if (parent)
             {
                 AliasPath absoluteInstancePath = m_parent->GetAbsoluteInstanceAliasPath();
@@ -100,7 +104,9 @@ namespace AzToolsFramework
 
         Instance::~Instance()
         {
-            Reset();
+            // when destroying an instance in its destructor, do not re-create any 
+            // new entities or instances (Avoids a leak)
+            Reset(false);
         }
 
         void Instance::Reflect(AZ::ReflectContext* context)
@@ -199,34 +205,38 @@ namespace AzToolsFramework
         AZStd::unique_ptr<AZ::Entity> Instance::DetachEntity(const AZ::EntityId& entityId)
         {
             EntityAlias entityAliasToRemove;
-            auto instanceToTemplateEntityIdIterator = m_instanceToTemplateEntityIdMap.find(entityId);
-
-            if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
+            if (auto instanceToTemplateEntityIdIterator = m_instanceToTemplateEntityIdMap.find(entityId);
+                instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
             {
                 entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
                 if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
                 {
                     if (!UnregisterEntity(entityId))
                     {
-                        AZ_Error("Prefab", false, "An owning instance couldn't be found corresponding to the entity requested to be detached");
+                        AZ_Error(
+                            "Prefab",
+                            false,
+                            "An owning instance couldn't be found corresponding to the entity requested to be detached");
                         return nullptr;
                     }
                 }
                 else
                 {
                     [[maybe_unused]] bool isEntityRemoved =
-                        m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
-                    AZ_Assert(isEntityRemoved,
+                        (m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) > 0) && (m_instanceToTemplateEntityIdMap.erase(entityId) > 0);
+                    AZ_Assert(
+                        isEntityRemoved,
                         "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
                         "This happens when the entity is not correctly removed from all the prefab system entity maps.",
-                        entityId.ToString().c_str(), m_templateSourcePath.c_str());
+                        entityId.ToString().c_str(),
+                        m_templateSourcePath.c_str());
                 }
             }
 
-            return DetachEntity(entityAliasToRemove);
+            return DetachEntityHelper(entityAliasToRemove);
         }
 
-        AZStd::unique_ptr<AZ::Entity> Instance::DetachEntity(const EntityAlias& entityAlias)
+        AZStd::unique_ptr<AZ::Entity> Instance::DetachEntityHelper(const EntityAlias& entityAlias)
         {
             AZStd::unique_ptr<AZ::Entity> removedEntity;
             auto&& entityIterator = m_entities.find(entityAlias);
@@ -266,6 +276,17 @@ namespace AzToolsFramework
             m_entities.clear();
         }
 
+        bool Instance::DestroyEntity(const AZ::EntityId& entityId)
+        {
+            AZStd::unique_ptr<AZ::Entity> detachedEntity = DetachEntity(entityId);
+            if (detachedEntity)
+            {
+                detachedEntity.reset();
+                return true;
+            }
+            return false;
+        }
+
         AZStd::unique_ptr<AZ::Entity> Instance::ReplaceEntity(AZStd::unique_ptr<AZ::Entity>&& entity, EntityAliasView alias)
         {
             AZStd::unique_ptr<AZ::Entity> result;
@@ -283,33 +304,54 @@ namespace AzToolsFramework
             return result;
         }
 
-        void Instance::RemoveNestedEntities(
+        void Instance::RemoveEntitiesInHierarchy(
             const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter)
         {
             RemoveEntities(filter);
 
             for (const auto& [instanceAlias, instance] : m_nestedInstances)
             {
-                instance->RemoveNestedEntities(filter);
+                instance->RemoveEntitiesInHierarchy(filter);
             }
         }
 
-        void Instance::Reset()
+        void Instance::Reset(bool forReuse)
         {
             m_templateInstanceMapper->UnregisterInstance(*this);
 
             ClearEntities();
 
             m_nestedInstances.clear();
-            m_cachedInstanceDom.SetNull();
-            m_containerEntity.reset(aznew AZ::Entity());
-            RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
+            m_cachedInstanceDom = PrefabDom();
 
+            // forReuse will be true unless we're in destructor
+            // If we're in a destructor, there is no point in creating a new entity for the container
+            // or registering a new one in the map, otherwise we would leak elements in the map.
+            if (forReuse)
+            {
+                m_containerEntity.reset(aznew AZ::Entity());
+                RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
+            }
+            else
+            {
+                m_containerEntity.reset();
+            }
         }
 
         void Instance::RemoveEntities(
             const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter)
         {
+            // It is possible for the container entity to be the one being asked to be removed
+            // This can happen if the prefab is being exported to a spawnable, and the container
+            // entity is set to "editor only" or even "not exported".  This is what allows
+            // prefab container entities to be set to Editor Only without causing a crash in the Editor.
+            if ((m_containerEntity)&&(m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne))
+            {
+                if (filter(m_containerEntity)) // asked to filter out the container
+                {
+                    DestroyContainerEntity();
+                }
+            }
             AZStd::erase_if(m_entities,
                 [this, &filter](const auto& item)
                 {
@@ -467,16 +509,6 @@ namespace AzToolsFramework
             return m_entities.size();
         }
 
-        void Instance::GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const
-        {
-            GetEntityIds(callback);
-
-            for (auto&&[instanceAlias, instance] : m_nestedInstances)
-            {
-                instance->GetNestedEntityIds(callback);
-            }
-        }
-
         void Instance::GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const
         {
             for (auto&&[entityAlias, entityId] : m_templateToInstanceEntityIdMap)
@@ -595,6 +627,16 @@ namespace AzToolsFramework
         void Instance::GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback) const
         {
             GetConstEntities_Impl(callback);
+        }
+
+        void Instance::GetAllEntityIdsInHierarchy(const AZStd::function<bool(AZ::EntityId)>& callback) const
+        {
+            GetEntityIds(callback);
+
+            for (auto&& [instanceAlias, instance] : m_nestedInstances)
+            {
+                instance->GetAllEntityIdsInHierarchy(callback);
+            }
         }
 
         void Instance::GetAllEntitiesInHierarchy(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
@@ -730,6 +772,11 @@ namespace AzToolsFramework
             return nestedInstanceAliases;
         }
 
+        const InstanceAlias& Instance::GetInstanceAlias() const
+        {
+            return m_alias;
+        }
+
         AliasPath Instance::GetAbsoluteInstanceAliasPath() const
         {
             // Reset the path using our preferred separator
@@ -849,11 +896,6 @@ namespace AzToolsFramework
             return m_parent != nullptr;
         }
 
-        const InstanceAlias& Instance::GetInstanceAlias() const
-        {
-            return m_alias;
-        }
-
         bool Instance::IsParentInstance(const Instance& instance) const
         {
             return &instance == m_parent;
@@ -901,6 +943,17 @@ namespace AzToolsFramework
             return AZStd::move(m_containerEntity);
         }
 
+        bool Instance::DestroyContainerEntity()
+        {
+            AZStd::unique_ptr<AZ::Entity> detachedEntity = DetachContainerEntity();
+            if (detachedEntity)
+            {
+                detachedEntity.reset();
+                return true;
+            }
+            return false;
+        }
+
         PrefabDomConstReference Instance::GetCachedInstanceDom() const
         {
             if (m_cachedInstanceDom.IsNull())
@@ -921,7 +974,21 @@ namespace AzToolsFramework
 
         void Instance::SetCachedInstanceDom(PrefabDomValueConstReference instanceDom)
         {
-            m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
+            // force a flush of memory by clearing first if cache isn't empty.
+            if (!m_cachedInstanceDom.IsNull())
+            {
+                m_cachedInstanceDom = PrefabDom(); 
+            }
+
+            if (m_isDomCachingEnabled)
+            {
+                m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
+            }
+        }
+
+        void Instance::EnableDomCaching(bool enableDomCaching)
+        {
+            m_isDomCachingEnabled = enableDomCaching;
         }
     }
 } // namespace AzToolsFramework

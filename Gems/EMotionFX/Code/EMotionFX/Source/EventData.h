@@ -41,7 +41,7 @@ namespace EMotionFX
      *     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
      *         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
      *         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-     *         ->Attribute(AZ_CRC("Creatable", 0x47bff8c4), true)
+     *         ->Attribute(AZ_CRC_CE("Creatable"), true)
      * @endcode
      *
      * @sa MotionEvent EventDataSyncable

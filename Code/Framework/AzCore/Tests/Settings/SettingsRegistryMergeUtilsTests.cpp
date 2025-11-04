@@ -19,6 +19,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace SettingsRegistryMergeUtilsTests
 {
@@ -32,7 +33,7 @@ namespace SettingsRegistryMergeUtilsTests
     };
 
     class SettingsRegistryMergeUtilsParamFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<DumpSettingsRegistryParams>
     {
     public:
@@ -75,7 +76,7 @@ namespace SettingsRegistryMergeUtilsTests
             param.m_dumperSettings));
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         DumpSettings,
         SettingsRegistryMergeUtilsParamFixture,
         ::testing::Values(
@@ -213,25 +214,6 @@ namespace SettingsRegistryMergeUtilsTests
     );
 
 
-    static bool CreateTestFile(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
-    {
-        AZ::IO::SystemFile file;
-        if (!file.Open(testPath.c_str(), AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-            | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-        {
-            AZ_Assert(false, "Unable to open test file for writing: %s", testPath.c_str());
-            return false;
-        }
-
-        if (file.Write(content.data(), content.size()) != content.size())
-        {
-            AZ_Assert(false, "Unable to write content to test file: %s", testPath.c_str());
-            return false;
-        }
-
-        return true;
-    }
-
     //! ConfigFile MergeUtils Test
     struct ConfigFileParams
     {
@@ -243,7 +225,7 @@ namespace SettingsRegistryMergeUtilsTests
         AZStd::fixed_vector<SettingsKeyValuePair, 20> m_expectedSettings;
     };
     class SettingsRegistryMergeUtilsConfigFileFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<ConfigFileParams>
     {
     public:
@@ -252,9 +234,8 @@ namespace SettingsRegistryMergeUtilsTests
         {
             m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             auto configFileParam = GetParam();
-            auto testPath = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory()) / configFileParam.m_testConfigFileName;
             // Create the test config file
-            ASSERT_TRUE(CreateTestFile(testPath, configFileParam.m_testConfigContents));
+            ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, configFileParam.m_testConfigFileName, configFileParam.m_testConfigContents));
         }
 
         void TearDown() override
@@ -280,7 +261,7 @@ namespace SettingsRegistryMergeUtilsTests
             {
                 if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
                 {
-                    return line.substr(0, commentOffset);
+                    line = line.substr(0, commentOffset);
                 }
             }
             return line;
@@ -314,7 +295,7 @@ namespace SettingsRegistryMergeUtilsTests
         }
     }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ReadConfigFile,
     SettingsRegistryMergeUtilsConfigFileFixture,
     ::testing::Values(
@@ -479,7 +460,7 @@ tags=tools,renderer,metal)"
     };
 
     class SettingsRegistryGemVisitFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<SettingsRegistryGemVisitParams>
     {
     public:
@@ -488,27 +469,26 @@ tags=tools,renderer,metal)"
             m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             // Create the manifest json files
             const auto& gemVisitParams = GetParam();
-            auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
-            AZ::IO::FixedMaxPath o3deManifestFilePath = tempRootFolder / "o3de" / "o3de_manifest.json";
-            AZ::IO::FixedMaxPath engineManifestPath = tempRootFolder / "engine" / "engine.json";
-            AZ::IO::FixedMaxPath projectManifestPath = tempRootFolder / "project" / "project.json";
-            ASSERT_TRUE(CreateTestFile(o3deManifestFilePath, gemVisitParams.m_o3deManifestJson));
-            ASSERT_TRUE(CreateTestFile(engineManifestPath, gemVisitParams.m_engineManifestJson));
-            ASSERT_TRUE(CreateTestFile(projectManifestPath, gemVisitParams.m_projectManifestJson));
+            AZ::IO::PathView o3deManifestFilePath = "o3de/o3de_manifest.json";
+            AZ::IO::PathView engineManifestPath = "engine/engine.json";
+            AZ::IO::PathView projectManifestPath = "project/project.json";
+            ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, o3deManifestFilePath, gemVisitParams.m_o3deManifestJson));
+            ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, engineManifestPath, gemVisitParams.m_engineManifestJson));
+            ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, projectManifestPath, gemVisitParams.m_projectManifestJson));
 
             for (const auto& [gemRelativePath, gemManifestJson] : gemVisitParams.m_gemManifestJsons)
             {
-                AZ::IO::FixedMaxPath gemManifestPath = tempRootFolder / gemRelativePath / "gem.json";
-                ASSERT_TRUE(CreateTestFile(gemManifestPath, gemManifestJson));
+                AZ::IO::FixedMaxPath gemManifestPath = AZ::IO::FixedMaxPath(gemRelativePath) / "gem.json";
+                ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, gemManifestPath, gemManifestJson));
             }
 
             // Set the FilePathKeys for the o3de root, engine root and project root directories
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_O3deManifestRootFolder,
-                (tempRootFolder / "o3de").Native());
+                m_testFolder.Resolve("o3de").Native());
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder,
-                (tempRootFolder / "engine").Native());
+                m_testFolder.Resolve("engine").Native());
             m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath,
-                (tempRootFolder / "project").Native());
+                m_testFolder.Resolve("project").Native());
 
             // Merge the Active Gem Json data to the Settings Registry
             EXPECT_TRUE(m_registry->MergeSettings(gemVisitParams.m_activeGemJson, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
@@ -674,13 +654,13 @@ tags=tools,renderer,metal)"
             } };
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         MergeManifestJson,
         SettingsRegistryGemVisitFixture,
         ::testing::ValuesIn(MakeGemVisitTestingValues()));
 
     class SettingsRegistryMergeUtilsCommandLineFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -732,13 +712,13 @@ tags=tools,renderer,metal)"
         AZ::CommandLine commandLine;
         commandLine.Parse({ "--regset-file", regsetFile });
 
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, false);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, {});
 
         // Add a settings path to anchor loaded settings underneath
         regsetFile = AZStd::string::format("%s::/AnchorPath/Of/Settings", AZ::IO::SystemFile::GetNullFilename());
         commandLine.Parse({ "--regset-file", regsetFile });
 
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, false);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, {});
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::NoType, m_registry->GetType("/AnchorPath/Of/Settings"));
     }
 
@@ -751,4 +731,321 @@ tags=tools,renderer,metal)"
         EXPECT_TRUE(AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/AzCore/Bootstrap/project_path"));
         EXPECT_FALSE(AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual("/Amazon/AzCore/Bootstrap", "/Amazon/Project/Settings/project_name"));
     }
+
+
+    struct SettingsRegistryFindEngineRootParams
+    {
+        AZStd::fixed_vector<const char*, 2> m_engineManifestsJson;
+        const char* m_projectManifestJson{ "" };
+        const char* m_userProjectManifestJson{ "" };
+        const int m_expectedEnginePathIndex; // negative means not found
+        const char* m_scanUpEngineRoot{ "" };
+    };
+
+    static auto MakeFindEngineRootTestingValues()
+    {
+        return AZStd::array{
+            // Selects correct engine based on name
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de1", "version": "1.0.0"})",
+                   R"({ "engine_name": "o3de2", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de1" })",
+
+                // project/user/project.json
+                R"({})",
+
+                0, // expect o3de1
+                ""
+            },
+
+            // Selects engine with highest version when multiple of same name found
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de", "version": "2.3.4"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de" })",
+
+                // project/user/project.json
+                R"({})",
+
+                1, // expect second engine with higher version number
+                ""
+            },
+
+            // Fails to find engine with name that isn't registered
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de1", "version": "1.0.0"})",
+                   R"({ "engine_name": "o3de2", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de-not-found"  })",
+
+                // project/user/project.json
+                R"({})",
+
+                -1, // not found
+                ""
+            },
+
+            // Fails to find engine with version that isn't registered
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de1", "version": "1.0.0"})",
+                   R"({ "engine_name": "o3de2", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de==1.1.1"  })",
+
+                // project/user/project.json
+                R"({})",
+
+                -1, // not found
+                ""
+            },
+
+            // Selects engine that has a legacy version field
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "O3DEVersion": "0.1.0.0"})",
+                   R"({ "engine_name": "o3de-new", "O3DEVersion": "0.1.0.0", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de"  })",
+
+                // project/user/project.json
+                R"({})",
+
+                0, // o3de
+                ""
+            },
+
+            // Selects first engine when multiple engines found with ambiguous project engine
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "O3DEVersion": "0.1.0.0"})",
+                   R"({ "engine_name": "o3de", "O3DEVersion": "0.1.0.0"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de"  })",
+
+                // project/user/project.json
+                R"({})",
+
+                0, // first engine
+                ""
+            },
+
+            // Selects correct engine when a version specifier is used
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de1", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de2", "version": "2.3.4"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de2==2.3.4"  })",
+
+                // project/user/project.json
+                R"({})",
+
+                1, // o3de2
+                ""
+            },
+
+            // Selects the engine specified by name in project/user/project.json
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de1", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de2", "version": "2.3.4"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de2==2.3.4"  })",
+
+                // project/user/project.json
+                R"({ "engine":"o3de1==1.2.3" })",
+
+                0, // o3de1
+                ""
+            },
+
+            // Selects the engine specified by path in project/user/project.json
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de"  })",
+
+                // project/user/project.json
+                R"({ "engine_path":"<engine_path1>" })",
+
+                1, // 2nd engine, even though both have same name & version
+                ""
+            },
+
+            // Fails if invalid engine specified in project/user/project.json
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de-other", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de"  })",
+
+                // project/user/project.json
+                R"({ "engine_path":"c:/path/not/found" })",
+
+                -1, // not found
+                ""
+            },
+
+            // Uses scan up engine if all other methods fail
+            SettingsRegistryFindEngineRootParams{
+                // engine.json files
+                {
+                   R"({ "engine_name": "o3de", "version": "1.2.3"})",
+                   R"({ "engine_name": "o3de-other", "version": "1.2.3"})",
+                },
+
+                // project/project.json
+                R"({ "project_name": "TestProject", "engine":"o3de-blah"  })",
+
+                // project/user/project.json
+                R"({})",
+
+                -1,
+                "engine"
+            },
+
+        };
+    }
+
+    class SettingsRegistryMergeUtilsFindEngineRootFixture
+        : public UnitTest::LeakDetectionFixture
+        , public ::testing::WithParamInterface<SettingsRegistryFindEngineRootParams>
+    {
+    public:
+        void SetUp() override
+        {
+            constexpr AZStd::string_view InternalScanUpEngineRootKey{ "/O3DE/Runtime/Internal/engine_root_scan_up_path" };
+            m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+
+            // Create the manifest json files
+            const auto& params = GetParam();
+            AZ::IO::PathView o3deManifestFilePath = "o3de/o3de_manifest.json";
+            AZ::IO::PathView projectPath = "project";
+            AZ::IO::FixedMaxPath projectManifestPath = AZ::IO::FixedMaxPath(projectPath) / "project.json";
+            AZ::IO::PathView projectUserPath = "project/user";
+            AZ::IO::FixedMaxPath userProjectManifestPath = AZ::IO::FixedMaxPath(projectUserPath) / "project.json";
+
+            for (size_t i = 0; i < params.m_engineManifestsJson.size(); ++i)
+            {
+                const AZ::IO::FixedMaxPath enginePath = AZ::IO::FixedMaxPathString::format("engine%zu", i);
+                ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, enginePath / "engine.json", params.m_engineManifestsJson[i]));
+
+                m_enginePaths.emplace_back(m_testFolder.GetDirectoryAsFixedMaxPath() / enginePath);
+            }
+
+            m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_O3deManifestRootFolder,
+                m_testFolder.Resolve("o3de").Native());
+            m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath,
+                (m_testFolder.GetDirectoryAsFixedMaxPath() / projectPath).Native());
+            m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath,
+                (m_testFolder.GetDirectoryAsFixedMaxPath() / projectUserPath).Native());
+
+            if(!AZStd::string_view(params.m_scanUpEngineRoot).empty())
+            {
+                // use an absolute path because that is what should be returned from FindEngineRoot
+                AZ::IO::FixedMaxPath scanUpEngineRootPath = m_testFolder.GetDirectoryAsFixedMaxPath() / params.m_scanUpEngineRoot;
+                m_registry->Set(InternalScanUpEngineRootKey, scanUpEngineRootPath.Native());
+            }
+            else
+            {
+                // set to an empty value to simulate no scan up engine root found
+                m_registry->Set(InternalScanUpEngineRootKey, "");
+            }
+
+            const char* o3deManifest = R"({ "o3de_manifest_name": "testmanifest", "engines":["<engine_path0>","<engine_path1>"] })";
+            ASSERT_TRUE(CreateTestFileWithSubstitutions(o3deManifestFilePath, o3deManifest));
+            ASSERT_TRUE(CreateTestFileWithSubstitutions(projectManifestPath, params.m_projectManifestJson));
+            ASSERT_TRUE(CreateTestFileWithSubstitutions(userProjectManifestPath, params.m_userProjectManifestJson));
+        }
+
+        bool CreateTestFileWithSubstitutions(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
+        {
+            // replace instances of <engine0>, <engine1> etc. with actual engine paths
+            AZStd::string contentString{ content };
+            for (size_t i = 0; i < m_enginePaths.size(); ++i)
+            {
+                AZStd::string enginePath{ m_enginePaths[i].Native().c_str() };
+                AZ::StringFunc::Json::ToEscapedString(enginePath);
+                AZ::StringFunc::Replace(contentString, AZStd::string::format("<engine_path%zu>", i).c_str(), enginePath.c_str());
+            }
+            return AZ::Test::CreateTestFile(m_testFolder, testPath, contentString.c_str()).has_value();
+        }
+
+        void TearDown() override
+        {
+            m_registry.reset();
+        }
+
+    protected:
+        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
+        AZ::Test::ScopedAutoTempDirectory m_testFolder;
+        AZStd::vector<AZ::IO::FixedMaxPath> m_enginePaths;
+    };
+
+
+    TEST_P(SettingsRegistryMergeUtilsFindEngineRootFixture, SettingsRegistryMergeUtils_FindEngineRoot_DetectsCorrectPath)
+    {
+        const auto& params = GetParam();
+        const AZ::IO::FixedMaxPath engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_registry).Native();
+
+        if (!AZStd::string_view(params.m_scanUpEngineRoot).empty())
+        {
+            auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
+            AZ::IO::FixedMaxPath scanUpEngineRootPath = tempRootFolder / params.m_scanUpEngineRoot;
+            EXPECT_EQ(engineRoot, scanUpEngineRootPath);
+        }
+        else if (params.m_expectedEnginePathIndex < 0 || params.m_expectedEnginePathIndex >= m_enginePaths.size())
+        {
+            EXPECT_TRUE(engineRoot.empty());
+        }
+        else
+        {
+            EXPECT_EQ(engineRoot, m_enginePaths[params.m_expectedEnginePathIndex]);
+        }
+    }
+
+    INSTANTIATE_TEST_SUITE_P(
+        FindEngineRoot,
+        SettingsRegistryMergeUtilsFindEngineRootFixture,
+        ::testing::ValuesIn(MakeFindEngineRootTestingValues()));
 }
+

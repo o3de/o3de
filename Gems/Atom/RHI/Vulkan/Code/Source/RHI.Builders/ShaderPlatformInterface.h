@@ -49,7 +49,8 @@ namespace AZ
                 RHI::ShaderHardwareStage shaderStage,
                 const AZStd::string& tempFolderPath,
                 StageDescriptor& outputDescriptor,
-                const RHI::ShaderBuildArguments& shaderBuildArguments) const override;
+                const RHI::ShaderBuildArguments& shaderBuildArguments,
+                const bool useSpecializationConstants) const override;
 
             const char* GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const override;
 

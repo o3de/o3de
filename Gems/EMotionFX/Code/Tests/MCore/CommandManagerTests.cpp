@@ -260,7 +260,7 @@ namespace EMotionFX
         tester.TestCommandGroup(commandGroup, 4, 0.0f, 4.0f, GetParam());
     }
 
-    INSTANTIATE_TEST_CASE_P(CommandGroupTests,
+    INSTANTIATE_TEST_SUITE_P(CommandGroupTests,
         CommandGroupFixture,
         ::testing::ValuesIn({ TestCommandExecutionMethod::Execute, TestCommandExecutionMethod::Undo, TestCommandExecutionMethod::Redo}));
 } // namespace EMotionFX

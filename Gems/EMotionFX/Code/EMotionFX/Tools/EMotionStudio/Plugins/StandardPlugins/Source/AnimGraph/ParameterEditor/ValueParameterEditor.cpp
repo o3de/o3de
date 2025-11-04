@@ -21,7 +21,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ValueParameterEditor, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ValueParameterEditor, EMStudio::UIAllocator)
 
     void ValueParameterEditor::Reflect(AZ::ReflectContext* context)
     {

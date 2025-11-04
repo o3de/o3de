@@ -37,7 +37,7 @@ inline void Gestures::RecognizerClickOrTap::Config::Reflect(AZ::ReflectContext* 
                     ->Attribute(AZ::Edit::Attributes::Max, 10)
                 ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minClicksOrTaps, "Min Clicks Or Taps", "The min number of clicks or taps required for the gesture to be recognized.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxSecondsHeld, "Max Seconds Held", "The max time in seconds allowed while held before the gesture stops being recognized.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxPixelsMoved, "Max Pixels Moved", "The max distance in pixels allowed to move while held before the gesture stops being recognized.")

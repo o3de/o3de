@@ -9,9 +9,12 @@ import binascii
 from dataclasses import dataclass
 import logging
 import os
+from pprint import pformat
 import pytest
+import re
+import shutil
 from typing import List
-import distutils.dir_util
+import warnings
 
 # Import LyTestTools
 import ly_test_tools.builtin.helpers as helpers
@@ -34,6 +37,11 @@ logger = logging.getLogger(__name__)
 # Helper: variables we will use for parameter values in the test:
 targetProjects = ["AutomatedTesting"]
 
+# Helper: Gets a case correct version of the cache folder
+def get_cache_folder(asset_processor):
+    # Make sure the folder being checked is fully lowercase.
+    # Leave the "c" in Cache uppercase.
+    return re.sub("ache[/\\\\](.*)", lambda m: m.group().lower(), asset_processor.project_test_cache_folder())
 
 @pytest.fixture
 def local_resources(request, workspace, ap_setup_fixture):
@@ -57,7 +65,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="OneMeshOneMaterial_RunAP_SuccessWithMatchingProducts",
             asset_folder="OneMeshOneMaterial",
-            scene_debug_file="onemeshonematerial.dbgsg",
+            scene_debug_file="onemeshonematerial.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="OneMeshOneMaterial.fbx",
@@ -70,16 +78,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='onemeshonematerial/onemeshonematerial.assetinfo.dbg',
-                                    sub_id=-1450203600,
+                                    product_name='onemeshonematerial/onemeshonematerial.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='onemeshonematerial/onemeshonematerial.fbx.assetinfo.dbg',
+                                    sub_id=635465363,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='onemeshonematerial/onemeshonematerial.dbgsg',
-                                    sub_id=1918494907,
+                                    product_name='onemeshonematerial/onemeshonematerial.fbx.dbgsg',
+                                    sub_id=2078121323,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='onemeshonematerial/onemeshonematerial.dbgsg.xml',
-                                    sub_id=556355570, asset_type=b'51f376140d774f369ac67ed70a0ac868'),
+                                    product_name='onemeshonematerial/onemeshonematerial.fbx.dbgsg.json',
+                                    sub_id=1736583047,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='onemeshonematerial/onemeshonematerial.fbx.dbgsg.xml',
+                                    sub_id=-976624731, asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshonematerial/onemeshonematerial_fbx.procprefab',
                                     sub_id=-1819295853,
@@ -102,7 +118,7 @@ blackbox_fbx_tests = [
             # Verifies that the soft naming convention feature with level of detail meshes works.
             test_name="SoftNamingLOD_RunAP_SuccessWithMatchingProducts",
             asset_folder="SoftNamingLOD",
-            scene_debug_file="lodtest.dbgsg",
+            scene_debug_file="lodtest.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="lodtest.fbx",
@@ -115,16 +131,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='softnaminglod/lodtest.assetinfo.dbg',
-                                    sub_id=1928041548,
+                                    product_name='softnaminglod/lodtest.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='softnaminglod/lodtest.fbx.assetinfo.dbg',
+                                    sub_id=-1252475526,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='softnaminglod/lodtest.dbgsg',
-                                    sub_id=-632012261,
+                                    product_name='softnaminglod/lodtest.fbx.dbgsg',
+                                    sub_id=1082129636,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='softnaminglod/lodtest.dbgsg.xml',
-                                    sub_id=-2036095434,
+                                    product_name='softnaminglod/lodtest.fbx.dbgsg.json',
+                                    sub_id=998015244,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='softnaminglod/lodtest.fbx.dbgsg.xml',
+                                    sub_id=1858673704,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='softnaminglod/lodtest_fbx.procprefab',
@@ -149,7 +173,7 @@ blackbox_fbx_tests = [
             # Verifies that the soft naming convention feature with physics proxies works.
             test_name="SoftNamingPhysics_RunAP_SuccessWithMatchingProducts",
             asset_folder="SoftNamingPhysics",
-            scene_debug_file="physicstest.dbgsg",
+            scene_debug_file="physicstest.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="physicstest.fbx",
@@ -162,19 +186,27 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='softnamingphysics/physicstest.assetinfo.dbg',
-                                    sub_id=-2134016152,
+                                    product_name='softnamingphysics/physicstest.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='softnamingphysics/physicstest.fbx.assetinfo.dbg',
+                                    sub_id=376675704,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='softnamingphysics/physicstest.dbgsg',
-                                    sub_id=-740411732,
+                                    product_name='softnamingphysics/physicstest.fbx.dbgsg',
+                                    sub_id=530659840,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='softnamingphysics/physicstest.dbgsg.xml',
-                                    sub_id=330338417,
+                                    product_name='softnamingphysics/physicstest.fbx.dbgsg.json',
+                                    sub_id=997442341,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='softnamingphysics/physicstest.fbx.dbgsg.xml',
+                                    sub_id=1618976652,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
-                                    product_name='softnamingphysics/physicstest.pxmesh',
+                                    product_name='softnamingphysics/physicstest.fbx.pxmesh',
                                     sub_id=640975857,
                                     asset_type=b'7a2871b95eab4de0a901b0d2c6920ddb'),
                                 asset_db_utils.DBProduct(
@@ -197,7 +229,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="MultipleMeshOneMaterial_RunAP_SuccessWithMatchingProducts",
             asset_folder="TwoMeshOneMaterial",
-            scene_debug_file="multiple_mesh_one_material.dbgsg",
+            scene_debug_file="multiple_mesh_one_material.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="multiple_mesh_one_material.fbx",
@@ -210,16 +242,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshonematerial/multiple_mesh_one_material.assetinfo.dbg',
-                                    sub_id=-1522579082,
+                                    product_name='twomeshonematerial/multiple_mesh_one_material.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshonematerial/multiple_mesh_one_material.fbx.assetinfo.dbg',
+                                    sub_id=-251254148,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshonematerial/multiple_mesh_one_material.dbgsg',
-                                    sub_id=2077268018,
+                                    product_name='twomeshonematerial/multiple_mesh_one_material.fbx.dbgsg',
+                                    sub_id=-599090337,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshonematerial/multiple_mesh_one_material.dbgsg.xml',
-                                    sub_id=1321067730,
+                                    product_name='twomeshonematerial/multiple_mesh_one_material.fbx.dbgsg.json',
+                                    sub_id=-981232068,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshonematerial/multiple_mesh_one_material.fbx.dbgsg.xml',
+                                    sub_id=2098803780,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'
                                 )
                             ]
@@ -236,7 +276,7 @@ blackbox_fbx_tests = [
             # Verifies whether multiple meshes can share linked materials
             test_name="MultipleMeshLinkedMaterials_RunAP_SuccessWithMatchingProducts",
             asset_folder="TwoMeshLinkedMaterials",
-            scene_debug_file="multiple_mesh_linked_materials.dbgsg",
+            scene_debug_file="multiple_mesh_linked_materials.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="multiple_mesh_linked_materials.fbx",
@@ -249,16 +289,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.assetinfo.dbg',
-                                    sub_id=-1625296771,
+                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.fbx.assetinfo.dbg',
+                                    sub_id=1774684099,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg',
-                                    sub_id=-1898461950,
+                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.fbx.dbgsg',
+                                    sub_id=399409097,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg.xml',
-                                    sub_id=-772341513,
+                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.fbx.dbgsg.json',
+                                    sub_id=-977002611,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.fbx.dbgsg.xml',
+                                    sub_id=-1473507434,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials_fbx.procprefab',
@@ -283,7 +331,7 @@ blackbox_fbx_tests = [
             # Verifies a mesh with multiple materials
             test_name="SingleMeshMultipleMaterials_RunAP_SuccessWithMatchingProducts",
             asset_folder="OneMeshMultipleMaterials",
-            scene_debug_file="single_mesh_multiple_materials.dbgsg",
+            scene_debug_file="single_mesh_multiple_materials.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="single_mesh_multiple_materials.fbx",
@@ -296,16 +344,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.assetinfo.dbg',
-                                    sub_id=-250120843,
+                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.fbx.assetinfo.dbg',
+                                    sub_id=-2146161009,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.dbgsg',
-                                    sub_id=-262822238,
+                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.fbx.dbgsg',
+                                    sub_id=82607561,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.dbgsg.xml',
-                                    sub_id=1462358160,
+                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.fbx.dbgsg.json',
+                                    sub_id=72739255,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.fbx.dbgsg.xml',
+                                    sub_id=-763826724,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshmultiplematerials/single_mesh_multiple_materials_fbx.procprefab',
@@ -329,7 +385,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="MeshWithVertexColors_RunAP_SuccessWithMatchingProducts",
             asset_folder="VertexColor",
-            scene_debug_file="vertexcolor.dbgsg",
+            scene_debug_file="vertexcolor.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="VertexColor.fbx",
@@ -342,16 +398,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='vertexcolor/vertexcolor.assetinfo.dbg',
-                                    sub_id=-772831195,
+                                    product_name='vertexcolor/vertexcolor.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='vertexcolor/vertexcolor.fbx.assetinfo.dbg',
+                                    sub_id=-684486226,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='vertexcolor/vertexcolor.dbgsg',
-                                    sub_id=-1543877170,
+                                    product_name='vertexcolor/vertexcolor.fbx.dbgsg',
+                                    sub_id=-501404951,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='vertexcolor/vertexcolor.dbgsg.xml',
-                                    sub_id=1743516586,
+                                    product_name='vertexcolor/vertexcolor.fbx.dbgsg.json',
+                                    sub_id=1580896704,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='vertexcolor/vertexcolor.fbx.dbgsg.xml',
+                                    sub_id=-2021002009,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='vertexcolor/vertexcolor_fbx.procprefab',
@@ -375,7 +439,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="MotionTest_RunAP_SuccessWithMatchingProducts",
             asset_folder="Motion",
-            scene_debug_file="Jack_Idle_Aim_ZUp.dbgsg",
+            scene_debug_file="jack_idle_aim_zup.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="Jack_Idle_Aim_ZUp.fbx",
@@ -388,16 +452,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='motion/jack_idle_aim_zup.assetinfo.dbg',
-                                    sub_id=-1508868345,
+                                    product_name='motion/jack_idle_aim_zup.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup.fbx.assetinfo.dbg',
+                                    sub_id=-1090444673,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='motion/jack_idle_aim_zup.dbgsg',
-                                    sub_id=-517610290,
+                                    product_name='motion/jack_idle_aim_zup.fbx.dbgsg',
+                                    sub_id=-1042666277,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='motion/jack_idle_aim_zup.dbgsg.xml',
-                                    sub_id=-817863914,
+                                    product_name='motion/jack_idle_aim_zup.fbx.dbgsg.json',
+                                    sub_id=-290748690,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup.fbx.dbgsg.xml',
+                                    sub_id=444631267,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='motion/jack_idle_aim_zup.motion',
@@ -425,7 +497,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="ShaderBall_RunAP_SuccessWithMatchingProducts",
             asset_folder="ShaderBall",
-            scene_debug_file="shaderball.dbgsg",
+            scene_debug_file="shaderball.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="shaderball.fbx",
@@ -438,16 +510,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='shaderball/shaderball.assetinfo.dbg',
-                                    sub_id=-2030891151,
+                                    product_name='shaderball/shaderball.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='shaderball/shaderball.fbx.assetinfo.dbg',
+                                    sub_id=2366451,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='shaderball/shaderball.dbgsg',
-                                    sub_id=-1607815784,
+                                    product_name='shaderball/shaderball.fbx.dbgsg',
+                                    sub_id=919030955,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='shaderball/shaderball.dbgsg.xml',
-                                    sub_id=-1153118555,
+                                    product_name='shaderball/shaderball.fbx.dbgsg.json',
+                                    sub_id=-1710127594,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='shaderball/shaderball.fbx.dbgsg.xml',
+                                    sub_id=-1137683506,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='shaderball/shaderball_fbx.procprefab',
@@ -469,7 +549,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="cubewithline_RunAP_CubeOutputsWithoutLine",
             asset_folder="cubewithline",
-            scene_debug_file="cubewithline.dbgsg",
+            scene_debug_file="cubewithline.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="cubewithline.fbx",
@@ -482,16 +562,24 @@ blackbox_fbx_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='cubewithline/cubewithline.assetinfo.dbg',
-                                    sub_id=-1674123269,
+                                    product_name='cubewithline/cubewithline.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='cubewithline/cubewithline.fbx.assetinfo.dbg',
+                                    sub_id=705480985,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='cubewithline/cubewithline.dbgsg',
-                                    sub_id=1173066699,
+                                    product_name='cubewithline/cubewithline.fbx.dbgsg',
+                                    sub_id=25987353,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='cubewithline/cubewithline.dbgsg.xml',
-                                    sub_id=1357518515,
+                                    product_name='cubewithline/cubewithline.fbx.dbgsg.json',
+                                    sub_id=-1971624352,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='cubewithline/cubewithline.fbx.dbgsg.xml',
+                                    sub_id=975809434,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='cubewithline/cubewithline_fbx.procprefab',
@@ -513,7 +601,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="MorphTargetOneMaterial_RunAP_SuccessWithMatchingProducts",
             asset_folder="MorphTargetOneMaterial",
-            scene_debug_file="morphtargetonematerial.dbgsg",
+            scene_debug_file="morphtargetonematerial.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="morphtargetonematerial.fbx",
@@ -523,37 +611,36 @@ blackbox_fbx_tests = [
                             job_key='Scene compilation',
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
-                            error_count=9,
+                            error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.actor',
                                     sub_id=-999339669,
                                     asset_type=b'f67cc648ea51464c9f5d4a9ce41a7f86'),
                                 asset_db_utils.DBProduct(
-                                    product_name='morphtargetonematerial/morphtargetonematerial.assetinfo.dbg',
-                                    sub_id=-1650525758,
+                                    product_name='morphtargetonematerial/morphtargetonematerial.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.fbx.assetinfo.dbg',
+                                    sub_id=726384549,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='morphtargetonematerial/morphtargetonematerial.dbgsg',
-                                    sub_id=1414413688,
+                                    product_name='morphtargetonematerial/morphtargetonematerial.fbx.dbgsg',
+                                    sub_id=1620685182,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='morphtargetonematerial/morphtargetonematerial.dbgsg.xml',
-                                    sub_id=1435013070,
+                                    product_name='morphtargetonematerial/morphtargetonematerial.fbx.dbgsg.json',
+                                    sub_id=1253137975,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.fbx.dbgsg.xml',
+                                    sub_id=-340185820,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargetonematerial/morphtargetonematerial.motion',
                                     sub_id=692653652,
                                     asset_type=b'00494b8e75784ba28b28272e90680787'),
-                                asset_db_utils.DBProduct(
-                                    product_name='morphtargetonematerial/morphtargetonematerial_fbx.procprefab',
-                                    sub_id=532704096,
-                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
-                                asset_db_utils.DBProduct(
-                                    product_name='morphtargetonematerial/morphtargetonematerial_fbx.procprefab.json',
-                                    sub_id=-613416016,
-                                    asset_type=b'00000000000000000000000000000000'
-                                ),
                             ]
                         ),
                     ]
@@ -565,7 +652,7 @@ blackbox_fbx_tests = [
         BlackboxAssetTest(
             test_name="MorphTargetTwoMaterials_RunAP_SuccessWithMatchingProducts",
             asset_folder="MorphTargetTwoMaterials",
-            scene_debug_file="morphtargettwomaterials.dbgsg",
+            scene_debug_file="morphtargettwomaterials.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="morphtargettwomaterials.fbx",
@@ -575,37 +662,36 @@ blackbox_fbx_tests = [
                             job_key='Scene compilation',
                             builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
                             status=4,
-                            error_count=9,
+                            error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.actor',
                                     sub_id=-557664045,
                                     asset_type=b'f67cc648ea51464c9f5d4a9ce41a7f86'),
                                 asset_db_utils.DBProduct(
-                                    product_name='morphtargettwomaterials/morphtargettwomaterials.assetinfo.dbg',
-                                    sub_id=-657938679,
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.assetinfo.dbg',
+                                    sub_id=-1807090167,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='morphtargettwomaterials/morphtargettwomaterials.dbgsg',
-                                    sub_id=594741318,
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.dbgsg',
+                                    sub_id=-303201013,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='morphtargettwomaterials/morphtargettwomaterials.dbgsg.xml',
-                                    sub_id=-990870494,
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.dbgsg.json',
+                                    sub_id=-1396790465,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.fbx.dbgsg.xml',
+                                    sub_id=-1157438659,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
                                     product_name='morphtargettwomaterials/morphtargettwomaterials.motion',
                                     sub_id=1527116269,
                                     asset_type=b'00494b8e75784ba28b28272e90680787'),
-                                asset_db_utils.DBProduct(
-                                    product_name='morphtargettwomaterials/morphtargettwomaterials_fbx.procprefab',
-                                    sub_id=-1878759677,
-                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
-                                asset_db_utils.DBProduct(
-                                    product_name='morphtargettwomaterials/morphtargettwomaterials_fbx.procprefab.json',
-                                    sub_id=1703480205,
-                                    asset_type=b'00000000000000000000000000000000'
-                                )
                             ]
                         ),
                     ]
@@ -613,6 +699,59 @@ blackbox_fbx_tests = [
             ]
         ),
     ),
+
+    pytest.param(
+        BlackboxAssetTest(
+            test_name="StingRayPBRAsset_PBRMaterialConvertion_AutoAssignOnProcessing",
+            asset_folder="PBRMaterialConvertion",
+            scene_debug_file="nagamaki1.fbx.dbgsg",
+            assets=[
+                asset_db_utils.DBSourceAsset(
+                    source_file_name="nagamaki1.fbx",
+                    uuid=b'9dbee85b454d53cf894b90a9ceb1430a',
+                    jobs=[
+                        asset_db_utils.DBJob(
+                            job_key='Scene compilation',
+                            builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
+                            status=4,
+                            error_count=0,
+                            products=[
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.fbx.assetinfo.dbg',
+                                    sub_id=-799018249,
+                                    asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.fbx.dbgsg',
+                                    sub_id=-1473851462,
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.fbx.dbgsg.json',
+                                    sub_id=-1739655040,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1.fbx.dbgsg.xml',
+                                    sub_id=-2094917174,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1_fbx.procprefab',
+                                    sub_id=-1637699071,
+                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
+                                asset_db_utils.DBProduct(
+                                    product_name='pbrmaterialconvertion/nagamaki1_fbx.procprefab.json',
+                                    sub_id=-602240166,
+                                    asset_type=b'00000000000000000000000000000000'
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+    )
 ]
 
 blackbox_fbx_special_tests = [
@@ -621,8 +760,8 @@ blackbox_fbx_special_tests = [
             test_name="MultipleMeshMultipleMaterial_MultipleAssetInfo_RunAP_SuccessWithMatchingProducts",
             asset_folder="TwoMeshTwoMaterial",
             override_asset_folder="OverrideAssetInfoForTwoMeshTwoMaterial",
-            scene_debug_file="multiple_mesh_multiple_material.dbgsg",
-            override_scene_debug_file="multiple_mesh_multiple_material_override.dbgsg",
+            scene_debug_file="multiple_mesh_multiple_material.fbx.dbgsg",
+            override_scene_debug_file="multiple_mesh_multiple_material_override.fbx.dbgsg",
             assets=[
                 asset_db_utils.DBSourceAsset(
                     source_file_name="multiple_mesh_multiple_material.fbx",
@@ -635,16 +774,24 @@ blackbox_fbx_special_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.assetinfo.dbg',
-                                    sub_id=1718635869,
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.assetinfo.dbg',
+                                    sub_id=-1020411616,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
-                                    sub_id=896980093,
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.dbgsg',
+                                    sub_id=2097661127,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml',
-                                    sub_id=-1556988544,
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.dbgsg.json',
+                                    sub_id=-1745484895,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.dbgsg.xml',
+                                    sub_id=694850264,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'
                                 )
                             ]
@@ -664,16 +811,24 @@ blackbox_fbx_special_tests = [
                             error_count=0,
                             products=[
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.assetinfo.dbg',
-                                    sub_id=1718635869,
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.abdata.json',
+                                    sub_id=4194304,
+                                    asset_type=b'd0a5e84e98664ad7a6a14d28fe7871c5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.assetinfo.dbg',
+                                    sub_id=-1020411616,
                                     asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
-                                    sub_id=896980093,
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.dbgsg',
+                                    sub_id=2097661127,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
                                 asset_db_utils.DBProduct(
-                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml',
-                                    sub_id=-1556988544,
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.dbgsg.json',
+                                    sub_id=-1745484895,
+                                    asset_type=b'4342b27e0e1449c3b3b9bcdb9a5fca23'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.fbx.dbgsg.xml',
+                                    sub_id=694850264,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'
                                 )
                             ]
@@ -746,12 +901,149 @@ class TestsFBX_AllPlatforms(object):
                     product.product_name = job.platform + "/" \
                                            + product.product_name
 
+
     @staticmethod
-    def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path):
-        debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
+    def trim_floating_point_values_from_same_length_lists(diff_actual: List[str], diff_expected: List[str],
+            actual_file_path:str, expected_file_path:str) -> (List[str], List[str]):
+        # Linux and non-Linux platforms generate slightly different values for floating points.
+        # Long term, it will be important to stabilize the output of product assets, because this difference
+        # will cause problems: If an Android asset is generated from a Linux versus Windows machine, for example,
+        # it will be different when it's not expected to be different.
+        # In the short term, it's not something addressed yet, so instead this function will
+        # truncate any floating point values to be short enough to be stable. It will then emit a warning, to help keep track of this issue.
+        
+        # Get the initial list lengths, so they can be compared to the list lengths later to see if any differences were
+        # removed due to floating point value drift.
+        initial_diff_actual_len = len(diff_actual)
+        initial_diff_expected_len = len(diff_expected)
+
+        # This function requires the two lists to be equal length.
+        assert initial_diff_actual_len == initial_diff_expected_len, "Scene mismatch - different line counts"
+
+        # Floating point values between Linux and Windows aren't consistent yet. For now, trim these values for comparison.
+        # Store the trimmed values and compare the un-trimmed values separately, emitting warnings.
+        # Trim decimals from the lists to be compared, if any where found, re-compare and generate new lists.
+        DECIMAL_DIGITS_TO_PRESERVE = 3
+        floating_point_regex = re.compile(f"(.*?-?[0-9]+\\.[0-9]{{{DECIMAL_DIGITS_TO_PRESERVE},{DECIMAL_DIGITS_TO_PRESERVE}}})[0-9]+(.*)")
+        for index, diff_actual_line in enumerate(diff_actual):
+            # Loop, because there may be multiple floats on the same line.
+            while True:
+                match_result = floating_point_regex.match(diff_actual[index])
+                if not match_result:
+                    break
+                diff_actual[index] = f"{match_result.group(1)}{match_result.group(2)}"
+            # diff_actual and diff_expected have the same line count, so they can both be checked here
+            while True:
+                match_result = floating_point_regex.match(diff_expected[index])
+                if not match_result:
+                    break
+                diff_expected[index] = f"{match_result.group(1)}{match_result.group(2)}"
+                
+        # Re-run the diff now that floating point values have been truncated.
+        diff_actual, diff_expected = utils.get_differences_between_lists(diff_actual, diff_expected)
+        
+        # If both lists are now empty, then the only differences between the two scene files were floating point drift.
+        if (diff_actual == None and diff_expected == None) or (len(diff_actual) == 0 and len(diff_actual) == 0):
+            warnings.warn(f"Floating point drift detected between {expected_file_path} and {actual_file_path}.")
+            return diff_actual, diff_expected
+            
+        # Something has gone wrong if the lists are now somehow different lengths after the comparison.
+        assert len(diff_actual) == len(diff_expected), "Scene mismatch - different line counts after truncation"
+
+        # If some entries were removed from both lists but not all, then there was some floating point drift causing
+        # differences to appear between the scene files. Provide a warning on that so it can be tracked, then
+        # continue on to the next set of list comparisons.
+        if len(diff_actual) != initial_diff_actual_len or len(diff_expected) != initial_diff_expected_len:
+            warnings.warn(f"Floating point drift detected between {expected_file_path} and {actual_file_path}.")
+
+        return diff_actual, diff_expected
+
+        
+    @staticmethod
+    def scan_scene_debug_xml_file_for_issues(diff_actual: List[str], diff_expected: List[str],
+            actual_hashes_to_skip: List[str], expected_hashes_to_skip: List[str]) -> (List[str], List[str]):
+        # Given the differences between the newly generated XML file versus the last known good, and the lists of hashes that were
+        # skipped in the non-XML debug scene graph comparison, check if the differences in the XML file are the same as the hashes
+        # that were skipped in the non-XML file.
+        # Hashes are generated differently on Linux than other platforms right now. Long term this is a problem, it will mean that
+        # product assets generated on Linux are different than other platforms. Short term, this is a known issue. This automated
+        # test handles this by emitting warnings when this occurs.
+
+        # If the difference count doesn't match the non-XML file, then it's not just hash mis-matches in the XML file, and the test has failed.
+        assert len(expected_hashes_to_skip) == len(diff_expected), "Scene mismatch"
+        assert len(actual_hashes_to_skip) == len(diff_actual), "Scene mismatch"                
+
+        # This test did a simple line by line comparison, and didn't actually load the XML data into a graph to compare.
+        # Which means that the relevant info for this field to make it clear that it is a hash and not another number is not immediately available.
+        # So instead, extract the number and compare it to the known list of hashes.
+        # If this regex fails or the number isn't in the hash list, then it means this is a non-hash difference and should cause a test failure.
+        # Otherwise, if it's just a hash difference, it can be a warning for now, while the information being hashed is not stable across platforms.
+        xml_number_regex = re.compile('.*<Class name="AZ::u64" field="m_data" value="([0-9]*)" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"\\/>')
+
+        for list_entry in diff_actual:
+            match_result = xml_number_regex.match(list_entry)
+            assert match_result, "Scene mismatch"
+            data_value = match_result.group(1)
+            # This value doesn't match the list of known hash differences, so mark this test as failed.
+            assert (data_value in actual_hashes_to_skip), "Scene mismatch"
+                
+        for list_entry in diff_expected:
+            match_result = xml_number_regex.match(list_entry)
+            assert match_result, "Scene mismatch"
+            data_value = match_result.group(1)
+            # This value doesn't match the list of known hash differences, so mark this test as failed.
+            assert (data_value in expected_hashes_to_skip), "Scene mismatch"
+        return expected_hashes_to_skip, actual_hashes_to_skip
+
+
+    @staticmethod
+    def scan_scene_debug_scene_graph_file_differences_for_issues(diff_actual: List[str], diff_expected: List[str],
+            actual_file_path:str, expected_file_path:str) -> (List[str], List[str]):
+        # Given the set of differences between two debug scene graph files, check for any known issues and emit warnings.
+        # For unknown issues, fail the test. This primarily checks for hashes that are different.
+        # Right now, hash generation is sometimes different on Linux from other platforms, and the test assets were generated on Windows,
+        # so the hashes may be different when run on Linux. Also, it's been a pain point to need to re-generate debug scene graphs
+        # when small changes occur in the scenes. This layer of data changing hasn't been causing issues yet, and is caught by other
+        # automated tests focused on the specific set of data. This automated test is to verify that the basic structure of the scene
+        # is the same with each run.
+        diff_actual_hashes_removed = []
+        diff_expected_hashes_removed = []
+
+        hash_regex = re.compile("(.*Hash: )([0-9]*)")
+
+        actual_hashes = []
+        expected_hashes = []
+
+        for list_entry in diff_actual:
+            match_result = hash_regex.match(list_entry)
+            assert match_result, "Scene mismatch"
+            diff_actual_hashes_removed.append(match_result.group(1))
+            actual_hashes.append(match_result.group(2))
+                
+        for list_entry in diff_expected:
+            match_result = hash_regex.match(list_entry)
+            assert match_result, "Scene mismatch"
+            diff_expected_hashes_removed.append(match_result.group(1))
+            expected_hashes.append(match_result.group(2))
+
+        hashes_removed_diffs_identical = utils.compare_lists(diff_actual_hashes_removed, diff_expected_hashes_removed)
+
+        # If, after removing all of the hash values, the lists are now identical, emit a warning.
+        if hashes_removed_diffs_identical == True:
+            warnings.warn(f"Hash values no longer match for debug scene graph between files {expected_file_path} and {actual_file_path}")
+
+        return expected_hashes, actual_hashes
+
+
+    @staticmethod
+    def compare_scene_debug_file(asset_processor, expected_file_path: str, actual_file_path: str,
+            expected_hashes_to_skip: List[str] = None, actual_hashes_to_skip: List[str] = None):
+        # Given the paths to the debug scene graph generated by re-processing the test scene file and the path to the
+        # last known good debug scene graph for that file, load both debug scene graphs into memory and scan them for differences.
+        # Warns on known issues, and fails on unknown issues.
+        debug_graph_path = os.path.join(get_cache_folder(asset_processor), actual_file_path)
         expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
-        import shutil
-        shutil.copyfile(debug_graph_path, f"C:/new/{actual_file_path}")
+
         logger.info(f"Parsing scene graph: {debug_graph_path}")
         with open(debug_graph_path, "r") as scene_file:
             actual_lines = scene_file.readlines()
@@ -759,13 +1051,33 @@ class TestsFBX_AllPlatforms(object):
         logger.info(f"Parsing scene graph: {expected_debug_graph_path}")
         with open(expected_debug_graph_path, "r") as scene_file:
             expected_lines = scene_file.readlines()
-        assert utils.compare_lists(actual_lines, expected_lines), "Scene mismatch"
+        diff_actual, diff_expected = utils.get_differences_between_lists(actual_lines, expected_lines)
+        if diff_actual == None and diff_expected == None:
+            return None, None
+
+        # There are some differences that are currently considered warnings.
+        # Long term these should become errors, but right now product assets on Linux and non-Linux
+        # are showing differences in hashes.
+        # Linux and non-Linux platforms are also generating different floating point values.
+        diff_actual, diff_expected = TestsFBX_AllPlatforms.trim_floating_point_values_from_same_length_lists(diff_actual, diff_expected, actual_file_path, expected_file_path)
+
+        # If this is the XML debug file, then it will be difficult to verify if a line is a hash line or another integer.
+        # However, because XML files are always compared after standard dbgsg files, the hashes from that initial comparison can be used here to check.
+        is_xml_dbgsg = os.path.splitext(expected_file_path)[-1].lower() == ".xml"        
+
+        if is_xml_dbgsg:
+            return TestsFBX_AllPlatforms.scan_scene_debug_xml_file_for_issues(diff_actual, diff_expected, actual_hashes_to_skip, expected_hashes_to_skip)
+        else:
+            return TestsFBX_AllPlatforms.scan_scene_debug_scene_graph_file_differences_for_issues(diff_actual, diff_expected, actual_file_path, expected_file_path)
+
 
     # Helper to run Asset Processor with debug output enabled and Atom output disabled
     @staticmethod
     def run_ap_debug_skip_atom_output(asset_processor):
-        result = asset_processor.batch_process(extra_params=["--debugOutput",
+        result, output = asset_processor.batch_process(capture_output=True, extra_params=["--debugOutput",
                                                              "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
+        logger.info(f"Asset Processor Output: {pformat(output)}")
         assert result, "Asset Processor Failed"
 
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
@@ -806,27 +1118,36 @@ class TestsFBX_AllPlatforms(object):
                 for expected_product in expected_job.products:
                     expected_product_list.append(expected_product.product_name)
 
+        cache_folder = get_cache_folder(asset_processor)
         missing_assets, _ = utils.compare_assets_with_cache(expected_product_list,
-                                                            asset_processor.project_test_cache_folder())
+                                                            cache_folder)
+
+        # If the test is going to fail, print information to help track down the cause of failure.
+        if missing_assets:
+            logger.info(f"The following assets were missing from cache: {pformat(missing_assets)}")
+            in_cache = os.listdir(cache_folder)
+            logger.info(f"The cache {cache_folder} contains this content: {pformat(in_cache)}")
 
         assert not missing_assets, \
             f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
 
         # Load the asset database.
-        db_path = os.path.join(asset_processor.temp_asset_root(), "Cache",
+        db_path = os.path.join(asset_processor.temp_asset_root(), workspace.project, "Cache",
                                "assetdb.sqlite")
-        cache_root = os.path.dirname(os.path.join(asset_processor.temp_asset_root(), "Cache",
+        cache_root = os.path.dirname(os.path.join(asset_processor.temp_asset_root(), workspace.project, "Cache",
                                                   ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]))
 
         if blackbox_params.scene_debug_file:
             scene_debug_file = blackbox_params.override_scene_debug_file if overrideAsset \
                 else blackbox_params.scene_debug_file
-            self.compare_scene_debug_file(asset_processor, scene_debug_file, blackbox_params.scene_debug_file)
+            expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_file, blackbox_params.scene_debug_file)
 
             # Run again for the .dbgsg.xml file
             self.compare_scene_debug_file(asset_processor,
                                           scene_debug_file + ".xml",
-                                          blackbox_params.scene_debug_file + ".xml")
+                                          blackbox_params.scene_debug_file + ".xml",
+                                          expected_hashes_to_skip = expected_hashes_to_skip,
+                                          actual_hashes_to_skip = actual_hashes_to_skip)
 
         # Check that each given source asset resulted in the expected jobs and products.
         self.populate_asset_info(workspace, project, assetsToValidate)
@@ -853,25 +1174,31 @@ class TestsFBX_AllPlatforms(object):
             5. Run asset processor
             6. Validate that Asset Processor generates the expected output
         """
-
         # Copying test assets to project folder
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "ModifiedFBXFile_ConsistentProductOutput")
+        TEST_FOLDER_NAME = "ModifiedFBXFile_ConsistentProductOutput"
+
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], TEST_FOLDER_NAME)
         # Run AP against the FBX file and the .assetinfo file
         self.run_ap_debug_skip_atom_output(asset_processor)
 
         # Set path to expected dbgsg output, copied from test folder
-        scene_debug_expected = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", "modifiedfbxfile.dbgsg")
-        assert os.path.exists(scene_debug_expected), "Expected scene file missing in SceneDebug/modifiedfbxfile.dbgsg - Check test assets"
+        scene_debug_expected = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", "modifiedfbxfile.fbx.dbgsg")
+        assert os.path.exists(scene_debug_expected), "Expected scene file missing in SceneDebug/modifiedfbxfile.fbx.dbgsg - Check test assets"
 
         # Set path to actual dbgsg output, obtained when running AP
-        scene_debug_actual = os.path.join(asset_processor.temp_project_cache(asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]), "ModifiedFBXFile_ConsistentProductOutput","modifiedfbxfile.dbgsg")
+        scene_debug_actual = os.path.join(
+            asset_processor.temp_project_cache(asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]),
+            TEST_FOLDER_NAME.lower(),
+            "modifiedfbxfile.fbx.dbgsg")
+
         assert os.path.exists(scene_debug_actual)
 
         # Compare the dbgsg files to ensure expected outputs
-        self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+        expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
 
         # Run again for the .dbgsg.xml files
-        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml")
+        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml",
+            expected_hashes_to_skip=expected_hashes_to_skip, actual_hashes_to_skip=actual_hashes_to_skip)
 
         # Remove the files to be replaced from the source test asset folder
         filestoremove = [
@@ -884,22 +1211,22 @@ class TestsFBX_AllPlatforms(object):
             assert not os.path.exists(file), f"File failed to be removed: {file}"
 
         # Add the replacement FBX and expected dbgsg files into the test project
-        source = os.path.join(ap_setup_fixture["tests_dir"], "Assets",
+        source = os.path.join(ap_setup_fixture["tests_dir"], "assets",
                               "Override_ModifiedFBXFile_ConsistentProductOutput")
         destination = asset_processor.project_test_source_folder()
-        # Note: Replace distutils for shutil.copytree("src", "dst", dirs_exist_ok=True) once updated to Python 3.8
-        distutils.dir_util.copy_tree(source, destination)
+        shutil.copytree(source, destination, dirs_exist_ok=True)
         assert os.path.exists(scene_debug_expected), \
-            "Expected scene file missing in SceneDebug/modifiedfbxfile.dbgsg - Check test assets"
+            "Expected scene file missing in SceneDebug/modifiedfbxfile.fbx.dbgsg - Check test assets"
 
         # Run AP again to regenerate the .dbgsg files
         self.run_ap_debug_skip_atom_output(asset_processor)
 
         # Compare the new .dbgsg files with their expected outputs
-        self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+        expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
 
         # Run again for the .dbgsg.xml file
-        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml")
+        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml",
+            expected_hashes_to_skip=expected_hashes_to_skip, actual_hashes_to_skip=actual_hashes_to_skip)
 
     def test_FBX_MixedCaseFileExtension_OutputSucceeds(self, workspace, ap_setup_fixture, asset_processor):
         """
@@ -921,9 +1248,16 @@ class TestsFBX_AllPlatforms(object):
             "OneMeshOneMaterial.fBX",
             "OneMeshOneMaterial.FBX",
         ]
+
+        expected_debug_list  = [
+            "onemeshonematerial_capf.fbx.dbgsg",
+            "onemeshonematerial_capbx.fbx.dbgsg",
+            "onemeshonematerial_capfbx.fbx.dbgsg"
+        ]
+
         original_extension = "OneMeshOneMaterial.fbx"
 
-        for extension in extensionlist:
+        for (extension, expected_debug_name) in zip(extensionlist, expected_debug_list):
             asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "OneMeshOneMaterial")
             rename_src = os.path.join(asset_processor.project_test_source_folder(), original_extension)
             rename_dst = os.path.join(asset_processor.project_test_source_folder(), extension)
@@ -934,34 +1268,37 @@ class TestsFBX_AllPlatforms(object):
             self.run_ap_debug_skip_atom_output(asset_processor)
 
             expectedassets = [
-                'onemeshonematerial/onemeshonematerial.assetinfo.dbg',
-                'onemeshonematerial/onemeshonematerial.dbgsg',
-                'onemeshonematerial/onemeshonematerial.dbgsg.xml',
+                'onemeshonematerial/onemeshonematerial.fbx.abdata.json',
+                'onemeshonematerial/onemeshonematerial.fbx.assetinfo.dbg',
+                'onemeshonematerial/onemeshonematerial.fbx.dbgsg',
+                'onemeshonematerial/onemeshonematerial.fbx.dbgsg.xml',
                 'onemeshonematerial/onemeshonematerial_fbx.procprefab',
                 'onemeshonematerial/onemeshonematerial_fbx.procprefab.json'
                 ]
 
             missing_assets, _ = utils.compare_assets_with_cache(expectedassets,
-                                                                asset_processor.project_test_cache_folder())
+                                                                get_cache_folder(asset_processor))
 
             assert not missing_assets, \
                 f'The following assets were expected to be in when processing {extension}, but not found in cache: ' \
                 f'{str(missing_assets)}'
 
             scene_debug_expected = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug",
-                                                "onemeshonematerial.dbgsg")
+                                                expected_debug_name)
             assert os.path.exists(scene_debug_expected), \
-                "Expected scene file missing in SceneDebug/onemeshonematerial.dbgsg - Check test assets"
+                f'Expected scene file missing in {scene_debug_expected} - Check test assets'
 
             # Set path to actual dbgsg output, obtained when running AP
             scene_debug_actual = os.path.join(asset_processor.temp_project_cache(
                 asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]),
-                                              "onemeshonematerial", "onemeshonematerial.dbgsg")
+                                              "onemeshonematerial", "onemeshonematerial.fbx.dbgsg")
             assert os.path.exists(scene_debug_actual), f"Scene debug output missing after running AP on {extension}."
 
-            self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+            expected_hashes_to_skip, actual_hashes_to_skip = self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
 
             # Run again for the .dbgsg.xml file
             self.compare_scene_debug_file(asset_processor,
                                           scene_debug_expected + ".xml",
-                                          scene_debug_actual + ".xml")
+                                          scene_debug_actual + ".xml",
+                                          expected_hashes_to_skip = expected_hashes_to_skip,
+                                          actual_hashes_to_skip = actual_hashes_to_skip)

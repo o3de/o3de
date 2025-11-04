@@ -26,7 +26,6 @@ int main(int argc, char* argv[])
     INVOKE_AZ_UNIT_TEST_MAIN();
 #endif
 
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     int runSuccess = 0;
 
     {
@@ -50,6 +49,5 @@ int main(int argc, char* argv[])
         }
     }
 
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     return runSuccess;
 }

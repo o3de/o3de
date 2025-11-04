@@ -10,7 +10,8 @@
 
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/NodeHierarchyWidget.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeWindowPlugin.h>
+#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <Editor/SkeletonModel.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 
@@ -32,35 +33,37 @@ namespace EMotionFX
         // Change the Editor mode to Character
         EMStudio::GetMainWindow()->ApplicationModeChanged("Character");
 
-        // Find the NodeWindowPlugin
-        auto nodeWindow = static_cast<EMStudio::NodeWindowPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::NodeWindowPlugin::CLASS_ID));
-        EXPECT_TRUE(nodeWindow) << "NodeWidow plugin not found!";
+        // Find the skeletonOutlinerPlugin
+        auto skeletonOutliner = static_cast<EMotionFX::SkeletonOutlinerPlugin*>(
+            EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SkeletonOutlinerPlugin::CLASS_ID));
+        EXPECT_TRUE(skeletonOutliner) << "SkeletonOutlinerPlugin plugin not found!";
 
         // Select the newly created actor instance
         AZStd::string result;
         AZStd::string command = AZStd::string::format("Select -actorInstanceID %u", actorInstance->GetID());
         EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(command, result));
 
-        QTreeWidget* treeWidget = nodeWindow->GetDockWidget()->findChild<EMStudio::NodeHierarchyWidget*>("EMFX.NodeWindowPlugin.NodeHierarchyWidget.HierarchyWidget")->GetTreeWidget();
-        EXPECT_TRUE(treeWidget) << "Joint Outliner Hierarchy not found";
+        QTreeView* treeView =
+            skeletonOutliner->GetDockWidget()->findChild<QTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
+        EXPECT_TRUE(treeView) << "Skeleton Outliner Hierarchy not found";
 
         // Select the node containing the mesh
-        QTreeWidgetItem* meshNodeItem = treeWidget->invisibleRootItem()->child(0);
-        EXPECT_TRUE(meshNodeItem) << "Character Node not found";
+        const QAbstractItemModel* model = treeView->model();
 
-        QTreeWidgetItem* rootItem = meshNodeItem->child(0);
-        EXPECT_TRUE(rootItem) << "Root node not found";
-        EXPECT_TRUE(rootItem->data(0, Qt::EditRole) == "rootJoint");
-        EXPECT_TRUE(rootItem->data(1, Qt::EditRole) == "Mesh");
+        const QModelIndex rootJointIndex = model->index(0, SkeletonModel::COLUMN_NAME);
+        EXPECT_TRUE(rootJointIndex.isValid()) << "Character Node not found";
+        EXPECT_TRUE(rootJointIndex.data(Qt::DisplayRole) == "Character");
+
+        QModelIndex rootItem = model->index(0, SkeletonModel::COLUMN_NAME, model->index(0, 0));
+        EXPECT_TRUE(rootItem.isValid()) << "Root node not found";
+        EXPECT_TRUE(rootItem.data(Qt::DisplayRole) == "rootJoint");
 
         for (int i = 1; i < numJoints; ++i)
         {
-            rootItem = rootItem->child(0);
-            EXPECT_TRUE(rootItem);
-            EXPECT_TRUE(rootItem->data(0, Qt::EditRole) == AZStd::string::format("joint%i", i).c_str());
-            EXPECT_TRUE(rootItem->data(1, Qt::EditRole) == "Node");
+            rootItem = rootItem.model()->index(0, SkeletonModel::COLUMN_NAME, rootItem);
+            EXPECT_TRUE(rootItem.data(Qt::DisplayRole) == AZStd::string::format("joint%i", i).c_str());
         }
 
         actorInstance->Destroy();
     }
-}   // namespace EMotionFX
+} // namespace EMotionFX

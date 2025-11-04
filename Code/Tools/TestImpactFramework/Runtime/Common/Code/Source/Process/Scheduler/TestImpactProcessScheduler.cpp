@@ -7,6 +7,7 @@
  */
 
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
+#include <Process/Scheduler/TestImpactProcessSchedulerBus.h>
 #include <Process/TestImpactProcess.h>
 #include <Process/TestImpactProcessException.h>
 #include <Process/TestImpactProcessInfo.h>
@@ -17,7 +18,7 @@ namespace TestImpact
     struct ProcessInFlight
     {
         AZStd::unique_ptr<Process> m_process;
-        AZStd::optional<AZStd::chrono::high_resolution_clock::time_point> m_startTime;
+        AZStd::optional<AZStd::chrono::steady_clock::time_point> m_startTime;
         AZStd::string m_stdOutput;
         AZStd::string m_stdError;
     };
@@ -28,10 +29,7 @@ namespace TestImpact
         ExecutionState(
             size_t maxConcurrentProcesses,
             AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
-            ProcessLaunchCallback processLaunchCallback,
-            ProcessExitCallback processExitCallback,
-            AZStd::optional<ProcessStdContentCallback> processStdContentCallback);
+            AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout);
         ~ExecutionState();
 
         ProcessSchedulerResult MonitorProcesses(const AZStd::vector<ProcessInfo>& processes);
@@ -42,12 +40,9 @@ namespace TestImpact
         void AccumulateProcessStdContent(ProcessInFlight& processInFlight);
 
         size_t m_maxConcurrentProcesses = 0;
-        ProcessLaunchCallback m_processLaunchCallback;
-        ProcessExitCallback m_processExitCallback;
-        AZStd::optional<ProcessStdContentCallback> m_processStdContentCallback;
         AZStd::optional<AZStd::chrono::milliseconds> m_processTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_scheduleTimeout;
-        AZStd::chrono::high_resolution_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
         AZStd::vector<ProcessInFlight> m_processPool;
         AZStd::queue<ProcessInfo> m_processQueue;
     };
@@ -55,14 +50,8 @@ namespace TestImpact
     ProcessScheduler::ExecutionState::ExecutionState(
         size_t maxConcurrentProcesses,
         AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
-        ProcessLaunchCallback processLaunchCallback,
-        ProcessExitCallback processExitCallback,
-        AZStd::optional<ProcessStdContentCallback> processStdContentCallback)
+        AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout)
         : m_maxConcurrentProcesses(maxConcurrentProcesses)
-        , m_processLaunchCallback(processLaunchCallback)
-        , m_processExitCallback(processExitCallback)
-        , m_processStdContentCallback(processStdContentCallback)
         , m_processTimeout(processTimeout)
         , m_scheduleTimeout(scheduleTimeout)
     {
@@ -81,8 +70,7 @@ namespace TestImpact
 
     ProcessSchedulerResult ProcessScheduler::ExecutionState::MonitorProcesses(const AZStd::vector<ProcessInfo>& processes)
     {
-        AZ_TestImpact_Eval(!processes.empty(), ProcessException, "Number of processes to launch cannot be 0");
-        m_startTime = AZStd::chrono::high_resolution_clock::now();
+        m_startTime = AZStd::chrono::steady_clock::now();
         const size_t numConcurrentProcesses = AZStd::min(processes.size(), m_maxConcurrentProcesses);
         m_processPool.resize(numConcurrentProcesses);
 
@@ -106,7 +94,7 @@ namespace TestImpact
             // Check to see whether or not the scheduling has exceeded its specified runtime
             if (m_scheduleTimeout.has_value())
             {
-                const auto shedulerRunTime = AZStd::chrono::milliseconds(AZStd::chrono::high_resolution_clock::now() - m_startTime);
+                const auto shedulerRunTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - m_startTime);
 
                 if (shedulerRunTime > m_scheduleTimeout)
                 {
@@ -133,15 +121,19 @@ namespace TestImpact
                         // Process has exited of its own accord
                         const ReturnCode returnCode = processInFlight.m_process->GetReturnCode().value();
                         processInFlight.m_process.reset();
-                        const auto exitTime = AZStd::chrono::high_resolution_clock::now();
+                        const auto exitTime = AZStd::chrono::steady_clock::now();
 
                         // Inform the client that the processes has exited
-                        if (ProcessCallbackResult::Abort == m_processExitCallback(
+                        AZ::EBusAggregateResults<ProcessCallbackResult> results;
+                        ProcessSchedulerNotificationBus::BroadcastResult(
+                            results,
+                            &ProcessSchedulerNotificationBus::Events::OnProcessExit,
                             processId,
                             ExitCondition::Gracefull,
                             returnCode,
                             ConsumeProcessStdContent(processInFlight),
-                            exitTime))
+                            exitTime);
+                        if (ProcessCallbackResult::Abort == GetAggregateProcessCallbackResult(results))
                         {
                             // Client chose to abort the scheduler
                             TerminateAllProcesses(ExitCondition::Terminated);
@@ -166,8 +158,8 @@ namespace TestImpact
                     else
                     {
                         // Process is still in-flight
-                        const auto exitTime = AZStd::chrono::high_resolution_clock::now();
-                        const auto runTime = AZStd::chrono::milliseconds(exitTime - processInFlight.m_startTime.value());
+                        const auto exitTime = AZStd::chrono::steady_clock::now();
+                        const auto runTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(exitTime - processInFlight.m_startTime.value());
 
                         // Check to see whether or not the processes has exceeded its specified flight time
                         if (m_processTimeout.has_value() && runTime > m_processTimeout)
@@ -176,12 +168,16 @@ namespace TestImpact
                             const ReturnCode returnCode = processInFlight.m_process->GetReturnCode().value();
                             processInFlight.m_process.reset();
 
-                            if (ProcessCallbackResult::Abort == m_processExitCallback(
+                            AZ::EBusAggregateResults<ProcessCallbackResult> results;
+                            ProcessSchedulerNotificationBus::BroadcastResult(
+                                results,
+                                &ProcessSchedulerNotificationBus::Events::OnProcessExit,
                                 processId,
                                 ExitCondition::Timeout,
                                 returnCode,
                                 ConsumeProcessStdContent(processInFlight),
-                                exitTime))
+                                exitTime);
+                            if (ProcessCallbackResult::Abort == GetAggregateProcessCallbackResult(results))
                             {
                                 // Client chose to abort the scheduler
                                 TerminateAllProcesses(ExitCondition::Terminated);
@@ -226,7 +222,7 @@ namespace TestImpact
     {
         auto processInfo = m_processQueue.front();
         m_processQueue.pop();
-        const auto createTime = AZStd::chrono::high_resolution_clock::now();
+        const auto createTime = AZStd::chrono::steady_clock::now();
         LaunchResult createResult = LaunchResult::Success;
 
         try
@@ -240,7 +236,12 @@ namespace TestImpact
             createResult = LaunchResult::Failure;
         }
 
-        return m_processLaunchCallback(processInfo.GetId(), createResult, createTime);
+         AZ::EBusAggregateResults<ProcessCallbackResult> results;
+        ProcessSchedulerNotificationBus::BroadcastResult(
+            results,
+            &ProcessSchedulerNotificationBus::Events::OnProcessLaunch, processInfo.GetId(), createResult, createTime);
+        
+        return GetAggregateProcessCallbackResult(results);
     }
 
     void ProcessScheduler::ExecutionState::AccumulateProcessStdContent(ProcessInFlight& processInFlight)
@@ -250,14 +251,15 @@ namespace TestImpact
         processInFlight.m_stdOutput += stdContents.m_out.value_or("");
         processInFlight.m_stdError += stdContents.m_err.value_or("");
 
-        if (m_processStdContentCallback.has_value() && (stdContents.m_out.has_value() || stdContents.m_err.has_value()))
+        if (stdContents.m_out.has_value() || stdContents.m_err.has_value())
         {
-            (*m_processStdContentCallback)(
+            ProcessSchedulerNotificationBus::Broadcast(
+                &ProcessSchedulerNotificationBus::Events::OnRealtimeStdContent,
                 processInFlight.m_process->GetProcessInfo().GetId(),
                 processInFlight.m_stdOutput,
                 processInFlight.m_stdError,
-                AZStd::move(stdContents.m_out.value_or("")),
-                AZStd::move(stdContents.m_err.value_or("")));
+                stdContents.m_out.value_or(""),
+                stdContents.m_err.value_or(""));
         }
     }
 
@@ -288,13 +290,17 @@ namespace TestImpact
 
                 if (isCallingBackToClient)
                 {
-                    const auto exitTime = AZStd::chrono::high_resolution_clock::now();
-                    if (ProcessCallbackResult::Abort == m_processExitCallback(
+                    const auto exitTime = AZStd::chrono::steady_clock::now();
+                    AZ::EBusAggregateResults<ProcessCallbackResult> results;
+                    ProcessSchedulerNotificationBus::BroadcastResult(
+                        results,
+                        &ProcessSchedulerNotificationBus::Events::OnProcessExit,
                         processInFlight.m_process->GetProcessInfo().GetId(),
                         exitStatus,
                         returnCode,
                         ConsumeProcessStdContent(processInFlight),
-                        exitTime))
+                        exitTime);
+                    if (ProcessCallbackResult::Abort == GetAggregateProcessCallbackResult(results))
                     {
                         // Client chose to abort the scheduler, do not make any further callbacks
                         isCallingBackToClient = false;
@@ -317,15 +323,11 @@ namespace TestImpact
     ProcessSchedulerResult ProcessScheduler::Execute(
         const AZStd::vector<ProcessInfo>& processes,
         AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
-        ProcessLaunchCallback processLaunchCallback,
-        ProcessExitCallback processExitCallback,
-        AZStd::optional<ProcessStdContentCallback> processStdContentCallback)
+        AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout)
     {
         AZ_TestImpact_Eval(!m_executionState, ProcessException, "Couldn't execute schedule, schedule already in progress");
         m_executionState = AZStd::make_unique<ExecutionState>(
-            m_maxConcurrentProcesses, processTimeout, scheduleTimeout, processLaunchCallback, processExitCallback,
-            processStdContentCallback);
+            m_maxConcurrentProcesses, processTimeout, scheduleTimeout);
         const auto result = m_executionState->MonitorProcesses(processes);
         m_executionState.reset();
         return result;

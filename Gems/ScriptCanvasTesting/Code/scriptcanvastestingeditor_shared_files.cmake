@@ -7,5 +7,5 @@
 #
 
 set(FILES
-        Source/ScriptCanvasTestingEditorModule.cpp
+    Source/ScriptCanvasTestingEditorModule.cpp
 )

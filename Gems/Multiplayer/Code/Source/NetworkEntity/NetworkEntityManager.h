@@ -75,6 +75,7 @@ namespace Multiplayer
         void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) override;
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
+        void RemoveEntityFromEntityMap(NetEntityId netEntityId) override;
         void MarkForRemoval(const ConstNetworkEntityHandle& entityHandle) override;
         bool IsMarkedForRemoval(const ConstNetworkEntityHandle& entityHandle) const override;
         void ClearEntityFromRemovalList(const ConstNetworkEntityHandle& entityHandle) override;

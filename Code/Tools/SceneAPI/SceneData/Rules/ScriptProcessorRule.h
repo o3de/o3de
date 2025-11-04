@@ -24,7 +24,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(ScriptProcessorRule, "{E61EDCBC-867A-4A6A-B49D-C87E60D3EC33}", DataTypes::IScriptProcessorRule);
-                AZ_CLASS_ALLOCATOR(ScriptProcessorRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(ScriptProcessorRule, AZ::SystemAllocator)
 
                 ~ScriptProcessorRule() override = default;
 

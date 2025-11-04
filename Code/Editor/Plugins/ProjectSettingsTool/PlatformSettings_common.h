@@ -16,26 +16,26 @@ namespace ProjectSettingsTool
 {
     namespace Attributes
     {
-        static const AZ::Crc32 FuncValidator = AZ_CRC("FuncValidator");
-        static const AZ::Crc32 SelectFunction = AZ_CRC("SelectFunction");
-        static const AZ::Crc32 LinkOptional = AZ_CRC("LinkOptional");
-        static const AZ::Crc32 Obfuscated = AZ_CRC("ObfuscatedText");
+        static const AZ::Crc32 FuncValidator = AZ_CRC_CE("FuncValidator");
+        static const AZ::Crc32 SelectFunction = AZ_CRC_CE("SelectFunction");
+        static const AZ::Crc32 LinkOptional = AZ_CRC_CE("LinkOptional");
+        static const AZ::Crc32 Obfuscated = AZ_CRC_CE("ObfuscatedText");
         // Used as a tooltip and for distinguising linked properties
-        static const AZ::Crc32 PropertyIdentfier = AZ_CRC("PropertyIdentfier");
-        static const AZ::Crc32 DefaultPath = AZ_CRC("DefaultPath");
-        static const AZ::Crc32 DefaultImagePreview = AZ_CRC("DefaultImagePreview");
-        static const AZ::Crc32 ObfuscatedText = AZ_CRC("ObfuscatedText");
-        static const AZ::Crc32 ClearButton = AZ_CRC("ClearButton");
-        static const AZ::Crc32 RemovableReadOnly = AZ_CRC("RemovableReadOnly");
+        static const AZ::Crc32 PropertyIdentfier = AZ_CRC_CE("PropertyIdentfier");
+        static const AZ::Crc32 DefaultPath = AZ_CRC_CE("DefaultPath");
+        static const AZ::Crc32 DefaultImagePreview = AZ_CRC_CE("DefaultImagePreview");
+        static const AZ::Crc32 ObfuscatedText = AZ_CRC_CE("ObfuscatedText");
+        static const AZ::Crc32 ClearButton = AZ_CRC_CE("ClearButton");
+        static const AZ::Crc32 RemovableReadOnly = AZ_CRC_CE("RemovableReadOnly");
     } // namespace Attributes
 
     namespace Handlers
     {
-        static const AZ::Crc32 ImagePreview = AZ_CRC("ImagePreview");
-        static const AZ::Crc32 LinkedLineEdit = AZ_CRC("LinkedLineEdit");
-        static const AZ::Crc32 FileSelect = AZ_CRC("FileSelect");
-        static const AZ::Crc32 QValidatedLineEdit = AZ_CRC("QValLineEdit");
-        static const AZ::Crc32 QValidatedBrowseEdit = AZ_CRC("QValBrowseEdit");
+        static const AZ::Crc32 ImagePreview = AZ_CRC_CE("ImagePreview");
+        static const AZ::Crc32 LinkedLineEdit = AZ_CRC_CE("LinkedLineEdit");
+        static const AZ::Crc32 FileSelect = AZ_CRC_CE("FileSelect");
+        static const AZ::Crc32 QValidatedLineEdit = AZ_CRC_CE("QValLineEdit");
+        static const AZ::Crc32 QValidatedBrowseEdit = AZ_CRC_CE("QValBrowseEdit");
     } // namespace Handlers
 
     namespace Identfiers

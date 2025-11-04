@@ -13,6 +13,39 @@
 
 namespace TestImpact
 {
+    Timer::Timer()
+        : m_startTime(AZStd::chrono::steady_clock::now())
+    {
+    }
+
+    AZStd::chrono::steady_clock::time_point Timer::GetStartTimePoint() const
+    {
+        return m_startTime;
+    }
+
+    AZStd::chrono::steady_clock::time_point Timer::GetStartTimePointRelative(const Timer& start) const
+    {
+        return AZStd::chrono::steady_clock::time_point() +
+            AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(m_startTime - start.GetStartTimePoint());
+    }
+
+    AZStd::chrono::milliseconds Timer::GetElapsedMs() const
+    {
+        const auto endTime = AZStd::chrono::steady_clock::now();
+        return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - m_startTime);
+    }
+
+    AZStd::chrono::steady_clock::time_point Timer::GetElapsedTimepoint() const
+    {
+        const auto endTime = AZStd::chrono::steady_clock::now();
+        return m_startTime + AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - m_startTime);
+    }
+
+    void Timer::ResetStartTimePoint()
+    {
+        m_startTime = AZStd::chrono::steady_clock::now();
+    }
+
     size_t DeleteFiles(const RepoPath& path, const AZStd::string& pattern)
     {
         size_t numFilesDeleted = 0;
@@ -76,21 +109,14 @@ namespace TestImpact
         return files;
     }
 
-    AZStd::string SuiteTypeAsString(SuiteType suiteType)
+    AZStd::string SuiteSetAsString(const SuiteSet& suiteSet)
     {
-        switch (suiteType)
-        {
-        case SuiteType::Main:
-            return "main";
-        case SuiteType::Periodic:
-            return "periodic";
-        case SuiteType::Sandbox:
-            return "sandbox";
-        case SuiteType::AWSI:
-            return "awsi";
-        default:
-            throw(Exception("Unexpected suite type"));
-        }
+        return ConcatenateContainerContentsAsString(suiteSet, "-");
+    }
+
+    AZStd::string SuiteLabelExcludeSetAsString(const SuiteLabelExcludeSet& suiteLabelExcludeSet)
+    {
+        return ConcatenateContainerContentsAsString(suiteLabelExcludeSet, "-");
     }
 
     AZStd::string SequenceReportTypeAsString(Client::SequenceReportType type)
@@ -230,20 +256,6 @@ namespace TestImpact
         }
     }
 
-    AZStd::string TestShardingPolicyAsString(Policy::TestSharding testShardingPolicy)
-    {
-        switch (testShardingPolicy)
-        {
-        case Policy::TestSharding::Always:
-            return "always";
-        case Policy::TestSharding::Never:
-            return "never";
-        default:
-            throw(Exception(
-                AZStd::string::format("Unexpected test sharding policy: %u", aznumeric_cast<AZ::u32>(testShardingPolicy))));
-        }
-    }
-
     AZStd::string TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture targetOutputCapturePolicy)
     {
         switch (targetOutputCapturePolicy)
@@ -274,258 +286,6 @@ namespace TestImpact
             return "passed";
         default:
             throw(Exception(AZStd::string::format("Unexpected client test case result: %u", aznumeric_cast<AZ::u32>(result))));
-        }
-    }
-
-    SuiteType SuiteTypeFromString(const AZStd::string& suiteType)
-    {
-        if (suiteType == SuiteTypeAsString(SuiteType::Main))
-        {
-            return SuiteType::Main;
-        }
-        else if (suiteType == SuiteTypeAsString(SuiteType::Periodic))
-        {
-            return SuiteType::Periodic;
-        }
-        else if (suiteType == SuiteTypeAsString(SuiteType::Sandbox))
-        {
-            return SuiteType::Sandbox;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected suite type: '%s'", suiteType.c_str()));
-        }
-    }
-
-    Client::SequenceReportType SequenceReportTypeFromString(const AZStd::string& type)
-    {
-        if (type == SequenceReportTypeAsString(Client::SequenceReportType::ImpactAnalysisSequence))
-        {
-            return Client::SequenceReportType::ImpactAnalysisSequence;
-        }
-        else if (type == SequenceReportTypeAsString(Client::SequenceReportType::RegularSequence))
-        {
-            return Client::SequenceReportType::RegularSequence;
-        }
-        else if (type == SequenceReportTypeAsString(Client::SequenceReportType::SafeImpactAnalysisSequence))
-        {
-            return Client::SequenceReportType::SafeImpactAnalysisSequence;
-        }
-        else if (type == SequenceReportTypeAsString(Client::SequenceReportType::SeedSequence))
-        {
-            return Client::SequenceReportType::SeedSequence;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected sequence report type: '%s'", type.c_str()));
-        }
-    }
-
-    Client::TestRunResult TestRunResultFromString(const AZStd::string& result)
-    {
-        if (result == TestRunResultAsString(Client::TestRunResult::AllTestsPass))
-        {
-            return Client::TestRunResult::AllTestsPass;
-        }
-        else if (result == TestRunResultAsString(Client::TestRunResult::FailedToExecute))
-        {
-            return Client::TestRunResult::FailedToExecute;
-        }
-        else if (result == TestRunResultAsString(Client::TestRunResult::NotRun))
-        {
-            return Client::TestRunResult::NotRun;
-        }
-        else if (result == TestRunResultAsString(Client::TestRunResult::TestFailures))
-        {
-            return Client::TestRunResult::TestFailures;
-        }
-        else if (result == TestRunResultAsString(Client::TestRunResult::Timeout))
-        {
-            return Client::TestRunResult::Timeout;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected client test run result: '%s'", result.c_str()));
-        }
-    }
-
-    Client::TestResult TestResultFromString(const AZStd::string& result)
-    {
-        if (result == ClientTestResultAsString(Client::TestResult::Failed))
-        {
-            return Client::TestResult::Failed;
-        }
-        else if (result == ClientTestResultAsString(Client::TestResult::NotRun))
-        {
-            return Client::TestResult::NotRun;
-        }
-        else if (result == ClientTestResultAsString(Client::TestResult::Passed))
-        {
-            return Client::TestResult::Passed;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected client test result: '%s'", result.c_str()));
-        }
-    }
-
-    TestSequenceResult TestSequenceResultFromString(const AZStd::string& result)
-    {
-        if (result == TestSequenceResultAsString(TestSequenceResult::Failure))
-        {
-            return TestSequenceResult::Failure;
-        }
-        else if (result == TestSequenceResultAsString(TestSequenceResult::Success))
-        {
-            return TestSequenceResult::Success;
-        }
-        else if (result == TestSequenceResultAsString(TestSequenceResult::Timeout))
-        {
-            return TestSequenceResult::Timeout;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected test sequence result: '%s'", result.c_str()));
-        }
-    }
-
-    Policy::ExecutionFailure ExecutionFailurePolicyFromString(const AZStd::string& executionFailurePolicy)
-    {
-        if (executionFailurePolicy == ExecutionFailurePolicyAsString(Policy::ExecutionFailure::Abort))
-        {
-            return Policy::ExecutionFailure::Abort;
-        }
-        else if (executionFailurePolicy == ExecutionFailurePolicyAsString(Policy::ExecutionFailure::Continue))
-        {
-            return Policy::ExecutionFailure::Continue;
-        }
-        else if (executionFailurePolicy == ExecutionFailurePolicyAsString(Policy::ExecutionFailure::Ignore))
-        {
-            return Policy::ExecutionFailure::Ignore;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected execution failure policy: '%s'", executionFailurePolicy.c_str()));
-        }
-    }
-
-    Policy::FailedTestCoverage FailedTestCoveragePolicyFromString(const AZStd::string& failedTestCoveragePolicy)
-    {
-        if (failedTestCoveragePolicy == FailedTestCoveragePolicyAsString(Policy::FailedTestCoverage::Discard))
-        {
-            return Policy::FailedTestCoverage::Discard;
-        }
-        else if (failedTestCoveragePolicy == FailedTestCoveragePolicyAsString(Policy::FailedTestCoverage::Keep))
-        {
-            return Policy::FailedTestCoverage::Keep;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected failed test coverage policy: '%s'", failedTestCoveragePolicy.c_str()));
-        }
-    }
-
-    Policy::TestPrioritization TestPrioritizationPolicyFromString(const AZStd::string& testPrioritizationPolicy)
-    {
-        if (testPrioritizationPolicy == TestPrioritizationPolicyAsString(Policy::TestPrioritization::DependencyLocality))
-        {
-            return Policy::TestPrioritization::DependencyLocality;
-        }
-        else if (testPrioritizationPolicy == TestPrioritizationPolicyAsString(Policy::TestPrioritization::None))
-        {
-            return Policy::TestPrioritization::None;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected test prioritization policy: '%s'", testPrioritizationPolicy.c_str()));
-        }
-    }
-
-    Policy::TestFailure TestFailurePolicyFromString(const AZStd::string& testFailurePolicy)
-    {
-        if (testFailurePolicy == TestFailurePolicyAsString(Policy::TestFailure::Abort))
-        {
-            return Policy::TestFailure::Abort;
-        }
-        else if (testFailurePolicy == TestFailurePolicyAsString(Policy::TestFailure::Continue))
-        {
-            return Policy::TestFailure::Continue;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected test failure policy: '%s'", testFailurePolicy.c_str()));
-        }
-    }
-
-    Policy::IntegrityFailure IntegrityFailurePolicyFromString(const AZStd::string& integrityFailurePolicy)
-    {
-        if (integrityFailurePolicy == IntegrityFailurePolicyAsString(Policy::IntegrityFailure::Abort))
-        {
-            return Policy::IntegrityFailure::Abort;
-        }
-        else if (integrityFailurePolicy == IntegrityFailurePolicyAsString(Policy::IntegrityFailure::Continue))
-        {
-            return Policy::IntegrityFailure::Continue;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected integration failure policy: '%s'", integrityFailurePolicy.c_str()));
-        }
-    }
-
-    Policy::DynamicDependencyMap DynamicDependencyMapPolicyFromString(const AZStd::string& dynamicDependencyMapPolicy)
-    {
-        if (dynamicDependencyMapPolicy == DynamicDependencyMapPolicyAsString(Policy::DynamicDependencyMap::Discard))
-        {
-            return Policy::DynamicDependencyMap::Discard;
-        }
-        else if (dynamicDependencyMapPolicy == DynamicDependencyMapPolicyAsString(Policy::DynamicDependencyMap::Update))
-        {
-            return Policy::DynamicDependencyMap::Update;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected dynamic dependency map policy: '%s'", dynamicDependencyMapPolicy.c_str()));
-        }
-    }
-
-    Policy::TestSharding TestShardingPolicyFromString(const AZStd::string& testShardingPolicy)
-    {
-        if (testShardingPolicy == TestShardingPolicyAsString(Policy::TestSharding::Always))
-        {
-            return Policy::TestSharding::Always;
-        }
-        else if (testShardingPolicy == TestShardingPolicyAsString(Policy::TestSharding::Never))
-        {
-            return Policy::TestSharding::Never;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected test sharding policy: '%s'", testShardingPolicy.c_str()));
-        }
-    }
-
-    Policy::TargetOutputCapture TargetOutputCapturePolicyFromString(const AZStd::string& targetOutputCapturePolicy)
-    {
-        if (targetOutputCapturePolicy == TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture::File))
-        {
-            return Policy::TargetOutputCapture::File;
-        }
-        else if (targetOutputCapturePolicy == TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture::None))
-        {
-            return Policy::TargetOutputCapture::None;
-        }
-        else if (targetOutputCapturePolicy == TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture::StdOut))
-        {
-            return Policy::TargetOutputCapture::StdOut;
-        }
-        else if (targetOutputCapturePolicy == TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture::StdOutAndFile))
-        {
-            return Policy::TargetOutputCapture::StdOutAndFile;
-        }
-        else
-        {
-            throw Exception(AZStd::string::format("Unexpected target output capture policy: '%s'", targetOutputCapturePolicy.c_str()));
         }
     }
 } // namespace TestImpact

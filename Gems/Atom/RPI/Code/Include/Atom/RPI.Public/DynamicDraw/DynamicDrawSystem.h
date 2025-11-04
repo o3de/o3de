@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h>
 #include <Atom/RPI.Reflect/RPISystemDescriptor.h>
-
 
 namespace AZ
 {
@@ -20,7 +20,7 @@ namespace AZ
         //! DynamicDrawSystem is the dynamic draw system in RPI system which implements DynamicDrawInterface
         //! It contains the dynamic buffer allocator which is used to allocate dynamic buffers.
         //! It also responses to submit all the dynamic draw data to the rendering passes.
-        class DynamicDrawSystem final : public DynamicDrawInterface
+        class ATOM_RPI_PUBLIC_API DynamicDrawSystem final : public DynamicDrawInterface
         {
             friend class RPISystem;
         public:

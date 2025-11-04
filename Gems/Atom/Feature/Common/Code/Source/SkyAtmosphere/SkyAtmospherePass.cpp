@@ -111,6 +111,7 @@ namespace AZ::Render
 
             bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTOutput"), Name("SkyTransmittanceLUTPass"));
             bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTInput"), Name("SkyViewLUTPass"));
+            bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTInput"), Name("SkyVolumeLUTPass"));
             bindImageToSlot(m_transmittanceLUTImage, Name("SkyTransmittanceLUTInput"), Name("SkyRayMarchingPass"));
         }
 
@@ -127,6 +128,22 @@ namespace AZ::Render
 
             bindImageToSlot(m_skyViewLUTImage, Name("SkyViewLUTOutput"), Name("SkyViewLUTPass"));
             bindImageToSlot(m_skyViewLUTImage, Name("SkyViewLUTInput"), Name("SkyRayMarchingPass"));
+        }
+
+        {
+            // create and bind sky volume LUT
+            constexpr AZ::u32 width = 32;
+            constexpr AZ::u32 height = 32;
+            constexpr AZ::u32 depth = 32;
+            RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create3D(
+                RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite, width, height, depth, RHI::Format::R16G16B16A16_FLOAT);
+            if (!m_skyVolumeLUTImage)
+            {
+                CreateImage(Name("SkyVolumeLUTImageAttachment"), imageDesc, m_skyVolumeLUTImage);
+            }
+
+            bindImageToSlot(m_skyVolumeLUTImage, Name("SkyVolumeLUTOutput"), Name("SkyVolumeLUTPass"));
+            bindImageToSlot(m_skyVolumeLUTImage, Name("SkyVolumeLUTInput"), Name("SkyRayMarchingPass"));
         }
     }
 
@@ -169,6 +186,8 @@ namespace AZ::Render
                 m_atmospherePassData.push_back({ index, srg, AZStd::move(shaderOptionGroup) });
             }
         }
+
+        m_updateConstants = true;
     }
 
     void SkyAtmospherePass::BuildInternal()
@@ -178,15 +197,17 @@ namespace AZ::Render
         BuildShaderData();
 
         m_skyTransmittanceLUTPass = FindChildPass(Name("SkyTransmittanceLUTPass"));
+        m_skyViewLUTPass = FindChildPass(Name("SkyViewLUTPass"));
+        m_skyVolumeLUTPass = FindChildPass(Name("SkyVolumeLUTPass"));
 
         BindLUTs();
 
-        m_updateConstants = true;
-        m_enableLUTPass = true;
+        m_enableSkyTransmittanceLUTPass = true;
     }
 
     void SkyAtmospherePass::UpdatePassData()
     {
+        uint32_t childIndex = 0;
         for (auto passData : m_atmospherePassData)
         {
             passData.m_srg->SetConstant(passData.m_index, m_constants);
@@ -194,14 +215,56 @@ namespace AZ::Render
             passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableShadows"), AZ::RPI::ShaderOptionValue{ m_enableShadows });
             passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableFastSky"), AZ::RPI::ShaderOptionValue{ m_enableFastSky });
             passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableSun"), AZ::RPI::ShaderOptionValue{ m_enableSun });
+            passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableFastAerialPerspective"), AZ::RPI::ShaderOptionValue{ m_fastAerialPerspectiveEnabled });
+            passData.m_shaderOptionGroup.SetValue(AZ::Name("o_enableAerialPerspective"), AZ::RPI::ShaderOptionValue{ m_aerialPerspectiveEnabled });
 
-            auto key = passData.m_shaderOptionGroup.GetShaderVariantKeyFallbackValue();
-            passData.m_srg->SetShaderVariantKeyFallbackValue(key);
+            const auto& pass = m_children[childIndex];
+            if (auto fullscreenPass = azrtti_cast<RPI::FullscreenTrianglePass*>(pass); fullscreenPass != nullptr)
+            {
+                fullscreenPass->UpdateShaderOptions(passData.m_shaderOptionGroup.GetShaderVariantId());
+            }
+            else if (auto computePass = azrtti_cast<RPI::ComputePass*>(pass); computePass != nullptr)
+            {
+                computePass->UpdateShaderOptions(passData.m_shaderOptionGroup.GetShaderVariantId());
+            }
+            childIndex++;
         }
+    }
+
+    bool SkyAtmospherePass::NeedsShaderDataRebuild() const
+    {
+        if (m_children.empty())
+        {
+            return false;
+        }
+        else if (m_children.size() != m_atmospherePassData.size())
+        {
+            return true;
+        }
+
+        // SRG may change due to a shader reload
+        for (int i = 0; i < m_atmospherePassData.size(); ++i)
+        {
+            if (RPI::RenderPass* renderPass = azrtti_cast<RPI::RenderPass*>(m_children[i].get()))
+            {
+                auto srg = renderPass->GetShaderResourceGroup();
+                if (m_atmospherePassData[i].m_srg != srg)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     void SkyAtmospherePass::FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params)
     {
+        if (NeedsShaderDataRebuild())
+        {
+            BuildShaderData();
+        }
+
         if (m_updateConstants && !m_atmospherePassData.empty())
         {
             m_updateConstants = false;
@@ -210,14 +273,33 @@ namespace AZ::Render
 
         if (m_skyTransmittanceLUTPass)
         {
-            if (m_enableLUTPass)
+            if (m_enableSkyTransmittanceLUTPass)
             {
                 m_skyTransmittanceLUTPass->SetEnabled(true);
-                m_enableLUTPass = false;
+
+                // we automatically disable the pass after updating until LUT params change again
+                m_enableSkyTransmittanceLUTPass = false;
             }
             else if (m_skyTransmittanceLUTPass->IsEnabled())
             {
                 m_skyTransmittanceLUTPass->SetEnabled(false);
+            }
+        }
+
+        if (m_skyViewLUTPass) 
+        {
+            if (m_enableFastSky != m_skyViewLUTPass->IsEnabled())
+            {
+                m_skyViewLUTPass->SetEnabled(m_enableFastSky);
+            }
+        }
+
+        if (m_skyVolumeLUTPass) 
+        {
+            bool enableVolumePass = m_fastAerialPerspectiveEnabled && m_aerialPerspectiveEnabled;
+            if (enableVolumePass != m_skyVolumeLUTPass->IsEnabled())
+            {
+                m_skyVolumeLUTPass->SetEnabled(enableVolumePass);
             }
         }
 
@@ -252,6 +334,7 @@ namespace AZ::Render
         m_constants.m_sunShadowFarClip = params.m_sunShadowsFarClip * 0.001f; // scale to km 
         m_constants.m_nearClip = params.m_nearClip;
         m_constants.m_nearFadeDistance = params.m_nearFadeDistance;
+        m_constants.m_aerialDepthFactor = params.m_aerialDepthFactor;
 
         // avoid oversampling (too many loops) causing device removal
         constexpr uint32_t maxSamples{ 64 };  
@@ -304,12 +387,14 @@ namespace AZ::Render
             m_constants.m_absorptionDensity1LinearTerm = -1.f / 15.f;
             m_constants.m_absorptionDensity1ConstantTerm = 8.f / 3.f;
 
-            m_enableLUTPass = true;
+            m_enableSkyTransmittanceLUTPass = true;
         }
 
         m_atmosphereParams = params;
         m_enableShadows = params.m_shadowsEnabled;
         m_enableFastSky = params.m_fastSkyEnabled;
+        m_fastAerialPerspectiveEnabled = params.m_fastAerialPerspectiveEnabled;
+        m_aerialPerspectiveEnabled = params.m_aerialPerspectiveEnabled;
         m_enableSun = params.m_sunEnabled;
 
 
@@ -322,6 +407,7 @@ namespace AZ::Render
     {
         m_transmittanceLUTImage.reset();
         m_skyViewLUTImage.reset();
+        m_skyVolumeLUTImage.reset();
         m_atmospherePassData.clear();
 
         Base::ResetInternal();

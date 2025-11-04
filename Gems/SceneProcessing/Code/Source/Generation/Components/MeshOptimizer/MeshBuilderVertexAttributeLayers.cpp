@@ -15,10 +15,10 @@
 
 namespace AZ::MeshBuilder
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilderVertexAttributeLayer, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerFloat, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerUInt32, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerVector2, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerVector3, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerVector4, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilderVertexAttributeLayer, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerFloat, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerUInt32, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerVector2, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerVector3, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerVector4, AZ::SystemAllocator)
 } // namespace AZ::MeshBuilder

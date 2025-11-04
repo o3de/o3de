@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Edit/Configuration.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
 
 namespace AZ
@@ -18,9 +19,9 @@ namespace AZ
         {
             //[GFX TODO][ATOM-4462] Replace this to use data driven color management system
             //! Return a ColorEditorConfiguration for editing a Linear sRGB color in sRGB space.
-            AzToolsFramework::ColorEditorConfiguration GetLinearRgbEditorConfig();
+            ATOM_RPI_EDIT_API AzToolsFramework::ColorEditorConfiguration GetLinearRgbEditorConfig();
             //! Return a ColorEditorConfiguration for editing a sRGB color in sRGB space.
-            AzToolsFramework::ColorEditorConfiguration GetRgbEditorConfig();
+            ATOM_RPI_EDIT_API AzToolsFramework::ColorEditorConfiguration GetRgbEditorConfig();
 
         } // namespace PropertyColorConfigs
     } // namespace RPI

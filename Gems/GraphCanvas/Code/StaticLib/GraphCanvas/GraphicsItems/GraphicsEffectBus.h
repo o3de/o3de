@@ -10,8 +10,12 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
 
+class QGraphicsItem;
+
 namespace GraphCanvas
 {
+    using GraphicsEffectId = AZ::EntityId;
+
     class GraphicsEffectRequests
         : public AZ::EBusTraits
     {
@@ -20,6 +24,8 @@ namespace GraphCanvas
         using BusIdType = GraphicsEffectId;
         
         virtual QGraphicsItem* AsQGraphicsItem() = 0;
+
+        virtual void PrepareGeometryChange() = 0;
         
         virtual void OnGraphicsEffectCancelled() = 0;
 
@@ -29,3 +35,5 @@ namespace GraphCanvas
     
     using GraphicsEffectRequestBus = AZ::EBus<GraphicsEffectRequests>;
 }
+
+DECLARE_EBUS_EXTERN(GraphCanvas::GraphicsEffectRequests);

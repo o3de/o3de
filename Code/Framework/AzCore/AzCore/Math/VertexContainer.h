@@ -15,7 +15,7 @@
 namespace AZ
 {
     class ReflectContext;
-    void VertexContainerReflect(ReflectContext* context);
+    AZCORE_API void VertexContainerReflect(ReflectContext* context);
 
     using IndexFunction = AZStd::function<void(size_t)>;
     using VoidFunction = AZStd::function<void()>;

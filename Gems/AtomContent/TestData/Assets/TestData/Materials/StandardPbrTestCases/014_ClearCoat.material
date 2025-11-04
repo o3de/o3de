@@ -1,0 +1,17 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            0.34190890192985535,
+            0.0009155413135886192,
+            1.0
+        ],
+        "baseColor.textureMap": "../../Textures/checker8x8_512.png",
+        "clearCoat.enable": true,
+        "clearCoat.influenceMap": "../../Textures/checker8x8_512.png",
+        "metallic.factor": 0.5,
+        "roughness.factor": 0.5
+    }
+}

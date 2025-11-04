@@ -12,30 +12,46 @@
 #include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/Memory/AllocatorBase.h>
+#include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Debug/MemoryProfiler.h>
 
 namespace AZ
 {
-    /**
-    * A basic, default allocator implementation using a custom schema.
-    */
-    template <class Schema, class DescriptorType=typename Schema::Descriptor, bool ProfileAllocations=true, bool ReportOutOfMemory=true>
-    class SimpleSchemaAllocator
+    class SimpleSchemaAllocatorBase
         : public AllocatorBase
     {
     public:
-        using Descriptor = DescriptorType;
-        using pointer_type = typename Schema::pointer_type;
+        AZ_RTTI(SimpleSchemaAllocatorBase, "{6B1DB724-B861-41A0-9FCF-6A5943007CA0}", AllocatorBase);
+        using AllocatorBase::AllocatorBase;
+        virtual IAllocator* GetSchema() const = 0;
+    };
+
+    /**
+    * A basic, default allocator implementation using a custom schema.
+    */
+    template<class Schema, bool ProfileAllocations = true, bool ReportOutOfMemory = true>
+    class SimpleSchemaAllocator
+        : public SimpleSchemaAllocatorBase
+    {
+    public:
+        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema), SimpleSchemaAllocatorBase);
+
+        using pointer = typename Schema::pointer;
         using size_type = typename Schema::size_type;
         using difference_type = typename Schema::difference_type;
 
-        SimpleSchemaAllocator(const char* name, const char* desc)
-            : AllocatorBase(nullptr, name, desc)
+        SimpleSchemaAllocator()
         {
+            SetProfilingActive(ProfileAllocations);
+            Create();
+
+            // Register the SimpleSchemaAllocator with the Allocator Manager
+            PostCreate();
         }
 
         ~SimpleSchemaAllocator() override
         {
+            PreDestroy();
             if (m_schema)
             {
                 reinterpret_cast<Schema*>(&m_schemaStorage)->~Schema();
@@ -43,19 +59,15 @@ namespace AZ
             m_schema = nullptr;
         }
 
-        bool Create(const Descriptor& desc = Descriptor())
+        bool Create()
         {
-            m_schema = new (&m_schemaStorage) Schema(desc);
-            return m_schema != nullptr;
-        }
+            m_schema = new (&m_schemaStorage) Schema();
 
-        //---------------------------------------------------------------------
-        // IAllocator
-        //---------------------------------------------------------------------
-        void Destroy() override
-        {
-            reinterpret_cast<Schema*>(&m_schemaStorage)->~Schema();
-            m_schema = nullptr;
+            // As the Simple Schema Allocator is registered
+            // with the Allocator Manager, unregister the Schema from the manager
+            auto& allocatorManager = AllocatorManager::Instance();
+            allocatorManager.UnRegisterAllocator(m_schema);
+            return m_schema != nullptr;
         }
 
         AllocatorDebugConfig GetDebugConfig() override
@@ -64,94 +76,80 @@ namespace AZ
         }
 
         //---------------------------------------------------------------------
-        // IAllocatorSchema
+        // IAllocator
         //---------------------------------------------------------------------
-        pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = nullptr, const char* fileName = nullptr, int lineNum = 0, unsigned int suppressStackRecord = 0) override
+        AllocateAddress allocate(size_type byteSize, size_type alignment) override
         {
             byteSize = MemorySizeAdjustedUp(byteSize);
-            pointer_type ptr = m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord);
+            const AllocateAddress ptr = m_schema->allocate(byteSize, alignment);
+            m_totalAllocatedBytes += ptr.GetAllocatedBytes();
 
-            if (ProfileAllocations)
+            if constexpr (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
-                AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord));
+                AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, 1));
             }
 
-            AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
-            if (ReportOutOfMemory && !ptr)
-            AZ_POP_DISABLE_WARNING
+            if constexpr (ReportOutOfMemory)
             {
-                OnOutOfMemory(byteSize, alignment, flags, name, fileName, lineNum);
+                if (ptr == nullptr)
+                {
+                    OnOutOfMemory(byteSize, alignment);
+                }
             }
 
             return ptr;
         }
 
-        void DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override
+        size_type deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override
         {
             byteSize = MemorySizeAdjustedUp(byteSize);
 
-            if (ProfileAllocations)
+            if constexpr (ProfileAllocations)
             {
                 AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
                 AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
             }
 
-            m_schema->DeAllocate(ptr, byteSize, alignment);
+            const size_type bytesDeallocated = m_schema->deallocate(ptr, byteSize, alignment);
+            m_totalAllocatedBytes -= bytesDeallocated;
+            return bytesDeallocated;
         }
 
-        size_type Resize(pointer_type ptr, size_type newSize) override
+        AllocateAddress reallocate(pointer ptr, size_type newSize, size_type newAlignment = 1) override
         {
-            newSize = MemorySizeAdjustedUp(newSize);
-            size_t result = m_schema->Resize(ptr, newSize);
-
-            if (ProfileAllocations)
-            {
-                AZ_MEMORY_PROFILE(ProfileResize(ptr, result));
-            }
-
-            // Failure to resize an existing pointer does not indicate out-of-memory, so we do not check for it here
-
-            return result;
-        }
-
-        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
-        {
-            if (ProfileAllocations)
+            if constexpr (ProfileAllocations)
             {
                 AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
             }
 
             newSize = MemorySizeAdjustedUp(newSize);
 
-            if (ProfileAllocations)
-            {
-                AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
-            }
+            const size_type oldAllocatedSize = get_allocated_size(ptr, 1);
+            AllocateAddress newPtr = m_schema->reallocate(ptr, newSize, newAlignment);
+            m_totalAllocatedBytes += newPtr.GetAllocatedBytes() - oldAllocatedSize;
 
-            pointer_type newPtr = m_schema->ReAllocate(ptr, newSize, newAlignment);
-
-            if (ProfileAllocations)
+            if constexpr (ProfileAllocations)
             {
                 AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newPtr, newSize, GetName());
-                AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
+                AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newPtr, newSize, newAlignment));
             }
 
-            AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
-            if (ReportOutOfMemory && newSize && !newPtr)
-            AZ_POP_DISABLE_WARNING
+            if constexpr (ReportOutOfMemory)
             {
-                OnOutOfMemory(newSize, newAlignment, 0, nullptr, nullptr, 0);
+                if (newSize && newPtr == nullptr)
+                {
+                    OnOutOfMemory(newSize, newAlignment);
+                }
             }
 
             return newPtr;
         }
-                
-        size_type AllocationSize(pointer_type ptr) override
+
+        size_type get_allocated_size(pointer ptr, align_type alignment = 1) const override
         {
-            return MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
+            return MemorySizeAdjustedDown(m_schema->get_allocated_size(ptr, alignment));
         }
-        
+
         void GarbageCollect() override
         {
             m_schema->GarbageCollect();
@@ -159,30 +157,23 @@ namespace AZ
 
         size_type NumAllocatedBytes() const override
         {
-            return m_schema->NumAllocatedBytes();
+            AZ_Assert(
+                m_totalAllocatedBytes >= 0,
+                R"(SchemaAllocator "%s": Total allocated bytes is less than zero with a value of %td. Was deallocate() invoked with an address )"
+                "that is not associated with the allocator? This should never occur",
+                GetName(), m_totalAllocatedBytes.load());
+            return static_cast<size_type>(m_totalAllocatedBytes);
         }
 
-        size_type Capacity() const override
+        IAllocator* GetSchema() const override
         {
-            return m_schema->Capacity();
-        }
-        
-        size_type GetMaxAllocationSize() const override
-        { 
-            return m_schema->GetMaxAllocationSize();
+            return m_schema;
         }
 
-        size_type GetMaxContiguousAllocationSize() const override
-        {
-            return m_schema->GetMaxContiguousAllocationSize();
-        }
-
-        size_type GetUnAllocatedMemory(bool isPrint = false) const override
-        { 
-            return m_schema->GetUnAllocatedMemory(isPrint);
-        }
-
+    protected:
+        IAllocator* m_schema{};
     private:
-        typename AZStd::aligned_storage<sizeof(Schema), AZStd::alignment_of<Schema>::value>::type m_schemaStorage;
+        AZStd::aligned_storage_for_t<Schema> m_schemaStorage;
+        AZStd::atomic<ptrdiff_t> m_totalAllocatedBytes{};
     };
 }

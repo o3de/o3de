@@ -28,7 +28,7 @@ namespace ScriptCanvas
                         return false;
                     }
 
-                    classElement.RemoveElementByName(AZ_CRC("m_unary", 0x1ddbd40d));
+                    classElement.RemoveElementByName(AZ_CRC_CE("m_unary"));
                 }
 
                 return true;

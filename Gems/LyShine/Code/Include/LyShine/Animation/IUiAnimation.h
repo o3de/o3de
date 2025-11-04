@@ -287,7 +287,7 @@ private:
 //
 // Note: TCB splines are only for backward compatibility, Bezier is the default
 //
-enum EUiAnimCurveType
+enum EUiAnimCurveType : unsigned int
 {
     eUiAnimCurveType_TCBFloat           = 1,
     eUiAnimCurveType_TCBVector          = 2,
@@ -306,7 +306,7 @@ enum EUiAnimCurveType
 // Note: If the param type of a track is known and valid these can be derived from the node.
 //       These are serialized in case the parameter got invalid (for example for material nodes)
 //
-enum EUiAnimValue
+enum EUiAnimValue : unsigned int
 {
     eUiAnimValue_Float          = 0,
     eUiAnimValue_Vector         = 1,
@@ -542,7 +542,7 @@ struct IUiAnimTrack
     virtual void SetValue(float time, const AZ::Color& value, bool bDefault = false) = 0;
 
     // Only for position tracks, offset all track keys by this amount.
-    virtual void OffsetKeyPosition(const Vec3& value) = 0;
+    virtual void OffsetKeyPosition(const AZ::Vector3& value) = 0;
 
     // Assign active time range for this track.
     virtual void SetTimeRange(const Range& timeRange) = 0;
@@ -1060,7 +1060,7 @@ struct IUiAnimationListener
     virtual ~IUiAnimationListener(){}
     //! callback on UI animation events
     virtual void OnUiAnimationEvent(EUiAnimationEvent uiAnimationEvent, IUiAnimSequence* pAnimSequence) = 0;
-    virtual void OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, [[maybe_unused]] IUiAnimSequence* pAnimSequence) {}
+    virtual void OnUiTrackEvent([[maybe_unused]] AZStd::string eventName, [[maybe_unused]] AZStd::string valueName, [[maybe_unused]] IUiAnimSequence* pAnimSequence) {}
     // </interfuscator:shuffle>
 };
 

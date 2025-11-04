@@ -9,6 +9,7 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/conversions.h>
 
 #include <AzFramework/Archive/ZipFileFormat.h>

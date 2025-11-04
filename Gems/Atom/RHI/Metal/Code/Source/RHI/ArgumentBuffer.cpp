@@ -24,7 +24,9 @@ namespace AZ
             return aznew ArgumentBuffer();
         }
 
-        void ArgumentBuffer::Init(Device* device, RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout, ShaderResourceGroup& group, ShaderResourceGroupPool* srgPool)
+        void ArgumentBuffer::Init(Device* device,
+                                  RHI::ConstPtr<RHI::ShaderResourceGroupLayout> srgLayout,
+                                  ShaderResourceGroupPool* srgPool)
         {
             @autoreleasepool
             {
@@ -49,40 +51,12 @@ namespace AZ
                     AZ_Assert(m_constantBuffer.IsValid(), "Couldnt allocate memory for Constant buffer")
                 }
 
-
                 NSMutableArray* argBufferDecriptors = [[[NSMutableArray alloc] init] autorelease];
                 bool argDescriptorsCreated = CreateArgumentDescriptors(argBufferDecriptors);
 
                 if(argDescriptorsCreated)
                 {
-                    NSSortDescriptor* sortDescriptor;
-                    sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"index"
-                                                                 ascending:YES] autorelease];
-                    NSArray* sortedArgDescriptors = [argBufferDecriptors sortedArrayUsingDescriptors:@[sortDescriptor]];
-
-                    m_argumentEncoder = [m_device->GetMtlDevice() newArgumentEncoderWithArguments:sortedArgDescriptors];
-                    NSUInteger argumentBufferLength = m_argumentEncoder.encodedLength;
-
-                    RHI::BufferDescriptor bufferDescriptor;
-
-                    bufferDescriptor.m_byteCount = argumentBufferLength;
-                    bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
-                    AZStd::string argBufferName = "ArgumentBuffer";
-#if defined(ARGUMENTBUFFER_PAGEALLOCATOR)
-                    m_argumentBuffer = device->GetArgumentBufferAllocator().Allocate(bufferDescriptor.m_byteCount);
-#else
-                    m_argumentBuffer = device->CreateBufferCommitted(bufferDescriptor, RHI::HeapMemoryLevel::Host);
-                    argBufferName = AZStd::string::format("ArgumentBuffer_%s", srgPool->GetName().GetCStr());
-                    m_argumentBuffer.SetName(argBufferName.c_str());
-#endif
-                    AZ_Assert(m_argumentBuffer.IsValid(), "Argument Buffer was not created");
-
-                    
-                    SetName(Name(argBufferName.c_str()));
-
-                    //Attach the argument buffer to the argument encoder
-                    [m_argumentEncoder setArgumentBuffer:m_argumentBuffer.GetGpuAddress<id<MTLBuffer>>()
-                                                                     offset:m_argumentBuffer.GetOffset()];
+                    SetArgumentBuffer(argBufferDecriptors, AZStd::string::format("ArgumentBuffer_%s", srgPool->GetName().GetCStr()));
 
                     //Attach the static samplers
                     AttachStaticSamplers();
@@ -93,10 +67,57 @@ namespace AZ
             }
         }
 
+        void ArgumentBuffer::Init(Device* device,
+                                  AZStd::vector<MTLArgumentDescriptor*> argBufferDescriptors,
+                                  AZStd::string argBufferName)
+        {
+            @autoreleasepool
+            {
+                m_device = device;
+
+                NSMutableArray* argBufferDecriptors = [[[NSMutableArray alloc] init] autorelease];
+                for(MTLArgumentDescriptor* desc : argBufferDescriptors)
+                {
+                    [argBufferDecriptors addObject:desc];
+                }
+                
+                SetArgumentBuffer(argBufferDecriptors, argBufferName);
+            }
+        }
+
+        void ArgumentBuffer::SetArgumentBuffer(NSMutableArray* argBufferDecriptors, AZStd::string argBufferName)
+        {
+            NSSortDescriptor* sortDescriptor;
+            sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"index"
+                                                         ascending:YES] autorelease];
+            NSArray* sortedArgDescriptors = [argBufferDecriptors sortedArrayUsingDescriptors:@[sortDescriptor]];
+
+            m_argumentEncoder = [m_device->GetMtlDevice() newArgumentEncoderWithArguments:sortedArgDescriptors];
+            NSUInteger argumentBufferLength = m_argumentEncoder.encodedLength;
+
+            RHI::BufferDescriptor bufferDescriptor;
+
+            bufferDescriptor.m_byteCount = argumentBufferLength;
+            bufferDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
+#if defined(ARGUMENTBUFFER_PAGEALLOCATOR)
+            m_argumentBuffer = m_device->GetArgumentBufferAllocator().Allocate(bufferDescriptor.m_byteCount);
+#else
+            m_argumentBuffer = m_device->CreateBufferCommitted(bufferDescriptor, RHI::HeapMemoryLevel::Host);
+            m_argumentBuffer.SetName(argBufferName.c_str());
+#endif
+            AZ_Assert(m_argumentBuffer.IsValid(), "Argument Buffer was not created");
+            SetName(Name(argBufferName.c_str()));
+
+            //Attach the argument buffer to the argument encoder
+            [m_argumentEncoder setArgumentBuffer:m_argumentBuffer.GetGpuAddress<id<MTLBuffer>>()
+                                                             offset:m_argumentBuffer.GetOffset()];
+        }
+    
         bool ArgumentBuffer::CreateArgumentDescriptors(NSMutableArray* argBufferDecriptors)
         {
             bool resourceAdded = false;
 
+            
             for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : m_srgLayout->GetShaderInputListForBuffers())
             {
                 MTLArgumentDescriptor* bufferArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
@@ -107,10 +128,14 @@ namespace AZ
 
             for (const RHI::ShaderInputImageDescriptor& shaderInputImage : m_srgLayout->GetShaderInputListForImages())
             {
-                MTLArgumentDescriptor* imgArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
-                ConvertImageArgumentDescriptor(imgArgDescriptor, shaderInputImage);
-                [argBufferDecriptors addObject:imgArgDescriptor];
-                resourceAdded = true;
+                // SubpassInputs do not use a texture in the SRG for Metal.
+                if (shaderInputImage.m_type != RHI::ShaderInputImageType::SubpassInput)
+                {
+                    MTLArgumentDescriptor* imgArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
+                    ConvertImageArgumentDescriptor(imgArgDescriptor, shaderInputImage);
+                    [argBufferDecriptors addObject:imgArgDescriptor];
+                    resourceAdded = true;
+                }
             }
 
             for (const RHI::ShaderInputSamplerDescriptor& shaderInputSampler : m_srgLayout->GetShaderInputListForSamplers())
@@ -118,7 +143,7 @@ namespace AZ
                 MTLArgumentDescriptor* samplerArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 samplerArgDescriptor.dataType = MTLDataTypeSampler;
                 samplerArgDescriptor.index = shaderInputSampler.m_registerId;
-                samplerArgDescriptor.access = MTLArgumentAccessReadOnly;
+                samplerArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 samplerArgDescriptor.arrayLength = shaderInputSampler.m_count > 1 ? shaderInputSampler.m_count:0;
                 [argBufferDecriptors addObject:samplerArgDescriptor];
                 resourceAdded = true;
@@ -129,7 +154,7 @@ namespace AZ
                 MTLArgumentDescriptor* staticSamplerArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 staticSamplerArgDescriptor.dataType = MTLDataTypeSampler;
                 staticSamplerArgDescriptor.index = staticSamplerInput.m_registerId;
-                staticSamplerArgDescriptor.access = MTLArgumentAccessReadOnly;
+                staticSamplerArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 [argBufferDecriptors addObject:staticSamplerArgDescriptor];
                 resourceAdded = true;
             }
@@ -141,7 +166,7 @@ namespace AZ
                 MTLArgumentDescriptor* constBufferArgDescriptor = [[[MTLArgumentDescriptor alloc] init] autorelease];
                 constBufferArgDescriptor.dataType = MTLDataTypePointer;
                 constBufferArgDescriptor.index = shaderInputConstant.m_registerId;
-                constBufferArgDescriptor.access = MTLArgumentAccessReadOnly;
+                constBufferArgDescriptor.access = GetBindingAccess(RHI::ShaderInputImageAccess::Read);
                 [argBufferDecriptors addObject:constBufferArgDescriptor];
                 resourceAdded = true;
             }
@@ -186,13 +211,19 @@ namespace AZ
         }
 
         void ArgumentBuffer::UpdateImageViews(const RHI::ShaderInputImageDescriptor& shaderInputImage,
-                                              const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews)
+                                              const AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>>& imageViews)
         {
+            if (shaderInputImage.m_type == RHI::ShaderInputImageType::SubpassInput)
+            {
+                // SubpassInputs don't need to update the argument buffer because they are not really a texture.
+                return;
+            }
+            
             int imageArrayLen = 0;
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
             
             m_resourceBindings[shaderInputImage.m_name].clear();
-            for (const RHI::ConstPtr<RHI::ImageView>& imageViewBase : imageViews)
+            for (const RHI::ConstPtr<RHI::DeviceImageView>& imageViewBase : imageViews)
             {
                 if (imageViewBase && !imageViewBase->IsStale())
                 {
@@ -250,7 +281,7 @@ namespace AZ
         }
 
         void ArgumentBuffer::UpdateBufferViews(const RHI::ShaderInputBufferDescriptor& shaderInputBuffer,
-                                               const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufferViews)
+                                               const AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>>& bufferViews)
         {
             int bufferArrayLen = 0;
             AZStd::array<id<MTLBuffer>, MaxEntriesInArgTable> mtlBuffers;
@@ -258,7 +289,7 @@ namespace AZ
             AZStd::array<id<MTLTexture>, MaxEntriesInArgTable> mtlTextures;
 
             m_resourceBindings[shaderInputBuffer.m_name].clear();
-            for (const RHI::ConstPtr<RHI::BufferView>& bufferViewBase : bufferViews)
+            for (const RHI::ConstPtr<RHI::DeviceBufferView>& bufferViewBase : bufferViews)
             {
                 if (bufferViewBase && !bufferViewBase->IsStale())
                 {
@@ -392,26 +423,17 @@ namespace AZ
         }
 
         void ArgumentBuffer::CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
-                                                       ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
-                                                       GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const
+                                                       ResourcesForCompute& untrackedResourceComputeRead,
+                                                       ResourcesForCompute& untrackedResourceComputeReadWrite) const
         {
             //Cache the constant buffer associated with a srg
-            if (m_constantBufferSize)
+            if (m_constantBufferSize &&
+                static_cast<uint32_t>(srgResourcesVisInfo.m_constantDataStageMask) > 0)
             {
-                uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(srgResourcesVisInfo.m_constantDataStageMask));
-                if( numBitsSet > 0)
+                id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
+                if(RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
                 {
-                    id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
-                    if(RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
-                    {
-                        resourcesToMakeResidentCompute[MTLResourceUsageRead].emplace(mtlconstantBufferResource);
-                    }
-                    else
-                    {
-                        MTLRenderStages mtlRenderStages = GetRenderStages(srgResourcesVisInfo.m_constantDataStageMask);
-                        AZStd::pair <MTLResourceUsage,MTLRenderStages> key = AZStd::make_pair(MTLResourceUsageRead, mtlRenderStages);
-                        resourcesToMakeResidentGraphics[key].emplace(mtlconstantBufferResource);
-                    }
+                    untrackedResourceComputeRead.insert(mtlconstantBufferResource);
                 }
             }
 
@@ -422,26 +444,50 @@ namespace AZ
                 auto visMaskIt = srgResourcesVisInfo.m_resourcesStageMask.find(it.first);
                 AZ_Assert(visMaskIt != srgResourcesVisInfo.m_resourcesStageMask.end(), "No Visibility information available")
 
-                uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(visMaskIt->second));
                 //Only use this resource if it is used in one of the shaders
-                if (numBitsSet > 0)
+                if (static_cast<uint32_t>(visMaskIt->second) > 0 &&
+                    RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
                 {
-                    if(RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
-                    {
-                        CollectResourcesForCompute(it.second, resourcesToMakeResidentCompute);
-                    }
-                    else
-                    {
-                        [[maybe_unused]] bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
-                        AZ_Assert(isBoundToGraphics, "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
-                        CollectResourcesForGraphics(visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
-                    }
+                    CollectResourcesForCompute(it.second, untrackedResourceComputeRead, untrackedResourceComputeReadWrite);
+                }
+            }
+        }
+
+        void ArgumentBuffer::CollectUntrackedResources(const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                                       ResourcesPerStageForGraphics& untrackedResourcesRead,
+                                                       ResourcesPerStageForGraphics& untrackedResourcesReadWrite) const
+        {
+            //Cache the constant buffer associated with a srg
+            if (m_constantBufferSize &&
+                static_cast<uint32_t>(srgResourcesVisInfo.m_constantDataStageMask) > 0 &&
+                !RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
+            {
+                id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
+                MTLRenderStages mtlRenderStages = GetRenderStages(srgResourcesVisInfo.m_constantDataStageMask);
+                AddUntrackedResource(mtlRenderStages, mtlconstantBufferResource, untrackedResourcesRead);
+            }
+
+            //Cach all the resources within a srg that are used by the shader based on the visibility information
+            for (const auto& it : m_resourceBindings)
+            {
+                //Extract the visibility mask for the give resource
+                auto visMaskIt = srgResourcesVisInfo.m_resourcesStageMask.find(it.first);
+                AZ_Assert(visMaskIt != srgResourcesVisInfo.m_resourcesStageMask.end(), "No Visibility information available")
+
+                //Only use this resource if it is used in one of the shaders
+                if (static_cast<uint32_t>(visMaskIt->second) > 0 &&
+                    !RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
+                {
+                    [[maybe_unused]] bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
+                    AZ_Assert(isBoundToGraphics, "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
+                    CollectResourcesForGraphics(visMaskIt->second, it.second, untrackedResourcesRead, untrackedResourcesReadWrite);
                 }
             }
         }
 
         void ArgumentBuffer::CollectResourcesForCompute(const ResourceBindingsSet& resourceBindingDataSet,
-                                                        ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const
+                                                        ResourcesForCompute& untrackedResourceComputeRead,
+                                                        ResourcesForCompute& untrackedResourceComputeReadWrite) const
         {
             for (const auto& resourceBindingData : resourceBindingDataSet)
             {
@@ -463,13 +509,21 @@ namespace AZ
                         AZ_Assert(false, "Undefined Resource type");
                     }
                 }
-                resourcesToMakeResidentMap[resourceUsage].emplace(resourceBindingData.m_resourcPtr);
+                if(resourceUsage == MTLResourceUsageRead)
+                {
+                    untrackedResourceComputeRead.insert(resourceBindingData.m_resourcPtr);
+                }
+                else
+                {
+                    untrackedResourceComputeReadWrite.insert(resourceBindingData.m_resourcPtr);
+                }
             }
         }
 
         void ArgumentBuffer::CollectResourcesForGraphics(RHI::ShaderStageMask visShaderMask,
                                                          const ResourceBindingsSet& resourceBindingDataSet,
-                                                         GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const
+                                                         ResourcesPerStageForGraphics& untrackedResourcesRead,
+                                                         ResourcesPerStageForGraphics& untrackedResourcesReadWrite) const
         {
             MTLRenderStages mtlRenderStages = GetRenderStages(visShaderMask);
             MTLResourceUsage resourceUsage = MTLResourceUsageRead;
@@ -493,11 +547,31 @@ namespace AZ
                     }
                 }
 
-                AZStd::pair <MTLResourceUsage, MTLRenderStages> key = AZStd::make_pair(resourceUsage, mtlRenderStages);
-                resourcesToMakeResidentMap[key].emplace(resourceBindingData.m_resourcPtr);
+                if(resourceUsage == MTLResourceUsageRead)
+                {
+                    AddUntrackedResource(mtlRenderStages, resourceBindingData.m_resourcPtr, untrackedResourcesRead);
+                }
+                else
+                {
+                    AddUntrackedResource(mtlRenderStages, resourceBindingData.m_resourcPtr, untrackedResourcesReadWrite);
+                }
             }
         }
 
+        void ArgumentBuffer::AddUntrackedResource(MTLRenderStages mtlRenderStages,
+                                         id<MTLResource> resourcPtr,
+                                         ResourcesPerStageForGraphics& resourceSet) const
+        {
+            if(mtlRenderStages & MTLRenderStageVertex)
+            {
+                resourceSet[RHI::ShaderStageVertex].insert(resourcPtr);
+            }
+            if(mtlRenderStages & MTLRenderStageFragment)
+            {
+                resourceSet[RHI::ShaderStageFragment].insert(resourcPtr);
+            }
+        }
+    
         bool ArgumentBuffer::IsNullHeapNeededForVertexStage(const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
         {
             bool isUsedByVertexStage = false;
@@ -517,6 +591,24 @@ namespace AZ
         bool ArgumentBuffer::IsNullDescHeapNeeded() const
         {
             return m_useNullDescriptorHeap;
+        }
+    
+        void ArgumentBuffer::UpdateTextureView(id <MTLTexture> mtlTexture, uint32_t index)
+        {
+            [m_argumentEncoder setTexture : mtlTexture
+                                atIndex   : index];
+        }
+        
+        void ArgumentBuffer::UpdateBufferView(id <MTLBuffer> mtlBuffer, uint32_t offset, uint32_t index)
+        {
+            [m_argumentEncoder setBuffer : mtlBuffer
+                                  offset : offset
+                                 atIndex : index];
+        }
+    
+        const id<MTLArgumentEncoder> ArgumentBuffer::GetArgEncoder() const
+        {
+            return m_argumentEncoder;
         }
     }
 }

@@ -28,9 +28,9 @@
 namespace EMotionFX
 {
     using CanDeleteJackEntityFixture = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AZ::UserSettingsComponent,
         AzToolsFramework::Components::PropertyManagerComponent,

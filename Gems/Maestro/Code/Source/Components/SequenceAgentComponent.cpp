@@ -11,7 +11,6 @@
 
 namespace Maestro
 {
-    //=========================================================================
     namespace ClassConverters
     {
         static bool UpgradeSequenceAgentComponent(AZ::SerializeContext&, AZ::SerializeContext::DataElementNode&);
@@ -30,7 +29,6 @@ namespace Maestro
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceAgentComponent::Init()
     {
         m_addressToBehaviorVirtualPropertiesMap.clear();
@@ -53,22 +51,20 @@ namespace Maestro
         DisconnectAllSequences();
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceAgentComponent::ConnectSequence(const AZ::EntityId& sequenceEntityId)
     {
         if (m_sequenceEntityIds.find(sequenceEntityId) == m_sequenceEntityIds.end())
         {
             m_sequenceEntityIds.insert(sequenceEntityId);
             // connect to EBus between the given SequenceComponent and me
-            Maestro::SequenceAgentEventBusId busId(sequenceEntityId, GetEntityId());
+            SequenceAgentEventBusId busId(sequenceEntityId, GetEntityId());
             SequenceAgentComponentRequestBus::MultiHandler::BusConnect(busId);
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceAgentComponent::DisconnectSequence()
     {
-        const Maestro::SequenceAgentEventBusId *busIdToDisconnect = SequenceAgentComponentRequestBus::GetCurrentBusId();
+        const SequenceAgentEventBusId *busIdToDisconnect = SequenceAgentComponentRequestBus::GetCurrentBusId();
         if (busIdToDisconnect)
         {
             AZ::EntityId sequenceEntityId = busIdToDisconnect->first;
@@ -84,53 +80,46 @@ namespace Maestro
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceAgentComponent::ConnectAllSequences()
     {
         // Connect all buses
         for (auto iter = m_sequenceEntityIds.begin(); iter != m_sequenceEntityIds.end(); iter++)
         {
-            Maestro::SequenceAgentEventBusId busIdToConnect(*iter, GetEntityId());
+            SequenceAgentEventBusId busIdToConnect(*iter, GetEntityId());
             SequenceAgentComponentRequestBus::MultiHandler::BusConnect(busIdToConnect);
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceAgentComponent::DisconnectAllSequences()
     {
         // disconnect all buses
         for (auto iter = m_sequenceEntityIds.begin(); iter != m_sequenceEntityIds.end(); iter++)
         {
-            Maestro::SequenceAgentEventBusId busIdToDisconnect(*iter, GetEntityId());
+            SequenceAgentEventBusId busIdToDisconnect(*iter, GetEntityId());
             SequenceAgentComponentRequestBus::MultiHandler::BusDisconnect(busIdToDisconnect);
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    void SequenceAgentComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
+    void SequenceAgentComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
     {
         SequenceAgent::GetAnimatedPropertyValue(returnValue, GetEntityId(), animatableAddress);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    bool SequenceAgentComponent::SetAnimatedPropertyValue(const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress, const AnimatedValue& value)
+    bool SequenceAgentComponent::SetAnimatedPropertyValue(const SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress, const AnimatedValue& value)
     {
         return SequenceAgent::SetAnimatedPropertyValue(GetEntityId(), animatableAddress, value);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     AZ::Uuid SequenceAgentComponent::GetAnimatedAddressTypeId(const AnimatablePropertyAddress& animatableAddress)
     {
         return GetVirtualPropertyTypeId(animatableAddress);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceAgentComponent::GetAssetDuration(AnimatedValue& returnValue, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
     {
         SequenceAgent::GetAssetDuration(returnValue, componentId, assetId);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
     void SequenceAgentComponent::GetEntityComponents(AZ::Entity::ComponentArrayType& entityComponents) const
     {
         AZ::Entity* entity = GetEntity();
@@ -145,7 +134,6 @@ namespace Maestro
         }
     }
  
-    //=========================================================================
     namespace ClassConverters
     {
         static bool UpgradeSequenceAgentComponent([[maybe_unused]] AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
@@ -167,4 +155,5 @@ namespace Maestro
             return true;
         }
     } // namespace ClassConverters
-}// namespace Maestro
+
+} // namespace Maestro

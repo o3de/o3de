@@ -64,13 +64,13 @@ const AZ::Crc32 FlyCameraInputComponent::UnknownInputChannelId("unknown_input_ch
 //////////////////////////////////////////////////////////////////////////////
 void FlyCameraInputComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
 {
-    required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+    required.push_back(AZ_CRC_CE("TransformService"));
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void FlyCameraInputComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
 {
-    provided.push_back(AZ_CRC("InputService", 0xd41af40c));
+    provided.push_back(AZ_CRC_CE("InputService"));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -100,27 +100,27 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
             editContext->Class<FlyCameraInputComponent>("Fly Camera Input", "The Fly Camera Input allows you to control the camera")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute("Category", "Gameplay")
-                ->Attribute("Icon", "Icons/Components/FlyCameraInput.svg")
-                ->Attribute("ViewportIcon", "Icons/Components/Viewport/FlyCameraInput.svg")
+                ->Attribute("Icon", "Editor/Icons/Components/FlyCameraInput.svg")
+                ->Attribute("ViewportIcon", "Editor/Icons/Components/Viewport/FlyCameraInput.svg")
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/fly-camera-input/")
                 ->Attribute("AutoExpand", true)
-                ->Attribute("AppearsInAddComponentMenu", AZ_CRC("Game", 0x232b318c))
+                ->Attribute("AppearsInAddComponentMenu", AZ_CRC_CE("Game"))
                 ->DataElement(0, &FlyCameraInputComponent::m_moveSpeed, "Move Speed", "Speed at which the camera moves")
                 ->Attribute("Min", 1.0f)
                 ->Attribute("Max", 100.0f)
-                ->Attribute("ChangeNotify", AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
                 ->DataElement(0, &FlyCameraInputComponent::m_rotationSpeed, "Rotation Speed", "Speed at which the camera rotates")
                 ->Attribute("Min", 1.0f)
                 ->Attribute("Max", 100.0f)
-                ->Attribute("ChangeNotify", AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
                 ->DataElement(0, &FlyCameraInputComponent::m_mouseSensitivity, "Mouse Sensitivity", "Mouse sensitivity factor")
                 ->Attribute("Min", 0.0f)
                 ->Attribute("Max", 1.0f)
-                ->Attribute("ChangeNotify", AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
                 ->DataElement(0, &FlyCameraInputComponent::m_InvertRotationInputAxisX, "Invert Rotation Input X", "Invert rotation input x-axis")
-                ->Attribute("ChangeNotify", AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
                 ->DataElement(0, &FlyCameraInputComponent::m_InvertRotationInputAxisY, "Invert Rotation Input Y", "Invert rotation input y-axis")
-                ->Attribute("ChangeNotify", AZ_CRC("RefreshValues", 0x28e720d4))
+                ->Attribute("ChangeNotify", AZ_CRC_CE("RefreshValues"))
                 ->DataElement(AZ::Edit::UIHandlers::CheckBox, &FlyCameraInputComponent::m_isEnabled,
                     "Is Initially Enabled", "When checked, the fly cam input is enabled on activate, else it has to be specifically enabled.");
         }
@@ -172,13 +172,15 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
     }
 
     AZ::Transform worldTransform = AZ::Transform::Identity();
-    EBUS_EVENT_ID_RESULT(worldTransform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+    AZ::TransformBus::EventResult(worldTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
     // Update movement
     const float moveSpeed = m_moveSpeed * deltaTime;
     const AZ::Vector3 right = worldTransform.GetBasisX();
     const AZ::Vector3 forward = worldTransform.GetBasisY();
-    const AZ::Vector3 movement = (forward * m_movement.y) + (right * m_movement.x);
+    const AZ::Vector3 up = worldTransform.GetBasisZ();
+
+    const AZ::Vector3 movement = (forward * m_movement.y) + (right * m_movement.x) + (up * m_movement.z);
     const AZ::Vector3 newPosition = worldTransform.GetTranslation() + (movement * moveSpeed);
     worldTransform.SetTranslation(newPosition);
 
@@ -192,7 +194,7 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
     const AZ::Quaternion newOrientation = LYQuaternionToAZQuaternion(Quat(newRotation));
     worldTransform.SetRotation(newOrientation);
 
-    EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus, SetWorldTM, worldTransform);
+    AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, worldTransform);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -300,6 +302,16 @@ void FlyCameraInputComponent::OnKeyboardEvent(const InputChannel& inputChannel)
     {
         m_movement.x = inputChannel.GetValue();
     }
+
+    if(channelId == InputDeviceKeyboard::Key::AlphanumericE)
+    {
+        m_movement.z = inputChannel.GetValue();
+    }
+
+    if(channelId == InputDeviceKeyboard::Key::AlphanumericQ)
+    {
+        m_movement.z = -inputChannel.GetValue();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -315,7 +327,17 @@ void FlyCameraInputComponent::OnGamepadEvent(const InputChannel& inputChannel)
     {
         m_movement.y = inputChannel.GetValue();
     }
-    
+
+    if (channelId == InputDeviceGamepad::Trigger::L2)
+    {
+        m_movement.z = -inputChannel.GetValue();
+    }
+
+    if (channelId == InputDeviceGamepad::Trigger::R2)
+    {
+        m_movement.z = inputChannel.GetValue();
+    }
+
     if (channelId == InputDeviceGamepad::ThumbStickAxis1D::RX)
     {
         m_rotation.x = inputChannel.GetValue();

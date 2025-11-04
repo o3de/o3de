@@ -17,8 +17,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollStrenghModifierNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollStrenghModifierNode::UniqueData, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollStrenghModifierNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRagdollStrenghModifierNode::UniqueData, AnimGraphAllocator)
 
     BlendTreeRagdollStrenghModifierNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -244,13 +244,13 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &BlendTreeRagdollStrenghModifierNode::IsDampingRatioReadOnly)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                    ->DataElement(AZ_CRC("ActorRagdollJoints", 0xed1cae00), &BlendTreeRagdollStrenghModifierNode::m_modifiedJointNames, "Modified joints", "The strengh and/or damping ratios of the selected joints will be modified.")
+                    ->DataElement(AZ_CRC_CE("ActorRagdollJoints"), &BlendTreeRagdollStrenghModifierNode::m_modifiedJointNames, "Modified joints", "The strengh and/or damping ratios of the selected joints will be modified.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeRagdollStrenghModifierNode::Reinit)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &BlendTreeRagdollStrenghModifierNode::GetModifiedJointName)
-                        ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("ActorJointElement", 0xedc8946c))
+                        ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC_CE("ActorJointElement"))
                 ;
             }
         }

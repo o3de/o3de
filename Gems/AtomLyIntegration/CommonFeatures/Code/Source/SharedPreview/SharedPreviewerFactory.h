@@ -22,7 +22,7 @@ namespace AZ
         class SharedPreviewerFactory final : public AzToolsFramework::AssetBrowser::PreviewerFactory
         {
         public:
-            AZ_CLASS_ALLOCATOR(SharedPreviewerFactory, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SharedPreviewerFactory, AZ::SystemAllocator);
 
             SharedPreviewerFactory() = default;
             ~SharedPreviewerFactory() = default;

@@ -25,7 +25,8 @@ namespace ScriptCanvas
 {
     class ScriptCanvasData;
 
-    AZ::Outcome<SourceTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle);
+    AZ::Outcome<SourceTree, AZStd::string> LoadEditorAssetTree(
+        SourceHandle handle, MakeInternalGraphEntitiesUnique makeUniqueEntities);
     
     struct FileLoadResult
     {

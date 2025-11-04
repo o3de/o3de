@@ -31,7 +31,7 @@ namespace AzNetworking
     //! @brief Packet data compressor interface.
     //!
     //! ICompressor is an abstract compression interface meant for user provided GEMs to implement (such as the [Multiplayer
-    //! Compression Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer-compression)).
+    //! Compression Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer/multiplayer-compression)).
     //! Compression is supported for both TCP and UDP connections.  Instantiation of a compressor is controlled by the
     //! `net_UdpCompressor` or `net_TcpCompressor` cvar for their respective protocols.  
 
@@ -94,7 +94,7 @@ namespace AzNetworking
     //! ICompressorFactory is an abstract compression interface meant for user provided GEMs to implement. ICompressorFactory
     //! implementations can be registered to classes implementing INetworking. Registered factories can then be used to create
     //! ICompressor implementations on demand. The [Multiplayer Compression
-    //! Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer-compression) is an example of an ICompressorFactory
+    //! Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer/multiplayer-compression) is an example of an ICompressorFactory
     //! for an LZ4 Compressor. In it, MultiplayerCompressionSystemComponent registers its ICompressorFactory with
     //! NetworkingSystemComponent, which is an implementation of INetworking. Registered factories are keyed by an AZ::Crc32
     //! of their string name accessed through the factory's GetFactoryName method.

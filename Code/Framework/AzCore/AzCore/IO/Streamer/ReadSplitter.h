@@ -25,11 +25,11 @@ namespace AZ
             struct ReportData;
         } // namespace Requests
 
-        struct ReadSplitterConfig final :
+        struct AZCORE_API ReadSplitterConfig final :
             public IStreamerStackConfig
         {
             AZ_RTTI(AZ::IO::ReadSplitterConfig, "{EDDD6CE5-D7BC-4FAB-8EBA-68F5C0390B05}", IStreamerStackConfig);
-            AZ_CLASS_ALLOCATOR(ReadSplitterConfig, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ReadSplitterConfig, AZ::SystemAllocator);
 
             ~ReadSplitterConfig() override = default;
             AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
@@ -61,7 +61,7 @@ namespace AZ
             bool m_splitAlignedRequests{ true };
         };
 
-        class ReadSplitter
+        class AZCORE_API ReadSplitter
             : public StreamStackEntry
         {
         public:

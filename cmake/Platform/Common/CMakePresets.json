@@ -45,6 +45,17 @@
             }
         },
         {
+            "name": "compile-commands-json",
+            "description": "Generate compile_commands.json file when used with a Makefile or Ninja Generator",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
             "name": "no-unity",
             "description": "unity: off",
             "hidden": true,
@@ -93,14 +104,20 @@
             "displayName": "Unix Makefiles",
             "description": "Configure using Unix Makefile generator",
             "generator": "Unix Makefiles",
-            "hidden": true
+            "hidden": true,
+            "inherits":[
+                "compile-commands-json"
+            ]
         },
         {
             "name": "ninja-multi-config",
             "displayName": "Ninja Multi-Config",
             "description": "Configure using Ninja Multi-Config generator",
             "hidden": true,
-            "generator": "Ninja Multi-Config"
+            "generator": "Ninja Multi-Config",
+            "inherits":[
+                "compile-commands-json"
+            ]
         },
         {
             "name": "vs2022",

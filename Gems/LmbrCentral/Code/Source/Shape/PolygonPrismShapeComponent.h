@@ -37,18 +37,18 @@ namespace LmbrCentral
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            provided.push_back(AZ_CRC("PolygonPrismShapeService", 0x1cbc4ed4));
-            provided.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-            provided.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+            provided.push_back(AZ_CRC_CE("ShapeService"));
+            provided.push_back(AZ_CRC_CE("PolygonPrismShapeService"));
+            provided.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+            provided.push_back(AZ_CRC_CE("FixedVertexContainerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-            incompatible.push_back(AZ_CRC("PolygonPrismShapeService", 0x1cbc4ed4));
-            incompatible.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-            incompatible.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+            incompatible.push_back(AZ_CRC_CE("ShapeService"));
+            incompatible.push_back(AZ_CRC_CE("PolygonPrismShapeService"));
+            incompatible.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+            incompatible.push_back(AZ_CRC_CE("FixedVertexContainerService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -58,7 +58,7 @@ namespace LmbrCentral
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void Reflect(AZ::ReflectContext* context);

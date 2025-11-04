@@ -266,6 +266,12 @@ namespace AzFramework
             return false;
         }
 
+        if (processLaunchInfo.m_tetherLifetime)
+        {
+            AZ_Warning("ProcessWatcher", false, 
+                "ProcessLaunchInfo tether-lifetime isn't implemented for Mac yet. The new process won't be terminated when this process closes.");
+        }
+
         // Because of the way execve is defined we need to copy the strings from
         // AZ::string (using c_str() returns a const char*) into a non-const char*
 

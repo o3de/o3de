@@ -10,9 +10,11 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/set.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/DataPatch.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Memory/Memory.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 
 #define MCPP_DLL_IMPORT 1
 #define MCPP_DONT_USE_SHORT_NAMES 1
@@ -28,6 +30,8 @@ namespace UnitTest
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace ShaderBuilder
     {
         //! Collects data output from the PreprocessFile() function
@@ -38,7 +42,7 @@ namespace AZ
 
             //! May contain warning and error messages, if this option is enabled in PreprocessFile().
             AZStd::string diagnostics;
-            
+
             //! Will contain the entire inclusion tree, not just the files include by top level AZSL file.
             AZStd::set<AZStd::string> includedPaths;
         };
@@ -47,7 +51,7 @@ namespace AZ
         struct PreprocessorOptions final
         {
             AZ_RTTI(PreprocessorOptions, "{684181FC-7372-49FC-B69C-1FF510A29621}");
-            AZ_CLASS_ALLOCATOR(PreprocessorOptions, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PreprocessorOptions, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

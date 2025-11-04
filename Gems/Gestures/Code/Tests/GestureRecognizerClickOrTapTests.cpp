@@ -19,6 +19,7 @@ class MockRecognizer
     : public Gestures::RecognizerClickOrTap
 {
 public:
+    AZ_CLASS_ALLOCATOR(MockRecognizer, AZ::SystemAllocator)
     MockRecognizer()
         : m_count(0)
     {

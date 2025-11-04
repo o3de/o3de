@@ -7,45 +7,52 @@
  */
 #pragma once
 
-#include <RHI/FrameGraphExecuteGroupHandlerBase.h>
-#include <RHI/RenderPassBuilder.h>
+#include <RHI/CommandList.h>
+#include <RHI/CommandQueue.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
+
+#include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class FrameGraphExecuteGroup;
+    }
+
     namespace Vulkan
     {
-        //! Handler for a list of ExecuteGroups that are part of the same graph group.
-        //! All the execute groups share the same renderpass and each of the groups correspond to
-        //! a subpass of the renderpass. Each execute group uses one or more secondary command list.
-        //! The handler owns the primary command list that will execute the secondary command list of each execute group.
-        class FrameGraphExecuteGroupHandler final
-            : public FrameGraphExecuteGroupHandlerBase
-        {
-            using Base = FrameGraphExecuteGroupHandlerBase;
+        class Device;
 
+        //! Base class for handler classes that manage frame graph execute groups.
+        //! Contains common functionality for all types of handlers including
+        //! how execute groups are handled and how work requests are sent
+        //! to the command queue.
+        class FrameGraphExecuteGroupHandler
+        {
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandler, AZ::SystemAllocator);
 
             FrameGraphExecuteGroupHandler() = default;
-            ~FrameGraphExecuteGroupHandler() = default;
+            virtual ~FrameGraphExecuteGroupHandler() = default;
 
-        private:
-            //////////////////////////////////////////////////////////////////////////
-            // FrameGraphExecuteGroupHandlerBase
-            RHI::ResultCode InitInternal(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups) override;
-            void EndInternal() override;
-            //////////////////////////////////////////////////////////////////////////
+            RHI::ResultCode Init(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups);
+            void End();
 
-            void EmitScopeBarriers(CommandList& commandList, Scope::BarrierSlot slot) const;
-            
-            // Clear scope's UAVs
-            void ProcessClearRequests(CommandList& commandList) const;
+            bool IsComplete() const;
+            bool IsExecuted() const;
 
-            // Resets the RHI QueryPools and its RHI Queries that are used for the scopes of the FrameGraphExecuteGroup.
-            void ResetQueryPools(CommandList& commandList) const;
+        protected:
+            virtual RHI::ResultCode InitInternal(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups) = 0;
+            virtual void EndInternal() = 0;
 
-            // RenderPassContext that is shared by all groups.
-            RenderPassContext m_renderPassContext;
+            void AddWorkRequest(const ExecuteWorkRequest& workRequest);
+
+            Device* m_device = nullptr;
+            ExecuteWorkRequest m_workRequest;
+            RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
+            AZStd::vector<RHI::FrameGraphExecuteGroup*> m_executeGroups;
+            bool m_isExecuted = false;
         };
     }
 }

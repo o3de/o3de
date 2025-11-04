@@ -10,6 +10,7 @@
 
 #include <AzNetworking/UdpTransport/UdpPacketHeader.h>
 #include <AzNetworking/UdpTransport/UdpConnectionSet.h>
+#include <AzNetworking/UdpTransport/UdpHeartbeatThread.h>
 #include <AzNetworking/UdpTransport/UdpReaderThread.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
@@ -94,7 +95,7 @@ namespace AzNetworking
         //! @param connectionListener reference to the connection listener responsible for handling all connection events
         //! @param trustZone          the trust level assigned to this network interface, server to server or client to server
         //! @param readerThread       pointer to the reader thread to be bound to this network interface
-        UdpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread);
+        UdpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread, UdpHeartbeatThread& heartbeatThread);
         ~UdpNetworkInterface() override;
 
         //! INetworkInterface interface.
@@ -118,6 +119,8 @@ namespace AzNetworking
         bool IsEncrypted() const override;
         bool IsOpen() const override;
         //! @}
+
+        AZStd::atomic<AZ::TimeMs> GetLastSystemTickUpdate() const;
 
     private:
 
@@ -182,6 +185,8 @@ namespace AzNetworking
         AZStd::unique_ptr<UdpSocket> m_socket;
         AZStd::unique_ptr<ICompressor> m_compressor;
         UdpReaderThread& m_readerThread;
+        UdpHeartbeatThread& m_heartbeatThread;
+        AZStd::atomic<AZ::TimeMs> m_lastSystemTickUpdate;
 
         struct RemovedConnection
         {

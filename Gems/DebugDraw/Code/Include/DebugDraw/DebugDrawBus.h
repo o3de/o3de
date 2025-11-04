@@ -24,7 +24,7 @@ namespace DebugDraw
     class DebugDrawLineElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugDrawLineElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugDrawLineElement, AZ::SystemAllocator);
         AZ_TYPE_INFO(DebugDrawLineElement, "{A26E844A-36C6-4832-B779-237019324FAA}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -124,7 +124,7 @@ namespace DebugDraw
          * @param color             Color of Obb
          * @param duration          How long to display the Obb for; 0 value will draw for one frame; negative values draw forever
          */
-        virtual void DrawObbOnEntity([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] const AZ::Obb& obb, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
+        virtual void DrawObbOnEntity([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] const AZ::Obb& obb, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] bool enableRayTracing, [[maybe_unused]] float duration) {}
 
         /**
          * Draws text in the world centered at worldLocation
@@ -155,6 +155,31 @@ namespace DebugDraw
          * @param duration          How long to display the text for; 0 value will draw for one frame; negative values draw forever
          */
         virtual void DrawTextOnScreen([[maybe_unused]] const AZStd::string& text, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
+
+        /**
+         * Draws text on the screen with scaled default render font.
+         *
+         * @param text              Text to be displayed.
+         * @param fontScale         Scale factor to default render font.
+         * @param color             Color of text.
+         * @param duration          How long to display the text for (in seconds); 0 value will draw for one frame; negative values draw forever.
+         */
+        virtual void DrawScaledTextOnScreen([[maybe_unused]] const AZStd::string& text
+            , [[maybe_unused]] float fontScale, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
+
+        /**
+         * Draws text on the screen with scaled default render font at given 2D coordinates.
+         *
+         * @param x                 X coordinate.
+         * @param y                 Y coordinate.
+         * @param text              Text to be displayed.
+         * @param fontScale         Scale factor to default render font.
+         * @param color             Color of text.
+         * @param duration          How long to display the text for (in seconds); 0 value will draw for one frame; negative values draw forever.
+         * @param bCenter           If true (default), centers drawn text relative to x coordinate, otherwise text is left-aligned.
+         */
+        virtual void DrawScaledTextOnScreenPos([[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] const AZStd::string& text
+            , [[maybe_unused]] float fontScale, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration, [[maybe_unused]] bool bCenter = true) {}
 
         /**
          * Draws a ray in the world for a specified duration
@@ -204,7 +229,7 @@ namespace DebugDraw
          * @param color             Color of sphere
          * @param duration          How long to display the sphere for; 0 value will draw for one frame; negative values draw forever
          */
-        virtual void DrawSphereOnEntity([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] float radius, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] float duration) {}
+        virtual void DrawSphereOnEntity([[maybe_unused]] const AZ::EntityId& targetEntity, [[maybe_unused]] float radius, [[maybe_unused]] const AZ::Color& color, [[maybe_unused]] bool enableRayTracing, [[maybe_unused]] float duration) {}
     };
     using DebugDrawRequestBus = AZ::EBus<DebugDrawRequests>;
 

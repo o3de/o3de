@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactClientTestRun.h>
+
 #include <Process/JobRunner/TestImpactProcessJobMeta.h>
 
 namespace TestImpact
@@ -19,7 +21,7 @@ namespace TestImpact
     {
     public:
         TestEngineJob(
-            const typename TestTarget* testTarget,
+            const TestTarget* testTarget,
             const AZStd::string& commandString,
             const JobMeta& jobMeta,
             Client::TestRunResult testResult,
@@ -27,7 +29,7 @@ namespace TestImpact
             AZStd::string&& stdErr);
 
         //! Returns the test target that was run for this job.
-        const typename TestTarget* GetTestTarget() const;
+        const TestTarget* GetTestTarget() const;
 
         //! Returns the result of the job that was run.
         Client::TestRunResult GetTestResult() const;
@@ -42,7 +44,7 @@ namespace TestImpact
         const AZStd::string& GetStdError() const;
 
     private:
-        const typename TestTarget* m_testTarget;
+        const TestTarget* m_testTarget;
         AZStd::string m_commandString;
         Client::TestRunResult m_testResult;
         AZStd::string m_stdOut;
@@ -51,7 +53,7 @@ namespace TestImpact
 
     template<typename TestTarget>
     TestEngineJob<TestTarget>::TestEngineJob(
-        const typename TestTarget* testTarget,
+        const TestTarget* testTarget,
         const AZStd::string& commandString,
         const JobMeta& jobMeta,
         Client::TestRunResult testResult,
@@ -67,7 +69,7 @@ namespace TestImpact
     }
 
     template<typename TestTarget>
-    const typename TestTarget* TestEngineJob<TestTarget>::GetTestTarget() const
+    const TestTarget* TestEngineJob<TestTarget>::GetTestTarget() const
     {
         return m_testTarget;
     }

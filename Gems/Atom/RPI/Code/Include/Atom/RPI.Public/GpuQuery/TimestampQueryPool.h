@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 #include <Atom/RPI.Public/GpuQuery/QueryPool.h>
 
@@ -15,7 +16,7 @@ namespace AZ
     namespace RPI
     {
         //! Timestamp pool context specialization for timestamp queries.
-        class TimestampQueryPool final
+        class ATOM_RPI_PUBLIC_API TimestampQueryPool final
             : public QueryPool
         {
             // Inherit the constructors of RPI::QueryPool.
@@ -23,15 +24,15 @@ namespace AZ
 
         public:
             AZ_RTTI(TimestampQueryPool, "{95A8D7ED-9BAD-4EC4-A201-AF4FD6345D17}", QueryPool);
-            AZ_CLASS_ALLOCATOR(TimestampQueryPool, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TimestampQueryPool, SystemAllocator);
 
             //! Only use this function to create a new Timestamp QueryPool object. And force using smart pointer to manage pool's life time.
             static QueryPoolPtr CreateTimestampQueryPool(uint32_t queryCount);
 
         protected:
             // RPI::QueryPool overrides...
-            RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
-            RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList);
+            RHI::ResultCode BeginQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
+            RHI::ResultCode EndQueryInternal(RHI::Interval rhiQueryIndices, const RHI::FrameGraphExecuteContext& context);
 
         private:
             TimestampQueryPool(uint32_t queryCapacity, uint32_t queriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags statisticsFlags);

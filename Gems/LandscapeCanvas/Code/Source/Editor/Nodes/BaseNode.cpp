@@ -9,6 +9,7 @@
 // AZ
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 
 // Qt
@@ -42,28 +43,52 @@ namespace LandscapeCanvas
     {
     }
 
+    void BaseNode::PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id)
+    {
+        Node::PostLoadSetup(graph, id);
+
+        // Make sure to refresh the data in the entity name slot after any load or reload in case the name changed.
+        RefreshEntityName();
+    }
+
+    void BaseNode::PostLoadSetup()
+    {
+        Node::PostLoadSetup();
+
+        // Make sure to refresh the data in the entity name slot after any load or reload in case the name changed.
+        RefreshEntityName();
+    }
+
     void BaseNode::CreateEntityNameSlot()
     {
         // Property field to show the name of the corresponding Vegetation Entity
         GraphModel::DataTypePtr stringDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::String);
-        RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
+
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Property,
             ENTITY_NAME_SLOT_ID,
             ENTITY_NAME_SLOT_LABEL.toUtf8().constData(),
-            stringDataType,
-            stringDataType->GetDefaultValue(),
-            ENTITY_NAME_SLOT_DESCRIPTION.toUtf8().constData()));
+            ENTITY_NAME_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ stringDataType },
+            stringDataType->GetDefaultValue()));
     }
 
     void BaseNode::SetVegetationEntityId(const AZ::EntityId& entityId)
     {
         m_vegetationEntityId = entityId;
+        RefreshEntityName();
+    }
 
+    void BaseNode::RefreshEntityName()
+    {
         // Update the Entity Name (if we have the property slot)
         GraphModel::SlotPtr slot = GetSlot(ENTITY_NAME_SLOT_ID);
         if (slot)
         {
             AZStd::string name;
-            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(name, entityId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetName);
+            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                name, m_vegetationEntityId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetName);
             slot->SetValue(AZStd::any(name));
         }
     }
@@ -103,6 +128,7 @@ namespace LandscapeCanvas
             || baseNodeType == LandscapeCanvas::BaseNode::VegetationAreaFilter
             || baseNodeType == LandscapeCanvas::BaseNode::VegetationAreaSelector
             || baseNodeType == LandscapeCanvas::BaseNode::TerrainExtender
+            || baseNodeType == LandscapeCanvas::BaseNode::TerrainSurfaceExtender
             ;
     }
 } // namespace LandscapeCanvas

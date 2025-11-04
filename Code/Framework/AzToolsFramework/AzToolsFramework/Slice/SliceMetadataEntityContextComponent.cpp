@@ -10,7 +10,6 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Slice/SliceMetadataInfoBus.h>
 
-#include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
@@ -52,7 +51,6 @@ namespace AzToolsFramework
                     "Slice Metadata Entity Context", "System component responsible for owning the slice metadata entity context")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -100,7 +98,7 @@ namespace AzToolsFramework
         m_metadataEntityByIdMap.clear();
         m_sliceAddressToRootMetadataMap.clear();
 
-        EBUS_EVENT(SliceMetadataEntityContextNotificationBus, OnContextReset);
+        SliceMetadataEntityContextNotificationBus::Broadcast(&SliceMetadataEntityContextNotificationBus::Events::OnContextReset);
     }
 
     /*!  Called to reset the current context.
@@ -228,21 +226,21 @@ namespace AzToolsFramework
     */
     void SliceMetadataEntityContextComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SliceMetadataEntityContextService", 0xa98f0bf9));
+        provided.push_back(AZ_CRC_CE("SliceMetadataEntityContextService"));
     }
 
     /*!  Fills out a list of the component services incompatible with this context
     */
     void SliceMetadataEntityContextComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("SliceMetadataEntityContextService", 0xa98f0bf9));
+        incompatible.push_back(AZ_CRC_CE("SliceMetadataEntityContextService"));
     }
 
     /*!  Fills out a list of the component services required for this context to function
     */
     void SliceMetadataEntityContextComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     /*!  Adds all the required components for this context to the given entity if they don't already exist.

@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AtomViewportDisplayInfoModule, "{B10C0E55-03A1-4A46-AE3E-D3615AEAA659}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(AtomViewportDisplayInfoModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AtomViewportDisplayInfoModule, AZ::SystemAllocator);
 
             AtomViewportDisplayInfoModule()
                 : AZ::Module()
@@ -41,7 +41,8 @@ namespace AZ
     } // namespace Render
 } // namespace AZ
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Render::AtomViewportDisplayInfoModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_AtomViewportDisplayInfo, AZ::Render::AtomViewportDisplayInfoModule)
+#endif

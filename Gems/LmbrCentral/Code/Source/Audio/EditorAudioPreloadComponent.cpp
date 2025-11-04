@@ -25,6 +25,11 @@ namespace LmbrCentral
                 ->Field("Load Type", &EditorAudioPreloadComponent::m_loadType)
                 ;
 
+            serializeContext->Enum<AudioPreloadComponent::LoadType>()
+                ->Value("Auto", AudioPreloadComponent::LoadType::Auto)
+                ->Value("Manual", AudioPreloadComponent::LoadType::Manual)
+                ;
+
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Enum<AudioPreloadComponent::LoadType>("Load Type", "Automatic or Manual loading and unloading")
@@ -37,13 +42,13 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioPreload.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioPreload.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                         // Icon todo:
                         //->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioPreload.png")
 
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio/preload/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/preload/")
 
                     ->DataElement("AudioControl", &EditorAudioPreloadComponent::m_defaultPreload, "Preload Name", "The default ATL Preload control to use")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioPreloadComponent::m_loadType, "Load Type", "Automatically when the component activates/deactivates, or Manually at user's request")

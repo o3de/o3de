@@ -17,6 +17,7 @@
 #include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AzNetworking
 {
@@ -325,11 +326,37 @@ namespace AzNetworking
 
         const uint16_t headerSize = aznumeric_cast<uint16_t>(headerBuffer.GetSize());
         uint8_t* dstData = reinterpret_cast<uint8_t*>(m_sendRingbuffer.ReserveBlockForWrite(headerSize + payloadSize));
+            
+        // We are in a "Reliable" Tcp send - the only way we fail to ReserveBlockForWrite here is
+        // if the connection is interrupted and cannot send, or the send ringbuffer is full.
+        // If that happens, invoke UpdateSend here, to drain the buffer, until the connection breaks, or we have enough room to send.
+        // This has a possibility of introducing a deadlock if we loop forever.  So we wait for a timeout before we give up.
+        // 
+        // This loop only has to wait until there is enough room in the ring buffer for ONE more packet, which is usually
+        // cut into about 100k chunks, so it only has to wait long enough for the TCP stack to send and get 100k acked.
+        // 
+        // It is possible the other side connection has stalled for a couple seconds too, as it is processing the command, without
+        // calling recv, so choose a small but reasonable amount of time, say 10 seconds, enough to show a pause, but not enough for
+        // the OS to consider the app dead.
+        constexpr AZStd::chrono::milliseconds timeoutMs = AZStd::chrono::milliseconds(aznumeric_cast<long long>(10 * 1000));
+        AZStd::chrono::steady_clock clock;
+        AZStd::chrono::time_point start = clock.now();
 
-        if (dstData == nullptr)
+        while (dstData == nullptr)
         {
-            AZLOG_ERROR("Send ringbuffer full, dropped packet");
-            return false;
+            if (!IsOpen())
+            {
+                AZLOG_ERROR("TcpConnection - The connection closed while sending data.");
+                return false;
+            }
+
+            if (timeoutMs.count() >= 0 && (clock.now() - start) >= timeoutMs)
+            {
+                AZLOG_ERROR("TcpConnection - timed out waiting for send buffer to have room.");
+                return false;
+            }
+            UpdateSend(); 
+            dstData = reinterpret_cast<uint8_t*>(m_sendRingbuffer.ReserveBlockForWrite(headerSize + payloadSize));
         }
 
         // Copy the header data to the ring buffer

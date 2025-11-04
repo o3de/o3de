@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/DataOverlayInstanceMsgs.h>
 #include <AzCore/Serialization/DataOverlayProviderMsgs.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Debug/Profiler.h>
@@ -105,7 +106,7 @@ namespace AZ
                 ST_BINARYFLAG_ELEMENT_END       = 0
             };
 
-            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator);
 
             ObjectStreamImpl(IO::GenericStream* stream, SerializeContext* sc, const ClassReadyCB& readyCB, const CompletionCB& doneCB, const FilterDescriptor& filterDesc = FilterDescriptor(), int flags = 0, const InplaceLoadRootInfoCB& inplaceLoadInfoCB = InplaceLoadRootInfoCB())
                 : ObjectStream(sc)
@@ -118,6 +119,7 @@ namespace AZ
                 , m_pending(0)
                 , m_inStream(&m_buffer1)
                 , m_outStream(&m_buffer2)
+                , m_localeScope(false) // do not automatically activate the locale.
             {
                 // Assign default asset filter if none was provided by the user.
                 m_filterDesc = filterDesc;
@@ -240,6 +242,7 @@ namespace AZ
             // completed successfully to make sure the equivalent amount
             // of CloseElements are called
             AZStd::vector<bool>                           m_writeElementResultStack;
+            Locale::ScopedSerializationLocale             m_localeScope;
         };
 
         //=========================================================================
@@ -251,12 +254,13 @@ namespace AZ
             // whenever tracing is available we make error logging available.
 #if defined(AZ_ENABLE_TRACING) 
             {
-                SerializeContext::DbgStackEntry de;
-                de.m_dataPtr = nullptr;
-                de.m_uuidPtr = &elementClass->m_typeId;
-                de.m_elementName = elementNode.GetNameString();
-                de.m_classData = elementClass;
-                de.m_classElement = nullptr;
+                SerializeContext::DbgStackEntry de {
+                    /*.m_dataPtr =*/ nullptr,
+                    /*.m_uuid =*/ elementClass ? elementClass->m_typeId : AZ::Uuid{},
+                    /*.m_classData =*/ elementClass,
+                    /*.m_elementName =*/ elementNode.GetNameString(),
+                    /*.m_classElement =*/ nullptr,
+                };
                 m_errorLogger.Push(de);
             }
 #endif // AZ_ENABLE_TRACING
@@ -458,7 +462,7 @@ namespace AZ
                         if (classData->m_converter)
                         {
                             AZStd::string error = AZStd::string::format("Converter failed for element '%s'(0x%x) with deprecated class ID '%s'.  File %s",
-                                element.m_name ? element.m_name : "NULL", element.m_nameCrc, element.m_id.ToString<AZStd::string>().c_str(),
+                                element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), element.m_id.ToString<AZStd::string>().c_str(),
                                 GetStreamFilename());
                             
                             m_errorLogger.ReportError(error.c_str());
@@ -491,7 +495,7 @@ namespace AZ
                             AZStd::string error = AZStd::string::format(
                                 "Element '%s'(0x%x) with class ID '%s' found in '%s' is not registered with the serializer!\n"
                                 "If this class was removed, consider using serializeContext->ClassDeprecate(...) to register classes as having been deprecated to avoid this error.  File %s\n",
-                                element.m_name ? element.m_name : "NULL", element.m_nameCrc, element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo ? parentClassInfo->m_name : "ROOT",
+                                element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo ? parentClassInfo->m_name : "ROOT",
                                 GetStreamFilename());
                             m_errorLogger.ReportError(error.c_str());
 
@@ -520,7 +524,8 @@ namespace AZ
                     overlaidNode.m_element.m_stream = &stream;
                     DataOverlayTarget data(&overlaidNode, m_sc, &m_errorLogger);
 
-                    EBUS_EVENT_ID(overlay.m_providerId, DataOverlayProviderBus, FillOverlayData, &data, overlay.m_dataToken);
+                    DataOverlayProviderBus::Event(
+                        overlay.m_providerId, &DataOverlayProviderBus::Events::FillOverlayData, &data, overlay.m_dataToken);
                     if (overlaidNode.GetNumSubElements() > 0)
                     {
                         AZ_Assert(overlaidNode.GetNumSubElements() == 1, "Only one node should ever be returned by the overlay provider!");
@@ -600,7 +605,7 @@ namespace AZ
                             }
                         }
                     }
-                    else if (parentClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid() && element.m_nameCrc == AZ_CRC("m_data", 0x335cc942))   // special case for dynamic-typed fields
+                    else if (parentClassInfo->m_typeId == SerializeTypeInfo<DynamicSerializableField>::GetUuid() && element.m_nameCrc == AZ_CRC_CE("m_data"))   // special case for dynamic-typed fields
                     {
                         DynamicSerializableField* fieldContainer = reinterpret_cast<DynamicSerializableField*>(parentClassPtr);
                         fieldContainer->m_typeId = classData->m_typeId;
@@ -640,7 +645,7 @@ namespace AZ
                                     {
                                         // Name matched but wrong type, this is an error when conversion function is not supplied.
                                         AZStd::string error = AZStd::string::format("Element '%s'(0x%x) in class '%s' is of type %s and cannot be downcasted to type %s.  File %s",
-                                            element.m_name ? element.m_name : "NULL", element.m_nameCrc, parentClassInfo->m_name,
+                                            element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), parentClassInfo->m_name,
                                             element.m_id.ToString<AZStd::string>().c_str(), childElement->m_typeId.ToString<AZStd::string>().c_str(),
                                             GetStreamFilename());
 
@@ -666,7 +671,7 @@ namespace AZ
                                     {
                                         // Name matched but wrong type, this is an error when conversion function is not supplied.
                                         AZStd::string error = AZStd::string::format("Element '%s'(0x%x) in class '%s' is of type %s but needs to be type %s.  File %s",
-                                            element.m_name ? element.m_name : "NULL", element.m_nameCrc, parentClassInfo->m_name,
+                                            element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), parentClassInfo->m_name,
                                             element.m_id.ToString<AZStd::string>().c_str(), childElement->m_typeId.ToString<AZStd::string>().c_str(),
                                             GetStreamFilename());
 
@@ -683,7 +688,7 @@ namespace AZ
                         if (classElement == nullptr)
                         {
                             AZStd::string error = AZStd::string::format("Element '%s'(0x%x) of type %s is not registered as part of class '%s'. Data will be discarded.  File %s", 
-                                element.m_name ? element.m_name : "NULL", element.m_nameCrc, element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo->m_name,
+                                element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(), element.m_id.ToString<AZStd::string>().c_str(), parentClassInfo->m_name,
                                 GetStreamFilename());
                             
                             if (m_filterDesc.m_flags & FILTERFLAG_STRICT)
@@ -769,12 +774,13 @@ namespace AZ
 
 #if defined(AZ_ENABLE_TRACING)
                 {
-                    SerializeContext::DbgStackEntry de;
-                    de.m_dataPtr = dataAddress;
-                    de.m_uuidPtr = &element.m_id;
-                    de.m_elementName = element.m_name;
-                    de.m_classData = classData;
-                    de.m_classElement = classElement;
+                    SerializeContext::DbgStackEntry de {
+                        /*.m_dataPtr =*/ dataAddress,
+                        /*.m_uuid =*/ element.m_id,
+                        /*.m_classData =*/ classData,
+                        /*.m_elementName =*/ element.m_name,
+                        /*.m_classElement =*/ classElement,
+                    };
                     m_errorLogger.Push(de);
                 }
 #endif // AZ_ENABLE_TRACING
@@ -822,7 +828,7 @@ namespace AZ
                         !classData->m_serializer->Load(dataAddress, *currentStream, element.m_version, element.m_dataType == SerializeContext::DataElement::DT_BINARY_BE))
                     {
                         AZStd::string error = AZStd::string::format("Serializer failed for %s '%s'(0x%x).  File %s", 
-                            classData->m_name, element.m_name ? element.m_name : "NULL", element.m_nameCrc,
+                            classData->m_name, element.m_name ? element.m_name : "NULL", element.m_nameCrc.GetValue(),
                             GetStreamFilename());
 
                         result = result && ((m_filterDesc.m_flags & FILTERFLAG_STRICT) == 0);  // in strict mode, this is a complete failure.
@@ -1031,7 +1037,7 @@ namespace AZ
             AZ_Assert(element.m_stream != nullptr, "You must provide a stream to store the values!");
             element.m_version = 0;
             element.m_name = nullptr;
-            element.m_nameCrc = 0;
+            element.m_nameCrc = Crc32();
             element.m_dataSize = 0;
             element.m_buffer.clear();
             element.m_stream->Seek(0, IO::GenericStream::ST_SEEK_BEGIN);
@@ -1306,7 +1312,7 @@ namespace AZ
                     nBytesRead = m_stream->Read(sizeof(nameCrc), &nameCrc);
                     AZ_Assert(nBytesRead == sizeof(nameCrc), "Failed trying to read binary element nameCrc!");
                     AZStd::endian_swap(nameCrc);
-                    element.m_nameCrc = nameCrc;
+                    element.m_nameCrc = Crc32(nameCrc);
                 }
 
                 // Read version
@@ -1567,7 +1573,8 @@ namespace AZ
             {
                 // Data overlays are only supported for non-root elements, which means we should have a valid class element.
                 DataOverlayInfo overlay;
-                EBUS_EVENT_ID_RESULT(overlay, DataOverlayInstanceId(objectPtr, classElement->m_typeId), DataOverlayInstanceBus, GetOverlayInfo);
+                DataOverlayInstanceBus::EventResult(
+                    overlay, DataOverlayInstanceId(objectPtr, classElement->m_typeId), &DataOverlayInstanceBus::Events::GetOverlayInfo);
                 if (overlay.m_providerId)
                 {
                     const SerializeContext::ClassData* overlayClassMetadata = m_sc->FindClassData(SerializeTypeInfo<DataOverlayInfo>::GetUuid());
@@ -1745,7 +1752,8 @@ namespace AZ
                     classData->m_serializer->DataToText(memStream, m_outStream, false);
 
                     char* rawText = static_cast<char*>(m_outStream.GetData()->data());
-                    char* xmlString = m_xmlDoc->allocate_string(rawText, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    char* xmlString = m_xmlDoc->allocate_string(nullptr, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    AZStd::copy(rawText, rawText + m_outStream.GetCurPos(), xmlString);
                     xmlString[m_outStream.GetCurPos()] = 0;
 
                     attr = m_xmlDoc->allocate_attribute(m_xmlDoc->allocate_string("value"), xmlString);
@@ -1954,6 +1962,8 @@ namespace AZ
             ++m_pending;
 
             bool result = true;
+
+            m_localeScope.Activate();
 
             if (m_flags & OPF_SAVING)
             {
@@ -2175,6 +2185,7 @@ namespace AZ
                     m_stream->Write(sizeof(u8), &endTag);
                 }
             }
+            m_localeScope.Deactivate();
             delete this;
             return success;
         }

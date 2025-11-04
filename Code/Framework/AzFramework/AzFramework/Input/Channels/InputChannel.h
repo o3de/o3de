@@ -16,6 +16,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/typetraits/is_base_of.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -27,7 +28,7 @@ namespace AzFramework
     //! Derived classes should provide additional functions that allow their parent input devices to
     //! update the state and value(s) of the input channel as raw input is received from the system,
     //! and they can (optionally) override the virtual GetCustomData function to return custom data.
-    class InputChannel : public InputChannelRequestBus::Handler
+    class AZF_API InputChannel : public InputChannelRequestBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +43,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Snapshot of an input channel that can be constructed, copied, and stored independently.
-        struct Snapshot
+        struct AZF_API Snapshot
         {
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Constructor
@@ -85,16 +86,16 @@ namespace AzFramework
         //! Base struct from which to derive all custom input data
         struct CustomData
         {
-            AZ_CLASS_ALLOCATOR(CustomData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomData, AZ::SystemAllocator);
             AZ_RTTI(CustomData, "{887E38BB-64AF-4F4E-A1AE-C1B02371F9EC}");
             virtual ~CustomData() = default;
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Custom data struct for input channels associated with a 2D position
-        struct PositionData2D : public CustomData
+        struct AZF_API PositionData2D : public CustomData
         {
-            AZ_CLASS_ALLOCATOR(PositionData2D, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PositionData2D, AZ::SystemAllocator);
             AZ_RTTI(PositionData2D, "{354437EC-6BFD-41D4-A0F2-7740018D3589}", CustomData);
             virtual ~PositionData2D() = default;
 
@@ -126,7 +127,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannel, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

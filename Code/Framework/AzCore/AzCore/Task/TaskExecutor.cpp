@@ -57,32 +57,40 @@ namespace AZ
             // TODO: Check for dependency cycles
         }
 
-        uint32_t CompiledTaskGraph::Release()
+        uint32_t CompiledTaskGraph::Release(CompiledTaskGraphTracker& eventTracker)
         {
+            // Release is run from many threads, and another thread can azdestroy(this) as soon as the remaining count is decremented.
+            // READ ALL NECESSARY DATA BEFORE DECREMENTING THE REMAINING COUNT!
+            bool isRetained = IsRetained();
+            TaskGraph* parent = m_parent;
+            TaskGraphEvent* waitEvent = m_waitEvent;
             uint32_t remaining = --m_remaining;
 
-            if (m_parent)
+            if (isRetained)
             {
                 if (remaining == 1)
                 {
                     // Allow the parent graph to be submitted again
-                    m_parent->m_submitted = false;
+                    parent->m_submitted = false;
+                    if (waitEvent)
+                    {
+                        eventTracker.WriteEventInfo(this, CTGEvent::Signalled, "CTG::Release parent=true");
+                        waitEvent->Signal();
+                    }
                 }
             }
             else if (remaining == 0)
             {
-                if (m_waitEvent)
+                if (waitEvent)
                 {
-                    m_waitEvent->Signal();
+
+                    eventTracker.WriteEventInfo(this, CTGEvent::Signalled, "CTG::Release parent=false");
+                    waitEvent->Signal();
                 }
 
-                azdestroy(this);
-                return remaining;
-            }
+                eventTracker.WriteEventInfo(this, CTGEvent::Deallocated, "CTG::Release parent=false");
 
-            if (m_waitEvent && remaining == (m_parent ? 1u : 0u))
-            {
-                m_waitEvent->Signal();
+                delete this;
             }
 
             return remaining;
@@ -198,9 +206,9 @@ namespace AZ
             {
                 m_executor = &executor;
 
-                AZStd::string threadName = AZStd::string::format("TaskWorker %u", id);
+                m_threadName = AZStd::string::format("TaskWorker %u", id);
                 AZStd::thread_desc desc = {};
-                desc.m_name = threadName.c_str();
+                desc.m_name = m_threadName.c_str();
                 if (affinitize)
                 {
                     desc.m_cpuId = 1 << id;
@@ -246,6 +254,8 @@ namespace AZ
                 m_semaphore.release();
             }
 
+            const char* GetThreadName() {return m_threadName.c_str();}
+
         private:
             void Run()
             {
@@ -273,7 +283,7 @@ namespace AZ
                         }
 
                         bool isRetained = task->m_graph->m_parent != nullptr;
-                        if (task->m_graph->Release() == (isRetained ? 1u : 0u))
+                        if (task->m_graph->Release(m_executor->GetEventTracker()) == (isRetained ? 1u : 0u))
                         {
                             m_executor->ReleaseGraph();
                         }
@@ -290,10 +300,50 @@ namespace AZ
 
             ::AZ::TaskExecutor* m_executor;
             TaskQueue m_queue;
+            AZStd::string m_threadName;
             friend class ::AZ::TaskExecutor;
         };
 
         thread_local TaskWorker* TaskWorker::t_worker = nullptr;
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Implement basic CompiledTaskGraph event breadcrumbs to help debug
+        // https://github.com/o3de/o3de/issues/12015
+
+#ifdef ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING
+        void CompiledTaskGraphTracker::WriteEventInfo(const CompiledTaskGraph* ctg, CTGEvent eventCode, const char* identifier)
+        {
+            const char* threadName = "None TaskGraph thread";
+            if (m_taskExecutor)
+            {
+                if (auto taskWorker = m_taskExecutor->GetTaskWorker(); taskWorker)
+                {
+                    threadName = taskWorker->GetThreadName();
+                }
+            }
+            // record event breadcrumbs
+            AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
+
+            CTGEventData& slot = m_recentEvents[m_nextEventSlot++ % NumTrackedRecentEvents];
+            if (ctg)
+            {
+                slot.m_parentLabel = ctg->GetParentLabel();
+                slot.m_remainingCount = ctg->GetRemainingCount();
+                slot.m_retained = ctg->IsRetained();
+            }
+            else
+            {
+                slot.m_parentLabel = "Null ctg";
+                slot.m_remainingCount = 0;
+                slot.m_retained = true;
+            }
+            slot.m_identifier = identifier;
+            slot.m_threadName = threadName;
+            slot.m_ctg = ctg;
+            slot.m_eventCode = eventCode;
+        }
+#endif
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     } // namespace Internal
 
     static EnvironmentVariable<TaskExecutor*> s_executor;
@@ -321,6 +371,7 @@ namespace AZ
     }
 
     TaskExecutor::TaskExecutor(uint32_t threadCount)
+        : m_eventTracker(this)
     {
         // TODO: Configure thread count + affinity based on configuration
         m_threadCount = threadCount == 0 ? AZStd::thread::hardware_concurrency() : threadCount;
@@ -363,7 +414,6 @@ namespace AZ
 
     void TaskExecutor::Submit(Internal::CompiledTaskGraph& graph, TaskGraphEvent* event)
     {
-        ++m_graphsRemaining;
 
         if (event)
         {
@@ -371,8 +421,26 @@ namespace AZ
             event->m_executor = this; // Used to validate event is not waited for inside a job
         }
 
+        // If there are no task in compiled task graph
+        // and a TaskGraphEvent has been supplied, then it needs
+        // to be signaled to release the semaphore so that the TaskGraphEvent::Wait
+        // function does not deadlock
+        auto& compiledTasks = graph.Tasks();
+        if (compiledTasks.empty())
+        {
+            if (event != nullptr)
+            {
+                event->Signal();
+            }
+            return;
+        }
+
+        // Since there is at least one compiled task, it is safe
+        // to increment the graphs remaining member
+        ++m_graphsRemaining;
+
         // Submit all tasks that have no inbound edges
-        for (Internal::Task& task : graph.Tasks())
+        for (Internal::Task& task : compiledTasks)
         {
             if (task.IsRoot())
             {

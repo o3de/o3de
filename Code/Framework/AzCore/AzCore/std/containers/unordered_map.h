@@ -325,7 +325,7 @@ namespace AZStd
     template <class Key, class MappedType, class Hasher, class EqualKey, class Allocator>
     AZ_FORCE_INLINE bool operator==(const unordered_map<Key, MappedType, Hasher, EqualKey, Allocator>& a, const unordered_map<Key, MappedType, Hasher, EqualKey, Allocator>& b)
     {
-        return (a.size() == b.size() && equal(a.begin(), a.end(), b.begin()));
+        return (a.size() == b.size() && AZStd::equal(a.begin(), a.end(), b.begin(), b.end()));
     }
 
     template <class Key, class MappedType, class Hasher, class EqualKey, class Allocator>
@@ -639,7 +639,7 @@ namespace AZStd
     template <class Key, class MappedType, class Hasher, class EqualKey, class Allocator>
     AZ_FORCE_INLINE bool operator==(const unordered_multimap<Key, MappedType, Hasher, EqualKey, Allocator>& a, const unordered_multimap<Key, MappedType, Hasher, EqualKey, Allocator>& b)
     {
-        return (a.size() == b.size() && equal(a.begin(), a.end(), b.begin()));
+        return (a.size() == b.size() && AZStd::equal(a.begin(), a.end(), b.begin(), b.end()));
     }
 
     template <class Key, class MappedType, class Hasher, class EqualKey, class Allocator>

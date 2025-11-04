@@ -18,12 +18,14 @@
 /Code/Framework/AzGameFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Code/LauncherUnified/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /engine.json @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/Archive/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/Compression/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/CrashReporting/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/ImGui/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/LmbrCentral/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/Profiler/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Registry/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/scripts/lldb/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /scripts/o3de/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /scripts/o3de.* @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Templates/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
@@ -40,19 +42,21 @@
 /engine.json @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 
 # SIG-Content general ownership area
-/Code/Framework/AzToolsFramework/ @o3de/sig-content-maintainers
-/Code/Tools/ @o3de/sig-content-maintainers
+/Code/Framework/AzToolsFramework/ @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/Code/Tools/ @o3de/sig-content-maintainers  @o3de/sig-content-reviewers
 
 # SIG-Content Asset Pipeline ownership area
-/AutomatedTesting/Gem/PythonTests/assetpipeline/ap_fixtures/ @o3de/sig-content-maintainers
-/AutomatedTesting/Gem/PythonTests/assetpipeline/asset_processor_tests/ @o3de/sig-content-maintainers
-/AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/ @o3de/sig-content-maintainers
-/AutomatedTesting/Gem/PythonTests/PythonAssetBuilder/ @o3de/sig-content-maintainers
-/Gems/SceneProcessing/ @o3de/sig-content-maintainers
-/Code/Framework/AzCore/AzCore/Asset/ @o3de/sig-content-maintainers
-/Code/Framework/AzCore/Tests/Asset/ @o3de/sig-content-maintainers
-/Code/Framework/AzCore/Tests/AssetManager.cpp @o3de/sig-content-maintainers
-/Code/Framework/AzCore/Tests/TestCatalog.h @o3de/sig-content-maintainers
+/AutomatedTesting/Gem/PythonTests/assetpipeline/ap_fixtures/ @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/AutomatedTesting/Gem/PythonTests/assetpipeline/asset_processor_tests/ @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/ @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/AutomatedTesting/Gem/PythonTests/PythonAssetBuilder/ @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/Gems/SceneProcessing/ @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/Code/Framework/AzCore/AzCore/Asset/ @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/Code/Framework/AzCore/Tests/Asset/ @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/Code/Framework/AzCore/Tests/AssetManager.* @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/Code/Framework/AzCore/Tests/TestCatalog.* @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/Code/Framework/AzFramework/AzFramework/Asset @o3de/sig-content-maintainers @o3de/sig-content-reviewers
+/Code/Framework/AzFramework/Tests/Asset* @o3de/sig-content-maintainers @o3de/sig-content-reviewers
 
 # SIG-Content Viewport ownership area
 /Code/Framework/AzFramework/AzFramework/Viewport/ @o3de/sig-content-maintainers
@@ -90,13 +94,11 @@
 # SIG-Simulation ownership area
 /Code/Framework/AzCore/AzCore/Math/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Code/Framework/AzFramework/AzFramework/Physics/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
-/Gems/Blast/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/MotionMatching/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/NvCloth/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/PhysX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/PhysXDebug/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /Gems/EMotionFX/ @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
-/AutomatedTesting/Gem/PythonTests/Blast @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /AutomatedTesting/Gem/PythonTests/NvCloth @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 /AutomatedTesting/Gem/PythonTests/Physics @o3de/sig-simulation-reviewers @o3de/sig-simulation-maintainers
 
@@ -130,3 +132,5 @@
 # SIG-Graphics-Audio ownership areas
 /Gems/Atom*/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers
 /Gems/Terrain/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers
+/Gems/Audio*/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers
+/Gems/Microphone/ @o3de/sig-graphics-audio-maintainers @o3de/sig-graphics-audio-reviewers

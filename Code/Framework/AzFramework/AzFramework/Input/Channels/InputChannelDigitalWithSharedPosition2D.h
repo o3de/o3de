@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Channels/InputChannelDigital.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -18,12 +19,12 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit one dimensional digital input value and share a position.
     //! Examples: mouse button
-    class InputChannelDigitalWithSharedPosition2D : public InputChannelDigital
+    class AZF_API InputChannelDigitalWithSharedPosition2D : public InputChannelDigital
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannelDigitalWithSharedPosition2D, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannelDigitalWithSharedPosition2D, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

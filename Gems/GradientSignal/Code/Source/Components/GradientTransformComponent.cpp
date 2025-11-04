@@ -33,6 +33,7 @@ namespace GradientSignal
                 ->Field("ShapeReference", &GradientTransformConfig::m_shapeReference)
                 ->Field("OverrideBounds", &GradientTransformConfig::m_overrideBounds)
                 ->Field("Bounds", &GradientTransformConfig::m_bounds)
+                ->Field("Center", &GradientTransformConfig::m_center)
                 ->Field("OverrideTranslate", &GradientTransformConfig::m_overrideTranslate)
                 ->Field("Translate", &GradientTransformConfig::m_translate)
                 ->Field("OverrideRotate", &GradientTransformConfig::m_overrideRotate)
@@ -76,24 +77,31 @@ namespace GradientSignal
 
                     ->DataElement(0, &GradientTransformConfig::m_allowReference, "Allow Reference", "When enabled, the shape reference can be overridden. When disabled, all operations are relative to this entity.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_shapeReference, "Shape Reference", "An optional shape reference that can be used to drive bounds and transform")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsReferenceReadOnly)
                     
                     ->DataElement(0, &GradientTransformConfig::m_overrideBounds, "Override Bounds", "Allow manual override of the associated parameter")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_bounds, "Bounds", "Local (untransformed) bounds of a box used to remap, clamp, wrap, scale incoming coordinates")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsBoundsReadOnly)
-                    
+                    ->DataElement(0, &GradientTransformConfig::m_center, "Center", "Local (untransformed) center of a box used to remap, clamp, wrap, scale incoming coordinates")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsBoundsReadOnly)
+
                     ->DataElement(0, &GradientTransformConfig::m_overrideTranslate, "Override Translate", "Allow manual override of the associated parameter")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_translate, "Translate", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsTranslateReadOnly)
                     ->DataElement(0, &GradientTransformConfig::m_overrideRotate, "Override Rotate", "Allow manual override of the associated parameter")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_rotate, "Rotate", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsRotateReadOnly)
                     ->DataElement(0, &GradientTransformConfig::m_overrideScale, "Override Scale", "Allow manual override of the associated parameter")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_scale, "Scale", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsScaleReadOnly)
                     
@@ -113,6 +121,7 @@ namespace GradientSignal
                 ->Property("shapeReference", BehaviorValueProperty(&GradientTransformConfig::m_shapeReference))
                 ->Property("overrideBounds", BehaviorValueProperty(&GradientTransformConfig::m_overrideBounds))
                 ->Property("bounds", BehaviorValueProperty(&GradientTransformConfig::m_bounds))
+                ->Property("center", BehaviorValueProperty(&GradientTransformConfig::m_center))
                 ->Property("transformType",
                     [](GradientTransformConfig* config) { return (AZ::u8&)(config->m_transformType); },
                     [](GradientTransformConfig* config, const AZ::u8& i) { config->m_transformType = (TransformType)i; })
@@ -139,6 +148,7 @@ namespace GradientSignal
             m_shapeReference == other.m_shapeReference &&
             m_overrideBounds == other.m_overrideBounds &&
             m_bounds.IsClose(other.m_bounds) &&
+            m_center.IsClose(other.m_center) &&
             m_transformType == other.m_transformType &&
             m_overrideTranslate == other.m_overrideTranslate &&
             m_translate.IsClose(other.m_translate) &&
@@ -188,18 +198,18 @@ namespace GradientSignal
 
     void GradientTransformComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
     }
 
     void GradientTransformComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
         services.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void GradientTransformComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void GradientTransformComponent::Reflect(AZ::ReflectContext* context)
@@ -234,6 +244,9 @@ namespace GradientSignal
                 ->Event("GetBounds", &GradientTransformModifierRequestBus::Events::GetBounds)
                 ->Event("SetBounds", &GradientTransformModifierRequestBus::Events::SetBounds)
                 ->VirtualProperty("Bounds", "GetBounds", "SetBounds")
+                ->Event("GetCenter", &GradientTransformModifierRequestBus::Events::GetCenter)
+                ->Event("SetCenter", &GradientTransformModifierRequestBus::Events::SetCenter)
+                ->VirtualProperty("Center", "GetCenter", "SetCenter")
                 ->Event("GetTransformType", &GradientTransformModifierRequestBus::Events::GetTransformType)
                 ->Event("SetTransformType", &GradientTransformModifierRequestBus::Events::SetTransformType)
                 ->VirtualProperty("TransformType", "GetTransformType", "SetTransformType")
@@ -414,6 +427,7 @@ namespace GradientSignal
             if (shapeBounds.IsValid())
             {
                 m_configuration.m_bounds = shapeBounds.GetExtents();
+                m_configuration.m_center = shapeBounds.GetCenter();
             }
         }
 
@@ -435,7 +449,7 @@ namespace GradientSignal
 
         //rebuild bounds from parameters
         m_configuration.m_bounds = m_configuration.m_bounds.GetAbs();
-        shapeBounds = AZ::Aabb::CreateFromMinMax(-m_configuration.m_bounds * 0.5f, m_configuration.m_bounds * 0.5f);
+        shapeBounds = AZ::Aabb::CreateCenterHalfExtents(m_configuration.m_center, 0.5f * m_configuration.m_bounds);
 
         //rebuild transform from parameters
         AZ::Matrix3x4 shapeTransformFinal;
@@ -508,9 +522,20 @@ namespace GradientSignal
         return m_configuration.m_bounds;
     }
     
-    void GradientTransformComponent::SetBounds(AZ::Vector3 bounds)
+    void GradientTransformComponent::SetBounds(const AZ::Vector3& bounds)
     {
         m_configuration.m_bounds = bounds;
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+    }
+
+    AZ::Vector3 GradientTransformComponent::GetCenter() const
+    {
+        return m_configuration.m_center;
+    }
+
+    void GradientTransformComponent::SetCenter(const AZ::Vector3& center)
+    {
+        m_configuration.m_center = center;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -541,7 +566,7 @@ namespace GradientSignal
         return m_configuration.m_translate;
     }
     
-    void GradientTransformComponent::SetTranslate(AZ::Vector3 translate)
+    void GradientTransformComponent::SetTranslate(const AZ::Vector3& translate)
     {
         m_configuration.m_translate = translate;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -563,7 +588,7 @@ namespace GradientSignal
         return m_configuration.m_rotate;
     }
     
-    void GradientTransformComponent::SetRotate(AZ::Vector3 rotate)
+    void GradientTransformComponent::SetRotate(const AZ::Vector3& rotate)
     {
         m_configuration.m_rotate = rotate;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -585,7 +610,7 @@ namespace GradientSignal
         return m_configuration.m_scale;
     }
     
-    void GradientTransformComponent::SetScale(AZ::Vector3 scale)
+    void GradientTransformComponent::SetScale(const AZ::Vector3& scale)
     {
         m_configuration.m_scale = scale;
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);

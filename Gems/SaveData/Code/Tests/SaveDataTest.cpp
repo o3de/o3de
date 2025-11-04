@@ -24,7 +24,7 @@
 
 void SaveDataTest::SetUp()
 {
-    AllocatorsTestFixture::SetUp();
+    LeakDetectionFixture::SetUp();
     m_saveDataSystemComponent = AZStd::make_unique<SaveData::SaveDataSystemComponent>();
     m_saveDataSystemComponent->Activate();
 
@@ -37,7 +37,7 @@ void SaveDataTest::TearDown()
 
     m_saveDataSystemComponent->Deactivate();
     m_saveDataSystemComponent.reset();
-    AllocatorsTestFixture::TearDown();
+    LeakDetectionFixture::TearDown();
 }
 
 

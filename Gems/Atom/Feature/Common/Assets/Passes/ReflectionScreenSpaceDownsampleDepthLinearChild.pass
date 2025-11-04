@@ -1,0 +1,40 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ReflectionScreenSpaceDownsampleDepthLinearChildPassTemplate",
+            "PassClass": "ReflectionScreenSpaceDownsampleDepthLinearChildPass",
+            "Slots": [
+                {
+                    "Name": "Input",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DownsampledDepthLinearOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DownsampledDepthLinearOutput",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "DownsampledDepthLinearInputOutput"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Reflections/ReflectionScreenSpaceDownsampleDepthLinear.shader"
+                },
+                "BindViewSrg": true
+            }
+        }
+    }
+}

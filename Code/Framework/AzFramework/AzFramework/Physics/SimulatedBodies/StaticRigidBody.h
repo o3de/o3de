@@ -11,6 +11,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace Physics
 namespace AzPhysics
 {
     //! Static rigid body.
-    struct StaticRigidBody
+    struct AZF_API StaticRigidBody
         : public SimulatedBody
     {
     public:

@@ -30,8 +30,8 @@ namespace AZStd
         };
 
         //! pointer
-        //! Attempts to use the C++ standard allocator_type::pointer typedef if avialable,
-        //! otherwise attempt to fallback to the AZStd pointer_type typedef.
+        //! Attempts to use the C++ standard allocator_type::pointer typedef if available,
+        //! otherwise attempt to fallback to the AZStd pointer typedef.
         //! if neither typedef is available fallbacks to value_type*
         template <typename Allocator, typename = void>
         static constexpr bool has_pointer = false;
@@ -41,7 +41,7 @@ namespace AZStd
         template <typename Allocator, typename = void>
         static constexpr bool has_pointer_type = false;
         template <typename Allocator>
-        static constexpr bool has_pointer_type<Allocator, void_t<typename Allocator::pointer_type>> = true;
+        static constexpr bool has_pointer_type<Allocator, void_t<typename Allocator::pointer>> = true;
 
         template <typename Allocator, typename ValueType, bool has_std_pointer_alias = has_pointer<Allocator>, bool has_azstd_pointer_alias = has_pointer_type<Allocator>>
         struct get_pointer_type
@@ -56,7 +56,7 @@ namespace AZStd
         template <typename Allocator, typename ValueType>
         struct get_pointer_type<Allocator, ValueType, false, true>
         {
-            using type = typename Allocator::pointer_type;
+            using type = typename Allocator::pointer;
         };
 
         //! const_pointer
@@ -107,6 +107,18 @@ namespace AZStd
             using type = typename Allocator::difference_type;
         };
 
+        //! align_type
+        template<typename Allocator, typename AlignType, typename = void >
+        struct get_align_type
+        {
+            using type = typename std::make_unsigned_t<AlignType>;
+        };
+        template<typename Allocator, typename AlignType>
+        struct get_align_type<Allocator, AlignType, void_t<typename Allocator::align_type>>
+        {
+            using type = typename Allocator::align_type;
+        };
+
         //! size_type
         template <typename Allocator, typename DifferenceType, typename = void>
         struct get_size_type
@@ -123,7 +135,7 @@ namespace AZStd
         template <typename Allocator, typename = void>
         struct get_propagate_on_container_copy_assignment_type
         {
-            using type = AZStd::false_type;
+            using type = AZStd::true_type;
         };
         template <typename Allocator>
         struct get_propagate_on_container_copy_assignment_type<Allocator, void_t<typename Allocator::propagate_on_container_copy_assignment>>
@@ -135,7 +147,7 @@ namespace AZStd
         template <typename Allocator, typename = void>
         struct get_propagate_on_container_move_assignment_type
         {
-            using type = AZStd::false_type;
+            using type = AZStd::true_type;
         };
         template <typename Allocator>
         struct get_propagate_on_container_move_assignment_type<Allocator, void_t<typename Allocator::propagate_on_container_move_assignment>>
@@ -147,7 +159,7 @@ namespace AZStd
         template <typename Allocator, typename = void>
         struct get_propagate_on_container_swap_type
         {
-            using type = AZStd::false_type;
+            using type = AZStd::true_type;
         };
         template <typename Allocator>
         struct get_propagate_on_container_swap_type<Allocator, void_t<typename Allocator::propagate_on_container_swap>>
@@ -273,6 +285,7 @@ namespace AZStd
         using void_pointer = typename get_void_pointer_type<allocator_type, pointer>::type;
         using const_void_pointer = typename get_const_void_pointer_type<allocator_type, pointer>::type;
         using difference_type = typename get_difference_type<allocator_type, pointer>::type;
+        using align_type = typename get_align_type<allocator_type, difference_type>::type;
         using size_type = typename get_size_type<allocator_type, difference_type>::type;
         using propagate_on_container_move_assignment = typename get_propagate_on_container_move_assignment_type<allocator_type>::type;
         using propagate_on_container_copy_assignment = typename get_propagate_on_container_copy_assignment_type<allocator_type>::type;
@@ -292,7 +305,7 @@ namespace AZStd
             return allocate(alloc, size, alignof(value_type));
         }
         //! Extension AZStd allocators supports supplying alignment
-        static pointer allocate(allocator_type& alloc, size_type size, size_type alignment)
+        static pointer allocate(allocator_type& alloc, size_type size, align_type alignment)
         {
             return alloc.allocate(size, alignment);
         }
@@ -303,7 +316,7 @@ namespace AZStd
         }
 
         //! Extension AZStd allocators supports supplying alignment
-        static void deallocate(allocator_type& alloc, pointer ptr, size_type size, size_type alignment)
+        static void deallocate(allocator_type& alloc, pointer ptr, size_type size, align_type alignment)
         {
             alloc.deallocate(ptr, size, alignment);
         }

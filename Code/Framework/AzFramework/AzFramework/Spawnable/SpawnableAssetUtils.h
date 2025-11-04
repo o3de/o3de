@@ -9,13 +9,14 @@
 #pragma once
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework::SpawnableAssetUtils
 {
     //! Called as part of the creation of a spawnable asset from loaded file data or in-memory data.
     //! Queues required spawnable aliases for loading after a callback is called that allows the
     //! entity aliases in a spawnable to be adjusted based on runtime requirements
-    void ResolveEntityAliases(
+    AZF_API void ResolveEntityAliases(
         class Spawnable* spawnable,
         const AZStd::string& spawnableName,
         AZStd::chrono::milliseconds streamingDeadline = {},

@@ -107,11 +107,3 @@ class TestAutomation_EditorTools(EditorTestSuite):
 
     class Editor_WaitCommands_Works(EditorBatchedTest):
         from .tests import Editor_WaitCommands_Works as test_module
-
-@pytest.mark.SUITE_periodic
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation_EditorSingleTests:# (EditorTestSuite):
-
-    class Editor_ObjectManagerCommands_Works(EditorSingleTest):
-        from .tests import Editor_ObjectManagerCommands_Works as test_module

@@ -6,18 +6,17 @@
  *
  */
 
-#ifndef REFLECTEDPROPERTYEDITOR_H
-#define REFLECTEDPROPERTYEDITOR_H
-
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include "PropertyEditorAPI.h"
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QFrame>
+#include <QWidget>
+#include <QFrame>
 #endif
 
 class QScrollArea;
@@ -37,19 +36,23 @@ namespace AzToolsFramework
     class PropertyRowWidget;
     class ComponentEditor;
 
+    class ReflectedPropertyEditor;
+    AZ_TYPE_INFO_SPECIALIZE(ReflectedPropertyEditor, "{F5B220A4-16DF-4E03-B0B2-CF776D59B9B7}");
+
     /**
      * the Reflected Property Editor is a Qt Control which you can place inside a GUI, which you then feed
      * a series of object(s) and instances.  Any object or instance with Editor reflection will then be editable
      * in the Reflected Property editor control, with the GUI arrangement specified in the edit reflection for
      * those objects.
      */
-    class ReflectedPropertyEditor
+    class AZTF_API ReflectedPropertyEditor
         : public QFrame
         , public IPropertyEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditor, AZ::SystemAllocator);
 
         typedef AZStd::unordered_map<InstanceDataNode*, PropertyRowWidget*> WidgetList;
 
@@ -79,7 +82,8 @@ namespace AzToolsFramework
 
         void SetFilterString(AZStd::string str) override;
         AZStd::string GetFilterString();
-        void SetSavedStateKey(AZ::u32 key) override; // a settings key which is used to store and load the set of things that are expanded or not and other settings
+        // a settings key which is used to store and load the set of things that are expanded or not and other settings
+        void SetSavedStateKey([[maybe_unused]] AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName = "") override;
 
         void QueueInvalidation(PropertyModificationRefreshLevel level) override;
         //will force any queued invalidations to happen immediately
@@ -188,5 +192,3 @@ namespace AzToolsFramework
         void OnPropertyRowRequestContainerAddItem(PropertyRowWidget* widget, InstanceDataNode* node);
     };
 }
-
-#endif

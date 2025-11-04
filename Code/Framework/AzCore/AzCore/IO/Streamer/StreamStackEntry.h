@@ -13,7 +13,7 @@
 #include <AzCore/IO/Streamer/FileRange.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -31,7 +31,7 @@ namespace AZ
         //! functionality tries perform its task and if it fails pass the request to the next entry
         //! in the stack. For instance if a request isn't cached it passes the request to the next
         //! entry which might read it from disk instead.
-        class StreamStackEntry
+        class AZCORE_API StreamStackEntry
         {
         public:
             struct Status
@@ -83,7 +83,7 @@ namespace AZ
             //!     from the bottom to the top, this list should be processed in reverse order.
             //! @param pendingBegin Iterator pointing to the start of the requests that are waiting for a processing slot in the stack.
             //! @param pendingEnd Iterator pointing to the end of the requests that are waiting for a processing slot in the stack.
-            virtual void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+            virtual void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
                 StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd);
 
             //! Collect various statistics on this stack entry. These are for profiling and debugging

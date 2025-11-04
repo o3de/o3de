@@ -58,12 +58,12 @@ namespace LUAEditor
         switch (m_State)
         {
         case DAS_ATTACHED:
-            EBUS_EVENT(Context_DebuggerManagement::Bus, RequestDetachDebugger);
+            Context_DebuggerManagement::Bus::Broadcast(&Context_DebuggerManagement::Bus::Events::RequestDetachDebugger);
             break;
         case DAS_UNATTACHED:
         case DAS_REFUSED:
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, RequestAttachDebugger);
+            Context_DebuggerManagement::Bus::Broadcast(&Context_DebuggerManagement::Bus::Events::RequestAttachDebugger);
         }
         break;
         }

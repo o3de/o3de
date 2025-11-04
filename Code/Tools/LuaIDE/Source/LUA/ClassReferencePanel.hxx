@@ -9,9 +9,9 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 
-#include <QtCore/QObject>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QTreeView>
+#include <QObject>
+#include <QWidget>
+#include <QTreeView>
 #endif
 
 #pragma once

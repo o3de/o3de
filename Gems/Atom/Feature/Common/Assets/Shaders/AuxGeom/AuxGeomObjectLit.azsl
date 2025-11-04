@@ -6,7 +6,7 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 #include "ObjectSrgLit.azsli"
 
 option enum class ViewProjectionMode { ViewProjection, ManualOverride } o_viewProjMode;

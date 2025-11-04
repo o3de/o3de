@@ -7,6 +7,9 @@
  */
 
 #include "MorphTargetEditWindow.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -67,7 +70,7 @@ namespace EMStudio
 
         // create the buttons layout
         QHBoxLayout* buttonsLayout = new QHBoxLayout();
-        buttonsLayout->setMargin(0);
+        buttonsLayout->setContentsMargins(0, 0, 0, 0);
 
         // create the OK button
         QPushButton* OKButton = new QPushButton("OK");
@@ -145,6 +148,8 @@ namespace EMStudio
 
     void MorphTargetEditWindow::Accepted()
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         const float rangeMin = (float)m_rangeMin->value();
         const float rangeMax = (float)m_rangeMax->value();
 

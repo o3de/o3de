@@ -10,10 +10,12 @@
 #include "UiAVEventsDialog.h"
 #include <Editor/Animation/ui_UiAVEventsDialog.h>
 #include "UiAnimViewUndo.h"
-#include "StringDlg.h"
 #include "UiAnimViewSequence.h"
 #include "AnimationContext.h"
 #include <limits>
+
+#include <QInputDialog>
+#include <QMessageBox>
 
 
 // CUiAVEventsDialog dialog

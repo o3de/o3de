@@ -13,13 +13,13 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TagSelector, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TagSelector, AZ::SystemAllocator)
 
     TagSelector::TagSelector(QWidget* parent)
         : QWidget(parent)
     {
         QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setMargin(0);
+        hLayout->setContentsMargins(0, 0, 0, 0);
 
         m_tagSelector = new AzQtComponents::TagSelector(this);
         connect(m_tagSelector, &AzQtComponents::TagSelector::TagsChanged, this, &TagSelector::OnSelectedTagsChanged);

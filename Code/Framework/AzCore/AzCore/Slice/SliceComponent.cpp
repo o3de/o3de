@@ -33,7 +33,7 @@ namespace AZ
         {
             if (classElement.GetVersion() < 2)
             {
-                const int instancesIndex = classElement.FindElement(AZ_CRC("Instances", 0x7a270069));
+                const int instancesIndex = classElement.FindElement(AZ_CRC_CE("Instances"));
                 if (instancesIndex > -1)
                 {
                     auto& instancesElement = classElement.GetSubElement(instancesIndex);
@@ -265,7 +265,7 @@ namespace AZ
 
             // Make the addressing relative to InstantiatedContainer (entityDataFlags are relative to the individual entity)
             DataPatch::AddressType addressPrefix;
-            addressPrefix.push_back(AZ_CRC("Entities", 0x50ec64e5));
+            addressPrefix.push_back(AZ_CRC_CE("Entities"));
             addressPrefix.push_back(static_cast<u64>(toEntityId));
 
             for (auto& addressFlagsPair : entityDataFlags)
@@ -610,7 +610,7 @@ namespace AZ
         {
             // Make the addressing relative to InstantiatedContainer (m_dataFlags stores flags relative to the individual entity)
             DataPatch::AddressType addressPrefix;
-            addressPrefix.push_back(AZ_CRC("Entities", 0x50ec64e5));
+            addressPrefix.push_back(AZ_CRC_CE("Entities"));
             addressPrefix.push_back(static_cast<u64>(baseIdInstanceIdPair.first));
 
             for (auto& addressDataFlagsPair : m_dataFlags.GetEntityDataFlags(baseIdInstanceIdPair.second))
@@ -1052,7 +1052,10 @@ namespace AZ
     //=========================================================================
     // SliceComponent::SliceReference::Instantiate
     //=========================================================================
-    bool SliceComponent::SliceReference::Instantiate(const AZ::ObjectStream::FilterDescriptor& filterDesc)
+    bool SliceComponent::SliceReference::Instantiate(
+        const AZ::ObjectStream::FilterDescriptor& filterDesc,
+        AZ::SerializeContext* serializeContext,
+        AZStd::unordered_map<AZStd::string, AZStd::string>* relativeToAbsoluteSlicePaths)
     {
         AZ_PROFILE_FUNCTION(AzCore);
 
@@ -1061,41 +1064,64 @@ namespace AZ
             return true;
         }
 
-        AZ::Data::AssetInfo assetInfo;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, m_asset.GetId());
-        bool isAssetStillOnDisk = assetInfo.m_assetId.IsValid();
-
-        bool isCachedAssetReady = m_asset.IsReady();
-
-        if (!(isCachedAssetReady && isAssetStillOnDisk))
+        SliceComponent* dependentSlice = nullptr;
+        const bool useAssetCatalog = !serializeContext || !relativeToAbsoluteSlicePaths;
+        if (useAssetCatalog)
         {
-            // If the asset has been queued for async loading but hasn't completed, we've reached the point where it is required
-            // to be complete, so block until it finishes loading.
-            if (m_asset.IsLoading())
-            {
-                m_asset.BlockUntilLoadComplete();
-            }
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, m_asset.GetId());
 
-            // If the asset still isn't ready, an unexpected error has occurred.
-            if (!m_asset.IsReady())
+            const bool isAssetStillOnDisk = assetInfo.m_assetId.IsValid();
+            const bool isCachedAssetReady = m_asset.IsReady();
+            if (!(isCachedAssetReady && isAssetStillOnDisk))
             {
+                // If the asset has been queued for async loading but hasn't completed, we've reached the point where it is required
+                // to be complete, so block until it finishes loading.
+                if (m_asset.IsLoading())
+                {
+                    m_asset.BlockUntilLoadComplete();
+                }
+
+                // If the asset still isn't ready, an unexpected error has occurred.
+                if (!m_asset.IsReady())
+                {
 #if defined(AZ_ENABLE_TRACING)
-                const Data::Asset<SliceAsset> owningAsset = m_component->m_myAsset ?
-                    Data::Asset<SliceAsset>(Data::AssetManager::Instance().FindAsset(m_component->m_myAsset->GetId(), AZ::Data::AssetLoadBehavior::Default)) :
-                    Data::Asset<SliceAsset>();
-                AZ_Error("Slice", false,
-                    "Instantiation of %d slice instance(s) of asset %s failed - asset not ready or not found during instantiation of owning slice %s!"
-                    "Saving owning slice will lose data for these instances.",
-                    m_instances.size(),
-                    m_asset.ToString<AZStd::string>().c_str(),
-                    m_component->m_myAsset ? owningAsset.ToString<AZStd::string>().c_str() : "[Could not find owning slice]");
+                    const Data::Asset<SliceAsset> owningAsset = m_component->m_myAsset ?
+                        Data::Asset<SliceAsset>(Data::AssetManager::Instance().FindAsset(m_component->m_myAsset->GetId(), AZ::Data::AssetLoadBehavior::Default)) :
+                        Data::Asset<SliceAsset>();
+                    AZ_Error("Slice", false,
+                        "Instantiation of %d slice instance(s) of asset %s failed - asset not ready or not found during instantiation of owning slice %s!"
+                        "Saving owning slice will lose data for these instances.",
+                        m_instances.size(),
+                        m_asset.ToString<AZStd::string>().c_str(),
+                        m_component->m_myAsset ? owningAsset.ToString<AZStd::string>().c_str() : "[Could not find owning slice]");
 #endif // AZ_ENABLE_TRACING
+                    return false;
+                }
+            }
+            dependentSlice = m_asset.Get()->GetComponent();
+        }
+        else
+        {
+            const AZStd::string& path = (*relativeToAbsoluteSlicePaths)[m_asset.GetHint()];
+            if (path.empty())
+            {
+                AZ_Error("SliceReference::Instantiate", false, "Failed to find Slice relative path from %s", m_asset.GetHint().c_str());
                 return false;
             }
+
+            AZ::Entity* sliceRootEntity = AZ::EntityUtils::LoadRootEntityFromSlicePath(path.c_str(), serializeContext);
+            dependentSlice = AZ::EntityUtils::FindFirstDerivedComponent<SliceComponent>(sliceRootEntity);
+            m_asset.Get()->SetData(sliceRootEntity, dependentSlice, false);
         }
 
-        SliceComponent* dependentSlice = m_asset.Get()->GetComponent();
-        InstantiateResult instantiationResult = dependentSlice->Instantiate();
+        if (!dependentSlice)
+        {
+            AZ_Error("SliceReference::Instantiate", false, "Failed to get SliceComponent from %s", m_asset.GetHint().c_str());
+            return false;
+        }
+        
+        InstantiateResult instantiationResult = dependentSlice->Instantiate(serializeContext, relativeToAbsoluteSlicePaths);
         if (instantiationResult != InstantiateResult::Success)
         {
             #if defined(AZ_ENABLE_TRACING)
@@ -1653,7 +1679,9 @@ namespace AZ
     //=========================================================================
     // SliceComponent::Instantiate
     //=========================================================================
-    SliceComponent::InstantiateResult SliceComponent::Instantiate()
+    SliceComponent::InstantiateResult SliceComponent::Instantiate(
+        AZ::SerializeContext* serializeContext,
+        AZStd::unordered_map<AZStd::string, AZStd::string>* relativeToAbsoluteSlicePaths)
     {
         AZ_PROFILE_FUNCTION(AzCore);
         AZStd::unique_lock<AZStd::recursive_mutex> lock(m_instantiateMutex);
@@ -1684,7 +1712,8 @@ namespace AZ
             }
             else
             {
-                bool instantiateSuccess = slice.Instantiate(AZ::ObjectStream::FilterDescriptor(m_assetLoadFilterCB, m_filterFlags));
+                bool instantiateSuccess = slice.Instantiate(
+                    AZ::ObjectStream::FilterDescriptor(m_assetLoadFilterCB, m_filterFlags), serializeContext, relativeToAbsoluteSlicePaths);
                 if (instantiateSuccess)
                 {
                     // Prune empty slice instances.
@@ -2849,7 +2878,7 @@ namespace AZ
         if (!m_serializeContext)
         {
             // use the default app serialize context
-            EBUS_EVENT_RESULT(m_serializeContext, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(m_serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!m_serializeContext)
             {
                 AZ_Error("Slices", false, "SliceComponent: No serialize context provided! Failed to get component application default serialize context! ComponentApp is not started or SliceComponent serialize context should not be null!");
@@ -3045,7 +3074,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("Prefab", 0xa60af5fc));
+        provided.push_back(AZ_CRC_CE("Prefab"));
     }
 
     //=========================================================================
@@ -3053,7 +3082,7 @@ namespace AZ
     //=========================================================================
     void SliceComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     /**
@@ -3076,14 +3105,16 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AzCore);
 
             SliceComponent* sliceComponent = reinterpret_cast<SliceComponent*>(classPtr);
-            EBUS_EVENT(SliceAssetSerializationNotificationBus, OnWriteDataToSliceAssetEnd, *sliceComponent);
+            SliceAssetSerializationNotificationBus::Broadcast(
+                &SliceAssetSerializationNotificationBus::Events::OnWriteDataToSliceAssetEnd, *sliceComponent);
 
             // Broadcast OnSliceEntitiesLoaded for entities that are "new" to this slice.
             // We can't broadcast this event for instanced entities yet, since they don't exist until instantiation.
             if (!sliceComponent->GetNewEntities().empty())
             {
                 AZ_PROFILE_SCOPE(AzCore, "SliceComponentSerializationEvents::OnWriteEnd:OnSliceEntitiesLoaded");
-                EBUS_EVENT(SliceAssetSerializationNotificationBus, OnSliceEntitiesLoaded, sliceComponent->GetNewEntities());
+                SliceAssetSerializationNotificationBus::Broadcast(
+                    &SliceAssetSerializationNotificationBus::Events::OnSliceEntitiesLoaded, sliceComponent->GetNewEntities());
             }
         }
     };
@@ -3954,4 +3985,40 @@ namespace AZ
                 ;
         }
     }
+
+    namespace EntityUtils
+    {
+        AZ::Entity* LoadRootEntityFromSlicePath(const char* filePath, SerializeContext* context)
+        {
+            AZ::Entity* sliceRootEntity = nullptr;
+            auto callback = [&sliceRootEntity](void* classPtr, const Uuid& classId, SerializeContext* serializeContext)
+            {
+                sliceRootEntity = serializeContext->Cast<AZ::Entity*>(classPtr, classId);
+                if (!sliceRootEntity)
+                {
+                    AZ_Warning("LoadRootEntityFromSlicePath", false, "  File not opened: Slice root is not an entity.\n");
+                    return false;
+                }
+                return true;
+            };
+
+            if (!AZ::Utils::InspectSerializedFile(
+                    filePath,
+                    context,
+                    callback,
+                    [](const AZ::Data::AssetFilterInfo& filterInfo)
+                    {
+                        return (filterInfo.m_assetType == azrtti_typeid<AZ::SliceAsset>());
+                    }))
+            {
+                AZ_Warning("LoadRootEntityFromSlicePath", false, "Failed to load '%s'. File may not contain an object stream.", filePath);
+                return nullptr;
+            }
+
+            return sliceRootEntity;
+        }
+    }
+
 } // namespace AZ
+
+

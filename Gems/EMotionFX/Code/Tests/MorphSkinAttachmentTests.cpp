@@ -112,6 +112,7 @@ namespace EMotionFX
         void TearDown() override
         {
             m_attachmentActorInstance->Destroy();
+            m_attachmentActor.reset();
 
             JackGraphFixture::TearDown();
         }

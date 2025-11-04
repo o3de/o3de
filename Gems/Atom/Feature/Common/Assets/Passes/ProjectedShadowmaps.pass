@@ -10,29 +10,16 @@
                 {
                     "Name": "Shadowmap",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "DepthStencil"
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "LoadActionStencil": "DontCare",
+                        "StoreActionStencil": "DontCare"
+                    }
                 },
                 {
                     "Name": "SkinnedMeshes",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "InputAssembly"
-                }
-            ],
-            "ImageAttachments": [
-                {
-                    "Name": "ShadowmapImage",
-                    "ImageDescriptor": {
-                        "Format": "D32_FLOAT"
-                    }
-                }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "Shadowmap",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ShadowmapImage"
-                    }
                 }
             ]
         }

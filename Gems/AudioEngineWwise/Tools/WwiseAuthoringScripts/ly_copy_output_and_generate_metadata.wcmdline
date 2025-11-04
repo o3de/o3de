@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<CmdLine Description="Copy Streamed Files and Generate Dependency Info">"$(CopyStreamedFilesExePath)" -info "$(InfoFilePath)" -outputpath "$(SoundBankPath)" -banks "$(SoundBankListAsTextFile)" -languages "$(LanguageList)"
-"$(WwiseProjectPath)\..\..\..\python\python.cmd" "$(WwiseProjectPath)\..\..\..\Gems\AudioEngineWwise\Tools\WwiseAuthoringScripts\bank_info_parser.py" "$(InfoFilePath)" "$(SoundBankPath)"</CmdLine>

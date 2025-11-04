@@ -29,7 +29,7 @@ namespace ScriptCanvasEditor
     struct UndoData
     {
         AZ_TYPE_INFO(UndoData, "{12561F1F-2806-4BCB-BDC5-B2F2B568A139}");
-        AZ_CLASS_ALLOCATOR(UndoData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UndoData, AZ::SystemAllocator);
         UndoData() = default;
 
         static void Reflect(AZ::ReflectContext* reflectContext)

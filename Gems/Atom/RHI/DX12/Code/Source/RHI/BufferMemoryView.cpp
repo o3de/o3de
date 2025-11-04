@@ -13,13 +13,6 @@ namespace AZ
     namespace DX12
     {
         BufferMemoryView::BufferMemoryView(
-            const MemoryView& memoryView,
-            BufferMemoryType memoryType)
-            : MemoryView(memoryView)
-            , m_type{memoryType}
-        {}
-
-        BufferMemoryView::BufferMemoryView(
             MemoryView&& memoryView,
             BufferMemoryType memoryType)
             : MemoryView(AZStd::move(memoryView))
@@ -30,5 +23,5 @@ namespace AZ
         {
             return m_type;
         }
-    }
+    } // namespace DX12
 }

@@ -9,11 +9,11 @@
 
 #include <AtomCore/Instance/Instance.h>
 
-#include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -26,13 +26,13 @@ namespace AZ
         class RenderPass;
 
         //! A scope producer to copy the input attachment and output a copy of this attachment
-        class ImageAttachmentCopy final
+        class ATOM_RPI_PUBLIC_API ImageAttachmentCopy final
             : public RHI::ScopeProducer
         {
             friend class ImageAttachmentPreviewPass;
         public:
             AZ_RTTI(ImageAttachmentCopy, "{27E35230-48D1-4950-8489-F301A45D4A0B}", RHI::ScopeProducer);
-            AZ_CLASS_ALLOCATOR(ImageAttachmentCopy, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageAttachmentCopy, SystemAllocator);
 
             ImageAttachmentCopy() = default;
             ~ImageAttachmentCopy() = default;
@@ -56,13 +56,14 @@ namespace AZ
             RHI::AttachmentId m_destAttachmentId;
 
             Data::Instance<AttachmentImage> m_destImage;
+            u16 m_sourceArraySlice = 0;
 
             // Copy item to be submitted to command list
             RHI::CopyItem m_copyItem;
         };
 
         //! Render preview of specified image attachment to the selected output attachment.
-        class ImageAttachmentPreviewPass final
+        class ATOM_RPI_PUBLIC_API ImageAttachmentPreviewPass final
             : public Pass
             , public RHI::ScopeProducer
             , public Data::AssetBus::Handler
@@ -71,7 +72,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ImageAttachmentPreviewPass, "{E6076B8E-E840-4C22-89A8-32C73FEEEBF9}", Pass);
-            AZ_CLASS_ALLOCATOR(ImageAttachmentPreviewPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageAttachmentPreviewPass, SystemAllocator);
 
             //! Creates an ImageAttachmentPreviewPass
             static Ptr<ImageAttachmentPreviewPass> Create(const PassDescriptor& descriptor);
@@ -79,7 +80,7 @@ namespace AZ
             ~ImageAttachmentPreviewPass();
             
             //! Preview the PassAttachment of a pass' PassAttachmentBinding
-            void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment);
+            void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment, RenderPipeline* previewOutputPipeline = nullptr, u32 imageArraySlice = 0);
 
             //! Set the output color attachment for this pass
             void SetOutputColorAttachment(RHI::Ptr<PassAttachment> outputImageAttachment);
@@ -134,7 +135,10 @@ namespace AZ
                 // Cached pipeline state descriptor
                 RHI::PipelineStateDescriptorForDraw m_pipelineStateDescriptor;
                 // The draw item for drawing the image preview for this type of image
-                RHI::DrawItem m_item;
+                RHI::DrawItem m_item{RHI::MultiDevice::AllDevices};
+
+                // Holds the geometry info for the draw call
+                RHI::GeometryView m_geometryView{ RHI::MultiDevice::AllDevices };
 
                 // Key to pass to the SRG when desired shader variant isn't found
                 ShaderVariantKey m_shaderVariantKeyFallback;

@@ -10,6 +10,8 @@
 #include <Atom/RHI.Reflect/DX12/ShaderStageFunction.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
+#include <RHI/ShaderUtils.h>
+
 namespace AZ
 {
     namespace DX12
@@ -19,9 +21,9 @@ namespace AZ
             return aznew PipelineState;
         }
 
-        const PipelineLayout& PipelineState::GetPipelineLayout() const
+        const PipelineLayout* PipelineState::GetPipelineLayout() const
         {
-            return *m_pipelineLayout;
+            return m_pipelineLayout.get();
         }
 
         ID3D12PipelineState* PipelineState::Get() const
@@ -42,7 +44,7 @@ namespace AZ
         RHI::ResultCode PipelineState::InitInternal(
             RHI::Device& deviceBase,
             const RHI::PipelineStateDescriptorForDraw& descriptor,
-            RHI::PipelineLibrary* pipelineLibraryBase)
+            RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
 
@@ -55,21 +57,24 @@ namespace AZ
             // Shader state.
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             pipelineStateDesc.pRootSignature = pipelineLayout->Get();
-
+            // Cache used for saving the patched version of the shader
+            AZStd::vector<ShaderByteCode> shaderByteCodeCache;
             if (const ShaderStageFunction* vertexFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_vertexFunction.get()))
             {
-                pipelineStateDesc.VS = D3D12BytecodeFromView(vertexFunction->GetByteCode());
+                pipelineStateDesc.VS =
+                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*vertexFunction, descriptor, shaderByteCodeCache));
             }
 
-            if (const ShaderStageFunction* tessellationFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_tessellationFunction.get()))
+            if (const ShaderStageFunction* geometryFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_geometryFunction.get()))
             {
-                pipelineStateDesc.HS = D3D12BytecodeFromView(tessellationFunction->GetByteCode(ShaderSubStage::TessellationHull));
-                pipelineStateDesc.DS = D3D12BytecodeFromView(tessellationFunction->GetByteCode(ShaderSubStage::TessellationDomain));
+                pipelineStateDesc.GS =
+                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*geometryFunction, descriptor, shaderByteCodeCache));
             }
 
             if (const ShaderStageFunction* fragmentFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_fragmentFunction.get()))
             {
-                pipelineStateDesc.PS = D3D12BytecodeFromView(fragmentFunction->GetByteCode());
+                pipelineStateDesc.PS =
+                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*fragmentFunction, descriptor, shaderByteCodeCache));
             }
 
             const RHI::RenderAttachmentConfiguration& renderAttachmentConfiguration = descriptor.m_renderAttachmentConfiguration;
@@ -122,7 +127,7 @@ namespace AZ
         RHI::ResultCode PipelineState::InitInternal(
             RHI::Device& deviceBase,
             const RHI::PipelineStateDescriptorForDispatch& descriptor,
-            RHI::PipelineLibrary* pipelineLibraryBase)
+            RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
 
@@ -131,10 +136,12 @@ namespace AZ
 
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             pipelineStateDesc.pRootSignature = pipelineLayout->Get();
-
+            // Cache used for saving the patched version of the shader
+            AZStd::vector<ShaderByteCode> shaderByteCodeCache;
             if (const ShaderStageFunction* computeFunction = azrtti_cast<const ShaderStageFunction*>(descriptor.m_computeFunction.get()))
             {
-                pipelineStateDesc.CS = D3D12BytecodeFromView(computeFunction->GetByteCode());
+                pipelineStateDesc.CS =
+                    D3D12BytecodeFromView(ShaderUtils::PatchShaderFunction(*computeFunction, descriptor, shaderByteCodeCache));
             }
 
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);
@@ -168,7 +175,7 @@ namespace AZ
         RHI::ResultCode PipelineState::InitInternal(
             RHI::Device& deviceBase,
             const RHI::PipelineStateDescriptorForRayTracing& descriptor,
-            [[maybe_unused]] RHI::PipelineLibrary* pipelineLibraryBase)
+            [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
 

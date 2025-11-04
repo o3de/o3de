@@ -19,9 +19,10 @@ namespace GradientSignal
     //! OutputFormat dictates the subset of output types supported for gradient image creation.
     enum class OutputFormat : AZ::u8
     {
-        R8,     //! single-channel 8-bit uint
-        R16,    //! single-channel 16-bit uint
-        R32     //! single-channel 32-bit float
+        R8,         //! single-channel 8-bit uint
+        R16,        //! single-channel 16-bit uint
+        R32,        //! single-channel 32-bit float
+        R8G8B8A8    //! four-channel 32-bit uint (8 bits per channel)
     };
 
     //! EBus that is used by any Editor Gradient components that create images (Gradient Baker, Image Gradient).

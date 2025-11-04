@@ -44,7 +44,7 @@ namespace EMotionFX
         void OnUnderlyingPropertiesChanged() override;
 
         void BeginEditing();
-        void FinishEditing();
+        void EndEditing();
 
         AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_swingYManipulator;
         AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_swingZManipulator;

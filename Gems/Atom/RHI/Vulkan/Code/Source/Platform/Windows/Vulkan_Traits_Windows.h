@@ -8,7 +8,10 @@
 #pragma once
 
 #define AZ_TRAIT_ATOM_SHADERBUILDER_DXC "Builders/DirectXShaderCompiler/dxc.exe"
+#define AZ_TRAIT_ATOM_AZSL_SHADER_HEADER "Builders/ShaderHeaders/Platform/Windows/Vulkan/AzslcHeader.azsli"
+#define AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER "Builders/ShaderHeaders/Platform/Windows/Vulkan/PlatformHeader.hlsli"
+#define AZ_TRAIT_ATOM_MOBILE_AZSL_SHADER_HEADER "Builders/ShaderHeaders/Platform/Android/Vulkan/AzslcHeader.azsli"
+#define AZ_TRAIT_ATOM_MOBILE_AZSL_PLATFORM_HEADER "Builders/ShaderHeaders/Platform/Android/Vulkan/PlatformHeader.hlsli"
 #define AZ_TRAIT_ATOM_VULKAN_DISABLE_DUAL_SOURCE_BLENDING 0
-#define AZ_TRAIT_ATOM_VULKAN_LAYER_LUNARG_STD_VALIDATION_SUPPORT 1
-#define AZ_TRAIT_ATOM_VULKAN_MIN_GPU_MEM (4 * 1024 * 1024 * 1024LL) //4GB
 #define AZ_TRAIT_ATOM_VULKAN_RECREATE_SWAPCHAIN_WHEN_SUBOPTIMAL 1
+#define AZ_TRAIT_ATOM_VULKAN_SWAPCHAIN_SCALING_FLAGS AZ::RHI::ScalingFlags::None

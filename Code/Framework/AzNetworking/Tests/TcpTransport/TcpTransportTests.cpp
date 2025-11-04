@@ -94,13 +94,12 @@ namespace UnitTest
     };
 
     class TcpTransportTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_loggerComponent = AZStd::make_unique<AZ::LoggerSystemComponent>();
@@ -115,7 +114,6 @@ namespace UnitTest
             m_loggerComponent.reset();
 
             AZ::NameDictionary::Destroy();
-            TeardownAllocator();
         }
 
         AZStd::unique_ptr<AZ::LoggerSystemComponent> m_loggerComponent;

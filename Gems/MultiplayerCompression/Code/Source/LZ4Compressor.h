@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzNetworking/Framework/ICompressor.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -26,7 +27,7 @@ namespace MultiplayerCompression
         : public AzNetworking::ICompressor
     {
     public:
-        AZ_CLASS_ALLOCATOR(LZ4Compressor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LZ4Compressor, AZ::SystemAllocator);
 
         LZ4Compressor() = default;
 

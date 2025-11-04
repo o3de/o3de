@@ -8,6 +8,35 @@
 
 include(cmake/Platform/Common/Configurations_common.cmake)
 
+# Exceptions are disabled by default.  Use this to turn them on just for a specific target.
+set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC -fexceptions)
+
+# O3DE Sets visibility to hidden by default, requiring explicit export.
+# However, some 3rd Party libraries will not export any symbols with this setting
+# as they expect to be built with visibility set to default.  Use this compile option
+# to turn visibility back to default for those 3rd Party targets ONLY.
+set(O3DE_COMPILE_OPTION_EXPORT_SYMBOLS PRIVATE -fvisibility=default)
+
+# By default, O3DE sets warning level 4 and sets warnings as errors.  If you're pulling in
+# external code (from 3rd Party libraries) you can't really control whether they generate
+# warnings or not, and its usually out of scope to fix them.  Add this compile option to 
+# those 3rd Party targets ONLY.
+set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE -w)
+
+# C++20 no longer allows to implicitly convert between enum values of different types or enum values and integral types.
+# This is problematic if 3rd-party libraries use such operations in header files.
+set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE -Wno-deprecated-enum-enum-conversion)
+
+# If (USE_FAST_MATH) is set, then enable fast math optimizations.
+# Some targets might need to disable fast math individually (likely 3rd Party libraries)
+# so this flag is provided to use them in a platform independent manner
+set(O3DE_COMPILE_OPTION_ENABLE_FAST_MATH -ffast-math)
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH -fno-fast-math)
+
+# Same as above, but to use inside set_target_properties for specific targets
+set(O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH})
+set(O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH})
+
 set(LY_GCC_BUILD_FOR_GCOV FALSE CACHE BOOL "Flag to enable the build for gcov usage")
 if(LY_GCC_BUILD_FOR_GCOV)
     set(LY_GCC_GCOV_FLAGS "--coverage")
@@ -18,6 +47,7 @@ if(LY_GCC_BUILD_FOR_GPROF)
     set(LY_GCC_GPROF_FLAGS "-pg")
 endif()
 
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE -fno-fast-math)
 
 ly_append_configurations_options(
     DEFINES_PROFILE

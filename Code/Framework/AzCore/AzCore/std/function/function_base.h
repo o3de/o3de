@@ -129,17 +129,17 @@ namespace AZStd
             template<typename F>
             class get_function_tag
             {
-                typedef typename Utils::if_c<(is_pointer<F>::value),
+                typedef conditional_t<(is_pointer<F>::value),
                     function_ptr_tag,
-                    function_obj_tag>::type ptr_or_obj_tag;
+                    function_obj_tag> ptr_or_obj_tag;
 
-                typedef typename Utils::if_c<(is_member_pointer<F>::value),
+                typedef conditional_t<(is_member_pointer<F>::value),
                     member_ptr_tag,
-                    ptr_or_obj_tag>::type ptr_or_obj_or_mem_tag;
+                    ptr_or_obj_tag> ptr_or_obj_or_mem_tag;
 
-                typedef typename Utils::if_c<(is_reference_wrapper<F>::value),
+                typedef conditional_t<(is_reference_wrapper<F>::value),
                     function_obj_ref_tag,
-                    ptr_or_obj_or_mem_tag>::type or_ref_tag;
+                    ptr_or_obj_or_mem_tag> or_ref_tag;
 
             public:
                 typedef or_ref_tag type;

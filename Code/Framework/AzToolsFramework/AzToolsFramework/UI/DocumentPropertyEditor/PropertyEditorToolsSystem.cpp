@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/ContainerActionButtonHandler.h>
@@ -27,6 +28,7 @@ namespace AzToolsFramework
     void PropertyEditorToolsSystem::RegisterDefaultHandlers()
     {
         PropertyEditorToolsSystemInterface::RegisterHandler<ContainerActionButtonHandler>();
+        PropertyEditorToolsSystemInterface::RegisterHandler<GenericButtonHandler>();
     }
 
     PropertyEditorToolsSystem::PropertyHandlerId PropertyEditorToolsSystem::GetPropertyHandlerForNode(const AZ::Dom::Value node)
@@ -40,31 +42,68 @@ namespace AzToolsFramework
             return InvalidHandlerId;
         }
 
-        // If the Type is empty or unspecified, check the default handler list
+        auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
+        AZ::TypeId typeId = AZ::TypeId::CreateNull();
+        if (typeIdAttribute != node.MemberEnd())
+        {
+            typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+        }
+        else
+        {
+            AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
+            // If the object is a pointer object extract the TypeId from it
+            if (auto pointerObject = AZ::Dom::Utils::ValueToType<AZ::PointerObject>(value);
+                pointerObject && pointerObject->IsValid())
+            {
+                typeId = pointerObject->m_typeId;
+            }
+            else
+            {
+                typeId = AZ::Dom::Utils::GetValueTypeId(value);
+            }
+        }
+
         AZStd::string_view typeName = PropertyEditor::Type.ExtractFromDomNode(node).value_or("");
-        if (typeName.empty())
+        return GetPropertyHandlerForType(typeName, typeId);
+    }
+
+    PropertyEditorToolsSystem::PropertyHandlerId PropertyEditorToolsSystem::GetPropertyHandlerForType(AZStd::string_view handlerName, const AZ::TypeId& typeId)
+    {
+        // If the Type is empty or unspecified, check the default handler list
+        if (handlerName.empty())
         {
             for (PropertyHandlerId handler : m_defaultHandlers)
             {
-                if (handler->m_shouldHandleNode(node))
+                if (handler->m_shouldHandleType(typeId))
                 {
                     return handler;
                 }
             }
-            return InvalidHandlerId;
         }
-
-        auto handlerBucketIt = m_registeredHandlers.find(AZ::Name(typeName));
-        if (handlerBucketIt == m_registeredHandlers.end())
+        // Otherwise search all registered handlers by name
+        else if (auto handlerBucketIt = m_registeredHandlers.find(AZ::Name(handlerName)); handlerBucketIt != m_registeredHandlers.end())
         {
-            return InvalidHandlerId;
-        }
-
-        for (auto handlerIt = handlerBucketIt->second.begin(); handlerIt != handlerBucketIt->second.end(); ++handlerIt)
-        {
-            if (handlerIt->m_shouldHandleNode(node))
+            for (auto handlerIt = handlerBucketIt->second.begin(); handlerIt != handlerBucketIt->second.end(); ++handlerIt)
             {
-                return &(*handlerIt);
+                if (handlerIt->m_shouldHandleType(typeId))
+                {
+                    return &(*handlerIt);
+                }
+            }
+        }
+
+        // If we still couldn't find the handler, check if there is any generic class info for this type.
+        // This might happen if there is a single generic handler for multiple derived types, such is the
+        // case for asset property handlers that have a generic handler for AZ::Data::Asset<AZ::Data::AssetData>,
+        // where the asset type is a derived class of AZ::Data::AssetData.
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (const auto* genericInfo = serializeContext->FindGenericClassInfo(typeId))
+        {
+            if (genericInfo->GetGenericTypeId() != typeId)
+            {
+                auto genericTypeId = genericInfo->GetGenericTypeId();
+                return GetPropertyHandlerForType(handlerName, genericTypeId);
             }
         }
 

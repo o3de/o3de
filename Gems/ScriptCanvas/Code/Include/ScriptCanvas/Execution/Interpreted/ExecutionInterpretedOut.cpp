@@ -133,21 +133,16 @@ namespace ScriptCanvas
             {
                 Execution::StackPush(m_lua, behaviorContext, argsBVPs[i]);
             }
+
             // Lua: lambda, args...
             const int result = InterpretedSafeCall(m_lua, numArguments, 1);
-            // Lua: ?
-            if (result != LUA_OK)
+
+            if(result == LUA_OK && resultBVP)
             {
-                // Lua: error
-                lua_pop(m_lua, 1);
-            }
-            else
-            {
-                // Lua: result
                 Execution::StackRead(m_lua, behaviorContext, -1, *resultBVP, nullptr);
-                lua_pop(m_lua, 1);
             }
-            // Lua:
+
+            lua_pop(m_lua, 1);
         }
     }
 }

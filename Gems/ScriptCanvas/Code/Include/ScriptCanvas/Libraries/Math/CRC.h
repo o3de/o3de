@@ -17,3 +17,5 @@ namespace ScriptCanvas
         Data::CRCType FromString(Data::StringType value);
     } // namespace CRCFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/CRC.generated.h>

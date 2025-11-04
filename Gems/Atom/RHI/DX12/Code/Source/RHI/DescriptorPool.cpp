@@ -73,6 +73,32 @@ namespace AZ
             }
         }
 
+        void DescriptorPool::InitPooledRange(DescriptorPool& parent, uint32_t offset, uint32_t count)
+        {
+            m_desc = parent.m_desc;
+            m_descriptorHeap.Attach(parent.GetPlatformHeap());
+            m_stride = parent.m_stride;
+            m_cpuStart = parent.m_cpuStart;
+            m_cpuStart.ptr += m_stride * offset;
+
+            bool shaderVisible = RHI::CheckBitsAll(m_desc.Flags, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+            if (shaderVisible)
+            {
+                m_gpuStart = parent.m_gpuStart;
+                m_gpuStart.ptr += m_stride * offset;
+            }
+
+            // NOTE: The range is currently only used for the static descriptor region of the shader visible heap, so
+            // we leverage the PoolAllocator since these descriptors are allocated one-at-a-time (fragmentation free).
+            RHI::PoolAllocator::Descriptor desc;
+            desc.m_alignmentInBytes = 1;
+            desc.m_elementSize = 1;
+            desc.m_capacityInBytes = count;
+            desc.m_garbageCollectLatency = RHI::Limits::Device::FrameCountMax;
+            m_allocator = AZStd::make_unique<RHI::PoolAllocator>();
+            static_cast<RHI::PoolAllocator*>(m_allocator.get())->Init(desc);
+        }
+
         DescriptorHandle DescriptorPool::AllocateHandle(uint32_t count)
         {
             RHI::VirtualAddress address;
@@ -150,105 +176,6 @@ namespace AZ
             AZ_Assert(handle.IsShaderVisible(), "Handle is not shader visible");
             AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
             return D3D12_GPU_DESCRIPTOR_HANDLE{ m_gpuStart.ptr + (handle.m_index * m_stride) };
-        }
-
-        void DescriptorPool::CloneAllocator(RHI::Allocator* newAllocator)
-        {
-            m_allocator->Clone(newAllocator);
-        }
-
-        void DescriptorPool::ClearAllocator()
-        {
-            AZ_Assert(m_gpuStart.ptr, "Clearing the allocator is only supported for the gpu visible heap as only this heap can be compacted");
-            static_cast<RHI::FreeListAllocator*>(m_allocator.get())
-                ->Init(static_cast<RHI::FreeListAllocator*>(m_allocator.get())->GetDescriptor());
-        }
-
-        RHI::Allocator* DescriptorPool::GetAllocator() const
-        {
-            return m_allocator.get();
-        }
-
-        void DescriptorPoolShaderVisibleCbvSrvUav::Init(
-            ID3D12DeviceX* device,
-            D3D12_DESCRIPTOR_HEAP_TYPE type,
-            D3D12_DESCRIPTOR_HEAP_FLAGS flags,
-            uint32_t descriptorCount,
-            uint32_t staticHandlesCount)
-        {
-            //This pool manages two allocators. The allocator in the base class manages static handles
-            Base::Init(device, type, flags, descriptorCount, staticHandlesCount);
-
-            //This allocator manages dynamic handles associated with descriptor tables. This allows us to
-            //reconstruct the full heap in a compact manner if it ever fragments. 
-            RHI::FreeListAllocator::Descriptor descriptor;
-            descriptor.m_alignmentInBytes = 1;
-            descriptor.m_capacityInBytes = aznumeric_cast<uint32_t>(descriptorCount - staticHandlesCount);
-            descriptor.m_garbageCollectLatency = RHI::Limits::Device::FrameCountMax;
-
-            RHI::FreeListAllocator* allocator = aznew RHI::FreeListAllocator();
-            allocator->Init(descriptor);
-            m_unboundedArrayAllocator.reset(allocator);
-
-            //Cache the starting point of the dynamic section of the heap
-            m_startingHandleIndex = staticHandlesCount;
-        }
-
-        DescriptorTable DescriptorPoolShaderVisibleCbvSrvUav::AllocateTable(uint32_t count)
-        {
-            RHI::VirtualAddress address;
-            {
-                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                address = m_unboundedArrayAllocator->Allocate(count, 1);
-            }
-
-            if (address.IsValid())
-            {
-                DescriptorHandle handle(m_desc.Type, m_desc.Flags, static_cast<uint32_t>(address.m_ptr));
-                return DescriptorTable(handle, static_cast<uint16_t>(count));
-            }
-            else
-            {
-                return DescriptorTable{};
-            }
-        }
-
-        void DescriptorPoolShaderVisibleCbvSrvUav::ReleaseTable(DescriptorTable table)
-        {
-            if (table.IsNull())
-            {
-                return;
-            }
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            m_unboundedArrayAllocator->DeAllocate(RHI::VirtualAddress::CreateFromOffset(table.GetOffset().m_index));
-        }
-
-        void DescriptorPoolShaderVisibleCbvSrvUav::GarbageCollect()
-        {
-            Base::GarbageCollect();
-            m_unboundedArrayAllocator->GarbageCollect();
-        }
-
-        D3D12_CPU_DESCRIPTOR_HANDLE DescriptorPoolShaderVisibleCbvSrvUav::GetCpuPlatformHandleForTable(DescriptorTable descTable) const
-        {
-            DescriptorHandle handle = descTable.GetOffset();
-            AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
-            return D3D12_CPU_DESCRIPTOR_HANDLE{ m_cpuStart.ptr + (m_startingHandleIndex * m_stride) + (handle.m_index * m_stride) };
-        }
-
-        D3D12_GPU_DESCRIPTOR_HANDLE DescriptorPoolShaderVisibleCbvSrvUav::GetGpuPlatformHandleForTable(DescriptorTable descTable) const
-        {
-            DescriptorHandle handle = descTable.GetOffset();
-            AZ_Assert(handle.IsShaderVisible(), "Handle is not shader visible");
-            AZ_Assert(handle.m_index != DescriptorHandle::NullIndex, "Index is invalid");
-            return D3D12_GPU_DESCRIPTOR_HANDLE{ m_gpuStart.ptr + (m_startingHandleIndex * m_stride) + (handle.m_index * m_stride) };
-        }
-
-        void DescriptorPoolShaderVisibleCbvSrvUav::ClearAllocator()
-        {
-            Base::ClearAllocator();
-            static_cast<RHI::FreeListAllocator*>(m_unboundedArrayAllocator.get())->Init(static_cast<RHI::FreeListAllocator*>(m_unboundedArrayAllocator.get())->GetDescriptor());
         }
     }
 }

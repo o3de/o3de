@@ -58,15 +58,15 @@ namespace AZ
         class ShaderBuildArgumentsManager final
         {
         public:
-            AZ_CLASS_ALLOCATOR(ShaderBuildArgumentsManager, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderBuildArgumentsManager, AZ::SystemAllocator);
 
             static constexpr char LogName[] = "ShaderBuildArgumentsManager";
 
             // The value of this registry key is customizable by the user.
             static constexpr char ConfigPathRegistryKey[] = "/O3DE/Atom/Shaders/Build/ConfigPath";
 
-            static constexpr char DefaultConfigPathDirectory[] = "@gemroot:AtomShader@/Config";
-            static constexpr char ShaderBuildOptionsJson[] = "shader_build_options.json";
+            static constexpr char DefaultConfigPathDirectory[] = "@gemroot:AtomShader@/Assets/Config/Shader";
+            static constexpr char ShaderBuildOptionsJson[] = "shader_build_options.settings";
             static constexpr char PlatformsDir[] = "Platform";
 
             //! Always loads all the factory arguments provided by the Atom Gem. In addition
@@ -105,17 +105,25 @@ namespace AZ
             //! @remark: The "" (global) arguments are never popped, regardless of how many times this function is called.
             void PopArgumentScope();
 
+            //! Finds the shader build config files from the default locations. Returns a map where the key is the name of the scope,
+            //! and the value is a fully qualified file path.
+            //! Remarks: Posible scope names are:
+            //!     "global"
+            //!     "<platform>". Example "Android", "Windows", etc
+            //!     "<platform>.<rhi>". Example "Windows.dx12" or "Windows.vulkan".
+            static AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> DiscoverConfigurationFiles();
+
         private:
             friend class ::UnitTest::ShaderBuildArgumentsTests;
             void Init(AZStd::unordered_map<AZStd::string, AZ::RHI::ShaderBuildArguments> && removeBuildArgumentsMap
                     , AZStd::unordered_map<AZStd::string, AZ::RHI::ShaderBuildArguments> && addBuildArgumentsMap);
 
             //! @returns A fully qualified path where the factory settings, as provided by Atom, are found.
-            AZ::IO::FixedMaxPath GetDefaultConfigDirectoryPath();
+            static AZ::IO::FixedMaxPath GetDefaultConfigDirectoryPath();
 
             //! @returns A fully qualified path where the user customized command line arguments are found.
             //!     The returned path will be empty if the user did not customize the path in the registry.
-            AZ::IO::FixedMaxPath GetUserConfigDirectoryPath();
+            static AZ::IO::FixedMaxPath GetUserConfigDirectoryPath();
 
             //! @param dirPath Starting directory for the search of  shader_build_options.json files.
             //! @returns A map where the key is the name of the scope, and the value is a fully qualified file path.
@@ -123,9 +131,7 @@ namespace AZ
             //!     "global"
             //!     "<platform>". Example "Android", "Windows", etc
             //!     "<platform>.<rhi>". Example "Windows.dx12" or "Windows.vulkan".
-            AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> DiscoverConfigurationFilesInDirectory(const AZ::IO::FixedMaxPath& dirPath);
-
-            AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> DiscoverConfigurationFiles();
+            static AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> DiscoverConfigurationFilesInDirectory(const AZ::IO::FixedMaxPath& dirPath);
 
             const AZ::RHI::ShaderBuildArguments& PushArgumentsInternal(const AZStd::string& name, const AZ::RHI::ShaderBuildArguments& arguments);
 

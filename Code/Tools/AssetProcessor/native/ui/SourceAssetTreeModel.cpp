@@ -12,11 +12,9 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <native/utilities/assetUtils.h>
+#include <native/utilities/IPathConversion.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-
-#include <QDebug>
-
 
 namespace AssetProcessor
 {
@@ -35,7 +33,10 @@ namespace AssetProcessor
     {
         // We need m_root to contain SourceAssetTreeItemData to show the stat column
         m_root.reset(new AssetTreeItem(
-            AZStd::make_shared<SourceAssetTreeItemData>(nullptr, nullptr, "", "", true), m_errorIcon, m_folderIcon, m_fileIcon));
+            AZStd::make_shared<SourceAssetTreeItemData>(nullptr, nullptr, "", "", true, AzToolsFramework::AssetDatabase::InvalidEntryId),
+            m_errorIcon,
+            m_folderIcon,
+            m_fileIcon));
 
         if (ap_disableAssetTreeView)
         {
@@ -95,14 +96,15 @@ namespace AssetProcessor
         {
             AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolderEntry;
 
-            if(!m_intermediateAssetFolderId.has_value())
+            IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
+
+            if (!pathConversion || pathConversion->GetIntermediateAssetScanFolderId() == AzToolsFramework::AssetDatabase::InvalidEntryId)
             {
-                // When building the intermediate asset source asset tree, search by the scan folder to save time
+                // If, for some reason, the path conversion interface is not available, then try to retrieve intermediate folder information a different way.
                 m_sharedDbConnection->QueryScanFolderByPortableKey(
                     AssetProcessor::IntermediateAssetsFolderName,
                     [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
                     {
-                        m_intermediateAssetFolderId = scanFolder.m_scanFolderID;
                         scanFolderEntry = scanFolder;
                         return false;
                     });
@@ -110,7 +112,7 @@ namespace AssetProcessor
             else
             {
                 m_sharedDbConnection->QueryScanFolderByScanFolderID(
-                    m_intermediateAssetFolderId.value(),
+                    pathConversion->GetIntermediateAssetScanFolderId(),
                     [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
                     {
                         scanFolderEntry = scanFolder;
@@ -140,7 +142,7 @@ namespace AssetProcessor
         const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder,
         bool modelIsResetting, AZ::s64 createJobDuration)
     {
-        const auto& existingEntry = m_sourceToTreeItem.find(source.m_sourceName);
+        const auto& existingEntry = m_sourceToTreeItem.find(SourceAndScanID(source.m_sourceName, scanFolder.m_scanFolderID));
         if (existingEntry != m_sourceToTreeItem.end())
         {
             AZStd::shared_ptr<SourceAssetTreeItemData> sourceItemData = AZStd::rtti_pointer_cast<SourceAssetTreeItemData>(existingEntry->second->GetData());
@@ -159,12 +161,22 @@ namespace AssetProcessor
             dataChanged(existingIndexStart, existingIndexEnd);
             return;
         }
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolderEntry;
 
-        if (m_intermediateAssetFolderId.has_value() &&
-            ((source.m_scanFolderPK == m_intermediateAssetFolderId.value() && !m_intermediateAssets) ||
-             (source.m_scanFolderPK != m_intermediateAssetFolderId.value() && m_intermediateAssets)))
+        IPathConversion* pathConversion = AZ::Interface<IPathConversion>::Get();
+        AZ::s64 intermediateAssetScanFolder = AzToolsFramework::AssetDatabase::InvalidEntryId;
+        if(pathConversion)
         {
-            return;
+            intermediateAssetScanFolder = pathConversion->GetIntermediateAssetScanFolderId();
+            
+            if (intermediateAssetScanFolder != AzToolsFramework::AssetDatabase::InvalidEntryId)
+            {
+                if (((source.m_scanFolderPK == intermediateAssetScanFolder && !m_intermediateAssets) ||
+                     (source.m_scanFolderPK != intermediateAssetScanFolder && m_intermediateAssets)))
+                {
+                    return;
+                }
+            }
         }
 
 
@@ -210,8 +222,13 @@ namespace AssetProcessor
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
                 nextParent = parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
-                    nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
-                m_sourceToTreeItem[currentFullFolderPath.Native()] = nextParent;
+                    nullptr,
+                    nullptr,
+                    currentFullFolderPath.Native(),
+                    currentPath.c_str(),
+                    true,
+                    scanFolder.m_scanFolderID));
+                m_sourceToTreeItem[SourceAndScanID(currentFullFolderPath.Native(), scanFolder.m_scanFolderID)] = nextParent;
                 // Folders don't have source IDs, don't add to m_sourceIdToTreeItem
                 if (!modelIsResetting)
                 {
@@ -228,9 +245,16 @@ namespace AssetProcessor
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
-        m_sourceToTreeItem[source.m_sourceName] = parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
-            &source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, createJobDuration));
-        m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[source.m_sourceName];
+        m_sourceToTreeItem[SourceAndScanID(source.m_sourceName, scanFolder.m_scanFolderID)] =
+            parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
+                &source,
+                &scanFolder,
+                source.m_sourceName,
+                AZ::IO::FixedMaxPathString(filename.Native()).c_str(),
+                false,
+                scanFolder.m_scanFolderID,
+                createJobDuration));
+        m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[SourceAndScanID(source.m_sourceName, scanFolder.m_scanFolderID)];
         if (!modelIsResetting)
         {
             endInsertRows();
@@ -241,6 +265,12 @@ namespace AssetProcessor
     {
         if (ap_disableAssetTreeView)
         {
+            return;
+        }
+
+        if (!m_root)
+        {
+            // we haven't reset the model yet, which means all of this will happen when we do.
             return;
         }
 
@@ -284,7 +314,7 @@ namespace AssetProcessor
 
         beginRemoveRows(parentIndex, assetToRemove->GetRow(), assetToRemove->GetRow());
 
-        m_sourceToTreeItem.erase(assetToRemove->GetData()->m_assetDbName);
+        m_sourceToTreeItem.erase(SourceAndScanID(assetToRemove->GetData()->m_assetDbName, assetToRemove->GetData()->m_scanFolderID));
         const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData = AZStd::rtti_pointer_cast<const SourceAssetTreeItemData>(assetToRemove->GetData());
         if (sourceItemData && sourceItemData->m_hasDatabaseInfo)
         {
@@ -301,6 +331,12 @@ namespace AssetProcessor
     {
         if (ap_disableAssetTreeView)
         {
+            return;
+        }
+
+        if (!m_root)
+        {
+            // we haven't reset the model yet, which means all of this will happen when we do.
             return;
         }
 
@@ -339,14 +375,14 @@ namespace AssetProcessor
 
     }
 
-    QModelIndex SourceAssetTreeModel::GetIndexForSource(const AZStd::string& source)
+    QModelIndex SourceAssetTreeModel::GetIndexForSource(const AZStd::string& source, AZ::s64 scanFolderID)
     {
         if (ap_disableAssetTreeView)
         {
             return QModelIndex();
         }
 
-        auto sourceItem = m_sourceToTreeItem.find(source);
+        auto sourceItem = m_sourceToTreeItem.find(SourceAndScanID(source, scanFolderID));
         if (sourceItem == m_sourceToTreeItem.end())
         {
             return QModelIndex();
@@ -354,10 +390,10 @@ namespace AssetProcessor
         return createIndex(sourceItem->second->GetRow(), 0, sourceItem->second);
     }
 
-    void SourceAssetTreeModel::OnCreateJobsDurationChanged(QString sourceName)
+    void SourceAssetTreeModel::OnCreateJobsDurationChanged(QString sourceName, AZ::s64 scanFolderID)
     {
         // update the source asset's CreateJob duration, if such asset exists in the tree
-        const auto& existingEntry = m_sourceToTreeItem.find(sourceName.toUtf8().constData());
+        const auto& existingEntry = m_sourceToTreeItem.find(SourceAndScanID(sourceName.toUtf8().constData(), scanFolderID));
         if (existingEntry != m_sourceToTreeItem.end())
         {
             AZStd::shared_ptr<SourceAssetTreeItemData> sourceItemData =

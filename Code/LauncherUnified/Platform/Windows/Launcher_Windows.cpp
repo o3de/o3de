@@ -10,8 +10,18 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+#if O3DE_HEADLESS_SERVER
+int main(int argc, char* argv[])
+{
+    int argCount = argc;
+    char** argValues = argv;
+#else
 int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance, [[maybe_unused]] LPSTR lpCmdLine, [[maybe_unused]] int nCmdShow)
 {
+    int argCount = __argc;
+    char** argValues = __argv;
+#endif // O3DE_HEADLESS_SERVER
+
     const AZ::Debug::Trace tracer;
     InitRootDir();
 
@@ -19,20 +29,15 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 
     PlatformMainInfo mainInfo;
 
-    mainInfo.m_instance = GetModuleHandle(0);
+    mainInfo.m_instance = GetModuleHandle(nullptr);
 
-    mainInfo.CopyCommandLine(__argc, __argv);
-
-    // Prevent allocator from growing in small chunks
-    // Pre-create our system allocator and configure it to ask for larger chunks from the OS
-    // Creating this here to be consistent with other platforms
-    AZ::SystemAllocator::Descriptor sysHeapDesc;
-    sysHeapDesc.m_heap.m_systemChunkSize = 64 * 1024 * 1024;
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create(sysHeapDesc);
+    mainInfo.CopyCommandLine(argCount, argValues);
 
     ReturnCode status = Run(mainInfo);
 
-#if !defined(_RELEASE)
+#if !O3DE_HEADLESS_SERVER
+
+    #if !defined(_RELEASE)
     bool noPrompt = (strstr(mainInfo.m_commandLine, "-noprompt") != nullptr);
 #else
     bool noPrompt = false;
@@ -42,10 +47,7 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
     {
         MessageBoxA(0, GetReturnCodeString(status), "Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY | MB_ICONERROR);
     }
-
-    // there is no way to transfer ownership of the allocator to the component application
-    // without altering the app descriptor, so it must be destroyed here
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+#endif // !O3DE_HEADLESS_SERVER
 
     return static_cast<int>(status);
 }

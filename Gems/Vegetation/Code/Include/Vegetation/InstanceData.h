@@ -24,7 +24,7 @@ namespace Vegetation
     struct InstanceData final
     {
         AZ_RTTI(InstanceData, "{1DD3D37D-0855-44F9-94F8-76F0128491A1}");
-        AZ_CLASS_ALLOCATOR(InstanceData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InstanceData, AZ::SystemAllocator);
 
         AZ::EntityId m_id;
         InstanceId m_instanceId = InvalidInstanceId;

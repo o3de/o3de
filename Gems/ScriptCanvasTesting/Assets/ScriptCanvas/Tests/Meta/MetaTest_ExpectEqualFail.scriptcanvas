@@ -5,7 +5,7 @@
     "ClassData": {
         "m_scriptCanvas": {
             "Id": {
-                "id": 1334121242908718
+                "id": 573514612704423
             },
             "Name": "Script Canvas Graph",
             "Components": {
@@ -16,7 +16,7 @@
                         "m_nodes": [
                             {
                                 "Id": {
-                                    "id": 1334138422777902
+                                    "id": 573527497606311
                                 },
                                 "Name": "37719353338543",
                                 "Components": {
@@ -129,7 +129,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334134127810606
+                                    "id": 573523202639015
                                 },
                                 "Name": "319086199609",
                                 "Components": {
@@ -159,7 +159,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334129832843310
+                                    "id": 573518907671719
                                 },
                                 "Name": "SC Node(GetVariable)",
                                 "Components": {
@@ -230,7 +230,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334142717745198
+                                    "id": 573531792573607
                                 },
                                 "Name": "11131735970593",
                                 "Components": {
@@ -430,7 +430,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334125537876014
+                                    "id": 573536087540903
                                 },
                                 "Name": "SC Node(GetVariable)",
                                 "Components": {
@@ -503,7 +503,7 @@
                         "m_connections": [
                             {
                                 "Id": {
-                                    "id": 1334147012712494
+                                    "id": 573540382508199
                                 },
                                 "Name": "srcEndpoint=(Get Variable: Out), destEndpoint=(Get Variable: In)",
                                 "Components": {
@@ -512,7 +512,7 @@
                                         "Id": 1544922946293780217,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 1334129832843310
+                                                "id": 573518907671719
                                             },
                                             "slotId": {
                                                 "m_id": "{23B98437-C3EE-4452-9B1A-2B44D8B4A8F1}"
@@ -520,7 +520,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 1334125537876014
+                                                "id": 573536087540903
                                             },
                                             "slotId": {
                                                 "m_id": "{4137ADF9-DBC3-4C02-B6ED-5029F2685794}"
@@ -531,7 +531,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334151307679790
+                                    "id": 573544677475495
                                 },
                                 "Name": "srcEndpoint=(On Graph Start: Out), destEndpoint=(Get Variable: In)",
                                 "Components": {
@@ -540,7 +540,7 @@
                                         "Id": 7162216740720140272,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 1334134127810606
+                                                "id": 573523202639015
                                             },
                                             "slotId": {
                                                 "m_id": "{580BA341-A358-462B-806B-8B21A48818AF}"
@@ -548,7 +548,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 1334129832843310
+                                                "id": 573518907671719
                                             },
                                             "slotId": {
                                                 "m_id": "{55EFB901-427F-49B5-AFA0-69E4438EB772}"
@@ -559,7 +559,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334155602647086
+                                    "id": 573548972442791
                                 },
                                 "Name": "srcEndpoint=(Get Variable: Boolean), destEndpoint=(Expect Equal: Candidate)",
                                 "Components": {
@@ -568,7 +568,7 @@
                                         "Id": 18221201413057297624,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 1334129832843310
+                                                "id": 573518907671719
                                             },
                                             "slotId": {
                                                 "m_id": "{3AFE7610-DAA8-41AC-827C-BFE6F5A69A06}"
@@ -576,7 +576,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 1334142717745198
+                                                "id": 573531792573607
                                             },
                                             "slotId": {
                                                 "m_id": "{6357F07F-779C-4D65-92F3-D7E60644758F}"
@@ -587,7 +587,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334159897614382
+                                    "id": 573553267410087
                                 },
                                 "Name": "srcEndpoint=(Expect Equal: Out), destEndpoint=(Mark Complete: In)",
                                 "Components": {
@@ -596,7 +596,7 @@
                                         "Id": 15509816185355539747,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 1334142717745198
+                                                "id": 573531792573607
                                             },
                                             "slotId": {
                                                 "m_id": "{409ACBD0-C463-404A-AE23-7551E87A1A6E}"
@@ -604,7 +604,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 1334138422777902
+                                                "id": 573527497606311
                                             },
                                             "slotId": {
                                                 "m_id": "{9CDDEFFC-534A-4CA5-B307-951A1FA10AE0}"
@@ -615,7 +615,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334164192581678
+                                    "id": 573557562377383
                                 },
                                 "Name": "srcEndpoint=(Get Variable: Out), destEndpoint=(Expect Equal: In)",
                                 "Components": {
@@ -624,7 +624,7 @@
                                         "Id": 11681786608435924898,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 1334125537876014
+                                                "id": 573536087540903
                                             },
                                             "slotId": {
                                                 "m_id": "{32AE8F8D-CEA8-43C5-9115-5C6479D0F7DE}"
@@ -632,7 +632,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 1334142717745198
+                                                "id": 573531792573607
                                             },
                                             "slotId": {
                                                 "m_id": "{D4793099-2FFE-4031-B015-D827A0005297}"
@@ -643,7 +643,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1334168487548974
+                                    "id": 573561857344679
                                 },
                                 "Name": "srcEndpoint=(Get Variable: Boolean), destEndpoint=(Expect Equal: Reference)",
                                 "Components": {
@@ -652,7 +652,7 @@
                                         "Id": 11325212913931876203,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 1334125537876014
+                                                "id": 573536087540903
                                             },
                                             "slotId": {
                                                 "m_id": "{2977C440-4CD0-4601-814F-3CAB4B9F162C}"
@@ -660,7 +660,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 1334142717745198
+                                                "id": 573531792573607
                                             },
                                             "slotId": {
                                                 "m_id": "{BDBA0202-8AB5-455D-A16B-DA68839B16DD}"
@@ -681,7 +681,7 @@
                     "GraphCanvasData": [
                         {
                             "Key": {
-                                "id": 1334121242908718
+                                "id": 573514612704423
                             },
                             "Value": {
                                 "ComponentData": {
@@ -698,38 +698,7 @@
                         },
                         {
                             "Key": {
-                                "id": 1334125537876014
-                            },
-                            "Value": {
-                                "ComponentData": {
-                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
-                                        "$type": "NodeSaveData"
-                                    },
-                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
-                                        "$type": "GeneralNodeTitleComponentSaveData",
-                                        "PaletteOverride": "GetVariableNodeTitlePalette"
-                                    },
-                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
-                                        "$type": "GeometrySaveData",
-                                        "Position": [
-                                            160.0,
-                                            940.0
-                                        ]
-                                    },
-                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
-                                        "$type": "StylingComponentSaveData",
-                                        "SubStyle": ".getVariable"
-                                    },
-                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
-                                        "$type": "PersistentIdComponentSaveData",
-                                        "PersistentId": "{22AAD43E-EDE8-4F8D-BB64-4561AC8B55B0}"
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "id": 1334129832843310
+                                "id": 573518907671719
                             },
                             "Value": {
                                 "ComponentData": {
@@ -760,7 +729,7 @@
                         },
                         {
                             "Key": {
-                                "id": 1334134127810606
+                                "id": 573523202639015
                             },
                             "Value": {
                                 "ComponentData": {
@@ -786,7 +755,7 @@
                         },
                         {
                             "Key": {
-                                "id": 1334138422777902
+                                "id": 573527497606311
                             },
                             "Value": {
                                 "ComponentData": {
@@ -817,7 +786,7 @@
                         },
                         {
                             "Key": {
-                                "id": 1334142717745198
+                                "id": 573531792573607
                             },
                             "Value": {
                                 "ComponentData": {
@@ -845,8 +814,63 @@
                                     }
                                 }
                             }
+                        },
+                        {
+                            "Key": {
+                                "id": 573536087540903
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "GetVariableNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            160.0,
+                                            940.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".getVariable"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{22AAD43E-EDE8-4F8D-BB64-4561AC8B55B0}"
+                                    }
+                                }
+                            }
                         }
-                    ]
+                    ],
+                    "StatisticsHelper": {
+                        "InstanceCounter": [
+                            {
+                                "Key": 4053150093067829293,
+                                "Value": 1
+                            },
+                            {
+                                "Key": 4199610336680704683,
+                                "Value": 1
+                            },
+                            {
+                                "Key": 10204019744198319120,
+                                "Value": 1
+                            },
+                            {
+                                "Key": 12476584211578331425,
+                                "Value": 1
+                            },
+                            {
+                                "Key": 18175139138226576702,
+                                "Value": 1
+                            }
+                        ]
+                    }
                 },
                 "Component_[18149037384916328538]": {
                     "$type": "EditorGraphVariableManagerComponent",
@@ -859,6 +883,7 @@
                                 },
                                 "Value": {
                                     "Datum": {
+                                        "isOverloadedStorage": false,
                                         "scriptCanvasType": {
                                             "m_type": 0
                                         },
@@ -879,6 +904,7 @@
                                 },
                                 "Value": {
                                     "Datum": {
+                                        "isOverloadedStorage": false,
                                         "scriptCanvasType": {
                                             "m_type": 0
                                         },

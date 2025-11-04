@@ -52,7 +52,7 @@ namespace EMotionFX
         m_rotationManipulators.InstallLeftMouseUpCallback(
             [this]([[maybe_unused]] const AzToolsFramework::AngularManipulator::Action& action)
             {
-                FinishEditing();
+                EndEditing();
             });
 
         AZ::TickBus::Handler::BusConnect();
@@ -101,7 +101,7 @@ namespace EMotionFX
         {
             BeginEditing();
             GetLocalOrientation() = AZ::Quaternion::CreateIdentity();
-            FinishEditing();
+            EndEditing();
             Refresh();
         }
     }
@@ -121,7 +121,7 @@ namespace EMotionFX
         CreateCommandAdjustJointLimit(m_commandGroup, m_physicsSetupManipulatorData);
     }
 
-    void JointLimitRotationManipulators::FinishEditing()
+    void JointLimitRotationManipulators::EndEditing()
     {
         ExecuteCommandAdjustJointLimit(m_commandGroup, m_physicsSetupManipulatorData);
     }

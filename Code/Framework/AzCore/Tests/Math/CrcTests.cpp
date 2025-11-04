@@ -68,7 +68,7 @@ namespace Benchmark
 namespace UnitTest
 {
     class Crc32Fixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
 
     };
@@ -84,6 +84,8 @@ namespace UnitTest
 
         constexpr uint8_t binaryData[] = { 'B', 'i', 'n', 0x3 };
         static_assert(AZ::Crc32(binaryData, 4, false) == AZ::Crc32(0x3528a896), R"(Crc32 should match the calculation on the binary blob "Bin\x03")");
+        constexpr AZStd::byte byteData[]{ AZStd::byte('B'), AZStd::byte('i'), AZStd::byte('n'), AZStd::byte(0x3) };
+        static_assert(AZ::Crc32(AZStd::span(byteData)) == AZ::Crc32(0x3528a896));
     }
 
     TEST_F(Crc32Fixture, OperatorUint32t_IsConstexpr)

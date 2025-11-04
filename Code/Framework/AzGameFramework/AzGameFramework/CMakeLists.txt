@@ -18,4 +18,25 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzFramework.NativeUI
+)
+
+# The 'Headless' version AzGameFramework is the same as the original, with the exception of 2 things:
+# 1. An 'O3DE_HEADLESS_SERVER' define that controls headless specific sections of the shared source files
+# 2. The dependency on 'AZ::AzFramework.NativeUI' is removed to ensure we don't pull in any UI dependencies
+ly_add_target(
+    NAME AzGameFramework.Headless STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        azgameframework_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            ..
+    COMPILE_DEFINITIONS
+        PUBLIC
+            O3DE_HEADLESS_SERVER=1
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzCore
+            AZ::AzFramework
 )

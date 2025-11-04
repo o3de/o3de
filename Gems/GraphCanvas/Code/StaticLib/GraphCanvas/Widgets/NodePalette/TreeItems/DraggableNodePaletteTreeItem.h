@@ -17,7 +17,7 @@ namespace GraphCanvas
         : public IconDecoratedNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(DraggableNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DraggableNodePaletteTreeItem, AZ::SystemAllocator);
         AZ_RTTI(DraggableNodePaletteTreeItem, "{40D29F3E-17F5-42B5-B771-FFAD7DB3CB96}", IconDecoratedNodePaletteTreeItem);
 
         DraggableNodePaletteTreeItem(AZStd::string_view name, EditorId editorId);

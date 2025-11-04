@@ -7,7 +7,6 @@
  */
 
 #include <Model/ModelExporterComponent.h>
-#include <Model/ModelExporterContexts.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -30,6 +29,7 @@
 
 #include <cinttypes>
 
+#include <Atom/RPI.Builders/Model/ModelExporterContexts.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
@@ -107,7 +107,7 @@ namespace AZ
                     relativeMaterialFileName,
                     MaterialAsset::Extension,
                     sourceSceneUuid,
-                    DataStream::ST_XML
+                    DataStream::ST_BINARY
                 };
 
                 if (!ExportAsset(asset, materialExportContext, exportEventContext, "Material"))
@@ -151,6 +151,17 @@ namespace AZ
                 {
                     return combinerResult.GetResult();
                 }
+                ModelAssetPostBuildContext modelAssetPostBuildContext(
+                    exportEventContext.GetScene(),
+                    exportEventContext.GetOutputDirectory(),
+                    exportEventContext.GetProductList(),
+                    meshGroup,
+                    modelAsset);
+                combinerResult = SceneAPI::Events::Process<ModelAssetPostBuildContext>(modelAssetPostBuildContext);
+                if (combinerResult.GetResult() != SceneAPI::Events::ProcessingResult::Success)
+                {
+                    return combinerResult.GetResult();
+                }
 
                 //Retrieve source asset info so we can get a string with the relative path to the asset
                 bool assetInfoResult;
@@ -160,12 +171,10 @@ namespace AZ
 
                 AZ_Assert(assetInfoResult, "Failed to retrieve source asset info. Can't reason about product asset paths");
 
-                uint32_t lodIndex = 0;
                 for (const Data::Asset<ModelLodAsset>& lodAsset : modelAsset->GetLodAssets())
                 {
                     AZStd::set<uint32_t> exportedSubAssets;
 
-                    uint32_t bufferIndex = 0;
                     for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
                     {
                         //Export all BufferAssets for this Lod
@@ -189,7 +198,6 @@ namespace AZ
                                 }
 
                                 exportedSubAssets.insert(indexBufferAsset.GetId().m_subId);
-                                bufferIndex++;
                             }
                         }
 
@@ -213,7 +221,6 @@ namespace AZ
                                 }
 
                                 exportedSubAssets.insert(bufferAsset.GetId().m_subId);
-                                bufferIndex++;
                             }
                         }
                     }
@@ -232,7 +239,6 @@ namespace AZ
                         return SceneAPI::Events::ProcessingResult::Failure;
                     }
 
-                    lodIndex++;
                 } //foreach lodAsset                
 
                 //Export ModelAsset
@@ -295,7 +301,8 @@ namespace AZ
             [[maybe_unused]] const char* assetTypeDebugName) const
         {
             const AZStd::string assetFileName = SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
-                assetContext.m_relativeFileName, context.GetOutputDirectory(), assetContext.m_extension);
+                assetContext.m_relativeFileName, context.GetOutputDirectory(), assetContext.m_extension,
+                context.GetScene().GetSourceExtension());
 
             if (!Utils::SaveObjectToFile(assetFileName, assetContext.m_dataStreamType, asset.Get()))
             {
@@ -342,7 +349,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelExporterComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(3);
+                    ->Version(4);
             }
         }
 

@@ -51,9 +51,9 @@ function(o3de_read_manifest o3de_manifest_json_data)
     endif()
 endfunction()
 
-
 #! o3de_find_gem_with_registered_external_subdirs: Query the path of a gem using its name
-#
+#  IMPORTANT NOTE: This does not take into account any gem versions or dependency resolution, 
+#  which is fine if you don't need it and just want speed.
 # \arg:gem_name the gem name to find
 # \arg:output_gem_path the path of the gem to set
 # \arg:registered_external_subdirs a list of external subdirectories registered accross
@@ -203,6 +203,13 @@ function(o3de_find_restricted_folder restricted_name restricted_path)
     # Iterate over the restricted directories from the manifest file
     foreach(restricted_entry ${restricted_entries})
         set(restricted_json_file ${restricted_entry}/restricted.json)
+        if (NOT EXISTS ${restricted_json_file})
+            message(STATUS "Restricted file '${restricted_entry}' is listed in the o3de manifest, but does not exist.\n"
+                         "      If this is a left-over from an old project, consider removing it from the manifest by using\n"
+                         "      the o3de command line tool (excute this from a CLI inside the scripts folder in the engine)\n"
+                         "        o3de register --remove -rp \"${restricted_entry}\"")
+            continue()
+        endif()
         ly_file_read(${restricted_json_file} restricted_json)
         string(JSON this_restricted_name ERROR_VARIABLE json_error GET ${restricted_json} "restricted_name")
         if(json_error)
@@ -246,6 +253,11 @@ endforeach()
 
 # set the O3DE_ENGINE_RESTRICTED_PATH
 o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH)
+if(NOT O3DE_ENGINE_RESTRICTED_PATH)
+    # If the engine.json does not have a 'restricted' field use the engine dir and append /restricted
+    set(O3DE_ENGINE_RESTRICTED_PATH "${LY_ROOT_FOLDER}/restricted")
+    message(VERBOSE "No restricted path found in engine.json, using default: ${O3DE_ENGINE_RESTRICTED_PATH}")
+endif()
 
 # detect platforms in the restricted path
 file(GLOB detection_files ${O3DE_ENGINE_RESTRICTED_PATH}/*/cmake/PALDetection_*.cmake)
@@ -260,6 +272,16 @@ ly_set(PAL_PLATFORM_NAME_LOWERCASE, ${PAL_PLATFORM_NAME_LOWERCASE})
 ly_set(PAL_HOST_PLATFORM_NAME ${LY_HOST_PLATFORM_DETECTION_${CMAKE_SYSTEM_NAME}})
 string(TOLOWER ${PAL_HOST_PLATFORM_NAME} PAL_HOST_PLATFORM_NAME_LOWERCASE)
 ly_set(PAL_HOST_PLATFORM_NAME_LOWERCASE ${PAL_HOST_PLATFORM_NAME_LOWERCASE})
+
+# In addition to platform name, set the platform architecture if supported
+if (LY_ARCHITECTURE_DETECTION_${PAL_PLATFORM_NAME})
+    ly_set(LY_ARCHITECTURE_NAME_EXTENSION "_${LY_ARCHITECTURE_DETECTION_${PAL_PLATFORM_NAME}}")
+endif()
+if (LY_HOST_ARCHITECTURE_DETECTION_${PAL_HOST_PLATFORM_NAME})
+    ly_set(LY_HOST_ARCHITECTURE_NAME_EXTENSION "_${LY_HOST_ARCHITECTURE_DETECTION_${PAL_HOST_PLATFORM_NAME}}")
+endif()
+
+
 
 set(PAL_RESTRICTED_PLATFORMS)
 
@@ -428,6 +450,8 @@ include(${pal_cmake_dir}/Toolchain_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL
 
 set(LY_DISABLE_TEST_MODULES FALSE CACHE BOOL "Option to forcibly disable the inclusion of test targets in the build")
 
-if(LY_DISABLE_TEST_MODULES)
+if(LY_DISABLE_TEST_MODULES OR NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
+    # AzTest library, which requires google test, is not supported on this platform
+    # so none of the tests can build either.
     ly_set(PAL_TRAIT_BUILD_TESTS_SUPPORTED FALSE)
 endif()

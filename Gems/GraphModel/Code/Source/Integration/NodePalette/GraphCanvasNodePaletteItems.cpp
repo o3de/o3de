@@ -7,6 +7,8 @@
  */
 
 #include <GraphModel/Integration/NodePalette/GraphCanvasNodePaletteItems.h>
+#include <GraphModel/Integration/NodePalette/ModuleNodePaletteItem.h>
+#include <AzCore/IO/Path/Path.h>
 
 namespace GraphModelIntegration
 {
@@ -17,5 +19,66 @@ namespace GraphModelIntegration
         utilitiesCategory->SetTitlePalette("UtilityNodeTitlePalette");
         utilitiesCategory->CreateChildNode<CommentNodePaletteTreeItem>("Comment", editorId);
         utilitiesCategory->CreateChildNode<NodeGroupNodePaletteTreeItem>("Node Group", editorId);
+    }
+
+    AZStd::string GetNodeName(AZStd::string_view sourceFileName)
+    {
+        AZ::IO::PathView name = AZ::IO::PathView(sourceFileName).Filename();
+        if (name.empty())
+        {
+            name = "unnamed";
+            AZ_Assert(false, "Could not get node name from module file path [%.*s]", AZ_STRING_ARG(sourceFileName));
+        }
+        return name.String();
+    }
+
+    void CreateGraphCanvasNodeMimeEvent::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+
+        if (serializeContext)
+        {
+            serializeContext->Class<CreateGraphCanvasNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                ->Version(0)
+                ;
+        }
+    }
+
+    void CreateCommentNodeMimeEvent::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+
+        if (serializeContext)
+        {
+            serializeContext->Class<CreateCommentNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                ->Version(0)
+                ;
+        }
+    }
+
+    void CreateNodeGroupNodeMimeEvent::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+
+        if (serializeContext)
+        {
+            serializeContext->Class<CreateNodeGroupNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                ->Version(0)
+                ;
+        }
+    }
+
+    void CreateModuleNodeMimeEvent::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+
+        if (serializeContext)
+        {
+            serializeContext->Class<CreateModuleNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                ->Version(0)
+                ->Field("m_sourceFileName", &CreateModuleNodeMimeEvent::m_sourceFileName)
+                ->Field("m_sourceFileId", &CreateModuleNodeMimeEvent::m_sourceFileId)
+                ;
+        }
     }
 }

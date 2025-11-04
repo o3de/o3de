@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Script/ScriptSystemBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 namespace AZ
@@ -21,8 +22,8 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<LuaMaterialFunctorSourceData>()
-                    ->Version(3)
+                serializeContext->Class<LuaMaterialFunctorSourceData, RPI::MaterialFunctorSourceData>()
+                    ->Version(4) // added base class
                     ->Field("file", &LuaMaterialFunctorSourceData::m_luaSourceFile)
                     ->Field("propertyNamePrefix", &LuaMaterialFunctorSourceData::m_propertyNamePrefix)
                     ->Field("srgNamePrefix", &LuaMaterialFunctorSourceData::m_srgNamePrefix)
@@ -163,10 +164,19 @@ namespace AZ
                 return Failure();
             }
 
-            AZ::ScriptContext scriptContext;
+            ScriptContext* scriptContext{};
+            ScriptSystemRequestBus::BroadcastResult(scriptContext, &ScriptSystemRequests::GetContext, ScriptContextIds::DefaultScriptContextId);
+            if (scriptContext == nullptr)
+            {
+                AZ_ErrorOnce("LuaMaterialFunctorSourceData", false, "Global script context is not available. Cannot execute script");
+                return Failure();
+            }
 
             auto scriptBuffer = functor->GetScriptBuffer();
-            if (!scriptContext.Execute(scriptBuffer.data(), functor->GetScriptDescription(), scriptBuffer.size()))
+            // Remove any GetMaterialPropertyDependencies and GetShaderOptionDependencies functions on the global table
+            scriptContext->RemoveGlobal("GetMaterialPropertyDependencies");
+            scriptContext->RemoveGlobal("GetShaderOptionDependencies");
+            if (!scriptContext->Execute(scriptBuffer.data(), functor->GetScriptDescription(), scriptBuffer.size()))
             {
                 AZ_Error("LuaMaterialFunctorSourceData", false, "Error initializing script '%s'.", functor->m_scriptAsset.ToString<AZStd::string>().c_str());
                 return Failure();
@@ -174,8 +184,8 @@ namespace AZ
 
             // [GFX TODO][ATOM-6012]: Figure out how to make shader option dependencies and material property dependencies get automatically reported
 
-            auto materialPropertyDependencies = GetNameListFromLuaScript(scriptContext, "GetMaterialPropertyDependencies");
-            auto shaderOptionDependencies = GetNameListFromLuaScript(scriptContext, "GetShaderOptionDependencies");
+            auto materialPropertyDependencies = GetNameListFromLuaScript(*scriptContext, "GetMaterialPropertyDependencies");
+            auto shaderOptionDependencies = GetNameListFromLuaScript(*scriptContext, "GetShaderOptionDependencies");
 
             if (!materialPropertyDependencies.IsSuccess() || !shaderOptionDependencies.IsSuccess())
             {
@@ -208,6 +218,8 @@ namespace AZ
                 // or may not exist, and it's up to the script to call HasMaterialProperty() before accessing a property
                 // if necessary.
             }
+
+            SetFunctorShaderParameter(functor, GetMaterialShaderParameters(materialNameContext));
 
             return Success(RPI::Ptr<MaterialFunctor>(functor));
         }

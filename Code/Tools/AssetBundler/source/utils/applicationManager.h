@@ -24,7 +24,7 @@ namespace AssetBundler
 {
     struct SeedsParams
     {
-        AZ_CLASS_ALLOCATOR(SeedsParams, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SeedsParams, AZ::SystemAllocator);
 
         FilePath m_seedListFile;
         AZStd::vector<AZStd::string> m_addSeedList;
@@ -45,7 +45,7 @@ namespace AssetBundler
 
     struct AssetListsParams
     {
-        AZ_CLASS_ALLOCATOR(AssetListsParams, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetListsParams, AZ::SystemAllocator);
 
         FilePath m_assetListFile;
         AZStd::vector<FilePath> m_seedListFiles;
@@ -75,7 +75,7 @@ namespace AssetBundler
 
     struct ComparisonRulesParams
     {
-        AZ_CLASS_ALLOCATOR(ComparisonRulesParams, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComparisonRulesParams, AZ::SystemAllocator);
 
         AZStd::vector<AzToolsFramework::AssetFileInfoListComparison::ComparisonType> m_comparisonTypeList;
         AZStd::vector<AZStd::string> m_filePatternList;
@@ -96,7 +96,7 @@ namespace AssetBundler
 
     struct ComparisonParams
     {
-        AZ_CLASS_ALLOCATOR(ComparisonParams, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComparisonParams, AZ::SystemAllocator);
         // Comparison input/output
         AZStd::vector<AZStd::string> m_firstCompareFile;
         AZStd::vector<AZStd::string> m_secondCompareFile;
@@ -116,7 +116,7 @@ namespace AssetBundler
 
     struct BundleSettingsParams
     {
-        AZ_CLASS_ALLOCATOR(BundleSettingsParams, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BundleSettingsParams, AZ::SystemAllocator);
 
         FilePath m_bundleSettingsFile;
         FilePath m_assetListFile;
@@ -132,7 +132,7 @@ namespace AssetBundler
 
     struct BundlesParams
     {
-        AZ_CLASS_ALLOCATOR(BundlesParams, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BundlesParams, AZ::SystemAllocator);
 
         FilePath m_bundleSettingsFile;
         FilePath m_assetListFile;
@@ -150,7 +150,7 @@ namespace AssetBundler
 
     struct BundleSeedParams
     {
-        AZ_CLASS_ALLOCATOR(BundleSeedParams, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BundleSeedParams, AZ::SystemAllocator);
 
         AZStd::vector<AZStd::string> m_addSeedList;
 
@@ -164,7 +164,10 @@ namespace AssetBundler
     {
         Q_OBJECT
     public:
-        explicit ApplicationManager(int* argc, char*** argv, QObject* parent = 0);
+        AZ_CLASS_ALLOCATOR(ApplicationManager, AZ::SystemAllocator)
+        ApplicationManager(int* argc, char*** argv, QObject* parent = nullptr);
+        ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings);
+        ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         virtual ~ApplicationManager();
 
         virtual bool Init();

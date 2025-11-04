@@ -63,7 +63,7 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::Icon, ":/EMotionFX/AnimGraphComponent.svg")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, azrtti_typeid<AnimGraphAsset>())
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/AnimGraphComponent.svg")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/animgraph/")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_motionSetAsset,
@@ -72,8 +72,8 @@ namespace EMotionFX
                             ->Attribute("EditDescription", "Open in Animation Editor")
                             ->Attribute("EditCallback", &EditorAnimGraphComponent::LaunchAnimationEditor)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAnimGraphComponent::OnMotionSetAssetSelected)
-                        ->DataElement(AZ_CRC("MotionSetName", 0xcf534ea6), &EditorAnimGraphComponent::m_activeMotionSetName, "Active motion set", "Motion set to use for this anim graph instance")
-                            ->Attribute(AZ_CRC("MotionSetAsset", 0xd4e88984), &EditorAnimGraphComponent::GetMotionAsset)
+                        ->DataElement(AZ_CRC_CE("MotionSetName"), &EditorAnimGraphComponent::m_activeMotionSetName, "Active motion set", "Motion set to use for this anim graph instance")
+                            ->Attribute(AZ_CRC_CE("MotionSetAsset"), &EditorAnimGraphComponent::GetMotionAsset)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_visualize, "Debug visualization", "Enable this to allow the anim graph to render debug visualization. Enable debug rendering on anim graph nodes first.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_animGraphAsset,
                             "Anim graph", "EMotion FX anim graph to be assigned to this actor.")
@@ -120,7 +120,7 @@ namespace EMotionFX
         {
             // call to open must be done before LoadCharacter
             const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
-            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
+            AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::OpenViewPane, panelName);
 
             if (assetId.IsValid())
             {
@@ -347,7 +347,7 @@ namespace EMotionFX
 
             // Force-refresh the property grid.
             using namespace AzToolsFramework;
-            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
         }
 
 

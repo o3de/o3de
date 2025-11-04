@@ -29,7 +29,7 @@
     when a rename node callback is fired, the node information is passed
     to the function on_shader_rename(*args) as a tuple
 
-        args[0] is OpenMaya.MObject, which is the object 
+        args[0] is OpenMaya.MObject, which is the object
         args[1] is the node previous name
         args[2] None (not sure what else could get passed in here)
 
@@ -64,14 +64,12 @@
 # --------------------------------------------------------------------------
 # -- Standard Python modules
 import os
+import logging as _logging
 
 # -- External Python modules
 
 # -- Lumberyard Extension Modules
-import azpy
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from DccScriptingInterface.globals import *
 
 # -- Maya Modules
 import maya.api.OpenMaya as om
@@ -79,18 +77,13 @@ import maya.cmds as mc
 # -------------------------------------------------------------------------
 
 
-# --------------------------------------------------------------------------
-# -- Misc Global Space Definitions
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.dcc.maya.callbacks.on_shader_rename'
-
-_LOGGER = azpy.initialize_logger(_PACKAGENAME, default_log_level=int(20))
-_LOGGER.debug('Invoking:: {0}.'.format({_PACKAGENAME}))
-# --------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+# global scope
+from DccScriptingInterface.azpy.dcc.maya.callbacks import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.on_shader_rename'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
+# -------------------------------------------------------------------------
 
 
 # =========================================================================
@@ -101,7 +94,7 @@ def find_shading_group(materialDepNode):
     """ To Do: Document"""
     # before moving on, let's see if we can figure out if this is a material
     # since we KNOW currently we are working with a specific type (dx11)
-    # we can already know what we are looking for:  u"kPluginHardwareShader"    
+    # we can already know what we are looking for:  u"kPluginHardwareShader"
     node_type = mc.nodeType(materialDepNode.name(), api=True)  # ==> "kPluginObjectSet"
 
     # if it's the right type, let;s move on

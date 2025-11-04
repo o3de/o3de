@@ -22,8 +22,8 @@ namespace Vegetation
         {
             if (classElement.GetVersion() < 1)
             {
-                classElement.RemoveElementByName(AZ_CRC("PropagateDebug", 0xb5675baa));
-                classElement.RemoveElementByName(AZ_CRC("InheritDebug", 0xd227cd11));
+                classElement.RemoveElementByName(AZ_CRC_CE("PropagateDebug"));
+                classElement.RemoveElementByName(AZ_CRC_CE("InheritDebug"));
             }
             return true;
         }
@@ -48,7 +48,7 @@ namespace Vegetation
                     "Vegetation Layer Debugger Config", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Color, &AreaDebugConfig::m_debugColor, "Debug Visualization Color", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Color, &AreaDebugConfig::m_debugCubeSize, "Debug Visualization Cube Size", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaDebugConfig::m_debugCubeSize, "Debug Visualization Cube Size", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &AreaDebugConfig::m_hideDebug, "Hide created instance in the Debug Visualization", "")
@@ -70,12 +70,12 @@ namespace Vegetation
 
     void AreaDebugComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaDebugService", 0x2c6f3c5c));
+        services.push_back(AZ_CRC_CE("VegetationAreaDebugService"));
     }
 
     void AreaDebugComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaDebugService", 0x2c6f3c5c));
+        services.push_back(AZ_CRC_CE("VegetationAreaDebugService"));
     }
 
     void AreaDebugComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

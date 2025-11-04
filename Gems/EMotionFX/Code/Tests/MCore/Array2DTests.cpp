@@ -13,7 +13,7 @@
 
 namespace MCore
 {
-    using Array2DFixture = UnitTest::ScopedAllocatorSetupFixture;
+    using Array2DFixture = UnitTest::LeakDetectionFixture;
 
     // A non-owning array view, a simple C++20 std::span stand-in
     template<typename T>

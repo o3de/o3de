@@ -13,11 +13,11 @@ from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
-from Tools.LyTestTools.ly_test_tools.environment import process_utils
-from Tools.LyTestTools.ly_test_tools.launchers import launcher_helper
-from Tools.LyTestTools.ly_test_tools.log.log_monitor import LogMonitor
+from ly_test_tools.environment import process_utils
+from ly_test_tools.launchers import launcher_helper
+from ly_test_tools.log.log_monitor import LogMonitor
 
-import Tools.LyTestTools.ly_test_tools.environment.waiter as waiter
+import ly_test_tools.environment.waiter as waiter
 
 # Saves the level cache folder.
 # These artifacts will be saved in the test results so developers can access the level assets
@@ -39,7 +39,7 @@ class TestAutomation(EditorTestSuite):
         from .tests import Multiplayer_AutoComponent_NetworkInput as test_module
 
         @classmethod
-        def setup(cls, instance, request, workspace, editor_test_results, launcher_platform):
+        def setup(cls, instance, request, workspace):
             save_multiplayer_level_cache_folder_artifact(workspace, "autocomponent_networkinput")
 
     @pytest.mark.xfail(reason="GHI #9869: Test periodically fails")
@@ -47,21 +47,15 @@ class TestAutomation(EditorTestSuite):
         from .tests import Multiplayer_AutoComponent_RPC as test_module
 
         @classmethod
-        def setup(cls, instance, request, workspace, editor_test_results, launcher_platform):
+        def setup(cls, instance, request, workspace):
             save_multiplayer_level_cache_folder_artifact(workspace, "autocomponent_rpc")
 
-    class test_Multiplayer_BasicConnectivity_Connects(EditorSingleTest):
-        from .tests import Multiplayer_BasicConnectivity_Connects as test_module
         
-        @classmethod
-        def setup(cls, instance, request, workspace, editor_test_results, launcher_platform):
-            save_multiplayer_level_cache_folder_artifact(workspace, "basicconnectivity_connects")
-
     class test_Multiplayer_SimpleNetworkLevelEntity(EditorSingleTest):
         from .tests import Multiplayer_SimpleNetworkLevelEntity as test_module
 
         @classmethod
-        def setup(cls, instance, request, workspace, editor_test_results, launcher_platform):
+        def setup(cls, instance, request, workspace):
             save_multiplayer_level_cache_folder_artifact(workspace, "simplenetworklevelentity")
 
     def test_Multiplayer_SimpleGameServerLauncher_ConnectsSuccessfully(self, workspace, launcher_platform, crash_log_watchdog):

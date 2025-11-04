@@ -21,7 +21,7 @@ namespace AZ
         //! RequestPath uses lazy evaluation so the relative path is
         //! not resolved to an absolute path until the path is requested
         //! or a check is done for validity.
-        class RequestPath
+        class AZCORE_API RequestPath
         {
         public:
             RequestPath() = default;
@@ -47,14 +47,13 @@ namespace AZ
             size_t GetHash() const;
 
         private:
-            constexpr static const size_t s_invalidPathHash = std::numeric_limits<size_t>::max();
-            constexpr static const size_t s_emptyPathHash = std::numeric_limits<size_t>::min();
-
+            constexpr static const size_t InvalidPathHash = std::numeric_limits<size_t>::max();
+            
             void ResolvePath() const;
             size_t FindAliasOffset(AZStd::string_view path) const;
 
             mutable FixedMaxPath m_path;
-            mutable size_t m_absolutePathHash = s_emptyPathHash;
+            mutable size_t m_absolutePathHash = InvalidPathHash;
             mutable size_t m_relativePathOffset = 0;
         };
     } // namespace IO

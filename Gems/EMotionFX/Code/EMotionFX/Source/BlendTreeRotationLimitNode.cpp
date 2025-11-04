@@ -17,8 +17,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode::RotationLimit, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode::RotationLimit, AnimGraphAllocator)
 
 
     const float BlendTreeRotationLimitNode::RotationLimit::s_rotationLimitRangeMin = -360.0f;
@@ -200,10 +200,10 @@ namespace EMotionFX
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeRotationLimitNode::m_twistAxis, "Twist axis", "The twist axis to calculate the rotation limits")
-            ->DataElement(AZ_CRC("BlendTreeRotationLimitContainerHandler", 0xb2c775fb), &BlendTreeRotationLimitNode::m_rotationLimits, "Rotation limits", "Rotation limits")
+            ->DataElement(AZ_CRC_CE("BlendTreeRotationLimitContainerHandler"), &BlendTreeRotationLimitNode::m_rotationLimits, "Rotation limits", "Rotation limits")
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("BlendTreeRotationLimitHandler", 0xc1af4ea8))
+                    ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC_CE("BlendTreeRotationLimitHandler"))
             ;
     }
 

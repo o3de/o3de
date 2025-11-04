@@ -25,12 +25,13 @@ namespace AssetProcessor
     public:
         AZ_RTTI(AssetTreeItemData, "{5660BA97-C4B0-4E3B-A03B-9ACD9C67841B}");
 
-        AssetTreeItemData(const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid);
+        AssetTreeItemData(const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid, const AZ::s64 scanFolderID);
         virtual ~AssetTreeItemData() {}
         virtual int GetColumnCount() const;
         virtual QVariant GetDataForColumn(int column) const;
 
         AZStd::string m_assetDbName;
+        AZ::s64 m_scanFolderID;
         QString m_name;
         QString m_extension;
         AZ::Uuid m_uuid;

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
@@ -23,12 +25,12 @@ namespace AzToolsFramework
 
     //! @class LocalViewBookmarkLoader.
     //! @brief class used to load/store local ViewBookmarks from project/user/Registry/ViewBookmarks.
-    class LocalViewBookmarkLoader final
+    class AZTF_API LocalViewBookmarkLoader final
         : public ViewBookmarkInterface
         , public ViewBookmarkPersistInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LocalViewBookmarkLoader, AZ::SystemAllocator);
         AZ_RTTI(LocalViewBookmarkLoader, "{A64F2300-0958-4430-9EEA-1D457997E618}", ViewBookmarkInterface);
 
         void RegisterViewBookmarkInterface();
@@ -68,15 +70,15 @@ namespace AzToolsFramework
 
     //! Stores the last known location using the current active camera position.
     //! Returns the ViewBookmark that was stored if successful.
-    AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromActiveCamera();
+    AZTF_API AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromActiveCamera();
     //! Stores the last known location using cameraState.
     //! Returns the ViewBookmark that was stored if successful.
-    AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromCameraState(const AzFramework::CameraState& cameraState);
+    AZTF_API AZStd::optional<ViewBookmark> StoreViewBookmarkLastKnownLocationFromCameraState(const AzFramework::CameraState& cameraState);
 
     //! Stores the view bookmark at the given index using the current active camera position.
     //! Returns the ViewBookmark that was stored if successful.
-    AZStd::optional<ViewBookmark> StoreViewBookmarkFromActiveCameraAtIndex(int index);
+    AZTF_API AZStd::optional<ViewBookmark> StoreViewBookmarkFromActiveCameraAtIndex(int index);
     //! Stores the view bookmark at the given index using cameraState.
     //! Returns the ViewBookmark that was stored if successful.
-    AZStd::optional<ViewBookmark> StoreViewBookmarkFromCameraStateAtIndex(int index, const AzFramework::CameraState& cameraState);
+    AZTF_API AZStd::optional<ViewBookmark> StoreViewBookmarkFromCameraStateAtIndex(int index, const AzFramework::CameraState& cameraState);
 } // namespace AzToolsFramework

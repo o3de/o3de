@@ -15,6 +15,7 @@ set(FILES
     Instance/InstanceDatabase.h
     std/containers/fixed_vector_set.h
     std/containers/lru_cache.h
+    std/containers/small_vector.h
     std/containers/vector_set.h
     std/containers/vector_set_base.h
     std/parallel/concurrency_checker.h

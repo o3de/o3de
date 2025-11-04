@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<CmdLine Description="Generate ATL Data">"$(WwiseProjectPath)\..\..\..\python\python.cmd" "$(WwiseProjectPath)\..\..\..\Gems\AudioEngineWwise\Tools\WwiseATLGen\wwise_atl_gen_tool.py" --autoLoad --atlName generated_controls.xml --atlPath "$(WwiseProjectPath)\..\..\libs\gameaudio\wwise" --bankPath "$(WwiseProjectPath)\..\wwise"</CmdLine>

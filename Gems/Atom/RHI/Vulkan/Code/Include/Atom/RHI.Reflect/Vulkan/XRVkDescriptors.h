@@ -9,36 +9,10 @@
 #pragma once
 
 #include <Atom/RHI/XRRenderingInterface.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
 
 namespace AZ::Vulkan
 {
-    //! This class is used as a container for transferring instance
-    //! data between RHI::Vulkan and XR::Vulkan
-    class XRInstanceDescriptor final
-        : public RHI::XRInstanceDescriptor
-    {
-        using Base = RHI::XRInstanceDescriptor;
-    public:
-        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator, 0);
-        AZ_RTTI(XRInstanceDescriptor, "{93DF070E-1423-4BBF-A9F3-136F9E543594}", Base);
-
-        XRInstanceDescriptor() = default;
-        ~XRInstanceDescriptor() = default;
-
-        // Provided by the RHI::Vulkan backend
-        struct 
-        { 
-            VkInstanceCreateInfo* m_createInfo = nullptr;
-        } m_inputData;
-
-        // Provided by the XR::Vulkan backend
-        struct 
-        {
-            VkInstance m_xrVkInstance = VK_NULL_HANDLE;
-        } m_outputData;
-
-    };
-
     //! This class is used as a container for transferring physical
     //! data between RHI::Vulkan and XR::Vulkan
     class XRPhysicalDeviceDescriptor final
@@ -47,7 +21,7 @@ namespace AZ::Vulkan
         using Base = RHI::XRPhysicalDeviceDescriptor;
 
     public:
-        AZ_CLASS_ALLOCATOR(XRPhysicalDeviceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRPhysicalDeviceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRPhysicalDeviceDescriptor, "{D1567011-ACA7-430D-9C5D-E639E6E99A85}", Base);
 
         XRPhysicalDeviceDescriptor() = default;
@@ -68,36 +42,11 @@ namespace AZ::Vulkan
         using Base = RHI::XRDeviceDescriptor;
 
     public:
-        AZ_CLASS_ALLOCATOR(XRDeviceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRDeviceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRDeviceDescriptor, "{D1567011-ACA7-430D-9C5D-E639E6E99A85}", Base);
 
         XRDeviceDescriptor() = default;
         ~XRDeviceDescriptor() = default;
-
-        // Provided by the RHI::Vulkan backend
-        struct
-        {
-            VkDeviceCreateInfo* m_deviceCreateInfo = nullptr;
-        } m_inputData;
-
-        // Provided by the XR::Vulkan backend
-        struct
-        {
-            VkDevice m_xrVkDevice = VK_NULL_HANDLE;
-        } m_outputData;
-    };
-
-
-    class XRSessionDescriptor final : public RHI::XRSessionDescriptor
-    {
-        using Base = RHI::XRSessionDescriptor;
-
-    public:
-        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator, 0);
-        AZ_RTTI(XRSessionDescriptor, "{2859EB21-D013-496B-B922-7C903BC377CF}", Base);
-
-        XRSessionDescriptor() = default;
-        ~XRSessionDescriptor() = default;
 
         struct GraphicsBinding
         {
@@ -108,10 +57,11 @@ namespace AZ::Vulkan
         // Provided by the RHI::Vulkan backend
         struct
         {
-            GraphicsBinding m_graphicsBinding; 
+            VkDevice m_xrVkDevice = VK_NULL_HANDLE;
+            VkPhysicalDevice m_xrVkPhysicalDevice = VK_NULL_HANDLE;
+            AZStd::array<GraphicsBinding, RHI::HardwareQueueClassCount> m_xrQueueBinding;
         } m_inputData;
     };
-
 
     class XRSwapChainDescriptor final
         : public RHI::XRSwapChainDescriptor
@@ -119,7 +69,7 @@ namespace AZ::Vulkan
         using Base = RHI::XRSwapChainDescriptor;
 
     public:
-        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRSwapChainDescriptor, "{358AA524-8EAF-40A9-A2B3-5D6916B72DA1}", Base);
 
         XRSwapChainDescriptor() = default;

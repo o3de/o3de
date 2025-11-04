@@ -67,7 +67,7 @@ namespace O3DE::ProjectManager
 
         // Gem requirement
         const QRect requirementRect = CalcRequirementRect(contentRect);
-        const QString requirement = GemModel::GetRequirement(modelIndex);
+        const QString& requirement = GemModel::GetGemInfo(modelIndex).m_requirement;
         DrawText(requirement, painter, requirementRect, standardFont);
 
         painter->restore();
@@ -100,8 +100,8 @@ namespace O3DE::ProjectManager
             const QRect requirementsRect = CalcRequirementRect(contentRect);
             if (requirementsRect.contains(mouseEvent->pos()))
             {
-                const QString html = GemModel::GetRequirement(modelIndex);
-                QString anchor = anchorAt(html, mouseEvent->pos(), requirementsRect);
+                const QString& requirementHtml = GemModel::GetGemInfo(modelIndex).m_requirement;
+                QString anchor = anchorAt(requirementHtml, mouseEvent->pos(), requirementsRect);
                 if (!anchor.isEmpty())
                 {
                     QDesktopServices::openUrl(QUrl(anchor));

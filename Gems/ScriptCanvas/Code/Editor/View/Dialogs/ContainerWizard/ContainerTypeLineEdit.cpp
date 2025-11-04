@@ -6,9 +6,8 @@
  *
  */
 
-#include <qtoolbutton.h>
-#include <qscopedvaluerollback.h>
-
+#include <QToolButton>
+#include <QScopedValueRollback>
 #include <QFocusEvent>
 #include <QHeaderView>
 #include <QWidgetAction>

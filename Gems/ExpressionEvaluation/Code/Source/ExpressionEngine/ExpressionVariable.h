@@ -39,7 +39,7 @@ namespace ExpressionEvaluation
         : public ExpressionElementParser
     {
     public:
-        AZ_CLASS_ALLOCATOR(VariableParser, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableParser, AZ::SystemAllocator);
 
         static int GetVariableOperatorId()
         {

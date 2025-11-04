@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -23,7 +24,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //! Triggered when an action's enabled or checked state changes.
-        virtual void OnActionStateChanged(AZStd::string actionIdentifier) {}
+        virtual void OnActionStateChanged([[maybe_unused]] AZStd::string actionIdentifier) {}
 
     protected:
         ~ActionManagerNotifications() = default;
@@ -32,3 +33,5 @@ namespace AzToolsFramework
     using ActionManagerNotificationBus = AZ::EBus<ActionManagerNotifications>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ActionManagerNotifications)

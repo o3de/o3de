@@ -44,7 +44,8 @@ namespace ProjectSettingsTool
         connect(m_browseEdit, &AzQtComponents::BrowseEdit::textChanged, this, &PropertyFuncValBrowseEditCtrl::ValidateAndShowErrors);
         connect(m_browseEdit, &AzQtComponents::BrowseEdit::textChanged, this, [this]([[maybe_unused]] const QString& text)
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             });
     }
 

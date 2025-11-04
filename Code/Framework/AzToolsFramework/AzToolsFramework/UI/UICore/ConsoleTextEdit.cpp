@@ -7,7 +7,11 @@
  */
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/UICore/ConsoleTextEdit.hxx>
+
 #include <QMenu>
 
 namespace AzToolsFramework
@@ -45,7 +49,7 @@ namespace AzToolsFramework
             deleteAction,
             &QAction::triggered,
             this,
-            [=]()
+            [this]()
             {
                 textCursor().removeSelectedText();
             });
@@ -71,7 +75,7 @@ namespace AzToolsFramework
             this,
             &QPlainTextEdit::textChanged,
             selectAllAction,
-            [=]
+            [this, clearAction, selectAllAction]
             {
                 if (document() && !document()->isEmpty())
                 {
@@ -83,7 +87,15 @@ namespace AzToolsFramework
                     clearAction->setEnabled(false);
                     selectAllAction->setEnabled(false);
                 }
-            });
+            }
+        );
+
+        AssignWidgetToActionContextHelper(EditorIdentifiers::EditorConsoleActionContextIdentifier, this);
+    }
+
+    ConsoleTextEdit::~ConsoleTextEdit()
+    {
+        RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorConsoleActionContextIdentifier, this);
     }
 
     bool ConsoleTextEdit::searchEnabled()

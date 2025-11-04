@@ -27,11 +27,11 @@ namespace AZ::IO
         struct ReportData;
     } // namespace Requests
 
-    struct DedicatedCacheConfig final :
+    struct AZCORE_API DedicatedCacheConfig final :
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::DedicatedCacheConfig, "{DF0F6029-02B0-464C-9846-524654335BCC}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(DedicatedCacheConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DedicatedCacheConfig, AZ::SystemAllocator);
 
         ~DedicatedCacheConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
@@ -48,11 +48,13 @@ namespace AZ::IO
         bool m_writeOnlyEpilog{ true };
     };
 
-    class DedicatedCache
+    class AZCORE_API DedicatedCache
         : public StreamStackEntry
     {
     public:
         DedicatedCache(u64 cacheSize, u32 blockSize, u32 alignment, bool onlyEpilogWrites);
+
+        AZ_DISABLE_COPY(DedicatedCache);
 
         void SetNext(AZStd::shared_ptr<StreamStackEntry> next) override;
         void SetContext(StreamerContext& context) override;
@@ -64,7 +66,7 @@ namespace AZ::IO
         void UpdateStatus(Status& status) const override;
 
         void UpdateCompletionEstimates(
-            AZStd::chrono::system_clock::time_point now,
+            AZStd::chrono::steady_clock::time_point now,
             AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin,
             StreamerContext::PreparedQueue::iterator pendingEnd) override;

@@ -12,6 +12,7 @@
 #include <AzCore/Console/ConsoleDataWrapper.h>
 #include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/EBus/Event.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/functional.h>
@@ -20,6 +21,7 @@ namespace AZ
 {
     class SettingsRegistryInterface;
     class CommandLine;
+    using PerformCommandResult = Outcome<void, AZStd::string>;
 
 
     //! @class IConsole
@@ -34,6 +36,7 @@ namespace AZ
         inline static constexpr AZStd::string_view ConsoleRuntimeCommandKey = "/Amazon/AzCore/Runtime/ConsoleCommands";
         inline static constexpr AZStd::string_view ConsoleAutoexecCommandKey = "/O3DE/Autoexec/ConsoleCommands";
 
+
         IConsole() = default;
         virtual ~IConsole() = default;
 
@@ -43,8 +46,9 @@ namespace AZ
         //! @param invokedFrom   the source point that initiated console invocation
         //! @param requiredSet   a set of flags that must be set on the functor for it to execute
         //! @param requiredClear a set of flags that must *NOT* be set on the functor for it to execute
-        //! @return boolean true on success, false otherwise
-        virtual bool PerformCommand
+        //! @return PerformCommandResult Returns "AZ::Success" if the command was executed; otherwise "AZ::Failure". 
+        //! Note: A failure could result in a deferred execution (check error for details).
+        virtual PerformCommandResult PerformCommand
         (
             const char* command,
             ConsoleSilentMode silentMode = ConsoleSilentMode::NotSilent,
@@ -59,8 +63,9 @@ namespace AZ
         //! @param invokedFrom    the source point that initiated console invocation
         //! @param requiredSet    a set of flags that must be set on the functor for it to execute
         //! @param requiredClear  a set of flags that must *NOT* be set on the functor for it to execute
-        //! @return boolean true on success, false otherwise
-        virtual bool PerformCommand
+        //! @return PerformCommandResult Returns "AZ::Success" if the command was executed; otherwise "AZ::Failure".
+        //! Note: A failure could result in a deferred execution (check error for details).
+        virtual PerformCommandResult PerformCommand
         (
             const ConsoleCommandContainer& commandAndArgs,
             ConsoleSilentMode silentMode = ConsoleSilentMode::NotSilent,
@@ -76,8 +81,9 @@ namespace AZ
         //! @param invokedFrom   the source point that initiated console invocation
         //! @param requiredSet   a set of flags that must be set on the functor for it to execute
         //! @param requiredClear a set of flags that must *NOT* be set on the functor for it to execute
-        //! @return boolean true on success, false otherwise
-        virtual bool PerformCommand
+        //! @return PerformCommandResult Returns "AZ::Success" if the command was executed; otherwise "AZ::Failure".
+        //! Note: A failure could result in a deferred execution (check error for details).
+        virtual PerformCommandResult PerformCommand
         (
             AZStd::string_view command,
             const ConsoleCommandContainer& commandArgs,
@@ -106,12 +112,12 @@ namespace AZ
         //! HasCommand is used to determine if the console knows about a command.
         //! @param command the command we are checking for
         //! @return boolean true on if the command is registered, false otherwise
-        virtual bool HasCommand(AZStd::string_view command) = 0;
+        virtual bool HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) = 0;
 
         //! FindCommand finds the console command with the specified console string.
         //! @param command the command that is being searched for
         //! @return non-null pointer to the console command if found
-        virtual ConsoleFunctorBase* FindCommand(AZStd::string_view command) = 0;
+        virtual ConsoleFunctorBase* FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags = ConsoleFunctorFlags::IsInvisible) = 0;
 
         //! Finds all commands where the input command is a prefix and returns
         //! the longest matching substring prefix the results have in common.
@@ -215,6 +221,22 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
     using CVarDataWrapperType##_NAME = AZ::ConsoleDataWrapper<_TYPE, ConsoleThreadSafety<_TYPE>>; \
     inline CVarDataWrapperType##_NAME _NAME(_INIT, _CALLBACK, #_NAME, _DESC, _FLAGS)
 
+//! Shared Library exported cvar macro.
+//! This is used in conjunction with the AZ_CVAR_API_EXTERNED
+//! @param _API  the conditional export macro for the shared library that owns the cvar
+//! @param _TYPE the data type of the cvar
+//! @param _TYPE the data type of the cvar
+//! @param _NAME the name of the cvar
+//! @param _INIT the initial value to assign to the cvar
+//! @param _CALLBACK this is an optional callback function to get invoked when a cvar changes value
+//!        You have no guarantees as to what thread will invoke the callback
+//!        It is the responsibility of the implementor of the callback to ensure thread safety
+//! @param _FLAGS a set of AzFramework::ConsoleFunctorFlags used to mutate behaviour
+//! @param _DESC a description of the cvar
+#define AZ_CVAR_API(_API, _TYPE, _NAME, _INIT, _CALLBACK, _FLAGS, _DESC)                                                                             \
+    using CVarDataWrapperType##_NAME = AZ::ConsoleDataWrapper<_TYPE, ConsoleThreadSafety<_TYPE>>;                                          \
+    _API CVarDataWrapperType##_NAME _NAME(_INIT, _CALLBACK, #_NAME, _DESC, _FLAGS)
+
 //! Block-scoped cvar macro.
 //! This declaration should only be used within a block-scope or function body
 //! @param _TYPE the data type of the cvar
@@ -236,8 +258,15 @@ static constexpr AZ::ThreadSafety ConsoleThreadSafety<_TYPE, std::enable_if_t<st
     using CVarDataWrapperType##_NAME = AZ::ConsoleDataWrapper<_TYPE, ConsoleThreadSafety<_TYPE>>; \
     extern CVarDataWrapperType##_NAME _NAME;
 
+//! Cvar macro that dll externs a console variable.
+//! @param _TYPE the data type of the cvar to extern
+//! @param _NAME the name of the cvar to extern
+#define AZ_CVAR_API_EXTERNED(_API, _TYPE, _NAME) \
+    using CVarDataWrapperType##_NAME = AZ::ConsoleDataWrapper<_TYPE, ConsoleThreadSafety<_TYPE>>;  \
+    _API extern CVarDataWrapperType##_NAME _NAME;
+
 //! Implements a console functor for a class member function.
-//! @param _CLASS the that the function gets invoked on
+//! @param _CLASS the class that the function gets invoked on
 //! @param _FUNCTION the method to invoke
 //!        You have no guarantees as to what thread will invoke the function
 //!        It is the responsibility of the implementor of the console function to ensure thread safety

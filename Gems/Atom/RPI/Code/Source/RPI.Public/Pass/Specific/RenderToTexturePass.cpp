@@ -68,7 +68,7 @@ namespace AZ
             outputBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
             outputBinding.SetAttachment(m_outputAttachment);
 
-            m_attachmentBindings.push_back(outputBinding);
+            AddAttachmentBinding(outputBinding);
             
             Base::BuildInternal();
         }

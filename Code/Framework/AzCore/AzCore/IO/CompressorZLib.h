@@ -41,11 +41,11 @@ namespace AZ
         /**
          * ZLib compressor per stream data.
          */
-        class CompressorZLibData
+        class AZCORE_API CompressorZLibData
             : public CompressorData
         {
         public:
-            AZ_CLASS_ALLOCATOR(CompressorZLibData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CompressorZLibData, AZ::SystemAllocator);
 
             CompressorZLibData(IAllocator* zlibMemAllocator = 0)
                 : m_zlib(zlibMemAllocator)
@@ -78,11 +78,11 @@ namespace AZ
          * caching functionality into the base Compressor class to be shared. Please do so when you have
          * an actual need to implement another compressor, don't just copy and paste.
          */
-        class CompressorZLib
+        class AZCORE_API CompressorZLib
             : public Compressor
         {
         public:
-            AZ_CLASS_ALLOCATOR(CompressorZLib, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CompressorZLib, AZ::SystemAllocator);
 
             /**
              * \param decompressionCachePerStream cache of decompressed data stored per stream, the more streams you have open the more memory it will use,

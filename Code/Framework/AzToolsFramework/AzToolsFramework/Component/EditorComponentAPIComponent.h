@@ -11,13 +11,14 @@
 #include <AzCore/Component/Entity.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
         //! A System Component to reflect Editor operations on Components to Behavior Context
-        class EditorComponentAPIComponent
+        class AZTF_API EditorComponentAPIComponent
             : public AZ::Component
             , public EditorComponentAPIBus::Handler
         {
@@ -35,7 +36,7 @@ namespace AzToolsFramework
 
             // EditorComponentAPIBus ...
             AZStd::vector<AZ::Uuid> FindComponentTypeIdsByEntityType(const AZStd::vector<AZStd::string>& componentTypeNames, EditorComponentAPIRequests::EntityType entityType) override;
-            AZStd::vector<AZ::Uuid> FindComponentTypeIdsByService(const AZStd::vector<AZ::ComponentServiceType>& serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter) override;
+            AZStd::vector<AZ::Uuid> FindComponentTypeIdsByService(AZStd::span<const AZ::ComponentServiceType> serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter) override;
             AZStd::vector<AZStd::string> FindComponentTypeNames(const AZ::ComponentTypeList& componentTypeIds) override;
             AZStd::vector<AZStd::string> BuildComponentTypeNameListByEntityType(EditorComponentAPIRequests::EntityType entityType) override;
 
@@ -63,7 +64,7 @@ namespace AzToolsFramework
             AZ::Entity* FindEntity(AZ::EntityId entityId);
             AZ::Component* FindComponent(AZ::EntityId entityId, AZ::ComponentId componentId);
             AZ::Component* FindComponent(AZ::EntityId entityId, AZ::Uuid componentType);
-            AZStd::vector<AZ::Component*> FindComponents(AZ::EntityId entityId, AZ::Uuid componentType);
+            AZ::Entity::ComponentArrayType FindComponents(AZ::EntityId entityId, AZ::Uuid componentType);
 
             bool m_usePropertyVisibility = false;
             AZ::SerializeContext* m_serializeContext = nullptr;

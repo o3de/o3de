@@ -98,7 +98,7 @@ namespace AZ
                 return QueryResultCode::Fail;
             }
 
-            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->BeginQueryInternal(rhiQueryIndices.value(), *context.GetCommandList());
+            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->BeginQueryInternal(rhiQueryIndices.value(), context);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to begin recording the query");
 
             m_cachedScopeId = context.GetScopeId();
@@ -131,13 +131,13 @@ namespace AZ
                 return QueryResultCode::Fail;
             }
 
-            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->EndQueryInternal(rhiQueryIndices.value(), *context.GetCommandList());
+            [[maybe_unused]] RHI::ResultCode resultCode = m_queryPool->EndQueryInternal(rhiQueryIndices.value(), context);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "Failed to end recording the query");
 
             return QueryResultCode::Success;
         }
 
-        QueryResultCode Query::GetLatestResultAndWait(void* queryResult, uint32_t resultSizeInBytes)
+        QueryResultCode Query::GetLatestResultAndWait(void* queryResult, uint32_t resultSizeInBytes, int deviceIndex)
         {
             if (resultSizeInBytes < m_queryPool->GetQueryResultSize())
             {
@@ -156,10 +156,10 @@ namespace AZ
             const SubQuery& recentSubQuery = m_subQueryArray[recentSubQueryIndex];
 
             // This may stall the calling thread; depending if the query result is already available for polling.
-            return m_queryPool->GetQueryResultFromIndices(static_cast<uint64_t*>(queryResult), recentSubQuery.m_rhiQueryIndices, RHI::QueryResultFlagBits::Wait);
+            return m_queryPool->GetQueryResultFromIndices(static_cast<uint64_t*>(queryResult), recentSubQuery.m_rhiQueryIndices, RHI::QueryResultFlagBits::Wait, deviceIndex);
         }
 
-        QueryResultCode Query::GetLatestResult(void* queryResult, uint32_t resultSizeInBytes)
+        QueryResultCode Query::GetLatestResult(void* queryResult, uint32_t resultSizeInBytes, int deviceIndex)
         {
             if (resultSizeInBytes < m_queryPool->GetQueryResultSize())
             {
@@ -176,35 +176,17 @@ namespace AZ
             }
 
             SubQuery& subQuery = m_subQueryArray[latestQueryIndex];
-            return m_queryPool->GetQueryResultFromIndices(static_cast<uint64_t*>(queryResult), subQuery.m_rhiQueryIndices, RHI::QueryResultFlagBits::None);
+            return m_queryPool->GetQueryResultFromIndices(static_cast<uint64_t*>(queryResult), subQuery.m_rhiQueryIndices, RHI::QueryResultFlagBits::None, deviceIndex);
         }
 
         bool Query::AssignNewFrameIndexToSubQuery(uint64_t poolFrameIndex)
         {
-#if defined (AZ_RPI_ENABLE_VALIDATION)
-            // Check if the query is already added in this frame.
-            {
-                const auto predicate = [poolFrameIndex](SubQuery& queryIndices)
-                {
-                    return queryIndices.m_poolFrameIndex == poolFrameIndex;
-                };
-
-                if (AZStd::any_of(m_subQueryArray.begin(), m_subQueryArray.end(), predicate))
-                {
-                    AZ_Warning("RPI::Query", false, "Query is already added in this frame");
-                    return false;
-                }
-            }
-#else
-            // Check if the FrameIndex is already present for this query instance, meaning that
-            // the user is trying to use the same query multiple times to record within a single frame.
             if (m_cachedSubQueryArrayIndex != InvalidQueryIndex &&
                 m_subQueryArray[m_cachedSubQueryArrayIndex].m_poolFrameIndex == poolFrameIndex)
             {
-                AZ_Warning("RPI::Query", false, "Query is already added in this frame");
-                return false;
+                // It might run multiple times if a pass has multiple scopes run on multiple devices
+                return true;
             }
-#endif
 
             // Get the oldest query array index.
             const uint32_t availableQueryIndex = GetOldestOrAvailableSubQueryArrayIndex();

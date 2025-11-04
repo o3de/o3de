@@ -31,7 +31,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridBlendIrradiancePass);
 
             AZ_RTTI(AZ::Render::DiffuseProbeGridBlendIrradiancePass, "{521E53EE-2D12-454F-8830-C61EA08CEF35}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridBlendIrradiancePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridBlendIrradiancePass, SystemAllocator);
             virtual ~DiffuseProbeGridBlendIrradiancePass() = default;
 
             static RPI::Ptr<DiffuseProbeGridBlendIrradiancePass> Create(const RPI::PassDescriptor& descriptor);

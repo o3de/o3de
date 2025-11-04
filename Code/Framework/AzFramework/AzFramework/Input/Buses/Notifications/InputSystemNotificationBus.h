@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -39,3 +40,5 @@ namespace AzFramework
     };
     using InputSystemNotificationBus = AZ::EBus<InputSystemNotifications>;
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::InputSystemNotifications);

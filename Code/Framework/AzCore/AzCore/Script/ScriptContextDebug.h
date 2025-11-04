@@ -26,7 +26,7 @@ namespace AZ
      * This context will be generated automatically once you enable the Debugging in the \ref ScriptContext.
      * Use this class to obtain registered classes, better callstacks, breakpoints, etc.
      */
-    class ScriptContextDebug
+    class AZCORE_API ScriptContextDebug
     {
         ScriptContextDebug(const ScriptContextDebug&);
         ScriptContextDebug operator=(const ScriptContextDebug&);
@@ -37,7 +37,7 @@ namespace AZ
         // path information.
         typedef AZStd::string BreakpointId;
 
-        AZ_CLASS_ALLOCATOR(ScriptContextDebug, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ScriptContextDebug, SystemAllocator);
 
         ScriptContextDebug(ScriptContext& scriptContext, bool isEnableStackRecord = false);
         ~ScriptContextDebug();

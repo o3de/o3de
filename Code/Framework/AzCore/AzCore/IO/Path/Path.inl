@@ -263,6 +263,11 @@ namespace AZ::IO
         return m_path.empty();
     }
 
+    constexpr const char PathView::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
+    }
+
     [[nodiscard]] constexpr bool PathView::HasRootName() const
     {
         return !root_name_view().empty();
@@ -1156,6 +1161,12 @@ namespace AZ::IO
     }
 
     template <typename StringType>
+    constexpr const char BasicPath<StringType>::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
+    }
+
+    template <typename StringType>
     [[nodiscard]] constexpr bool BasicPath<StringType>::HasRootName() const
     {
         return static_cast<PathView>(*this).HasRootName();
@@ -1479,7 +1490,7 @@ namespace AZStd
     template <>
     struct hash<AZ::IO::PathView>
     {
-        constexpr size_t operator()(const AZ::IO::PathView& pathToHash) noexcept
+        constexpr size_t operator()(const AZ::IO::PathView& pathToHash) const noexcept
         {
             auto pathParser = AZ::IO::parser::PathParser::CreateBegin(pathToHash.Native(), pathToHash.m_preferred_separator);
             return AZ::IO::parser::HashPath(pathParser);
@@ -1488,7 +1499,7 @@ namespace AZStd
     template <typename StringType>
     struct hash<AZ::IO::BasicPath<StringType>>
     {
-        constexpr size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) noexcept
+        constexpr size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) const noexcept
         {
             return AZStd::hash<AZ::IO::PathView>{}(pathToHash);
         }
@@ -1521,7 +1532,7 @@ namespace AZ::IO
     extern template size_t hash_value<FixedMaxPathString>(const FixedMaxPath& pathToHash);
 
     // Append operator explicit declarations
-    extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, const PathView& rhs);
+    extern template BasicPath<AZStd::string> operator/ <AZStd::string>(const BasicPath<AZStd::string>& lhs, const PathView& rhs);
     extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, const PathView& rhs);
     extern template BasicPath<AZStd::string> operator/<AZStd::string>(const BasicPath<AZStd::string>& lhs, AZStd::string_view rhs);
     extern template BasicPath<FixedMaxPathString> operator/<FixedMaxPathString>(const BasicPath<FixedMaxPathString>& lhs, AZStd::string_view rhs);
@@ -1531,17 +1542,17 @@ namespace AZ::IO
         const typename BasicPath<FixedMaxPathString>::value_type* rhs);
 
     // Iterator compare explicit declarations
-    extern template bool operator==<const PathView>(const PathIterator<const PathView>& lhs,
+    extern template AZCORE_API bool operator==<const PathView>(const PathIterator<const PathView>& lhs,
         const PathIterator<const PathView>& rhs);
-    extern template bool operator==<const Path>(const PathIterator<const Path>& lhs,
+    extern template AZCORE_API bool operator== <const Path>(const PathIterator<const Path>& lhs,
         const PathIterator<const Path>& rhs);
-    extern template bool operator==<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+    extern template AZCORE_API bool operator==<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
-    extern template bool operator!=<const PathView>(const PathIterator<const PathView>& lhs,
+    extern template AZCORE_API bool operator!=<const PathView>(const PathIterator<const PathView>& lhs,
         const PathIterator<const PathView>& rhs);
-    extern template bool operator!=<const Path>(const PathIterator<const Path>& lhs,
+    extern template AZCORE_API bool operator!= <const Path>(const PathIterator<const Path>& lhs,
         const PathIterator<const Path>& rhs);
-    extern template bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
+    extern template AZCORE_API bool operator!=<const FixedMaxPath>(const PathIterator<const FixedMaxPath>& lhs,
         const PathIterator<const FixedMaxPath>& rhs);
 }
 

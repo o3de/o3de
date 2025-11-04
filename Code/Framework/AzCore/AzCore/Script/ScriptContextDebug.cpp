@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/std/string/tokenize.h>
 
 extern "C" {
@@ -114,6 +115,9 @@ void ScriptContextDebug::DisconnectHook()
 void
 ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMethod, EnumProperty enumProperty, void* userData)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     AZ_Assert(enumClass && enumMethod && enumProperty, "Invalid input!");
 
     lua_State* l = m_context.NativeContext();
@@ -238,6 +242,9 @@ ScriptContextDebug::EnumRegisteredClasses(EnumClass enumClass, EnumMethod enumMe
 void
 ScriptContextDebug::EnumRegisteredGlobals(EnumMethod enumMethod, EnumProperty enumProperty, void* userData)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     lua_State* l = m_context.NativeContext();
     lua_rawgeti(l, LUA_REGISTRYINDEX, AZ_LUA_GLOBALS_TABLE_REF); // load the class table
 
@@ -319,6 +326,9 @@ bool EBusHasHandler(const AZ::BehaviorEBus* bus)
 
 void ScriptContextDebug::EnumRegisteredEBuses(EnumEBus enumEBus, EnumEBusSender enumEBusSender, void* userData)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     AZ::BehaviorContext* behaviorContext = m_context.GetBoundContext();
     if (!behaviorContext)
     {
@@ -548,6 +558,9 @@ ScriptContextDebug::PopCallstack()
 OSString
 ScriptContextDebug::DbgValueToString(int valueIndex)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     lua_State* l = m_context.NativeContext();
     int type = lua_type(l, valueIndex);
     switch (type)
@@ -598,6 +611,9 @@ static ScriptContextDebug::BreakpointId MakeBreakpointId(const char* sourceName,
 //=========================================================================
 void LuaHook(lua_State* l, lua_Debug* ar)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     // Read contexts
     lua_rawgeti(l, LUA_REGISTRYINDEX, AZ_LUA_SCRIPT_CONTEXT_REF);
     ScriptContext* sc = reinterpret_cast<ScriptContext*>(lua_touserdata(l, -1));
@@ -749,6 +765,9 @@ void LuaHook(lua_State* l, lua_Debug* ar)
 void
 ScriptContextDebug::EnumLocals(EnumLocalCallback& cb)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     if (cb && m_luaDebug)
     {
         lua_State* l = m_context.NativeContext();
@@ -823,7 +842,11 @@ ScriptContextDebug::StepOut()
         }
         else
         {
-            m_stepStackLevel = 0;
+            // -1 forces to exit the current function at the top of the callstack.
+            // This is important, because if set to 0, StepOut would behave like a
+            // StepOver event and that's not the right user experience when using
+            // debuggers.
+            m_stepStackLevel = -1; 
         }
     }
     else
@@ -883,6 +906,9 @@ ScriptContextDebug::RemoveBreakpoint(Breakpoint& bp)
 void
 ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bool isReadOnly)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     lua_State* l = m_context.NativeContext();
     int valueType = lua_type(l, -1);
     value.m_type = static_cast<char>(valueType);
@@ -1068,6 +1094,9 @@ ScriptContextDebug::ReadValue(DebugValue& value, VoidPtrArray& tablesVisited, bo
 void
 ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, int localIndex, int tableIndex, int userDataStackIndex)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     lua_State* l = m_context.NativeContext();
     int valueTableIndex = -1;
     if (valueName[0] == '[')
@@ -1241,16 +1270,18 @@ ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, i
                                 }
                                 break;
                             case LUA_TNUMBER:
-                                lua_getupvalue(l, -1, 2);
-                                if (lua_isnil(l, -1))
                                 {
-                                    lua_pop(l, 1);
-                                }
-                                else
-                                {
-                                    lua_pushvalue(l, -5);    // copy the user data (this pointer)
-                                    lua_pushnumber(l, static_cast<lua_Number>(strtod(subElement.m_value.c_str(), nullptr)));
-                                    lua_call(l, 2, 0);   // call the setter
+                                    lua_getupvalue(l, -1, 2);
+                                    if (lua_isnil(l, -1))
+                                    {
+                                        lua_pop(l, 1);
+                                    }
+                                    else
+                                    {
+                                        lua_pushvalue(l, -5);    // copy the user data (this pointer)
+                                        lua_pushnumber(l, static_cast<lua_Number>(strtod(subElement.m_value.c_str(), nullptr)));
+                                        lua_call(l, 2, 0);   // call the setter
+                                    }
                                 }
                                 break;
                             case LUA_TBOOLEAN:
@@ -1338,6 +1369,9 @@ ScriptContextDebug::WriteValue(const DebugValue& value, const char* valueName, i
 bool
 ScriptContextDebug::GetValue(DebugValue& value)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     value.m_elements.clear();
 
     AZStd::vector<AZ::OSString> tokens;
@@ -1442,6 +1476,9 @@ ScriptContextDebug::GetValue(DebugValue& value)
 bool
 ScriptContextDebug::SetValue(const DebugValue& sourceValue)
 {
+    // LUA Must execute in the "C" Locale.
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
+
     AZStd::vector<AZ::OSString> tokens;
     AZStd::tokenize<AZ::OSString>(sourceValue.m_name, ".[] ", tokens);
 

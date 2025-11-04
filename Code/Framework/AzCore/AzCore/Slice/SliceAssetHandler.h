@@ -18,12 +18,12 @@ namespace AZ
     /**
      * Manages prefab assets.
      */
-    class SliceAssetHandler
+    class AZCORE_API SliceAssetHandler
         : public Data::AssetHandler
         , AZ::AssetTypeInfoBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceAssetHandler, AZ::SystemAllocator);
         AZ_RTTI(SliceAssetHandler, "{4DA1A81B-EEFE-4129-97A2-258233437A88}", Data::AssetHandler);
 
         SliceAssetHandler(SerializeContext* context = nullptr);

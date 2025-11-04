@@ -16,6 +16,11 @@
 
 //////////////////////////////////////////////////////////////////////////
 
+namespace AZ
+{
+    class ReflectContext;
+}
+
 // These flags are mostly applicable for hermit based splines.
 enum ESplineKeyTangentType
 {
@@ -357,26 +362,20 @@ namespace spline
     }
 
     /****************************************************************************
-    **                            Key classes                                                                    **
+    **                            Key classes                                  **
     ****************************************************************************/
-    template    <class T>
-    struct  SplineKey
+    template <class T>
+    struct SplineKey
     {
-        typedef T   value_type;
+        typedef T value_type;
 
-        float               time;       //!< Key time.
-        int                 flags;  //!< Key flags.
-        value_type  value;  //!< Key value.
-        value_type  ds;         //!< Incoming tangent.
-        value_type  dd;         //!< Outgoing tangent.
-        SplineKey()
-        {
-            memset(this, 0, sizeof(SplineKey));
-        }
+        float time = 0;                 //!< Key time.
+        int flags = 0;                  //!< Key flags.
+        value_type value = type_zero(); //!< Key value.
+        value_type ds = type_zero();    //!< Incoming tangent.
+        value_type dd = type_zero();    //!< Outgoing tangent.
 
-        SplineKey& operator=(const SplineKey& src) { memcpy(this, &src, sizeof(*this)); return *this; }
-
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext* context) {}
     };
 
     template    <class T>
@@ -635,7 +634,7 @@ namespace spline
         virtual void interp_keys(int key1, int key2, float u, value_type& val) = 0;
         //////////////////////////////////////////////////////////////////////////
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext* context) {}
 
         inline void add_ref()
         {
@@ -1011,7 +1010,7 @@ namespace spline
             }
         }
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext* context) {}
 
     protected:
         virtual void interp_keys(int from, int to, float u, T& val)

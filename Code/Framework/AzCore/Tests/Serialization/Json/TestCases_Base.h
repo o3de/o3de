@@ -64,7 +64,7 @@ namespace JsonSerializationTests
         template<class T>
         friend struct AZStd::IntrusivePtrCountPolicy;
 
-        AZ_CLASS_ALLOCATOR(BaseClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseClass, AZ::SystemAllocator);
         AZ_RTTI(BaseClass, "{E0A66EB6-1AC5-4C73-B1A7-6367A47EC026}");
 
         virtual ~BaseClass() = default;
@@ -85,7 +85,7 @@ namespace JsonSerializationTests
         template<class T>
         friend struct AZStd::IntrusivePtrCountPolicy;
 
-        AZ_CLASS_ALLOCATOR(BaseClass2, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseClass2, AZ::SystemAllocator);
         AZ_RTTI(BaseClass2, "{F9D704C1-04AF-463C-B47A-02C28805AAEE}");
 
         virtual ~BaseClass2() = default;

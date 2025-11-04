@@ -20,7 +20,7 @@ namespace AZ
             using Base = RHI::Scope;
         public:
             AZ_RTTI(Scope, "{2F46C8DD-08CB-427C-8EE7-7D00F140A22F}", Base);
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
             static RHI::Ptr<Scope> Create();
 
@@ -30,7 +30,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Scope
             void DeactivateInternal() override {}
-            void CompileInternal([[maybe_unused]] RHI::Device& device) override {}
+            void CompileInternal() override {}
             void AddQueryPoolUse([[maybe_unused]] RHI::Ptr<RHI::QueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access) override {}
             //////////////////////////////////////////////////////////////////////////
         };

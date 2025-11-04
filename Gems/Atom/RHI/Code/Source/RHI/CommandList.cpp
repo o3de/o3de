@@ -8,24 +8,24 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/ScopeProducer.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        void CommandList::ValidateTotalSubmits([[maybe_unused]] const ScopeProducer* scopeProducer)
-        {
-            if (m_submitRange.GetCount())
-            {
-                AZ_Assert(m_totalSubmits <= m_submitRange.GetCount(),
-                    "Incorrect number of submit items detected in scope %s (%d expected, %d submitted). "
-                    "Call RHI::FrameGraphInterface::SetEstimatedItemCount to set the expected number of submits. "
-                    "The number of submits in BuildCommandListInternal must not exceed this value.",
-                    scopeProducer->GetScopeId().GetCStr(),
-                    m_submitRange.GetCount(),
-                    m_totalSubmits);
+    const ShadingRateCombinators CommandList::DefaultShadingRateCombinators = { { ShadingRateCombinerOp::Passthrough,
+                                                                                    ShadingRateCombinerOp::Passthrough } };
 
-                ResetTotalSubmits();
-            }
+    void CommandList::ValidateTotalSubmits([[maybe_unused]] const ScopeProducer* scopeProducer)
+    {
+        if (m_submitRange.GetCount())
+        {
+            AZ_Assert(m_totalSubmits <= m_submitRange.GetCount(),
+                "Incorrect number of submit items detected in scope %s (%d expected, %d submitted). "
+                "Call RHI::FrameGraphInterface::SetEstimatedItemCount to set the expected number of submits. "
+                "The number of submits in BuildCommandListInternal must not exceed this value.",
+                scopeProducer->GetScopeId().GetCStr(),
+                m_submitRange.GetCount(),
+                m_totalSubmits);
+
+            ResetTotalSubmits();
         }
     }
 }

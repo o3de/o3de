@@ -19,7 +19,6 @@ ly_add_target(
     NAME AssetProcessor.Static STATIC
     NAMESPACE AZ
     AUTOMOC
-    AUTORCC
     FILES_CMAKE
         assetprocessor_static_files.cmake
         Platform/${PAL_PLATFORM_NAME}/assetprocessor_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -77,6 +76,10 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         AZ::AssetBuilder
 )
+
+if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+    ly_target_link_libraries(AssetProcessor PRIVATE AZ::ToolsCrashHandler)
+endif()
 
 # Adds the AssetProcessor target as a C preprocessor define so that it can be used as a Settings Registry
 # specialization in order to look up the generated .setreg which contains the dependencies
@@ -254,10 +257,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     # Have the AssetProcessorTest use the LY_CMAKE_TARGET define of AssetProcessorBatch for the purpose
     # of looking up the generated cmake build dependencies settings registry .setreg file
-    # It is tied to the UnitTestRunner.cpp file
+    # It is tied to the UnitTestUtils.cpp file
     if(TARGET AssetProcessorBatch)
         set_source_files_properties(
-            native/unittests/UnitTestRunner.cpp
+            native/unittests/UnitTestUtils.cpp
             PROPERTIES
                 COMPILE_DEFINITIONS
                     LY_CMAKE_TARGET="AssetProcessorBatch"
@@ -267,9 +270,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             " Perhaps it has been renamed")
     endif()
 
+    # there are some tests in the main suite, and some in periodic.
     ly_add_googletest(
         NAME AZ::AssetProcessor.Tests
+        LABELS REQUIRES_tiaf
     )
+    ly_add_googletest(NAME AZ::AssetProcessor.Tests.Periodic
+        TARGET AZ::AssetProcessor.Tests 
+        TEST_SUITE periodic)
+    # Sandbox the tests that fail intermittently
+    ly_add_googletest(NAME AZ::AssetProcessor.Tests.Sandbox
+        TARGET AZ::AssetProcessor.Tests 
+        TEST_SUITE sandbox)
+
     ly_add_googlebenchmark(
         NAME AZ::AssetProcessor.Benchmarks
         TARGET AZ::AssetProcessor.Tests

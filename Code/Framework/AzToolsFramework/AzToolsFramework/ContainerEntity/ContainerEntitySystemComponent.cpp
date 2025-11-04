@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -113,10 +114,20 @@ namespace AzToolsFramework
             return entityId;
         }
 
+        // is entity pick mode enabled?
+        bool isEntityPickModeEnabled = false;
+        if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+        {
+            auto entityContextId = AzFramework::EntityContextId::CreateNull();
+            EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+            isEntityPickModeEnabled = viewportEditorModeTracker->GetViewportEditorModes({ entityContextId })
+                                          ->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick);
+        }
+
         auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-        if (Prefab::IsPrefabOverridesUxEnabled())
+        if (Prefab::IsOutlinerOverrideManagementEnabled())
         {
             // Get currently selected entities
             EntityIdList selectedEntities;
@@ -128,36 +139,45 @@ namespace AzToolsFramework
                 return entityId;
             }
 
-            // Return the highest closed container, or the entity if none is found.
-            AZ::EntityId secondLastOpenContainerBeforeSelection = entityId;
-            AZ::EntityId lastOpenContainerBeforeSelection = entityId;
+            // Return the highest unselected ancestor container of the entity, or the entity if none is found.
+            AZ::EntityId highestUnselectedAncestorContainer = entityId;
 
             // Skip the queried entity, as we only want to check its ancestors.
             AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
 
-            // Assumption - there are no closed containers. This is due to the way PrefabEditScope::NESTED_INSTANCES works,
-            // since we open all descendant containers of the focused prefab.
-            // If this is no longer the case, this code will need a rewrite.
-
-            // Go up the hierarchy until you hit the root
+            // Go up the hierarchy until you hit the root or a selected container
             while (entityId.IsValid())
             {
-                if (IsContainer(entityId) &&
-                    AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
+                if (IsContainer(entityId))
                 {
-                    return lastOpenContainerBeforeSelection;
-                }
-                else
-                {
-                    secondLastOpenContainerBeforeSelection = lastOpenContainerBeforeSelection;
-                    lastOpenContainerBeforeSelection = entityId;
+                    if (AZStd::find(selectedEntities.begin(), selectedEntities.end(), entityId) != selectedEntities.end())
+                    {
+                        if (!IsContainerOpen(entityId))
+                        {
+                            // If the selected container is closed, keep selecting it.
+                            highestUnselectedAncestorContainer = entityId;
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        if (!isEntityPickModeEnabled || !IsContainerOpen(entityId))
+                        {
+                            highestUnselectedAncestorContainer = entityId;
+                        }
+                    }
                 }
 
-                AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+                AZ::EntityId parentId; // start with an invalid id, in case the parent is invalid.
+                AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
+                if (entityId == parentId)
+                {
+                    break; // avoid situation where a GetParentId returns the same id leading to an infinite loop
+                }
+                entityId = parentId;
             }
 
-            // We will always hit the root, so exclude it for our purposes
-            return secondLastOpenContainerBeforeSelection;
+            return highestUnselectedAncestorContainer;
         }
 
         // Return the highest closed container, or the entity if none is found.
@@ -176,7 +196,13 @@ namespace AzToolsFramework
                 highestSelectableEntityId = entityId;
             }
 
-            AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+            AZ::EntityId parentId; // start with an invalid id, in case the parent is invalid.
+            AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
+            if (entityId == parentId)
+            {
+                break; // avoid an infinite loop in the case where the same entity is returned.
+            }
+            entityId = parentId;
         }
 
         return highestSelectableEntityId;

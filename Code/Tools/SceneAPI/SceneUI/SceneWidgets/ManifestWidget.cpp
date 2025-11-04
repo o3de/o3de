@@ -30,12 +30,18 @@ namespace AZ
                 , m_serializeContext(serializeContext)
             {
                 ui->setupUi(this);
-
-                AzQtComponents::TabWidget::applySecondaryStyle(ui->m_tabs, false);
+                ui->m_tabs->setOverflowButtonSpacing(true);
             }
             
             ManifestWidget::~ManifestWidget()
             {
+            }
+
+            void ManifestWidget::ResetScene()
+            {
+                ui->m_tabs->clear();
+                m_pages.clear();
+                m_scene.reset();
             }
 
             void ManifestWidget::BuildFromScene(const AZStd::shared_ptr<Containers::Scene>& scene)
@@ -160,7 +166,7 @@ namespace AZ
                 AZStd::sort(categories.begin(), categories.end(), 
                     [](const Events::ManifestMetaInfo::CategoryRegistration& lhs, const Events::ManifestMetaInfo::CategoryRegistration& rhs)
                     {
-                        return (rhs.m_preferredOrder - lhs.m_preferredOrder) > 0;
+                        return rhs.m_preferredOrder > lhs.m_preferredOrder;
                     }
                 );
 
@@ -193,6 +199,18 @@ namespace AZ
             {
                 m_pages.push_back(page);
                 ui->m_tabs->addTab(page, category);
+                connect(page, &ManifestWidgetPage::SaveClicked, this, &ManifestWidget::SaveClicked);
+                connect(page, &ManifestWidgetPage::InspectClicked, this, &ManifestWidget::OnInspect);
+                connect(page, &ManifestWidgetPage::ResetSettings, this, &ManifestWidget::OnSceneResetRequested);
+                connect(page, &ManifestWidgetPage::ClearChanges, this, &ManifestWidget::OnClearUnsavedChangesRequested);
+                connect(page, &ManifestWidgetPage::AssignScript, this, &ManifestWidget::OnAssignScript);
+                connect(this, &ManifestWidget::AppendUnsavedChangesToTitle, page, &ManifestWidgetPage::AppendUnsavedChangesToTitle);
+                connect(this, &ManifestWidget::EnableInspector, page, &ManifestWidgetPage::EnableInspector);
+            }
+
+            void ManifestWidget::SetInspectButtonVisibility(bool enableInspector)
+            {
+                emit EnableInspector(enableInspector);
             }
         } // namespace UI
     } // namespace SceneAPI

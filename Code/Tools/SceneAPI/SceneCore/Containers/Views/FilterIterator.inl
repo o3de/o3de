@@ -90,13 +90,13 @@ namespace AZ
                 }
 
                 template<typename Iterator>
-                bool FilterIterator<Iterator, AZStd::input_iterator_tag>::operator==(const typename super::RootIterator& rhs) const
+                bool FilterIterator<Iterator, AZStd::input_iterator_tag>::operator==(const FilterIterator& rhs) const
                 {
                     return super::m_iterator == rhs.m_iterator;
                 }
 
                 template<typename Iterator>
-                bool FilterIterator<Iterator, AZStd::input_iterator_tag>::operator!=(const typename super::RootIterator& rhs) const
+                bool FilterIterator<Iterator, AZStd::input_iterator_tag>::operator!=(const FilterIterator& rhs) const
                 {
                     return super::m_iterator != rhs.m_iterator;
                 }

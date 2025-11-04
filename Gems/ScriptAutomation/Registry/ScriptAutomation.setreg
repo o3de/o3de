@@ -1,0 +1,24 @@
+{
+    "O3DE": {
+        "ScriptAutomation": {
+            "ImageComparisonSettings": {
+                "toleranceLevels" : [
+                    { "name": "Level A", "filterImperceptibleDiffs": false, "threshold": 0.0 },
+                    { "name": "Level B", "filterImperceptibleDiffs": true,  "threshold": 0.0001 },
+                    { "name": "Level C", "filterImperceptibleDiffs": true,  "threshold": 0.0005 },
+                    { "name": "Level D", "filterImperceptibleDiffs": true,  "threshold": 0.001 },
+                    { "name": "Level E", "filterImperceptibleDiffs": true,  "threshold": 0.003 },
+                    { "name": "Level F", "filterImperceptibleDiffs": true,  "threshold": 0.005 },
+                    { "name": "Level G", "filterImperceptibleDiffs": true,  "threshold": 0.01 },
+                    { "name": "Level H", "filterImperceptibleDiffs": true,  "threshold": 0.025 },
+                    { "name": "Level I", "filterImperceptibleDiffs": true,  "threshold": 0.05 },
+                    { "name": "Level J", "filterImperceptibleDiffs": true,  "threshold": 0.06 },
+                    { "name": "Level K", "filterImperceptibleDiffs": true,  "threshold": 0.07 },
+                    { "name": "Level L", "filterImperceptibleDiffs": true,  "threshold": 0.08 },
+                    { "name": "Level M", "filterImperceptibleDiffs": true,  "threshold": 0.09 },
+                    { "name": "Level N", "filterImperceptibleDiffs": true,  "threshold": 0.1 }
+                ]
+            }
+        }
+    }
+}

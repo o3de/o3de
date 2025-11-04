@@ -26,6 +26,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
+
 {% for xml in dataFiles %}
 {%   for Class in xml.findall('Class') %}
 
@@ -45,9 +48,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {% endif %}
 
 {% set attribute_Base = "ScriptCanvas::Nodeable" %}
-{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
-{%    set attribute_Base = Class.attrib['Base'] %}
+
+{% if Class.attrib['Base'] is defined %}
+{% set attribute_Base = Class.attrib['Base'] %}
 {% endif %}
+
 
 {% if attribute_Namespace is defined %}
 namespace {{attribute_Namespace}}
@@ -78,7 +83,7 @@ public: \
     static const char* GetDescription() { return "{{ macros.GetAttributeAsString(Class.attrib, 'Description') }}"; } \
     ScriptCanvas::NodePropertyInterface* GetPropertyInterface(AZ::Crc32 propertyId) override; \
     bool IsActive() const override { return false; } \
-{{ nodemacro.PopulateMemberVariables(Class) }}{{ nodemacro.ExecutionInDeclarations(Class) }}{{ nodemacro.ExecutionOutDeclarations(Class) }}/* end #define SCRIPTCANVAS_NODE_{{className}} */
+{{ nodemacro.PopulateMemberVariables(Class) }}{{ nodemacro.ExecutionInDeclarations(Class) }}{{ nodemacro.ExecutionOutDeclarations(Class) }}{{ nodemacro.CopyConstructor(Class) }}/* end #define SCRIPTCANVAS_NODE_{{className}} */
 
 {% if className is defined -%}
 {% set nodeableNodeName = nodeableClassName + 'Node' %}
@@ -102,12 +107,13 @@ public: \
               void ConfigureSlots() override;
 
 {% if Class.attrib['ExtendConfigureSlots'] is defined %}
-              void ExtendConfigureSlots([[maybe_unused]] SlotExecution::Ins& ins, [[maybe_unused]] SlotExecution::Outs& latents);
+              void ExtendConfigureSlots([[maybe_unused]] ScriptCanvas::SlotExecution::Ins& ins, [[maybe_unused]] ScriptCanvas::SlotExecution::Outs& latents);
 
 {% else %}
               /* no slot configuration extension, Use Class attribute 'ExtendConfigureSlots' to extend them */
 
 {% endif %}
+              void OnInit() override;
               void ConfigureVisualExtensions() override;
 
               size_t GenerateFingerprint() const override;
@@ -120,6 +126,21 @@ public: \
 
               {{Class.attrib['NodeDeclarations']}}
           };
+
+          class {{nodeableNodeName}}_Reflection
+            {
+            public:
+                {% set reflectionClassName = nodeableNodeName|join("_Reflection") %}
+                AZ_TYPE_INFO({{ nodeableNodeName }}_Reflection, "{{ reflectionClassName|createHashGuid }}");
+
+                static void Reflect(AZ::ReflectContext* ) {}
+
+                {{nodeableNodeName}}_Reflection();
+                virtual ~{{nodeableNodeName}}_Reflection() {}
+
+            };
+
+            SCRIPTCANVAS_REGISTER_EXTERN({{nodeableNodeName}}_Reflection);
       }
 {% endif %}
 

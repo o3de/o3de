@@ -9,7 +9,7 @@
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
-    NAME SaveData.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
@@ -29,7 +29,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME SaveData ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         savedata_shared_files.cmake
@@ -40,18 +40,27 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::SaveData.Static
+            Gem::${gem_name}.Static
 )
 
-# the SaveData module above is only used in Clients by default.
-ly_create_alias(NAME SaveData.Clients NAMESPACE Gem TARGETS Gem::SaveData)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/SaveDataModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# the ${gem_name} module above is only used in Clients by default.
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME SaveData.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             savedata_tests_files.cmake
@@ -63,9 +72,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::SaveData.Static
+                Gem::${gem_name}.Static
     )
     ly_add_googletest(
-        NAME Gem::SaveData.Tests
+        NAME Gem::${gem_name}.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

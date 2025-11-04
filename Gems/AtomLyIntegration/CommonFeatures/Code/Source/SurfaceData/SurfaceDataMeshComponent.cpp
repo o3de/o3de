@@ -11,7 +11,6 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
@@ -45,17 +44,17 @@ namespace SurfaceData
 
     void SurfaceDataMeshComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
+        services.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
     }
 
     void SurfaceDataMeshComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
+        services.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
     }
 
     void SurfaceDataMeshComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("MeshService", 0x71d8a455));
+        services.push_back(AZ_CRC_CE("MeshService"));
     }
 
     void SurfaceDataMeshComponent::Reflect(AZ::ReflectContext* context)

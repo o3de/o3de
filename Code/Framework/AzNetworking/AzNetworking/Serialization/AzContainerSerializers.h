@@ -18,9 +18,13 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/VectorN.h>
+#include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/Matrix3x4.h>
+#include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/MatrixMxN.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
@@ -199,6 +203,18 @@ namespace AzNetworking
         }
     };
 
+    
+    // Pair
+    template<class KeyType, class ValueType>
+    struct SerializeObjectHelper<AZStd::pair<KeyType, ValueType>>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZStd::pair<KeyType, ValueType>& value)
+        {
+            bool result = serializer.Serialize(value.first, "key") && serializer.Serialize(value.second, "value");
+            return result;
+        }
+    };
+
     // String
     template<>
     struct SerializeAzContainer<AZStd::string>
@@ -287,6 +303,108 @@ namespace AzNetworking
             serializer.Serialize(values[3], "wValue");
             value = AZ::Vector4::CreateFromFloat4(values);
             return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::VectorN>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::VectorN& value)
+        {
+            AZStd::size_t size = value.GetDimensionality();
+            if (serializer.Serialize(size, "size"))
+            {
+                value.Resize(size);
+            }
+            return serializer.Serialize(value.GetVectorValues(), "data");
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Matrix3x3>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Matrix3x3& value)
+        {
+            float values[9];
+            value.StoreToRowMajorFloat9(values);
+            serializer.Serialize(values[0], "0");
+            serializer.Serialize(values[1], "1");
+            serializer.Serialize(values[2], "2");
+            serializer.Serialize(values[3], "3");
+            serializer.Serialize(values[4], "4");
+            serializer.Serialize(values[5], "5");
+            serializer.Serialize(values[6], "6");
+            serializer.Serialize(values[7], "7");
+            serializer.Serialize(values[8], "8");
+            value = AZ::Matrix3x3::CreateFromRowMajorFloat9(values);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Matrix3x4>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Matrix3x4& value)
+        {
+            float values[12];
+            value.StoreToRowMajorFloat12(values);
+            serializer.Serialize(values[ 0], "0");
+            serializer.Serialize(values[ 1], "1");
+            serializer.Serialize(values[ 2], "2");
+            serializer.Serialize(values[ 3], "3");
+            serializer.Serialize(values[ 4], "4");
+            serializer.Serialize(values[ 5], "5");
+            serializer.Serialize(values[ 6], "6");
+            serializer.Serialize(values[ 7], "7");
+            serializer.Serialize(values[ 8], "8");
+            serializer.Serialize(values[ 9], "9");
+            serializer.Serialize(values[10], "A");
+            serializer.Serialize(values[11], "B");
+            value = AZ::Matrix3x4::CreateFromRowMajorFloat12(values);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Matrix4x4>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Matrix4x4& value)
+        {
+            float values[16];
+            value.StoreToRowMajorFloat16(values);
+            serializer.Serialize(values[ 0], "0");
+            serializer.Serialize(values[ 1], "1");
+            serializer.Serialize(values[ 2], "2");
+            serializer.Serialize(values[ 3], "3");
+            serializer.Serialize(values[ 4], "4");
+            serializer.Serialize(values[ 5], "5");
+            serializer.Serialize(values[ 6], "6");
+            serializer.Serialize(values[ 7], "7");
+            serializer.Serialize(values[ 8], "8");
+            serializer.Serialize(values[ 9], "9");
+            serializer.Serialize(values[10], "A");
+            serializer.Serialize(values[11], "B");
+            serializer.Serialize(values[12], "C");
+            serializer.Serialize(values[13], "D");
+            serializer.Serialize(values[14], "E");
+            serializer.Serialize(values[15], "F");
+            value = AZ::Matrix4x4::CreateFromRowMajorFloat16(values);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::MatrixMxN>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::MatrixMxN& value)
+        {
+            AZStd::size_t rows = value.GetRowCount();
+            AZStd::size_t cols = value.GetColumnCount();
+            if (serializer.Serialize(rows, "rows") && serializer.Serialize(cols, "cols"))
+            {
+                value.Resize(rows, cols);
+            }
+            return serializer.Serialize(value.GetMatrixElements(), "data");
         }
     };
 

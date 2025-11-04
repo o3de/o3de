@@ -18,7 +18,7 @@ namespace Profiler
     {
     public:
         AZ_RTTI(ProfilerModule, "{4A286414-B387-4D20-9A7E-2F792755B769}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ProfilerModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProfilerModule, AZ::SystemAllocator);
 
         ProfilerModule()
         {
@@ -43,4 +43,8 @@ namespace Profiler
     };
 }// namespace Profiler
 
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Profiler::ProfilerModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Profiler, Profiler::ProfilerModule)
+#endif

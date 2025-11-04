@@ -22,14 +22,10 @@
 #endif
 
 class CCryDocManager;
-class CQuickAccessBar;
 class CCryEditDoc;
 class CEditCommandLineInfo;
 class CMainFrame;
 class CConsoleDialog;
-struct mg_connection;
-struct mg_request_info;
-struct mg_context;
 class QAction;
 class MainWindow;
 class QSharedMemory;
@@ -52,14 +48,10 @@ public:
     void WriteList();
 
     static const int Max = 12;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+
     QStringList m_arrNames;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QSettings m_settings;
 };
-
-
-#define PROJECT_CONFIGURATOR_GEM_PAGE "Gems Settings"
 
 
 /**
@@ -89,15 +81,12 @@ enum class COpenSameLevelOptions
     NotReopenIfSame
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API CCryEditApp
     : public QObject
     , protected AzFramework::AssetSystemInfoBus::Handler
     , protected EditorIdleProcessingBus::Handler
+    , protected AzFramework::AssetSystemStatusBus::Handler
 {
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     friend MainWindow;
     Q_OBJECT
 public:
@@ -115,15 +104,12 @@ public:
 
     static CCryEditApp* instance();
 
-    bool GetRootEnginePath(QDir& rootEnginePath) const;
     bool CreateLevel(bool& wasCreateLevelOperationCancelled);
     void LoadFile(QString fileName);
     void ForceNextIdleProcessing() { m_bForceProcessIdle = true; }
     void KeepEditorActive(bool bActive) { m_bKeepEditorActive = bActive; };
     bool IsInTestMode() const { return m_bTestMode; };
     bool IsInPreviewMode() const { return m_bPreviewMode; };
-    bool IsInExportMode() const { return m_bExportMode; };
-    bool IsExportingLegacyData() const { return m_bIsExportingLegacyData; }
     bool IsInConsoleMode() const { return m_bConsoleMode; };
     bool IsInAutotestMode() const { return m_bAutotestMode; };
     bool IsInLevelLoadTestMode() const { return m_bLevelLoadTestMode; }
@@ -132,12 +118,11 @@ public:
     void EnableAccelerator(bool bEnable);
     void SaveAutoBackup();
     void SaveAutoRemind();
-    void ExportToGame(bool bNoMsgBox = true);
     //! \param sTitleStr overwrites the default title of the Editor
     void SetEditorWindowTitle(QString sTitleStr = QString(), QString sPreTitleStr = QString(), QString sPostTitleStr = QString());
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);
-    ECreateLevelResult CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName);
+    ECreateLevelResult CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName);
     bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
@@ -164,8 +149,8 @@ public:
 
     QString GetRootEnginePath() const;
     void RedirectStdoutToNull();
+
     // Overrides
-    // ClassWizard generated virtual function overrides
 public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
@@ -176,42 +161,27 @@ public:
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
-    void RegisterActionHandlers();
-
     // Implementation
     void OnCreateLevel();
     void OnOpenLevel();
-    void OnCreateSlice();
-    void OnOpenSlice();
     void OnAppAbout();
     void OnAppShowWelcomeScreen();
     void OnUpdateShowWelcomeScreen(QAction* action);
     void OnDocumentationTutorials();
     void OnDocumentationGlossary();
     void OnDocumentationO3DE();
-    void OnDocumentationGamelift();
     void OnDocumentationReleaseNotes();
     void OnDocumentationGameDevBlog();
     void OnDocumentationForums();
-    void OnDocumentationAWSSupport();
-    void OnCommercePublish();
-    void OnCommerceMerch();
-    void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
-    void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
     void OnViewSwitchToGameFullScreen();
-    void OnViewDeploy();
-    void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
     void OnRenameObj();
     void OnUndo();
-    void OnOpenAssetImporter();
-    void OnUpdateSelected(QAction* action);
     void OnEditLevelData();
     void OnFileEditLogFile();
-    void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
     void OnOpenProjectManagerSettings();
@@ -240,6 +210,10 @@ protected:
     void OnError(AzFramework::AssetSystem::AssetSystemErrors error) override;
     // -------------------------------------------
 
+    // ------- AzFramework::AssetSystemStatusBus::Handler ------
+    void AssetSystemWaiting() override;
+    // -------------------------------------------
+
 private:
     friend class EditorActionsHandler;
 
@@ -250,7 +224,6 @@ private:
 
     CMainFrame* GetMainFrame() const;
     void WriteConfig();
-    bool UserExportToGame(bool bNoMsgBox = true);
     static void ShowSplashScreen(CCryEditApp* app);
     static void CloseSplashScreen();
     static void OutputStartupMessage(QString str);
@@ -271,14 +244,6 @@ private:
     //! Test mode is a special mode enabled when Editor ran with /test command line.
     //! In this mode editor starts up, but exit immediately after all initialization.
     bool m_bTestMode = false;
-    //! In this mode editor will load specified cry file, export t, and then close.
-    bool m_bExportMode = false;
-    QString m_exportFile;
-    //! This flag is set to true every time any of the "Export" commands is being executed.
-    //! Once exporting is finished the flag is set back to false.
-    //! UI events like "New Level" or "Open Level", should not be allowed while m_bIsExportingLegacyData==true.
-    //! Otherwise it could trigger crashes trying to export while exporting.
-    bool m_bIsExportingLegacyData = false;
     //! If application exiting.
     bool m_bExiting = false;
     //! True if editor is in preview mode.
@@ -330,7 +295,6 @@ private:
     int m_numBeforeDisplayErrorFrames = 0;
 
     QString m_lastOpenLevelPath;
-    CQuickAccessBar* m_pQuickAccessBar = nullptr;
     QString m_rootEnginePath;
 
     int m_disableIdleProcessingCounter = 0; //!< Counts requests to disable idle processing. When non-zero, idle processing will be disabled.
@@ -338,17 +302,25 @@ private:
     CCryDocManager* m_pDocManager = nullptr;
 
 // Disable warning for dll export since this member won't be used outside this class
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 private:
-    static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
+    // Optional Uri to start an external lua debugger. If not specified,
+    // then the Editor will open LuaIDE.exe.
+    // For example, if using The Visual Studio Debugger Extension provided by lumbermixalot
+    // The value will be: "vscode://lumbermixalot.o3de-lua-debug/debug?"
+    // The following parameters will be added to the URI at runtime:
+    // "projectPath". Absolute path of the game projec root.
+    // "enginePath". Absolute path of the engine root. if not specified, it will be assume to be one directory above the game project root.
+    // "files[]". A list of files, 
+    // Full example using the Uri shown below:
+    // "vscode://lumbermixalot.o3de-lua-debug/debug?projectPath=D:\mydir\myproject&enginePath=C:\GIT\o3de&files[]=D:\mydir\myproject\scripts\something.lua&files[]=D:\mydir\myproject\scripts\utils\something2.lua"
+    // or
+    // "vscode://lumbermixalot.o3de-lua-debug/debug?projectPath=D:\GIT\o3de\AutomatedTesting&files[]=D:\GIT\o3de\AutomatedTesting\Assets\Scripts\something.lua"
+    static constexpr AZStd::string_view LuaDebuggerUriRegistryKey = "/O3DE/Lua/Debugger/Uri";
 
     struct PythonOutputHandler;
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<PythonOutputHandler> m_pythonOutputHandler;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
     void OpenProjectManager(const AZStd::string& screen);
@@ -356,14 +328,11 @@ private:
     void OnViewConfigureLayout();
 
     void OnCustomizeKeyboard();
-    void OnToolsConfiguretools();
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
-    void OnSwitchToDefaultCamera();
-    void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
     void OnUpdateSwitchToSequenceCamera(QAction* action);
     void OnSwitchToSelectedcamera();
@@ -374,13 +343,10 @@ private:
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnOpenQuickAccessBar();
+    void OnNewComponent();
 
-public:
-    void ExportLevel(bool bExportToGame, bool bExportTexture, bool bAutoExport);
-    static bool Command_ExportToEngine();
-
-    void OnFileExportOcclusionMesh();
+    // @param files: A list of file paths, separated by '|';
+    void OpenExternalLuaDebugger(AZStd::string_view luaDebuggerUri, AZStd::string_view enginePath, AZStd::string_view projectPath, const char * files);
 };
 
 //////////////////////////////////////////////////////////////////////////

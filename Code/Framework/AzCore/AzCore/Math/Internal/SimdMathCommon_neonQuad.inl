@@ -26,12 +26,13 @@ namespace AZ
 
             AZ_MATH_INLINE float32x4_t FromVec1(float32x2_t value)
             {
-                return vcombine_f32(value, vmov_n_f32(0.0f));
+                value = NeonDouble::SplatIndex0(value);
+                return vcombine_f32(value, value); // {value.x, value.x, value.x, value.x}
             }
 
             AZ_MATH_INLINE float32x4_t FromVec2(float32x2_t value)
             {
-                return vcombine_f32(value, vmov_n_f32(0.0f));
+                return vcombine_f32(value, vmov_n_f32(0.0f)); // {value.x, value.y, 0.0f, 0.0f}
             }
 
             AZ_MATH_INLINE float32x4_t LoadAligned(const float* __restrict addr)
@@ -90,22 +91,22 @@ namespace AZ
                 vst1q_s32(addr, value);
             }
 
-            AZ_MATH_INLINE float SelectFirst(float32x4_t value)
+            AZ_MATH_INLINE float SelectIndex0(float32x4_t value)
             {
                 return vgetq_lane_f32(value, 0);
             }
 
-            AZ_MATH_INLINE float SelectSecond(float32x4_t value)
+            AZ_MATH_INLINE float SelectIndex1(float32x4_t value)
             {
                 return vgetq_lane_f32(value, 1);
             }
 
-            AZ_MATH_INLINE float SelectThird(float32x4_t value)
+            AZ_MATH_INLINE float SelectIndex2(float32x4_t value)
             {
                 return vgetq_lane_f32(value, 2);
             }
 
-            AZ_MATH_INLINE float SelectFourth(float32x4_t value)
+            AZ_MATH_INLINE float SelectIndex3(float32x4_t value)
             {
                 return vgetq_lane_f32(value, 3);
             }
@@ -120,64 +121,64 @@ namespace AZ
                 return vdupq_n_s32(value);
             }
 
-            AZ_MATH_INLINE float32x4_t SplatFirst(float32x4_t value)
+            AZ_MATH_INLINE float32x4_t SplatIndex0(float32x4_t value)
             {
                 return vdupq_laneq_f32(value, 0);
             }
 
-            AZ_MATH_INLINE float32x4_t SplatSecond(float32x4_t value)
+            AZ_MATH_INLINE float32x4_t SplatIndex1(float32x4_t value)
             {
                 return vdupq_laneq_f32(value, 1);
             }
 
-            AZ_MATH_INLINE float32x4_t SplatThird(float32x4_t value)
+            AZ_MATH_INLINE float32x4_t SplatIndex2(float32x4_t value)
             {
                 return vdupq_laneq_f32(value, 2);
             }
 
-            AZ_MATH_INLINE float32x4_t SplatFourth(float32x4_t value)
+            AZ_MATH_INLINE float32x4_t SplatIndex3(float32x4_t value)
             {
                 return vdupq_laneq_f32(value, 3);
             }
 
-            AZ_MATH_INLINE float32x4_t ReplaceFirst(float32x4_t a, float b)
+            AZ_MATH_INLINE float32x4_t ReplaceIndex0(float32x4_t a, float b)
             {
                 return vsetq_lane_f32(b, a, 0);
             }
 
-            AZ_MATH_INLINE float32x4_t ReplaceFirst(float32x4_t a, float32x4_t b)
+            AZ_MATH_INLINE float32x4_t ReplaceIndex0(float32x4_t a, float32x4_t b)
             {
-                return ReplaceFirst(a, SelectFirst(b));
+                return ReplaceIndex0(a, SelectIndex0(b));
             }
 
-            AZ_MATH_INLINE float32x4_t ReplaceSecond(float32x4_t a, float b)
+            AZ_MATH_INLINE float32x4_t ReplaceIndex1(float32x4_t a, float b)
             {
                 return vsetq_lane_f32(b, a, 1);
             }
 
-            AZ_MATH_INLINE float32x4_t ReplaceSecond(float32x4_t a, float32x4_t b)
+            AZ_MATH_INLINE float32x4_t ReplaceIndex1(float32x4_t a, float32x4_t b)
             {
-                return ReplaceSecond(a, SelectSecond(b));
+                return ReplaceIndex1(a, SelectIndex1(b));
             }
 
-            AZ_MATH_INLINE float32x4_t ReplaceThird(float32x4_t a, float b)
+            AZ_MATH_INLINE float32x4_t ReplaceIndex2(float32x4_t a, float b)
             {
                 return vsetq_lane_f32(b, a, 2);
             }
 
-            AZ_MATH_INLINE float32x4_t ReplaceThird(float32x4_t a, float32x4_t b)
+            AZ_MATH_INLINE float32x4_t ReplaceIndex2(float32x4_t a, float32x4_t b)
             {
-                return ReplaceThird(a, SelectThird(b));
+                return ReplaceIndex2(a, SelectIndex2(b));
             }
 
-            AZ_MATH_INLINE float32x4_t ReplaceFourth(float32x4_t a, float b)
+            AZ_MATH_INLINE float32x4_t ReplaceIndex3(float32x4_t a, float b)
             {
                 return vsetq_lane_f32(b, a, 3);
             }
 
-            AZ_MATH_INLINE float32x4_t ReplaceFourth(float32x4_t a, float32x4_t b)
+            AZ_MATH_INLINE float32x4_t ReplaceIndex3(float32x4_t a, float32x4_t b)
             {
-                return ReplaceFourth(a, SelectFourth(b));
+                return ReplaceIndex3(a, SelectIndex3(b));
             }
 
             AZ_MATH_INLINE float32x4_t LoadImmediate(float x, float y, float z, float w)
@@ -402,6 +403,31 @@ namespace AZ
                 return Neon::AreAllLanesTrue(vcgeq_f32(arg1, arg2));
             }
 
+            AZ_MATH_INLINE bool CmpFirstThreeEq(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vceqq_f32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeLt(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vcltq_f32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeLtEq(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vcleq_f32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeGt(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vcgtq_f32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeGtEq(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vcgeq_f32(arg1, arg2));
+            }
+
             AZ_MATH_INLINE int32x4_t CmpEq(int32x4_t arg1, int32x4_t arg2)
             {
                 return vceqq_s32(arg1, arg2);
@@ -435,6 +461,11 @@ namespace AZ
             AZ_MATH_INLINE bool CmpAllEq(int32x4_t arg1, int32x4_t arg2)
             {
                 return Neon::AreAllLanesTrue(vceqq_s32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeEq(int32x4_t arg1, int32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vceqq_s32(arg1, arg2));
             }
 
             AZ_MATH_INLINE float32x4_t Select(float32x4_t arg1, float32x4_t arg2, float32x4_t mask)

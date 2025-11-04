@@ -29,7 +29,7 @@ namespace ScriptCanvas
                 return false;
             }
 
-            int nodeElementIndex = operatorBaseClass->FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+            int nodeElementIndex = operatorBaseClass->FindElement(AZ_CRC_CE("BaseClass1"));
 
             if (nodeElementIndex < 0)
             {
@@ -52,12 +52,12 @@ namespace ScriptCanvas
             bool addedBaseClass = true;
 
             // Need to shim in a new class
-            AZ::SerializeContext::DataElementNode baseClassElement = (*classElement.FindSubElement(AZ_CRC("BaseClass1", 0xd4925735)));            
-            classElement.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735));
+            AZ::SerializeContext::DataElementNode baseClassElement = (*classElement.FindSubElement(AZ_CRC_CE("BaseClass1")));
+            classElement.RemoveElementByName(AZ_CRC_CE("BaseClass1"));
 
             classElement.AddElement<ClassType>(serializeContext, "BaseClass1");
 
-            AZ::SerializeContext::DataElementNode* newClassNode = classElement.FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
+            AZ::SerializeContext::DataElementNode* newClassNode = classElement.FindSubElement(AZ_CRC_CE("BaseClass1"));
 
             if (newClassNode)
             {

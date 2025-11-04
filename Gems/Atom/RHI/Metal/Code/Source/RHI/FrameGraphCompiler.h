@@ -19,7 +19,7 @@ namespace AZ
         {
             using Base = RHI::FrameGraphCompiler;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphCompiler> Create();
 
@@ -28,7 +28,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::FrameGraphCompiler
-            RHI::ResultCode InitInternal(RHI::Device& device) override;
+            RHI::ResultCode InitInternal() override;
             void ShutdownInternal() override;
             RHI::MessageOutcome CompileInternal(const RHI::FrameGraphCompileRequest& request) override;
             //////////////////////////////////////////////////////////////////////////

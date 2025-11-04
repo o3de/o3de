@@ -87,7 +87,7 @@ namespace UnitTest
         {
             AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
                 timeOneFrameSeconds,
-                AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+                AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
 
             if (tickCount == tickBefore)
             {

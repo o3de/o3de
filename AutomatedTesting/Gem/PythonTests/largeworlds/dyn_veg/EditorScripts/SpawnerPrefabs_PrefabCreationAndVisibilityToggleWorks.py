@@ -60,7 +60,7 @@ def SpawnerPrefabs_PrefabCreationAndVisibilityToggleWorks():
     # 2) Verifies if a prefab containing the Vegetation Layer Spawner component can be created.
     # 2.1) Create basic vegetation entity
     position = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "SpawnerPrefab_PinkFlower")[0]
     veg_1 = dynveg.create_temp_prefab_vegetation_area("vegetation_1", position, 16.0, 16.0, 16.0,
                                                       pink_flower_prefab)

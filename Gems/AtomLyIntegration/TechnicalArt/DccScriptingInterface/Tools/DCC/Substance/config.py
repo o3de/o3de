@@ -17,8 +17,8 @@ Adobe Substance Designer with o3de inter-op, scripts, etc.
 
 This like the core <DCCsi>/config.py uses Dynaconf:
 1. Modular rather then monolithic (single DCC integrations can stand on their own)
-2. Layered config and settings (the core can be extended or )
-3. Derive or alter via logic
+2. Layered config and settings (the core can be extended or replaced)
+3. Derive or alter env via logic
 4. DCC integration code and comments are written for a novice TA audience
 5. etc. (to do: expand on the benefits)
 

@@ -58,6 +58,7 @@ namespace ScriptEvents
         : public ScriptEventsSystemComponentImpl
     {
     public:
+        AZ_CLASS_ALLOCATOR(ScriptEventsSystemComponentRuntimeImpl, AZ::SystemAllocator)
 
         void RegisterAssetHandler() override;
         void UnregisterAssetHandler() override;

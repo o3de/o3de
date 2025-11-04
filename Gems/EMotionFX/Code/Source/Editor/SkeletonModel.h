@@ -12,8 +12,8 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Node.h>
-#include <QtCore/QAbstractItemModel>
-#include <QtCore/QItemSelectionModel>
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
 #include <Editor/ActorEditorBus.h>
 #include <Editor/QtMetaTypes.h>
 #include <QIcon>
@@ -99,6 +99,7 @@ namespace EMotionFX
         static const char* s_ragdollJointLimitIconPath;
         static const char* s_simulatedJointIconPath;
         static const char* s_simulatedColliderIconPath;
+        static const char* s_characterIconPath;
 
         static bool IndexIsRootNode(const QModelIndex& idx);
         static bool IndicesContainRootNode(const QModelIndexList& indices);
@@ -135,6 +136,7 @@ namespace EMotionFX
         QIcon m_ragdollJointLimitIcon;
         QIcon m_simulatedJointIcon;
         QIcon m_simulatedColliderIcon;
+        QIcon m_characterIcon;
     };
 
 } // namespace EMotionFX

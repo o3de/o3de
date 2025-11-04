@@ -19,7 +19,7 @@ namespace GraphCanvas
         , public StyleManagerNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(IconDecoratedNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IconDecoratedNodePaletteTreeItem, AZ::SystemAllocator);
         AZ_RTTI(IconDecoratedNodePaletteTreeItem, "{674FE7BB-C15C-4532-B580-336C7C6173A3}", NodePaletteTreeItem);
 
         IconDecoratedNodePaletteTreeItem(AZStd::string_view name, EditorId editorId);

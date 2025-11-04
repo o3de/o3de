@@ -9,8 +9,8 @@
 
 #include <RHI/CommandQueue.h>
 
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 #include <AzCore/std/containers/span.h>
 
 namespace AZ
@@ -46,16 +46,19 @@ namespace AZ
 
             // Queue copy commands to upload buffer resource
             // @return queue id which can be use to check whether upload finished or wait for upload finish
-            uint64_t QueueUpload(const RHI::BufferStreamRequest& request);
+            uint64_t QueueUpload(const RHI::DeviceBufferStreamRequest& request);
 
             // Queue copy commands to upload image subresources.
             // @param residentMip is the resident mip level the expand request starts from. 
             // @return queue id which can be use to check whether upload finished or wait for upload finish
-            uint64_t QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
+            uint64_t QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip);
             
             // Queue tile mapping to map tiles from allocate heap for reserved resource. This is usually required before upload data to 
             // reserved resource in this copy queue
             void QueueTileMapping(const CommandList::TileMapRequest& request);
+
+            // Queue a wait command
+            void QueueWaitFence(const Fence& fence, uint64_t fenceValue);
 
             bool IsUploadFinished(uint64_t fenceValue);
             void WaitForUpload(uint64_t fenceValue);
@@ -98,12 +101,6 @@ namespace AZ
             // pending upload callbacks and their corresponding fence values
             AZStd::queue<AZStd::pair<AZStd::function<void()>, uint64_t>> m_callbacks;
             AZStd::mutex m_callbackMutex;
-
-            // commands which need to be cached before they were finished
-            // Note: the BufferStreamRequest doesn't need to be cached since the queued command doesn't use the its reference
-            AZStd::queue<CommandList::TileMapRequest> m_tileMapRequests;
-            AZStd::queue<RHI::StreamingImageExpandRequest> m_imageExpandRequests;
-            AZStd::mutex m_copyQueueMutex;
         };
     }
 }

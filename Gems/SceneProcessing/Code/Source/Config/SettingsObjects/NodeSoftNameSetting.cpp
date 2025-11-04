@@ -31,6 +31,8 @@ namespace AZ
                     ->Version(1)
                     ->Field("includeChildren", &NodeSoftNameSetting::m_includeChildren);
 
+                serialize->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<NodeSoftNameSetting>>>();
+
                 EditContext* editContext = serialize->GetEditContext();
                 if (editContext)
                 {
@@ -62,6 +64,11 @@ namespace AZ
             {
                 return MatchesPattern(graph.GetNodeName(node));
             }
+        }
+
+        const AZ::Uuid NodeSoftNameSetting::GetTypeId() const
+        {
+            return azrtti_typeid<NodeSoftNameSetting>();
         }
 
         bool NodeSoftNameSetting::MatchesPattern(const SceneAPI::Containers::SceneGraph::Name& name) const

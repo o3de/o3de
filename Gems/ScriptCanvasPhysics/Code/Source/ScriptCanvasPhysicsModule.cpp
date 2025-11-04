@@ -17,7 +17,7 @@ namespace ScriptCanvasPhysics
     {
     public:
         AZ_RTTI(ScriptCanvasPhysicsModule, "{6B4D5464-DAA5-439D-A0D9-22311608C610}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasPhysicsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasPhysicsModule, AZ::SystemAllocator);
 
         ScriptCanvasPhysicsModule()
             : AZ::Module()
@@ -40,7 +40,8 @@ namespace ScriptCanvasPhysics
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), ScriptCanvasPhysics::ScriptCanvasPhysicsModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasPhysics, ScriptCanvasPhysics::ScriptCanvasPhysicsModule)
+#endif

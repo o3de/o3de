@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathUtils.h>
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
@@ -20,6 +21,7 @@ namespace AZ
 {
     namespace Render
     {
+        AZ_CVAR(bool, r_enableDOF, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable depth of field effect support");
 
         // Must match the struct in NewDepthOfFieldCommon.azsli
         struct NewDepthOfFieldConstants
@@ -46,6 +48,10 @@ namespace AZ
 
         bool NewDepthOfFieldParentPass::IsEnabled() const
         {
+            if (!r_enableDOF)
+            {
+                return false;
+            }
             if (!ParentPass::IsEnabled())
             {
                 return false;
@@ -56,7 +62,7 @@ namespace AZ
                 return false;
             }
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            AZ::RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            AZ::RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
             if (!fp)
             {
                 return false;
@@ -74,7 +80,7 @@ namespace AZ
         {
             RPI::Scene* scene = GetScene();
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            AZ::RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            AZ::RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
             if (fp)
             {
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -104,7 +110,7 @@ namespace AZ
         {
             // Though this is a fullscreen pass, the shader computes 16x16 tiles with groups of 8x8 threads,
             // each thread outputting to a single pixel in the tiled min/max texture
-            m_isFullscreenPass = false;
+            m_fullscreenDispatch = false;
         }
 
         void NewDepthOfFieldTileReducePass::FrameBeginInternal(FramePrepareParams params)

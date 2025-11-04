@@ -9,6 +9,8 @@
 #include <AssetBrowser/ui_AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -40,7 +42,6 @@ namespace AtomToolsFramework
         m_ui->m_searchWidget->Setup(true, true);
         m_ui->m_searchWidget->setMinimumSize(QSize(150, 0));
 
-        m_ui->m_viewOptionButton->setIcon(QIcon(":/Icons/menu.svg"));
         m_ui->m_splitter->setSizes(QList<int>() << 400 << 200);
         m_ui->m_splitter->setStretchFactor(0, 1);
 
@@ -64,20 +65,56 @@ namespace AtomToolsFramework
         connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AtomToolsAssetBrowser::UpdateFilter);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::activated, this, &AtomToolsAssetBrowser::OpenSelectedEntries);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this, &AtomToolsAssetBrowser::UpdatePreview);
-        connect(m_ui->m_viewOptionButton, &QPushButton::clicked, this, &AtomToolsAssetBrowser::OpenOptionsMenu);
         connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel, &AssetBrowserFilterModel::filterUpdatedSlot);
+
+        InitOptionsMenu();
+        InitSettingsHandler();
+        InitSettings();
     }
 
     AtomToolsAssetBrowser::~AtomToolsAssetBrowser()
     {
+        // Disconnect the event handler before saving settings so that it does not get triggered from the destructor.
+        m_settingsNotifyEventHandler.Disconnect();
+
+        // Rewrite any potentially unsaved settings to the registry.
+        SaveSettings();
+
         // Maintains the tree expansion state between runs
         m_ui->m_assetBrowserTreeViewWidget->SaveState();
         AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void AtomToolsAssetBrowser::SetFilterState(const AZStd::string& category, const AZStd::string& displayName, bool enabled)
+    AzToolsFramework::AssetBrowser::SearchWidget* AtomToolsAssetBrowser::GetSearchWidget()
     {
-        m_ui->m_searchWidget->SetFilterState(category.c_str(), displayName.c_str(), enabled);
+        return m_ui->m_searchWidget;
+    }
+
+    void AtomToolsAssetBrowser::SetFileTypeFilters(const FileTypeFilterVec& fileTypeFilters)
+    {
+        m_fileTypeFilters = fileTypeFilters;
+
+        // Pre sort the file type filters just so that they are organized alphabetically in the menu.
+        AZStd::sort(
+            m_fileTypeFilters.begin(),
+            m_fileTypeFilters.end(),
+            [](const auto& fileTypeFilter1, const auto& fileTypeFilter2)
+            {
+                return fileTypeFilter1.m_name < fileTypeFilter2.m_name;
+            });
+
+        UpdateFileTypeFilters();
+    }
+
+    void AtomToolsAssetBrowser::UpdateFileTypeFilters()
+    {
+        m_fileTypeFiltersEnabled = AZStd::any_of(
+            m_fileTypeFilters.begin(),
+            m_fileTypeFilters.end(),
+            [](const auto& fileTypeFilter)
+            {
+                return fileTypeFilter.m_enabled;
+            });
     }
 
     void AtomToolsAssetBrowser::SetOpenHandler(AZStd::function<void(const AZStd::string&)> openHandler)
@@ -101,7 +138,7 @@ namespace AtomToolsFramework
 
     void AtomToolsAssetBrowser::OpenSelectedEntries()
     {
-        const AZStd::vector<AssetBrowserEntry*> entries = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
+        const AZStd::vector<const AssetBrowserEntry*> entries = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
 
         const bool promptToOpenMultipleFiles =
             GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles", true);
@@ -130,33 +167,70 @@ namespace AtomToolsFramework
         }
     }
 
-    void AtomToolsAssetBrowser::OpenOptionsMenu()
-    {
-        QMenu menu;
-        QAction* action = menu.addAction(tr("Show Asset Preview"), this, &AtomToolsAssetBrowser::TogglePreview);
-        action->setCheckable(true);
-        action->setChecked(m_ui->m_previewerFrame->isVisible());
-        menu.exec(QCursor::pos());
-    }
-
     AzToolsFramework::AssetBrowser::FilterConstType AtomToolsAssetBrowser::CreateFilter() const
     {
         using namespace AzToolsFramework::AssetBrowser;
 
-        QSharedPointer<EntryTypeFilter> sourceFilter(new EntryTypeFilter);
-        sourceFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Source);
+        auto filterFn = [this](const AssetBrowserEntry* entry)
+        {
+            switch (entry->GetEntryType())
+            {
+            case AssetBrowserEntry::AssetEntryType::Folder:
+                {
+                    if (const auto& path = entry->GetFullPath(); !IsPathIgnored(path))
+                    {
+                        return m_showEmptyFolders;
+                    }
 
-        QSharedPointer<EntryTypeFilter> folderFilter(new EntryTypeFilter);
-        folderFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
+                    // The path is invalid or ignored
+                    return false;
+                }
 
-        QSharedPointer<CompositeFilter> sourceOrFolderFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::OR));
-        sourceOrFolderFilter->AddFilter(sourceFilter);
-        sourceOrFolderFilter->AddFilter(folderFilter);
+            case AssetBrowserEntry::AssetEntryType::Source:
+                {
+                    if (const auto& path = entry->GetFullPath(); !IsPathIgnored(path))
+                    {
+                        // Filter assets against supported extensions instead of using asset type comparisons
+                        if (m_fileTypeFiltersEnabled)
+                        {
+                            for (const auto& fileTypeFilter : m_fileTypeFilters)
+                            {
+                                if (fileTypeFilter.m_enabled)
+                                {
+                                    for (const auto& extension : fileTypeFilter.m_extensions)
+                                    {
+                                        if (AZ::StringFunc::EndsWith(path, extension))
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Filters were enabled but no matching filter was found so exclude this entry.
+                            return false;
+                        }
+
+                        // Filters were not enabled so automatically include all entries.
+                        return true;
+                    }
+
+                    // The path is invalid or ignored
+                    return false;
+                }
+            }
+
+            return false;
+        };
+
+        // The custom filter uses a lambda or function pointer instead of combining complicated filter logic operations. The filter must
+        // propagate down in order to support showing and hiding empty folders.
+        QSharedPointer<CustomFilter> customFilter(new CustomFilter(filterFn));
+        customFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
         QSharedPointer<CompositeFilter> finalFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
-        finalFilter->AddFilter(sourceOrFolderFilter);
         finalFilter->AddFilter(m_ui->m_searchWidget->GetFilter());
-
+        finalFilter->AddFilter(customFilter);
         return finalFilter;
     }
 
@@ -193,6 +267,152 @@ namespace AtomToolsFramework
         {
             m_ui->m_splitter->restoreState(m_browserState);
         }
+    }
+
+    void AtomToolsAssetBrowser::InitOptionsMenu()
+    {
+        // Create pop-up menu to toggle the visibility of the asset browser preview window
+        m_optionsMenu = new QMenu(this);
+        QMenu::connect(
+            m_optionsMenu,
+            &QMenu::aboutToShow,
+            [this]()
+            {
+                // Register action to toggle showing and hiding the asset preview image
+                m_optionsMenu->clear();
+                QAction* action = m_optionsMenu->addAction(tr("Show Asset Preview"), this, &AtomToolsAssetBrowser::TogglePreview);
+                action->setCheckable(true);
+                action->setChecked(m_ui->m_previewerFrame->isVisible());
+
+                // Register action to toggle showing and hiding folders with no visible children
+                m_optionsMenu->addSeparator();
+                QAction* emptyFolderAction = m_optionsMenu->addAction(
+                    tr("Show Empty Folders"),
+                    this,
+                    [this]()
+                    {
+                        m_showEmptyFolders = !m_showEmptyFolders;
+                        m_filterModel->filterUpdatedSlot();
+                    });
+                emptyFolderAction->setCheckable(true);
+                emptyFolderAction->setChecked(m_showEmptyFolders);
+
+                // Register actions to toggle showing and hiding asset browser entries matching supported extensions
+                if (!m_fileTypeFilters.empty())
+                {
+                    m_optionsMenu->addSeparator();
+                    m_optionsMenu->addAction(
+                        tr("Enable All File Filters"),
+                        this,
+                        [this]()
+                        {
+                            for (auto& fileTypeFilter : m_fileTypeFilters)
+                            {
+                                fileTypeFilter.m_enabled = true;
+                            }
+                            UpdateFileTypeFilters();
+                            m_filterModel->filterUpdatedSlot();
+                        });
+
+                    m_optionsMenu->addAction(
+                        tr("Disable All File Filters"),
+                        this,
+                        [this]()
+                        {
+                            for (auto& fileTypeFilter : m_fileTypeFilters)
+                            {
+                                fileTypeFilter.m_enabled = false;
+                            }
+                            UpdateFileTypeFilters();
+                            m_filterModel->filterUpdatedSlot();
+                        });
+                    m_optionsMenu->addSeparator();
+
+                    for (const auto& fileTypeFilter : m_fileTypeFilters)
+                    {
+                        QAction* extensionAction = m_optionsMenu->addAction(
+                            tr("Show %1 Files").arg(fileTypeFilter.m_name.c_str()),
+                            this,
+                            [this, fileTypeFilterName = fileTypeFilter.m_name]()
+                            {
+                                auto fileTypeFilterItr = AZStd::find_if(
+                                    m_fileTypeFilters.begin(),
+                                    m_fileTypeFilters.end(),
+                                    [fileTypeFilterName](const auto& fileTypeFilter)
+                                    {
+                                        return fileTypeFilter.m_name == fileTypeFilterName;
+                                    });
+                                if (fileTypeFilterItr != m_fileTypeFilters.end())
+                                {
+                                    fileTypeFilterItr->m_enabled = !fileTypeFilterItr->m_enabled;
+                                }
+                                UpdateFileTypeFilters();
+                                m_filterModel->filterUpdatedSlot();
+                            });
+                        extensionAction->setCheckable(true);
+                        extensionAction->setChecked(fileTypeFilter.m_enabled);
+                    }
+                }
+            });
+
+        m_ui->m_viewOptionButton->setMenu(m_optionsMenu);
+        m_ui->m_viewOptionButton->setIcon(QIcon(":/Icons/menu.svg"));
+        m_ui->m_viewOptionButton->setPopupMode(QToolButton::InstantPopup);
+    }
+
+    void AtomToolsAssetBrowser::InitSettingsHandler()
+    {
+        // Monitor for asset browser related settings changes
+        if (auto registry = AZ::SettingsRegistry::Get())
+        {
+            m_settingsNotifyEventHandler = registry->RegisterNotifier(
+                [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                {
+                    // Refresh the asset browser model if any of the filter related settings change.
+                    if (AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(
+                            "/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder", notifyEventArgs.m_jsonKeyPath) ||
+                        AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(
+                            "/O3DE/AtomToolsFramework/Application/IgnoredPathRegexPatterns", notifyEventArgs.m_jsonKeyPath))
+                    {
+                        m_filterModel->filterUpdatedSlot();
+                    }
+                });
+        }
+    }
+
+    void AtomToolsAssetBrowser::InitSettings()
+    {
+        // Restoring enabled state for registered file type filters.
+        const auto& fileTypeFilterStateMap =
+            GetSettingsObject("/O3DE/AtomToolsFramework/AssetBrowser/FileTypeFilterStateMap", AZStd::unordered_map<AZStd::string, bool>{});
+        for (const auto& fileTypeFilterStatePair : fileTypeFilterStateMap)
+        {
+            auto fileTypeFilterItr = AZStd::find_if(
+                m_fileTypeFilters.begin(),
+                m_fileTypeFilters.end(),
+                [fileTypeFilterStatePair](const auto& fileTypeFilter)
+                {
+                    return fileTypeFilter.m_name == fileTypeFilterStatePair.first;
+                });
+            if (fileTypeFilterItr != m_fileTypeFilters.end())
+            {
+                fileTypeFilterItr->m_enabled = fileTypeFilterStatePair.second;
+            }
+        }
+        m_showEmptyFolders = GetSettingsValue("/O3DE/AtomToolsFramework/AssetBrowser/ShowEmptyFolders", false);
+        UpdateFileTypeFilters();
+    }
+
+    void AtomToolsAssetBrowser::SaveSettings()
+    {
+        // Record the enabled state for each of the file type filters
+        AZStd::unordered_map<AZStd::string, bool> fileTypeFilterStateMap;
+        for (const auto& fileTypeFilter : m_fileTypeFilters)
+        {
+            fileTypeFilterStateMap[fileTypeFilter.m_name] = fileTypeFilter.m_enabled;
+        }
+        SetSettingsObject("/O3DE/AtomToolsFramework/AssetBrowser/FileTypeFilterStateMap", fileTypeFilterStateMap);
+        SetSettingsValue("/O3DE/AtomToolsFramework/AssetBrowser/ShowEmptyFolders", m_showEmptyFolders);
     }
 
     void AtomToolsAssetBrowser::OnSystemTick()

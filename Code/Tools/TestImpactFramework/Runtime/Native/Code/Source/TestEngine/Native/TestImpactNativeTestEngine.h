@@ -17,35 +17,43 @@
 #include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
 #include <TestEngine/Common/Run/TestImpactTestEngineRegularRun.h>
 
+#include <TestRunner/Native/Job/TestImpactNativeShardedTestJobInfoGenerator.h>
+
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
     class NativeTestTarget;
+    class NativeTestEnumerationJobInfoGenerator;
     class NativeRegularTestRunJobInfoGenerator;
     class NativeInstrumentedTestRunJobInfoGenerator;
+    struct NativeShardedArtifactDir;
+    class NativeShardedRegularTestRunJobInfoGenerator;
+    class NativeShardedInstrumentedTestRunJobInfoGenerator;
     class NativeTestEnumerator;
     class NativeInstrumentedTestRunner;
     class NativeRegularTestRunner;
+    class NativeShardedInstrumentedTestRunner;
+    class NativeShardedRegularTestRunner;
 
     //! Provides the front end for performing test enumerations and test runs.
     class NativeTestEngine
     {
     public:
         //! Configures the test engine with the necessary path information for launching test targets and managing the artifacts they produce.
-        //! @param sourceDir Root path where source files are found (including subfolders).
+        //! @param repoRootDir Root path where source files are found (including subfolders).
         //! @param targetBinaryDir Path to where the test target binaries are found.
-        //! @param cacheDir Path to the persistent folder where test target enumerations are cached.
         //! @param artifactDir Path to the transient directory where test artifacts are produced.
+        //! @param shardedArtifactDir Path to the transient directory where sharded test artifacts are produced.
         //! @param testRunnerBinary Path to the binary responsible for launching test targets that have the TestRunner launch method.
         //! @param instrumentBinary Path to the binary responsible for launching test targets with test coverage instrumentation.
         //! @param maxConcurrentRuns The maximum number of concurrent test targets that can be in flight at any given moment.
         NativeTestEngine(
-            const RepoPath& sourceDir,
+            const RepoPath& repoRootDir,
             const RepoPath& targetBinaryDir,
-            const RepoPath& cacheDir,
             const ArtifactDir& artifactDir,
+            const NativeShardedArtifactDir& shardedArtifactDir,
             const RepoPath& testRunnerBinary,
             const RepoPath& instrumentBinary,
             size_t maxConcurrentRuns);
@@ -58,8 +66,8 @@ namespace TestImpact
         //! by the test engine itself.
         //! @param testTargets The test targets to enumerate.
         //! @param executionFailurePolicy The policy for how enumeration execution failures should be handled.
-        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty). 
-        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
+        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty).
+        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty).
         //! @param callback The client callback function to handle completed test target enumerations.
         //! @ returns The sequence result and the enumerations for the target that were enumerated.
         //AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
@@ -72,13 +80,11 @@ namespace TestImpact
 
         //! Performs a test run without any instrumentation and, for each test target, returns the test run results and metrics about the run.
         //! @param testTargets The test targets to run.
-        //! @param testShardingPolicy Test sharding policy to use for test targets in this run.
         //! @param executionFailurePolicy Policy for how test execution failures should be handled.
         //! @param testFailurePolicy Policy for how test targets with failing tests should be handled.
         //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.
-        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty). 
-        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
-        //! @param callback The client callback function to handle completed test target runs.
+        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty).
+        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty).
         //! @ returns The sequence result and the test run results for the test targets that were run.
         [[nodiscard]] TestEngineRegularRunResult<NativeTestTarget>
         RegularRun(
@@ -87,8 +93,7 @@ namespace TestImpact
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const;
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const;
 
         //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics about the run.
         //! @param testTargets The test targets to run.
@@ -96,9 +101,8 @@ namespace TestImpact
         //! @param integrityFailurePolicy Policy for how integrity failures of the test impact data and source tree model should be handled.
         //! @param testFailurePolicy Policy for how test targets with failing tests should be handled.
         //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.
-        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty). 
-        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
-        //! @param callback The client callback function to handle completed test target runs.
+        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty).
+        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty).
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
         [[nodiscard]] TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage>
         InstrumentedRun(
@@ -108,19 +112,26 @@ namespace TestImpact
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const;
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const;
 
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.
-        void DeleteArtifactXmls() const;
+        void DeleteXmlArtifacts() const;
 
-        size_t m_maxConcurrentRuns = 0;
+        //! Helper function to generate the test target and enumeration pairs for a given set of test targets.
+        AZStd::vector<TestTargetAndEnumeration> GenerateTestTargetAndEnumerations(const AZStd::vector<const NativeTestTarget*>& testTargets) const;
+
+        AZStd::unique_ptr<NativeTestEnumerationJobInfoGenerator> m_enumerationTestJobInfoGenerator;
         AZStd::unique_ptr<NativeRegularTestRunJobInfoGenerator> m_regularTestJobInfoGenerator;
         AZStd::unique_ptr<NativeInstrumentedTestRunJobInfoGenerator> m_instrumentedTestJobInfoGenerator;
+        AZStd::unique_ptr<NativeShardedRegularTestRunJobInfoGenerator> m_shardedRegularTestJobInfoGenerator;
+        AZStd::unique_ptr<NativeShardedInstrumentedTestRunJobInfoGenerator> m_shardedInstrumentedTestJobInfoGenerator;
         AZStd::unique_ptr<NativeTestEnumerator> m_testEnumerator;
         AZStd::unique_ptr<NativeInstrumentedTestRunner> m_instrumentedTestRunner;
         AZStd::unique_ptr<NativeRegularTestRunner> m_testRunner;
+        AZStd::unique_ptr<NativeShardedInstrumentedTestRunner> m_shardedInstrumentedTestRunner;
+        AZStd::unique_ptr<NativeShardedRegularTestRunner> m_shardedTestRunner;
         ArtifactDir m_artifactDir;
+        NativeShardedArtifactDir m_shardedArtifactDir;
     };
 } // namespace TestImpact

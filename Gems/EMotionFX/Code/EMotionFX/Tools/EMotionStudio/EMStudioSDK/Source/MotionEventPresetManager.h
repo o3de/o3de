@@ -25,10 +25,10 @@ namespace EMStudio
     {
     public:
         AZ_RTTI(EMStudio::MotionEventPreset, "{EDE6662A-32C4-4DE1-9EC5-19C9F506ACAE}")
-        AZ_CLASS_ALLOCATOR(MotionEventPreset, EMStudio::UIAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionEventPreset, EMStudio::UIAllocator)
 
         MotionEventPreset() = default;
-        MotionEventPreset(const AZStd::string& name, EMotionFX::EventDataSet&& eventDatas, AZ::Color color);
+        MotionEventPreset(const AZStd::string& name, EMotionFX::EventDataSet&& eventDatas, AZ::Color color, const AZStd::string& comment);
 
         virtual ~MotionEventPreset() = default;
 
@@ -37,12 +37,7 @@ namespace EMStudio
         const EMotionFX::EventDataSet& GetEventDatas() const { return m_eventDatas; }
         EMotionFX::EventDataSet& GetEventDatas() { return m_eventDatas; }
         const AZStd::string& GetName() const { return m_name; }
-        AZ::u32 GetEventColor() const
-        {
-            // AZ::Color::ToU32 returns the color in format AABBGGRR, but Qt
-            // wants AARRGGBB
-            return (m_color.GetA8() << 24) | (m_color.GetR8() << 16) | (m_color.GetG8() << 8) | (m_color.GetB8());
-        }
+        const AZ::Color& GetEventColor() const { return m_color; }
         bool GetIsDefault() const { return m_isDefault; }
 
         void SetName(const AZStd::string& name) { m_name = name; }
@@ -52,6 +47,7 @@ namespace EMStudio
     private:
         EMotionFX::EventDataSet m_eventDatas;
         AZStd::string m_name;
+        AZStd::string m_comment;
         AZ::Color m_color = AZ::Color::CreateOne();
         bool m_isDefault = false;
     };
@@ -86,7 +82,7 @@ namespace EMStudio
         const AZStd::string& GetFileNameString() const                          { return m_fileName; }
         void SetFileName(const char* filename)                                  { m_fileName = filename; }
 
-        AZ::u32 GetEventColor(const EMotionFX::EventDataSet& eventDatas) const;
+        AZ::Color GetEventColor(const EMotionFX::EventDataSet& eventDatas) const;
 
     private:
         bool LoadLYSerializedFormat();
@@ -95,7 +91,7 @@ namespace EMStudio
         AZStd::vector<MotionEventPreset*>           m_eventPresets;
         AZStd::string                               m_fileName;
         bool                                        m_dirtyFlag;
-        static const AZ::u32                        s_unknownEventColor;
+        static const AZ::Color                        s_unknownEventColor;
 
         void SaveToSettings();
         void CreateDefaultPresets();

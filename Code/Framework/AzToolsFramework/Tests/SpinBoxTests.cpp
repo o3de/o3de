@@ -28,7 +28,7 @@ namespace UnitTest
 
     // A fixture to help test the int and double spin boxes.
     class SpinBoxFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override

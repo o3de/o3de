@@ -38,11 +38,7 @@ namespace EMotionFX
         }
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(EMotionFXBuilderTests, DISABLED_TestAnimGraphAsset_HasReferenceNode_OutputProductDependencies)
-#else
     TEST_F(EMotionFXBuilderTests, TestAnimGraphAsset_HasReferenceNode_OutputProductDependencies)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         AZ::Data::AssetId referencedAnimGraph("96025290-BCC9-5382-AFC0-8B47CEF63018", 0);
         AZ::Data::AssetId referencedMotionSet("6455D020-F4CE-5F57-8557-315C0C968122", 0);

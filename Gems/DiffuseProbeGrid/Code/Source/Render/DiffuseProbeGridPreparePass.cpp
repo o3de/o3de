@@ -8,7 +8,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -20,6 +20,9 @@ namespace AZ
 {
     namespace Render
     {
+        constexpr AZStd::string_view DiffuseProbeGridPrepareShaderProductAssetPath =
+            "shaders/diffuseglobalillumination/diffuseprobegridprepare.azshader";
+
         RPI::Ptr<DiffuseProbeGridPreparePass> DiffuseProbeGridPreparePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridPreparePass> pass = aznew DiffuseProbeGridPreparePass(descriptor);
@@ -44,8 +47,7 @@ namespace AZ
         {
             // load shader
             // Note: the shader may not be available on all platforms
-            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridPrepare.azshader";
-            m_shader = RPI::LoadCriticalShader(shaderFilePath);
+            m_shader = RPI::LoadCriticalShader(DiffuseProbeGridPrepareShaderProductAssetPath);
             if (m_shader == nullptr)
             {
                 return;
@@ -64,7 +66,11 @@ namespace AZ
             const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchArgs);
             if (!outcome.IsSuccess())
             {
-                AZ_Error("PassSystem", false, "[DiffuseProbeGridPreparePass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath.c_str(), outcome.GetError().c_str());
+                AZ_Error("PassSystem", false,
+                    "[DiffuseProbeGridPreparePass '%s']: Shader '" AZ_STRING_FORMAT "' contains invalid numthreads arguments:\n%s",
+                    GetPathName().GetCStr(),
+                    AZ_STRING_ARG(DiffuseProbeGridPrepareShaderProductAssetPath),
+                    outcome.GetError().c_str());
             }
         }
 
@@ -112,7 +118,8 @@ namespace AZ
                     desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                    frameGraph.UseShaderAttachment(
+                        desc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::ComputeShader);
                 }
             }
         }
@@ -126,7 +133,10 @@ namespace AZ
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdatePrepareSrg(m_shader, m_srgLayout);
-                diffuseProbeGrid->GetPrepareSrg()->Compile();
+                if (!diffuseProbeGrid->GetPrepareSrg()->IsQueuedForCompile())
+                {
+                    diffuseProbeGrid->GetPrepareSrg()->Compile();
+                }
             }
         }
 
@@ -142,11 +152,11 @@ namespace AZ
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
 
                 const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetPrepareSrg()->GetRHIShaderResourceGroup();
-                commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
+                commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup->GetDeviceShaderResourceGroup(context.GetDeviceIndex()));
 
-                RHI::DispatchItem dispatchItem;
+                RHI::DeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
-                dispatchItem.m_pipelineState = m_pipelineState;
+                dispatchItem.m_pipelineState = m_pipelineState->GetDevicePipelineState(context.GetDeviceIndex()).get();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = 1;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = 1;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;

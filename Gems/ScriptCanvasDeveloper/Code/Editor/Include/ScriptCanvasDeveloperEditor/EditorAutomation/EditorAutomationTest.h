@@ -100,7 +100,7 @@ namespace ScriptCanvas::Developer
         static constexpr int EXIT_STATE_ID = (-1);
 
         AZ_TYPE_INFO(EditorAutomationState, "{B18A0531-E3C2-4209-8A9E-1B0195C28443}");
-        AZ_CLASS_ALLOCATOR(EditorAutomationState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorAutomationState, AZ::SystemAllocator);
 
         virtual ~EditorAutomationState() = default;
 
@@ -189,6 +189,7 @@ namespace ScriptCanvas::Developer
     class NamedAutomationState : public EditorAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(NamedAutomationState, AZ::SystemAllocator)
 
         AZ_TYPE_INFO(NamedAutomationState, "{62DD037C-D80F-4B1B-9F3E-9F05400ABA24}");
 
@@ -261,7 +262,7 @@ namespace ScriptCanvas::Developer
         , public StateModel
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorAutomationTest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorAutomationTest, AZ::SystemAllocator);
         AZ_RTTI(EditorAutomationTest, "{C46081C5-E7E9-47C7-96D4-29E7D1C4D403}");
 
         ~EditorAutomationTest();

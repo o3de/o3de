@@ -96,7 +96,7 @@ bool UiGameEntityContext::CloneUiEntities(const AZStd::vector<AZ::EntityId>& sou
     for (const AZ::EntityId& id : sourceEntities)
     {
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
         if (entity)
         {
             sourceObjects.m_entities.push_back(entity);
@@ -135,7 +135,8 @@ bool UiGameEntityContext::DestroyEntity(AZ::Entity* entity)
     AZ_Assert(m_entityOwnershipService->IsInitialized(), "The context has not been initialized.");
 
     AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
-    EBUS_EVENT_ID_RESULT(owningContextId, entity->GetId(), AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+    AzFramework::EntityIdContextQueryBus::EventResult(
+        owningContextId, entity->GetId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
     AZ_Assert(owningContextId == m_contextId, "Entity does not belong to this context, and therefore can not be safely destroyed by this context.");
 
     if (owningContextId == m_contextId)
@@ -308,7 +309,11 @@ void UiGameEntityContext::OnSlicePreInstantiate(const AZ::Data::AssetId& sliceAs
                 }, m_serializeContext, false);
         }
 
-        EBUS_EVENT_ID(ticket, UiGameEntityContextSliceInstantiationResultsBus, OnEntityContextSlicePreInstantiate, sliceAssetId, sliceAddress);
+        UiGameEntityContextSliceInstantiationResultsBus::Event(
+            ticket,
+            &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSlicePreInstantiate,
+            sliceAssetId,
+            sliceAddress);
     }
 }
 
@@ -343,7 +348,7 @@ void UiGameEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAsse
         for (AZ::Entity* entity : entities)
         {
             LyShine::EntityArray children;
-            EBUS_EVENT_ID_RESULT(children, entity->GetId(), UiElementBus, GetChildElements);
+            UiElementBus::EventResult(children, entity->GetId(), &UiElementBus::Events::GetChildElements);
 
             for (auto child : children)
             {
@@ -369,12 +374,12 @@ void UiGameEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAsse
         // Initialize the internal parent pointers and the canvas pointer in the elements
         // We do this before adding the elements, otherwise the GetUniqueChildName code in FixupCreatedEntities will
         // already see the new elements and think the names are not unique
-        EBUS_EVENT_ID(m_canvasEntityId, UiCanvasBus, FixupCreatedEntities, entitiesToInit, true, parent);
+        UiCanvasBus::Event(m_canvasEntityId, &UiCanvasBus::Events::FixupCreatedEntities, entitiesToInit, true, parent);
 
         // Add all of the top-level entities as children of the parent
         for (auto entity : topLevelEntities)
         {
-            EBUS_EVENT_ID(m_canvasEntityId, UiCanvasBus, AddElement, entity, parent, nullptr);
+            UiCanvasBus::Event(m_canvasEntityId, &UiCanvasBus::Events::AddElement, entity, parent, nullptr);
         }
 
         // Here we adjust the position of the instantiated entities. Depending on how the dynamic slice
@@ -387,11 +392,11 @@ void UiGameEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAsse
 
             // Transform pivot position to canvas space
             AZ::Vector2 pivotPos;
-            EBUS_EVENT_ID_RESULT(pivotPos, rootElement->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+            UiTransformBus::EventResult(pivotPos, rootElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
 
             // Transform destination position to canvas space
             AZ::Matrix4x4 transformFromViewport;
-            EBUS_EVENT_ID(rootElement->GetId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+            UiTransformBus::Event(rootElement->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
             AZ::Vector3 destPos3 = transformFromViewport * AZ::Vector3(desiredViewportPosition.GetX(), desiredViewportPosition.GetY(), 0.0f);
             AZ::Vector2 destPos(destPos3.GetX(), destPos3.GetY());
 
@@ -401,23 +406,25 @@ void UiGameEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAsse
             for (auto entity : entitiesToInit)
             {
                 UiTransform2dInterface::Offsets offsets;
-                EBUS_EVENT_ID_RESULT(offsets, entity->GetId(), UiTransform2dBus, GetOffsets);
-                EBUS_EVENT_ID(entity->GetId(), UiTransform2dBus, SetOffsets, offsets + offsetDelta);
+                UiTransform2dBus::EventResult(offsets, entity->GetId(), &UiTransform2dBus::Events::GetOffsets);
+                UiTransform2dBus::Event(entity->GetId(), &UiTransform2dBus::Events::SetOffsets, offsets + offsetDelta);
             }
         }
         else if (!instantiating.m_position.IsZero())
         {
             AZ::Entity* rootElement = entitiesToInit[0];
-            EBUS_EVENT_ID(rootElement->GetId(), UiTransformBus, MoveLocalPositionBy, instantiating.m_position);
+            UiTransformBus::Event(rootElement->GetId(), &UiTransformBus::Events::MoveLocalPositionBy, instantiating.m_position);
         }
 
         // must erase this in case our instantiate calls trigger a slice spawn which would invalid this iterator.
         m_instantiatingDynamicSlices.erase(instantiatingIter);
 
         // This allows the UiSpawnerComponent to respond after the entities have been activated and fixed up
-        EBUS_EVENT_ID(ticket, UiGameEntityContextSliceInstantiationResultsBus, OnEntityContextSliceInstantiated, sliceAssetId, instance);
+        UiGameEntityContextSliceInstantiationResultsBus::Event(
+            ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSliceInstantiated, sliceAssetId, instance);
 
-        EBUS_EVENT(UiGameEntityContextNotificationBus, OnSliceInstantiated, sliceAssetId, instance, ticket);
+        UiGameEntityContextNotificationBus::Broadcast(
+            &UiGameEntityContextNotificationBus::Events::OnSliceInstantiated, sliceAssetId, instance, ticket);
     }
 }
 
@@ -430,7 +437,9 @@ void UiGameEntityContext::OnSliceInstantiationFailed(const AZ::Data::AssetId& sl
 
     if (m_instantiatingDynamicSlices.erase(ticket) > 0)
     {
-        EBUS_EVENT_ID(ticket, UiGameEntityContextSliceInstantiationResultsBus, OnEntityContextSliceInstantiationFailed, sliceAssetId);
-        EBUS_EVENT(UiGameEntityContextNotificationBus, OnSliceInstantiationFailed, sliceAssetId, ticket);
+        UiGameEntityContextSliceInstantiationResultsBus::Event(
+            ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSliceInstantiationFailed, sliceAssetId);
+        UiGameEntityContextNotificationBus::Broadcast(
+            &UiGameEntityContextNotificationBus::Events::OnSliceInstantiationFailed, sliceAssetId, ticket);
     }
 }

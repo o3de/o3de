@@ -26,7 +26,7 @@ namespace MCore
     class MCORE_API AttributeColor
         : public Attribute
     {
-        AZ_CLASS_ALLOCATOR(AttributeColor, AttributeAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AttributeColor, AttributeAllocator)
 
         friend class AttributeFactory;
     public:

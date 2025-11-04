@@ -57,6 +57,14 @@
                 "Path": "Passes/DiffuseProbeGridQuery.pass"
             },
             {
+                "Name": "DiffuseProbeGridQueryFullscreenPassTemplate",
+                "Path": "Passes/DiffuseProbeGridQueryFullscreen.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridQueryFullscreenWithAlbedoPassTemplate",
+                "Path": "Passes/DiffuseProbeGridQueryFullscreenWithAlbedo.pass"
+            },
+            {
                 "Name": "DiffuseProbeGridVisualizationPassTemplate",
                 "Path": "Passes/DiffuseProbeGridVisualization.pass"
             },

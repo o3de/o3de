@@ -18,7 +18,7 @@ namespace MessagePopup
     {
     public:
         AZ_RTTI(MessagePopupModule, "{79CE538B-D7D1-4066-8C0E-5794121BE8A8}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(MessagePopupModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MessagePopupModule, AZ::SystemAllocator);
 
         MessagePopupModule()
             : CryHooksModule()
@@ -46,7 +46,8 @@ namespace MessagePopup
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), MessagePopup::MessagePopupModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_MessagePopup, MessagePopup::MessagePopupModule)
+#endif

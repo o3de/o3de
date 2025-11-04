@@ -10,10 +10,10 @@
 #include "EditorEntitySortBus.h"
 
 #include <AzCore/Component/Entity.h>
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityStartStatus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -107,3 +107,6 @@ namespace AzToolsFramework
     };
     using EditorEntityInfoNotificationBus = AZ::EBus<EditorEntityInfoNotifications>;
 }
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityInfoRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorEntityInfoNotifications);

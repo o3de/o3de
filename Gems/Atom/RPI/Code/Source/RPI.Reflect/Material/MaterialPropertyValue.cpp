@@ -16,6 +16,7 @@ namespace AZ
 {
     namespace RPI
     {
+        // clang-format off
         static_assert((
             AZStd::is_same_v<AZStd::monostate,                   AZStd::variant_alternative_t<0, MaterialPropertyValue::ValueType>> &&
             AZStd::is_same_v<bool,                               AZStd::variant_alternative_t<1, MaterialPropertyValue::ValueType>> &&
@@ -28,8 +29,10 @@ namespace AZ
             AZStd::is_same_v<Color,                              AZStd::variant_alternative_t<8, MaterialPropertyValue::ValueType>> &&
             AZStd::is_same_v<Data::Asset<ImageAsset>,            AZStd::variant_alternative_t<9, MaterialPropertyValue::ValueType>> &&
             AZStd::is_same_v<Data::Instance<Image>,              AZStd::variant_alternative_t<10, MaterialPropertyValue::ValueType>> &&
-            AZStd::is_same_v<AZStd::string,                      AZStd::variant_alternative_t<11, MaterialPropertyValue::ValueType>>),
+            AZStd::is_same_v<AZStd::string,                      AZStd::variant_alternative_t<11, MaterialPropertyValue::ValueType>> &&
+            AZStd::is_same_v<RHI::SamplerState,                  AZStd::variant_alternative_t<12, MaterialPropertyValue::ValueType>>),
             "Types must be in the order of the type ID array.");
+        // clang-format on
 
         void MaterialPropertyValue::Reflect(ReflectContext* context)
         {
@@ -47,8 +50,7 @@ namespace AZ
         TypeId MaterialPropertyValue::GetTypeId() const
         {
             // Must sort in the same order defined in the variant.
-            static const AZ::TypeId PropertyValueTypeIds[] =
-            {
+            static const AZ::TypeId PropertyValueTypeIds[] = {
                 azrtti_typeid<AZStd::monostate>(),
                 azrtti_typeid<bool>(),
                 azrtti_typeid<int32_t>(),
@@ -61,6 +63,7 @@ namespace AZ
                 azrtti_typeid<Data::Asset<ImageAsset>>(),
                 azrtti_typeid<Data::Instance<Image>>(),
                 azrtti_typeid<AZStd::string>(),
+                azrtti_typeid<RHI::SamplerState>(),
             };
 
             return PropertyValueTypeIds[m_value.index()];
@@ -166,6 +169,10 @@ namespace AZ
             {
                 result.m_value = AZStd::any_cast<AZStd::string>(value);
             }
+            else if (value.is<RHI::SamplerState>())
+            {
+                result.m_value = AZStd::any_cast<RHI::SamplerState>(value);
+            }
             else
             {
                 AZ_Warning(
@@ -223,6 +230,10 @@ namespace AZ
             else if (AZStd::holds_alternative<AZStd::string>(value.m_value))
             {
                 result = AZStd::get<AZStd::string>(value.m_value);
+            }
+            else if (AZStd::holds_alternative<RHI::SamplerState>(value.m_value))
+            {
+                result = AZStd::get<RHI::SamplerState>(value.m_value);
             }
 
             return result;

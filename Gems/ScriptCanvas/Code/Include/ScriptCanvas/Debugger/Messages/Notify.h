@@ -25,7 +25,7 @@ namespace ScriptCanvas
                 : public AzFramework::RemoteToolsMessage
             {
             public:
-                AZ_CLASS_ALLOCATOR(Notification, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(Notification, AZ::SystemAllocator);
                 AZ_RTTI(Notification, "{2FBEC565-7F5F-435E-8BC6-DD17CC1FABE7}", AzFramework::RemoteToolsMessage);
 
                 Notification() : AzFramework::RemoteToolsMessage(k_serviceNotificationsMsgSlotId) {}
@@ -38,7 +38,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(NotificationPayload<t_Payload>, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(NotificationPayload<t_Payload>, AZ::SystemAllocator);
                 AZ_RTTI((NotificationPayload, "{AC9FC9F9-C660-43DC-BCB8-0CD390432ED1}", t_Payload), Notification);
 
                 t_Payload m_payload;
@@ -105,7 +105,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(BreakpointAdded, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(BreakpointAdded, AZ::SystemAllocator);
                 AZ_RTTI(BreakpointAdded, "{D1F1D760-57B5-42A5-B74A-B7DEC37C320E}", Notification);
 
                 Breakpoint m_breakpoint;
@@ -124,7 +124,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(BreakpointHit, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(BreakpointHit, AZ::SystemAllocator);
                 AZ_RTTI(BreakpointHit, "{CF28546A-7A3F-46E0-8A96-39555F8684F2}", Notification);
 
                 Breakpoint m_breakpoint;
@@ -143,7 +143,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(Connected, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(Connected, AZ::SystemAllocator);
                 AZ_RTTI(Connected, "{5AED7FF5-FEA3-4F24-A5D6-25A2554AA018}", Notification);
 
                 Target m_target;
@@ -161,7 +161,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(Disconnected, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(Disconnected, AZ::SystemAllocator);
                 AZ_RTTI(Disconnected, "{9A2280F2-0D2F-41E6-A0DB-6DBC65D039E3}", Notification);
 
                 Disconnected() = default;
@@ -173,7 +173,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(Continued, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(Continued, AZ::SystemAllocator);
                 AZ_RTTI(Continued, "{C3EBD826-115A-4EBC-8390-1FC8E4405395}", Notification);
 
                 virtual void Visit(NotificationVisitor& visitor) { visitor.Visit(*this); }
@@ -183,7 +183,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(SignaledInput, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(SignaledInput, AZ::SystemAllocator);
                 AZ_RTTI(SignaledInput, "{1FFD4CF1-4D3A-4FA7-8D57-5C178EFE9CA7}", Notification);
 
                 InputSignal m_signal;
@@ -201,7 +201,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(SignaledOutput, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(SignaledOutput, AZ::SystemAllocator);
                 AZ_RTTI(SignaledOutput, "{63805157-F333-4999-8FE2-93E3F71C23F7}", Notification);
 
                 OutputSignal m_signal;
@@ -219,7 +219,7 @@ namespace ScriptCanvas
                 : public Notification
             {
             public:
-                AZ_CLASS_ALLOCATOR(VariableChanged, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(VariableChanged, AZ::SystemAllocator);
                 AZ_RTTI(VariableChanged, "{86D554CF-D998-4AB6-B528-10273584A301}", Notification);
 
                 VariableChange m_variableChange;

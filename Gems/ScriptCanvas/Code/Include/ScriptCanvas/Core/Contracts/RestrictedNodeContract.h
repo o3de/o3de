@@ -16,7 +16,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(RestrictedNodeContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RestrictedNodeContract, AZ::SystemAllocator);
         AZ_RTTI(RestrictedNodeContract, "{DC2B464E-17EE-4CAC-89E9-84C76605E766}", Contract);
 
         using Contract::Contract;

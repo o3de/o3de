@@ -10,12 +10,9 @@
 
 // AZ ...
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzTest/AzTest.h>
@@ -30,9 +27,15 @@
 // Mock GraphCanvas buses ...
 #include <Tests/MockGraphCanvas.h>
 
+namespace AZ
+{
+    class ComponentApplication;
+    class ReflectContext;
+}
+
 namespace GraphModelIntegrationTest
 {
-    static const GraphCanvas::EditorId NODE_GRAPH_TEST_EDITOR_ID = AZ_CRC("GraphModelIntegrationTestEditor", 0x56953df8);
+    static const GraphCanvas::EditorId NODE_GRAPH_TEST_EDITOR_ID = AZ_CRC_CE("GraphModelIntegrationTestEditor");
     static const char* TEST_STRING_INPUT_ID = "inputString";
     static const char* TEST_STRING_OUTPUT_ID = "outputString";
     static const char* TEST_EVENT_INPUT_ID = "inputEvent";
@@ -56,6 +59,7 @@ namespace GraphModelIntegrationTest
         : public GraphModel::Node
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestNode, AZ::SystemAllocator)
         AZ_RTTI(TestNode, "{C51A8CE2-229A-4807-9173-96CF730C6C2B}", Node);
 
         using TestNodePtr = AZStd::shared_ptr<TestNode>;
@@ -77,6 +81,7 @@ namespace GraphModelIntegrationTest
         : public GraphModel::Node
     {
     public:
+        AZ_CLASS_ALLOCATOR(ExtendableSlotsNode, AZ::SystemAllocator)
         AZ_RTTI(ExtendableSlotsNode, "{5670CFB9-EE42-456D-B1AE-CACC55EC0967}", Node);
 
         using ExtendableSlotsNodePtr = AZStd::shared_ptr<ExtendableSlotsNode>;
@@ -85,27 +90,6 @@ namespace GraphModelIntegrationTest
 
         ExtendableSlotsNode() = default;
         explicit ExtendableSlotsNode(GraphModel::GraphPtr graph, AZStd::shared_ptr<TestGraphContext> graphContext);
-
-        const char* GetTitle() const override;
-
-    protected:
-        void RegisterSlots() override;
-
-        AZStd::shared_ptr<TestGraphContext> m_graphContext = nullptr;
-    };
-
-    class BadNode
-        : public GraphModel::Node
-    {
-    public:
-        AZ_RTTI(BadNode, "{8ECC580C-1AFC-4D66-863D-72AC9971CEC8}", Node);
-
-        using BadNodePtr = AZStd::shared_ptr<BadNode>;
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        BadNode() = default;
-        explicit BadNode(GraphModel::GraphPtr graph, AZStd::shared_ptr<TestGraphContext> graphContext);
 
         const char* GetTitle() const override;
 

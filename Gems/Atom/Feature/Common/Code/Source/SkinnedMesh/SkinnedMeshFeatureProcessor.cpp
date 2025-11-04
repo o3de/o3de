@@ -8,11 +8,11 @@
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 #include <SkinnedMesh/SkinnedMeshRenderProxy.h>
 #include <SkinnedMesh/SkinnedMeshComputePass.h>
+#include <Mesh/MeshFeatureProcessor.h>
 #include <MorphTargets/MorphTargetComputePass.h>
 #include <MorphTargets/MorphTargetDispatchItem.h>
 
@@ -192,8 +192,7 @@ namespace AZ
                     renderProxy.m_instance->m_model->WaitForUpload();
                 }
 
-                ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
-                const RPI::Cullable& cullable = modelDataInstance.GetCullable();
+                const RPI::Cullable& cullable = (*renderProxy.m_meshHandle)->GetCullable();
 
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {
@@ -283,14 +282,14 @@ namespace AZ
 #endif
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+            RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
-            InitSkinningAndMorphPass(pipeline.get());
-        }
-
-        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
-        {
-            InitSkinningAndMorphPass(renderPipeline);
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            {
+                InitSkinningAndMorphPass(renderPipeline);
+            }
         }
 
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
@@ -310,8 +309,8 @@ namespace AZ
             m_skinningDispatches.clear();
             m_morphTargetDispatches.clear();
 
-            m_alreadyCreatedSkinningScopeThisFrame = false;
-            m_alreadyCreatedMorphTargetScopeThisFrame = false;
+            m_alreadyCreatedSkinningScopeThisFrame = {};
+            m_alreadyCreatedMorphTargetScopeThisFrame = {};
         }
 
         SkinnedMeshFeatureProcessor::SkinnedMeshHandle SkinnedMeshFeatureProcessor::AcquireSkinnedMesh(const SkinnedMeshHandleDescriptor& desc)
@@ -371,12 +370,11 @@ namespace AZ
 
         void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline)
         {
-            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "SkinningPass" }, renderPipeline);
+            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithTemplateName(AZ::Name{ "SkinningPassTemplate" }, renderPipeline);
             RPI::Ptr<RPI::Pass> skinningPass = RPI::PassSystemInterface::Get()->FindFirstPass(skinPassFilter);
             if (skinningPass)
             {
                 SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
-                skinnedMeshComputePass->SetFeatureProcessor(this);
 
                 // There may be multiple skinning passes in the scene due to multiple pipelines, but there is only one skinning shader
                 m_skinningShader = skinnedMeshComputePass->GetShader();
@@ -391,12 +389,12 @@ namespace AZ
                 }
             }
 
-            RPI::PassFilter morphPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "MorphTargetPass" }, renderPipeline);
+            RPI::PassFilter morphPassFilter =
+                RPI::PassFilter::CreateWithTemplateName(AZ::Name{ "MorphTargetPassTemplate" }, renderPipeline);
             RPI::Ptr<RPI::Pass> morphTargetPass = RPI::PassSystemInterface::Get()->FindFirstPass(morphPassFilter);
             if (morphTargetPass)
             {
                 MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());
-                morphTargetComputePass->SetFeatureProcessor(this);
 
                 // There may be multiple morph target passes in the scene due to multiple pipelines, but there is only one morph target shader
                 m_morphTargetShader = morphTargetComputePass->GetShader();
@@ -420,55 +418,56 @@ namespace AZ
             m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
         }
 
-        void SkinnedMeshFeatureProcessor::SetupSkinningScope(RHI::FrameGraphInterface frameGraph)
+        void SkinnedMeshFeatureProcessor::SetupSkinningScope(RHI::FrameGraphInterface frameGraph, int deviceIndex)
         {
-            if (m_alreadyCreatedSkinningScopeThisFrame)
+            if (RHI::CheckBit(m_alreadyCreatedSkinningScopeThisFrame, deviceIndex))
             {
                 frameGraph.SetEstimatedItemCount(0);
             }
             else
             {
                 frameGraph.SetEstimatedItemCount((u32)m_skinningDispatches.size());
-                m_alreadyCreatedSkinningScopeThisFrame = true;
+                RHI::SetBit(m_alreadyCreatedSkinningScopeThisFrame, deviceIndex);
             }
         }
 
-        void SkinnedMeshFeatureProcessor::SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph)
+        void SkinnedMeshFeatureProcessor::SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph, int deviceIndex)
         {
-            if (m_alreadyCreatedMorphTargetScopeThisFrame)
+            if (RHI::CheckBit(m_alreadyCreatedMorphTargetScopeThisFrame, deviceIndex))
             {
                 frameGraph.SetEstimatedItemCount(0);
             }
             else
             {
                 frameGraph.SetEstimatedItemCount((u32)m_morphTargetDispatches.size());
-                m_alreadyCreatedMorphTargetScopeThisFrame = true;
+                RHI::SetBit(m_alreadyCreatedMorphTargetScopeThisFrame, deviceIndex);
             }
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
+        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
 
-            AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_skinningDispatches.begin();
+            auto it = m_skinningDispatches.begin();
             AZStd::advance(it, startIndex);
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                const RHI::DispatchItem* dispatchItem = *it;
-                commandList->Submit(*dispatchItem, index);
+                const auto* dispatchItem = *it;
+                context.GetCommandList()->Submit(dispatchItem->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
+        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(
+            const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
 
-            AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_morphTargetDispatches.begin();
+            auto it = m_morphTargetDispatches.begin();
             AZStd::advance(it, startIndex);
             for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                const RHI::DispatchItem* dispatchItem = *it;
-                commandList->Submit(*dispatchItem, index);
+                const auto* dispatchItem = *it;
+                context.GetCommandList()->Submit(dispatchItem->GetDeviceDispatchItem(context.GetDeviceIndex()), index);
             }
         }
 

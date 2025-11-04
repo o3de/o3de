@@ -54,13 +54,9 @@ namespace UnitTest
     };
 
     class ChunkedVectorTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
-        ChunkedVectorTest()
-            : AllocatorsFixture()
-        {}
-
         void run()
         {
             static const size_t CapacityLogSize = 16; // 65535 elements.
@@ -147,11 +143,11 @@ namespace UnitTest
     }
 
     class HandleMapTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         HandleMapTest()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {}
 
         void run()

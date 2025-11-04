@@ -32,7 +32,7 @@ namespace GradientSignal
     class GradientBakerConfig : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientBakerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientBakerConfig, AZ::SystemAllocator);
         AZ_RTTI(GradientBakerConfig, "{C43366FC-6789-4154-848D-DF0F39BAA4E6}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -47,7 +47,7 @@ namespace GradientSignal
         : public AZ::Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(BakeImageJob, AZ::ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BakeImageJob, AZ::ThreadPoolAllocator);
 
         BakeImageJob(
             const GradientBakerConfig& configuration,

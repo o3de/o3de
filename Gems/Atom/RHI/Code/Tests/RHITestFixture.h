@@ -21,67 +21,22 @@
 #include <AzCore/Component/TickBus.h>
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI/RHISystem.h>
+#include <Tests/Device.h>
+#include <Tests/Factory.h>
 
 namespace UnitTest
 {
-    inline constexpr bool EnableLeakTracking = false;
-
     class RHITestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::ReflectionManager> m_reflectionManager;
 
     public:
-        RHITestFixture()
-        {
-            {
-                AZ::PoolAllocator::Descriptor desc;
-
-                if constexpr (EnableLeakTracking)
-                {
-                    desc.m_allocationRecords = true;
-                    desc.m_stackRecordLevels = 5;
-                    desc.m_isMemoryGuards = true;
-                    desc.m_isMarkUnallocatedMemory = true;
-                }
-
-                AZ::AllocatorInstance<AZ::PoolAllocator>::Create(desc);
-            }
-
-            {
-                AZ::ThreadPoolAllocator::Descriptor desc;
-
-                if constexpr (EnableLeakTracking)
-                {
-                    desc.m_allocationRecords = true;
-                    desc.m_stackRecordLevels = 5;
-                    desc.m_isMemoryGuards = true;
-                    desc.m_isMarkUnallocatedMemory = true;
-                }
-
-                AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create(desc);
-            }
-
-            if constexpr (EnableLeakTracking)
-            {
-                AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords();
-                if (records)
-                {
-                    records->SetMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-                }
-            }
-        }
-
 
         AZ::SerializeContext* GetSerializeContext()
         {
             return m_reflectionManager ? m_reflectionManager->GetReflectContext<AZ::SerializeContext>() : nullptr;
-        }
-
-        virtual ~RHITestFixture()
-        {
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         void SetUp() override
@@ -104,5 +59,34 @@ namespace UnitTest
             m_reflectionManager->Clear();
             m_reflectionManager.reset();
         }
+    };
+
+    class MultiDeviceRHITestFixture : public RHITestFixture
+    {
+    public:
+        void SetUp() override
+        {
+            RHITestFixture::SetUp();
+
+            m_factory.reset(aznew Factory());
+
+            m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
+
+            m_rhiSystem->InitDevices(DeviceCount);
+            m_rhiSystem->Init();
+        }
+
+        void TearDown() override
+        {
+            m_rhiSystem->Shutdown();
+            m_rhiSystem.reset();
+            m_factory.reset();
+
+            RHITestFixture::TearDown();
+        }
+
+    private:
+        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem;
+        AZStd::unique_ptr<Factory> m_factory;
     };
 }

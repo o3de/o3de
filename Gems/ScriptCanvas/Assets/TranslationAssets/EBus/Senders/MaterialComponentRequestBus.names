@@ -923,17 +923,17 @@
                     ]
                 },
                 {
-                    "base": "GetDefautMaterialMap",
+                    "base": "GetDefaultMaterialMap",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Defaut Material Map"
+                        "tooltip": "When signaled, this will invoke Get Default Material Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Defaut Material Map is invoked"
+                        "tooltip": "Signaled after Get Default Material Map is invoked"
                     },
                     "details": {
-                        "name": "Get Defaut Material Map"
+                        "name": "Get Default Material Map"
                     },
                     "results": [
                         {

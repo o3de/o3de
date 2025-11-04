@@ -9,7 +9,7 @@
 #include <Shadows/FullscreenShadowPass.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -34,6 +34,22 @@ namespace AZ
         {
         }
 
+        void FullscreenShadowPass::InitializeInternal()
+        {
+            Base::InitializeInternal();
+
+            AZ::Name msaaOptionName = AZ::Name("MsaaMode::MsaaNone");
+            uint16_t numSamples = GetDepthBufferMSAACount();
+            if (numSamples > 1)
+            {
+                msaaOptionName = AZStd::string::format("MsaaMode::Msaa%ux", numSamples);
+            }
+
+            UpdateShaderOptions(
+                { { AZ::Name("o_msaaMode"), msaaOptionName} }
+            );
+        }
+
         void FullscreenShadowPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             SetConstantData();
@@ -48,23 +64,22 @@ namespace AZ
             return outputDim;
         }
 
-        int FullscreenShadowPass::GetDepthBufferMSAACount()
+        uint16_t FullscreenShadowPass::GetDepthBufferMSAACount()
         {
-            RPI::PassAttachmentBinding* outputBinding = RPI::Pass::FindAttachmentBinding(m_outputName);
-            return outputBinding->GetAttachment()->m_descriptor.m_image.m_multisampleState.m_samples;
+            RPI::PassAttachmentBinding* inputBinding = RPI::Pass::FindAttachmentBinding(m_depthInputName);
+            return inputBinding->GetAttachment()->m_descriptor.m_image.m_multisampleState.m_samples;
         }       
 
         void FullscreenShadowPass::SetConstantData()
         {
-            struct ConstantData
+            struct alignas(16) ConstantData
             {
                 AZStd::array<float, 2> m_screenSize;
                 int m_lightIndex;
                 int m_filterMode;
+                int m_filteringSampleCountMode;
                 int m_blendBetweenCascadesEnable;
                 int m_receiverShadowPlaneBiasEnable;
-                int m_msaaCount;
-                float m_invMsaaCount;
 
             } constantData;
 
@@ -72,13 +87,13 @@ namespace AZ
             constantData.m_lightIndex = m_lightIndex;
             constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };
             constantData.m_filterMode = static_cast<int>(m_filterMethod);
+            constantData.m_filteringSampleCountMode = static_cast<int>(m_filteringSampleCountMode);
             constantData.m_blendBetweenCascadesEnable = m_blendBetweenCascadesEnable ? 1 : 0;
             constantData.m_receiverShadowPlaneBiasEnable = m_receiverShadowPlaneBiasEnable ? 1 : 0;
-            constantData.m_msaaCount = GetDepthBufferMSAACount();
-            constantData.m_invMsaaCount = 1.0f / constantData.m_msaaCount;
 
             [[maybe_unused]] bool setOk = m_shaderResourceGroup->SetConstant(m_constantDataIndex, constantData);
             AZ_Assert(setOk, "FullscreenShadowPass::SetConstantData() - could not set constant data");
+
         }
 
     }   // namespace Render

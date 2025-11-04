@@ -15,9 +15,9 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TriggerEvent, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(Contact, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionEvent, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(TriggerEvent, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(Contact, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionEvent, AZ::SystemAllocator);
 
     /*static*/ void TriggerEvent::Reflect(AZ::ReflectContext* context)
     {
@@ -36,8 +36,8 @@ namespace AzPhysics
             behaviorContext->Class<TriggerEvent>()
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "Physics")
-                ->Method("Get Trigger EntityId", &TriggerEvent::GetTriggerEntityId)
-                ->Method("Get Other EntityId", &TriggerEvent::GetOtherEntityId)
+                ->Method("GetTriggerEntityId", &TriggerEvent::GetTriggerEntityId)
+                ->Method("GetOtherEntityId", &TriggerEvent::GetOtherEntityId)
                 ;
         }
     }
@@ -76,10 +76,10 @@ namespace AzPhysics
         if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<Contact>("Contact")
-                ->Property("Position", BehaviorValueProperty(&Contact::m_position))
-                ->Property("Normal", BehaviorValueProperty(&Contact::m_normal))
-                ->Property("Impulse", BehaviorValueProperty(&Contact::m_impulse))
-                ->Property("Separation", BehaviorValueProperty(&Contact::m_separation))
+                ->Property("Position", BehaviorValueGetter(&Contact::m_position), nullptr)                
+                ->Property("Normal", BehaviorValueGetter(&Contact::m_normal), nullptr)
+                ->Property("Impulse", BehaviorValueGetter(&Contact::m_impulse), nullptr)
+                ->Property("Separation", BehaviorValueGetter(&Contact::m_separation), nullptr)
                 ;
         }
     }
@@ -105,8 +105,8 @@ namespace AzPhysics
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Property("Contacts", BehaviorValueGetter(&CollisionEvent::m_contacts), nullptr)
-                ->Method("Get Body 1 EntityId", &CollisionEvent::GetBody1EntityId)
-                ->Method("Get Body 2 EntityId", &CollisionEvent::GetBody2EntityId)
+                ->Method("GetBody1EntityId", &CollisionEvent::GetBody1EntityId)
+                ->Method("GetBody2EntityId", &CollisionEvent::GetBody2EntityId)
                 ;
         }
     }

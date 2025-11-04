@@ -7,12 +7,11 @@
  */
 
 
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_DIRECTORNODEANIMATOR_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_DIRECTORNODEANIMATOR_H
 #pragma once
 
-
 #include "TrackViewAnimNode.h"
+
+#include <AzCore/std/functional.h>
 
 // This is used to bind/unbind sub sequences in director nodes
 // when the sequence time changes. A sequence only gets bound if it was already
@@ -23,9 +22,9 @@ class CDirectorNodeAnimator
 public:
     CDirectorNodeAnimator(CTrackViewAnimNode* pDirectorNode);
 
-    virtual void Animate(CTrackViewAnimNode* pNode, const SAnimContext& ac) override;
-    virtual void Render(CTrackViewAnimNode* pNode, const SAnimContext& ac) override;
-    virtual void UnBind(CTrackViewAnimNode* pNode) override;
+    void Animate(CTrackViewAnimNode* pNode, const SAnimContext& ac) override;
+    void Render(CTrackViewAnimNode* pNode, const SAnimContext& ac) override;
+    void UnBind(CTrackViewAnimNode* pNode) override;
 
     // Utility function to find a CTrackViewSequence* from an ISequenceKey
     static CTrackViewSequence* GetSequenceFromSequenceKey(const ISequenceKey& sequenceKey);
@@ -35,4 +34,3 @@ private:
         const bool bHandleOtherKeys, std::function<void(CTrackViewSequence*, const SAnimContext&)> animateFunction,
         std::function<void(CTrackViewSequence*, const SAnimContext&)> resetFunction);
 };
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_DIRECTORNODEANIMATOR_H

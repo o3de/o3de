@@ -34,6 +34,7 @@
 #include <string>
 
 #include <AzCore/Asset/AssetDataStream.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -81,6 +82,10 @@ namespace AMD
         {
             return false;
         }
+
+        // interpret the data in the culture invariant locale so that it doesn't matter
+        // what locale the machine of the user is set to.
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
 
         int numOfBones;
         AZStd::vector<AZStd::string> boneNames;

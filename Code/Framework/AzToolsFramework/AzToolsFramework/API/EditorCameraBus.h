@@ -8,9 +8,11 @@
 
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/Component.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -22,7 +24,7 @@ namespace Camera
     /**
      * This bus allows you to get and set the current editor viewport camera
      */
-    class EditorCameraRequests : public AZ::EBusTraits
+    class AZTF_API EditorCameraRequests : public AZ::EBusTraits
     {
     public:
         using Bus = AZ::EBus<EditorCameraRequests>;
@@ -35,13 +37,6 @@ namespace Camera
          * @param entityId the id of the entity whose perspective is to be used
          */
         virtual void SetViewFromEntityPerspective(const AZ::EntityId& /*entityId*/) {}
-
-        /**
-         * Sets the view from the entity's perspective
-         * @param entityId the id of the entity whose perspective is to be used
-         * @param lockCameraMovement disallow camera movement from user input in the editor render viewport.
-         */
-        virtual void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& /*entityId*/, bool /*lockCameraMovement*/) {}
 
         /**
          * Gets the id of the current view entity. Invalid EntityId is returned for the default editor camera
@@ -154,3 +149,8 @@ namespace Camera
     using EditorCameraViewRequestBus = AZ::EBus<EditorCameraViewRequests>;
 
 } // namespace Camera
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraSystemRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraNotifications);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, Camera::EditorCameraViewRequests);

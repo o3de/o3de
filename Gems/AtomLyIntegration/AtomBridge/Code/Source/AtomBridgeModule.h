@@ -22,7 +22,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(Module, "{92196B90-6DF5-479D-8746-296AF56F0ABA}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator);
 
             Module();
 

@@ -54,7 +54,7 @@ void UiParticleEmitterComponent::OnCanvasSizeOrScaleChange(AZ::EntityId canvasEn
 {
     // Only clear particles if the canvas that resized is the one that this particle component is on.
     AZ::EntityId canvasId;
-    EBUS_EVENT_ID_RESULT(canvasId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     if (canvasEntityId == canvasId)
     {
         ClearActiveParticles();
@@ -772,15 +772,15 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     if (m_isPositionRelativeToEmitter)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
         emitterOffset = (points.TopLeft() + points.BottomRight()) * 0.5f;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToViewport, transform);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transform);
     }
     else
     {
         AZ::EntityId canvasID;
-        EBUS_EVENT_ID_RESULT(canvasID, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID_RESULT(transform, canvasID, UiCanvasBus, GetCanvasToViewportMatrix);
+        UiElementBus::EventResult(canvasID, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasBus::EventResult(transform, canvasID, &UiCanvasBus::Events::GetCanvasToViewportMatrix);
     }
 
     AZ::Data::Instance<AZ::RPI::Image> image;
@@ -889,7 +889,7 @@ void UiParticleEmitterComponent::Update(float deltaTime)
         {
             AZ::Vector2 emitterPosition = AZ::Vector2::CreateZero();
             UiTransformInterface::RectPoints points;
-            EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+            UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
             emitterPosition = (points.TopLeft() + points.BottomRight()) * 0.5f;
 
             if (m_nextEmitTime + m_particleLifetime + m_particleLifetimeVariation < m_emitterAge)
@@ -903,7 +903,7 @@ void UiParticleEmitterComponent::Update(float deltaTime)
 
             if (!m_isPositionRelativeToEmitter)
             {
-                EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToCanvasSpace, transform);
+                UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToCanvasSpace, transform);
                 AZ::Vector3 transformScale = transform.RetrieveScale();
                 scale.Set(transformScale.GetX(), transformScale.GetY());
             }
@@ -976,7 +976,7 @@ void UiParticleEmitterComponent::Update(float deltaTime)
 void UiParticleEmitterComponent::OnUiElementFixup(AZ::EntityId canvasEntityId, AZ::EntityId /*parentEntityId*/)
 {
     bool isElementEnabled = false;
-    EBUS_EVENT_ID_RESULT(isElementEnabled, GetEntityId(), UiElementBus, GetAreElementAndAncestorsEnabled);
+    UiElementBus::EventResult(isElementEnabled, GetEntityId(), &UiElementBus::Events::GetAreElementAndAncestorsEnabled);
     if (isElementEnabled)
     {
         UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -989,7 +989,7 @@ void UiParticleEmitterComponent::OnUiElementAndAncestorsEnabledChanged(bool areE
     if (areElementAndAncestorsEnabled)
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         if (canvasEntityId.IsValid())
         {
             UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -1020,6 +1020,51 @@ void UiParticleEmitterComponent::SetOverrideAlpha(float alpha)
 {
     m_overrideAlpha = alpha;
     m_isAlphaOverridden = true;
+}
+
+void UiParticleEmitterComponent::SetImageIndex(AZ::u32 index)
+{
+    if (m_spriteSheetCellIndex != index)
+    {
+        m_spriteSheetCellIndex = index;
+        MarkRenderGraphDirty();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const AZ::u32 UiParticleEmitterComponent::GetImageIndex()
+{
+    return m_spriteSheetCellIndex;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const AZ::u32 UiParticleEmitterComponent::GetImageIndexCount()
+{
+    if (m_sprite)
+    {
+        return static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
+    }
+
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZStd::string UiParticleEmitterComponent::GetImageIndexAlias(AZ::u32 index)
+{
+    return m_sprite ? m_sprite->GetCellAlias(index) : AZStd::string();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiParticleEmitterComponent::SetImageIndexAlias(AZ::u32 index, const AZStd::string& alias)
+{
+    m_sprite ? m_sprite->SetCellAlias(index, alias) : AZ_UNUSED(0);
+    MarkRenderGraphDirty();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::u32 UiParticleEmitterComponent::GetImageIndexFromAlias(const AZStd::string& alias)
+{
+    return m_sprite ? m_sprite->GetCellIndexFromAlias(alias) : 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1096,7 +1141,7 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             {
@@ -1105,7 +1150,7 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isEmitOnActivate, "Emit on activate", "Emitter starts emitting on activate.");
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isHitParticleCountOnActivate, "Hit particle count on activate", "Emitter hits the particle count when it starts emitting.");
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isEmitterLifetimeInfinite, "Infinite life time", "The life time of the emitter is infinite")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("EmitterLifetime", &UiParticleEmitterComponent::m_emitterLifetime, "Emitter lifetime", "The amount of time (in seconds) that the emitter emits.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsEmitterLifetimeFinite)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f);
@@ -1115,25 +1160,25 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::ResetParticleBuffers);
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isParticleCountLimited, "Particle count limit", "Sets whether there is a limit on the amount of active particles.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLimitToggleable)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("MaxParticles", &UiParticleEmitterComponent::m_maxParticles, "Active particles limit", "The maximum amount of particles that can be active.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLimitRequired)
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, m_activeParticlesLimit)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::ResetParticleBuffers);
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isRandomSeedFixed, "Fixed random seed", "Sets whether the random seed for this emitter is fixed. If unchecked, a random seed will be automatically generated each time the emitter starts emitting.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("RandomSeed", &UiParticleEmitterComponent::m_randomSeed, "Random seed", "The seed to use for the particle emitter.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::m_isRandomSeedFixed);
                 editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_emitShape, "Emitter shape", "The shape of the emitter.")
                     ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Point, "Point")
                     ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Circle, "Circle")
                     ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Quad, "Quad")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("IsEmitOnEdge", &UiParticleEmitterComponent::m_isEmitOnEdge, "Emit on edge", "The particles are emitted from the edge of the emitter shape.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsShapeWithEdge)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("EmitInsideDistance", &UiParticleEmitterComponent::m_insideDistance, "Emit inside distance", "The distance inside the emitter shape edge that particles should be emitted.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsEmittingFromEdge);
                 editInfo->DataElement("EmitOutsideDistance", &UiParticleEmitterComponent::m_outsideDistance, "Emit outside distance", "The distance outside the emitter shape edge that particles should be emitted.")
@@ -1142,7 +1187,7 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::CanEmitFromCenter)
                     ->EnumAttribute(UiParticleEmitterInterface::ParticleInitialDirectionType::RelativeToEmitAngle, "Relative to emit angle")
                     ->EnumAttribute(UiParticleEmitterInterface::ParticleInitialDirectionType::RelativeToEmitterCenter, "Relative to emitter center")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("EmitAngle", &UiParticleEmitterComponent::m_emitAngle, "Emit angle", "The angle to emit particles, measured clockwise in degrees from straight up.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsEmitAngleRequired);
                 editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiParticleEmitterComponent::m_emitAngleVariation, "Emit angle variation", "The spread of particles emitted about the emit angle in degrees.")
@@ -1156,7 +1201,7 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
                 editInfo->DataElement("IsParticleLifetimeInfinite", &UiParticleEmitterComponent::m_isParticleLifetimeInfinite, "Infinite life time", "The life time of the emitted particles is infinite.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::CheckMaxParticleValidity)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("ParticleLife", &UiParticleEmitterComponent::m_particleLifetime, "Life time", "The life time of the emitted particles in seconds.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
@@ -1166,26 +1211,26 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
                 editInfo->DataElement("Sprite", &UiParticleEmitterComponent::m_spritePathname, "Sprite pathname", "The sprite path.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSpritePathnameChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetAnimated, "Animated sprite sheet", "The sprite sheet cell index is animated over time.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsSpriteTypeSpriteSheet)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetAnimationLooped, "Loop sprite sheet animation", "The sprite sheet animation is looped.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::m_isSpriteSheetAnimated);
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetIndexRandom, "Random sprite sheet index", "The sprite sheet cell index is randomly chosen from the given range.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsSpriteTypeSpriteSheet)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_spriteSheetCellIndex, "Sprite sheet Index", "Sprite sheet index. Defines which cell in a sprite sheet is displayed.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsSpriteTypeSpriteSheet)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &UiParticleEmitterComponent::GetSpriteSheetIndexPropertyLabel)
                     ->Attribute("EnumValues", &UiParticleEmitterComponent::PopulateSpriteSheetIndexStringList)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSpriteSheetCellIndexChanged)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
                 editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_spriteSheetCellEndIndex, "Sprite sheet end frame", "Defines which cell in a sprite sheet is displayed.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsSpriteSheetCellRangeRequired)
                     ->Attribute("EnumValues", &UiParticleEmitterComponent::PopulateSpriteSheetIndexStringList)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSpriteSheetCellEndIndexChanged)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
                 editInfo->DataElement("SpriteSheetFrameDelay", &UiParticleEmitterComponent::m_spriteSheetFrameDelay, "Sprite sheet frame delay", "Number of seconds to delay until the next frame.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::m_isSpriteSheetAnimated)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
@@ -1204,7 +1249,7 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_particleMovementCoordinateType, "Movement co-ordinate type", "The co-ordinate system to use for particle movement.")
                     ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Cartesian, "Cartesian")
                     ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Polar, "Polar")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("ParticleInitialVelocity", &UiParticleEmitterComponent::m_particleInitialVelocity, "Initial velocity", "The initial velocity of the emitted particles.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsMovementCoordinateTypePolar);
                 editInfo->DataElement("ParticleInitialVelocityVariation", &UiParticleEmitterComponent::m_particleInitialVelocityVariation, "Initial Velocity Variation", "The random variation in the initial velocity of emitted particles.")
@@ -1217,13 +1262,13 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_particleAccelerationCoordinateType, "Acceleration co-ordinate type", "The co-ordinate system to use for particle acceleration.")
                     ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Cartesian, "Cartesian")
                     ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Polar, "Polar")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("ParticleAcceleration", &UiParticleEmitterComponent::m_particleAcceleration, "Acceleration", "The acceleration of the particles.");
                 editInfo->DataElement("IsParticleRotationFromVelocity", &UiParticleEmitterComponent::m_isParticleRotationFromVelocity, "Orientation velocity based", "The particle orientation is based on the current velocity.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("IsParticleInitialRotationFromInitialVelocity", &UiParticleEmitterComponent::m_isParticleInitialRotationFromInitialVelocity, "Initial orientation velocity based", "The particle orientation is based on the current velocity.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsRotationRequired)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("ParticleInitialRotation", &UiParticleEmitterComponent::m_particleInitialRotation, "Initial rotation", "The initial rotation of the emitted particles in degrees.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsInitialRotationRequired);
                 editInfo->DataElement("ParticleIntiialRotationVariation", &UiParticleEmitterComponent::m_particleInitialRotationVariation, "Initial rotation variation", "The random variation in the initial rotation of the emitted particles in degrees.")
@@ -1240,11 +1285,11 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                 editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Particle Size")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
                 editInfo->DataElement("ParticleAspectRatioLocked", &UiParticleEmitterComponent::m_isParticleAspectRatioLocked, "Lock aspect ratio", "Locks the size of the particles to the current aspect ratio.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement("ParticlePivot", &UiParticleEmitterComponent::m_particlePivot, "Pivot", "The pivot of the emitted particles.");
                 editInfo->DataElement("ParticleSize", &UiParticleEmitterComponent::m_particleSize, "Size", "The size of the emitted particles.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnParticleSizeChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.1f);
                 editInfo->DataElement("ParticleSizeVariation", &UiParticleEmitterComponent::m_particleSizeVariation, "Size variation", "The random variation in size of the emitted particles.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
@@ -1270,30 +1315,30 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
                 editInfo->DataElement("ParticleSpeedMultiplier", &UiParticleEmitterComponent::m_particleSpeedMultiplier, "Speed multiplier", "The speed multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSpeedMultiplierChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
                 editInfo->DataElement("ParticleWidthMultiplier", &UiParticleEmitterComponent::m_particleWidthMultiplier, "Width multiplier", "The width multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSizeXMultiplierChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &UiParticleEmitterComponent::GetParticleWidthMultiplierPropertyLabel)
                     ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &UiParticleEmitterComponent::GetParticleWidthMultiplierPropertyDescription)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
                 editInfo->DataElement("ParticleHeightMultiplier", &UiParticleEmitterComponent::m_particleHeightMultiplier, "Height multiplier", "The height multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSizeYMultiplierChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsAspectRatioUnlocked)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
                 editInfo->DataElement("ParticleColorMultiplier", &UiParticleEmitterComponent::m_particleColorMultiplier, "Color multiplier", "The color multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnColorMultiplierChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
                 editInfo->DataElement("ParticleAlphaMultiplier", &UiParticleEmitterComponent::m_particleAlphaMultiplier, "Alpha multiplier", "The alpha multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnAlphaMultiplierChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
             }
@@ -1462,13 +1507,14 @@ void UiParticleEmitterComponent::Activate()
     UiVisualBus::Handler::BusConnect(GetEntityId());
     UiCanvasSizeNotificationBus::Handler::BusConnect();
     UiElementNotificationBus::Handler::BusConnect(GetEntityId());
+    UiIndexableImageBus::Handler::BusConnect(GetEntityId());
 
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     if (canvasEntityId.IsValid())
     {
         bool isElementEnabled = false;
-        EBUS_EVENT_ID_RESULT(isElementEnabled, GetEntityId(), UiElementBus, GetAreElementAndAncestorsEnabled);
+        UiElementBus::EventResult(isElementEnabled, GetEntityId(), &UiElementBus::Events::GetAreElementAndAncestorsEnabled);
         if (isElementEnabled)
         {
             UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -1486,6 +1532,7 @@ void UiParticleEmitterComponent::Deactivate()
     UiVisualBus::Handler::BusDisconnect();
     UiCanvasSizeNotificationBus::Handler::BusDisconnect();
     UiElementNotificationBus::Handler::BusDisconnect();
+    UiIndexableImageBus::Handler::BusDisconnect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1502,7 +1549,7 @@ AZ::Vector3 UiParticleEmitterComponent::GetRandomParticlePosition()
     if (m_emitShape == EmitShape::Point)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
         AZ::Vector2 centerPoint = (points.TopLeft() + points.BottomRight()) * 0.5f;
 
         if (IsMovementCoordinateTypeCartesian())
@@ -1522,7 +1569,7 @@ AZ::Vector3 UiParticleEmitterComponent::GetRandomParticlePosition()
     else if (m_emitShape == EmitShape::Circle)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
         AZ::Vector2 centerPoint = (points.TopLeft() + points.BottomRight()) * 0.5f;
 
@@ -1557,7 +1604,7 @@ AZ::Vector3 UiParticleEmitterComponent::GetRandomParticlePosition()
     else if (m_emitShape == EmitShape::Quad)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
         AZ::Vector2 shapeTopLeft = points.TopLeft();
 
@@ -2094,6 +2141,6 @@ void UiParticleEmitterComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }

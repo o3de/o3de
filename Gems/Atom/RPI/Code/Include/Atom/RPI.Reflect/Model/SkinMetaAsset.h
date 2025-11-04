@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
     {
         //! The skin meta asset is an optional asset that belongs to a model.
         //! In case the model does not contain any mesh with skinning information, the skin meta asset won't be generated.
-        class SkinMetaAsset final
+        class ATOM_RPI_REFLECT_API SkinMetaAsset final
             : public Data::AssetData
         {
         public:
@@ -27,7 +28,7 @@ namespace AZ
             static constexpr inline const char* Group = "Model";
 
             AZ_RTTI(SkinMetaAsset, "{DEDBC099-A628-463F-81BB-47C45D1E1CB1}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(SkinMetaAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SkinMetaAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

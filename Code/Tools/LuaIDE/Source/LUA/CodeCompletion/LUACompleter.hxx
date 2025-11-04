@@ -25,7 +25,7 @@ namespace LUAEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(Completer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Completer, AZ::SystemAllocator);
 
         Completer(QAbstractItemModel* model, QObject* parent);
         virtual ~Completer();

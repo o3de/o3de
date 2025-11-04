@@ -15,11 +15,11 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshDeformerStack, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshDeformerStack, DeformerAllocator)
 
     // constructor
     MeshDeformerStack::MeshDeformerStack(Mesh* mesh)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_mesh = mesh;
     }
@@ -109,7 +109,7 @@ namespace EMotionFX
     {
         // if we have deformers in the stack
         const size_t numDeformers = m_deformers.size();
-        
+
         const uint16 highestJointIndex = m_mesh->GetHighestJointIndex();
 
         // iterate through the deformers and reinitialize them

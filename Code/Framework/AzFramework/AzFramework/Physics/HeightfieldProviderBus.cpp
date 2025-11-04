@@ -11,6 +11,10 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+// Disable exporting specialized EBus types due to an issue with the EBusSharedDispatchTraits.
+// AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderRequests);
+// AZ_INSTANTIATE_EBUS_MULTI_ADDRESS(AZF_API, Physics::HeightfieldProviderNotifications);
+
 namespace Physics
 {
     void HeightfieldProviderRequests::Reflect(AZ::ReflectContext* context)
@@ -20,7 +24,7 @@ namespace Physics
             behaviorContext->EBus<Physics::HeightfieldProviderRequestsBus>("HeightfieldProviderRequestsBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Event("GetHeightfieldGridSpacing", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSpacing)
                 ->Event("GetHeightfieldAabb", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldAabb)
                 ->Event("GetHeightfieldTransform", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldTransform)

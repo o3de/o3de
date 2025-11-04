@@ -11,8 +11,9 @@
 #include "LUAEditorBlockState.h"
 
 #include <Source/LUA/moc_LUAEditorFindResults.cpp>
-
 #include <Source/LUA/ui_LUAEditorFindResults.h>
+
+#include <QRegularExpression>
 
 namespace LUAEditor
 {
@@ -26,7 +27,7 @@ namespace LUAEditor
 
     void FindResultsHighlighter::highlightBlock(const QString& text)
     {
-        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
         auto block = currentBlock();
         QTBlockState blockState;
@@ -52,37 +53,32 @@ namespace LUAEditor
                 setFormat(0, block.length(), textFormat);
 
                 textFormat.setForeground(colors->GetFindResultsMatchColor());
-                QRegExp regex(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
-                int index = 0;
                 if (m_regEx || m_wholeWord)
                 {
-                    index = text.indexOf(regex, index);
+                    QRegularExpression regex(
+                        m_searchString, m_caseSensitive ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
+                    QRegularExpressionMatch match = regex.match(text);
+                    int index = match.capturedStart();
+                    while (match.hasMatch())
+                    {
+                        const int length = match.capturedLength();
+                        setFormat(index, length, textFormat);
+
+                        match = regex.match(text, index + length);
+                        index = match.capturedStart();
+                    }
                 }
                 else
                 {
-                    index = text.indexOf(m_searchString, index, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
-                }
-                while (index > 1)
-                {
-                    if (m_regEx || m_wholeWord)
-                    {
-                        setFormat(index, regex.matchedLength(), textFormat);
-                    }
-                    else
+                    int index = text.indexOf(m_searchString, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                    while (index > 1)
                     {
                         setFormat(index, m_searchString.length(), textFormat);
-                    }
-
-                    ++index;
-                    if (m_regEx || m_wholeWord)
-                    {
-                        index = text.indexOf(regex, index);
-                    }
-                    else
-                    {
+                        ++index;
                         index = text.indexOf(m_searchString, index, m_caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
                     }
                 }
+ 
             }
         }
     }
@@ -95,13 +91,13 @@ namespace LUAEditor
 
         m_gui->m_foldingWidget->setEnabled(true);
         m_gui->m_foldingWidget->SetTextEdit(m_gui->m_resultsList);
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::BlockDoubleClicked, this, &FindResults::OnBlockDoubleClicked);
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::cursorPositionChanged, this, [&]() { m_gui->m_foldingWidget->update(); });
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::Scrolled, this, [&]() { m_gui->m_foldingWidget->update(); });
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::BlockDoubleClicked, this, &FindResults::OnBlockDoubleClicked);
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::cursorPositionChanged, this, [&]() { m_gui->m_foldingWidget->update(); });
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::Scrolled, this, [&]() { m_gui->m_foldingWidget->update(); });
         connect(m_gui->m_foldingWidget, &FoldingWidget::TextBlockFoldingChanged, this, [&]() {m_gui->m_resultsList->update(); });
         connect(m_gui->m_resultsList->document(), &QTextDocument::contentsChange, m_gui->m_foldingWidget, &FoldingWidget::OnContentChanged);
 
-        auto settings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
+        auto settings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
         m_gui->m_resultsList->setFont(settings->GetFont());
         m_gui->m_foldingWidget->SetFont(settings->GetFont());
 

@@ -153,12 +153,9 @@ class Material_Component_Converter(object):
         componentConfig = create_xml_element_from_string("<Class name=\"ComponentConfig\" field=\"BaseClass1\" version=\"1\" type=\"{0A7929DF-2932-40EA-B2B3-79BC1C3490D0}\"/>")
         materialMap = create_xml_element_from_string("<Class name=\"AZStd::unordered_map\" field=\"materials\" type=\"{50F6716F-698B-5A6C-AACD-940597FDEC24}\">")
 
-        # {00000000-0000-0000-0000-000000000000}:0 is the default slot
-        defaultMaterialAssignmentMapEntry = self.create_material_map_entry("{00000000-0000-0000-0000-000000000000}:0", atomMaterialInDefaultSlotAssetId)
-        materialMap.append(defaultMaterialAssignmentMapEntry)
-
+        defaultSlot = "{00000000-0000-0000-0000-000000000000}:0"
         for atomMaterial in materialAssignmentList:
-            if atomMaterial.assignmentAssetId:
+            if atomMaterial.assignmentAssetId and atomMaterial.assignmentAssetId != defaultSlot:
                 materialMapElement = self.create_material_map_entry(atomMaterial.slotAssetId, atomMaterial.assignmentAssetId)
                 materialMap.append(materialMapElement)
         
@@ -169,7 +166,7 @@ class Material_Component_Converter(object):
         editorRenderComponentAdapter.append(editorComponentAdapter)
 
         isDefaultSlot = True
-        defaultMaterialComponentSlot = self.create_editor_material_assignment_slot("{00000000-0000-0000-0000-000000000000}:0", atomMaterialInDefaultSlotAssetId, isDefaultSlot)
+        defaultMaterialComponentSlot = self.create_editor_material_assignment_slot(defaultSlot, atomMaterialInDefaultSlotAssetId, isDefaultSlot)
 
         #   <Class name="AZStd::vector" field="materialSlots" type="{7FDDDE36-46C8-5DBC-8566-E792AA358BD9}">
         #        ... (slots)
@@ -222,7 +219,7 @@ class Material_Component_Converter(object):
         if isActor:
             cacheFbxPath = "".join((oldFbxRelativePathWithoutExtension, ".actor"))
         else:
-            cacheFbxPath = "".join((oldFbxRelativePathWithoutExtension, ".azmodel"))
+            cacheFbxPath = "".join((oldFbxRelativePathWithoutExtension, ".fbx.azmodel"))
 
         if cacheFbxPath in self.assetCatalogHelper.relativePathToAssetIdDict:
             fbxAssetId = self.assetCatalogHelper.relativePathToAssetIdDict[cacheFbxPath]

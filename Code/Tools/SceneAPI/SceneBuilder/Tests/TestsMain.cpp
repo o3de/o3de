@@ -21,11 +21,9 @@ public:
 protected:
     void SetupEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         sceneCoreModule = AZ::DynamicModuleHandle::Create("SceneCore");
         AZ_Assert(sceneCoreModule, "SceneBuilder unit tests failed to create SceneCore module.");
-        [[maybe_unused]] bool loaded = sceneCoreModule->Load(false);
+        [[maybe_unused]] bool loaded = sceneCoreModule->Load();
         AZ_Assert(loaded, "SceneBuilder unit tests failed to load SceneCore module.");
         auto init = sceneCoreModule->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
         AZ_Assert(init, "SceneBuilder unit tests failed to find the initialization function the SceneCore module.");
@@ -33,7 +31,7 @@ protected:
 
         sceneDataModule = AZ::DynamicModuleHandle::Create("SceneData");
         AZ_Assert(sceneDataModule, "SceneData unit tests failed to create SceneData module.");
-        loaded = sceneDataModule->Load(false);
+        loaded = sceneDataModule->Load();
         AZ_Assert(loaded, "SceneBuilder unit tests failed to load SceneData module.");
         init = sceneDataModule->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
         AZ_Assert(init, "SceneBuilder unit tests failed to find the initialization function the SceneData module.");
@@ -51,8 +49,6 @@ protected:
         AZ_Assert(uninit, "SceneBuilder unit tests failed to find the uninitialization function the SceneCore module.");
         (*uninit)();
         sceneCoreModule.reset();
-
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 
 private:

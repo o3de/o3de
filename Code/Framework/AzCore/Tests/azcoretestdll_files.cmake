@@ -8,4 +8,5 @@
 
 set(FILES
     DLLMainTest.cpp
+    DLLTestVirtualClass.h
 )

@@ -10,7 +10,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 
@@ -41,7 +41,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DeferredFogPass, "{0406C8AB-E95D-43A7-AF53-BDEE22D36746}", RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(DeferredFogPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DeferredFogPass, SystemAllocator);
             ~DeferredFogPass() = default;
 
 
@@ -59,7 +59,6 @@ namespace AZ
 
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             //! Set the binding indices of all members of the SRG
             void SetSrgBindIndices();
@@ -77,8 +76,11 @@ namespace AZ
             // actively pass them to the shader.
             DeferredFogSettings m_fallbackSettings;
 
-            // Shader options for variant generation (texture and layer activation in this case)
-            AZ::RPI::ShaderVariantKey m_ShaderOptions;
+            // Fog mode option name
+            const AZ::Name m_fogModeOptionName;
+
+            // Shader input constant index for the depth texture dimensions.
+            RHI::ShaderInputConstantIndex m_depthTextureDimensionsIndex;
         };       
     }   // namespace Render
 }   // namespace AZ

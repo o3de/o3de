@@ -8,6 +8,50 @@
 
 include(cmake/Platform/Common/Configurations_common.cmake)
 
+# Exceptions are disabled by default.  Use this to turn them on just for a specific target.
+set(O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS PUBLIC -fexceptions)
+
+# O3DE Sets visibility to hidden by default, requiring explicit export.
+# However, some 3rd Party libraries will not export any symbols with this setting
+# as they expect to be built with visibility set to default.  Use this compile option
+# to turn visibility back to default for those 3rd Party targets ONLY.
+set(O3DE_COMPILE_OPTION_EXPORT_SYMBOLS PRIVATE -fvisibility=default)
+
+# By default, O3DE sets warning level 4 and sets warnings as errors.  If you're pulling in
+# external code (from 3rd Party libraries) you can't really control whether they generate
+# warnings or not, and its usually out of scope to fix them.  Add this compile option to 
+# those 3rd Party targets ONLY.
+set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE -w)
+
+# C++20 no longer allows to implicitly convert between enum values of different types or enum values and integral types.
+# This is problematic if 3rd-party libraries use such operations in header files.
+set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE -Wno-deprecated-enum-enum-conversion)
+
+# If (USE_FAST_MATH) is set, then enable fast math optimizations.
+# Some targets might need to disable fast math individually (likely 3rd Party libraries)
+# so this flag is provided to use them in a platform independent manner
+set(O3DE_COMPILE_OPTION_ENABLE_FAST_MATH -ffast-math)
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH -fno-fast-math)
+
+# Same as above, but to use inside set_target_properties for specific targets
+set(O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH})
+set(O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH})
+
+# A known bug in clang18 and below prevents __cpp_conditional_explicit from working correctly.
+# see https://github.com/llvm/llvm-project/pull/70548 and other reports.
+# this causes it to evaluate #if __cpp_conditional_explicit >= 201806L as true, but
+# can trip over code that uses it, such as in AZStd::pair.
+# It seems a bug was introduced when Clang introduced this feature, and it was fixed in clang19.
+# Clangs from before the feature was introduced would not declare __cpp_conditional_explicit and thus
+# won't run the code anyway.  Clangs after the feature was introduced but before it was fixed will
+# incorrectly evaluate the condition and run the code, but trip over the bug.  Since we know its fixed
+# in 19.0 and later, disable it for clang18 and earlier.  (This feature is not necessary for O3DE
+# to actually function)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.0)
+    message(STATUS "Clang 18 detected, adding workaround for __cpp_conditional_explicit bug")
+    add_compile_definitions(O3DE_DISABLE_CONDITIONAL_EXPLICIT=1)
+endif()
+
 ly_append_configurations_options(
     DEFINES_PROFILE
         _FORTIFY_SOURCE=2
@@ -33,6 +77,7 @@ ly_append_configurations_options(
         -Wno-reorder
         -Wno-switch
         -Wno-undefined-var-template
+        -Wno-dllexport-explicit-instantiation-decl  # explicit instantiation declaration should not be 'dllexport'
 
         ###################
         # Enabled warnings (that are disabled by default)

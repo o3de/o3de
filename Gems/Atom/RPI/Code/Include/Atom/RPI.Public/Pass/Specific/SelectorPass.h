@@ -11,11 +11,11 @@
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/ScopeProducerFunction.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
@@ -26,12 +26,12 @@ namespace AZ
     {
         //! A pass provide the ability to pass through input attachments to output attachments
         //! For example, it can choose one of the input attachments as output atachments. 
-        class SelectorPass final
+        class ATOM_RPI_PUBLIC_API SelectorPass final
             : public Pass
         {
         public:
             AZ_RTTI(SelectorPass, "{A6BCB7A5-EF09-4863-BC8C-C84655067984}", Pass);
-            AZ_CLASS_ALLOCATOR(SelectorPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SelectorPass, SystemAllocator);
 
             static Ptr<SelectorPass> Create(const PassDescriptor& descriptor);
             ~SelectorPass() = default;

@@ -11,7 +11,7 @@
 #include "../EMotionFXConfig.h"
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Endian.h>
-#include <EMotionFX/Source/BaseObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/std/string/string.h>
 
@@ -45,7 +45,8 @@ namespace EMotionFX
      *
      * The same applies to other types like motions, but using the LoadMotion, LoadAnimGraph and LoadMotionSet methods.
      */
-    class EMFX_API Importer : public BaseObject
+    class EMFX_API Importer : 
+        public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class Initializer;

@@ -90,7 +90,7 @@ namespace JsonSerializationTests
         MathVectorSerializerTestDescription<AZ::Vector3, 3, AZ::JsonVector3Serializer>,
         MathVectorSerializerTestDescription<AZ::Vector4, 4, AZ::JsonVector4Serializer>
     >;
-    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonMathVectorSerializer, JsonSerializerConformityTests, MathVectorSerializerConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_SUITE_P(JsonMathVectorSerializer, JsonSerializerConformityTests, MathVectorSerializerConformityTestTypes));
     
     template<typename T>
     class JsonMathVectorSerializerTests
@@ -148,7 +148,7 @@ namespace JsonSerializationTests
 
     using JsonMathVectorSerializerTypes = ::testing::Types <
         Vector2Descriptor, Vector3Descriptor, Vector4Descriptor>;
-    TYPED_TEST_CASE(JsonMathVectorSerializerTests, JsonMathVectorSerializerTypes);
+    TYPED_TEST_SUITE(JsonMathVectorSerializerTests, JsonMathVectorSerializerTypes);
 
     // Load array tests
 

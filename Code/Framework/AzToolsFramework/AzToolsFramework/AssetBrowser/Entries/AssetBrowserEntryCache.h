@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 
 namespace AZ
@@ -34,9 +35,9 @@ namespace AzToolsFramework
         * This exists to handle memory caches that the AssetBrowser system needs
         * which need to be available across DLLs but still with managed life cycles and not leaking memory
         */
-        class EntryCache
+        class AZTF_API EntryCache
         {
-            AZ_CLASS_ALLOCATOR(EntryCache, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EntryCache, AZ::SystemAllocator);
         public:
             static EntryCache* GetInstance();
 
@@ -48,6 +49,7 @@ namespace AzToolsFramework
             AZStd::unordered_map<AZ::s64, AssetBrowserEntry*> m_fileIdMap;
             AZStd::unordered_map<AZ::Uuid, SourceAssetBrowserEntry*> m_sourceUuidMap;
             AZStd::unordered_map<AZ::s64, SourceAssetBrowserEntry*> m_sourceIdMap;
+            AZStd::unordered_map<AZ::Uuid, FolderAssetBrowserEntry*> m_folderUuidMap;
             AZStd::unordered_map<AZ::Data::AssetId, ProductAssetBrowserEntry*> m_productAssetIdMap;
             AZStd::unordered_map<AZ::s64, AZStd::string> m_knownScanFolders;
             AZStd::unordered_map<AZStd::string, AZ::s64> m_absolutePathToFileId;

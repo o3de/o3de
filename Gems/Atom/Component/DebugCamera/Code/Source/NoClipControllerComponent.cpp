@@ -129,7 +129,7 @@ namespace AZ
         bool NoClipControllerComponent::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
         {
             static const auto KeyCount = static_cast<uint32_t>(CameraKeys::Count);
-            static const float PixelToDegree = 1.0 / 360.0f;
+            static const float PixelToDegree = 1.0f / 360.0f;
 
             static const AzFramework::InputChannelId CameraInputMap[KeyCount] =
             {
@@ -404,32 +404,32 @@ namespace AZ
 
         void NoClipControllerComponent::SetCameraStateForward(float value)
         {
-            m_inputStates[CameraKeys::Forward] = value < -deadZone ? false : true; 
+            m_inputStates[CameraKeys::Forward] = value >= -deadZone; 
         }
 
         void NoClipControllerComponent::SetCameraStateBack(float value)
         {
-            m_inputStates[Back] = value > deadZone ? false : true;
+            m_inputStates[Back] = value <= deadZone;
         }
 
         void NoClipControllerComponent::SetCameraStateLeft(float value)
         {
-            m_inputStates[Left] = value < -deadZone ? true : false; 
+            m_inputStates[Left] = value < -deadZone; 
         }
 
         void NoClipControllerComponent::SetCameraStateRight(float value)
         {
-            m_inputStates[Right] = value > deadZone ? true : false;
+            m_inputStates[Right] = value > deadZone;
         }
 
         void NoClipControllerComponent::SetCameraStateUp(float value)
         {
-            m_inputStates[Up] = value > deadZone ? true : false;
+            m_inputStates[Up] = value > deadZone;
         }
 
         void NoClipControllerComponent::SetCameraStateDown(float value)
         {
-            m_inputStates[Down] = value > deadZone ? true : false;
+            m_inputStates[Down] = value > deadZone;
         }
 
         void NoClipControllerComponent::SetPitch(float pitch)

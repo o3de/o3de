@@ -13,15 +13,12 @@
 namespace UnitTest
 {
     // This fixture provides a functional serialize context and allocators.
-    class SerializeContextFixture : public AllocatorsFixture
+    class SerializeContextFixture : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             m_serializeContext = aznew AZ::SerializeContext(true, true);
         }
@@ -31,10 +28,7 @@ namespace UnitTest
             delete m_serializeContext;
             m_serializeContext = nullptr;
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:

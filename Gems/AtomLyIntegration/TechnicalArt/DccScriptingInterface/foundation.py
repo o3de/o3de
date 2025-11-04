@@ -74,18 +74,18 @@ os.chdir(_PATH_DCCSIG.as_posix())        # cwd
 # local imports from dccsi
 import azpy.config_utils
 
-# the path we want to install packages into
-STR_PATH_DCCSI_PYTHON_LIB = str('{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages')
-
 # these are just defaults and are meant to be replaced by info for the target python.exe
 _SYS_VER_MAJOR = sys.version_info.major
 _SYS_VER_MINOR = sys.version_info.minor
 # the default will be based on the python executable running this module
 # this value should be replaced with the sys,version of the target python
 # for example mayapy, or blenders python, etc.
-_PATH_DCCSI_PYTHON_LIB = Path(STR_PATH_DCCSI_PYTHON_LIB.format(_PATH_DCCSIG,
-                                                               _SYS_VER_MAJOR,
-                                                               _SYS_VER_MINOR))
+
+_PATH_DCCSI_PYTHON_LIB = Path(f'{_PATH_DCCSIG}\\3rdParty\\Python\\Lib\\'
+                              f'{_SYS_VER_MAJOR}.x\\'
+                              f'{_SYS_VER_MAJOR}.{_SYS_VER_MINOR}.x\\site-packages').resolve()
+
+_PATH_DCCSI_PYTHON_LIB.touch(exist_ok=True) # make sure it's there
 
 # this is the shared default requirements.txt file to install for python 3.6.x+
 _DCCSI_PYTHON_REQUIREMENTS = Path(_PATH_DCCSIG, 'requirements.txt')
@@ -445,6 +445,8 @@ if __name__ == '__main__':
                 _LOGGER.info(f'.touch(): {_PATH_DCCSI_PYTHON_LIB}')
         else:
             _LOGGER.error(f'This py exe does not exist:{_PYTHON_EXE}')
+            _LOGGER.info(f'Make sure to wrap your path to the exe in quotes, like:')
+            _LOGGER.info(f'.\python foundation.py -py="C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe"')
             sys.exit()
 
     # this will verify pip is installed for the target python interpreter/env

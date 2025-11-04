@@ -10,6 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <QKeySequence>
 
@@ -204,8 +205,6 @@ namespace AzToolsFramework
         : public AZ::EBusTraits
     {
     public:
-        /// Dispatched when Editor's Tools menu is being populated so that external tools can add their actions.
-        virtual void OnPopulateToolMenuItems() = 0;
 
         /// Dispatched when Editor's Tools menu is cleared.
         virtual void OnResetToolMenuItems() = 0;
@@ -214,3 +213,8 @@ namespace AzToolsFramework
     /// Type to inherit to implement EditorMenuNotifications.
     using EditorMenuNotificationBus = AZ::EBus<EditorMenuNotifications>;
 }
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ActionOverrideRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorActionRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorMenuRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorMenuNotifications);

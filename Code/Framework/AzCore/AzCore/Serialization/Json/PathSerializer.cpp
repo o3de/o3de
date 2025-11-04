@@ -71,7 +71,7 @@ namespace AZ::JsonPathSerializerInternal
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonPathSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonPathSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonPathSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)

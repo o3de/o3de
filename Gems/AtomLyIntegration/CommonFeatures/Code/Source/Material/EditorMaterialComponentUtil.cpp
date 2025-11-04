@@ -90,6 +90,17 @@ namespace AZ
                     return false;
                 }
 
+                // With the introduction of the material pipeline, abstract material types, and intermediate assets, the material could
+                // be referencing a generated material type in the intermediate asset folder. We need to map back to the original
+                // material type.
+                editData.m_originalMaterialTypeSourcePath =
+                    AZ::RPI::MaterialUtils::PredictOriginalMaterialTypeSourcePath(editData.m_materialTypeSourcePath);
+                if (editData.m_originalMaterialTypeSourcePath.empty())
+                {
+                    AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Build to locate originating source material type asset: %s", editData.m_materialAssetId.ToString<AZStd::string>().c_str());
+                    return false;
+                }
+
                 // Load the material type source data
                 auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(editData.m_materialTypeSourcePath);
                 if (!materialTypeOutcome.IsSuccess())
@@ -104,7 +115,7 @@ namespace AZ
             bool SaveSourceMaterialFromEditData(const AZStd::string& path, const MaterialEditData& editData)
             {
                 if (path.empty() || !editData.m_materialAsset.IsReady() || !editData.m_materialTypeAsset.IsReady() ||
-                    editData.m_materialTypeSourcePath.empty())
+                    editData.m_materialTypeSourcePath.empty() || editData.m_originalMaterialTypeSourcePath.empty())
                 {
                     AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Can not export: %s", path.c_str());
                     return false;
@@ -113,12 +124,15 @@ namespace AZ
                 // Construct the material source data object that will be exported
                 AZ::RPI::MaterialSourceData exportData;
                 exportData.m_materialTypeVersion = editData.m_materialTypeAsset->GetVersion();
-                exportData.m_materialType = AtomToolsFramework::GetPathToExteralReference(path, editData.m_materialTypeSourcePath);
+
+                // Source material files that should reference the originating source material type instead of the potential intermediate
+                // material type asset.
+                exportData.m_materialType = AtomToolsFramework::GetPathToExteralReference(path, editData.m_originalMaterialTypeSourcePath);
                 exportData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(path, editData.m_materialParentSourcePath);
 
                 // Copy all of the properties from the material asset to the source data that will be exported
                 bool result = true;
-                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZ::RPI::MaterialTypeSourceData::PropertyDefinition* propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext)
+                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZ::RPI::MaterialPropertySourceData* propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext)
                     {
                         AZ::Name propertyId{propertyDefinition->GetName()};
                         nameContext.ContextualizeProperty(propertyId);
@@ -240,7 +254,7 @@ namespace AZ
             {
                 MaterialAssignmentMap primaryMaterialSlots;
                 MaterialComponentRequestBus::EventResult(
-                    primaryMaterialSlots, primaryEntityId, &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
+                    primaryMaterialSlots, primaryEntityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialMap);
 
                 return AZStd::all_of(
                     secondaryEntityIds.begin(), secondaryEntityIds.end(),
@@ -249,7 +263,7 @@ namespace AZ
                         MaterialAssignmentMap secondaryMaterialSlots;
                         MaterialComponentRequestBus::EventResult(
                             secondaryMaterialSlots, secondaryEntityId,
-                            &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
+                            &MaterialComponentRequestBus::Events::GetDefaultMaterialMap);
 
                         if (primaryMaterialSlots.size() != secondaryMaterialSlots.size())
                         {

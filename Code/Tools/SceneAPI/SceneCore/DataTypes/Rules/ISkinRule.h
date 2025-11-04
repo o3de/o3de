@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -7,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -24,7 +23,7 @@ namespace AZ
             struct SkinRuleSettings
             {
                 AZ::u32 m_maxInfluencesPerVertex = 8;
-                float m_weightThreshold = 0.001;
+                float m_weightThreshold = 0.001f;
             };
 
             inline SkinRuleSettings GetDefaultSkinRuleSettings()

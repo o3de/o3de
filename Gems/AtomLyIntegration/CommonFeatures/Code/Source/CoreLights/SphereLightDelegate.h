@@ -10,46 +10,50 @@
 
 #include <CoreLights/LightDelegateBase.h>
 
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Atom/Feature/CoreLights/PointLightFeatureProcessorInterface.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    class SphereLightDelegate final : public LightDelegateBase<PointLightFeatureProcessorInterface>
     {
-        class SphereLightDelegate final
-            : public LightDelegateBase<PointLightFeatureProcessorInterface>
-        {
-            using Base = LightDelegateBase<PointLightFeatureProcessorInterface>;
+        using Base = LightDelegateBase<PointLightFeatureProcessorInterface>;
 
-        public:
-            SphereLightDelegate(LmbrCentral::SphereShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible);
+    public:
+        SphereLightDelegate(LmbrCentral::SphereShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible);
 
-            // LightDelegateBase overrides...
-            float CalculateAttenuationRadius(float lightThreshold) const override;
-            void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const override;
-            float GetSurfaceArea() const override;
-            float GetEffectiveSolidAngle() const override { return PhotometricValue::OmnidirectionalSteradians; }
-            void SetEnableShadow(bool enabled) override;
-            void SetShadowBias(float bias) override;
-            void SetShadowmapMaxSize(ShadowmapSize size) override;
-            void SetShadowFilterMethod(ShadowFilterMethod method) override;
-            void SetFilteringSampleCount(uint32_t count) override;
-            void SetEsmExponent(float esmExponent) override;
-            void SetNormalShadowBias(float bias) override;
-            void SetAffectsGI(bool affectsGI) override;
-            void SetAffectsGIFactor(float affectsGIFactor) override;
+        // LightDelegateBase overrides...
+        float CalculateAttenuationRadius(float lightThreshold) const override;
+        void DrawDebugDisplay(
+            const Transform& transform,
+            const Color& color,
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            bool isSelected) const override;
+        float GetSurfaceArea() const override;
+        float GetEffectiveSolidAngle() const override;
+        void SetEnableShadow(bool enabled) override;
+        void SetShadowBias(float bias) override;
+        void SetShadowmapMaxSize(ShadowmapSize size) override;
+        void SetShadowFilterMethod(ShadowFilterMethod method) override;
+        void SetFilteringSampleCount(uint32_t count) override;
+        void SetEsmExponent(float esmExponent) override;
+        void SetNormalShadowBias(float bias) override;
+        void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) override;
+        void SetAffectsGI(bool affectsGI) override;
+        void SetAffectsGIFactor(float affectsGIFactor) override;
+        Aabb GetLocalVisualizationBounds() const override;
 
-        private:
+    private:
+        // LightDelegateBase overrides...
+        void HandleShapeChanged() override;
 
-            // LightDelegateBase overrides...
-            void HandleShapeChanged() override;
+        float GetRadius() const;
 
-            float GetRadius() const;
+        LmbrCentral::SphereShapeComponentRequests* m_sphereShapeBus = nullptr;
+    };
 
-            LmbrCentral::SphereShapeComponentRequests* m_shapeBus = nullptr;
-        };
-
-    } // namespace Render
-} // namespace AZ
-
+    inline float SphereLightDelegate::GetEffectiveSolidAngle() const
+    {
+        return PhotometricValue::OmnidirectionalSteradians;
+    }
+} // namespace AZ::Render

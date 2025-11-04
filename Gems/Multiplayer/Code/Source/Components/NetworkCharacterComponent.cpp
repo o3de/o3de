@@ -107,11 +107,30 @@ namespace Multiplayer
     {
     }
 
+
     void NetworkCharacterComponent::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        Physics::CharacterRequests* characterRequests = Physics::CharacterRequestBus::FindFirstHandler(GetEntityId());
-        m_physicsCharacter = (characterRequests != nullptr) ? characterRequests->GetCharacter() : nullptr;
+        // During activation the character controller is not created yet.
+        // Connect to CharacterNotificationBus to listen when it's activated after creation.
+        Physics::CharacterNotificationBus::Handler::BusConnect(GetEntityId());
+
+        // Set up the network event handlers. These can be bound before the character controller is created
+        // because they check for the character controller to exist inside of the handlers.
+
         GetNetBindComponent()->AddEntitySyncRewindEventHandler(m_syncRewindHandler);
+
+        if (!HasController())
+        {
+            GetNetworkTransformComponent()->TranslationAddEvent(m_translationEventHandler);
+        }
+    }
+
+    void NetworkCharacterComponent::OnCharacterActivated(const AZ::EntityId& entityId)
+    {
+        Physics::CharacterRequests* characterRequests = Physics::CharacterRequestBus::FindFirstHandler(entityId);
+        AZ_Assert(characterRequests, "Character Controller component is required on entity %s", GetEntity()->GetName().c_str());
+
+        m_physicsCharacter = characterRequests->GetCharacter();
 
         if (m_physicsCharacter)
         {
@@ -123,16 +142,21 @@ namespace Multiplayer
                 callbackManager->SetObjectPreFilter(CollisionLayerBasedObjectPreFilter);
             }
         }
+    }
 
-        if (!HasController())
-        {
-            GetNetworkTransformComponent()->TranslationAddEvent(m_translationEventHandler);
-        }
+    void NetworkCharacterComponent::OnCharacterDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        m_physicsCharacter = nullptr;
     }
 
     void NetworkCharacterComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        ;
+        Physics::CharacterNotificationBus::Handler::BusDisconnect();
+
+        m_syncRewindHandler.Disconnect();
+        m_translationEventHandler.Disconnect();
+
+        m_physicsCharacter = nullptr;
     }
 
     void NetworkCharacterComponent::OnTranslationChangedEvent([[maybe_unused]] const AZ::Vector3& translation)
@@ -196,20 +220,23 @@ namespace Multiplayer
             Multiplayer::GetNetworkTime()->SyncEntitiesToRewindState(entitySweptBounds);
         }
 
-        if ((GetParent().m_physicsCharacter == nullptr) || (velocity.GetLengthSq() <= 0.0f))
+        if (GetParent().m_physicsCharacter != nullptr)
         {
-            return GetEntity()->GetTransform()->GetWorldTranslation();
+            GetParent().m_physicsCharacter->SetRotation(GetEntity()->GetTransform()->GetWorldRotationQuaternion());
+
+            if (velocity.GetLengthSq() > 0.0f)
+            {
+                GetParent().m_physicsCharacter->Move(velocity * deltaTime, deltaTime);
+                GetEntity()->GetTransform()->SetWorldTM(GetParent().m_physicsCharacter->GetTransform());
+                AZLOG(
+                    NET_Movement,
+                    "Moved to position %f x %f x %f",
+                    GetParent().m_physicsCharacter->GetBasePosition().GetX(),
+                    GetParent().m_physicsCharacter->GetBasePosition().GetY(),
+                    GetParent().m_physicsCharacter->GetBasePosition().GetZ());
+            }
         }
-        GetParent().m_physicsCharacter->Move(velocity * deltaTime, deltaTime);
-        GetEntity()->GetTransform()->SetWorldTranslation(GetParent().m_physicsCharacter->GetBasePosition());
-        AZLOG
-        (
-            NET_Movement,
-            "Moved to position %f x %f x %f",
-            GetParent().m_physicsCharacter->GetBasePosition().GetX(),
-            GetParent().m_physicsCharacter->GetBasePosition().GetY(),
-            GetParent().m_physicsCharacter->GetBasePosition().GetZ()
-        );
+
         return GetEntity()->GetTransform()->GetWorldTranslation();
     }
 }

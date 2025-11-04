@@ -1,0 +1,13 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/EnhancedPBR.materialtype",
+    "materialTypeVersion": 6,
+    "parentMaterial": "101_DetailMaps_BaseNoDetailMaps.material",
+    "propertyValues": {
+        "detailLayerGroup.detailUV.scale": 40.0,
+        "detailLayerGroup.enableDetailLayer": true,
+        "detailLayerGroup.enableNormals": true,
+        "detailLayerGroup.normalDetailFlipY": true,
+        "detailLayerGroup.normalDetailMap": "../../Textures/test_dome_normal.tiff",
+        "detailLayerGroup.normalDetailStrength": 0.30000001192092896
+    }
+}

@@ -208,6 +208,10 @@
                     "$type": "EditorLockComponent",
                     "Id": 7090012899106946164
                 },
+                "Component_[773790315487116393]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 773790315487116393
+                },
                 "Component_[9410832619875640998]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 9410832619875640998

@@ -31,7 +31,7 @@ namespace LandscapeCanvasEditor
 
     GraphCanvas::ActionGroupId FindSelectedNodesAction::GetActionGroupId() const
     {
-        return AZ_CRC("SceneActionGroup", 0x284f71aa);
+        return AZ_CRC_CE("SceneActionGroup");
     }
 
     void FindSelectedNodesAction::RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId)

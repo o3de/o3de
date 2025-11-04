@@ -90,7 +90,11 @@ namespace AZ::SceneAPI::Utilities
             const DataTypes::ISceneNodeGroup& meshGroup);
 
     private:
-        static void CopySelectionToSet(AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected, const DataTypes::ISceneNodeSelectionList& list);
-        static void CorrectRootNode(const Containers::SceneGraph& graph, AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected);
+        static void CopySelectionToSet(
+            AZStd::unordered_set<AZStd::string>& selected, AZStd::unordered_set<AZStd::string>& unselected,
+            const DataTypes::ISceneNodeSelectionList& list);
+        static void CorrectRootNode(
+            const Containers::SceneGraph& graph,
+            AZStd::unordered_set<AZStd::string>& selected, AZStd::unordered_set<AZStd::string>& unselected);
     };
 }

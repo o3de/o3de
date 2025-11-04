@@ -24,11 +24,9 @@ namespace AZ
         {
             using Base = RHI::FrameGraphExecuter;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphExecuter> Create();
-
-            Device& GetDevice() const;
 
         private:
             FrameGraphExecuter();
@@ -42,10 +40,8 @@ namespace AZ
             void EndInternal() override {}
             //////////////////////////////////////////////////////////////////////////
 
-            CommandQueueContext* m_commandQueueContext = nullptr;
-
             const RHI::ScopeId m_mergedScopeId{"Merged"};
-            FrameGraphExecuterData m_frameGraphExecuterData;
+            AZStd::unordered_map<int, FrameGraphExecuterData> m_frameGraphExecuterData;
         };
     }
 }

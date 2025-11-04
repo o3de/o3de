@@ -5,9 +5,9 @@
                 "Initialization": {
                     "CommonSrgsShaderAssetPath": "shaders/sceneandviewsrgs.azshader",
                     "ImageSystemDescriptor": {
-                        "AssetStreamingImagePoolSize": 0,
-                        "SystemStreamingImagePoolSize": 134217728, // 128 * 1024 * 1024
-                        "SystemAttachmentImagePoolSize": 0 
+                        "SystemStreamingImagePoolSize": 0,
+                        "SystemStreamingImagePoolMipBias": 0,
+                        "SystemAttachmentImagePoolSize": 0
                     },
                     "GpuQuerySystemDescriptor": {
                         "OcclusionQueryCount": 128,
@@ -15,7 +15,7 @@
                         "TimestampQueryCount": 256
                     },
                     "DynamicDrawSystemDescriptor": {
-                        "DynamicBufferPoolSize": 50331648 // 3 * 16 * 1024 * 1024 (for 3 frames)
+                        "DynamicBufferPoolSize": 16777216 // 16 * 1024 * 1024 (per frame)
                     }
                 },
                 "UseDebugFallbackImages": true

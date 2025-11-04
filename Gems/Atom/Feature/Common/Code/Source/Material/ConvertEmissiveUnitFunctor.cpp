@@ -6,7 +6,7 @@
  *
  */
 
-#include "./ConvertEmissiveUnitFunctor.h"
+#include <Atom/Feature/Material/ConvertEmissiveUnitFunctor.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -19,46 +19,29 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ConvertEmissiveUnitFunctor, AZ::RPI::MaterialFunctor>()
-                    ->Version(6)
+                    ->Version(7) // changed shaderInputIndex to shaderParameter
                     ->Field("intensityPropertyIndex", &ConvertEmissiveUnitFunctor::m_intensityPropertyIndex)
                     ->Field("lightUnitPropertyIndex", &ConvertEmissiveUnitFunctor::m_lightUnitPropertyIndex)
-                    ->Field("shaderInputIndex", &ConvertEmissiveUnitFunctor::m_shaderInputIndex)
+                    ->Field("shaderParameter", &ConvertEmissiveUnitFunctor::m_shaderParameter)
                     ->Field("ev100Index", &ConvertEmissiveUnitFunctor::m_ev100Index)
                     ->Field("nitIndex", &ConvertEmissiveUnitFunctor::m_nitIndex)
                     ->Field("ev100Min", &ConvertEmissiveUnitFunctor::m_ev100Min)
                     ->Field("ev100Max", &ConvertEmissiveUnitFunctor::m_ev100Max)
                     ->Field("nitMin", &ConvertEmissiveUnitFunctor::m_nitMin)
-                    ->Field("nitMax", &ConvertEmissiveUnitFunctor::m_nitMax)
-                    ;
+                    ->Field("nitMax", &ConvertEmissiveUnitFunctor::m_nitMax);
             }
         }
 
-        void ConvertEmissiveUnitFunctor::Process(RuntimeContext& context)
+        void ConvertEmissiveUnitFunctor::Process(RPI::MaterialFunctorAPI::RuntimeContext& context)
         {
             // Convert unit on runtime
             float sourceValue = context.GetMaterialPropertyValue<float>(m_intensityPropertyIndex);
             uint32_t lightUnit = context.GetMaterialPropertyValue<uint32_t>(m_lightUnitPropertyIndex);
-
-            PhotometricUnit sourceType;
-            if (lightUnit == m_ev100Index)
-            {
-                sourceType = PhotometricUnit::Ev100Luminance;
-            }
-            else if (lightUnit == m_nitIndex)
-            {
-                sourceType = PhotometricUnit::Nit;
-            }
-            else
-            {
-                sourceType = PhotometricUnit::Unknown;
-                AZ_Assert(false, "ConvertEmissiveUnitFunctor doesn't recognize light unit.")
-            }
-
-            float targetValue = PhotometricValue::ConvertIntensityBetweenUnits(sourceType, PhotometricUnit::Nit, sourceValue);
-            context.GetShaderResourceGroup()->SetConstant(m_shaderInputIndex, targetValue);
+            float targetValue = GetProcessedValue(sourceValue, lightUnit);
+            context.GetMaterialShaderParameter()->SetParameter(m_shaderParameter, targetValue);
         }
 
-        void ConvertEmissiveUnitFunctor::Process(EditorContext& context)
+        void ConvertEmissiveUnitFunctor::Process(RPI::MaterialFunctorAPI::EditorContext& context)
         {
             // Update Editor based on selected light unit
             uint32_t lightUnit = context.GetMaterialPropertyValue<uint32_t>(m_lightUnitPropertyIndex);
@@ -77,6 +60,40 @@ namespace AZ
             {
                 AZ_Assert(false, "ConvertEmissiveUnitFunctor doesn't recognize light unit.")
             }
+        }
+
+        float ConvertEmissiveUnitFunctor::GetProcessedValue(float originalEmissiveIntensity, uint32_t lightUnitIndex) const
+        {
+            PhotometricUnit sourceType;
+            if (lightUnitIndex == m_ev100Index)
+            {
+                sourceType = PhotometricUnit::Ev100Luminance;
+            }
+            else if (lightUnitIndex == m_nitIndex)
+            {
+                sourceType = PhotometricUnit::Nit;
+            }
+            else
+            {
+                sourceType = PhotometricUnit::Unknown;
+                AZ_Assert(false, "ConvertEmissiveUnitFunctor doesn't recognize light unit.")
+            }
+
+            return PhotometricValue::ConvertIntensityBetweenUnits(sourceType, PhotometricUnit::Nit, originalEmissiveIntensity);
+        }
+
+        bool ConvertEmissiveUnitFunctor::UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout)
+        {
+            if (m_shaderParameter.ValidateOrFindIndex(layout) == false)
+            {
+                AZ_Error(
+                    "ConvertEmissiveUnitFunctorSourceData",
+                    false,
+                    "Could not find shader parameter '%s'",
+                    m_shaderParameter.GetName().GetCStr());
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -17,10 +17,11 @@
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class SpawnableSystemComponent
+    class AZF_API SpawnableSystemComponent
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public AZ::SystemTickBus::Handler
@@ -68,6 +69,7 @@ namespace AzFramework
         uint64_t AssignRootSpawnable(AZ::Data::Asset<Spawnable> rootSpawnable) override;
         void ReleaseRootSpawnable() override;
         void ProcessSpawnableQueue() override;
+        void ProcessSpawnableQueueUntilEmpty() override;
 
         //
         // RootSpawnbleNotificationBus
@@ -92,3 +94,4 @@ namespace AzFramework
         AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
     };
 } // namespace AzFramework
+

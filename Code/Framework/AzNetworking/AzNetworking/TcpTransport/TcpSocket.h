@@ -86,6 +86,12 @@ namespace AzNetworking
         bool SocketCreateInternal();
 
         SocketFd m_socketFd;
+
+        // prevent warning spam for bind failure, if something is sitting on the port.
+        // These threads usually try 100x a second or faster, so warning for every bind failure is bad
+        // We'll remember the last warned port so that if the app layer responds to a listen failure
+        // by trying another port, that will show up.
+        uint16_t m_warnedBindForPortFailure = 0; //! Which port have we most recently warned for?
     };
 }
 

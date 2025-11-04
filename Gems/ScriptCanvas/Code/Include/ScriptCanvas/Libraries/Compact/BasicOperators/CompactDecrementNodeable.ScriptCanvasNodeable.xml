@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDecrementNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:noNamespaceSchemaLocation="../../../AutoGen/ScriptCanvasNodeable.xsd">
+    <Class Name="CompactDecrementNodeable"
+        QualifiedName="Nodeables::CompactDecrementNodeable"
+        PreferredClassName="--"
+        Category="Compact/Basic Operators"
+        Namespace="ScriptCanvas"
+        Description="Decrements the input number by 1"
+        Preset="compact">
+
+        <Input Name="In" OutputName="Out">
+            <Parameter Name="a" Type="float"/>
+            <Return Name="Out" Type="float"/>
+        </Input>
+
+    </Class>
+</ScriptCanvas>

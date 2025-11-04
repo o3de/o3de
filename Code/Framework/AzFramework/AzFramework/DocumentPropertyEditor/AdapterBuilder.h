@@ -12,12 +12,13 @@
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentSchema.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
     //! Helper class that builds a DOM suitable for usage in a DocumentAdapter.
     //! Uses a visitor pattern to establish node elements.
-    class AdapterBuilder
+    class AZF_API AdapterBuilder
     {
     public:
         AdapterBuilder() = default;
@@ -72,6 +73,8 @@ namespace AZ::DocumentPropertyEditor
 
         //! Gets the path to the DOM node currently being built within this builder's DOM.
         Dom::Path GetCurrentPath() const;
+
+        void SetCurrentPath(const Dom::Path&);
 
         //! Returns true if an error has been encountered during the build process,
         bool IsError() const;

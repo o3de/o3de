@@ -32,5 +32,4 @@ set(FILES
     Tests/Utilities/SceneGraphSelectorTests.cpp
     Tests/Utilities/PatternMatcherTests.cpp
     Tests/Utilities/CoordinateSystemConverterTests.cpp
-    Tests/Export/MaterialIOTests.cpp
 )

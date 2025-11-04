@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -22,11 +23,11 @@ namespace AzFramework
      * Other systems, which communicate with activated entities,
      * should use the appropriate EBus to communicate with components.
      */
-    class BehaviorComponentId
+    class AZF_API BehaviorComponentId
     {
     public:
         AZ_TYPE_INFO(BehaviorComponentId, "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}");
-        AZ_CLASS_ALLOCATOR(BehaviorComponentId, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorComponentId, AZ::ComponentAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         BehaviorComponentId() = default;
@@ -45,11 +46,11 @@ namespace AzFramework
      * It is always safe to call functions on this class
      * even if the entity it represents has been deleted from memory.
      */
-    class BehaviorEntity
+    class AZF_API BehaviorEntity
     {
     public:
         AZ_RTTI(BehaviorEntity, "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}");
-        AZ_CLASS_ALLOCATOR(BehaviorEntity, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorEntity, AZ::EntityAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         virtual ~BehaviorEntity() = default;

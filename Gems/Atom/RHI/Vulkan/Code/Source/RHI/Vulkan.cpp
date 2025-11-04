@@ -6,11 +6,7 @@
  *
  */
 
-#include <stdarg.h>
-#include <algorithm>
-#include <Atom/RHI.Reflect/Bits.h>
-#include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <RHI/Vulkan.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/BufferView.h>
@@ -19,6 +15,24 @@
 #include <RHI/Image.h>
 #include <RHI/Instance.h>
 #include <Vulkan_Traits_Platform.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/StringFunc/StringFunc.h>
+
+#define VMA_IMPLEMENTATION
+
+#include <vma/vk_mem_alloc.h>
+AZ_CVAR(
+    uint32_t,
+    r_vkBarrierOptimizationFlags,
+    static_cast<uint32_t>(AZ::Vulkan::BarrierOptimizationFlags::All),
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Optimize resource barriers mask: 0 = None, 1 = UseRenderpassLayout, 2 = RemoveReadAfterRead, 4 = UseGlobal, All = 7\
+     Useful when debugging to see all generated barriers.");
 
 namespace AZ
 {
@@ -108,6 +122,23 @@ namespace AZ
             }
         }
 
+        void RemoveRawStringList(RawStringList& removeFrom, const RawStringList& toRemove)
+        {
+            AZStd::erase_if(
+                removeFrom,
+                [&](const auto& x)
+                {
+                    return AZStd::find_if(
+                               toRemove.begin(),
+                               toRemove.end(),
+                               [&](const auto& y)
+                               {
+                                   return AZ::StringFunc::Equal(x, y);
+                               }
+                    ) != toRemove.end();
+                });
+        }
+
         RawStringList FilterList(const RawStringList& source, const StringList& filter)
         {
             RawStringList filteredList;
@@ -127,7 +158,7 @@ namespace AZ
             return x1 < y2 && y1 < x2;
         }
 
-        bool ResourceViewOverlaps(const RHI::BufferView& lhs, const RHI::BufferView& rhs)
+        bool ResourceViewOverlaps(const RHI::DeviceBufferView& lhs, const RHI::DeviceBufferView& rhs)
         {
             auto const& lhsBufferMemoryView = static_cast<const Buffer&>(lhs.GetBuffer()).GetBufferMemoryView();
             auto const& rhsBufferMemoryView = static_cast<const Buffer&>(rhs.GetBuffer()).GetBufferMemoryView();
@@ -145,7 +176,7 @@ namespace AZ
             return Overlaps(lhsBegin, lhsEnd, rhsBegin, rhsEnd);
         }
 
-        bool ResourceViewOverlaps(const RHI::ImageView& lhs, const RHI::ImageView& rhs)
+        bool ResourceViewOverlaps(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs)
         {
             auto const& lhsImage = static_cast<const Image&>(lhs.GetImage());
             auto const& rhsImage = static_cast<const Image&>(rhs.GetImage());
@@ -157,6 +188,44 @@ namespace AZ
             return SubresourceRangeOverlaps(
                 static_cast<const ImageView&>(lhs).GetVkImageSubresourceRange(),
                 static_cast<const ImageView&>(rhs).GetVkImageSubresourceRange());
+        }
+
+        bool ResourceViewContains(const RHI::DeviceImageView& lhs, const RHI::DeviceImageView& rhs)
+        {
+            auto const& lhsImageView = static_cast<const ImageView&>(lhs);
+            auto const& rhsImageView = static_cast<const ImageView&>(rhs);
+            if (static_cast<const Image&>(lhsImageView.GetImage()).GetNativeImage() !=
+                static_cast<const Image&>(rhsImageView.GetImage()).GetNativeImage())
+            {
+                return false;
+            }
+
+            const auto& lhsRange = lhsImageView.GetImageSubresourceRange();
+            const auto& rhsRange = rhsImageView.GetImageSubresourceRange();
+            if (!(
+                lhsRange.m_arraySliceMin <= rhsRange.m_arraySliceMin &&
+                lhsRange.m_arraySliceMax >= rhsRange.m_arraySliceMax &&
+                lhsRange.m_mipSliceMin <= rhsRange.m_mipSliceMin &&
+                lhsRange.m_mipSliceMax >= rhsRange.m_mipSliceMax
+                ))
+            {
+                return false;
+            }
+
+            for (uint32_t i = static_cast<uint32_t>(RHI::ImageAspect::Color); i < static_cast<uint32_t>(RHI::ImageAspect::Count); ++i)
+            {
+                RHI::ImageAspectFlags flag = static_cast<RHI::ImageAspectFlags>(AZ_BIT(i));
+                if (!RHI::CheckBitsAll(rhsImageView.GetAspectFlags(), flag))
+                {
+                    continue;
+                }
+
+                if (!RHI::CheckBitsAll(lhsImageView.GetAspectFlags(), flag))
+                {
+                    return false;
+                }                
+            }
+            return true;
         }
 
         bool SubresourceRangeOverlaps(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs)
@@ -180,10 +249,48 @@ namespace AZ
             case RHI::ScopeAttachmentUsage::DepthStencil:
             case RHI::ScopeAttachmentUsage::Resolve:
             case RHI::ScopeAttachmentUsage::SubpassInput:
+            case RHI::ScopeAttachmentUsage::ShadingRate:
                 return true;
             default:
                 return false;
             }
+        }
+
+        bool IsReadOnlyAccess(VkAccessFlags access)
+        {
+            return !RHI::CheckBitsAny(
+                access,
+                VkAccessFlags(VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                    VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_MEMORY_WRITE_BIT |
+                    VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT | VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT |
+                    VK_ACCESS_CONDITIONAL_RENDERING_READ_BIT_EXT | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR |
+                    VK_ACCESS_COMMAND_PREPROCESS_WRITE_BIT_NV | VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV));
+        }
+
+        BarrierOptimizationFlags GetBarrierOptimizationFlags()
+        {
+            return static_cast<BarrierOptimizationFlags>(static_cast<uint32_t>(r_vkBarrierOptimizationFlags));
+        }
+
+        bool operator==(const VkMemoryBarrier& lhs, const VkMemoryBarrier& rhs)
+        {
+            return lhs.dstAccessMask == rhs.dstAccessMask && lhs.pNext == rhs.pNext && lhs.srcAccessMask == rhs.srcAccessMask;
+        }
+
+        bool operator==(const VkBufferMemoryBarrier& lhs, const VkBufferMemoryBarrier& rhs)
+        {
+            return lhs.buffer == rhs.buffer && lhs.dstAccessMask == rhs.dstAccessMask &&
+                lhs.dstQueueFamilyIndex == rhs.dstQueueFamilyIndex && lhs.offset == rhs.offset && lhs.pNext == rhs.pNext &&
+                lhs.size == rhs.size && lhs.srcAccessMask == rhs.srcAccessMask && lhs.srcQueueFamilyIndex == rhs.srcQueueFamilyIndex;
+        }
+
+        bool operator==(const VkImageMemoryBarrier& lhs, const VkImageMemoryBarrier& rhs)
+        {
+            return lhs.dstAccessMask == rhs.dstAccessMask && lhs.dstQueueFamilyIndex == rhs.dstQueueFamilyIndex && lhs.image == rhs.image &&
+                lhs.newLayout == rhs.newLayout && lhs.oldLayout == rhs.oldLayout && lhs.pNext == rhs.pNext &&
+                lhs.srcAccessMask == rhs.srcAccessMask && lhs.srcQueueFamilyIndex == rhs.srcQueueFamilyIndex &&
+                lhs.subresourceRange == rhs.subresourceRange;
         }
 
         bool operator==(const VkImageSubresourceRange& lhs, const VkImageSubresourceRange& rhs)
@@ -198,63 +305,7 @@ namespace AZ
 
         namespace Debug
         {
-            VkDebugReportCallbackEXT s_reportCallback = VK_NULL_HANDLE;
-            const char* s_debugMessageLabel = "vkDebugMessage";
-
-            VKAPI_ATTR VkBool32 VKAPI_CALL ReportCallback(
-                VkDebugReportFlagsEXT flags,
-                VkDebugReportObjectTypeEXT objType,
-                uint64_t srcObject,
-                size_t location,
-                int32_t msgCode,
-                const char* layerPrefix,
-                const char* msg,
-                void* userData)
-            {
-                AZ_UNUSED(objType);
-                AZ_UNUSED(srcObject);
-                AZ_UNUSED(location);
-                AZ_UNUSED(userData);
-
-                // Error that may result in undefined behavior
-                if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
-                {
-                    AZ_Error(s_debugMessageLabel, false, "ERROR: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                // Warnings may hint at unexpected / non-spec API usage
-                if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
-                {
-                    AZ_Warning(s_debugMessageLabel, false, "WARNING: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                // May indicate sub-optimal usage of the API
-                if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
-                {
-                    AZ_Printf(s_debugMessageLabel, "PERFORMANCE: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                // Informal messages that may become handy during debugging
-                if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
-                {
-                    AZ_Printf(s_debugMessageLabel, "INFO: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                // Diagnostic info from the Vulkan loader and layers
-                // Usually not helpful in terms of API usage, but may help to debug layer and loader problems 
-                if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
-                {
-                    AZ_Printf(s_debugMessageLabel, "DEBUG: [%s] Code %d : %s\n", layerPrefix, msgCode, msg);
-                }
-
-                /*
-                    The return value of this callback controls whether the Vulkan call that caused the validation message
-                    will be aborted or not. We return VK_FALSE as we DON'T want Vulkan calls that cause a validation message
-                    (and return a VkResult) to abort. If you instead want to have calls abort, pass in VK_TRUE and the function will
-                    return VK_ERROR_VALIDATION_FAILED_EXT.
-                */
-                return VK_FALSE;
-            }
+            const char* s_debugMessageLabel = "vkDebugMessage";            
 
             VkDebugUtilsMessengerEXT s_messageCallback = VK_NULL_HANDLE;
             VKAPI_ATTR VkBool32 VKAPI_CALL MessageCallbak(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, [[maybe_unused]] void* pUserData)
@@ -309,7 +360,6 @@ namespace AZ
 
             void InitDebugMessages(const GladVulkanContext& context, VkInstance instance, DebugMessageTypeFlag messageTypeMask)
             {
-                // First check if VK_EXT_debug_utils is supported since it has the same functionalities as VK_EXT_debug_report and more.
                 if (VK_INSTANCE_EXTENSION_SUPPORTED(context, EXT_debug_utils))
                 {
                     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
@@ -343,53 +393,17 @@ namespace AZ
                     }
 
                     [[maybe_unused]] VkResult result =
-                        context.CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &s_messageCallback);
+                        context.CreateDebugUtilsMessengerEXT(instance, &createInfo, VkSystemAllocator::Get(), &s_messageCallback);
 
                     AZ_Error("Vulkan", !result, "Failed to initialize the debug messaging system");
-                }
-                else if (VK_INSTANCE_EXTENSION_SUPPORTED(context, EXT_debug_report))
-                {
-                    VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = {};
-                    dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
-                    dbgCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)ReportCallback;
-
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Info))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
-                    }
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Warning))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_WARNING_BIT_EXT;
-                    }
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Error))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_ERROR_BIT_EXT;
-                    }
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Debug))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_DEBUG_BIT_EXT;
-                    }
-                    if (RHI::CheckBitsAny(messageTypeMask, DebugMessageTypeFlag::Performance))
-                    {
-                        dbgCreateInfo.flags |= VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-                    }
-
-                    [[maybe_unused]] VkResult result =
-                        context.CreateDebugReportCallbackEXT(instance, &dbgCreateInfo, nullptr, &s_reportCallback);
-
-                    AZ_Error("Vulkan", !result, "Failed to initialize the debug reporting system");
                 }
             }
 
             void ShutdownDebugMessages(const GladVulkanContext& context, VkInstance instance)
             {
-                if (s_reportCallback != VK_NULL_HANDLE)
-                {
-                    context.DestroyDebugReportCallbackEXT(instance, s_reportCallback, nullptr);
-                }
                 if (s_messageCallback != VK_NULL_HANDLE)
                 {
-                    context.DestroyDebugUtilsMessengerEXT(instance, s_messageCallback, nullptr);
+                    context.DestroyDebugUtilsMessengerEXT(instance, s_messageCallback, VkSystemAllocator::Get());
                 }
             }
 
@@ -397,30 +411,24 @@ namespace AZ
             {
                 if (Instance::GetInstance().GetValidationMode() != RHI::ValidationMode::Disabled)
                 {
-#if AZ_TRAIT_ATOM_VULKAN_LAYER_LUNARG_STD_VALIDATION_SUPPORT
                     return
-                    { {
-                            "VK_LAYER_LUNARG_standard_validation",
-                            "VK_LAYER_KHRONOS_validation"
-                    } };
-#else
-                    // Android doesn't support the meta-layer "VK_LAYER_KHRONOS_validation" so 
-                    // we need to add each layer manually.
-                    return
-                    { {
-                            "VK_LAYER_GOOGLE_threading",
-                            "VK_LAYER_LUNARG_parameter_validation",
-                            "VK_LAYER_LUNARG_device_limits",
-                            "VK_LAYER_LUNARG_object_tracker",
-                            "VK_LAYER_LUNARG_image",
-                            "VK_LAYER_LUNARG_core_validation",
-                            "VK_LAYER_LUNARG_swapchain",
-                            "VK_LAYER_GOOGLE_unique_objects",
-                            "VK_LAYER_KHRONOS_validation"
-                    } };
-#endif
+                    {
+                        "VK_LAYER_KHRONOS_validation"
+                    };
                 }
                 return RawStringList{};
+            }
+
+            RawStringList GetValidationExtensions()
+            {
+                if (Instance::GetInstance().GetValidationMode() != RHI::ValidationMode::Disabled)
+                {
+                    return
+                    {
+                            VK_EXT_DEBUG_REPORT_EXTENSION_NAME
+                    };
+                }
+                return RawStringList();
             }
 
             VkDebugUtilsLabelEXT CreateVkDebugUtilLabel(const char* label, const AZ::Color color)

@@ -75,8 +75,8 @@ struct CryPakMock
     MOCK_CONST_METHOD0(GetPakPriority, AZ::IO::FileSearchPriority());
     MOCK_CONST_METHOD1(GetFileOffsetOnMedia, uint64_t(AZStd::string_view szName));
     MOCK_CONST_METHOD1(GetFileMediaType, EStreamSourceMediaType(AZStd::string_view szName));
-    MOCK_METHOD0(GetLevelPackOpenEvent, auto()->LevelPackOpenEvent*);
-    MOCK_METHOD0(GetLevelPackCloseEvent, auto()->LevelPackCloseEvent*);
+    MOCK_METHOD0(GetLevelPackOpenEvent, LevelPackOpenEvent*());
+    MOCK_METHOD0(GetLevelPackCloseEvent, LevelPackCloseEvent*());
 
 };
 

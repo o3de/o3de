@@ -19,7 +19,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterAction, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterAction, AnimGraphAllocator)
 
     AnimGraphParameterAction::AnimGraphParameterAction()
         : AnimGraphTriggerAction()
@@ -226,10 +226,10 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphNumberParameter", 0x8023eba9), &AnimGraphParameterAction::m_parameterName, "Parameter", "The parameter name to apply the action on.")
+            ->DataElement(AZ_CRC_CE("AnimGraphNumberParameter"), &AnimGraphParameterAction::m_parameterName, "Parameter", "The parameter name to apply the action on.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphParameterAction::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphParameterAction::GetAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphParameterAction::GetAnimGraph)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AnimGraphParameterAction::m_triggerValue, "Trigger Value", "The value that the parameter will be override to.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphParameterAction::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

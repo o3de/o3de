@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/PlatformDef.h>
 #include <AzCore/Socket/AzSocket.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
 
 #include <platform.h>
 #include <IConsole.h>
@@ -19,10 +20,7 @@
 #include "RemoteConsoleCore.h"
 #include <RemoteConsole_Traits_Platform.h>
 
-
-
 const int defaultRemoteConsolePort = 4600; // externed in the header to expose publicly
-
 
 namespace
 {
@@ -37,19 +35,23 @@ namespace
 
 bool RCON_IsRemoteAllowedToConnect(const AZ::AzSock::AzSocketAddress& connectee)
 {
-    if ((!gEnv) || (!gEnv->pConsole))
+    auto console = AZ::Interface<AZ::IConsole>::Get();
+    if ((!gEnv) || console == nullptr)
     {
         CryLog("Cannot allow incoming connection for remote console, because we do not yet have a console or an environment.");
         return false;
     }
-    ICVar* remoteConsoleAllowedHostList = gEnv->pConsole->GetCVar("log_RemoteConsoleAllowedAddresses");
-    if (!remoteConsoleAllowedHostList)
+
+    AZ::CVarFixedString remoteConsoleAllowedHostList;
+
+    if (console->GetCvarValue("log_RemoteConsoleAllowedAddresses", remoteConsoleAllowedHostList)
+        != AZ::GetValueResult::Success)
     {
         CryLog("Cannot allow incoming connection for remote console, because there is no registered log_RemoteConsoleAllowedAddresses console variable.");
         return false;
     }
 
-    const char* value = remoteConsoleAllowedHostList->GetString();
+    const char* value = remoteConsoleAllowedHostList.c_str();
     // the default or empty string indicates localhost.
     if (!value)
     {
@@ -194,12 +196,12 @@ void SRemoteServer::Run()
     }
 
     // this CVAR is optional.
-    AZ::u16 remotePort = defaultRemoteConsolePort;
-    ICVar* remoteConsolePort = gEnv->pConsole->GetCVar("log_RemoteConsolePort");
-    if (remoteConsolePort)
+    AZ::u16 remotePort = static_cast<AZ::u16>(defaultRemoteConsolePort);
+    if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
     {
-        remotePort = static_cast<AZ::u16>(remoteConsolePort->GetIVal());
+        console->GetCvarValue("log_RemoteConsolePort", remotePort);
     }
+
 
     //
     // There may be multiple processes running, and each process will require a unique port for remote console to work. 
@@ -489,28 +491,6 @@ void SRemoteClient::FillAutoCompleteList(AZStd::vector<AZStd::string>& list)
     if (!gEnv->pSystem || !gEnv->pSystem->GetILevelSystem())
     {
         return;
-    }
-
-    bool usePrefabSystemForLevels = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-    if (!usePrefabSystemForLevels)
-    {
-        for (int i = 0, end = gEnv->pSystem->GetILevelSystem()->GetLevelCount(); i < end; ++i)
-        {
-            ILevelInfo* pLevel = gEnv->pSystem->GetILevelSystem()->GetLevelInfo(i);
-            AZStd::string item = "LoadLevel ";
-            const char* levelName = pLevel->GetName();
-            int start = 0;
-            for (int k = 0, kend = static_cast<int>(strlen(levelName)); k < kend; ++k)
-            {
-                if ((levelName[k] == '\\' || levelName[k] == '/') && k + 1 < kend)
-                {
-                    start = k + 1;
-                }
-            }
-            item += levelName + start;
-            list.push_back(item);
-        }
     }
 }
 

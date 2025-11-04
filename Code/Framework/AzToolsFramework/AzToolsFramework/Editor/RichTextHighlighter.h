@@ -10,6 +10,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <QString>
 #include <QStyleOptionViewItem>
 #include <QTextDocument>
@@ -23,10 +24,10 @@ namespace AzToolsFramework
 {
     //! @class RichTextHighlighter
     //! @brief Highlights a given string given a matching substring.
-    class RichTextHighlighter
+    class AZTF_API RichTextHighlighter
     {
     public:
-        AZ_CLASS_ALLOCATOR(RichTextHighlighter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RichTextHighlighter, AZ::SystemAllocator);
         RichTextHighlighter() = delete;
 
         static QString HighlightText(const QString& displayString, const QString& matchingSubstring);

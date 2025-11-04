@@ -46,6 +46,11 @@ namespace Physics
         }
     }
 
+    ShapeConfiguration::ShapeConfiguration(const AZ::Vector3& scale)
+        : m_scale(scale)
+    {
+    }
+
     void SphereShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -72,8 +77,9 @@ namespace Physics
         }
     }
 
-    SphereShapeConfiguration::SphereShapeConfiguration(float radius)
+    SphereShapeConfiguration::SphereShapeConfiguration(float radius, const AZ::Vector3& scale)
         : m_radius(radius)
+        , ShapeConfiguration(scale)
     {
     }
 
@@ -108,8 +114,9 @@ namespace Physics
         }
     }
 
-    BoxShapeConfiguration::BoxShapeConfiguration(const AZ::Vector3& boxDimensions)
+    BoxShapeConfiguration::BoxShapeConfiguration(const AZ::Vector3& boxDimensions, const AZ::Vector3& scale)
         : m_dimensions(boxDimensions)
+        , ShapeConfiguration(scale)
     {
     }
 
@@ -152,9 +159,10 @@ namespace Physics
         }
     }
 
-    CapsuleShapeConfiguration::CapsuleShapeConfiguration(float height, float radius)
+    CapsuleShapeConfiguration::CapsuleShapeConfiguration(float height, float radius, const AZ::Vector3& scale)
         : m_height(height)
         , m_radius(radius)
+        , ShapeConfiguration(scale)
     {
     }
 

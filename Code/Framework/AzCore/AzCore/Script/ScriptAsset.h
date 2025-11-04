@@ -22,10 +22,10 @@ namespace AZ
     class ReflectContext;
     class ScriptAsset;
 
-    class LuaScriptData
+    class AZCORE_API LuaScriptData
     {
     public:
-        AZ_CLASS_ALLOCATOR(LuaScriptData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LuaScriptData, AZ::SystemAllocator);
         AZ_TYPE_INFO(LuaScriptData, "{C62098FE-8E3F-4DD3-88F8-B11FD2609A43}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -43,11 +43,11 @@ namespace AZ
     /**
     * Script Asset - contains the source code for a script
     */
-    class ScriptAsset
+    class AZCORE_API ScriptAsset
         : public Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptAsset, AZ::SystemAllocator);
         AZ_RTTI(ScriptAsset, "{82557326-4AE3-416C-95D6-C70635AB7588}", Data::AssetData);
 
         static const u32 CompiledAssetSubId = 1;

@@ -18,6 +18,10 @@ namespace AZ
 {
     namespace Render
     {
+        // This event is called whenever a configuration parameter changes
+        // in the Directional Light Component.
+        using DirectionalLightConfigurationChangedEvent = AZ::Event<>;
+
         class DirectionalLightRequests
             : public ComponentBus
         {
@@ -29,6 +33,14 @@ namespace AZ
             //! Sets a directional light's color. This value is independent from its intensity.
             //! @param color directional light's color
             virtual void SetColor(const Color& color) = 0;
+
+            //! Gets the intensity mode of a directional light
+            //! @return directional light's intensity mode
+            virtual PhotometricUnit GetIntensityMode() const = 0;
+
+            //! Sets the intensity mode of a directional light
+            //! @param directional light's intensity mode
+            virtual void SetIntensityMode(PhotometricUnit intensityMode) = 0;
 
             //! Gets a directional light's intensity. This value is independent from its color.
             //! @return directional light's intensity
@@ -51,6 +63,12 @@ namespace AZ
             //! Sets a directional light's angular diameter. This value should be small, for instance the sun is 0.5 degrees across.
             //! @param angularDiameter Directional light's angular diameter in degrees.
             virtual void SetAngularDiameter(float angularDiameter) = 0;
+
+            //! Sets whether enable shadow for this light
+            virtual void SetShadowEnabled(bool enable) = 0;
+
+            //! Get shadow enable status for this light
+            virtual bool GetShadowEnabled() const = 0;
 
             //! This gets shadowmap size (width/height).
             //! @return shadowmap size.
@@ -204,6 +222,15 @@ namespace AZ
 
             //! Sets the contribution multiplier for global illumination
             virtual void SetAffectsGIFactor(float affectsGIFactor) = 0;
+
+            //! Bind to this event to be notified whenever at least one of the
+            //! Returns the lighting channel mask
+            virtual uint32_t GetLightingChannelMask() const = 0;
+
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(uint32_t lightingChannelMask) = 0;
+            //! when the user modifies the component properties in the Inspector panel. 
+            virtual void BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler) = 0;
         };
         using DirectionalLightRequestBus = EBus<DirectionalLightRequests>;
 

@@ -20,7 +20,7 @@ namespace RecastNavigation
     {
     public:
         AZ_RTTI(RecastNavigationModuleInterface, "{d1f30353-6d97-4392-b367-a82587ce439c}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(RecastNavigationModuleInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecastNavigationModuleInterface, AZ::SystemAllocator);
 
         RecastNavigationModuleInterface()
         {

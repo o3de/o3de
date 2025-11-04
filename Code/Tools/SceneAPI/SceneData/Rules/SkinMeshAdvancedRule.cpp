@@ -21,7 +21,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(SkinMeshAdvancedRule, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SkinMeshAdvancedRule, SystemAllocator);
 
             SkinMeshAdvancedRule::SkinMeshAdvancedRule()
                 : m_use32bitVertices(false)

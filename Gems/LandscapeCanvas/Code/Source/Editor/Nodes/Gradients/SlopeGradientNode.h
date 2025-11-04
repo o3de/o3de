@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class SlopeGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SlopeGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlopeGradientNode, AZ::SystemAllocator);
         AZ_RTTI(SlopeGradientNode, "{180A74BE-2244-4DF1-B656-68C66CBD68E7}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);

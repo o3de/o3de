@@ -23,7 +23,7 @@ namespace LmbrCentral
     using AzToolsFramework::ViewportInteraction::BuildMouseInteraction;
     using AzToolsFramework::ViewportInteraction::BuildMousePick;
 
-    class EditorIntersectionComponentFixture : public UnitTest::ToolsApplicationFixture
+    class EditorIntersectionComponentFixture : public UnitTest::ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -152,7 +152,7 @@ namespace LmbrCentral
         VerifySelectionIntersection();
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         ShapeEditorComponentIndirectCallManipulatorViewportInteractionFixtureParam,
         testing::Values(IntersectionQueryOutcome{ true, true }, IntersectionQueryOutcome{ false, false }));
@@ -162,7 +162,7 @@ namespace LmbrCentral
         VerifySelectionIntersection();
     }
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         All,
         SplineEditorComponentIndirectCallManipulatorViewportInteractionFixtureParam,
         testing::Values(IntersectionQueryOutcome{ true, true }, IntersectionQueryOutcome{ false, false }));

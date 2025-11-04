@@ -39,7 +39,7 @@ namespace ScriptEventData
     {
     public:
         AZ_RTTI(VersionedProperty, "{828CA9C0-32F1-40B3-8018-EE7C3C38192A}");
-        AZ_CLASS_ALLOCATOR(VersionedProperty, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VersionedProperty, AZ::SystemAllocator);
 
         VersionedProperty()
             : m_id(AZ::Uuid::CreateRandom())

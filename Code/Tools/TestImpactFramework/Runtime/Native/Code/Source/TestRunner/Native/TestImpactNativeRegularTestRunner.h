@@ -18,10 +18,13 @@
 
 namespace TestImpact
 {
+    class NativeRegularTestRunJobInfoGenerator;
+
     class NativeRegularTestRunner
         : public TestRunner<NativeTestRunJobData<TestRunJobData>>
     {
     public:
+        using JobInfoGenerator = NativeRegularTestRunJobInfoGenerator;
         using TestRunner<NativeTestRunJobData<TestRunJobData>>::TestRunner;
 
     protected:

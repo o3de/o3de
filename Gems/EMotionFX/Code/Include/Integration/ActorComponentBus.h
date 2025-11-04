@@ -44,7 +44,8 @@ namespace EMotionFX
         enum class SkinningMethod : AZ::u32
         {
             DualQuat = 0,       ///< Dual Quaternions will be used to blend joints during skinning.
-            Linear              ///< Matrices will be used to blend joints during skinning.
+            Linear,             ///< Matrices will be used to blend joints during skinning.
+            None                ///< No skinning will be applied, the model will be rendered as-is. 
         };
 
         /**
@@ -55,7 +56,7 @@ namespace EMotionFX
             : public AZ::ComponentBus
         {
         public:
-            using MutexType = AZStd::mutex;
+            using MutexType = AZStd::recursive_mutex;
 
             /// Retrieve component's actor instance.
             /// \return pointer to actor instance.
@@ -87,14 +88,21 @@ namespace EMotionFX
 
             /// Enables rendering of the actor.
             virtual bool GetRenderCharacter() const = 0;
-            virtual void SetRenderCharacter(bool enable) = 0;
+            virtual void SetRenderCharacter(bool enabled) = 0;
             virtual bool GetRenderActorVisible() const = 0;
+
+            /// Enables raytracing for the actor
+            virtual void SetRayTracingEnabled(bool enabled) = 0;
 
             /// Returns skinning method used by the actor.
             virtual SkinningMethod GetSkinningMethod() const = 0;
 
             // Use this to alter the actor asset.
             virtual void SetActorAsset(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) = 0;
+
+            // Use this bus to enable or disable the actor instance update in the job scheduler system.
+            // This could be useful if you want to manually update the actor instance.
+            virtual void EnableInstanceUpdate(bool enableInstanceUpdate) = 0;
 
             static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
         };

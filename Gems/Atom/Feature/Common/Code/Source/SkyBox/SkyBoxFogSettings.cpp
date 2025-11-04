@@ -6,11 +6,11 @@
  *
  */
 
-#include <SkyBox/SkyBoxFogSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Atom/Feature/SkyBox/SkyBoxFogBus.h>
+#include <Atom/Feature/SkyBox/SkyBoxFogSettings.h>
 
 namespace AZ
 {

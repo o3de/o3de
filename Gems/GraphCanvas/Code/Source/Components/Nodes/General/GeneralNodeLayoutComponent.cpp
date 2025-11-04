@@ -157,6 +157,12 @@ namespace GraphCanvas
             {
                 slotLayout->insertItem(1, m_title);
                 slotLayout->setContentsMargins(0, 0, 0, 0);
+
+                // Center the title and slots vertically
+                for (int i = 0; i < slotLayout->count(); i++)
+                {
+                    slotLayout->setAlignment(slotLayout->itemAt(i), Qt::AlignVCenter);
+                }
             }
         }
         

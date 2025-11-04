@@ -66,6 +66,18 @@ namespace EMotionFX
                 && (paramterActionA->GetParameterName() == paramterActionB->GetParameterName());
         }
 
+        void TearDown() override
+        {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->Destroy();
+                m_animGraphInstance = nullptr;
+            }
+            m_motionNodeAnimGraph.reset();
+
+            AnimGraphFixture::TearDown();
+        }
+
         AZStd::unique_ptr<TwoMotionNodeAnimGraph> m_motionNodeAnimGraph;
         AnimGraphNode* m_stateA = nullptr;
         AnimGraphNode* m_stateB = nullptr;
@@ -207,6 +219,19 @@ namespace EMotionFX
             }
         }
 
+        void TearDown() override
+        {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->Destroy();
+                m_animGraphInstance = nullptr;
+            }
+            m_motionNodeAnimGraph.reset();
+
+            AnimGraphFixture::TearDown();
+        }
+
+
         AZStd::unique_ptr<TwoMotionNodeAnimGraph> m_motionNodeAnimGraph;
         AnimGraphNode* m_stateA = nullptr;
         AnimGraphNode* m_stateB = nullptr;
@@ -259,7 +284,7 @@ namespace EMotionFX
         VerifyAfterOperation();
     }
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphCopyPasteTests,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphCopyPasteTests,
         AnimGraphTransitionConditionCopyPasteFixture,
         ::testing::Bool());
 
@@ -478,7 +503,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphCopyPasteTests,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphCopyPasteTests,
         AnimGraphSimpleCopyPasteFixture,
         ::testing::Bool());
 
@@ -519,6 +544,18 @@ namespace EMotionFX
             AZStd::vector<AnimGraphConnectionId> canBeInterruptedBy = { m_transitionAC->GetId() };
             m_transitionAB->SetCanBeInterruptedBy(canBeInterruptedBy);
             m_motionNodeAnimGraph->InitAfterLoading();
+        }
+
+        void TearDown() override
+        {
+            if (m_animGraphInstance)
+            {
+                m_animGraphInstance->Destroy();
+                m_animGraphInstance = nullptr;
+            }
+            m_motionNodeAnimGraph.reset();
+
+            AnimGraphFixture::TearDown();
         }
 
     public:
@@ -591,7 +628,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(CopyPasteTests,
+    INSTANTIATE_TEST_SUITE_P(CopyPasteTests,
         AnimGraphCopyPasteFixture_CanBeInterruptedBy,
         ::testing::Bool());
 
@@ -660,7 +697,6 @@ namespace EMotionFX
         }
 
     public:
-        AZStd::unique_ptr<OneBlendTreeNodeAnimGraph> m_blendTreeAnimGraph;
         AZStd::unique_ptr<EMotionFX::BlendTreeConnection> m_testConnection;
         AnimGraphBindPoseNode* m_bindPoseNodeA = nullptr;
         AnimGraphBindPoseNode* m_bindPoseNodeB = nullptr;
@@ -679,6 +715,20 @@ namespace EMotionFX
         AZStd::vector<EMotionFX::AnimGraphNode*> nodesToCopy = { m_bindPoseNodeA, m_bindPoseNodeB, m_blendNNode };
         CommandSystem::AnimGraphCopyPasteData copyPasteData;
 
+        // in this test, we test both a copy and a cut operation
+        // a cut operation deletes the original data, so any comparisons with it has to be stored here
+        // before we actually execute the operation.
+        const auto& originalNodeParamWeights = m_blendNNode->GetParamWeights();
+        const size_t numParamWeights = originalNodeParamWeights.size();
+        AZStd::vector<float> originalNodeParamWeightRanges;
+        originalNodeParamWeightRanges.reserve(numParamWeights);
+
+        for (const EMotionFX::BlendNParamWeight& paramWeight : originalNodeParamWeights)
+        {
+            originalNodeParamWeightRanges.push_back(paramWeight.GetWeightRange());
+        }
+
+
         // Copy and paste m_bindPoseNodeA, m_bindPoseNodeB, m_blendNNode in the blend tree.
         CommandSystem::ConstructCopyAnimGraphNodesCommandGroup(&commandGroup,
             /*targetParentNode=*/m_blendTree,
@@ -690,8 +740,7 @@ namespace EMotionFX
             /*ignoreTopLevelConnections=*/false);
         EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result));
 
-        const AZStd::vector<EMotionFX::BlendNParamWeight> &originalNodeParamWeights = m_blendNNode->GetParamWeights();
-        const size_t numParamWeights = originalNodeParamWeights.size();
+        // originalNodeParamWeights is invalid after the above call..
 
         if (cutMode)
         {
@@ -713,7 +762,7 @@ namespace EMotionFX
             EXPECT_TRUE(cutNodeParamWeights.size() == numParamWeights) << "Number of cut and pasted parameter weights should be the same as the number of original parameter weights.";
             for (uint32 i = 0; i < numParamWeights; i++)
             {
-                EXPECT_TRUE(originalNodeParamWeights[i].GetWeightRange() == cutNodeParamWeights[i].GetWeightRange()) <<
+                EXPECT_TRUE(originalNodeParamWeightRanges[i] == cutNodeParamWeights[i].GetWeightRange()) <<
                     "Parameter weights in the cut and pasted blend n node should be equal to the parameter weights in original blend n node.";
             }
         }
@@ -731,7 +780,8 @@ namespace EMotionFX
             EXPECT_TRUE(copiedNodeParamWeights.size() == numParamWeights) << "Number of copied parameter weights should be the same as the number of original parameter weights.";
             for (uint32 i = 0; i < numParamWeights; i++)
             {
-                EXPECT_TRUE(originalNodeParamWeights[i].GetWeightRange() == copiedNodeParamWeights[i].GetWeightRange()) <<
+                EXPECT_TRUE(originalNodeParamWeightRanges[i] == copiedNodeParamWeights[i].GetWeightRange())
+                    <<
                     "Parameter weights in copied blend n node should be equal to the parameter weights in original blend n node.";
             }
         }
@@ -745,9 +795,9 @@ namespace EMotionFX
         EXPECT_TRUE(testBlendNNode->HasConnectionAtInputPort(BlendTreeBlendNNode::PORTID_INPUT_POSE_2)) <<
             "New connection should be created.";
 
-        for (uint32 i = 0; i < m_blendNNode->GetParamWeights().size(); i++)
+        for (uint32 i = 0; i < numParamWeights; i++)
         {
-            EXPECT_TRUE(originalNodeParamWeights[i].GetWeightRange() == testNodeParamWeights[i].GetWeightRange()) <<
+            EXPECT_TRUE(originalNodeParamWeightRanges[i] == testNodeParamWeights[i].GetWeightRange()) <<
                 "Existing parameter weights should not be affected by adding a new connection.";
         }
 
@@ -757,7 +807,7 @@ namespace EMotionFX
             "New connection's parameter weight should be the weight value of 1.";
     }
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphCopyPasteTests,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphCopyPasteTests,
         AnimGraphCopyPasteFixture_NodeTriggerValue,
         ::testing::Bool());
 } // namespace EMotionFX

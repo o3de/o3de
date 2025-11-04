@@ -21,6 +21,7 @@ namespace AZ
             : public AZ::RPI::MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(SubsurfaceTransmissionParameterFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(SubsurfaceTransmissionParameterFunctorSourceData, "{FEDECF94-0351-4775-8AE4-2005171B5634}", RPI::MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context);

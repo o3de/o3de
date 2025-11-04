@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RHI.Reflect/Interval.h>
 #include <Atom/RHI.Reflect/Limits.h>
@@ -41,8 +42,8 @@ namespace AZ
         //! to record a Timestamp on frame 3, the CPU stall will ensure that the result of the Timestamp will be available on frame 6).
         //! The RPI Query will instantiate multiple SubQueries, one for each buffered frame. The SubQuery that is used for recording, will cache the
         //! FrameIndex in which it was used for recording.
-        class Query :
-            public AZStd::intrusive_refcount<AZStd::atomic_uint>
+        class ATOM_RPI_PUBLIC_API Query :
+            public AZStd::intrusive_base
         {
             friend class QueryPool;
 
@@ -66,7 +67,7 @@ namespace AZ
 
         public:
             AZ_TYPE_INFO(Query, "{DC956F7F-5C9C-40FC-9200-D8C75E238135}");
-            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator);
 
             Query(RPI::QueryPool* queryPool, RHI::Interval rhiQueryIndices, RHI::QueryType queryType, RHI::QueryPoolScopeAttachmentType attachmentType, RHI::ScopeAttachmentAccess attachmentAccess);
             ~Query();
@@ -91,17 +92,17 @@ namespace AZ
             //! QueryCode::Fail.
             //! @param[out] queryResult The user provided structure where the data is copied to.
             //! @param[in] resultSizeInBytes The size of the data in bytes.
-            QueryResultCode GetLatestResult(void* queryResult, uint32_t resultSizeInBytes);
+            QueryResultCode GetLatestResult(void* queryResult, uint32_t resultSizeInBytes, int deviceIndex);
 
             //! Returns the earliest possible query result without stalling the thread. Result might be a few frames old.
             //! Note: When trying to retrieve query results without any queries being ready for readback, the system will return
             //! QueryCode::Fail.
             //! @param[in/out] queryResult The user provided structure where the data is copied to.
             template<typename T>
-            QueryResultCode GetLatestResult(T& queryResult)
+            QueryResultCode GetLatestResult(T& queryResult, int deviceIndex)
             {
                 void* resultData = static_cast<void*>(&queryResult);
-                return GetLatestResult(resultData, sizeof(T));
+                return GetLatestResult(resultData, sizeof(T), deviceIndex);
             }
 
             //! Returns the result of the earliest possible query. It might stall the calling thread, depending if the query result is available for polling
@@ -111,7 +112,7 @@ namespace AZ
             //! to make sure the pool isn't deleted while the thread is stalling.
             //! @param[out] queryResult The user provided pointer where the data is copied to.
             //! @param[in] resultSizeInBytes The size of the data in bytes.
-            QueryResultCode GetLatestResultAndWait(void* queryResult, uint32_t resultSizeInBytes);
+            QueryResultCode GetLatestResultAndWait(void* queryResult, uint32_t resultSizeInBytes, int deviceIndex);
 
             //! Returns the result of the earliest possible query. It might stall the calling thread, depending if the query result is available for polling
             //! Note1: When trying to retrieve query results without any queries being ready for readback, the system will return
@@ -120,10 +121,10 @@ namespace AZ
             //! to make sure the pool isn't deleted while the thread is stalling.
             //! @param[in/out] queryResult The user provided pointer where the data is copied to.
             template<typename T>
-            QueryResultCode GetLatestResultAndWait(T& queryResult)
+            QueryResultCode GetLatestResultAndWait(T& queryResult, int deviceIndex)
             {
                 void* resultData = static_cast<void*>(&queryResult);
-                return GetLatestResultAndWait(resultData, sizeof(T));
+                return GetLatestResultAndWait(resultData, sizeof(T), deviceIndex);
             }
 
             //! Removes the reference of this instance in the RPI QueryPool where it was created.

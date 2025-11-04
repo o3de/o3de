@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "Transpose",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Transpose"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "Zero",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Zero"
@@ -66,7 +64,6 @@
                 },
                 {
                     "base": "Subtract",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Subtract"
@@ -104,7 +101,6 @@
                 },
                 {
                     "base": "GetElement",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetElement"
@@ -148,7 +144,6 @@
                 },
                 {
                     "base": "Invert",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Invert"
@@ -180,7 +175,6 @@
                 },
                 {
                     "base": "GetDiagonal",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetDiagonal"
@@ -212,7 +206,6 @@
                 },
                 {
                     "base": "GetColumn",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColumn"
@@ -250,7 +243,6 @@
                 },
                 {
                     "base": "MultiplyByVector",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByVector"
@@ -288,7 +280,6 @@
                 },
                 {
                     "base": "Add",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Add"
@@ -326,7 +317,6 @@
                 },
                 {
                     "base": "IsFinite",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsFinite"
@@ -358,7 +348,6 @@
                 },
                 {
                     "base": "DivideByNumber",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DivideByNumber"
@@ -396,7 +385,6 @@
                 },
                 {
                     "base": "ToAdjugate",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToAdjugate"
@@ -428,7 +416,6 @@
                 },
                 {
                     "base": "IsClose",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsClose"
@@ -472,7 +459,6 @@
                 },
                 {
                     "base": "MultiplyByMatrix",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByMatrix"
@@ -510,7 +496,6 @@
                 },
                 {
                     "base": "IsOrthogonal",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsOrthogonal"
@@ -542,7 +527,6 @@
                 },
                 {
                     "base": "Orthogonalize",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Orthogonalize"
@@ -574,7 +558,6 @@
                 },
                 {
                     "base": "GetRows",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRows"
@@ -606,7 +589,6 @@
                 },
                 {
                     "base": "FromCrossProduct",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromCrossProduct"
@@ -638,7 +620,6 @@
                 },
                 {
                     "base": "GetColumns",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColumns"
@@ -670,7 +651,6 @@
                 },
                 {
                     "base": "FromTransform",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromTransform"
@@ -702,7 +682,6 @@
                 },
                 {
                     "base": "FromScale",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromScale"
@@ -734,7 +713,6 @@
                 },
                 {
                     "base": "ToScale",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToScale"
@@ -766,7 +744,6 @@
                 },
                 {
                     "base": "FromQuaternion",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromQuaternion"
@@ -798,7 +775,6 @@
                 },
                 {
                     "base": "MultiplyByNumber",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByNumber"
@@ -836,7 +812,6 @@
                 },
                 {
                     "base": "GetRow",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRow"
@@ -874,7 +849,6 @@
                 },
                 {
                     "base": "FromRotationYDegrees",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRotationYDegrees"
@@ -906,7 +880,6 @@
                 },
                 {
                     "base": "FromRows",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRows"
@@ -950,7 +923,6 @@
                 },
                 {
                     "base": "FromDiagonal",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromDiagonal"
@@ -982,7 +954,6 @@
                 },
                 {
                     "base": "FromRotationZDegrees",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRotationZDegrees"
@@ -1014,7 +985,6 @@
                 },
                 {
                     "base": "FromMatrix4x4",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromMatrix4x4"
@@ -1046,7 +1016,6 @@
                 },
                 {
                     "base": "FromColumns",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromColumns"
@@ -1090,7 +1059,6 @@
                 },
                 {
                     "base": "FromRotationXDegrees",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRotationXDegrees"
@@ -1122,7 +1090,6 @@
                 },
                 {
                     "base": "ToDeterminant",
-                    "context": "MathMatrix3x3_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToDeterminant"

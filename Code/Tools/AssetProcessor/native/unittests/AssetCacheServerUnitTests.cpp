@@ -9,13 +9,15 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzTest/Utils.h>
 #include <AzToolsFramework/Archive/ArchiveAPI.h>
 #include <native/resourcecompiler/rcjob.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/utilities/assetUtils.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <QStandardPaths>
 #include <QDir>
 
@@ -43,7 +45,7 @@ namespace UnitTest
     };
 
     class AssetServerHandlerUnitTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
 
     public:
@@ -175,7 +177,7 @@ namespace UnitTest
         jobDetails.m_jobEntry.m_jobKey = "ACS_Test";
         AssetProcessor::RCJob rcJob {&parent};
         rcJob.Init(jobDetails);
-        AZ::ComponentDescriptor::StringWarningArray sourceFileList;
+        AZStd::vector<AZStd::string> sourceFileList;
         AssetProcessor::BuilderParams builderParams {&rcJob};
         builderParams.m_serverKey = m_fakeFilename;
         builderParams.m_processJobRequest.m_sourceFile = (m_tempFolder + m_fakeFullname).toUtf8().toStdString().c_str();

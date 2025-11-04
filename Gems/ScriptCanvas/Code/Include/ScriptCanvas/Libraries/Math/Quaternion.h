@@ -68,6 +68,10 @@ namespace ScriptCanvas
 
         QuaternionType CreateFromEulerAngles(NumberType pitch, NumberType roll, NumberType yaw);
 
+        QuaternionType CreateFromValues(NumberType x, NumberType y, NumberType z, NumberType w);
+
         Vector3Type RotateVector3(QuaternionType source, Vector3Type vector3);
     } // namespace QuaternionFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Quaternion.generated.h>

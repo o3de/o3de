@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzFramework/AzFrameworkAPI.h>
+
 namespace AZ
 {
     class Color;
@@ -19,34 +21,34 @@ namespace AzFramework
     namespace ViewportColors
     {
         /// Color to use for a deselected object
-        extern const AZ::Color DeselectedColor;
+        AZF_API extern const AZ::Color DeselectedColor;
 
         /// Color to use for a selected object
-        extern const AZ::Color SelectedColor;
+        AZF_API extern const AZ::Color SelectedColor;
 
         /// Color to use when hovering
-        extern const AZ::Color HoverColor;
+        AZF_API extern const AZ::Color HoverColor;
 
         /// Color to use for wireframe
-        extern const AZ::Color WireColor;
+        AZF_API extern const AZ::Color WireColor;
 
         /// Color to use for locked
-        extern const AZ::Color LockColor;
+        AZF_API extern const AZ::Color LockColor;
 
         /// Color to use for hidden
-        extern const AZ::Color HiddenColor;
+        AZF_API extern const AZ::Color HiddenColor;
 
         /// Color to use for x-axis
-        extern const AZ::Color XAxisColor;
+        AZF_API extern const AZ::Color XAxisColor;
 
         /// Color to use for y-axis
-        extern const AZ::Color YAxisColor;
+        AZF_API extern const AZ::Color YAxisColor;
 
         /// Color to use for z-axis
-        extern const AZ::Color ZAxisColor;
+        AZF_API extern const AZ::Color ZAxisColor;
 
         /// Color used by QuadBillboard Manipulator View.
-        extern const AZ::Color DefaultManipulatorHandleColor;
+        AZF_API extern const AZ::Color DefaultManipulatorHandleColor;
 
     } // namespace ViewportColors
 } // namespace AzFramework

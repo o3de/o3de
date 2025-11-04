@@ -12,8 +12,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const ShaderVariantStableId RootShaderVariantStableId{0};
-
         void ShaderVariantId::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

@@ -12,10 +12,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceManager, BlendSpaceManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceManager, BlendSpaceManagerAllocator)
 
     BlendSpaceManager::BlendSpaceManager()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         m_evaluators.reserve(9);
 

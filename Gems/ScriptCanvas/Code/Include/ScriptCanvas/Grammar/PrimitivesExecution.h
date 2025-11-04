@@ -21,7 +21,7 @@ namespace ScriptCanvas
         // The node and the activation slot. The execution in, or the event or latent out slot.
         struct ExecutionId
         {
-            AZ_CLASS_ALLOCATOR(ExecutionId, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ExecutionId, AZ::SystemAllocator);
 
             const Node* m_node = nullptr;
             const Slot* m_slot = nullptr;
@@ -71,7 +71,7 @@ namespace ScriptCanvas
         struct ExecutionInput
         {
             AZ_TYPE_INFO(ExecutionInput, "{103413DF-830E-418F-A5CB-645063F1D93F}");
-            AZ_CLASS_ALLOCATOR(ExecutionInput, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ExecutionInput, AZ::SystemAllocator);
 
             const Slot* m_slot = nullptr;
             VariableConstPtr m_value;
@@ -81,7 +81,7 @@ namespace ScriptCanvas
         struct ExecutionChild
         {
             AZ_TYPE_INFO(ExecutionChild, "{29966A61-D7E3-4491-A14B-12DDF65D61D2}");
-            AZ_CLASS_ALLOCATOR(ExecutionChild, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ExecutionChild, AZ::SystemAllocator);
 
             // can be nullptr if a single graph node is split into multiple grammar nodes
             const Slot* m_slot = nullptr;
@@ -95,7 +95,7 @@ namespace ScriptCanvas
             : public AZStd::enable_shared_from_this<ExecutionTree>
         {
             AZ_TYPE_INFO(ExecutionTree, "{B062AFDC-7BC7-415B-BFC4-EFEE8D1CE87A}");
-            AZ_CLASS_ALLOCATOR(ExecutionTree, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ExecutionTree, AZ::SystemAllocator);
 
             ~ExecutionTree();
 

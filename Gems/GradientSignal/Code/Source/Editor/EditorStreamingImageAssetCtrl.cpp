@@ -35,19 +35,50 @@ namespace GradientSignal
     {
     }
 
+
     bool SupportedImageAssetPickerDialog::EvaluateSelection() const
     {
-        bool isValid = AzToolsFramework::AssetBrowser::AssetPickerDialog::EvaluateSelection();
+        using namespace AzToolsFramework::AssetBrowser;
+        if (!AssetPickerDialog::EvaluateSelection())
+        {
+            return false;
+        }
+        // note that this function is called as part of the internals of the asset picker dialog
+        // and that the selection currently selected refers to the actual entry picked in the UI by the user
+        // and not necessarily the products of that file.  The user could have clicked on a source file, a folder, etc.
 
         // If we have a valid selection (a streaming image asset), we need to also verify
         // that its pixel format is supported by the image data retrieval API
-        if (isValid)
+        const AssetBrowserEntry* entry = m_selection.GetResult();
+        if (!entry)
         {
-            const auto productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(m_selection.GetResult());
-            isValid = Internal::IsImageDataPixelAPISupportedForAsset(productEntry->GetAssetId());
+            return false;
         }
 
-        return isValid;
+        if ((entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source) && (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product))
+        {
+            return false;
+        }
+
+        bool foundValidImage = false;
+        entry->VisitDown( // checks itself, and all its children.
+            [&](const auto& currentEntry)
+            {
+                if (const auto productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(currentEntry))
+                {
+                    if (productEntry->GetAssetType() == AZ::AzTypeInfo<AZ::RPI::StreamingImageAsset>::Uuid())
+                    {
+                        if (Internal::IsImageDataPixelAPISupportedForAsset(productEntry->GetAssetId()))
+                        {
+                            foundValidImage = true;
+                            return false; // returning false from the visitor stops it from continuing to search.
+                        }
+                    }
+                }
+                return true; // continue searching for more...
+            });
+
+        return foundValidImage;
     }
 
     StreamingImagePropertyAssetCtrl::StreamingImagePropertyAssetCtrl(QWidget* parent)
@@ -62,6 +93,24 @@ namespace GradientSignal
         // format has been selected
         SupportedImageAssetPickerDialog dialog(selection, parent);
         dialog.exec();
+    }
+
+    bool StreamingImagePropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
+    {
+        using namespace AzToolsFramework::AssetBrowser;
+        if (!PropertyAssetCtrl::CanAcceptAsset(assetId, assetType))
+        {
+            return false;
+        }
+
+        // If the asset is a streaming image asset, we need to verify that its pixel format
+        // is supported by the image data retrieval API
+        if (assetType == AZ::AzTypeInfo<AZ::RPI::StreamingImageAsset>::Uuid())
+        {
+            return Internal::IsImageDataPixelAPISupportedForAsset(assetId);
+        }
+
+        return false;
     }
 
     void StreamingImagePropertyAssetCtrl::OnAutocomplete(const QModelIndex& index)
@@ -88,6 +137,11 @@ namespace GradientSignal
                 AZStd::string::format("Image asset (%s) has an unsupported pixel format", GetCurrentAssetHint().c_str())
             );
         }
+    }
+
+    AZ::TypeId StreamingImagePropertyHandler::GetHandledType() const
+    {
+        return AZ::GetAssetClassId();
     }
 
     AZ::u32 StreamingImagePropertyHandler::GetHandlerName() const
@@ -138,8 +192,8 @@ namespace GradientSignal
 
     void StreamingImagePropertyHandler::ConsumeAttribute(StreamingImagePropertyAssetCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName)
     {
-        // Let the AssetPropertyHandlerDefault handle all of the attributes
-        AzToolsFramework::AssetPropertyHandlerDefault::ConsumeAttributeInternal(GUI, attrib, attrValue, debugName);
+        // Let ConsumeAttributeForPropertyAssetCtrl handle all of the attributes
+        AzToolsFramework::ConsumeAttributeForPropertyAssetCtrl(GUI, attrib, attrValue, debugName);
     }
 
     void StreamingImagePropertyHandler::WriteGUIValuesIntoProperty(size_t index, StreamingImagePropertyAssetCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node)
@@ -152,6 +206,12 @@ namespace GradientSignal
     {
         // Let the AssetPropertyHandlerDefault handle reading values into the GUI
         return AzToolsFramework::AssetPropertyHandlerDefault::ReadValuesIntoGUIInternal(index, GUI, instance, node);
+    }
+
+    AZ::Data::Asset<AZ::Data::AssetData>* StreamingImagePropertyHandler::CastTo(void* instance, const AzToolsFramework::InstanceDataNode* node, [[maybe_unused]] const AZ::Uuid& fromId, [[maybe_unused]] const AZ::Uuid& toId) const
+    {
+        // Let the AssetPropertyHandlerDefault handle the downcast
+        return AzToolsFramework::AssetPropertyHandlerDefault::CastToInternal(instance, node);
     }
 
     void StreamingImagePropertyHandler::Register()

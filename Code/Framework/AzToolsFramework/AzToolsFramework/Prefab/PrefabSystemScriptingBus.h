@@ -8,13 +8,15 @@
 
 #pragma once
 
+
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -29,6 +31,12 @@ namespace AzToolsFramework
 
             virtual TemplateId CreatePrefabTemplate(
                 const AZStd::vector<AZ::EntityId>& entityIds, const AZStd::string& filePath) = 0;
+
+            //! Creates a prefab template using the custom entity aliases provided.
+            //! @param entities The map of entity ids to entity aliases.
+            //! @param filepath The filepath corresponding to the new template to be created.
+            virtual TemplateId CreatePrefabTemplateWithCustomEntityAliases(
+                const AZStd::unordered_map<AZ::EntityId, AZStd::string>& entities, const AZStd::string& filePath) = 0;
         };
         
         using PrefabSystemScriptingBus = AZ::EBus<PrefabSystemScriptingEbusTraits>;
@@ -36,3 +44,4 @@ namespace AzToolsFramework
     } // namespace Prefab
 } // namespace AzToolsFramework
 
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::Prefab::PrefabSystemScriptingEbusTraits);

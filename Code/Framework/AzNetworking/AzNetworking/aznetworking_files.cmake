@@ -104,6 +104,8 @@ set(FILES
     UdpTransport/UdpConnectionSet.h
     UdpTransport/UdpFragmentQueue.cpp
     UdpTransport/UdpFragmentQueue.h
+    UdpTransport/UdpHeartbeatThread.cpp
+    UdpTransport/UdpHeartbeatThread.h
     UdpTransport/UdpNetworkInterface.cpp
     UdpTransport/UdpNetworkInterface.h
     UdpTransport/UdpPacketHeader.cpp

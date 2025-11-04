@@ -23,7 +23,7 @@ namespace TrackViewPythonBindingsUnitTests
 {
 
     class TrackViewPythonBindingsFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -31,8 +31,9 @@ namespace TrackViewPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-
-            m_app.Start(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(appDesc, startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.
@@ -82,7 +83,7 @@ namespace TrackViewPythonBindingsUnitTests
     }
 
     class TrackViewComponentFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -90,8 +91,9 @@ namespace TrackViewPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-
-            m_app.Start(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(appDesc, startupParameters);
             m_app.RegisterComponentDescriptor(AzToolsFramework::TrackViewComponent::CreateDescriptor());
 
             // Disable saving global user settings to prevent failure due to detecting file updates

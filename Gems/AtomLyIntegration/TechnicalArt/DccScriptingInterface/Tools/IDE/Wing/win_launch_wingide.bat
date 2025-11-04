@@ -71,10 +71,10 @@ SET PATH=%PATH_O3DE_BIN%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH%
 CALL %~dp0..\..\Dev\Windows\Env_O3DE_Python.bat
 
 :: add to the PATH here (this is global)
-SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
+SET PATH=%O3DE_PYTHONHOME%;%PATH_O3DE_PYTHON_INSTALL%;%DCCSI_PY_IDE%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
-SET PYTHONPATH=%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
+SET PYTHONPATH=%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%
 
 :: This can now only be added late, in the launcher
 :: it conflicts with other Qt apps like Wing Pro 8+

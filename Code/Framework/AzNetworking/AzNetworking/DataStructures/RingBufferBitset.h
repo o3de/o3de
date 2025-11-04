@@ -23,7 +23,7 @@ namespace AzNetworking
     {
     public:
 
-        static constexpr uint32_t NumBitsetChunkedBits = AZ::Log2(BitsetChunk(~0));
+        static constexpr uint32_t NumBitsetChunkedBits = AZ::RequiredBitsForValue(BitsetChunk(~0));
         static constexpr uint32_t RingbufferContainerSize = SIZE / NumBitsetChunkedBits;
         static_assert((SIZE % NumBitsetChunkedBits) == 0, "RingbufferBitset must be a multiple of NumBitsetChunkedBits");
 

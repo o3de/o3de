@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
 #include <MeshletsRenderObject.h>
 
@@ -42,7 +42,7 @@ namespace AZ
 
         public:
             AZ_RTTI(MeshletsRenderPass, "{753E455B-8E36-4DC3-B315-789F0EF0483C}", RasterPass);
-            AZ_CLASS_ALLOCATOR(MeshletsRenderPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshletsRenderPass, SystemAllocator);
 
             static RPI::Ptr<MeshletsRenderPass> Create(const RPI::PassDescriptor& descriptor);
 

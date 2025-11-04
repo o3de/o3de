@@ -24,7 +24,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CapsuleShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(CapsuleShape, AZ::SystemAllocator)
         AZ_RTTI(CapsuleShape, "{5184EF7A-CD81-4A04-BBF3-86BDAB726E67}")
 
         static void Reflect(AZ::ReflectContext* context);
@@ -34,25 +34,26 @@ namespace LmbrCentral
         void InvalidateCache(InvalidateShapeCacheReason reason);
 
         // ShapeComponentRequestsBus::Handler
-        AZ::Crc32 GetShapeType() override { return AZ_CRC("Capsule", 0xc268a183); }
-        AZ::Aabb GetEncompassingAabb() override;
-        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) override;
-        bool IsPointInside(const AZ::Vector3& point) override;
-        float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
-        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Crc32 GetShapeType() const override { return AZ_CRC_CE("Capsule"); }
+        AZ::Aabb GetEncompassingAabb() const override;
+        void GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const override;
+        bool IsPointInside(const AZ::Vector3& point) const override;
+        float DistanceSquaredFromPoint(const AZ::Vector3& point) const override;
+        bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // CapsuleShapeComponentRequestsBus::Handler
-        CapsuleShapeConfig GetCapsuleConfiguration() override { return m_capsuleShapeConfig; }
+        const CapsuleShapeConfig& GetCapsuleConfiguration() const override { return m_capsuleShapeConfig; }
         void SetHeight(float height) override;
         void SetRadius(float radius) override;
-        CapsuleInternalEndPoints GetCapsulePoints() override;
-        float GetHeight() override;
-        float GetRadius() override;
+        CapsuleInternalEndPoints GetCapsulePoints() const override;
+        float GetHeight() const override;
+        float GetRadius() const override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-        const CapsuleShapeConfig& GetCapsuleConfiguration() const { return m_capsuleShapeConfig; }
         void SetCapsuleConfiguration(const CapsuleShapeConfig& capsuleShapeConfig) { m_capsuleShapeConfig = capsuleShapeConfig; }
         const AZ::Transform& GetCurrentTransform() const { return m_currentTransform; }
 
@@ -80,7 +81,7 @@ namespace LmbrCentral
         };
 
         CapsuleShapeConfig m_capsuleShapeConfig; ///< Underlying capsule configuration.
-        CapsuleIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
+        mutable CapsuleIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current World transform.
         AZ::EntityId m_entityId; ///< Id of the entity the shape is attached to.
         mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety

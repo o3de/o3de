@@ -8,10 +8,10 @@
 
 #pragma once
 
+#include <Atom/RPI.Builders/Model/ModelExporterContexts.h>
 #include <AzCore/Serialization/Utils.h>
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
 #include <SceneAPI/SceneCore/SceneBuilderDependencyBus.h>
-#include <Model/ModelExporterContexts.h>
 
 namespace AZ
 {

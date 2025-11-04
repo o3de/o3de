@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "SetUVCoords",
-                    "context": "UVCoords",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetUV Coords"
@@ -58,7 +57,6 @@
                 },
                 {
                     "base": "SetBottom",
-                    "context": "UVCoords",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Bottom"
@@ -87,7 +85,6 @@
                 },
                 {
                     "base": "SetRight",
-                    "context": "UVCoords",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Right"
@@ -116,7 +113,6 @@
                 },
                 {
                     "base": "SetTop",
-                    "context": "UVCoords",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Top"
@@ -145,7 +141,6 @@
                 },
                 {
                     "base": "SetLeft",
-                    "context": "UVCoords",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Left"

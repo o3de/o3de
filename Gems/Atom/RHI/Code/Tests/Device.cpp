@@ -24,16 +24,21 @@ namespace UnitTest
 
     RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
     {
-        return RHI::PhysicalDeviceList{aznew PhysicalDevice};
+        RHI::PhysicalDeviceList devices;
+        for(auto deviceIndex{0}; deviceIndex < DeviceCount; ++deviceIndex)
+        {
+            devices.emplace_back(aznew PhysicalDevice);
+        }
+        return devices;
     }
 
     RHI::Ptr<RHI::Device> MakeTestDevice()
     {
         RHI::PhysicalDeviceList physicalDevices = RHI::Factory::Get().EnumeratePhysicalDevices();
-        EXPECT_EQ(physicalDevices.size(), 1);
+        EXPECT_EQ(physicalDevices.size(), DeviceCount);
 
         RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
-        device->Init(*physicalDevices[0]);
+        device->Init(RHI::MultiDevice::DefaultDeviceIndex, *physicalDevices[0]);
 
         return device;
     }

@@ -14,13 +14,25 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace Vulkan
     {
-        using ShaderByteCode = AZStd::vector<uint8_t>;
+        using ShaderByteCode = AZStd::vector<uint8_t, RHI::ShaderStageFunction::Allocator>;
         using ShaderByteCodeView = AZStd::span<const uint8_t>;
 
         /**
@@ -30,29 +42,25 @@ namespace AZ
         {
             /// Used when the sub-stage is 1-to-1 with the virtual stage.
             const uint32_t Default = 0;
-
-            /// Tessellation is composed of two physical stages in Vulkan.
-            const uint32_t TesselationControl = 0;
-            const uint32_t TesselationEvaluattion = 1;
         }
-        
+
         const uint32_t ShaderSubStageCountMax = 2;
 
         class ShaderStageFunction
             : public RHI::ShaderStageFunction
         {
             using Base = RHI::ShaderStageFunction;
-            
+
         public:
             AZ_RTTI(ShaderStageFunction, "{A606478A-97E9-402D-A776-88EE72DAC6F9}", RHI::ShaderStageFunction);
-            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
-            
+            AZ_CLASS_ALLOCATOR_DECL
+
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<ShaderStageFunction> Create(RHI::ShaderStage shaderStage);
 
             /// Assigns byte code to the function.
-            void SetByteCode(uint32_t subStageIndex, const ShaderByteCode& byteCode, const AZStd::string_view& entryFunctionName);
+            void SetByteCode(uint32_t subStageIndex, const AZStd::vector<uint8_t>& byteCode, const AZStd::string_view& entryFunctionName);
 
             /// Returns the assigned bytecode.
             ShaderByteCodeView GetByteCode(uint32_t subStageIndex) const;
@@ -63,7 +71,10 @@ namespace AZ
         private:
             ShaderStageFunction() = default;
             ShaderStageFunction(RHI::ShaderStage shaderStage);
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             ///////////////////////////////////////////////////////////////////
             // RHI::ShaderStageFunction

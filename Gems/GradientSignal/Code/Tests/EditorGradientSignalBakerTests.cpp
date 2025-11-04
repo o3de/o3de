@@ -13,13 +13,24 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/Utils.h>
 
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 
-#include <OpenImageIO/imageio.h>
-
+#include <Tests/FileIOBaseTestTypes.h>
+// this needs to be included before OpenImageIO because of WIN32 GetObject macro conflicting with RegistrySettings::GetObject
 #include <Tests/GradientSignalTestFixtures.h>
+
+AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
+// Clang20 on Windows complains about the expression "(begin - &*context_.begin())" in OpenImageIo/detail/fmt/core.h:2716 not being a
+// constant expression, but other compilers dont. To fix this without needing to update the library, define an empty FMT_CONSTEVAL macro,
+// which disables constexpr format strings for the library entirely
+#define FMT_CONSTEVAL
+#include <OpenImageIO/imageio.h>
+#undef FMT_CONSTEVAL
+AZ_POP_DISABLE_WARNING
+
 
 namespace UnitTest
 {
@@ -29,6 +40,11 @@ namespace UnitTest
     protected:
         AZ::JobManager* m_jobManager = nullptr;
         AZ::JobContext* m_jobContext = nullptr;
+
+        // We need to use LocalFileIO for these tests so that the image saving code can properly save and rename the test files.
+        // If we use TestFileIOBase or no FileIOBase, the necessary File IO operations won't exist and the tests will fail.
+        AZ::IO::LocalFileIO m_fileIO;
+        AZ::IO::FileIOBase* m_prevFileIO{};
 
         void SetUp() override
         {
@@ -52,10 +68,15 @@ namespace UnitTest
                 m_jobContext = aznew AZ::JobContext(*m_jobManager);
                 AZ::JobContext::SetGlobalContext(m_jobContext);
             }
+
+            m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ::IO::FileIOBase::SetInstance(&m_fileIO);
         }
 
         void TearDown() override
         {
+            AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
+
             if (m_jobContext)
             {
                 AZ::JobContext::SetGlobalContext(nullptr);

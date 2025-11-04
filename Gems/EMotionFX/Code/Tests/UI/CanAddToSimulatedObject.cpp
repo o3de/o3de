@@ -17,10 +17,12 @@
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <Editor/ColliderContainerWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/ReselectingTreeView.h>
+#include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
@@ -205,7 +207,7 @@ namespace EMotionFX
         // Copy the ragdoll collider setup to simulated object colliders
         QDockWidget* simulatedObjectInspectorDock = EMStudio::GetMainWindow()->findChild<QDockWidget*>("EMFX.SimulatedObjectWidget.SimulatedObjectInspectorDock");
         ASSERT_TRUE(simulatedObjectInspectorDock);
-        QPushButton* addColliderButton = simulatedObjectInspectorDock->findChild<QPushButton*>("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
+        QPushButton* addColliderButton = EMStudio::GetPluginManager()->FindActivePlugin<SimulatedObjectWidget>()->GetDockWidget()->findChild<QPushButton*>("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
         ASSERT_TRUE(addColliderButton);
         QTest::mouseClick(addColliderButton, Qt::LeftButton);
 

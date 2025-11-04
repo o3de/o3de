@@ -30,21 +30,21 @@ namespace VirtualGamepad
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadThumbStickComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("VirtualGamepadThumbStickService"));
-        provided.push_back(AZ_CRC("UiInteractableService"));
+        provided.push_back(AZ_CRC_CE("VirtualGamepadThumbStickService"));
+        provided.push_back(AZ_CRC_CE("UiInteractableService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadThumbStickComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("VirtualGamepadThumbStickService"));
-        incompatible.push_back(AZ_CRC("UiInteractableService"));
+        incompatible.push_back(AZ_CRC_CE("VirtualGamepadThumbStickService"));
+        incompatible.push_back(AZ_CRC_CE("UiInteractableService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void VirtualGamepadThumbStickComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ namespace VirtualGamepad
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiVirtualThumbStick.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiVirtualThumbStick.png")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &VirtualGamepadThumbStickComponent::m_assignedInputChannelName,
                         "Input Channel", "The input channel that will be updated when the user interacts with this virtual control")

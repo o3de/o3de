@@ -80,6 +80,7 @@ namespace UnitTest
             uint32_t count;
             uint32_t size;
             uint32_t registerIndex = 0;
+            uint32_t spaceIndex = 0;
             uint32_t sizeOfBool = 4;
 
             srgLayout->SetBindingSlot(0);
@@ -87,111 +88,111 @@ namespace UnitTest
             // bool, binding index 0
             count = 1;
             size = count * sizeOfBool;
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // bool2, binding index 1
             count = 2;
             size = count * sizeOfBool;
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool2"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // bool3, binding index 2
             count = 3;
             size = count * sizeOfBool;
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool3"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool3"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // bool4, binding index 3
             count = 4;
             size = count * sizeOfBool;
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool4"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyBool4"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // int, binding index 4
             count = 1;
             size = count * sizeof(int32_t);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // int2, binding index 5
             count = 2;
             size = count * sizeof(int32_t);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt2"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // int3, binding index 6
             count = 3;
             size = count * sizeof(int32_t);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt3"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt3"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // int4, binding index 7
             count = 4;
             size = count * sizeof(int32_t);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt4"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyInt4"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // uint, binding index 8
             count = 1;
             size = count * sizeof(uint32_t);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // uint2, binding index 9
             count = 2;
             size = count * sizeof(uint32_t);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint2"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // uint3, binding index 10
             count = 3;
             size = count * sizeof(uint32_t);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint3"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint3"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // uint4, binding index 11
             count = 4;
             size = count * sizeof(uint32_t);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint4"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyUint4"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // float, binding index 12
             count = 1;
             size = count * sizeof(float);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // float2, binding index 13
             count = 2;
             size = count * sizeof(float);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat2"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // float3, binding index 14
             count = 3;
             size = count * sizeof(float);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat3"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat3"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // float4, binding index 15
             count = 4;
             size = count * sizeof(float);
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat4"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MyFloat4"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // simple struct, binding index 16
             // [GFX TODO][ATOM-111] This is not very fleshed out right now. We still need to do more to support structs, but at least I want to verify that SRG templatized setters and getters can work with structs
             count = 1;
             size = 8;
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MySimpleStruct"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MySimpleStruct"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             // array of 2 simple structs, binding index 17
             // [GFX TODO][ATOM-111] This is not very fleshed out right now. We still need to do more to support structs, but at least I want to verify that SRG templatized setters and getters can work with structs
             count = 2;
             size = 16;
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MySimpleStructArray2"), offset, size, registerIndex });
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name("MySimpleStructArray2"), offset, size, registerIndex, spaceIndex});
             offset += size;
 
             srgLayout->SetBindingSlot(0);
@@ -388,7 +389,7 @@ namespace UnitTest
             // MyFloat2
             EXPECT_FALSE(m_srg->SetConstantArray<float>(RHI::ShaderInputConstantIndex(13), AZStd::array<float, 3>({ 0.1f, 0.2f, 0.3f })));
 
-            AZ_TEST_STOP_ASSERTTEST(1);
+            AZ_TEST_STOP_ASSERTTEST(2);
         }
     }
 
@@ -416,7 +417,7 @@ namespace UnitTest
             // MyBool2
             EXPECT_FALSE(m_srg->SetConstant<bool>(RHI::ShaderInputConstantIndex(1), false));
 
-            AZ_TEST_STOP_ASSERTTEST(1);
+            AZ_TEST_STOP_ASSERTTEST(2);
         }
     }
 
@@ -432,5 +433,41 @@ namespace UnitTest
 
             AZ_TEST_STOP_ASSERTTEST(1);
         }
+    }
+
+    TEST_F(ShaderResourceGroupConstantBufferTests, TestCopyShaderResourceGroupData)
+    {
+        using namespace AZ;
+        const RHI::ShaderInputConstantIndex inputIndex(4);
+
+        // Check using inputIndex
+        EXPECT_TRUE(m_srg->SetConstant(inputIndex, 51));
+
+        auto testSrg2 = RPI::ShaderResourceGroup::Create(m_shaderAsset, AZ::RPI::DefaultSupervariantIndex, m_srgLayout->GetName());
+
+        EXPECT_TRUE(testSrg2->CopyShaderResourceGroupData(*m_srg));
+        EXPECT_EQ(m_srg->GetConstant<int32_t>(inputIndex), testSrg2->GetConstant<int32_t>(inputIndex));
+    }
+
+    TEST_F(ShaderResourceGroupConstantBufferTests, TestPartialCopyShaderResourceGroupData)
+    {
+        using namespace AZ;
+
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout2 = RHI::ShaderResourceGroupLayout::Create();
+        srgLayout2->SetName(Name("partial"));
+        srgLayout2->SetBindingSlot(0);
+        srgLayout2->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("MyUint"), 0, sizeof(uint32_t), 0, 0 });
+        srgLayout2->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("MyBool1337"), sizeof(uint32_t), sizeof(bool), 0, 0 });
+        srgLayout2->Finalize();
+
+        auto testSrgShaderAsset2 = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout2);
+        auto testSrg2 = RPI::ShaderResourceGroup::Create(testSrgShaderAsset2, AZ::RPI::DefaultSupervariantIndex, srgLayout2->GetName());
+
+        const RHI::ShaderInputConstantIndex inputIndex(8);
+        EXPECT_TRUE(m_srg->SetConstant(inputIndex, 23));
+        EXPECT_TRUE(m_srg->SetConstant(RHI::ShaderInputConstantIndex{0}, false));
+
+        EXPECT_FALSE(testSrg2->CopyShaderResourceGroupData(*m_srg));
+        EXPECT_EQ(m_srg->GetConstant<uint32_t>(inputIndex), testSrg2->GetConstant<uint32_t>(RHI::ShaderInputConstantIndex{ 0 }));
     }
 }

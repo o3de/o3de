@@ -10,6 +10,7 @@
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -53,7 +54,7 @@ namespace AZ
         MoveFunctorsToDeferredHead(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         const char* command,
         ConsoleSilentMode silentMode,
@@ -83,7 +84,7 @@ namespace AZ
         return PerformCommand(commandView, commandArgsView, silentMode, invokedFrom, requiredSet, requiredClear);
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         const ConsoleCommandContainer& commandAndArgs,
         ConsoleSilentMode silentMode,
@@ -94,13 +95,13 @@ namespace AZ
     {
         if (commandAndArgs.empty())
         {
-            return false;
+            return AZ::Failure("CommandAndArgs is empty.");
         }
 
         return PerformCommand(commandAndArgs.front(), ConsoleCommandContainer(commandAndArgs.begin() + 1, commandAndArgs.end()), silentMode, invokedFrom, requiredSet, requiredClear);
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         AZStd::string_view command,
         const ConsoleCommandContainer& commandArgs,
@@ -110,7 +111,24 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
-        return DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear);
+        if (!DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear))
+        {
+            // If the command could not be dispatched at this time add it to the deferred commands queue
+            DeferredCommand deferredCommand{ AZStd::string_view{ command },
+                                             DeferredCommand::DeferredArguments{ commandArgs.begin(), commandArgs.end() },
+                                             silentMode,
+                                             invokedFrom,
+                                             requiredSet,
+                                             requiredClear };
+
+            CVarFixedString commandLowercase(command);
+            AZStd::to_lower(commandLowercase.begin(), commandLowercase.end());
+            m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
+            return AZ::Failure(AZStd::string::format(
+                "Command \"%s\" is not yet registered. Deferring to attempt execution later.", commandLowercase.c_str()));
+        }
+
+        return AZ::Success();
     }
 
     void Console::ExecuteConfigFile(AZStd::string_view configFileName)
@@ -191,12 +209,12 @@ namespace AZ
         m_deferredCommands = {};
     }
 
-    bool Console::HasCommand(AZStd::string_view command)
+    bool Console::HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
-        return FindCommand(command) != nullptr;
+        return FindCommand(command, ignoreAnyFlags) != nullptr;
     }
 
-    ConsoleFunctorBase* Console::FindCommand(AZStd::string_view command)
+    ConsoleFunctorBase* Console::FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
         CVarFixedString lowerName(command);
         AZStd::to_lower(lowerName.begin(), lowerName.end());
@@ -206,7 +224,7 @@ namespace AZ
         {
             for (ConsoleFunctorBase* curr : iter->second)
             {
-                if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
+                if ((curr->GetFlags() & ignoreAnyFlags) != ConsoleFunctorFlags::Null)
                 {
                     // Filter functors marked as invisible
                     continue;
@@ -421,6 +439,9 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
+        // incoming commands are assumed to be in the "C" locale as they might be from portable data files
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
+
         bool result = false;
         ConsoleFunctorFlags flags = ConsoleFunctorFlags::Null;
 
@@ -467,9 +488,23 @@ namespace AZ
                     result = true;
                     if ((silentMode == ConsoleSilentMode::NotSilent) && (curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) != ConsoleFunctorFlags::IsInvisible)
                     {
-                        CVarFixedString value;
-                        curr->GetValue(value);
-                        AZLOG_INFO("> %s : %s", curr->GetName(), value.empty() ? "<empty>" : value.c_str());
+                        // First use the ConsoleFunctorBase::GetValue function
+                        // to retrieve the value of the type of the first template parameter to the ConsoleFunctor class template
+                        // This is populated for non-void types and is set for Console Variables(CVars) and Console Commands
+                        // which are member functions
+                        // See `ConsoleFunctor<_TYPE, _REPLICATES_VALUE>::GetValueAsString`
+                        CVarFixedString inputStr;
+                        if (GetValueResult getCVarValue = curr->GetValue(inputStr);
+                            getCVarValue != GetValueResult::Success)
+                        {
+                            // In this case the ConsoleFunctorBase pointer references a `ConsoleFunctor<void, _REPLICATES_VALUE>` object
+                            // which has no type associated with it.
+                            // This is used for Console Commands which are free functions
+                            // The `ConsoleFunctor<void, _REPLICATES_VALUE>::GetValueAsString` returns NotImplemented
+                            // Instead the input arguments to the console command will be logged
+                            AZ::StringFunc::Join(inputStr, inputs, ' ');
+                        }
+                        AZLOG_INFO("> %s : %s", curr->GetName(), inputStr.empty() ? "<no-args>" : inputStr.c_str());
                     }
                     flags = curr->GetFlags();
                 }
@@ -584,24 +619,8 @@ namespace AZ
                     commandTrace += commandArg;
                 }
 
-                if (!m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent,
-                    ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null))
-                {
-                    // If the command could not be dispatched at this time add it to the
-                    // deferred commands queue
-                    using DeferredCommand = Console::DeferredCommand;
-                    DeferredCommand deferredCommand
-                    {
-                        AZStd::string_view{command},
-                        DeferredCommand::DeferredArguments{commandArgs.begin(), commandArgs.end()},
-                        ConsoleSilentMode::NotSilent,
-                        ConsoleInvokedFrom::AzConsole,
-                        ConsoleFunctorFlags::Null,
-                        ConsoleFunctorFlags::Null
-                    };
-
-                    m_console.m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
-                }
+                m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent,
+                    ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
             }
         }
 

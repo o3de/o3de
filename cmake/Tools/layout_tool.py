@@ -114,14 +114,6 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
                                                                          f'remote_ip'
                                                                          ])
 
-    # Validate the system_{platform}_{asset type}.cfg exists
-    platform_system_cfg_file = layout_path / f'system_{platform_name_lower}_{asset_type}.cfg'
-    if not platform_system_cfg_file.is_file():
-        warning_count += _warn(f"'system_{platform_name_lower}_{asset_type}.cfg' is missing from {str(layout_path)}")
-        system_config_values = None
-    else:
-        system_config_values = common.get_config_file_values(str(platform_system_cfg_file), [])
-
     if bootstrap_values:
 
         remote_ip = bootstrap_values.get(f'{platform_name_lower}_remote_ip') or bootstrap_values.get('remote_ip') or LOCAL_HOST
@@ -137,57 +129,23 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
         # Validate that if '<platform>_connect_to_remote is enabled, that the 'remote_ip' is not set to local host
         warning_count += _validate_remote_ap(remote_ip, remote_connect, None)
 
-        project_asset_path = layout_path / project_name_lower
+        project_asset_path = layout_path
         if not project_asset_path.is_dir():
             warning_count += _warn(f"Asset folder for project {project_name} is missing from the deployment layout.")
-
-        elif system_config_values is not None:
-
-            shaders_remote_compiler = '0'
-            asset_processor_shader_compiler = system_config_values.get('r_AssetProcessorShaderCompiler') or '0'
-            shader_compiler_server = LOCAL_HOST
-            shaders_allow_compilation = system_config_values.get('r_ShadersAllowCompilation')
-
-            def _validate_remote_shader_settings():
-
-                if asset_processor_shader_compiler != '1':
-                    return _warn(f"Connection to the remote shader compiler (r_ShaderCompilerServer) is not properly "
-                                 f"set in system_{platform_name_lower}_{asset_type}.cfg. If it is set to {LOCAL_HOST}, then "
-                                 f"r_AssetProcessorShaderCompiler must be set to 1.")
-
-
-                else:
-                    if _validate_remote_ap(remote_ip, remote_connect, False) > 0:
-                        return _warn(f"The system_{platform_name_lower}_{asset_type}.cfg file is configured to connect to the"
-                                     f" shader compiler server through the remote connection to the Asset Processor.")
-                return 0
-
+        else:
             # Validation steps based on the asset mode
             if asset_mode == ASSET_MODE_PAK:
                 # Validate that we have pak files
-                pak_count = 0
-                has_shader_pak = False
                 project_paks = project_asset_path.glob("*.pak")
-                for project_pak in project_paks:
-                    if project_pak.name == 'shadercachestartup.pak':
-                        has_shader_pak = True
-                    pak_count += 1
+                pak_count = len(list(project_paks))
 
                 if pak_count == 0:
                     warning_count += _warn("No pak files found for PAK mode deployment")
                     # Check if the shader paks are set
-                if has_shader_pak:
-                    # Since we are not connecting to the shader compiler, also make sure bootstrap is not configured to
-                    # connect to Asset Processor remotely
-                    warning_count += _validate_remote_ap(remote_ip, remote_connect, False)
 
-                    if shaders_allow_compilation is not None and shaders_allow_compilation == '1':
-                        warning_count += _warn(f"Shader paks are set for project {project_name} but shader compiling "
-                                               f"(r_ShadersAllowCompilation) is still enabled "
-                                               f"for it in system_{platform_name_lower}_{asset_type}.cfg.")
-
-                else:
-                    warning_count += _validate_remote_shader_settings()
+                # Since we are using pak files, make sure the settings are not configured to
+                # connect to Asset Processor remotely
+                warning_count += _validate_remote_ap(remote_ip, remote_connect, False)
 
             elif asset_mode == ASSET_MODE_VFS:
                 remote_file_system = bootstrap_values.get(f'{platform_name_lower}_remote_filesystem') or '0'
@@ -195,10 +153,6 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
                     warning_count += _warn("Remote file system is not configured in bootstrap.setreg for VFS mode.")
                 else:
                     warning_count += _validate_remote_ap(remote_ip, remote_connect, True)
-
-            else:
-                # If there are no shader paks, make sure that a connection to the shader compiler is set
-                warning_count += _validate_remote_shader_settings()
 
     return warning_count
 
@@ -412,7 +366,10 @@ def sync_layout_vfs(target_platform, project_path, asset_type, warning_on_missin
     create_link(vfs_asset_source, temp_vfs_layout_project_config_path, copy)
 
     # Copy minimum assets to the layout necessary for vfs
-    root_assets = ['engine.json', 'bootstrap.game.debug.setreg', 'bootstrap.game.profile.setreg', 'bootstrap.game.release.setreg']
+    root_assets = ['engine.json',
+                   'bootstrap.client.debug.setreg', 'bootstrap.client.profile.setreg', 'bootstrap.client.release.setreg',
+                   'bootstrap.server.debug.setreg', 'bootstrap.server.profile.setreg', 'bootstrap.server.release.setreg',
+                   'bootstrap.unified.debug.setreg', 'bootstrap.unified.profile.setreg', 'bootstrap.unified.release.setreg']
     for root_asset in root_assets:
         logging.debug("Copying %s -> %s",  os.path.join(project_asset_folder, root_asset), layout_target)
         shutil.copy2(os.path.join(project_asset_folder, root_asset), layout_target)
@@ -454,7 +411,10 @@ def sync_layout_non_vfs(mode, target_platform, project_path, asset_type, warning
 
     if mode == ASSET_MODE_PAK:
         target_pak_folder_name = '{}_{}_paks'.format(project_name_lower, asset_type)
-        project_asset_folder = os.path.join(project_path, override_pak_folder or PAK_FOLDER_NAME, target_pak_folder_name)
+        if override_pak_folder:
+            project_asset_folder = override_pak_folder
+        else:    
+            project_asset_folder = os.path.join(project_path, override_pak_folder or PAK_FOLDER_NAME, target_pak_folder_name)
         if not os.path.isdir(project_asset_folder):
             if warning_on_missing_assets:
                 logging.warning(f'Pak folder for the project at path "{project_path}" is missing'

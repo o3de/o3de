@@ -24,6 +24,7 @@ class TreeViewPage
 
 public:
     explicit TreeViewPage(QWidget* parent = nullptr);
+    ~TreeViewPage() override;
 
 private:
     QScopedPointer<Ui::TreeViewPage> ui;

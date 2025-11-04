@@ -218,12 +218,12 @@ def AtomEditorComponents_Material_AddedToEntity():
 
         # 12. Set a model asset to Mesh component
         # Set a simple model to ensure that the more complex model will load cleanly
-        model_path = os.path.join('objects', 'cube.azmodel')
+        model_path = os.path.join('objects', 'cube.fbx.azmodel')
         model = Asset.find_asset_by_path(model_path)
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
         general.idle_wait_frames(1)
         # Update model asset to a model with 5 LOD materials
-        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.azmodel')
+        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.fbx.azmodel')
         model = Asset.find_asset_by_path(model_path)
         mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
         general.idle_wait_frames(1)
@@ -242,7 +242,7 @@ def AtomEditorComponents_Material_AddedToEntity():
         # .\o3de\Gems\AtomLyIntegration\CommonFeatures\Code\Source\Material\EditorMaterialComponentSlot.cpp
         label = item.GetLabel()
         Report.result(Tests.model_material_label, label == 'lambert0')
-        # Asset path for lambert0 is 'objects/sphere_5lods_lambert0_11781189446760285338.azmaterial'; numbers may vary
+        # Asset path for lambert0 is 'objects/sphere_5lods_lambert0_11781189446760285338.fbx.azmaterial'; numbers may vary
         default_asset = Asset(item.GetDefaultAssetId())
         default_asset_path = default_asset.get_path()
         Report.result(

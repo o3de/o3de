@@ -10,6 +10,8 @@
 
 #include "AssetTreeItem.h"
 
+#include <QRegularExpression>
+
 namespace AssetProcessor
 {
 
@@ -45,8 +47,8 @@ namespace AssetProcessor
             }
         }
 
-        QRegExp filter(filterRegExp());
-        if (filter.isEmpty())
+        QRegularExpression filter(filterRegularExpression());
+        if (filter.pattern().isEmpty())
         {
             return true;
         }
@@ -70,9 +72,9 @@ namespace AssetProcessor
         return DescendantMatchesFilter(*assetTreeItem, filter, filterAsUuid);
     }
 
-    bool AssetTreeFilterModel::DescendantMatchesFilter(const AssetTreeItem& assetTreeItem, const QRegExp& filter, const AZ::Uuid& filterAsUuid) const
+    bool AssetTreeFilterModel::DescendantMatchesFilter(const AssetTreeItem& assetTreeItem, const QRegularExpression& filter, const AZ::Uuid& filterAsUuid) const
     {
-        if (filter.isEmpty())
+        if (filter.pattern().isEmpty())
         {
             // Match everything if there is no filter.
             return true;

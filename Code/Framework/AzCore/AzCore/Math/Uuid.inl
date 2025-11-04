@@ -8,28 +8,44 @@
 
 #include <AzCore/Math/Sha1.h>
 
-#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/limits.h>
-#include <AzCore/std/ranges/ranges_algorithm.h>
-#include <AzCore/std/ranges/ranges_to.h>
-#include <AzCore/std/string/fixed_string.h>
 
 namespace AZ::UuidInternal
 {
+    constexpr AZStd::byte InvalidValue = AZStd::byte(255);
+
+    // Lookup table to convert ascii values for 0-9, a-f, and A-F to hex values in the range 0-15.
+    // Lambda expression populates the CharToHexDigit lookup table at compile time(it can't be invoked at runtime)
+    // It is invoked immediately
+    inline constexpr auto CharToHexDigit = []() constexpr
+    {
+        AZStd::array<AZStd::byte, 256> charToHexTable{};
+        AZStd::fill(charToHexTable.begin(), charToHexTable.end(), InvalidValue);
+        // Fill characters '0' - '9' with the byte range of 0 - 9
+        for (size_t i = 0; i < 10; ++i)
+        {
+            charToHexTable['0' + i] = AZStd::byte(i);
+        }
+        // Fill characters 'A' - 'F' with the byte range of 10-15(for hex digits)
+        for (size_t i = 0; i < 6; ++i)
+        {
+            charToHexTable['A' + i] = AZStd::byte(10 + i);
+        }
+        // Fill characters 'a' - 'f' with the byte range of 10-15(for hex digits)
+        for (size_t i = 0; i < 6; ++i)
+        {
+            charToHexTable['a' + i] = AZStd::byte(10 + i);
+        }
+
+        return charToHexTable;
+    }
+    ();
+
     constexpr AZStd::byte GetValue(char c)
     {
-        constexpr AZStd::string_view UuidChars = "0123456789ABCDEFabcdef";
-        // CharToHexDigit is 1 more character than UuidChars array
-        constexpr auto CharToHexDigit = AZStd::to_array<AZStd::byte>({
-            AZStd::byte(0),AZStd::byte(1), AZStd::byte(2), AZStd::byte(3),
-            AZStd::byte(4), AZStd::byte(5), AZStd::byte(6), AZStd::byte(7),
-            AZStd::byte(8), AZStd::byte(9),
-            AZStd::byte(10), AZStd::byte(11), AZStd::byte(12), AZStd::byte(13), AZStd::byte(14), AZStd::byte(15),
-            AZStd::byte(10), AZStd::byte(11), AZStd::byte(12), AZStd::byte(13), AZStd::byte(14), AZStd::byte(15),
-            AZStd::numeric_limits<AZStd::byte>::max() });
-        const char* hexDigit = AZStd::ranges::find(UuidChars, c);
-        return CharToHexDigit[hexDigit - UuidChars.data()];
+        // Use a direct lookup table to convert from a valid ascii char to a 0-15 hex value
+        return CharToHexDigit[c];
     }
 }
 
@@ -47,6 +63,11 @@ namespace AZ
     constexpr Uuid Uuid::CreateNull()
     {
         return Uuid{};
+    }
+
+    constexpr Uuid Uuid::CreateInvalid()
+    {
+        return Uuid{ "{00000BAD-0BAD-0BAD-0BAD-000000000BAD}" };
     }
 
     constexpr Uuid Uuid::CreateString(const char* string, size_t stringLength)
@@ -256,7 +277,7 @@ namespace AZ
     template<class StringType>
     constexpr StringType Uuid::ToString(bool isBrackets, bool isDashes) const
     {
-        return AZStd::ranges::to<StringType>(ToFixedString(isBrackets, isDashes));
+        return StringType{ AZStd::string_view(ToFixedString(isBrackets, isDashes)) };
     }
 
     /// For inplace version we require resize, data and size members.
@@ -333,12 +354,14 @@ namespace AZ
     constexpr bool Uuid::IsNull() const
     {
         constexpr AZStd::byte zeroBytes[16]{};
-        return AZStd::ranges::equal(m_data, zeroBytes);
+        return AZStd::equal(AZStd::begin(m_data), AZStd::end(m_data),
+            AZStd::begin(zeroBytes), AZStd::end(zeroBytes));
     }
 
     constexpr bool Uuid::operator==(const Uuid& rhs) const
     {
-        return AZStd::ranges::equal(m_data, rhs.m_data);
+        return AZStd::equal(AZStd::begin(m_data), AZStd::end(m_data),
+            AZStd::begin(rhs.m_data), AZStd::end(rhs.m_data));
     }
     constexpr bool Uuid::operator!=(const Uuid& rhs) const
     {
@@ -347,7 +370,8 @@ namespace AZ
 
     constexpr bool Uuid::operator<(const Uuid& rhs) const
     {
-        return AZStd::ranges::lexicographical_compare(m_data, rhs.m_data);
+        return AZStd::lexicographical_compare(AZStd::begin(m_data), AZStd::end(m_data),
+            AZStd::begin(rhs.m_data), AZStd::end(rhs.m_data));
     }
     constexpr bool Uuid::operator>(const Uuid& rhs) const
     {
@@ -420,8 +444,8 @@ namespace AZ
     {
         // Combines both Uuids into 1 single buffer
         AZStd::array<AZStd::byte, sizeof(Uuid::m_data) * 2> mergedData{AZStd::byte{}};
-        AZStd::ranges::copy(lhs, mergedData.begin());
-        AZStd::ranges::copy(rhs, mergedData.begin() + sizeof(Uuid::m_data));
+        AZStd::copy(lhs.begin(), lhs.end(), mergedData.begin());
+        AZStd::copy(rhs.begin(), rhs.end(), mergedData.begin() + sizeof(Uuid::m_data));
         return Uuid::CreateData(mergedData);
     }
 

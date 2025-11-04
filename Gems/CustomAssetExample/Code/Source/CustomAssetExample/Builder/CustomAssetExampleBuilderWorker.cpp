@@ -55,7 +55,7 @@ namespace CustomAssetExample
                 descriptor.m_jobKey = "Second Compile Example";
 
                 // Custom parameters that you may need to know about when the job processes can be added to m_jobParameters
-                descriptor.m_jobParameters[AZ_CRC("hello", 0x3610a686)] = "World";
+                descriptor.m_jobParameters[AZ_CRC_CE("hello")] = "World";
                 response.m_createJobOutputs.push_back(descriptor);
             }
 
@@ -95,7 +95,7 @@ namespace CustomAssetExample
                 descriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
 
                 // you can also place whatever parameters you want to save for later into this map:
-                descriptor.m_jobParameters[AZ_CRC("hello", 0x3610a686)] = "World";
+                descriptor.m_jobParameters[AZ_CRC_CE("hello")] = "World";
                 response.m_createJobOutputs.push_back(descriptor);
             }
 

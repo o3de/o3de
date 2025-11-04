@@ -40,7 +40,9 @@ namespace AZ
         {
             m_photometricValue.SetEffectiveSolidAngle(GetEffectiveSolidAngle());
             m_shapeBus = LmbrCentral::ShapeComponentRequestsBus::FindFirstHandler(entityId);
-            TransformBus::EventResult(m_transform, entityId, &TransformBus::Events::GetWorldTM);
+            AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
+            TransformBus::EventResult(entityTransform, entityId, &TransformBus::Events::GetWorldTM);
+            m_transform = ComputeOverallTransform(entityTransform);
 
             if (m_shapeBus != nullptr)
             {
@@ -63,7 +65,7 @@ namespace AZ
         }
 
         template <typename FeatureProcessorType>
-        void LightDelegateBase<FeatureProcessorType>::SetChroma(const AZ::Color& color)
+        void LightDelegateBase<FeatureProcessorType>::SetChroma(const Color& color)
         {
             m_photometricValue.SetChroma(color);
             if (m_lightHandle.IsValid())
@@ -95,14 +97,15 @@ namespace AZ
         }
 
         template <typename FeatureProcessorType>
-        void LightDelegateBase<FeatureProcessorType>::OnShapeChanged(ShapeChangeReasons changeReason)
+        void LightDelegateBase<FeatureProcessorType>::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
         {
             AZ_Assert(m_shapeBus, "OnShapeChanged called without a shape bus present.");
-            if (changeReason == ShapeChangeReasons::TransformChanged)
-            {
-                AZ::Aabb aabb; // unused, but required for GetTransformAndLocalBounds()
-                m_shapeBus->GetTransformAndLocalBounds(m_transform, aabb);
-            }
+            // need to update the overall transform whether the change reason is TransformChanged or ShapeChanged, because changes to the
+            // translation offset trigger the event with ShapeChanged 
+            Aabb aabb; // unused, but required for GetTransformAndLocalBounds()
+            AZ::Transform entityTransform = AZ::Transform::CreateIdentity();
+            m_shapeBus->GetTransformAndLocalBounds(entityTransform, aabb);
+            m_transform = ComputeOverallTransform(entityTransform);
             m_photometricValue.SetArea(GetSurfaceArea());
             if (m_lightHandle.IsValid())
             {
@@ -112,10 +115,17 @@ namespace AZ
         }
         
         template <typename FeatureProcessorType>
-        void LightDelegateBase<FeatureProcessorType>::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+        void LightDelegateBase<FeatureProcessorType>::OnTransformChanged(const Transform& /*local*/, const Transform& world)
         {
-            m_transform = world;
+            m_transform = ComputeOverallTransform(world);
             HandleShapeChanged();
+        }
+
+        template <typename FeatureProcessorType>
+        AZ::Transform LightDelegateBase<FeatureProcessorType>::ComputeOverallTransform(const Transform& world)
+        {
+            const AZ::Vector3 translationOffset = m_shapeBus ? m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
+            return world * AZ::Transform::CreateTranslation(translationOffset);
         }
 
         template <typename FeatureProcessorType>
@@ -152,5 +162,13 @@ namespace AZ
             }
         }
 
+        template<typename FeatureProcessorType>
+        void LightDelegateBase<FeatureProcessorType>::SetLightingChannelMask(uint32_t lightingChannelMask)
+        {
+            if (m_lightHandle.IsValid())
+            {
+                m_featureProcessor->SetLightingChannelMask(m_lightHandle, lightingChannelMask);
+            }
+        }
     }
 }

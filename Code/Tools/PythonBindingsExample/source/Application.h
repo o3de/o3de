@@ -21,6 +21,7 @@ namespace PythonBindingsExample
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator)
         Application(int* argc, char*** argv);
         ~Application();
 

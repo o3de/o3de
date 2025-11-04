@@ -26,7 +26,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(RandomGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RandomGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(RandomGradientConfig, "{A435F06D-A148-4B5F-897D-39996495B6F4}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         AZ::u32 m_randomSeed = 13;

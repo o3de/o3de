@@ -18,13 +18,13 @@ namespace UnitTest
     // Or the bitset can be tested without respect to the unsigned long, but benefit from having multiple test cases exercised through the parameterized test
     class BitsetUnsignedLongTests
         : public ::testing::WithParamInterface <unsigned long>
-        , public UnitTest::ScopedAllocatorSetupFixture
+        , public UnitTest::LeakDetectionFixture
     {
 
     protected:
         void SetUp() override
         {
-            m_unsignedLong = GetParam();
+            m_unsignedLong = static_cast<AZ::u32>(GetParam());
             m_bitset = AZStd::bitset<32>(m_unsignedLong);
         }
 
@@ -107,7 +107,7 @@ namespace UnitTest
     // Bitwise operations can be performed between the bitsets, then compared to the same bitwise operations preformed between the unsigned longs
     class BitsetUnsignedLongPairTests
         : public ::testing::WithParamInterface < AZStd::pair<unsigned long, unsigned long> >
-        , public UnitTest::ScopedAllocatorSetupFixture
+        , public UnitTest::LeakDetectionFixture
     {
 
     protected:
@@ -221,7 +221,7 @@ namespace UnitTest
     // such as shifting bits beyond the length of the bitset
     class BitsetStdComparisonTests
         : public ::testing::WithParamInterface <unsigned long>
-        , public UnitTest::ScopedAllocatorSetupFixture
+        , public UnitTest::LeakDetectionFixture
     {
 
     protected:
@@ -336,14 +336,14 @@ namespace UnitTest
         return bitset1.to_string() + 'x' + bitset2.to_string();
     }
 
-    INSTANTIATE_TEST_CASE_P(Bitset, BitsetUnsignedLongTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(Bitset, BitsetUnsignedLongTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
 
-    INSTANTIATE_TEST_CASE_P(Bitset, BitsetUnsignedLongPairTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongPairTestCases()), GenerateBitsetUnsignedLongPairTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(Bitset, BitsetUnsignedLongPairTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongPairTestCases()), GenerateBitsetUnsignedLongPairTestCaseName);
 
-    INSTANTIATE_TEST_CASE_P(Bitset, BitsetStdComparisonTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
+    INSTANTIATE_TEST_SUITE_P(Bitset, BitsetStdComparisonTests, ::testing::ValuesIn(GenerateBitsetUnsignedLongTestCases()), GenerateBitsetUnsignedLongTestCaseName);
 
     class BitsetTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 

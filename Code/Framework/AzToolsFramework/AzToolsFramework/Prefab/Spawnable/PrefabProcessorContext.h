@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/ComponentExport.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -36,13 +37,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     using PrefabSpawnablePostProcessEvent = AZ::Event<const AZStd::string&, AzFramework::Spawnable&>;
 
-    class PrefabProcessorContext : private EntityIdPathMapperInterface
+    class AZTF_API PrefabProcessorContext : private EntityIdPathMapperInterface
     {
     public:
         using ProcessedObjectStoreContainer = AZStd::vector<ProcessedObjectStore>;
         using ProductAssetDependencyContainer = AZStd::unordered_multimap<AZ::Data::AssetId, AssetDependencyInfo>;
 
-        AZ_CLASS_ALLOCATOR(PrefabProcessorContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabProcessorContext, AZ::SystemAllocator);
         AZ_RTTI(PrefabProcessorContext, "{C7D77E3A-C544-486B-B774-7C82C38FE22F}");
 
         explicit PrefabProcessorContext(const AZ::Uuid& sourceUuid);

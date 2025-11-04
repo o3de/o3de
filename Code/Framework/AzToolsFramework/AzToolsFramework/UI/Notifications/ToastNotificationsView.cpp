@@ -17,6 +17,8 @@ namespace AzToolsFramework
     ToastNotificationsView::ToastNotificationsView(QWidget* parent, ToastRequestBusId busId)
         : QWidget(parent)
     {
+        setMaximumSize(QSize(0, 0));
+
         ToastRequestBus::Handler::BusConnect(busId);
     }
 
@@ -63,10 +65,16 @@ namespace AzToolsFramework
 
     ToastId ToastNotificationsView::ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        // reject duplicate messages
-        if (m_rejectDuplicates && DuplicateNotificationInQueue(toastConfiguration))
+        // reject duplicate messages unless toast configuration allows duplicates, if the notification is a duplicate
+        // replace current notification with the new one
+        auto isDuplicate = DuplicateNotificationInQueue(toastConfiguration);
+        if (m_rejectDuplicates && isDuplicate && !toastConfiguration.m_allowDuplicateNotifications)
         {
             return ToastId();
+        }
+        else if (isDuplicate && toastConfiguration.m_allowDuplicateNotifications)
+        {
+            HideToastNotification(m_activeNotification);
         }
 
         ToastId toastId = CreateToastNotification(toastConfiguration); 

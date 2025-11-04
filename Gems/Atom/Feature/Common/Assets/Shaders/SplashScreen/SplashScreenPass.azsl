@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Sampler m_imageSampler
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Texture2D<float4> m_splashScreenImage;
+
+    struct SplashScreenParams
+    {
+        float m_fadingFactor;
+    } m_splashScreenParams;
+}
+
+struct VSInput
+{
+    uint m_vertexIndex : SV_VertexID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_uv : UV0;
+};
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+
+    float4 posTex = GetVertexPositionAndTexCoords(vsInput.m_vertexIndex);
+    OUT.m_position = float4(posTex.x, posTex.y, 0.0, 1.0);
+    OUT.m_uv = float2(posTex.z, posTex.w);
+    return OUT;
+}
+
+PSOutput MainPS(VSOutput psInput)
+{
+    PSOutput OUT;
+
+    float4 color = PassSrg::m_splashScreenImage.Sample(PassSrg::m_imageSampler, psInput.m_uv);
+    OUT.m_color = float4(color.rgb * PassSrg::m_splashScreenParams.m_fadingFactor, color.a);
+
+    return OUT;
+}
+

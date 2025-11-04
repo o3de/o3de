@@ -138,7 +138,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(VisualExtensionSlotConfiguration, "{3EA2D6DB-1B8F-451B-A6CE-D5779E56F4A8}");
-        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator);
 
         enum class VisualExtensionType
         {
@@ -217,7 +217,7 @@ namespace ScriptCanvas
     {
     public:
 
-        AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
+        AZ_RTTI((TypedNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
         virtual ~TypedNodePropertyInterface() = default;
@@ -283,7 +283,7 @@ namespace ScriptCanvas
 
         // The this-> method calls are here to deal with clang quirkiness with dependent template classes. Don't remove them.
 
-        AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
+        AZ_RTTI((TypedComboBoxNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
         virtual ~TypedComboBoxNodePropertyInterface() = default;
@@ -489,6 +489,7 @@ namespace ScriptCanvas
 
         AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}", SerializationListener);
         static void Reflect(AZ::ReflectContext* reflection);
+        static int GetNodeVersion();
 
         Node();
         ~Node() override;
@@ -591,6 +592,8 @@ namespace ScriptCanvas
         AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const override;
         Data::Type GetSlotDataType(const SlotId& slotId) const override;
 
+        Data::Type GetUnderlyingSlotDataType(const SlotId& slotId) const;
+
         VariableId GetSlotVariableId(const SlotId& slotId) const override;
         void SetSlotVariableId(const SlotId& slotId, const VariableId& variableId) override;
         void ClearSlotVariableId(const SlotId& slotId) override;
@@ -669,6 +672,7 @@ namespace ScriptCanvas
         // Hook here to allow CodeGen to override this
         virtual bool IsDeprecated() const { return false; };
         virtual size_t GenerateFingerprint() const { return 0; }
+        // Use following function to backup node replacement configuration
         virtual NodeReplacementConfiguration GetReplacementNodeConfiguration() const { return {}; };
         virtual AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const { return {}; };
 
@@ -830,6 +834,12 @@ namespace ScriptCanvas
         AZ::Outcome<AZStd::string> GetInternalOutKey(const SlotExecution::Map& map, const Slot& slot) const;
 
         AZ::Outcome<AZStd::string> GetLatentOutKey(const SlotExecution::Map& map, const Slot& slot) const;
+
+        // Returns the provided slot's corresponding execution slot
+        const Slot* GetCorrespondingExecutionSlot(const Slot* slot) const;
+
+        // Returns the provided slot's corresponding data slots
+        AZStd::vector<const Slot*> GetCorrespondingDataSlots(const Slot* slot) const;
 
         void ClearDisplayType(const SlotId& slotId);
         void SetDisplayType(const SlotId& slotId, const Data::Type& dataType);

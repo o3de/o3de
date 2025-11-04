@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RHI.Reflect/ShaderSemantic.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/Utils/TypeHash.h>
@@ -18,7 +19,7 @@ namespace AZ
     namespace RPI
     {
         //! Describes the set of inputs required by a shader
-        struct ShaderInputContract
+        struct ATOM_RPI_REFLECT_API ShaderInputContract
         {
             AZ_TYPE_INFO(ShaderInputContract, "{7C86110E-2455-45D0-8362-C31CAF6FEE9B}");
             static void Reflect(ReflectContext* context);

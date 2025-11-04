@@ -7,6 +7,11 @@
                 "$type": "EditorInspectorComponent",
                 "Id": 10641544592923449938
             },
+            "Component_[10678944021727050709]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 10678944021727050709,
+                "LocalBookmarkFileName": "BasicConnectivity_Connects_16732444871925707.setreg"
+            },
             "Component_[12039882709170782873]": {
                 "$type": "EditorOnlyEntityComponent",
                 "Id": 12039882709170782873
@@ -20,8 +25,27 @@
                 "Id": 14126657869720434043,
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
-                    "Entity_[934973135879]"
+                    "Entity_[475866853297]"
                 ]
+            },
+            "Component_[1463776549570530769]": {
+                "$type": "GenericComponentWrapper",
+                "Id": 1463776549570530769,
+                "m_template": {
+                    "$type": "Multiplayer::SimplePlayerSpawnerComponent",
+                    "PlayerSpawnable": {
+                        "Spawnable": {
+                            "assetId": {
+                                "guid": "{B022C510-8CD6-5ED5-825E-3FCA67D48A7E}",
+                                "subId": 738868766
+                            },
+                            "assetHint": "levels/multiplayer/basicconnectivity_connects/player.network.spawnable"
+                        }
+                    },
+                    "SpawnPoints": [
+                        "Entity_[475866853297]"
+                    ]
+                }
             },
             "Component_[15230859088967841193]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -35,10 +59,6 @@
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
-            },
-            "Component_[6545738857812235305]": {
-                "$type": "SelectionComponent",
-                "Id": 6545738857812235305
             },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",
@@ -59,10 +79,6 @@
             "Id": "Entity_[1155164325235]",
             "Name": "Sun",
             "Components": {
-                "Component_[10440557478882592717]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10440557478882592717
-                },
                 "Component_[13620450453324765907]": {
                     "$type": "EditorLockComponent",
                     "Id": 13620450453324765907
@@ -129,10 +145,6 @@
             "Id": "Entity_[1159459292531]",
             "Name": "Ground",
             "Components": {
-                "Component_[11701138785793981042]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11701138785793981042
-                },
                 "Component_[12260880513256986252]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 12260880513256986252
@@ -234,10 +246,6 @@
                         ]
                     }
                 },
-                "Component_[18387556550380114975]": {
-                    "$type": "SelectionComponent",
-                    "Id": 18387556550380114975
-                },
                 "Component_[2654521436129313160]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 2654521436129313160
@@ -274,10 +282,6 @@
                 "Component_[11443347433215807130]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 11443347433215807130
-                },
-                "Component_[11779275529534764488]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11779275529534764488
                 },
                 "Component_[14249419413039427459]": {
                     "$type": "EditorInspectorComponent",
@@ -389,10 +393,6 @@
                         }
                     }
                 },
-                "Component_[8056625192494070973]": {
-                    "$type": "SelectionComponent",
-                    "Id": 8056625192494070973
-                },
                 "Component_[8550141614185782969]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 8550141614185782969
@@ -424,10 +424,6 @@
                 "Component_[14988041764659020032]": {
                     "$type": "EditorLockComponent",
                     "Id": 14988041764659020032
-                },
-                "Component_[15808690248755038124]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15808690248755038124
                 },
                 "Component_[15900837685796817138]": {
                     "$type": "EditorVisibilityComponent",
@@ -481,10 +477,6 @@
                             }
                         }
                     }
-                },
-                "Component_[11980494120202836095]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11980494120202836095
                 },
                 "Component_[1428633914413949476]": {
                     "$type": "EditorLockComponent",
@@ -547,78 +539,46 @@
                 }
             }
         },
-        "Entity_[934973135879]": {
-            "Id": "Entity_[934973135879]",
-            "Name": "NetworkPlayerSpawner",
+        "Entity_[475866853297]": {
+            "Id": "Entity_[475866853297]",
+            "Name": "PlayerSpawnPoint",
             "Components": {
-                "Component_[10073073412761793204]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 10073073412761793204,
-                    "m_template": {
-                        "$type": "NetworkPlayerSpawnerComponent",
-                        "SpawnableAsset": {
-                            "assetId": {
-                                "guid": "{B022C510-8CD6-5ED5-825E-3FCA67D48A7E}",
-                                "subId": 738868766
-                            },
-                            "assetHint": "levels/multiplayer/basicconnectivity_connects/player.network.spawnable"
-                        }
-                    }
-                },
-                "Component_[11031619423549867263]": {
-                    "$type": "EditorDisabledCompositionComponent",
-                    "Id": 11031619423549867263
-                },
-                "Component_[12540211635700590833]": {
-                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "Id": 12540211635700590833,
-                    "Parent Entity": "Entity_[1146574390643]",
-                    "Transform Data": {
-                        "Translate": [
-                            1.0597752332687378,
-                            0.10000038146972656,
-                            1.7889275550842285
-                        ]
-                    }
-                },
-                "Component_[15519127561316685789]": {
-                    "$type": "EditorInspectorComponent",
-                    "Id": 15519127561316685789
-                },
-                "Component_[16045283820530631537]": {
+                "Component_[14512681391139819103]": {
                     "$type": "EditorOnlyEntityComponent",
-                    "Id": 16045283820530631537
+                    "Id": 14512681391139819103
                 },
-                "Component_[17354453761187497860]": {
-                    "$type": "EditorEntityIconComponent",
-                    "Id": 17354453761187497860
+                "Component_[15838007809020534270]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 15838007809020534270
                 },
-                "Component_[1877501581777517517]": {
-                    "$type": "EditorPendingCompositionComponent",
-                    "Id": 1877501581777517517
-                },
-                "Component_[3971819454540172560]": {
+                "Component_[2907170550273369202]": {
                     "$type": "EditorEntitySortComponent",
-                    "Id": 3971819454540172560
+                    "Id": 2907170550273369202
                 },
-                "Component_[4542112105449182550]": {
+                "Component_[4297441568124196342]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 4297441568124196342
+                },
+                "Component_[6264875110967431933]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 6264875110967431933
+                },
+                "Component_[6347057995455881360]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 6347057995455881360,
+                    "Parent Entity": "Entity_[1146574390643]"
+                },
+                "Component_[7253740736082737363]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 7253740736082737363
+                },
+                "Component_[8051329903433303855]": {
                     "$type": "EditorLockComponent",
-                    "Id": 4542112105449182550
+                    "Id": 8051329903433303855
                 },
-                "Component_[4723626109100132447]": {
-                    "$type": "SelectionComponent",
-                    "Id": 4723626109100132447
-                },
-                "Component_[5108899024798646009]": {
+                "Component_[8555740006901758331]": {
                     "$type": "EditorVisibilityComponent",
-                    "Id": 5108899024798646009
-                },
-                "Component_[7037421293728728360]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 7037421293728728360,
-                    "m_template": {
-                        "$type": "NetBindComponent"
-                    }
+                    "Id": 8555740006901758331
                 }
             }
         }

@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeFloatConditionNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeFloatConditionNode, AnimGraphAllocator)
 
     BlendTreeFloatConditionNode::BlendTreeFloatConditionNode()
         : AnimGraphNode()

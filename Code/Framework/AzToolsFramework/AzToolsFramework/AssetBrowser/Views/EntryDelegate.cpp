@@ -11,6 +11,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
@@ -18,6 +20,7 @@
 
 #include <QApplication>
 #include <QTextDocument>
+#include <QLineEdit>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
                                                                // 4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)
@@ -55,61 +58,91 @@ namespace AzToolsFramework
             return baseHint;
         }
 
+        QWidget* EntryDelegate::createEditor(QWidget* parent, [[ maybe_unused]] const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+        {
+            QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
+            if (auto* lineEdit = qobject_cast<QLineEdit*>(widget))
+            {
+                connect(lineEdit, &QLineEdit::editingFinished,
+                    this, [this]()
+                    {
+                        auto sendingLineEdit = qobject_cast<QLineEdit*>(sender());
+                        if (sendingLineEdit)
+                        {
+                            emit RenameEntry(sendingLineEdit->text());
+                        }
+                    });
+            }
+            return widget;
+        }
+
+        void EntryDelegate::paintAssetBrowserEntry(QPainter* painter, int column, const AssetBrowserEntry* entry, const QStyleOptionViewItem& option) const
+        {
+            // Draw main entry thumbnail.
+            QRect remainingRect(option.rect);
+            remainingRect.adjust(EntryIconMarginLeftPixels, 0, 0, 0); // bump it rightwards to give some margin to the icon.
+
+            QSize iconSize(m_iconSize, m_iconSize);
+            // Note that the thumbnail might actually be smaller than the row if theres a lot of padding or font size
+            // so it needs to center vertically with padding in that case:
+            QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
+
+            QStyleOptionViewItem actualOption = option;
+
+            auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
+            if (column == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
+            {
+                int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry);
+                if (sourceEntry)
+                {
+                    if (m_showSourceControl)
+                    {
+                        DrawThumbnail(painter, iconTopLeft, iconSize, entry);
+                    }
+                    // sources with no children should be greyed out.
+                    if (sourceEntry->GetChildCount() == 0)
+                    {
+                        actualOption.state &= QStyle::State_Enabled;
+                    }
+                }
+
+                remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
+                remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
+            }
+            // for display use the display name when the name column is aksed for, otherwise use the path.
+            QString displayString = column == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
+                ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
+                : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
+
+            if (!m_searchString.isEmpty())
+            {
+                displayString = AzToolsFramework::RichTextHighlighter::HighlightText(displayString, m_searchString);
+            }
+
+            RichTextHighlighter::PaintHighlightedRichText(displayString, painter, actualOption, remainingRect);
+        }
+
         void EntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
         {
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
-                bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-                bool isSelected = (option.state & QStyle::State_Selected) != 0;
-
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
                 // draw the background
-                style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+                if (!index.parent().isValid() && !(option.state & QStyle::State_MouseOver) && !(option.state & QStyle::State_Selected))
+                {
+                    painter->fillRect(option.rect, 0x333333);
+                }
+                else
+                {
+                    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+                }
 
                 auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
 
-                // Draw main entry thumbnail.
-                QRect remainingRect(option.rect);
-                remainingRect.adjust(EntryIconMarginLeftPixels, 0, 0, 0); // bump it rightwards to give some margin to the icon.
 
-                QSize iconSize(m_iconSize, m_iconSize);
-                // Note that the thumbnail might actually be smaller than the row if theres a lot of padding or font size
-                // so it needs to center vertically with padding in that case:
-                QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
-
-                auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-                QPalette actualPalette(option.palette);
-                if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
-                {
-                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
-                    if (sourceEntry)
-                    {
-                        if (m_showSourceControl)
-                        {
-                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
-                        }
-                        // sources with no children should be greyed out.
-                        if (sourceEntry->GetChildCount() == 0)
-                        {
-                            isEnabled = false; // draw in disabled style.
-                            actualPalette.setCurrentColorGroup(QPalette::Disabled);
-                        }
-                    }
-
-                    remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
-                    remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
-                }
-                // for display use the display name when the name column is aksed for, otherwise use the path.
-                QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
-                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
-                    : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
-
-                style->drawItemText(
-                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled,
-                    displayString,
-                    isSelected ? QPalette::HighlightedText : QPalette::Text);
+                paintAssetBrowserEntry(painter, index.column(), entry, option);
             }
         }
 
@@ -118,40 +151,72 @@ namespace AzToolsFramework
             m_showSourceControl = showSourceControl;
         }
 
-        int EntryDelegate::DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const
+        void EntryDelegate::SetShowFavoriteIcons(bool showFavoriteIcons)
         {
-            SharedThumbnail thumbnail;
-            ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey);
-            AZ_Assert(thumbnail, "The shared numbernail was not available from the ThumbnailerRequestBus.");
-            AZ_Assert(painter, "A null QPainter was passed in to DrawThumbnail.");
-            if (!painter || !thumbnail || thumbnail->GetState() == Thumbnail::State::Failed)
-            {
-                return 0;
-            }
+            m_showFavoriteIcons = showFavoriteIcons;
+        }
 
-            const Thumbnail::State thumbnailState = thumbnail->GetState();
-            if (thumbnailState == Thumbnail::State::Loading)
+        int EntryDelegate::DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, const AssetBrowserEntry* entry) const
+        {
+            if (!m_showSourceControl)
             {
-                AzQtComponents::StyledBusyLabel* busyLabel;
-                AssetBrowserComponentRequestBus::BroadcastResult(busyLabel , &AssetBrowserComponentRequests::GetStyledBusyLabel);
-                if (busyLabel)
+                const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(entry, false, m_showFavoriteIcons);
+                if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
                 {
-                    busyLabel->DrawTo(painter, QRectF(point.x(), point.y(), size.width(), size.height()));
+                    QIcon icon;
+                    icon.addFile(path, size, QIcon::Normal, QIcon::Off);
+                    icon.paint(painter, QRect(point.x(), point.y(), size.width(), size.height()));
+                }
+                else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
+                {
+                    // Scaling and centering pixmap within bounds to preserve aspect ratio
+                    const QPixmap pixmapScaled = pixmap.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                    const QSize sizeDelta = size - pixmapScaled.size();
+                    const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
+                    painter->drawPixmap(point + pointDelta, pixmapScaled);
                 }
             }
-            else if (thumbnailState == Thumbnail::State::Ready)
+            else if (auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry))
             {
-                // Scaling and centering pixmap within bounds to preserve aspect ratio
-                const QPixmap pixmap = thumbnail->GetPixmap().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-                const QSize sizeDelta = size - pixmap.size();
-                const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
-                painter->drawPixmap(point + pointDelta, pixmap);
-            }
-            else
-            {
-                AZ_Assert(false, "Thumbnail state %d unexpected here", int(thumbnailState));
+                Thumbnailer::SharedThumbnailKey thumbnailKey = sourceEntry->GetSourceControlThumbnailKey();
+                SharedThumbnail thumbnail;
+                ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey);
+                AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
+                AZ_Assert(painter, "A null QPainter was passed in to DrawThumbnail.");
+                if (!painter || !thumbnail || thumbnail->GetState() == Thumbnail::State::Failed)
+                {
+                    return 0;
+                }
+
+                const Thumbnail::State thumbnailState = thumbnail->GetState();
+                if (thumbnailState == Thumbnail::State::Loading)
+                {
+                    AzQtComponents::StyledBusyLabel* busyLabel;
+                    AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowserComponentRequests::GetStyledBusyLabel);
+                    if (busyLabel)
+                    {
+                        busyLabel->DrawTo(painter, QRectF(point.x(), point.y(), size.width(), size.height()));
+                    }
+                }
+                else if (thumbnailState == Thumbnail::State::Ready)
+                {
+                    // Scaling and centering pixmap within bounds to preserve aspect ratio
+                    const QPixmap pixmap = thumbnail->GetPixmap().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                    const QSize sizeDelta = size - pixmap.size();
+                    const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
+                    painter->drawPixmap(point + pointDelta, pixmap);
+                }
+                else
+                {
+                    AZ_Assert(false, "Thumbnail state %d unexpected here", int(thumbnailState));
+                }
             }
             return m_iconSize;
+        }
+
+        void EntryDelegate::SetSearchString(const QString& searchString)
+        {
+            m_searchString = searchString;
         }
 
         SearchEntryDelegate::SearchEntryDelegate(QWidget* parent)
@@ -208,12 +273,12 @@ namespace AzToolsFramework
 
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
-                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
+                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry);
                     if (sourceEntry)
                     {
                         if (m_showSourceControl)
                         {
-                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
+                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry);
                         }
                         // sources with no children should be greyed out.
                         if (sourceEntry->GetChildCount() == 0)

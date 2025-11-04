@@ -20,7 +20,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(InspectorGroupWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InspectorGroupWidget, AZ::SystemAllocator);
 
         InspectorGroupWidget(QWidget* parent = nullptr);
 

@@ -11,14 +11,16 @@
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Time/TimeSystem.h>
+#include <AzCore/UnitTest/MockComponentApplication.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzFramework/Network/IRemoteTools.h>
+#include <AzFramework/Script/ScriptDebugMsgReflection.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 #include <RemoteToolsSystemComponent.h>
-#include <Utilities/RemoteToolsOutboxThread.h>
 
 namespace UnitTest
 {
@@ -26,35 +28,50 @@ namespace UnitTest
 
     static constexpr AZ::Crc32 TestToolsKey("TestRemoteTools"); 
 
-    class RemoteToolsTests : public ScopedAllocatorSetupFixture
+    class RemoteToolsTests : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::NameDictionary::Create();
 
             m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
             m_networkingSystemComponent = AZStd::make_unique<AzNetworking::NetworkingSystemComponent>();
             m_remoteToolsSystemComponent = AZStd::make_unique<RemoteToolsSystemComponent>();
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_remoteTools = m_remoteToolsSystemComponent.get();
+            m_applicationMock = AZStd::make_unique<testing::NiceMock<UnitTest::MockComponentApplication>>();
+
+            ON_CALL(*m_applicationMock, GetSerializeContext())
+                .WillByDefault(
+                    [this]()
+                    {
+                        return m_serializeContext.get();
+                    });
+
+            AzFramework::ReflectScriptDebugClasses(m_serializeContext.get());
         }
 
         void TearDown() override
         {
+            m_applicationMock.reset();
             m_remoteTools = nullptr;
+            m_serializeContext.reset();
             m_remoteToolsSystemComponent.reset();
             m_networkingSystemComponent.reset();
             m_timeSystem.reset();
 
             AZ::NameDictionary::Destroy();
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
+        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
         AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
         AZStd::unique_ptr<RemoteToolsSystemComponent> m_remoteToolsSystemComponent;
-        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AzFramework::IRemoteTools* m_remoteTools = nullptr;
+        AZStd::unique_ptr<testing::NiceMock<UnitTest::MockComponentApplication>> m_applicationMock;
     };
 
     TEST_F(RemoteToolsTests, TEST_RemoteToolsEmptyRegistry)
@@ -92,23 +109,24 @@ namespace UnitTest
         EXPECT_FALSE(m_remoteTools->IsEndpointOnline(TestToolsKey, TestToolsKey));
 
         {
-            AzFramework::RemoteToolsMessage msg;
+            AzFramework::ScriptDebugBreakpointRequest msg(1, "test", 2);
             msg.SetSenderTargetId(TestToolsKey);
             m_remoteTools->SendRemoteToolsMessage(endpointInfo, msg);
         }
+
         const AzFramework::ReceivedRemoteToolsMessages* receiveMsgs = m_remoteTools->GetReceivedMessages(TestToolsKey);
         EXPECT_NE(receiveMsgs, nullptr);
         EXPECT_EQ(receiveMsgs->size(), 1);
+
+        auto msg = azrtti_cast<AzFramework::ScriptDebugBreakpointRequest*>(receiveMsgs->at(0));
+        EXPECT_TRUE(msg != nullptr);
+        EXPECT_EQ(msg->m_request, 1);
+        EXPECT_STREQ(msg->m_context.c_str(), "test");
+        EXPECT_EQ(msg->m_line, 2);
+
         m_remoteTools->ClearReceivedMessages(TestToolsKey);
     }
 
-    TEST(RemoteToolsOutboxTests, RemoteToolsOutboxMessagePush)
-    {
-        RemoteToolsOutboxThread outThread(1000);
-        OutboundToolingDatum datum;
-        outThread.PushOutboxMessage(nullptr, AzNetworking::ConnectionId(0), AZStd::move(datum));
-        EXPECT_EQ(outThread.GetPendingMessageCount(), 1);
-    }
 }
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

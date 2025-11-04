@@ -18,7 +18,7 @@ namespace UnitTest
      * systemFile test
      */
     class SystemFileTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
@@ -135,7 +135,6 @@ namespace UnitTest
 
     TEST_F(SystemFileTest, Open_BadFileNames_DoesNotCrash)
     {
-
         AZStd::string randomJunkName;
 
         randomJunkName.resize(128, '\0');
@@ -250,6 +249,119 @@ namespace UnitTest
 
         AZ::IO::SystemFile::Delete(srcFile.c_str());
         AZ::IO::SystemFile::Delete(redirectFile.c_str());
+    }
+
+    TEST_F(SystemFileTest, FileDescriptorCapturer_DoesNotDeadlock_WhenMoreThanPipeSizeContent_IsCaptured)
+    {
+        using namespace AZ::IO;
+
+        AZStd::string capturedData;
+        auto StoreFromFile = [&capturedData](AZStd::span<const AZStd::byte> capturedBytes)
+        {
+            AZStd::string_view capturedStrView(reinterpret_cast<const char*>(capturedBytes.data()), capturedBytes.size());
+            capturedData += capturedStrView;
+        };
+
+        // The +1 to make sure the value isn't a power of 2, to try to catch any edge cases
+        // with reading from a buffered pipe
+        constexpr size_t charCountToWrite = AZ::IO::FileDescriptorCapturer::DefaultPipeSize * 2 + 1;
+        capturedData.reserve(charCountToWrite);
+
+        // while it may be tempting to use stdout here, other processes and threads might be running
+        // in the same test run and also outputting to stdout.  This would cause an intermittent failure.
+        // Instead, write to a temp file.
+        AZ::Test::ScopedAutoTempDirectory tempDir;
+        auto srcFile = tempDir.Resolve("SystemFileTest_Source.txt");
+        int sourceFd = PosixInternal::Open(srcFile.c_str(),
+            PosixInternal::OpenFlags::Create | PosixInternal::OpenFlags::ReadWrite | PosixInternal::OpenFlags::Truncate,
+            PosixInternal::PermissionModeFlags::Read | PosixInternal::PermissionModeFlags::Write);
+        ASSERT_NE(sourceFd, -1);
+        AZ::IO::FileDescriptorCapturer capturer(sourceFd);
+
+        capturer.Start(StoreFromFile);
+        const char* dataToWrite = "a";
+        for (size_t i = 0; i < charCountToWrite; ++i)
+        {
+            // this should cause the write function to fill up any buffer and then block if the pipe is full
+            // until the capturer reads from it.
+            // filling the pipe should NOT cause blocking here, since the capturer reads on a different thread.
+            PosixInternal::Write(sourceFd, dataToWrite, 1);
+        }
+        PosixInternal::Close(sourceFd);
+        capturer.Stop();
+
+        const AZStd::string expectedValue(charCountToWrite, 'a');
+
+        // if the lengths are not equal, we DROPPED or invented data.
+        EXPECT_EQ(expectedValue.size(), capturedData.size()) << "FileDescriptorCapturer dropped or invented some of the data.";
+        
+        if (expectedValue.size() == capturedData.size())
+        {
+            // if the lengths are equal, but the strings are different, then the data is corrupt in some way (full of the
+            // wrong character, or nulls, or something).
+            EXPECT_TRUE(expectedValue == capturedData) << "FileDescriptorCapturer corrupted some of the data";
+        }
+    }
+
+    TEST_F(SystemFileTest, GetStdout_ReturnsHandle_ThatCanWriteToStdout_Succeeds)
+    {
+        AZStd::string stdoutData;
+        auto StoreStdout = [&stdoutData](AZStd::span<const AZStd::byte> capturedBytes)
+        {
+            AZStd::string_view capturedStrView(reinterpret_cast<const char*>(capturedBytes.data()), capturedBytes.size());
+            stdoutData += capturedStrView;
+        };
+
+        constexpr AZStd::string_view testData{ "Micro Macro Tera Zetta\n"};
+
+        // Capture stdout using descriptor of 1
+        constexpr int StdoutDescriptor = 1;
+        AZ::IO::FileDescriptorCapturer capturer(StdoutDescriptor);
+        capturer.Start(StoreStdout);
+        {
+            AZ::IO::SystemFile stdoutHandle = AZ::IO::SystemFile::GetStdout();
+            stdoutHandle.Write(testData.data(), testData.size());
+        }
+        fflush(stdout);
+        capturer.Stop();
+
+        EXPECT_EQ(testData, stdoutData);
+    }
+
+    TEST_F(SystemFileTest, GetStderr_ReturnsHandle_ThatCanWriteToStderr_Succeeds)
+    {
+        AZStd::string stderrData;
+        auto StoreStderr = [&stderrData](AZStd::span<const AZStd::byte> capturedBytes)
+        {
+            AZStd::string_view capturedStrView(reinterpret_cast<const char*>(capturedBytes.data()), capturedBytes.size());
+            stderrData += capturedStrView;
+        };
+
+        constexpr AZStd::string_view testData{ "Micro Macro Tera Zetta\n"};
+
+        // Capture stderr using descriptor of 2
+        constexpr int StderrDescriptor = 2;
+        AZ::IO::FileDescriptorCapturer capturer(StderrDescriptor);
+        capturer.Start(StoreStderr);
+        {
+            AZ::IO::SystemFile stderrHandle = AZ::IO::SystemFile::GetStderr();
+            stderrHandle.Write(testData.data(), testData.size());
+        }
+        fflush(stderr);
+        capturer.Stop();
+
+        EXPECT_EQ(testData, stderrData);
+    }
+
+    TEST_F(SystemFileTest, GetStdin_ReturnsHandle_ThatIsOpen_Succeeds)
+    {
+        char buffer[1];
+        AZ::IO::SystemFile stdinHandle = AZ::IO::SystemFile::GetStdin();
+        ASSERT_TRUE(stdinHandle.IsOpen());
+        // Read 0 bytes to validate that the stdin handle is open
+        // as well to avoid needing stdin to have data within it
+        // This call should block.
+        EXPECT_EQ(0, stdinHandle.Read(static_cast<AZ::IO::SizeType>(0), buffer));
     }
 
 }   // namespace UnitTest

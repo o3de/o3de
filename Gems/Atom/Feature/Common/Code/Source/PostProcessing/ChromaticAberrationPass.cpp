@@ -38,11 +38,11 @@ namespace AZ
                 return false;
             }
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
             if (!fp)
             {
                 return false;
             }
+            const RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
             PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
             if (!postProcessSettings)
             {
@@ -71,7 +71,7 @@ namespace AZ
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
             if (fp)
             {
-                RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+                RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
                 PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
                 if (postProcessSettings)
                 {

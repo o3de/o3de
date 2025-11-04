@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/vaseRound_1k_basecolor.png",
         "clearCoat.factor": 0.5,
@@ -8,13 +8,14 @@
         "clearCoat.normalMap": "../Textures/vaseRound_1k_normal.jpg",
         "clearCoat.roughness": 0.25,
         "general.applySpecularAA": true,
-        "irradiance.color": [
+        "irradiance.manualColor": [
             0.46933698654174805,
             0.3824063539505005,
             0.47861447930336,
             1.0
         ],
         "normal.textureMap": "../Textures/vaseRound_1k_normal.jpg",
+        "normal.flipY": true,
         "occlusion.diffuseTextureMap": "../Textures/vaseRound_1k_ao.png",
         "opacity.factor": 1.0,
         "parallax.factor": 0.019999999552965164,

@@ -15,14 +15,13 @@ struct z_stream_s;
 namespace AZ
 {
     class IAllocator;
-    class IAllocatorSchema;
 
     /**
      * The most well known and used compression algorithm. It gives the best compression ratios even on level 1,
      * the speed and memory usage can be an issue. If you want detailed control over the compressed stream, include
      * "AzCore/compression/zlib/zlib.h" and do it yourself!
      */
-    class ZLib
+    class AZCORE_API ZLib
     {
     public:
         ZLib(IAllocator* workMemAllocator = 0);
@@ -90,7 +89,7 @@ namespace AZ
 
         z_stream_s* m_strDeflate;
         z_stream_s* m_strInflate;
-        IAllocatorSchema* m_workMemoryAllocator;
+        IAllocator* m_workMemoryAllocator;
     };
 }
 

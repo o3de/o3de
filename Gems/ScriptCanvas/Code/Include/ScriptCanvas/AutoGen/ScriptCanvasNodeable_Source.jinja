@@ -22,6 +22,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
 #include <ScriptCanvas/Utils/VersionConverters.h>
 
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
 {% for xml in dataFiles %}
 {%   for Class in xml.iter('Class') %}
 
@@ -34,16 +36,29 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {# ----------------------------------------------------------------------------------------- #}
 {%- set attribute_Name = macros.CleanName(Class.attrib['Name']) %}
 {%- set attribute_QualifiedName = macros.CleanName(Class.attrib['QualifiedName']) %}
-{%- set attribute_PreferredClassName = macros.CleanName(Class.attrib['PreferredClassName']) %}
+{%- set attribute_PreferredClassName = nodemacro.CleanName(Class.attrib['PreferredClassName']) %}
 {%- set attribute_Description = Class.attrib['Description']  %}
 {%- set attribute_Category = Class.attrib['Category']  %}
+{%- set attribute_HideProperty = Class.attrib['HideProperty']%}
 {%- set attribute_Uuid = Class.attrib['Uuid']  %}
 {%- set attribute_Icon = Class.attrib['Icon']  %}
-{%- set attribute_GeneratePropertyFriend = Class.attrib['GeneratePropertyFriend']  %}
 {%- set attribute_Version = Class.attrib['Version'] %}
 {%- set attribute_VersionConverter = Class.attrib['VersionConverter'] %}
 {%- set attribute_EventHandler = Class.attrib['EventHandler'] %}
 {%- set attribute_Deprecated = Class.attrib['Deprecated'] %}
+{%- set attribute_Style = Class.attrib['Style'] %}
+
+{%- set attribute_Preset = Class.attrib['Preset'] %}
+
+{% if attribute_Preset is defined %}
+{%- set attribute_Preset = Class.attrib['Preset'].lower() %}
+{% else %}
+{%- set attribute_Preset = "" %}
+{% endif %}
+
+{% if attribute_Preset == "compact" %}
+{%- set attribute_Style = ".compact" %}
+{% endif %}
 
 {%- set attribute_Base = "ScriptCanvas::Nodeable" %}
 {% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
@@ -115,8 +130,8 @@ namespace {{attribute_Namespace}}
 {% set branches = [] %}
 {% for method in Class.findall('Input') %}
 {%      for branch in method.findall('Branch') %}
-{%			if branches.append(branch) %}{% endif %}
-{%		endfor %}
+{%            if branches.append(branch) %}{% endif %}
+{%        endfor %}
 {% endfor %}
 {# ExecutionOuts #}
 // ExecutionOuts begin
@@ -182,13 +197,13 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
                        {{preEdit}}->ClassElement(AZ::Edit::ClassElements::EditorData, ""){{postEdit}}
                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
 {% if attribute_Category is defined %}
-                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
+                       {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
 {%- endif %}
 {% if attribute_Icon is defined %}
-                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}"){{postEdit}}
+                       {{preEdit}}->Attribute(AZ::Edit::Attributes::Icon, "{{ attribute_Icon }}"){{postEdit}}
 {%- endif %}
 {% if attribute_Deprecated is defined %}
-                        {{preEdit}}->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}"){{postEdit}}
+                       {{preEdit}}->Attribute(AZ::Edit::Attributes::Deprecated, "{{ attribute_Deprecated }}"){{postEdit}}
 {%- endif %}
 {% set uihandler = 'AZ::Edit::UIHandlers::Default' %}
 {% for item in Class.iter('Property') %}
@@ -200,10 +215,10 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
     {% set description = item.attrib['Description'] %}
 {% endif %}
 
-                        // {{ item.attrib['Name'] }}
-                        {{preEdit}}->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}"){{postEdit}}
+                       // {{ item.attrib['Name'] }}
+                       {{preEdit}}->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}"){{postEdit}}
 {%          for EditAttribute in item.iter('EditAttribute') %}
-                        {{preEdit}}->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }}){{postEdit}}
+                       {{preEdit}}->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }}){{postEdit}}
 {%          endfor %}
 {% endfor %}
                             ;
@@ -260,7 +275,7 @@ void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
     // Serialization Context Reflection
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        {%if ExtendReflectionSerialize is defined%}auto {{preSerialize}} = {%endif%}serializeContext->Class<{{ nodeableNodeName }}, NodeableNode>(){{postSerialize}}
+        {%if ExtendReflectionSerialize is defined%}auto {{preSerialize}} = {%endif%}serializeContext->Class<{{ nodeableNodeName }}, NodeableNode, Node, AZ::Component>(){{postSerialize}}
 {% if attribute_Version is defined %}
             {{preSerialize}}->Version({{ attribute_Version }}{% if attribute_VersionConverter is defined %}, &{{ attribute_VersionConverter }}{% endif %}){{postSerialize}}
 {% else %}
@@ -278,7 +293,11 @@ void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
 {% if attribute_Category is defined %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
 {% endif %}
+{% if attribute_HideProperty is defined %}
+                {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide){{postEdit}}
+{% else %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
+{% endif %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::AutoExpand, true){{postEdit}}
                 ;
 {% if ExtendReflectionEdit is defined %}
@@ -337,6 +356,14 @@ void Nodes::{{ nodeableNodeName }}::ConfigureVisualExtensions()
     OnConfigureVisualExtensions();
 }
 
+{# OnInit #}
+void Nodes::{{ nodeableNodeName }}::OnInit()
+{
+{% if attribute_Style is defined %}
+    SetNodeStyle("{{attribute_Style}}");
+{% endif %}
+}
+
 {# ConfigureSlots #}
 // Configure Slots and Build the Nodeable Execution Maps
 void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
@@ -348,16 +375,22 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
 
 {%- for item in Class.findall('Input') %}
 {%-     set itemName = item.attrib['Name'] %}
-{%      set itemDisplayGroup = item.attrib['DisplayGroup'] if item.attrib['DisplayGroup'] is defined else macros.SlotName(itemName) %}
+{% if item.attrib['DisplayGroup'] is defined %}
+{%      set itemDisplayGroup = item.attrib['DisplayGroup'] %}
+{% elif attribute_Preset == "compact" %}
+{%      set itemDisplayGroup = "" %}
+{% else %}
+{%      set itemDisplayGroup = macros.SlotName(itemName) %}
+{% endif %}
     // execution in begin 
     { 
         SlotExecution::In in;
 
-{{      nodemacro.CreateExecutionSlot(item, "Input", undefined) }}
+{{      nodemacro.CreateExecutionSlot(item, "Input", undefined, attribute_Preset) }}
         in.slotId = slotId{{ macros.CleanName(itemName) }}Input;
 
 {% for paraItem in item.findall('Parameter') %}
-        {{ nodemacro.AddDataSlot("true", "in.inputs", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+        {{ nodemacro.AddDataSlot("true", "in.inputs", paraItem.attrib['DisplayGroup'], paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name'], paraItem.attrib['HideInputField'], paraItem.attrib['HideName'], attribute_Preset) }}
 {% endfor %}
         { // execution outs begin    
 {%      if item.findall("Branch")|length == 0 %}
@@ -371,15 +404,27 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
             outSlotConfiguration.m_name = "On {{itemName}}";
 {%          endif %}
             outSlotConfiguration.m_toolTip = "{{item.attrib['Description']}}";
+{% if item.attrib['HideName'] %}
+            outSlotConfiguration.m_isNameHidden = true;
+{% endif %}
             outSlotConfiguration.m_displayGroup = "{{ itemDisplayGroup }}";
             outSlotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
+{%          if item.attrib['Hidden'] is defined %}
+{%          if item.attrib['Hidden'] == "true" %}
+            outSlotConfiguration.m_isVisible = false;
+{%          endif %}
+{%          elif attribute_Preset == "compact" %}
+            outSlotConfiguration.m_isVisible = false;
+{%          endif %}
             outSlotConfiguration.m_isLatent = false;
             out.name = outSlotConfiguration.m_name;
             SlotId outSlotId = AddSlot(outSlotConfiguration);
             AZ_Assert(outSlotId.IsValid(), "ExecutionOutput slot is not created successfully.");
             out.slotId = outSlotId;
 {%          for return in item.findall('Return') %}
-                {{ nodemacro.AddDataSlot("false", "out.outputs", itemDisplayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], item.attrib['Name']) }}
+                {# Default to the input's display group if no group for this tag is defined #}
+                {% set displayGroup = return.attrib['DisplayGroup'] if return.attrib['DisplayGroup'] is defined else itemDisplayGroup %}
+                {{ nodemacro.AddDataSlot("false", "out.outputs", displayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], item.attrib['Name'], return.attrib['HideInputField'], return.attrib['HideName'], attribute_Preset) }}
 {%          endfor %}
             in.outs.push_back(out);
 {%      else %}
@@ -399,7 +444,9 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
                 AZ_Assert(outSlotId.IsValid(), "ExecutionOutput slot is not created successfully.");
                 out.slotId = outSlotId;
 {%              for return in branchItem.findall('Return') %}
-                    {{ nodemacro.AddDataSlot("false", "out.outputs", branchDisplayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], branchItem.attrib['Name']) }}
+                    {# Default to the branch's display group if no group for this tag is defined #}
+                    {% set displayGroup = return.attrib['DisplayGroup'] if return.attrib['DisplayGroup'] is defined else branchDisplayGroup %}
+                    {{ nodemacro.AddDataSlot("false", "out.outputs", displayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], branchItem.attrib['Name'], return.attrib['HideInputField'], return.attrib['HideName'], attribute_Preset) }}
 {%              endfor %}
                 in.outs.push_back(out);
             }
@@ -415,14 +462,14 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
     // Latent out
     {
         SlotExecution::Out out;
-{{      nodemacro.CreateExecutionSlot(item, "Output", item.attrib['Latent']) }}
+{{      nodemacro.CreateExecutionSlot(item, "Output", item.attrib['Latent'], attribute_Preset) }}
         out.slotId = slotId{{ nodemacro.SlotName(itemName) }}Output;
         out.name = "{{itemName}}";
 {%      for paraItem in item.findall('Parameter') %}
-{{     nodemacro.AddDataSlot("false", "out.outputs", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+{{     nodemacro.AddDataSlot("false", "out.outputs", paraItem.attrib['DisplayGroup'], paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name'], paraItem.attrib['HideInputField'], paraItem.attrib['HideName'], attribute_Preset) }}
 {%      endfor %}
 {%      for paraItem in item.findall('Return') %}
-{{     nodemacro.AddDataSlot("true", "out.returnValues.values", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+{{     nodemacro.AddDataSlot("true", "out.returnValues.values", paraItem.attrib['DisplayGroup'], paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name'], paraItem.attrib['HideInputField'], paraItem.attrib['HideName'], attribute_Preset) }}
 {%      endfor %}
         outs.push_back(out);
     }
@@ -475,6 +522,17 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
     m_slotExecutionMap = SlotExecution::Map(AZStd::move(ins), AZStd::move(outs));
 
 }
+
+namespace Nodes
+{
+
+    SCRIPTCANVAS_REGISTER({{nodeableNodeName}}_Reflection)
+    {
+        ScriptCanvasModel::Instance().RegisterReflection( "{{nodeableNodeName}}_Reflection", [] (AZ::ReflectContext* context) { {{nodeableNodeName}}_Reflection::Reflect(context); }, {{nodeableNodeName}}::CreateDescriptor());
+    }
+
+}
+
 
 {# -- #}
 

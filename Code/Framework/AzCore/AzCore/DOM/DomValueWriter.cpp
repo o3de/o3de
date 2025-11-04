@@ -85,10 +85,7 @@ namespace AZ::Dom
     template <class T, class A>
     void MoveVectorMemory(AZStd::vector<T, A>& dest, AZStd::vector<T, A>& source)
     {
-        dest.resize_no_construct(source.size());
-        const size_t size = sizeof(T) * source.size();
-        memcpy(dest.data(), source.data(), size);
-        memset(source.data(), 0, size);
+        dest = AZStd::move(source);
         source.resize(0);
     }
 

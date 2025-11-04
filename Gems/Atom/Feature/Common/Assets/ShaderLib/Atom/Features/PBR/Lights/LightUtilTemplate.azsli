@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#error "This file exists as starting point for a custom lightTypeUtil class, and can't be used directly."
+
+#pragma once
+
+#ifndef _LIGHTTYPE_Util
+#define _LIGHTTYPE_Util _LIGHTTYPE_Util__NAME_
+#endif
+
+#include <Atom/Features/PBR/Lights/_LIGHTTYPE_.azsli>
+
+// "Manual" template for a custom <LightType>Util class that holds the <LightType>Util_PBR base-class, and redirects all
+// functions to that base class. This exists as a workarround to allow extension or modification of parts of the <LightType>Util_PBR base-class, 
+// since azsl doesn't really support inheritance and virtual function overrides.
+// Copy this file and replace _LIGHTTYPE_ and _NAME_ with your editor to get started quickly with your custom light-util.
+// Also, keep in mind that not every lightType needs the 'ApplySampled' function
+class _LIGHTTYPE_Util__NAME_
+{
+    _LIGHTTYPE_Util_PBR base;
+
+    static _LIGHTTYPE_Util__NAME_ Init(_LIGHTTYPE_ light, Surface surface)
+    {
+        _LIGHTTYPE_Util__NAME_ result;
+        result.base = _LIGHTTYPE_Util_PBR::Init(light, surface);
+        return result;
+    }
+
+    real3 GetSurfaceToLightDirection()
+    {
+        return base.GetSurfaceToLightDirection();
+    }
+
+#if ENABLE_TRANSMISSION
+    void SetTransmissionDistance(real distance)
+    {
+        base.SetTransmissionDistance(distance);
+    }
+#endif
+
+    real GetFalloff()
+    {
+        return base.GetFalloff();
+    }
+
+    void Apply(_LIGHTTYPE_ light, Surface surface, real litRatio, inout LightingData lightingData)
+    {
+        base.Apply(light, surface, litRatio, lightingData);
+    }
+
+    void ApplySampled(_LIGHTTYPE_ light, Surface surface, inout LightingData lightingData, const uint sampleCount = 512)
+    {
+        base.ApplySampled(light, surface, lightingData, sampleCount);
+    }
+};
+
+#endif // ENABLE_DISK_LIGHTS

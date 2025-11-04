@@ -17,7 +17,6 @@ ly_add_target(
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC
-    AUTORCC
     FILES_CMAKE
         lua_ide_files.cmake
         ${pal_dir}/lua_ide_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -39,6 +38,10 @@ ly_add_target(
         PRIVATE
             STANDALONETOOLS_ENABLE_LUA_IDE
 )
+
+if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
+    ly_target_link_libraries(LuaIDE PRIVATE AZ::ToolsCrashHandler)
+endif()
 
 ly_set_gem_variant_to_load(TARGETS LuaIDE VARIANTS LuaTools)
 ly_add_dependencies(Editor LuaIDE)

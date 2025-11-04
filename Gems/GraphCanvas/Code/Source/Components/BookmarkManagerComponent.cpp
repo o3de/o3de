@@ -6,7 +6,7 @@
  *
  */
 
-#include <qgraphicsitem.h>
+#include <QGraphicsItem>
 
 #include <AzCore/Component/Entity.h>
 

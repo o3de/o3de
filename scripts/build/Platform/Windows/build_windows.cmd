@@ -50,13 +50,16 @@ IF NOT EXIST CMakeCache.txt (
 IF DEFINED RUN_CONFIGURE (
     call ECHO [ci_build] %CONFIGURE_CMD%
     call %CONFIGURE_CMD%
-    IF NOT !ERRORLEVEL!==0 GOTO :error
+    IF NOT !ERRORLEVEL! EQU 0 GOTO :error
     ECHO !CONFIGURE_CMD!> %LAST_CONFIGURE_CMD_FILE%
 )
 
-call ECHO [ci_build] cmake --build . --target %CMAKE_TARGET% --config %CONFIGURATION% %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
-call cmake --build . --target %CMAKE_TARGET% --config %CONFIGURATION% %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
-IF NOT %ERRORLEVEL%==0 GOTO :error
+REM Split the configuration on semi-colon and use the cmake --build wrapper to run the underlying build command for each
+FOR %%C in (%CONFIGURATION%) do (
+    call ECHO [ci_build] cmake --build . --target %CMAKE_TARGET% --config %%C %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
+    call cmake --build . --target %CMAKE_TARGET% --config %%C %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
+    IF NOT !ERRORLEVEL! EQU 0 GOTO :error
+)
 
 POPD
 EXIT /b 0

@@ -14,28 +14,28 @@ option bool o_enableAnisotropy = false;
 
 class AnisotropicSurfaceData
 {
-    float3 tangent;                 //!< surface space tangent for anisotropic use
-    float3 bitangent;               //!< surface space bitangent for anisotropic use
-    float2 anisotropyFactors;       //!< anisotory factors along the tangent and the bitangent directions
+    real3 tangent;                 //!< surface space tangent for anisotropic use
+    real3 bitangent;               //!< surface space bitangent for anisotropic use
+    real2 anisotropyFactors;       //!< anisotory factors along the tangent and the bitangent directions
 
-    void Init(float3 normal, float3 vtxTangent, float3 vtxBitangent, float anisotropyAngle, float anisotropyFactor, float roughnessA);
+    void Init(real3 normal, real3 vtxTangent, real3 vtxBitangent, real anisotropyAngle, real anisotropyFactor, real roughnessA);
 };
 
 // ------- Functions -------
 
 //! Notice that since the newly created surface tangent and bitangent will be rotated according
 //! to the anisotropy direction and should not be used for other purposes unless rotated back.
-void AnisotropicSurfaceData::Init(float3 normal, float3 vtxTangent, float3 vtxBitangent, float anisotropyAngle, float anisotropyFactor, float roughnessA)
+void AnisotropicSurfaceData::Init(real3 normal, real3 vtxTangent, real3 vtxBitangent, real anisotropyAngle, real anisotropyFactor, real roughnessA)
 {
     anisotropyFactors = max( 0.01,
-        float2( roughnessA * (1.0 + anisotropyFactor), 
-                roughnessA * (1.0 - anisotropyFactor) )
+        real2( roughnessA * (1.0 + anisotropyFactor), 
+               roughnessA * (1.0 - anisotropyFactor) )
     );
 
     if (anisotropyAngle > 0.01)
     {
         // Base rotation according to anisotropic main direction
-        float aniSin, aniCos;
+        real aniSin, aniCos;
         sincos(anisotropyAngle, aniSin, aniCos);
 
         // Rotate the vertex tangent to get new aligned to surface normal tangent

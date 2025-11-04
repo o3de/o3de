@@ -19,11 +19,11 @@ namespace Profiler
 {
     static constexpr AZ::Crc32 profilerServiceCrc = AZ_CRC_CE("ProfilerService");
 
-    struct DeplayedFunction
+    struct DelayedFunction
     {
         using func_type = AZStd::function<void()>;
 
-        DeplayedFunction(int framesToDelay, func_type&& function)
+        DelayedFunction(int framesToDelay, func_type&& function)
             : m_function(AZStd::move(function))
             , m_framesLeft(framesToDelay)
         {
@@ -38,7 +38,7 @@ namespace Profiler
             else
             {
                 AZ::SystemTickBus::QueueFunction(
-                    [](DeplayedFunction&& delayedFunc)
+                    [](DelayedFunction&& delayedFunc)
                     {
                         delayedFunc.Run();
                     },
@@ -100,7 +100,6 @@ namespace Profiler
             {
                 ec->Class<ProfilerSystemComponent>("Profiler", "Provides a custom implementation of the AZ::Debug::Profiler interface for capturing performance data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -184,7 +183,7 @@ namespace Profiler
         }
 
         const int frameDelay = 5; // arbitrary number
-        DeplayedFunction delayedFunc(frameDelay,
+        DelayedFunction delayedFunc(frameDelay,
             [this, outputFilePath, wasEnabled]()
             {
                 // Blocking call for a single frame of data, avoid thread overhead

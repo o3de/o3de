@@ -55,17 +55,25 @@ namespace AtomToolsFramework
 
     AZ::Aabb EntityPreviewViewportContent::GetObjectLocalBounds() const
     {
-        AZ::Aabb objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        AZ::Aabb objectBounds = AZ::Aabb::CreateNull();
         AzFramework::BoundsRequestBus::EventResult(
             objectBounds, GetObjectEntityId(), &AzFramework::BoundsRequestBus::Events::GetLocalBounds);
+        if (!objectBounds.IsValid() || !objectBounds.IsFinite())
+        {
+            objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        }
         return objectBounds;
     }
 
     AZ::Aabb EntityPreviewViewportContent::GetObjectWorldBounds() const
     {
-        AZ::Aabb objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        AZ::Aabb objectBounds = AZ::Aabb::CreateNull();
         AzFramework::BoundsRequestBus::EventResult(
             objectBounds, GetObjectEntityId(), &AzFramework::BoundsRequestBus::Events::GetWorldBounds);
+        if (!objectBounds.IsValid() || !objectBounds.IsFinite())
+        {
+            objectBounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 0.5f);
+        }
         return objectBounds;
     }
 

@@ -1,0 +1,55 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{31851737-6638-45F5-A28C-B7F578B1F0F3}",
+        "category": "Math Functions",
+        "title": "Pow",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns x ^ y (per component)",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue1",
+                "displayName": "Value1",
+                "description": "Value1",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inValue2",
+                "displayName": "Value2",
+                "description": "Value2",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = pow(inValue1, inValue2);"
+                    ]
+                }
+            }
+        ]
+    }
+}

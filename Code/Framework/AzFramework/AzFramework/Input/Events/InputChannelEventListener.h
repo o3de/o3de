@@ -14,6 +14,7 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 // Start: fix for windows defining max/min macros
 #pragma push_macro("max")
@@ -27,7 +28,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class that handles input notifications by priority, and that allows events to be filtered by
     //! their channel name, device name, device index (local player) or any combination of the three.
-    class InputChannelEventListener : public InputChannelNotificationBus::Handler
+    class AZF_API InputChannelEventListener : public InputChannelNotificationBus::Handler
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////

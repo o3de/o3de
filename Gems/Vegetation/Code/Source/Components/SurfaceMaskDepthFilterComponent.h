@@ -32,7 +32,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskDepthFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskDepthFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskDepthFilterConfig, "{5F0CD700-EC2B-468D-B708-F6EEA7782C46}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         FilterStage m_filterStage = FilterStage::Default;

@@ -24,7 +24,7 @@ partial ShaderResourceGroup ViewSrg
 
     float3 m_worldPosition;
 
-    // Constants to help caluclate linear depth in an optimized manner
+    // Constants to help calculate linear depth in an optimized manner
     float4 m_linearizeDepthConstants;
 
     // Constants used to unproject depth values and reconstruct the view-space position (Z-forward & Y-up)

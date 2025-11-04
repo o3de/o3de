@@ -17,6 +17,7 @@
 // AzCore
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
@@ -97,6 +98,14 @@ namespace
         return Path::GetEditingGameDataFolder();
     }
 
+    AZStd::string PyGetBuildFolderAsString()
+    {
+        AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
+        projectBuildPath = projectBuildPath.RemoveFilename(); // profile
+        projectBuildPath = projectBuildPath.RemoveFilename(); // bin
+        return AZStd::string(projectBuildPath.c_str());
+    }
+
     bool PyOpenLevel(const char* pLevelName)
     {
         const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
@@ -169,13 +178,13 @@ namespace
         return false;
     }
 
-    int PyCreateLevel(const char* levelName, [[maybe_unused]] int resolution, [[maybe_unused]] int unitSize, [[maybe_unused]] bool bUseTerrain)
+    int PyCreateLevel(const char* templateName, const char* levelName, [[maybe_unused]] int resolution, [[maybe_unused]] int unitSize, [[maybe_unused]] bool bUseTerrain)
     {
         QString qualifiedName;
-        return CCryEditApp::instance()->CreateLevel(levelName, qualifiedName);
+        return CCryEditApp::instance()->CreateLevel(templateName, levelName, qualifiedName);
     }
 
-    int PyCreateLevelNoPrompt(const char* levelName, [[maybe_unused]] int heightmapResolution, [[maybe_unused]] int heightmapUnitSize,
+    int PyCreateLevelNoPrompt(const char* templateName, const char* levelName, [[maybe_unused]] int heightmapResolution, [[maybe_unused]] int heightmapUnitSize,
         [[maybe_unused]] int terrainExportTextureSize, [[maybe_unused]] bool useTerrain)
     {
         // If a level was open, ignore any unsaved changes if it had been modified
@@ -185,7 +194,7 @@ namespace
         }
 
         QString qualifiedName;
-        return CCryEditApp::instance()->CreateLevel(levelName, qualifiedName);
+        return CCryEditApp::instance()->CreateLevel(templateName, levelName, qualifiedName);
     }
 
     const char* PyGetCurrentLevelName()
@@ -211,25 +220,23 @@ namespace
 
     AZ::Vector3 PyGetCurrentViewPosition()
     {
-        auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
-        if (viewportContextRequests)
+        if (const auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get())
         {
-            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
-            AZ::Transform transform = viewportContext->GetCameraTransform();
-            return transform.GetTranslation();
+            AZ::RPI::ConstViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
+            return viewportContext->GetCameraTransform().GetTranslation();
         }
+
         return AZ::Vector3();
     }
 
     AZ::Vector3 PyGetCurrentViewRotation()
     {
-        auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get();
-        if (viewportContextRequests)
+        if (const auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get())
         {
-            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
-            AZ::Transform transform = viewportContext->GetCameraTransform();
-            return transform.GetRotation().GetEulerDegrees();
+            AZ::RPI::ConstViewportContextPtr viewportContext = viewportContextRequests->GetDefaultViewportContext();
+            return viewportContext->GetCameraTransform().GetRotation().GetEulerDegrees();
         }
+
         return AZ::Vector3();
     }
 
@@ -400,9 +407,10 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("open_level", ::PyOpenLevel, nullptr, "Opens a level."));
             addLegacyGeneral(behaviorContext->Method("open_level_no_prompt", ::PyOpenLevelNoPrompt, nullptr, "Opens a level. Doesn't prompt user about saving a modified level."));
             addLegacyGeneral(behaviorContext->Method("reload_current_level", ::PyReloadCurrentLevel, nullptr, "Re-loads the current level. If no level is loaded, then does nothing."));
-            addLegacyGeneral(behaviorContext->Method("create_level", ::PyCreateLevel, nullptr, "Creates a level with the parameters of 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
-            addLegacyGeneral(behaviorContext->Method("create_level_no_prompt", ::PyCreateLevelNoPrompt, nullptr, "Creates a level with the parameters of 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
+            addLegacyGeneral(behaviorContext->Method("create_level", ::PyCreateLevel, nullptr, "Creates a level with the parameters of 'templateName', 'levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
+            addLegacyGeneral(behaviorContext->Method("create_level_no_prompt", ::PyCreateLevelNoPrompt, nullptr, "Creates a level with the parameters of 'templateName','levelName', 'resolution', 'unitSize' and 'bUseTerrain'."));
             addLegacyGeneral(behaviorContext->Method("get_game_folder", PyGetGameFolderAsString, nullptr, "Gets the path to the Game folder of current project."));
+            addLegacyGeneral(behaviorContext->Method("get_build_folder", PyGetBuildFolderAsString, nullptr, "Gets the build folder path of current project."));
             addLegacyGeneral(behaviorContext->Method("get_current_level_name", PyGetCurrentLevelName, nullptr, "Gets the name of the current level."));
             addLegacyGeneral(behaviorContext->Method("get_current_level_path", PyGetCurrentLevelPath, nullptr, "Gets the fully specified path of the current level."));
 
@@ -412,7 +420,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("set_current_view_position", PySetCurrentViewPosition, nullptr, "Sets the position of the current view as given x, y, z coordinates."));
             addLegacyGeneral(behaviorContext->Method("set_current_view_rotation", PySetCurrentViewRotation, nullptr, "Sets the rotation of the current view as given x, y, z Euler angles in degrees."));
 
-            addLegacyGeneral(behaviorContext->Method("export_to_engine", CCryEditApp::Command_ExportToEngine, nullptr, "Exports the current level to the engine."));
             addLegacyGeneral(behaviorContext->Method("get_config_platform", PyGetConfigPlatform, nullptr, "Gets the system config platform."));
 
             addLegacyGeneral(behaviorContext->Method("set_result_to_success", PySetResultToSuccess, nullptr, "Sets the result of a script execution to success. Used only for Sandbox AutoTests."));

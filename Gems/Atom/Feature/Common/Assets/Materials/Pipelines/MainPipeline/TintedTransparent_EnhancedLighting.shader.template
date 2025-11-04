@@ -1,0 +1,58 @@
+{
+    "Source" : "",
+
+    "DepthStencilState" :
+    {
+        "Depth" :
+        {
+            "Enable" : true,
+            "CompareFunc" : "GreaterEqual",
+            "writeMask": "Zero"
+        },
+        "Stencil" :
+        {
+            "Enable" : true,
+            "ReadMask" : "0x00",
+            "WriteMask" : "0xFF",
+            "FrontFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            },
+            "BackFace" :
+            {
+                "Func" : "Always",
+                "DepthFailOp" : "Keep",
+                "FailOp" : "Keep",
+                "PassOp" : "Replace"
+            }
+        }
+    },
+    
+    "GlobalTargetBlendState" : 
+    {
+        "Enable" : true,
+        "BlendSource" : "One",
+        "BlendDest" : "ColorSource1",
+        "BlendOp" : "Add"
+    },
+
+    "ProgramSettings":
+    {
+      "EntryPoints":
+      [
+        {
+          "name": "VertexShader",
+          "type": "Vertex"
+        },
+        {
+          "name": "PixelShader",
+          "type": "Fragment"
+        }
+      ]
+    },
+
+    "DrawList" : "transparent"
+}

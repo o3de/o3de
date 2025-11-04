@@ -13,12 +13,12 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/RenderCommon.h>
+#include <Mesh/MeshFeatureProcessor.h>
 
 namespace AZ
 {
@@ -36,17 +36,15 @@ namespace AZ
 
         void ReflectionProbeFeatureProcessor::Activate()
         {
-            RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
-
             m_reflectionProbes.reserve(InitialProbeAllocationSize);
 
             RHI::BufferPoolDescriptor desc;
             desc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             desc.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
 
-            m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+            m_bufferPool = aznew RHI::BufferPool;
             m_bufferPool->SetName(Name("ReflectionProbeBoxBufferPool"));
-            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(*rhiSystem->GetDevice(), desc);
+            [[maybe_unused]] RHI::ResultCode resultCode = m_bufferPool->Init(desc);
             AZ_Error("ReflectionProbeFeatureProcessor", resultCode == RHI::ResultCode::Success, "Failed to initialize buffer pool");
 
             // create box mesh vertices and indices
@@ -152,10 +150,7 @@ namespace AZ
 
                 AZStd::sort(m_reflectionProbes.begin(), m_reflectionProbes.end(), sortFn);
                 m_probeSortRequired = false;
-
-                // notify the MeshFeatureProcessor that the reflection probes changed
-                MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-                meshFeatureProcessor->UpdateMeshReflectionProbes();
+                m_meshFeatureProcessorUpdateRequired = true;
             }
 
             // call Simulate on all reflection probes
@@ -176,6 +171,17 @@ namespace AZ
                 AZ_Assert(reflectionProbe.use_count() > 1, "ReflectionProbe found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
                 reflectionProbe->OnRenderEnd();
+            }
+
+            // notify the MeshFeatureProcessor if there were changes to the ReflectionProbes
+            // Note: This is done in OnRenderEnd to avoid a race between the two feature processors in Simulate, and any changes
+            // will be applied on the next frame by the MeshFeatureProcessor.
+            if (m_meshFeatureProcessorUpdateRequired)
+            {
+                MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+                meshFeatureProcessor->UpdateMeshReflectionProbes();
+
+                m_meshFeatureProcessorUpdateRequired = false;
             }
         }
 
@@ -211,6 +217,8 @@ namespace AZ
 
             m_reflectionProbes.erase(itEntry);
             m_reflectionProbeMap.erase(handle);
+
+            m_meshFeatureProcessorUpdateRequired = true;
         }
 
         void ReflectionProbeFeatureProcessor::SetOuterExtents(const ReflectionProbeHandle& handle, const Vector3& outerExtents)
@@ -310,9 +318,7 @@ namespace AZ
 
             m_reflectionProbeMap[handle]->SetCubeMapImage(cubeMapImage, relativePath);
 
-            // notify the MeshFeatureProcessor that the reflection probe changed
-            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
-            meshFeatureProcessor->UpdateMeshReflectionProbes();
+            m_meshFeatureProcessorUpdateRequired = true;
         }
 
         Data::Instance<RPI::Image> ReflectionProbeFeatureProcessor::GetCubeMap(const ReflectionProbeHandle& handle) const
@@ -609,7 +615,7 @@ namespace AZ
 
             // create index buffer
             AZ::RHI::BufferInitRequest request;
-            m_boxIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxIndexBuffer = aznew RHI::Buffer;
             request.m_buffer = m_boxIndexBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxIndices.size() * sizeof(uint16_t) };
             request.m_initialData = m_boxIndices.data();
@@ -624,11 +630,12 @@ namespace AZ
                 sizeof(indices),
                 AZ::RHI::IndexFormat::Uint16,
             };
-            m_reflectionRenderData.m_boxIndexBufferView = indexBufferView;
-            m_reflectionRenderData.m_boxIndexCount = numIndices;
+
+            m_reflectionRenderData.m_geometryView.SetIndexBufferView(indexBufferView);
+            m_reflectionRenderData.m_geometryView.SetDrawArguments(RHI::DrawIndexed{ 0, numIndices, 0 });
 
             // create position buffer
-            m_boxPositionBuffer = AZ::RHI::Factory::Get().CreateBuffer();
+            m_boxPositionBuffer = aznew RHI::Buffer;
             request.m_buffer = m_boxPositionBuffer.get();
             request.m_descriptor = AZ::RHI::BufferDescriptor{ AZ::RHI::BufferBindFlags::InputAssembly, m_boxPositions.size() * sizeof(Position) };
             request.m_initialData = m_boxPositions.data();
@@ -643,9 +650,10 @@ namespace AZ
                 (uint32_t)(m_boxPositions.size() * sizeof(Position)),
                 sizeof(Position),
             };
-            m_reflectionRenderData.m_boxPositionBufferView = { { positionBufferView } };
+            m_reflectionRenderData.m_geometryView.ClearStreamBufferViews();
+            m_reflectionRenderData.m_geometryView.AddStreamBufferView(positionBufferView);
 
-            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_boxPositionBufferView);
+            AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_reflectionRenderData.m_geometryView.GetStreamBufferViews());
         }
 
         void ReflectionProbeFeatureProcessor::LoadShader(
@@ -679,22 +687,16 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", srgLayout != nullptr, "Failed to find ObjectSrg layout from shader [%s]", filePath);
         }
 
-        void ReflectionProbeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
+        void ReflectionProbeFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+            RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
-            for (auto& reflectionProbe : m_reflectionProbes)
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
             {
-                reflectionProbe->OnRenderPipelinePassesChanged(renderPipeline);
+                for (auto& reflectionProbe : m_reflectionProbes)
+                {
+                    reflectionProbe->OnRenderPipelinePassesChanged(renderPipeline);
+                }
             }
-            m_needUpdatePipelineStates = true;
-        }
-
-        void ReflectionProbeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
-        {
-            m_needUpdatePipelineStates = true;
-        }
-
-        void ReflectionProbeFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
-        {
             m_needUpdatePipelineStates = true;
         }
 

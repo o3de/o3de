@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <TestImpactFramework/TestImpactRepoPath.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactClientSequenceReport.h>
@@ -13,10 +15,33 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/vector.h>
 
-#pragma once
-
 namespace TestImpact
 {
+    //! Simple helper class for tracking basic timing information.
+    class Timer
+    {
+    public:
+        Timer();
+
+        //! Returns the time point that the timer was instantiated.
+        AZStd::chrono::steady_clock::time_point GetStartTimePoint() const;
+
+        //! Returns the time point that the timer was instantiated relative to the specified starting time point.
+        AZStd::chrono::steady_clock::time_point GetStartTimePointRelative(const Timer& start) const;
+
+        //! Returns the time elapsed (in milliseconds) since the timer was instantiated.
+        AZStd::chrono::milliseconds GetElapsedMs() const;
+
+        //! Returns the current time point relative to the time point the timer was instantiated.
+        AZStd::chrono::steady_clock::time_point GetElapsedTimepoint() const;
+
+        //! Resets the timer start point to now.
+        void ResetStartTimePoint();
+
+    private:
+        AZStd::chrono::steady_clock::time_point m_startTime;
+    };
+
     //! Attempts to read the contents of the specified file into a string.
     //! @tparam ExceptionType The exception type to throw upon failure.
     //! @param path The path to the file to read the contents of.
@@ -56,6 +81,25 @@ namespace TestImpact
             file.Write(bytes.data(), bytes.size()), ExceptionType, AZStd::string::format("Couldn't write contents for file %s", path.c_str()));
     }
 
+    //! Returns a string of the concatenated container contents separated by the specified separator.
+    template<typename Container>
+    AZStd::string ConcatenateContainerContentsAsString(const Container& container, const AZStd::string& separator)
+    {
+        AZStd::string concatenatedString;
+        size_t i = 1;
+        for (const auto& value : container)
+        {
+            concatenatedString += value;
+            if (i != container.size())
+            {
+                concatenatedString += separator;
+            }
+            i++;
+        }
+
+        return concatenatedString;
+    }
+
     //! Delete the files that match the pattern from the specified directory.
     //! @param path The path to the directory to pattern match the files for deletion.
     //! @param pattern The pattern to match files for deletion.
@@ -74,7 +118,10 @@ namespace TestImpact
     [[nodiscard]] size_t FileCount(const RepoPath& path, const AZStd::string& pattern);
 
     //! User-friendly names for the test suite types.
-    AZStd::string SuiteTypeAsString(SuiteType suiteType);
+    AZStd::string SuiteSetAsString(const SuiteSet& suiteSet);
+
+    //! User-friendly names for the test suite label excludes.
+    AZStd::string SuiteLabelExcludeSetAsString(const SuiteLabelExcludeSet& suiteLabelExcludeSet);
 
     //! User-friendly names for the sequence report types.
     AZStd::string SequenceReportTypeAsString(Client::SequenceReportType type);
@@ -103,51 +150,9 @@ namespace TestImpact
     //! User-friendly names for the dynamic dependency map policy types.
     AZStd::string DynamicDependencyMapPolicyAsString(Policy::DynamicDependencyMap dynamicDependencyMapPolicy);
 
-    //! User-friendly names for the test sharding policy types.
-    AZStd::string TestShardingPolicyAsString(Policy::TestSharding testShardingPolicy);
-
     //! User-friendly names for the target output capture policy types.
     AZStd::string TargetOutputCapturePolicyAsString(Policy::TargetOutputCapture targetOutputCapturePolicy);
 
     //! User-friendly names for the client test result types.
     AZStd::string ClientTestResultAsString(Client::TestResult result);
-
-    //! User-friendly names for the suite types.
-    SuiteType SuiteTypeFromString(const AZStd::string& suiteType);
-
-    //! Returns the sequence report type for the specified string.
-    Client::SequenceReportType SequenceReportTypeFromString(const AZStd::string& type);
-
-    //! Returns the test run result for the specified string.
-    Client::TestRunResult TestRunResultFromString(const AZStd::string& result);
-
-    //! Returns the test result for the specified string.
-    Client::TestResult TestResultFromString(const AZStd::string& result);
-
-    //! Returns the test sequence result for the specified string.
-    TestSequenceResult TestSequenceResultFromString(const AZStd::string& result);
-
-    //! Returns the execution failure policy for the specified string.
-    Policy::ExecutionFailure ExecutionFailurePolicyFromString(const AZStd::string& executionFailurePolicy);
-
-    //! Returns the failed test coverage policy for the specified string.
-    Policy::FailedTestCoverage FailedTestCoveragePolicyFromString(const AZStd::string& failedTestCoveragePolicy);
-
-    //! Returns the test prioritization policy for the specified string.
-    Policy::TestPrioritization TestPrioritizationPolicyFromString(const AZStd::string& testPrioritizationPolicy);
-
-    //! Returns the test failure policy for the specified string.
-    Policy::TestFailure TestFailurePolicyFromString(const AZStd::string& testFailurePolicy);
-
-    //! Returns the integrity failure policy for the specified string.
-    Policy::IntegrityFailure IntegrityFailurePolicyFromString(const AZStd::string& integrityFailurePolicy);
-
-    //! Returns the dynamic dependency map policy for the specified string.
-    Policy::DynamicDependencyMap DynamicDependencyMapPolicyFromString(const AZStd::string& dynamicDependencyMapPolicy);
-
-    //! Returns the test sharding policy for the specified string.
-    Policy::TestSharding TestShardingPolicyFromString(const AZStd::string& testShardingPolicy);
-
-    //! Returns the target output capture policy for the specified string.
-    Policy::TargetOutputCapture TargetOutputCapturePolicyFromString(const AZStd::string& targetOutputCapturePolicy);
 } // namespace TestImpact

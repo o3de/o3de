@@ -18,7 +18,7 @@ namespace Presence
     {
     public:
         AZ_RTTI(PresenceModule, "{FAFD5AC3-26EC-446B-A444-ADFFC06BCD3D}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(PresenceModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PresenceModule, AZ::SystemAllocator);
 
         PresenceModule()
             : AZ::Module()
@@ -41,7 +41,8 @@ namespace Presence
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), Presence::PresenceModule)
+#else
 AZ_DECLARE_MODULE_CLASS(Gem_Presence, Presence::PresenceModule)
+#endif

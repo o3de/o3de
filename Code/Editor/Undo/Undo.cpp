@@ -13,9 +13,6 @@
 
 #include "Settings.h"
 #include "IUndoManagerListener.h"
-#include "Objects/ObjectManager.h"
-#include <Include/ILogFile.h>
-#include <list>
 
 #include <QString>
 #include "QtUtilWin.h"
@@ -64,7 +61,7 @@ public:
 
 private:
     //! Undo steps included in this step.
-    std::vector<CUndoStep*> m_undoSteps;
+    AZStd::vector<CUndoStep*> m_undoSteps;
 };
 
 // Helper class for CUndoManager that monitors the Asset Manager and suspends undo recording while the Asset Manager
@@ -308,7 +305,7 @@ void CUndoManager::Redo(int numSteps)
 
     if (m_bRecording || m_bSuperRecording)
     {
-        GetIEditor()->GetLogFile()->FormatLine("Cannot Redo while Recording");
+        AZ_Warning("CUndoManager", false, "Cannot Redo while Recording");
         return;
     }
 
@@ -324,6 +321,13 @@ void CUndoManager::Redo(int numSteps)
             m_bRedoing = true;
             CUndoStep* redo = m_redoStack.back();
             redo->Redo();
+
+            AZ_Printf("CUndoManager",
+                "(Undo: %d, Redo: %d) - Redo last operation: '%s'",
+                m_undoStack.size(),
+                m_redoStack.size(),
+                redo->GetName().toUtf8().constData());
+
             m_redoStack.pop_back();
             // Push undo object to redo stack.
             m_undoStack.push_back(redo);
@@ -335,8 +339,6 @@ void CUndoManager::Redo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetLogFile()->FormatLine("Redo (Undo:%d,Redo:%d)", m_undoStack.size(), m_redoStack.size());
-    GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bRedoing = true;
     EndUndoTransaction();
@@ -363,7 +365,7 @@ void CUndoManager::Undo(int numSteps)
 
     if (m_bRecording || m_bSuperRecording)
     {
-        GetIEditor()->GetLogFile()->FormatLine("Cannot Undo while Recording");
+        AZ_Warning("CUndoManager", false, "Cannot Undo while Recording");
         return;
     }
 
@@ -379,6 +381,13 @@ void CUndoManager::Undo(int numSteps)
             m_bUndoing = true;
             CUndoStep* undo = m_undoStack.back();
             undo->Undo(true);
+
+            AZ_Printf("CUndoManager",
+                "(Undo: %d, Redo: %d) - Undo last operation: '%s'",
+                m_undoStack.size(),
+                m_redoStack.size(),
+                undo->GetName().toUtf8().constData());
+
             m_undoStack.pop_back();
             // Push undo object to redo stack.
             m_redoStack.push_back(undo);
@@ -391,8 +400,6 @@ void CUndoManager::Undo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetLogFile()->FormatLine("Undo (Undo:%d,Redo:%d)", m_undoStack.size(), m_redoStack.size());
-    GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bUndoing = true;
     EndUndoTransaction();
@@ -438,7 +445,7 @@ void CUndoManager::ClearRedoStack()
     }
     m_bClearRedoStackQueued = false;
 
-    for (std::list<CUndoStep*>::iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
+    for (AZStd::list<CUndoStep*>::iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
     {
         delete *it;
     }
@@ -450,7 +457,7 @@ void CUndoManager::ClearRedoStack()
 //////////////////////////////////////////////////////////////////////////
 void CUndoManager::ClearUndoStack()
 {
-    for (std::list<CUndoStep*>::iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
+    for (AZStd::list<CUndoStep*>::iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
     {
         delete *it;
     }
@@ -674,15 +681,15 @@ int CUndoManager::GetDatabaseSize()
 {
     int size = 0;
     {
-        for (std::list<CUndoStep*>::iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
+        for (CUndoStep* step : m_undoStack)
         {
-            size += (*it)->GetSize();
+            size += step->GetSize();
         }
     }
     {
-        for (std::list<CUndoStep*>::iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
+        for (CUndoStep* step : m_redoStack)
         {
-            size += (*it)->GetSize();
+            size += step->GetSize();
         }
     }
     return size;

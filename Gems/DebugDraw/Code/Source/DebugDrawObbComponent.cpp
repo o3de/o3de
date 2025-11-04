@@ -25,6 +25,7 @@ namespace DebugDraw
                 ->Field("Color", &DebugDrawObbElement::m_color)
                 ->Field("WorldLocation", &DebugDrawObbElement::m_worldLocation)
                 ->Field("Scale", &DebugDrawObbElement::m_scale)
+                ->Field("IsRayTracingEnabled", &DebugDrawObbElement::m_isRayTracingEnabled)
                 ;
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -35,6 +36,7 @@ namespace DebugDraw
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
                     ->DataElement(0, &DebugDrawObbElement::m_color, "Color", "Display color for the line.")
                     ->DataElement(0, &DebugDrawObbElement::m_scale, "Scale", "The scale of the box.")
+                    ->DataElement(0, &DebugDrawObbElement::m_isRayTracingEnabled, "Use ray tracing", "Includes this object in ray tracing calculations.")
                     ;
             }
         }
@@ -61,7 +63,7 @@ namespace DebugDraw
 
     void DebugDrawObbComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("DebugDrawObbService", 0x1775ae66));
+        provided.push_back(AZ_CRC_CE("DebugDrawObbService"));
     }
 
     void DebugDrawObbComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

@@ -11,7 +11,6 @@
 
 #include <ATLCommon.h>
 #include <SoundCVars.h>
-#include <MathConversion.h>
 
 namespace Audio
 {

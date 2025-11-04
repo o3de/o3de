@@ -18,6 +18,7 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QMessageBox>
+#include <QProcess>
 #include <QSettings>
 
 #include <AzQtComponents/Components/StyleManager.h>
@@ -65,7 +66,7 @@ namespace
         binaryDir.setNameFilters(QStringList() << applicationBase);
         binaryDir.setFilter(QDir::Files);
         // iterate all matching
-        foreach(QString tempFile, binaryDir.entryList())
+        for (QString tempFile : binaryDir.entryList())
         {
             binaryDir.remove(tempFile);
         }
@@ -94,7 +95,17 @@ void ErrorCollector::AddError(AZStd::string message)
 }
 
 GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent)
-    : ApplicationManagerBase(argc, argv, parent)
+    : GUIApplicationManager(argc, argv, parent, {})
+{
+}
+
+GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : GUIApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManagerBase(argc, argv, parent, AZStd::move(componentAppSettings))
 {
 #if defined(AZ_PLATFORM_MAC)
     // Since AP is not shipped as a '.app' package, it will not receive keyboard focus
@@ -255,13 +266,13 @@ bool GUIApplicationManager::Run()
 #endif
 
     QAction* quitAction = new QAction(QObject::tr("Quit"), m_mainWindow);
-    quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    quitAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Q));
     quitAction->setMenuRole(QAction::QuitRole);
     m_mainWindow->addAction(quitAction);
     m_mainWindow->connect(quitAction, SIGNAL(triggered()), this, SLOT(QuitRequested()));
 
     QAction* refreshAction = new QAction(QObject::tr("Refresh Stylesheet"), m_mainWindow);
-    refreshAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+    refreshAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_R));
     m_mainWindow->addAction(refreshAction);
     m_mainWindow->connect(refreshAction, &QAction::triggered, this, refreshStyleSheets);
 
@@ -366,8 +377,8 @@ bool GUIApplicationManager::Run()
     delete m_mainWindow;
     m_mainWindow = nullptr;
 
-    AZ::SerializeContext* context;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::SerializeContext* context = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -485,12 +496,17 @@ bool GUIApplicationManager::OnAssert(const char* message)
     return true;
 }
 
+WId GUIApplicationManager::GetWindowId() const
+{
+    return m_mainWindow->effectiveWinId();
+}
+
 bool GUIApplicationManager::Activate()
 {
     m_startupErrorCollector = AZStd::make_unique<ErrorCollector>(m_mainWindow);
 
-    AZ::SerializeContext* context;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::SerializeContext* context = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -699,7 +715,7 @@ FileServer* GUIApplicationManager::GetFileServer() const
 
 void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
 {
-    AZStd::chrono::system_clock::time_point currentTime = AZStd::chrono::system_clock::now();
+    AZStd::chrono::steady_clock::time_point currentTime = AZStd::chrono::steady_clock::now();
 
     if (m_trayIcon && m_mainWindow)
     {
@@ -747,9 +763,12 @@ bool GUIApplicationManager::Restart()
 
 void GUIApplicationManager::Reflect()
 {
-    AZ::SerializeContext* context;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    ApplicationManagerBase::Reflect();
+
+    AZ::SerializeContext* context = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
+
     AzToolsFramework::LogPanel::BaseLogPanel::Reflect(context);
     AssetProcessor::PlatformConfiguration::Reflect(context);
 }
@@ -806,9 +825,17 @@ ApplicationManager::RegistryCheckInstructions GUIApplicationManager::PopupRegist
 void GUIApplicationManager::InitSourceControl()
 {
     // Look in the editor's settings for the Source Control value
-    QSettings settings(QApplication::organizationName(), QString("O3DE Editor"));
-    settings.beginGroup("Settings");
-    bool enableSourceControl = settings.value("EnableSourceControl", 1).toBool();
+    constexpr AZStd::string_view enableSourceControlKey = "/Amazon/Settings/EnableSourceControl";
+    bool enableSourceControl = false;
+
+    if (const auto* registry = AZ::SettingsRegistry::Get())
+    {
+        bool potentialValue;
+        if (registry->Get(potentialValue, enableSourceControlKey))
+        {
+            enableSourceControl = AZStd::move(potentialValue);
+        }
+    }
 
     const AzFramework::CommandLine* commandLine = nullptr;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(commandLine, &AzFramework::ApplicationRequests::GetCommandLine);
@@ -818,13 +845,36 @@ void GUIApplicationManager::InitSourceControl()
         enableSourceControl = true;
     }
 
-    if (enableSourceControl)
+    AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequestBus::Events::EnableSourceControl, enableSourceControl);
+
+    if (!enableSourceControl)
     {
-        AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequestBus::Events::EnableSourceControl, true);
-    }
-    else
-    {
+        // Source control is disabled, emit the SourceControlReady signal immediately since the source control system will not emit it
         Q_EMIT SourceControlReady();
+    }
+
+    // Register the source control status request - whenever it comes in, we need to reset our source control
+    // to follow that state:
+    if (m_connectionManager)
+    {
+        auto refreshSourceControl = [](unsigned int /*connId*/, unsigned int /*type*/, unsigned int /*serial*/, QByteArray payload, QString /*platform*/)
+        {
+            AzFramework::AssetSystem::UpdateSourceControlStatusRequest request;
+            bool readFromStream = AZ::Utils::LoadObjectFromBufferInPlace(payload.data(), payload.size(), request);
+            AZ_Assert(readFromStream, "GUIApplicationManager::UpdateSourceControlStatusRequest: Could not deserialize from stream");
+            if (readFromStream)
+            {
+                AzToolsFramework::SourceControlState state = AzToolsFramework::SourceControlState::Disabled;
+                AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(state, &AzToolsFramework::SourceControlConnectionRequestBus::Events::GetSourceControlState);
+                bool wasEnabled = state != AzToolsFramework::SourceControlState::Disabled;
+                bool isEnabled = request.m_sourceControlEnabled;
+                if (wasEnabled != isEnabled)
+                {
+                    AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequestBus::Events::EnableSourceControl, isEnabled);
+                }
+            }
+        };
+        m_connectionManager->RegisterService(AzFramework::AssetSystem::UpdateSourceControlStatusRequest::MessageType, refreshSourceControl);
     }
 }
 

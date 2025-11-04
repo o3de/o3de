@@ -49,7 +49,7 @@ public:
     MOCK_METHOD1(QueueRequestBatch, void(AZStd::vector<FileRequestPtr>&&));
     MOCK_CONST_METHOD1(HasRequestCompleted, bool(FileRequestHandle));
     MOCK_CONST_METHOD1(GetRequestStatus, IStreamerTypes::RequestStatus(FileRequestHandle));
-    MOCK_CONST_METHOD1(GetEstimatedRequestCompletionTime, AZStd::chrono::system_clock::time_point(FileRequestHandle));
+    MOCK_CONST_METHOD1(GetEstimatedRequestCompletionTime, AZStd::chrono::steady_clock::time_point(FileRequestHandle));
     MOCK_CONST_METHOD4(GetReadRequestResult, bool(FileRequestHandle, void*&, AZ::u64&, IStreamerTypes::ClaimMemory));
     MOCK_METHOD1(CollectStatistics, void(AZStd::vector<Statistic>&));
     MOCK_CONST_METHOD0(GetRecommendations, const IStreamerTypes::Recommendations&());

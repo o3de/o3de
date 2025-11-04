@@ -8,38 +8,38 @@
 #pragma once
 
 #include <AzCore/UnitTest/TestTypes.h>
-#include <Atom/RHI/PipelineLibrary.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineLibrary.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace UnitTest
 {
     class PipelineLibrary
-        : public AZ::RHI::PipelineLibrary
+        : public AZ::RHI::DevicePipelineLibrary
     {
     public:
-        AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
 
-        AZStd::unordered_map<uint64_t, const AZ::RHI::PipelineState*> m_pipelineStates;
+        AZStd::unordered_map<uint64_t, const AZ::RHI::DevicePipelineState*> m_pipelineStates;
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineLibraryDescriptor&) override { return AZ::RHI::ResultCode::Success; }
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::DevicePipelineLibraryDescriptor&) override { return AZ::RHI::ResultCode::Success; }
         void ShutdownInternal() override;
-        AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::PipelineLibrary* const>) override;
+        AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::DevicePipelineLibrary* const>) override;
         AZ::RHI::ConstPtr<AZ::RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr; }
         bool SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const override { return false; }
     };
 
     class PipelineState
-        : public AZ::RHI::PipelineState
+        : public AZ::RHI::DevicePipelineState
     {
     public:
-        AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineStateDescriptorForDraw&, AZ::RHI::PipelineLibrary*) override;
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineStateDescriptorForDispatch&, AZ::RHI::PipelineLibrary*) override;
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineStateDescriptorForRayTracing&, AZ::RHI::PipelineLibrary*) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineStateDescriptorForDraw&, AZ::RHI::DevicePipelineLibrary*) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineStateDescriptorForDispatch&, AZ::RHI::DevicePipelineLibrary*) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineStateDescriptorForRayTracing&, AZ::RHI::DevicePipelineLibrary*) override;
         void ShutdownInternal() override {}
     };
 }

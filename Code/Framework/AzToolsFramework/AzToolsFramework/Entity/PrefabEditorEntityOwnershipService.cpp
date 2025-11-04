@@ -9,11 +9,11 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
-#include <AzCore/Serialization/Utils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
@@ -23,6 +23,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoHelpers.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
@@ -34,8 +35,6 @@ namespace AzToolsFramework
         : m_entityContextId(entityContextId)
         , m_serializeContext(serializeContext)
     {
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            m_shouldAssertForLegacySlicesUsage, &AzFramework::ApplicationRequests::ShouldAssertForLegacySlicesUsage);
         AZ::Interface<PrefabEditorEntityOwnershipInterface>::Register(this);
     }
 
@@ -50,6 +49,10 @@ namespace AzToolsFramework
         AZ_Assert(m_prefabFocusInterface != nullptr,
             "Couldn't get prefab focus interface, it's a requirement for PrefabEntityOwnership system to work");
 
+        m_instanceEntityMapperInterface = AZ::Interface<Prefab::InstanceEntityMapperInterface>::Get();
+        AZ_Assert(m_instanceEntityMapperInterface,
+            "Couldn't get instance entity mapper interface. It's a requirement for PrefabEntityOwnership to work");
+
         m_prefabSystemComponent = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
         AZ_Assert(m_prefabSystemComponent != nullptr,
             "Couldn't get prefab system component, it's a requirement for PrefabEntityOwnership system to work");
@@ -58,11 +61,8 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab({}, {}, "newLevel.prefab"));
-        m_sliceOwnershipService.BusConnect(m_entityContextId);
-        m_sliceOwnershipService.m_shouldAssertForLegacySlicesUsage = m_shouldAssertForLegacySlicesUsage;
-        m_editorSliceOwnershipService.BusConnect();
-        m_editorSliceOwnershipService.m_shouldAssertForLegacySlicesUsage = m_shouldAssertForLegacySlicesUsage;
+        m_rootInstance =
+            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab"));
     }
 
     bool PrefabEditorEntityOwnershipService::IsInitialized()
@@ -73,8 +73,6 @@ namespace AzToolsFramework
     void PrefabEditorEntityOwnershipService::Destroy()
     {
         StopPlayInEditor();
-        m_editorSliceOwnershipService.BusDisconnect();
-        m_sliceOwnershipService.BusDisconnect();
 
         if (m_rootInstance != nullptr)
         {
@@ -167,15 +165,32 @@ namespace AzToolsFramework
 
     bool PrefabEditorEntityOwnershipService::DestroyEntity(AZ::Entity* entity)
     {
+        AZ_Assert(entity, "Tried to destroy a null entity");
+        if (!entity)
+        {
+            return false;
+        }
+
         return DestroyEntityById(entity->GetId());
     }
 
     bool PrefabEditorEntityOwnershipService::DestroyEntityById(AZ::EntityId entityId)
     {
         AZ_Assert(IsInitialized(), "Tried to destroy an entity without initializing the Entity Ownership Service");
-        AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
         OnEntityRemoved(entityId);
-        return true;
+        bool destroyResult = false;
+        if (auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); owningInstance.has_value())
+        {
+            if (owningInstance->get().GetContainerEntityId() == entityId)
+            {
+                destroyResult = owningInstance->get().DestroyContainerEntity();
+            }
+            else
+            {
+                destroyResult = owningInstance->get().DestroyEntity(entityId);
+            }
+        }
+        return destroyResult;
     }
 
     void PrefabEditorEntityOwnershipService::GetNonPrefabEntities(EntityList& entities)
@@ -207,10 +222,6 @@ namespace AzToolsFramework
     void PrefabEditorEntityOwnershipService::HandleEntitiesAdded(const EntityList& entities)
     {
         AZ_Assert(m_entitiesAddedCallback, "Callback function for AddEntity has not been set.");
-        for (const AZ::Entity* entity : entities)
-        {
-            AzFramework::SliceEntityRequestBus::MultiHandler::BusConnect(entity->GetId());
-        }
         m_entitiesAddedCallback(entities);
     }
 
@@ -324,7 +335,8 @@ namespace AzToolsFramework
             HandleEntitiesAdded({ m_rootInstance->m_containerEntity.get() });
 
             AzToolsFramework::Prefab::PrefabDom dom;
-            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
+            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom,
+                AzToolsFramework::Prefab::PrefabDomUtils::StoreFlags::StripLinkIds);
             if (!success)
             {
                 AZ_Error(
@@ -405,14 +417,13 @@ namespace AzToolsFramework
             filePath, instanceToParentUnder,
             [this](const EntityList& entities)
             {
-                HandleEntitiesAdded(entities);
+                HandleEntitiesAdded(entities); // includes container entity
             });
 
         if (instantiatedPrefabInstance)
         {
             Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(
                 AZStd::move(instantiatedPrefabInstance));
-            HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
             return addedInstance;
         }
 
@@ -443,7 +454,7 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::OnEntityRemoved(AZ::EntityId entityId)
     {
-        AzFramework::SliceEntityRequestBus::MultiHandler::BusDisconnect(entityId);
+        AZ_Assert(m_entitiesRemovedCallback, "Callback function for entity removal has not been set.");
         m_entitiesRemovedCallback({ entityId });
     }
 
@@ -460,6 +471,25 @@ namespace AzToolsFramework
     void PrefabEditorEntityOwnershipService::SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback)
     {
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
+    }
+
+    void PrefabEditorEntityOwnershipService::HandleEntityBeingDestroyed(const AZ::EntityId& entityId)
+    {
+        AZ_Assert(IsInitialized(), "Tried to destroy an entity without initializing the Entity Ownership Service");
+        OnEntityRemoved(entityId);
+        if (auto owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); owningInstance.has_value())
+        {
+            // Entities removed through the application (as in via manual 'delete'),
+            // should be detached from the owning instance, but not again deleted.
+            if (owningInstance->get().GetContainerEntityId() == entityId)
+            {
+                owningInstance->get().DetachContainerEntity().release();
+            }
+            else
+            {
+                owningInstance->get().DetachEntity(entityId).release();
+            }
+        }
     }
 
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
@@ -482,12 +512,24 @@ namespace AzToolsFramework
             auto createRootSpawnableResult = m_playInEditorData.m_assetsCache.CreateInMemorySpawnableAsset(m_rootInstance->GetTemplateId(), AzFramework::Spawnable::DefaultMainSpawnableName, true);
             if (createRootSpawnableResult.IsSuccess())
             {
-                // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
+                // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of
                 // (load asset) -> (notify) -> (init) -> (activate)
                 AZ::Data::AssetManager::Instance().DispatchEvents();
 
-                m_playInEditorData.m_entities.Reset(createRootSpawnableResult.GetValue());
-                m_playInEditorData.m_entities.SpawnAllEntities();
+                AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable = createRootSpawnableResult.GetValue().get();
+                m_playInEditorData.m_entities.Reset(rootSpawnable);
+
+                AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+                auto spawnCompleteCB = [rootSpawnable](
+                                           [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId,
+                                           [[maybe_unused]] AzFramework::SpawnableConstEntityContainerView view)
+                {
+                    AzFramework::RootSpawnableNotificationBus::Broadcast(
+                        &AzFramework::RootSpawnableNotificationBus::Events::OnRootSpawnableReady, rootSpawnable, 0);
+                };
+
+                optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
+                m_playInEditorData.m_entities.SpawnAllEntities(AZStd::move(optionalArgs));
 
                 // This is a workaround until the replacement for GameEntityContext is done
                 AzFramework::GameEntityContextEventBus::Broadcast(
@@ -555,11 +597,17 @@ namespace AzToolsFramework
 
             // Game entity cleanup is queued onto the next tick via the DespawnEntities call.
             // To avoid both game entities and Editor entities active at the same time
-            // we flush the tick queue to ensure the game entities are cleared first.
+            // we flush the tick queue and the spawnable queue to ensure the game entities are cleared first.
             // The Alert callback that follows the DespawnEntities call will then reactivate the editor entities
             // This should be considered temporary as a move to a less rigid event sequence that supports async entity clean up
             // is the desired direction forward.
             AZ::TickBus::ExecuteQueuedEvents();
+            auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
+            if (rootSpawnableInterface)
+            {
+                rootSpawnableInterface->ProcessSpawnableQueue();
+                AzFramework::RootSpawnableNotificationBus::ExecuteQueuedEvents();
+            }
         }
 
         m_playInEditorData.m_isEnabled = false;
@@ -627,150 +675,5 @@ namespace AzToolsFramework
         }
 
         return false;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // Slice Buses implementation with Assert(false), this will exist only during Slice->Prefab
-    // development to pinpoint and replace specific calls to Slice system
-
-    AZ::SliceComponent::SliceInstanceAddress PrefabEditorEntityOwnershipService::GetOwningSlice()
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return AZ::SliceComponent::SliceInstanceAddress();
-    }
-
-   
-    AZ::Data::AssetId UnimplementedSliceEntityOwnershipService::CurrentlyInstantiatingSlice()
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return {};
-    }
-
-    bool UnimplementedSliceEntityOwnershipService::HandleRootEntityReloadedFromStream(
-        AZ::Entity*, bool, AZ::SliceComponent::EntityIdToEntityIdMap*)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return false;
-    }
-
-    AZ::SliceComponent* UnimplementedSliceEntityOwnershipService::GetRootSlice()
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return nullptr;
-    }
-
-    const AZ::SliceComponent::EntityIdToEntityIdMap& UnimplementedSliceEntityOwnershipService::GetLoadedEntityIdMap()
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        static AZ::SliceComponent::EntityIdToEntityIdMap dummy;
-        return dummy;
-    }
-
-    AZ::EntityId UnimplementedSliceEntityOwnershipService::FindLoadedEntityIdMapping(const AZ::EntityId&) const
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return AZ::EntityId();
-    }
-
-    AzFramework::SliceInstantiationTicket UnimplementedSliceEntityOwnershipService::InstantiateSlice(
-        const AZ::Data::Asset<AZ::Data::AssetData>&,
-        const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper&,
-        const AZ::Data::AssetFilterCB&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return AzFramework::SliceInstantiationTicket();
-    }
-
-    AZ::SliceComponent::SliceInstanceAddress UnimplementedSliceEntityOwnershipService::CloneSliceInstance(
-        AZ::SliceComponent::SliceInstanceAddress, AZ::SliceComponent::EntityIdToEntityIdMap&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return {};
-    }
-
-    void UnimplementedSliceEntityOwnershipService::CancelSliceInstantiation(const AzFramework::SliceInstantiationTicket&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    AzFramework::SliceInstantiationTicket UnimplementedSliceEntityOwnershipService::GenerateSliceInstantiationTicket()
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return AzFramework::SliceInstantiationTicket();
-    }
-
-    void UnimplementedSliceEntityOwnershipService::SetIsDynamic(bool)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    const AzFramework::RootSliceAsset& UnimplementedSliceEntityOwnershipService::GetRootAsset() const
-    {
-        static AzFramework::RootSliceAsset dummy;
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return dummy;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-
-    AzFramework::SliceInstantiationTicket UnimplementedSliceEditorEntityOwnershipService::InstantiateEditorSlice(
-        const AZ::Data::Asset<AZ::Data::AssetData>&, const AZ::Transform&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return AzFramework::SliceInstantiationTicket();
-    }
-
-    AZ::SliceComponent::SliceInstanceAddress UnimplementedSliceEditorEntityOwnershipService::CloneEditorSliceInstance(
-        AZ::SliceComponent::SliceInstanceAddress, AZ::SliceComponent::EntityIdToEntityIdMap&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return {};
-    }
-
-    AZ::SliceComponent::SliceInstanceAddress UnimplementedSliceEditorEntityOwnershipService::CloneSubSliceInstance(
-        const AZ::SliceComponent::SliceInstanceAddress&, const AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>&,
-        const AZ::SliceComponent::SliceInstanceAddress&, AZ::SliceComponent::EntityIdToEntityIdMap*)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return {};
-    }
-
-    AZ::SliceComponent::SliceInstanceAddress UnimplementedSliceEditorEntityOwnershipService::PromoteEditorEntitiesIntoSlice(
-        const AZ::Data::Asset<AZ::SliceAsset>&, const AZ::SliceComponent::EntityIdToEntityIdMap&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return {};
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::DetachSliceEntities(const EntityIdList&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::DetachSliceInstances(const AZ::SliceComponent::SliceInstanceAddressSet&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::DetachSubsliceInstances(const AZ::SliceComponent::SliceInstanceEntityIdRemapList&)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::RestoreSliceEntity(
-        AZ::Entity*, const AZ::SliceComponent::EntityRestoreInfo&, SliceEntityRestoreType)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    void UnimplementedSliceEditorEntityOwnershipService::ResetEntitiesToSliceDefaults(EntityIdList)
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-    }
-
-    AZ::SliceComponent* UnimplementedSliceEditorEntityOwnershipService::GetEditorRootSlice()
-    {
-        AZ_Assert(!m_shouldAssertForLegacySlicesUsage, "Slice usage with Prefab code enabled");
-        return nullptr;
     }
 }

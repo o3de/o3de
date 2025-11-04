@@ -94,14 +94,15 @@ namespace AZ
                             ->Attribute("AutoExpand", true)
                             ->Attribute(Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
-                        ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &MeshGroup::m_name, "Name mesh",
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/meshes-tab/")
+                        ->DataElement(AZ_CRC_CE("ManifestName"), &MeshGroup::m_name, "Name mesh",
                             "Name the mesh as you want it to appear in the Open 3D Engine Asset Browser.")
                             ->Attribute("FilterType", DataTypes::IMeshGroup::TYPEINFO_Uuid())
                         ->DataElement(Edit::UIHandlers::Default, &MeshGroup::m_nodeSelectionList, "Select meshes", "Select 1 or more meshes to add to this asset in the Open 3D Engine Asset Browser.")
                             ->Attribute("FilterName", "meshes")
                             ->Attribute("FilterType", DataTypes::IMeshData::TYPEINFO_Uuid())
                         ->DataElement(Edit::UIHandlers::Default, &MeshGroup::m_rules, "", "Add or remove rules to fine-tune the export process.")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20));
+                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"));
                 }
             }
 

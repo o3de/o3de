@@ -44,7 +44,7 @@ namespace AssetBuilder
 
     unsigned int BuilderHelloRequest::MessageType()
     {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::BuilderHelloRequest", 0x213a7248);
+        static unsigned int messageType = AZ_CRC_CE("AssetBuilderSDK::BuilderHelloRequest");
 
         return messageType;
     }
@@ -84,7 +84,7 @@ namespace AssetBuilder
 
     unsigned int CreateJobsNetRequest::MessageType()
     {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::CreateJobsNetRequest", 0xc48209c0);
+        static unsigned int messageType = AZ_CRC_CE("AssetBuilderSDK::CreateJobsNetRequest");
 
         return messageType;
     }
@@ -119,7 +119,7 @@ namespace AssetBuilder
 
     unsigned int ProcessJobNetRequest::MessageType()
     {
-        static unsigned int messageType = AZ_CRC("AssetBuilderSDK::ProcessJobNetRequest", 0x479f340f);
+        static unsigned int messageType = AZ_CRC_CE("AssetBuilderSDK::ProcessJobNetRequest");
 
         return messageType;
     }

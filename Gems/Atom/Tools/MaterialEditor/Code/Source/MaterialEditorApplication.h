@@ -20,6 +20,7 @@ namespace MaterialEditor
         , private AzToolsFramework::EditorWindowRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(MaterialEditorApplication, AZ::SystemAllocator)
         AZ_TYPE_INFO(MaterialEditor::MaterialEditorApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
 
         using Base = AtomToolsFramework::AtomToolsDocumentApplication;

@@ -23,11 +23,6 @@ namespace LandscapeCanvas
     {
         AZ_TYPE_INFO(LandscapeCanvasSerialization, "{263F0CE3-5F3D-4297-B2DC-0B81F30BEC3E}");
 
-        //! Mapping of the original EntityId to a clone of the Entity that was serialized
-        //! These Entities correspond to nodes that have been serialized that will need
-        //! to also copy the Entity they represent.
-        AZStd::unordered_map<AZ::EntityId, AZ::Entity*> m_serializedNodeEntities;
-
         //! Mapping of the original EntityId to the EntityId of the Entity that has been
         //! copied as part of the deserialization (paste/duplicate)
         AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_deserializedEntities;
@@ -47,7 +42,6 @@ namespace LandscapeCanvas
         //! Get/set our serialized mappings of the Landscape Canvas Entities that correspond to
         //! GraphModel nodes that have been serialized
         virtual const LandscapeCanvasSerialization& GetSerializedMappings() = 0;
-        virtual void SetSerializedNodeEntities(const AZStd::unordered_map<AZ::EntityId, AZ::Entity*>& nodeEntities) = 0;
         virtual void SetDeserializedEntities(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& entities) = 0;
     };
 

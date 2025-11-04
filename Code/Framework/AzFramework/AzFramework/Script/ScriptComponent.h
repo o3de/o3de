@@ -7,26 +7,29 @@
  */
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
     class ScriptProperty;
-}
+} // namespace AZ
 
 namespace AzToolsFramework
 {
     namespace Components
     {
         class ScriptEditorComponent;
-    }
-}
+    } // namespace Components
+} // namespace AzToolsFramework
 
 namespace AzFramework
 {
@@ -45,14 +48,14 @@ namespace AzFramework
         AZ::LuaScriptData m_luaScriptDataOut;
     };
 
-    void ConstructScriptAssetPaths(ScriptCompileRequest& request);
-    AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request);
-    AZ::Outcome<void, AZStd::string> CompileScriptAndAsset(ScriptCompileRequest& request);
-    AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request, AZ::ScriptContext& context);
-    AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request);
-    bool SaveLuaAssetData(const AZ::LuaScriptData& data, AZ::IO::GenericStream& stream);
+    AZF_API void ConstructScriptAssetPaths(ScriptCompileRequest& request);
+    AZF_API AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request);
+    AZF_API AZ::Outcome<void, AZStd::string> CompileScriptAndAsset(ScriptCompileRequest& request);
+    AZF_API AZ::Outcome<void, AZStd::string> CompileScript(ScriptCompileRequest& request, AZ::ScriptContext& context);
+    AZF_API AZ::Outcome<AZStd::string, AZStd::string> CompileScriptAndSaveAsset(ScriptCompileRequest& request);
+    AZF_API bool SaveLuaAssetData(const AZ::LuaScriptData& data, AZ::IO::GenericStream& stream);
 
-    struct ScriptPropertyGroup
+    struct AZF_API ScriptPropertyGroup
     {
         AZ_TYPE_INFO(ScriptPropertyGroup, "{79682522-2f81-4b36-9fc2-a091c7504f7f}");
         AZStd::string                       m_name;
@@ -76,8 +79,10 @@ namespace AzFramework
         ScriptPropertyGroup& operator=(ScriptPropertyGroup&& rhs);
     };
 
-    class ScriptComponent
+    class AZF_API ScriptComponent
         : public AZ::Component
+        , private AZ::Data::AssetBus::Handler
+        , private AZ::TickBus::Handler
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
@@ -103,18 +108,22 @@ namespace AzFramework
 
     protected:
         ScriptComponent(const ScriptComponent&) = delete;
-        //////////////////////////////////////////////////////////////////////////
-        // Component base
+
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        //////////////////////////////////////////////////////////////////////////
+
+        // AssetBus
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
+        // TickBus
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         /// Loads the script into the context/VM, \returns true if the script is loaded
         bool LoadInContext();
 
-        // Create script instance table.
         void CreateEntityTable();
+        void DestroyEntityTable();
         
         void CreatePropertyGroup(const ScriptPropertyGroup& group, int propertyGroupTableIndex, int parentIndex, int metatableIndex, bool isRoot);
 
@@ -124,4 +133,4 @@ namespace AzFramework
         int                                 m_table;                ///< Cached table index
         ScriptPropertyGroup                 m_properties;           ///< List with all properties that were tweaked in the editor and should override values in the m_sourceScriptName class inside m_script.
     };        
-}   // namespace AZ
+} // namespace AzFramework

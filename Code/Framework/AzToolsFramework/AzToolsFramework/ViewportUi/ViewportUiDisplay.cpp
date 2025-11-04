@@ -24,6 +24,17 @@ namespace AzToolsFramework::ViewportUi::Internal
     const static int HighlightBorderBackButtonIconSize = 20;
     const static char* const HighlightBorderBackButtonIconFile = "X_axis.svg";
 
+    ViewportUiElementInfo::ViewportUiElementInfo() = default;
+    ViewportUiElementInfo::~ViewportUiElementInfo() = default;
+
+    ViewportUiElementInfo::ViewportUiElementInfo(AZStd::shared_ptr<QWidget> widget,
+        ViewportUiElementId elementId, bool anchored)
+        : m_widget(AZStd::move(widget))
+        , m_viewportUiElementId(elementId)
+        , m_anchored(anchored)
+    {
+    }
+
     static void UnparentWidgets(ViewportUiElementIdInfoLookup& viewportUiElementIdInfoLookup)
     {
         for (auto& element : viewportUiElementIdInfoLookup)

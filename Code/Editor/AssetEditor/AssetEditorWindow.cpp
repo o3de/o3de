@@ -25,9 +25,7 @@
 // Editor
 #include "LyViewPaneNames.h"
 
-AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AssetEditor/ui_AssetEditorWindow.h>
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace AssetEditorUtils
 {
@@ -77,9 +75,9 @@ void AssetEditorWindow::RegisterViewClass(const AZ::Data::Asset<AZ::Data::AssetD
     AzToolsFramework::RegisterViewPane<AssetEditorWindow>(paneName, LyViewPane::CategoryTools, options, [asset](QWidget*) {return AssetEditorUtils::CreateAssetEditorWithAsset(asset); });
 }
 
-void AssetEditorWindow::CreateAsset(const AZ::Data::AssetType& assetType)
+void AssetEditorWindow::CreateAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& interestedComponentId)
 {
-    m_ui->m_assetEditorWidget->CreateAsset(assetType);
+    m_ui->m_assetEditorWidget->CreateAsset(assetType, interestedComponentId);
 }
 
 void AssetEditorWindow::OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
@@ -101,9 +99,22 @@ void AssetEditorWindow::SaveAssetAs(const AZStd::string_view assetPath)
         return;
     }
 
-    auto absoluteAssetPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / assetPath;
+    AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
+    projectSourcePath /= "Assets";
+    projectSourcePath /= assetPath;
 
-    if (!m_ui->m_assetEditorWidget->SaveAssetToPath(absoluteAssetPath.Native()))
+    QDir dir(projectSourcePath.c_str());
+    if (!dir.exists())
+    {
+        auto result = AZ::IO::SystemFile::CreateDir(projectSourcePath.c_str());
+        if (!result)
+        {
+            AZ_Error("Script Canvas", false, "Failed to make new folder: %s", projectSourcePath.c_str());
+            return;
+        }
+    }
+
+    if (!m_ui->m_assetEditorWidget->SaveAssetToPath(projectSourcePath.Native()))
     {
         AZ_Warning("Asset Editor", false, "File was not saved correctly via SaveAssetAs.");
     }
@@ -112,7 +123,7 @@ void AssetEditorWindow::SaveAssetAs(const AZStd::string_view assetPath)
 void AssetEditorWindow::RegisterViewClass()
 {
     AzToolsFramework::ViewPaneOptions options;
-    options.preferedDockingArea = Qt::LeftDockWidgetArea;
+    options.preferedDockingArea = Qt::NoDockWidgetArea;
     options.showOnToolsToolbar = true;
     options.toolbarIcon = ":/Menu/asset_editor.svg";
     AzToolsFramework::RegisterViewPane<AssetEditorWindow>(LyViewPane::AssetEditor, LyViewPane::CategoryTools, options);
@@ -127,7 +138,6 @@ void AssetEditorWindow::OnAssetOpened(const AZ::Data::Asset<AZ::Data::AssetData>
         AZStd::string extension;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, asset.GetId());
         AzFramework::StringFunc::Path::Split(assetPath.c_str(), nullptr, nullptr, &assetName, &extension);
-//        AZStd::string windowTitle = AZStd::string::format("Edit Asset: %s", (assetName + extension).c_str());
 
         AZStd::string windowTitle = asset.GetHint();
 
@@ -141,15 +151,7 @@ void AssetEditorWindow::OnAssetOpened(const AZ::Data::Asset<AZ::Data::AssetData>
 
 void AssetEditorWindow::closeEvent(QCloseEvent* event)
 {
-    if (m_ui->m_assetEditorWidget->WaitingToSave())
-    {
-        // Don't need to ask to save, as a save is already queued.
-        m_ui->m_assetEditorWidget->SetCloseAfterSave();
-        event->ignore();
-        return;
-    }
-
-    if (m_ui->m_assetEditorWidget->TrySave([this]() {  qobject_cast<QWidget*>(parent())->close(); }))
+    if (!m_ui->m_assetEditorWidget->SaveAllAndClose())
     {
         event->ignore();
     }

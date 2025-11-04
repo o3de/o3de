@@ -19,7 +19,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL_INTERNAL(IManifestVectorHandler<ManifestType>, SystemAllocator, 0, template<typename ManifestType>)
+            AZ_CLASS_ALLOCATOR_IMPL((IManifestVectorHandler, AZ_CLASS), SystemAllocator);
 
             template<typename ManifestType> SerializeContext* IManifestVectorHandler<ManifestType>::s_serializeContext = nullptr;
             template<typename ManifestType> IManifestVectorHandler<ManifestType>* IManifestVectorHandler<ManifestType>::s_instance = nullptr;
@@ -46,7 +46,7 @@ namespace AZ
             template<typename ManifestType>
             u32 IManifestVectorHandler<ManifestType>::GetHandlerName() const
             {
-                return AZ_CRC("ManifestVector", 0x895aa9aa);
+                return AZ_CRC_CE("ManifestVector");
             }
 
             template<typename ManifestType>
@@ -61,7 +61,7 @@ namespace AZ
             {
                 AZ_TraceContext("Attribute name", debugName);
 
-                if (attrib == AZ_CRC("ObjectTypeName", 0x6559e0c0))
+                if (attrib == AZ_CRC_CE("ObjectTypeName"))
                 {
                     AZStd::string name;
                     if (attrValue->Read<AZStd::string>(name))
@@ -69,7 +69,7 @@ namespace AZ
                         widget->SetCollectionTypeName(name);
                     }
                 }
-                else if (attrib == AZ_CRC("CollectionName", 0xbbc1c898))
+                else if (attrib == AZ_CRC_CE("CollectionName"))
                 {
                     AZStd::string name;
                     if (attrValue->Read<AZStd::string>(name))
@@ -79,7 +79,7 @@ namespace AZ
                 }
                 // Sets the number of entries the user can add through this widget. It doesn't limit
                 //      the amount of entries that can be stored.
-                else if (attrib == AZ_CRC("Cap", 0x993387b1))
+                else if (attrib == AZ_CRC_CE("Cap"))
                 {
                     size_t cap;
                     if (attrValue->Read<size_t>(cap))

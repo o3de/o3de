@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/std/ranges/subrange_fwd.h>
+
 #include <AzCore/std/ranges/ranges_adaptor.h>
 #include <AzCore/std/typetraits/is_reference.h>
 #include <AzCore/std/tuple.h>
@@ -85,8 +87,7 @@ namespace AZStd::ranges
         bool_constant<input_or_output_iterator<I>>,
         bool_constant<sentinel_for<S, I>>,
         bool_constant<(K == subrange_kind::sized || !sized_sentinel_for<S, I>)>>
-        >>
-        : public view_interface<subrange<I, S, K>>
+        >> : public view_interface<subrange<I, S, K>>
     {
         static constexpr bool StoreSize = K == subrange_kind::sized && !sized_sentinel_for<S, I>;
 

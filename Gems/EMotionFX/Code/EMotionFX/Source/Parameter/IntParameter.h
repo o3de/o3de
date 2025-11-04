@@ -12,12 +12,15 @@
 
 namespace EMotionFX
 {
+    class IntParameter;
+    AZ_TYPE_INFO_SPECIALIZE(IntParameter , "{8F1C1579-E6B7-4CD0-8ABB-0250A131CF6C}");
+
     class IntParameter 
         : public RangedValueParameter<int, IntParameter>
     {
         using BaseType = RangedValueParameter<int, IntParameter>;
     public:
-        AZ_RTTI(IntParameter , "{8F1C1579-E6B7-4CD0-8ABB-0250A131CF6C}", ValueParameter);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL
 
         IntParameter()

@@ -6,7 +6,7 @@
  *
  */
 
-#pragma once
+ #pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/EBus/Event.h>
@@ -37,12 +37,28 @@ namespace AZ
         class ComponentFactoryInterface;
     }
 
-    struct ApplicationTypeQuery
+    struct AZCORE_API ApplicationTypeQuery
     {
+        //! Signals if the application is the Editor.
         bool IsEditor() const;
+
+        //! Signals if the application is the tool application, i.e. AssetProcessor.
         bool IsTool() const;
+
+        //! Signals if the application is a game or server launcher.
         bool IsGame() const;
+
+        //! Signals if the application is running headless (console application with no graphics rendering capability enabled).
+        bool IsHeadless() const;
+
+        //! Signals if the application is valid or not. This means the application has not been categorized as any one of Editor, Tool, or Game.
         bool IsValid() const;
+
+        //! Signals if the application is running in console mode where the native client window is not created but still (optionally) supports graphics rendering.
+        bool IsConsoleMode() const;
+
+        //! Signals if the application is the AssetProcessor tool application.
+        bool IsAssetProcessor() const;
 
         enum class Masks
         {
@@ -50,6 +66,9 @@ namespace AZ
             Editor = 1 << 0,
             Tool = 1 << 1,
             Game = 1 << 2,
+            Headless = 1 << 3,
+            ConsoleMode = 1 << 4,
+            AssetProcessor = 1 << 5
         };
         Masks m_maskValue = Masks::Invalid;
     };
@@ -59,6 +78,9 @@ namespace AZ
     inline bool ApplicationTypeQuery::IsEditor() const { return (m_maskValue & Masks::Editor) == Masks::Editor; }
     inline bool ApplicationTypeQuery::IsTool() const { return (m_maskValue & Masks::Tool) == Masks::Tool; }
     inline bool ApplicationTypeQuery::IsGame() const { return (m_maskValue & Masks::Game) == Masks::Game; }
+    inline bool ApplicationTypeQuery::IsHeadless() const { return (m_maskValue & Masks::Headless) == Masks::Headless; }
+    inline bool ApplicationTypeQuery::IsConsoleMode() const { return (m_maskValue & Masks::ConsoleMode) == Masks::ConsoleMode; }
+    inline bool ApplicationTypeQuery::IsAssetProcessor() const { return (m_maskValue & Masks::AssetProcessor) == Masks::AssetProcessor; }
     inline bool ApplicationTypeQuery::IsValid() const { return m_maskValue != Masks::Invalid; }
 
     using EntityAddedEvent = AZ::Event<AZ::Entity*>;
@@ -67,7 +89,7 @@ namespace AZ
     using EntityDeactivatedEvent = AZ::Event<AZ::Entity*>;
 
     //! Interface that components can use to make requests of the main application.
-    class ComponentApplicationRequests
+    class AZCORE_API ComponentApplicationRequests
     {
     public:
         AZ_RTTI(ComponentApplicationRequests, "{E8BE41B7-615F-4FE8-B611-8A9E441290A8}");
@@ -211,3 +233,5 @@ namespace AZ
     //! Used by components to make requests of the component application.
     using ComponentApplicationBus = AZ::EBus<ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits>;
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS_WITH_TRAITS(AZCORE_API, AZ::ComponentApplicationRequests, AZ::ComponentApplicationRequestsEBusTraits);

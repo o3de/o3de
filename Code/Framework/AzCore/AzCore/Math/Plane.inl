@@ -131,7 +131,7 @@ namespace AZ
 
     AZ_MATH_INLINE float Plane::GetPointDist(const Vector3& pos) const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec4::PlaneDistance(m_plane.GetSimdValue(), pos.GetSimdValue()));
+        return Simd::Vec1::SelectIndex0(Simd::Vec4::PlaneDistance(m_plane.GetSimdValue(), pos.GetSimdValue()));
     }
 
 

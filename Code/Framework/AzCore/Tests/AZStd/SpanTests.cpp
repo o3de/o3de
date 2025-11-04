@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class SpanTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     // range access

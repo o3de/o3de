@@ -18,7 +18,6 @@
 #include <Shape/ShapeGeometryUtil.h>
 #include <Shape/ShapeDisplay.h>
 #include <ISystem.h>
-#include <IRenderAuxGeom.h>
 
 namespace LmbrCentral
 {
@@ -365,7 +364,7 @@ namespace LmbrCentral
         m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
     }
 
-    AZ::Aabb PolygonPrismShape::GetEncompassingAabb()
+    AZ::Aabb PolygonPrismShape::GetEncompassingAabb() const
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_intersectionDataCache.UpdateIntersectionParams(
@@ -374,7 +373,7 @@ namespace LmbrCentral
         return m_intersectionDataCache.m_aabb;
     }
 
-    void PolygonPrismShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void PolygonPrismShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         bounds = PolygonPrismUtil::CalculateAabb(*m_polygonPrism, AZ::Transform::Identity());
@@ -384,7 +383,7 @@ namespace LmbrCentral
     /// Return if the point is inside of the polygon prism volume or not.
     /// Use 'Crossings Test' to determine if point lies in or out of the polygon.
     /// @param point Position in world space to test against.
-    bool PolygonPrismShape::IsPointInside(const AZ::Vector3& point)
+    bool PolygonPrismShape::IsPointInside(const AZ::Vector3& point) const
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_intersectionDataCache.UpdateIntersectionParams(
@@ -400,7 +399,7 @@ namespace LmbrCentral
         return PolygonPrismUtil::IsPointInside(*m_polygonPrism, point, m_currentTransform);
     }
 
-    float PolygonPrismShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float PolygonPrismShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_intersectionDataCache.UpdateIntersectionParams(
@@ -409,7 +408,7 @@ namespace LmbrCentral
         return PolygonPrismUtil::DistanceSquaredFromPoint(*m_polygonPrism, point, m_currentTransform);
     }
 
-    bool PolygonPrismShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool PolygonPrismShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
         m_intersectionDataCache.UpdateIntersectionParams(

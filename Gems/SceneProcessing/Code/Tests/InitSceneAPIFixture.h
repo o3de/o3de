@@ -18,7 +18,7 @@ namespace AZ { class DynamicModuleHandle; }
 namespace SceneProcessing
 {
     class InitSceneAPIFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
         using DynamicModuleHandlePtr = AZStd::unique_ptr<AZ::DynamicModuleHandle>;
 
@@ -26,17 +26,17 @@ namespace SceneProcessing
 
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             const AZStd::vector<AZStd::string> moduleNames {"SceneCore", "SceneData"};
             for (const AZStd::string& moduleName : moduleNames)
             {
                 AZStd::unique_ptr<AZ::DynamicModuleHandle> module = AZ::DynamicModuleHandle::Create(moduleName.c_str());
-                ASSERT_TRUE(module) << "EMotionFX Editor unit tests failed to create " << moduleName.c_str() << " module.";
-                const bool loaded = module->Load(false);
-                ASSERT_TRUE(loaded) << "EMotionFX Editor unit tests failed to load " << moduleName.c_str() << " module.";
+                ASSERT_TRUE(module) << "Scene Processing Gem unit tests failed to create " << moduleName.c_str() << " module.";
+                const bool loaded = module->Load();
+                ASSERT_TRUE(loaded) << "Scene Processing Gem unit tests failed to load " << moduleName.c_str() << " module.";
                 auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
-                ASSERT_TRUE(init) << "EMotionFX Editor unit tests failed to find the initialization function the " << moduleName.c_str() << " module.";
+                ASSERT_TRUE(init) << "Scene Processing Gem unit tests failed to find the initialization function the " << moduleName.c_str() << " module.";
                 (*init)();
 
                 m_modules.emplace_back(AZStd::move(module));

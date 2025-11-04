@@ -22,7 +22,8 @@ from typing import Union
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'DCCsi.Tools.IDE.Wing.discovery'
+from DccScriptingInterface.Tools.IDE.Wing import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.discovery'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------

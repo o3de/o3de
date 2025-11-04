@@ -16,7 +16,7 @@
 namespace UnitTest
 {
     class SpawnableSortEntitiesTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     protected:
         AZStd::vector<AZ::Entity*> m_unsorted;

@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTCOMPONENT_H
-#define AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTCOMPONENT_H
+#pragma once
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Math/Quaternion.h>
@@ -20,8 +19,7 @@
 #include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextPickingBus.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipService.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include "EditorEntityContextBus.h"
 
@@ -48,13 +46,12 @@ namespace AzToolsFramework
      * The editor entity context owns entities in the world, within the editor.
      * These entities typically own components inheriting from EditorComponentBase.
      */
-    class EditorEntityContextComponent
+    class AZTF_API EditorEntityContextComponent
         : public AZ::Component
         , public AzFramework::EntityContext
         , private EditorEntityContextRequestBus::Handler
         , private EditorEntityContextPickingRequestBus::Handler
         , private EditorLegacyGameModeNotificationBus::Handler
-        , private SliceEditorEntityOwnershipServiceNotificationBus::Handler
     {
     public:
 
@@ -153,14 +150,6 @@ namespace AzToolsFramework
 
     private:
         EditorEntityContextComponent(const EditorEntityContextComponent&) = delete;
-
-        //////////////////////////////////////////////////////////////////////////
-        // SliceEditorEntityOwnershipServiceNotificationBus
-        void OnSaveStreamForGameBegin(AZ::IO::GenericStream& gameStream, AZ::DataStream::StreamType streamType,
-            AZStd::vector<AZStd::unique_ptr<AZ::Entity>>& levelEntities) override;
-        void OnSaveStreamForGameSuccess(AZ::IO::GenericStream& gameStream) override;
-        void OnSaveStreamForGameFailure(AZStd::string_view failureString) override;
-        //////////////////////////////////////////////////////////////////////////
         
         // EditorLegacyGameModeNotificationBus ...
         void OnStartGameModeRequest() override;
@@ -175,6 +164,8 @@ namespace AzToolsFramework
         EntityIdList m_selectedBeforeStartingGame;
 
         //! Bidirectional mapping of runtime entity Ids to their editor counterparts (relevant during in-editor simulation).
+        using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
+
         EntityIdToEntityIdMap m_editorToRuntimeIdMap;
         EntityIdToEntityIdMap m_runtimeToEditorIdMap;
 
@@ -182,10 +173,7 @@ namespace AzToolsFramework
         //! EditorEntityContextRequestBus::Events::AddRequiredComponents()
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
 
-        bool m_isLegacySliceService;
-
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
     };
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTCOMPONENT_H

@@ -18,16 +18,17 @@
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/JointConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace Physics
 {
     using ParentIndices = AZStd::vector<size_t>;
 
-    class RagdollNodeConfiguration
+    class AZF_API RagdollNodeConfiguration
         : public AzPhysics::RigidBodyConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(RagdollNodeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RagdollNodeConfiguration, AZ::SystemAllocator);
         AZ_RTTI(RagdollNodeConfiguration, "{A1796586-85AB-496E-93C9-C5841F03B1AD}", AzPhysics::RigidBodyConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -37,11 +38,11 @@ namespace Physics
         AZStd::shared_ptr<AzPhysics::JointConfiguration> m_jointConfig;
     };
 
-    class RagdollConfiguration
+    class AZF_API RagdollConfiguration
         : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(RagdollConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RagdollConfiguration, AZ::SystemAllocator);
         AZ_RTTI(RagdollConfiguration, "{7C96D332-61D8-4C58-A2BF-707716D38D14}", AzPhysics::SimulatedBodyConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -60,11 +61,11 @@ namespace Physics
     };
 
     /// Represents a single rigid part of a ragdoll.
-    class RagdollNode
+    class AZF_API RagdollNode
         : public AzPhysics::SimulatedBody
     {
     public:
-        AZ_CLASS_ALLOCATOR(RagdollNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RagdollNode, AZ::SystemAllocator);
         AZ_RTTI(RagdollNode, "{226D02B7-6138-4F6B-9870-DE5A1C3C5077}", AzPhysics::SimulatedBody);
 
         virtual AzPhysics::RigidBody& GetRigidBody() = 0;
@@ -75,11 +76,11 @@ namespace Physics
     };
 
     /// A hierarchical collection of rigid bodies connected by joints typically used to physically simulate a character.
-    class Ragdoll
+    class AZF_API Ragdoll
         : public AzPhysics::SimulatedBody
     {
     public:
-        AZ_CLASS_ALLOCATOR(Ragdoll, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Ragdoll, AZ::SystemAllocator);
         AZ_RTTI(Physics::Ragdoll, "{01F09602-80EC-4693-A0E7-C2719239044B}", AzPhysics::SimulatedBody);
         virtual ~Ragdoll() = default;
 

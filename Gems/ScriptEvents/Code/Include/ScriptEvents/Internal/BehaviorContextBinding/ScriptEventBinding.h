@@ -21,7 +21,7 @@ namespace ScriptEvents
     public:
 
         AZ_TYPE_INFO(ScriptEventBinding, "{E0DDA446-656D-41D6-8BEC-42B6EA57DD7D}");
-        AZ_CLASS_ALLOCATOR(ScriptEventBinding, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventBinding, AZ::SystemAllocator);
 
         ScriptEventBinding(AZ::BehaviorContext* context, AZStd::string_view scriptEventName, const AZ::Uuid& addressType);
 

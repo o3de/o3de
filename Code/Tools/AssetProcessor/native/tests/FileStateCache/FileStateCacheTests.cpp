@@ -6,9 +6,10 @@
  *
  */
 
-#include "FileStateCacheTests.h"
+#include <native/tests/FileStateCache/FileStateCacheTests.h>
 #include <native/utilities/assetUtils.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
+#include <AzFramework/IO/LocalFileIO.h>
 
 namespace UnitTests
 {
@@ -17,12 +18,15 @@ namespace UnitTests
     void FileStateCacheTests::SetUp()
     {
         m_temporarySourceDir = QDir(m_temporaryDir.path());
+        AZ::IO::FileIOBase::SetInstance(aznew AZ::IO::LocalFileIO());
         m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStateCache>();
     }
 
     void FileStateCacheTests::TearDown()
     {
         m_fileStateCache = nullptr;
+        delete AZ::IO::FileIOBase::GetInstance();
+        AZ::IO::FileIOBase::SetInstance(nullptr);
     }
 
     void FileStateCacheTests::CheckForFile(QString path, bool shouldExist)

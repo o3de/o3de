@@ -39,6 +39,8 @@ namespace EMotionFX
             SkinningMethod GetSkinningMethod() const;
             virtual void SetSkinningMethod(SkinningMethod skinningMethod);
 
+            virtual void SetRayTracingEnabled(bool enabled) = 0;
+
             virtual void UpdateBounds() = 0;
             const AZ::Aabb& GetWorldAABB() const;
             const AZ::Aabb& GetLocalAABB() const;
@@ -47,9 +49,7 @@ namespace EMotionFX
             virtual void SetIsVisible(bool isVisible);
             virtual bool IsInCameraFrustum() const;
 
-            virtual void SetMaterials(const ActorAsset::MaterialList& materialsPerLOD) = 0;
-            typedef AZStd::function<void(const AZStd::string& materialName)> MaterialChangedFunction;
-            void SetOnMaterialChangedCallback(MaterialChangedFunction callback);
+            virtual void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) = 0;
 
             Actor* GetActor() const;
 
@@ -63,7 +63,6 @@ namespace EMotionFX
 
             bool m_isVisible = true;
             SkinningMethod m_skinningMethod = SkinningMethod::DualQuat;
-            MaterialChangedFunction m_onMaterialChangedCallback;
         };
     } // namespace Integration
 } // namespace EMotionFX

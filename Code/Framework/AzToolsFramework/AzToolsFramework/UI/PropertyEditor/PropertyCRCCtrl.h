@@ -7,10 +7,13 @@
  */
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 #include "PropertyEditorAPI.h"
 #endif
@@ -21,12 +24,12 @@ class QString;
 namespace AzToolsFramework
 {
     // a control for storing a CRC-like u32 hex value and displaying it as hex.
-    class PropertyCRCCtrl
+    class AZTF_API PropertyCRCCtrl
         : public QWidget
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyCRCCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyCRCCtrl, AZ::SystemAllocator);
 
         PropertyCRCCtrl(QWidget* pParent = NULL);
         virtual ~PropertyCRCCtrl();
@@ -65,12 +68,12 @@ namespace AzToolsFramework
         void UpdateWidgetInternalTabbing(PropertyCRCCtrl* widget) override { widget->UpdateTabOrder(); }
     };
 
-    class U32CRCHandler
+    class AZTF_API U32CRCHandler
         : public QObject
         , public CRC32HandlerCommon<AZ::u32>
     {
     public:
-        AZ_CLASS_ALLOCATOR(U32CRCHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(U32CRCHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         bool IsDefaultHandler() const override { return false; }
@@ -79,12 +82,12 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node) override;
     };
 
-    class CRC32Handler
+    class AZTF_API CRC32Handler
         : public QObject
         , public CRC32HandlerCommon<AZ::Crc32>
     {
     public:
-        AZ_CLASS_ALLOCATOR(CRC32Handler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CRC32Handler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         bool IsDefaultHandler() const override { return true; }
@@ -93,5 +96,5 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, PropertyCRCCtrl* GUI, const property_t& instance, InstanceDataNode* node) override;
     };
 
-    void RegisterCrcHandler();
+    AZTF_API void RegisterCrcHandler();
 };

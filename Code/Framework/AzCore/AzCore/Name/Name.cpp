@@ -19,7 +19,9 @@
 
 namespace AZ
 {
-    Name* Name::s_staticNameBegin = nullptr;
+    //! Describes the begin of the static list of Names that were initialized before the NameDictionary was available.
+    //! On module initialization, these names are linked into the NameDictionary's static pool and created.
+    static Name* s_staticNameBegin = nullptr;
 
     NameRef::NameRef(Name name)
         : m_data(AZStd::move(name.m_data))
@@ -253,6 +255,22 @@ namespace AZ
         return m_view.empty();
     }
 
+    //! For internal use:
+    //! Gets a reference to the current head of the deferred Name linked list.
+    //! The list is used to initialize Names created before the NameDictionary when
+    //! their modules are loaded.
+    Name*& Name::GetDeferredHead()
+    {
+        return s_staticNameBegin;
+    }
+
+    Name* Name::SetStaticNameBegin(Name* staticNameBegin)
+    {
+        Name* oldValue = s_staticNameBegin;
+        s_staticNameBegin = staticNameBegin;
+        return oldValue;
+    }
+
     void Name::LinkStaticName(Name** name)
     {
         if ((*name) == nullptr)
@@ -341,6 +359,7 @@ namespace AZ
                 ->Constructor()
                 ->Constructor<AZStd::string_view>()
                 ->Method("ToString", &Name::GetCStr)
+                ->Method("__repr__", &Name::GetCStr)
                 ->Method("Set", [](Name* thisPtr, AZStd::string_view name) { thisPtr->SetName(name); })
                 ->Method("IsEmpty", &Name::IsEmpty)
                 ->Method("Equal", static_cast<bool(Name::*)(const Name&)const>(&Name::operator==))

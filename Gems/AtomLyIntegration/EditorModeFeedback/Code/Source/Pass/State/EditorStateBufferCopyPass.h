@@ -22,7 +22,7 @@ namespace AZ::Render
     {
     public:
         AZ_RTTI(EditorStateBufferCopyPass, "{03EE6F22-7A28-4D01-9D22-0CC04A66B54D}", AZ::RPI::FullscreenTrianglePass);
-        AZ_CLASS_ALLOCATOR(EditorStateBufferCopyPass, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorStateBufferCopyPass, SystemAllocator);
 
         virtual ~EditorStateBufferCopyPass() = default;
 

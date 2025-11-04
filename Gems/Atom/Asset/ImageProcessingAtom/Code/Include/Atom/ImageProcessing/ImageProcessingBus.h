@@ -96,6 +96,9 @@ namespace ImageProcessingAtom
 
         //! Return true if the preset name is valid
         virtual bool IsValidPreset(PresetName presetName) = 0;
+
+        //! Returns true if the specified extension is supported by the image processing gem
+        virtual bool IsExtensionSupported(const char* extension) = 0;
     };
 
     using ImageBuilderRequestBus = AZ::EBus<ImageBuilderRequests>;

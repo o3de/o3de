@@ -19,11 +19,11 @@
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 
 namespace UnitTest
 {
@@ -41,9 +41,9 @@ namespace UnitTest
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<AZ::MemoryComponent>(),
                 azrtti_typeid<AZ::AssetManagerComponent>(),
                 azrtti_typeid<AZ::JobManagerComponent>(),
+                azrtti_typeid<AZ::TaskGraphSystemComponent>(),
                 azrtti_typeid<AZ::StreamerComponent>(),
                 azrtti_typeid<AZ::SliceSystemComponent>(),
                 azrtti_typeid<AzFramework::GameEntityContextComponent>(),
@@ -64,21 +64,20 @@ namespace UnitTest
     };
 
     class UiDynamicScrollBoxComponentTest
-        : public testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
 
         void SetUp() override
         {
             // start application
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-
             AZ::ComponentApplication::Descriptor appDescriptor;
             appDescriptor.m_useExistingAllocator = true;
 
             m_application = aznew UiDynamicScrollBoxTestApplication();
-            m_application->Start(appDescriptor, AZ::ComponentApplication::StartupParameters());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(appDescriptor, startupParameters);
         }
 
         void TearDown() override
@@ -86,8 +85,6 @@ namespace UnitTest
             m_application->Stop();
             delete m_application;
             m_application = nullptr;
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
         static int FindDescendantCount(const AZ::Entity* entity)

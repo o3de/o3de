@@ -28,7 +28,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AtomRenderPlugin, EMotionFX::EditorAllocator);
 
     AtomRenderPlugin::AtomRenderPlugin()
         : DockWidgetPlugin()
@@ -104,7 +104,7 @@ namespace EMStudio
         QVBoxLayout* verticalLayout = new QVBoxLayout(m_innerWidget);
         verticalLayout->setSizeConstraint(QLayout::SetNoConstraint);
         verticalLayout->setSpacing(1);
-        verticalLayout->setMargin(0);
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
 
         // Add the viewport widget
         m_animViewportWidget = new AnimViewportWidget(this);
@@ -119,6 +119,7 @@ namespace EMStudio
         SetupManipulators();
 
         m_picking = AZStd::make_unique<EMotionFX::Picking>();
+        m_picking->SetRenderFlags(GetRenderOptions()->GetRenderFlags());
 
         SetupMetrics();
 

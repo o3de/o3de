@@ -169,9 +169,11 @@ function(ly_append_configurations_options)
 
 endfunction()
 
-# Set the C++ standard that is being targeted to C++17
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ Standard to target")
+# Set the C++ standard that is being targeted to C++20
+set(CMAKE_CXX_STANDARD 20 CACHE STRING "C++ Standard to target")
 ly_set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(O3DE_STACK_CAPTURE_DEPTH 3 CACHE STRING "The depth of the callstack to capture when tracking allocations")
 
 get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT _isMultiConfig)
@@ -204,6 +206,43 @@ foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_EXE_LINKER_FLAGS_${UCONF} CACHE STRING "Flags to pass to the linker when creating an executable for ${conf}")
 endforeach()
 
-# flags are defined per platform, follow platform files under Platform/<PlatformName>/Configurations_<platformname>.cmake
+# flags are defined per platform, follow platform files under Platform/<PlatformName>/Configurations_<platformname>(_<platformarchitecture>).cmake
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
-include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}${LY_ARCHITECTURE_NAME_EXTENSION}.cmake)
+
+# Perform a self-check here - we expect certain values to be defined even if they are blank for a given platform.
+set(O3DE_REQUIRED_DEFINITIONS 
+    O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS 
+    O3DE_COMPILE_OPTION_EXPORT_SYMBOLS 
+    O3DE_COMPILE_OPTION_DISABLE_WARNINGS
+    O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION
+    O3DE_COMPILE_OPTION_ENABLE_FAST_MATH
+    O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH
+    O3DE_COMPILE_OPTION_DISABLE_FAST_MATH
+    O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH
+    )
+foreach(def ${O3DE_REQUIRED_DEFINITIONS})
+    message(VERBOSE "Current compiler/arch sets ${def}=${${def}}")
+    if (NOT DEFINED ${def})
+        message(FATAL_ERROR, "${def} must be defined for every platform and compiler.  Set it to blank if it does not apply when you are defining a new toolchain")
+    endif()
+endforeach()
+
+# This is a good place to set global options based on the above:
+
+if (USE_FAST_MATH)
+    ly_append_configurations_options(
+        DEFINES
+            # append our definition, even though __FAST_MATH__ is already defined
+            # it gets undefined if any other flag that affects the fast math is used
+            O3DE_USING_FAST_MATH 
+        COMPILATION
+            ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH}
+    )
+else()
+    ly_append_configurations_options(
+        COMPILATION
+            ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH}
+    )
+endif()
+

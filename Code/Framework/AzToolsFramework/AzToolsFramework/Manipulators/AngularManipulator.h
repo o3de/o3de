@@ -13,6 +13,7 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -22,7 +23,7 @@ namespace AzToolsFramework
     //! AngularManipulator serves as a visual tool for users to change a component's property based on rotation
     //! around an axis. The rotation angle increases if the rotation goes counter clock-wise when looking
     //! in the opposite direction the rotation axis points to.
-    class AngularManipulator
+    class AZTF_API AngularManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalTransform
     {
@@ -31,7 +32,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(AngularManipulator, "{01CB40F9-4537-4187-A8A6-1A12356D3FD1}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(AngularManipulator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AngularManipulator, AZ::SystemAllocator);
 
         AngularManipulator() = delete;
         AngularManipulator(const AngularManipulator&) = delete;

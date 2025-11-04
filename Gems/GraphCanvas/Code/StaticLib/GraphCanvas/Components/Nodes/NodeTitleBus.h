@@ -19,7 +19,7 @@ class QGraphicsWidget;
 
 namespace GraphCanvas
 {
-    static const AZ::Crc32 NodeTitleServiceCrc = AZ_CRC("GraphCanvas_TitleService", 0xfe6d63bc);
+    static const AZ::Crc32 NodeTitleServiceCrc = AZ_CRC_CE("GraphCanvas_TitleService");
 
     //! NodeTitleRequests
     //! Requests that get/set an entity's Node Title
@@ -81,12 +81,15 @@ namespace GraphCanvas
 
     using NodeTitleNotificationsBus = AZ::EBus<NodeTitleNotifications>;
 
+    class GeneralNodeTitleComponentSaveData;
+    AZ_TYPE_INFO_SPECIALIZE(GeneralNodeTitleComponentSaveData, "{328FF15C-C302-458F-A43D-E1794DE0904E}");
+
     class GeneralNodeTitleComponentSaveData
         : public SceneMemberComponentSaveData<GeneralNodeTitleComponentSaveData>
     {
     public:
-        AZ_RTTI(GeneralNodeTitleComponentSaveData, "{328FF15C-C302-458F-A43D-E1794DE0904E}", SceneMemberComponentSaveData<GeneralNodeTitleComponentSaveData>);
-        AZ_CLASS_ALLOCATOR(GeneralNodeTitleComponentSaveData, AZ::SystemAllocator, 0);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR(GeneralNodeTitleComponentSaveData, AZ::SystemAllocator);
 
         GeneralNodeTitleComponentSaveData() = default;
         ~GeneralNodeTitleComponentSaveData() = default;

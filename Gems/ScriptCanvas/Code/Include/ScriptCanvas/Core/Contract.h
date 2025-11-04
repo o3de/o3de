@@ -33,7 +33,7 @@ namespace ScriptCanvas
     using ContractCreationFunction = AZStd::function<Contract*()>;
     struct ContractDescriptor
     {
-        AZ_CLASS_ALLOCATOR(ContractDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ContractDescriptor, AZ::SystemAllocator);
         AZ_TYPE_INFO(ContractDescriptor, "{C0E3537F-5E6A-4269-A717-17089559F7A1}");
         ContractCreationFunction m_createFunc;
 
@@ -47,7 +47,7 @@ namespace ScriptCanvas
     class Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(Contract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Contract, AZ::SystemAllocator);
         AZ_RTTI(Contract, "{93846E60-BD7E-438A-B970-5C4AA591CF93}");
 
         Contract() = default;

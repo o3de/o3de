@@ -13,6 +13,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Process/ProcessCommon_fwd.h>
 #include <AzFramework/AzFramework_Traits_Platform.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 #if AZ_TRAIT_AZFRAMEWORK_PROCESSLAUNCH_DEFAULT
 #include <Default/AzFramework/Process/ProcessCommon_Default.h>
@@ -22,7 +23,7 @@
 
 namespace AzFramework
 {
-    class ProcessOutput
+    class AZF_API ProcessOutput
     {
     public:
         AZStd::string outputResult;
@@ -33,7 +34,7 @@ namespace AzFramework
         bool HasError() const;
     };
 
-    class ProcessCommunicator
+    class AZF_API ProcessCommunicator
     {
     public:
 
@@ -82,20 +83,20 @@ namespace AzFramework
         // Reads into process output until the communicator's output handles are no longer valid
         void ReadIntoProcessOutput(ProcessOutput& processOutput);
 
+        // Waits for stdout or stderr to be ready for reading.  Note that its non-const
+        // because it can detect if the outputs break and update them to be "broken".
+        virtual void WaitForReadyOutputs(OutputStatus& outputStatus) = 0;
+
     protected:
         AZ_DISABLE_COPY(ProcessCommunicator);
         
-        // Waits for output or error to be ready for reading
-        virtual void WaitForReadyOutputs(OutputStatus& outputStatus) const = 0;
-
-        void ReadFromOutputs(ProcessOutput& processOutput,
-            OutputStatus& status, char* buffer, AZ::u32 bufferSize);
+        void ReadFromOutputs(ProcessOutput& processOutput, OutputStatus& status);
 
     private:
         static const size_t s_readBufferSize = 16 * 1024;
     };
 
-    class ProcessCommunicatorForChildProcess
+    class AZF_API ProcessCommunicatorForChildProcess
     {
     public:
 
@@ -131,7 +132,7 @@ namespace AzFramework
 
     using StdProcessCommunicatorHandle = AZStd::unique_ptr<CommunicatorHandleImpl>;
 
-    class StdInOutCommunication
+    class AZF_API StdInOutCommunication
     {
     public: 
         virtual ~StdInOutCommunication() = default;
@@ -142,11 +143,20 @@ namespace AzFramework
         AZ::u32 WriteDataToHandle(StdProcessCommunicatorHandle& handle, const void* writeBuffer, AZ::u32 bytesToWrite);
     };
 
-    class StdProcessCommunicator
+    class AZF_API StdProcessCommunicator
         : public ProcessCommunicator
     {
     public:
         virtual bool CreatePipesForProcess(AzFramework::ProcessData* processData) = 0;
+    };
+
+    //! Platform-specific class, default does nothing, but you can derive from it
+    //! and supply it in your platform-specific implementation.  
+    class AZF_API StdInOutProcessCommunicatorData
+    {
+        public:
+            StdInOutProcessCommunicatorData() = default;
+            virtual ~StdInOutProcessCommunicatorData() = default;
     };
 
     /**
@@ -155,7 +165,7 @@ namespace AzFramework
     * to do this, it must provide handles for the child process to 
     * inherit before process creation
     */
-    class StdInOutProcessCommunicator
+    class AZF_API StdInOutProcessCommunicator
         : public StdProcessCommunicator
         , public StdInOutCommunication
     {
@@ -184,23 +194,27 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::ProcessCommunicator overrides
-        void WaitForReadyOutputs(OutputStatus& outputStatus) const override;
+        void WaitForReadyOutputs(OutputStatus& outputStatus) override;
         //////////////////////////////////////////////////////////////////////////
 
         AZStd::unique_ptr<CommunicatorHandleImpl> m_stdInWrite;
         AZStd::unique_ptr<CommunicatorHandleImpl> m_stdOutRead;
         AZStd::unique_ptr<CommunicatorHandleImpl> m_stdErrRead;
+
+        //! OPTIONAL - platform-specific classes can plug in additional arbitrary platform
+        //! specific data in here.  or leave it nullptr.
+        AZStd::unique_ptr<StdInOutProcessCommunicatorData> m_communicatorData;
         bool m_initialized = false;
     };
 
-    class StdProcessCommunicatorForChildProcess
+    class AZF_API StdProcessCommunicatorForChildProcess
         : public ProcessCommunicatorForChildProcess
     {
     public:
         virtual bool AttachToExistingPipes() = 0;
     };
 
-    class StdInOutProcessCommunicatorForChildProcess
+    class AZF_API StdInOutProcessCommunicatorForChildProcess
         : public StdProcessCommunicatorForChildProcess
         , public StdInOutCommunication
     {

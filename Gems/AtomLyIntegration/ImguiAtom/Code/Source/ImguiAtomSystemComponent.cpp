@@ -48,8 +48,6 @@ namespace AZ
 
         void ImguiAtomSystemComponent::Activate()
         {
-            ImGui::OtherActiveImGuiRequestBus::Handler::BusConnect();
-
             auto atomViewportRequests = AZ::RPI::ViewportContextRequests::Get();
             AZ_Assert(atomViewportRequests, "AtomViewportContextRequests interface not found!");
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
@@ -61,7 +59,6 @@ namespace AZ
 
         void ImguiAtomSystemComponent::Deactivate()
         {
-            ImGui::OtherActiveImGuiRequestBus::Handler::BusDisconnect();
             AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
         }
 
@@ -82,16 +79,19 @@ namespace AZ
 #endif
         }
 
-        void ImguiAtomSystemComponent::RenderImGuiBuffers(const ImDrawData& drawData)
-        {
-            Render::ImGuiSystemRequestBus::Broadcast(&Render::ImGuiSystemRequests::RenderImGuiBuffersToCurrentViewport, drawData);
-        }
-
         void ImguiAtomSystemComponent::OnRenderTick()
         {
 #if defined(IMGUI_ENABLED)
             InitializeViewportSizeIfNeeded();
-            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::Render);
+            ImGui::IImGuiManager* imguiManager = AZ::Interface<ImGui::IImGuiManager>().Get();
+            if (imguiManager != nullptr)
+            {
+                ImDrawData* drawData = imguiManager->GetImguiDrawData();
+                if (drawData != nullptr)
+                {
+                    Render::ImGuiSystemRequestBus::Broadcast(&Render::ImGuiSystemRequests::RenderImGuiBuffersToCurrentViewport, *drawData);
+                }
+            }
 #endif
         }
 

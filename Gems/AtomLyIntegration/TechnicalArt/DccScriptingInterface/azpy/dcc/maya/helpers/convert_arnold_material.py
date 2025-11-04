@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -23,7 +21,7 @@
 import logging as _logging
 import maya.cmds as mc
 
-_LOGGER = _logging.getLogger('azpy.dcc.maya.helpers.convert_arnold_material')
+_LOGGER = _logging.getLogger('DCCsi.azpy.dcc.maya.helpers.convert_arnold_material')
 
 
 def get_material_info(target_material: str):

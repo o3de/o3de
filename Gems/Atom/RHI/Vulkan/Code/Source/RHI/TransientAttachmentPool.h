@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/AliasedAttachmentAllocator.h>
 #include <RHI/AliasedHeap.h>
 
@@ -21,12 +21,12 @@ namespace AZ
         using AliasedAttachmentAllocator = RHI::AliasedAttachmentAllocator<AliasedHeap>;
 
         class TransientAttachmentPool final
-            : public RHI::TransientAttachmentPool
+            : public RHI::DeviceTransientAttachmentPool
         {
-            using Base = RHI::TransientAttachmentPool;
+            using Base = RHI::DeviceTransientAttachmentPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
             AZ_RTTI(TransientAttachmentPool, "5440AD98-D7EF-4C73-BA79-D281253BC048", Base);
 
             static RHI::Ptr<TransientAttachmentPool> Create();
@@ -36,12 +36,12 @@ namespace AZ
             TransientAttachmentPool() = default;
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::TransientAttachmentPool
+            // RHI::DeviceTransientAttachmentPool
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::TransientAttachmentPoolDescriptor& descriptor) override;
             void BeginInternal(const RHI::TransientAttachmentPoolCompileFlags compileFlags, const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
             void EndInternal() override;
-            RHI::Image* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
-            RHI::Buffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
+            RHI::DeviceImage* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;
+            RHI::DeviceBuffer* ActivateBuffer(const RHI::TransientBufferDescriptor& descriptor) override;
             void DeactivateBuffer(const RHI::AttachmentId& attachmentId) override;
             void DeactivateImage(const RHI::AttachmentId& attachmentId) override;
             void ShutdownInternal() override;

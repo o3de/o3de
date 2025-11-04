@@ -239,11 +239,11 @@ namespace AMD
                     ->DataElement(
                         AZ::Edit::UIHandlers::Color, &TressFXRenderingSettings::m_HairMatBaseColor, "Base Color",
                         "RGB color to be used for the base color of the hair.")
-                        ->Attribute(AZ_CRC("AlphaChannel", 0xa0cab5cf), true)
+                        ->Attribute(AZ_CRC_CE("AlphaChannel"), true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Color, &TressFXRenderingSettings::m_HairMatTipColor, "Mat Tip Color",
                         "RGB color to use for a blend from root to tip.")
-                        ->Attribute(AZ_CRC("AlphaChannel", 0xa0cab5cf), true)
+                        ->Attribute(AZ_CRC_CE("AlphaChannel"), true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_HairKDiffuse, "Hair Kdiffuse",
                         "Diffuse coefficient, think of it as a gain value. The Kajiya-Kay model diffuse component is proportional to "

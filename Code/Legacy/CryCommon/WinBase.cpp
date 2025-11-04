@@ -62,10 +62,6 @@
 #include <dirent.h>
 #endif
 
-#if defined(APPLE)
-    #include <AzFramework/Utils/SystemUtilsApple.h>
-#endif
-
 #if AZ_TRAIT_COMPILER_DEFINE_FS_ERRNO_TYPE
 typedef int FS_ERRNO_TYPE;
 
@@ -650,8 +646,6 @@ BOOL SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft)
     ft->dwHighDateTime = t.u.HighPart;
     return TRUE;
 }
-
-#define Int32x32To64(a, b) ((uint64)((uint64)(a)) * (uint64)((uint64)(b)))
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(AZ_RESTRICTED_PLATFORM)

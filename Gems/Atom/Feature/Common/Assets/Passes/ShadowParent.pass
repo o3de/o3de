@@ -133,12 +133,37 @@
                         "$type": "EsmShadowmapsPassData",
                         "LightType": "directional"
                     },
+                    "ImageAttachments": [
+                        {
+                            "Name": "OutputAttachment",
+                            "SizeSource": {
+                                "Source": {
+                                    "Pass": "Cascades",
+                                    "Attachment": "Shadowmap"
+                                }
+                            },
+                            "ArraySizeSource": {
+                                "Pass": "Cascades",
+                                "Attachment": "Shadowmap"
+                            },
+                            "ImageDescriptor": {
+                                "Format": "R32_FLOAT"
+                            }
+                        }
+                    ],
                     "Connections": [
                         {
                             "LocalSlot": "DepthShadowmaps",
                             "AttachmentRef": {
                                 "Pass": "Cascades",
                                 "Attachment": "Shadowmap"
+                            }
+                        },
+                        {
+                            "localSlot": "EsmShadowmaps",
+                            "AttachmentRef": {
+                                "Pass": "This",
+                                "Attachment": "OutputAttachment"
                             }
                         }
                     ]

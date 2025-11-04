@@ -10,9 +10,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPIExt/Rules/LodRule.h>
 #include <SceneAPIExt/Data/LodNodeSelectionList.h>
-
 
 namespace EMotionFX
 {
@@ -20,7 +20,7 @@ namespace EMotionFX
     {
         namespace Rule
         {
-            AZ_CLASS_ALLOCATOR_IMPL(LodRule, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(LodRule, AZ::SystemAllocator)
 
             SceneData::SceneNodeSelectionList& LodRule::GetSceneNodeSelectionList(size_t index)
             {
@@ -59,13 +59,9 @@ namespace EMotionFX
                 for (size_t i = 0; i < lodCount; ++i)
                 {
                     const auto& list = m_nodeSelectionLists[i];
-                    const size_t selectedNodeCount = list.GetSelectedNodeCount();
-                    for (size_t j = 0; j < selectedNodeCount; ++j)
+                    if (list.IsSelectedNode(nodePath))
                     {
-                        if (nodePath == list.GetSelectedNode(j))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
                 return false;
@@ -104,7 +100,8 @@ namespace EMotionFX
                             AZ::Edit::UIHandlers::Default, &LodRule::m_nodeSelectionLists, "Skeleton",
                             "Select the joints to assign to each level of detail.")
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "Additional LOD")
-                        ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC("LODTreeSelection", 0x25c27718));
+                            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ_CRC_CE("LODTreeSelection"))
+                            ->ElementAttribute(AZ_CRC_CE("FilterType"), azrtti_typeid<SceneDataTypes::IBoneData>());
                 }
             }
         }

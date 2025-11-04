@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include "EditorComponentBase.h"
 #include "EditorInspectorComponentBus.h"
 #include <AzCore/Serialization/SerializeContext.h>
@@ -18,7 +19,7 @@ namespace AzToolsFramework
         /**
          * Contains Inspector related data that needs to be stored on a per-entity level, such as component ordering per-entity
          */
-        class EditorInspectorComponent
+        class AZTF_API EditorInspectorComponent
             : public AzToolsFramework::Components::EditorComponentBase
             , public EditorInspectorComponentRequestBus::Handler
         {
@@ -58,17 +59,8 @@ namespace AzToolsFramework
             class ComponentOrderSerializationEvents
                 : public AZ::SerializeContext::IEventHandler
             {
-                /** 
-                 * Called right before we start reading from the instance pointed by classPtr.
-                 */
-                void OnReadBegin(void* classPtr) override
-                {
-                    EditorInspectorComponent* component = reinterpret_cast<EditorInspectorComponent*>(classPtr);
-                    component->PrepareSave();
-                }
-
                 /**
-                 * Called right after we finish writing data to the instance pointed at by classPtr.
+                 * Called after reading from a serialized file into a EditorInspectorComponent object.
                  */
                 void OnWriteEnd(void* classPtr) override
                 {
@@ -95,8 +87,6 @@ namespace AzToolsFramework
             ComponentOrderEntryArray m_componentOrderEntryArray; ///< The serialized order array which uses the persistent id mechanism as described above*/
 
             ComponentOrderArray m_componentOrderArray; ///< The simple vector of component id is what is used by the component order ebus and is generated from the serialized data
-            
-            bool m_componentOrderIsDirty = true; ///< This flag indicates our stored serialization order data is out of date and must be rebuilt before serialization occurs
         };
     } // namespace Components
 } // namespace AzToolsFramework

@@ -7,9 +7,10 @@
  */
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignmentId.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/parallel/mutex.h>
 
 class QPixmap;
 
@@ -24,6 +25,8 @@ namespace AZ
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            //! Using a mutex because this EBus is accessed from multiple threads.
+            using MutexType = AZStd::mutex;
 
             //! This notification is sent when a material preview image for a given entity and material assignment has been rendered by the
             //! preview rendering system

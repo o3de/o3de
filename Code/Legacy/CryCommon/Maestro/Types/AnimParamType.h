@@ -24,7 +24,7 @@ enum class AnimParamType
     // Parameter is specified by string. See CAnimParamType
     ByString                         = 8,
 
-    FOV                              = 0,
+    //FOV                              = 0,
     Position                         = 1,
     Rotation                         = 2,
     Scale                            = 3,

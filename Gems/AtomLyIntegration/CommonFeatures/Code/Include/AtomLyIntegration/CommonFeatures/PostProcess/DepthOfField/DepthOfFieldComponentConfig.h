@@ -19,6 +19,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(DepthOfFieldComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::DepthOfFieldComponentConfig, "{41E878A3-7DE6-4F27-AD14-FC115DE506F5}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);
@@ -38,7 +39,8 @@ namespace AZ
 
             bool IsCameraEntityInvalid() const { return !m_cameraEntityId.IsValid(); }
             bool ArePropertiesReadOnly() const { return !m_enabled || IsCameraEntityInvalid(); }
-            bool IsAutoFocusReadOnly() const { return !m_enableAutoFocus || ArePropertiesReadOnly(); }
+            bool IsAutoFocusReadOnly() const { return !m_enableAutoFocus || m_focusedEntityId.IsValid() || ArePropertiesReadOnly(); }
+            bool IsFocusedEntityReadonly() const { return !m_enableAutoFocus || ArePropertiesReadOnly(); }
             bool IsFocusDistanceReadOnly() const { return m_enableAutoFocus || ArePropertiesReadOnly(); }
         };
     }

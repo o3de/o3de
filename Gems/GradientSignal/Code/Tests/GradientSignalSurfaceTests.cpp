@@ -139,7 +139,7 @@ namespace UnitTest
         // Set arbitrary input data
         SetSurfacePoint(input, AZ::Vector3(1.0f), AZ::Vector3(0.0f), {});
         // Output should match the input, but with an added tag / value
-        SetSurfacePoint(expectedOutput, input.m_position, input.m_normal, { AZStd::make_pair<AZStd::string, float>(tag, gradientValue) });
+        SetSurfacePoint(expectedOutput, input.m_position, input.m_normal, { AZStd::pair<AZStd::string, float>(tag, gradientValue) });
 
         TestGradientSurfaceDataComponent(
             gradientValue,      // constant gradient value
@@ -193,7 +193,7 @@ namespace UnitTest
         SetSurfacePoint(input, AZ::Vector3(1.0f), AZ::Vector3(0.0f), {});
         // Output should match the input, but with two added tags
         SetSurfacePoint(expectedOutput, input.m_position, input.m_normal,
-                        { AZStd::make_pair<AZStd::string, float>(tag1, gradientValue), AZStd::make_pair<AZStd::string, float>(tag2, gradientValue) });
+                        { AZStd::pair<AZStd::string, float>(tag1, gradientValue), AZStd::pair<AZStd::string, float>(tag2, gradientValue) });
 
         TestGradientSurfaceDataComponent(
             gradientValue,      // constant gradient value
@@ -219,10 +219,10 @@ namespace UnitTest
         float gradientValue = 0.5f;
 
         // Set arbitrary input data
-        SetSurfacePoint(input, AZ::Vector3(1.0f), AZ::Vector3(0.0f), { AZStd::make_pair<AZStd::string, float>(preservedTag, 1.0f) });
+        SetSurfacePoint(input, AZ::Vector3(1.0f), AZ::Vector3(0.0f), { AZStd::pair<AZStd::string, float>(preservedTag, 1.0f) });
         // Output should match the input, but with two added tags
         SetSurfacePoint(expectedOutput, input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(preservedTag, 1.0f), AZStd::make_pair<AZStd::string, float>(modifierTag, gradientValue) });
+            { AZStd::pair<AZStd::string, float>(preservedTag, 1.0f), AZStd::pair<AZStd::string, float>(modifierTag, gradientValue) });
 
         TestGradientSurfaceDataComponent(
             gradientValue,      // constant gradient value
@@ -248,10 +248,10 @@ namespace UnitTest
         float inputValue = 0.75f;
 
         // Set arbitrary input data
-        SetSurfacePoint(input, AZ::Vector3(1.0f), AZ::Vector3(0.0f), { AZStd::make_pair<AZStd::string, float>(tag, inputValue) });
+        SetSurfacePoint(input, AZ::Vector3(1.0f), AZ::Vector3(0.0f), { AZStd::pair<AZStd::string, float>(tag, inputValue) });
         // Output should match the input - the higher input value on the tag is preserved
         SetSurfacePoint(expectedOutput, input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(tag, inputValue) });
+            { AZStd::pair<AZStd::string, float>(tag, inputValue) });
 
         TestGradientSurfaceDataComponent(
             gradientValue,      // constant gradient value
@@ -277,10 +277,10 @@ namespace UnitTest
         float inputValue = 0.25f;
 
         // Set arbitrary input data
-        SetSurfacePoint(input, AZ::Vector3(1.0f), AZ::Vector3(0.0f), { AZStd::make_pair<AZStd::string, float>(tag, inputValue) });
+        SetSurfacePoint(input, AZ::Vector3(1.0f), AZ::Vector3(0.0f), { AZStd::pair<AZStd::string, float>(tag, inputValue) });
         // Output should match the input, except that the value on the tag gets the higher modifier value
         SetSurfacePoint(expectedOutput, input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(tag, gradientValue) });
+            { AZStd::pair<AZStd::string, float>(tag, gradientValue) });
 
         TestGradientSurfaceDataComponent(
             gradientValue,      // constant gradient value
@@ -307,7 +307,7 @@ namespace UnitTest
         SetSurfacePoint(input, AZ::Vector3(-100000000.0f), AZ::Vector3(0.0f), {});
         // Output should match the input but with the tag added, even though the point was far away.
         SetSurfacePoint(expectedOutput, input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(tag, gradientValue) });
+            { AZStd::pair<AZStd::string, float>(tag, gradientValue) });
 
         TestGradientSurfaceDataComponent(
             gradientValue,      // constant gradient value
@@ -335,7 +335,7 @@ namespace UnitTest
         SetSurfacePoint(input, AZ::Vector3(0.25f), AZ::Vector3(0.0f), {});
         // Output should match the input but with the tag added, since the point is within the shape constraint.
         SetSurfacePoint(expectedOutput, input.m_position, input.m_normal,
-            { AZStd::make_pair<AZStd::string, float>(tag, gradientValue) });
+            { AZStd::pair<AZStd::string, float>(tag, gradientValue) });
 
         TestGradientSurfaceDataComponent(
             gradientValue,      // constant gradient value

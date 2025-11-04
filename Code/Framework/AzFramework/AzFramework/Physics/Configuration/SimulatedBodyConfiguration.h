@@ -13,6 +13,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ
 {
@@ -22,7 +23,7 @@ namespace AZ
 namespace AzPhysics
 {
     //! Base Class of all Physics Bodies that will be simulated.
-    struct SimulatedBodyConfiguration
+    struct AZF_API SimulatedBodyConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(AzPhysics::SimulatedBodyConfiguration, "{52844E3D-79C8-4F34-AF63-5C45ADE77F85}");

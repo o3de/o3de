@@ -18,12 +18,11 @@
 namespace UnitTest
 {
     class ScheduledEventTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_loggerComponent = AZStd::make_unique<AZ::LoggerSystemComponent>();
@@ -44,7 +43,6 @@ namespace UnitTest
             m_loggerComponent.reset();
 
             AZ::NameDictionary::Destroy();
-            TeardownAllocator();
         }
 
         void TestBasicEvent()

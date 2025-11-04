@@ -9,7 +9,7 @@
 #include <AzCore/Math/Random.h>
 #include <Tests/SystemComponentFixture.h>
 #include <Tests/Matchers.h>
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Mesh.h>
@@ -69,6 +69,7 @@ namespace EMotionFX
         void TearDown() override
         {
             m_actorInstance->Destroy();
+            m_actor.reset();
             SystemComponentFixture::TearDown();
         }
 
@@ -150,7 +151,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<bool>
     {
     };
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsBoolParam, ::testing::Bool());
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsBoolParam, ::testing::Bool());
 
     TEST_F(PoseTests, Clear)
     {
@@ -489,8 +490,13 @@ namespace EMotionFX
 
             // Set the model space transform directly, so that it won't automatically be updated.
             pose.SetModelSpaceTransformDirect(i, newTransform);
+            #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+            EXPECT_THAT(pose.GetModelSpaceTransformDirect(i), IsClose(newTransform));
+            EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(oldLocalSpaceTransform));
+            #else
             EXPECT_EQ(pose.GetModelSpaceTransformDirect(i), newTransform);
             EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), oldLocalSpaceTransform);
+            #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
 
         // We have to manually update the local space transforms as we directly set them.
@@ -512,7 +518,11 @@ namespace EMotionFX
         for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             // Get the local space transform without auto-updating them, to see if update call worked.
+            #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+            EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity())));
+            #else
             EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity()));
+            #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
     }
 
@@ -529,8 +539,13 @@ namespace EMotionFX
 
             // Set the local space without invalidating the model space transform.
             pose.SetModelSpaceTransformDirect(i, newTransform);
+            #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+            EXPECT_THAT(pose.GetModelSpaceTransformDirect(i), IsClose(newTransform));
+            EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(oldLocalSpaceTransform));
+            #else
             EXPECT_EQ(pose.GetModelSpaceTransformDirect(i), newTransform);
             EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), oldLocalSpaceTransform);
+            #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
 
         // Update all local space transforms regardless of the invalidate flag.
@@ -539,7 +554,11 @@ namespace EMotionFX
         for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             // Get the local space transform without auto-updating them, to see if update call worked.
+            #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+            EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity())));
+            #else
             EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity()));
+            #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
     }
 
@@ -768,7 +787,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<float>
     {
     };
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsBlendWeightParam, ::testing::ValuesIn({0.0f, 0.1f, 0.25f, 0.33f, 0.5f, 0.77f, 1.0f}));
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsBlendWeightParam, ::testing::ValuesIn({0.0f, 0.1f, 0.25f, 0.33f, 0.5f, 0.77f, 1.0f}));
 
     TEST_P(PoseTestsBlendWeightParam, Blend)
     {
@@ -884,7 +903,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<PoseTestsMultiplyFunction>
     {
     };
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsMultiply, ::testing::ValuesIn({
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsMultiply, ::testing::ValuesIn({
         PreMultiply, Multiply, MultiplyInverse}));
 
     TEST_P(PoseTestsMultiply, Multiply)
@@ -946,7 +965,7 @@ namespace EMotionFX
         , public ::testing::WithParamInterface<float>
     {
     };
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsSum, ::testing::ValuesIn({0.0f, 0.1f, 0.25f, 0.33f, 0.5f, 0.77f, 1.0f}));
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsSum, ::testing::ValuesIn({0.0f, 0.1f, 0.25f, 0.33f, 0.5f, 0.77f, 1.0f}));
 
     TEST_P(PoseTestsSum, Sum)
     {
@@ -1065,7 +1084,7 @@ namespace EMotionFX
         {true, ApplyAdditiveWeight, 0.0f}, {true, ApplyAdditiveWeight, 0.25f}, {true, ApplyAdditiveWeight, 0.5f}, {true, ApplyAdditiveWeight, 1.0f}
     };
 
-    INSTANTIATE_TEST_CASE_P(PoseTests, PoseTestsAdditive, ::testing::ValuesIn(poseTestsAdditiveData));
+    INSTANTIATE_TEST_SUITE_P(PoseTests, PoseTestsAdditive, ::testing::ValuesIn(poseTestsAdditiveData));
 
     TEST_P(PoseTestsAdditive, Additive)
     {

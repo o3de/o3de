@@ -169,7 +169,7 @@ namespace ScriptCanvasEditor
 
     GraphCanvas::ActionGroupId ConvertVariableNodeToReferenceAction::GetActionGroupId() const
     {
-        return AZ_CRC("VariableConversion", 0x157beab0);
+        return AZ_CRC_CE("VariableConversion");
     }
 
     void ConvertVariableNodeToReferenceAction::RefreshAction(const GraphCanvas::GraphId& graphId, const AZ::EntityId& targetId)
@@ -216,7 +216,7 @@ namespace ScriptCanvasEditor
 
     GraphCanvas::ActionGroupId ConvertReferenceToVariableNodeAction::GetActionGroupId() const
     {
-        return AZ_CRC("VariableConversion", 0x157beab0);
+        return AZ_CRC_CE("VariableConversion");
     }
 
 
@@ -837,7 +837,7 @@ namespace ScriptCanvasEditor
         : GraphCanvas::SceneContextMenu(ScriptCanvasEditor::AssetEditorId)
     {
 
-        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        auto userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         if (userSettings)
         {
             m_userNodePaletteWidth = userSettings->m_sceneContextMenuNodePaletteWidth;

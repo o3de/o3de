@@ -216,10 +216,10 @@ namespace EMStudio
         // create the main aidget and put it to the dialog stack
         QVBoxLayout* layout = new QVBoxLayout();
         setLayout(layout);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
 
         QVBoxLayout* tableLayout = new QVBoxLayout();
-        tableLayout->setMargin(0);
+        tableLayout->setContentsMargins(0, 0, 0, 0);
         tableLayout->setSpacing(2);
 
         QToolBar* toolBar = new QToolBar(this);
@@ -1617,7 +1617,12 @@ namespace EMStudio
                     for (size_t i = 0; i < selection.GetNumSelectedMotions(); ++i)
                     {
                         EMotionFX::Motion* motion = selection.GetMotion(i);
-                        AzQtComponents::ShowFileOnDesktop(motion->GetFileName());
+
+                        // The browser action should point to the source file's folder.
+                        AZStd::string fileName = motion->GetFileName();
+                        GetMainWindow()->GetFileManager()->RelocateToAssetSourceFolder(fileName);
+
+                        AzQtComponents::ShowFileOnDesktop(fileName.c_str());
                     }
                 });
         }

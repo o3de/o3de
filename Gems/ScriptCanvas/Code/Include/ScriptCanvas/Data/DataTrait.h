@@ -8,49 +8,18 @@
 
 #pragma once
 
-#include <Data/BehaviorContextObjectPtr.h>
-#include <Data/Data.h>
-
-//#include <AzFramework/Entity/EntityContextBus.h>
-//#include <AzFramework/Slice/SliceInstantiationTicket.h>
+#include <ScriptCanvas/Data/BehaviorContextObjectPtr.h>
+#include <ScriptCanvas/Data/Constants.h>
+#include <ScriptCanvas/Data/Data.h>
+#include <ScriptCanvas/Data/DataTraitBase.h>
 
 namespace ScriptCanvas
 {
     namespace Data
-    {   
-        template<typename t_Type>
-        struct TraitsBase
-        {
-            using ThisType = TraitsBase<t_Type>;
-            using Type = AZStd::decay_t<t_Type>;
-            static const bool s_isAutoBoxed = false;
-            static const bool s_isKey = false;
-            static const bool s_isNative = false;
-            static const eType s_type = eType::Invalid;
-
-            static AZ::Uuid GetAZType(const Data::Type& = {}) { return azrtti_typeid<t_Type>(); }
-            static Data::Type GetSCType(const AZ::TypeId& = AZ::TypeId::CreateNull()) { return Data::FromAZType(GetAZType()); }
-            static AZStd::string GetName(const Data::Type& = {}) { return Data::GetName(Data::FromAZType(GetAZType())); }
-            // The static_assert needs to rely on the template parameter in order to avoid the clang frontend from asserting when parsing the template declaration
-            static Type GetDefault(const Data::Type& = {}) { static_assert((!AZStd::is_same<t_Type, t_Type>::value), "implement in the typed function"); return {}; }
-            static bool IsDefault(const AZStd::any&, const Data::Type& = {}) { static_assert((!AZStd::is_same<t_Type, t_Type>::value), "implement in the typed function"); return {}; }
-        };
-
-        
-        template<typename t_Type>
-        struct Traits : public TraitsBase<t_Type>
-        {
-        };
-                
-        // a compile time map of eType back to underlying AZ type and traits
-        template<eType>
-        struct eTraits
-        {
-        };
-
+    {                   
         struct TypeErasedDataTraits
         {
-            AZ_CLASS_ALLOCATOR(TypeErasedDataTraits, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TypeErasedDataTraits, AZ::SystemAllocator);
 
             TypeErasedDataTraits() = default;
 
@@ -250,6 +219,21 @@ namespace ScriptCanvas
         };
 
         template<>
+        struct Traits<MatrixMxNType> : public TraitsBase<MatrixMxNType>
+        {
+            using Type = MatrixMxNType;
+            static const bool s_isAutoBoxed = false;
+            static const bool s_isNative = true;
+            static const eType s_type = eType::MatrixMxN;
+
+            static AZ::Uuid GetAZType(const Data::Type & = {}) { return azrtti_typeid<MatrixMxNType>(); }
+            static Data::Type GetSCType(const AZ::TypeId & = AZ::TypeId::CreateNull()) { return Data::Type::MatrixMxN(); }
+            static AZStd::string GetName(const Data::Type & = {}) { return "MatrixMxN"; }
+            static Type GetDefault(const Data::Type & = {}) { return MatrixMxNType::CreateZero(0, 0); }
+            static bool IsDefault(const Type&, const Data::Type& = {}) { return false; }
+        };
+
+        template<>
         struct Traits<NumberType> : public TraitsBase<NumberType>
         {
             using Type = NumberType;
@@ -393,6 +377,21 @@ namespace ScriptCanvas
             static bool IsDefault(const Type& value, const Data::Type& = {}) { return value == GetDefault(); }
         };
 
+        template<>
+        struct Traits<VectorNType> : public TraitsBase<VectorNType>
+        {
+            using Type = VectorNType;
+            static const bool s_isAutoBoxed = false;
+            static const bool s_isNative = true;
+            static const eType s_type = eType::VectorN;
+
+            static AZ::Uuid GetAZType(const Data::Type & = {}) { return azrtti_typeid<VectorNType>(); }
+            static Data::Type GetSCType(const AZ::TypeId & = AZ::TypeId::CreateNull()) { return Data::Type::VectorN(); }
+            static AZStd::string GetName(const Data::Type & = {}) { return "VectorN"; }
+            static Type GetDefault(const Data::Type & = {}) { return VectorNType::CreateZero(0); }
+            static bool IsDefault(const Type&, const Data::Type& = {}) { return false; }
+        };
+
         /*template<>
         struct Traits<AzFramework::SliceInstantiationTicket> : public TraitsBase<AzFramework::SliceInstantiationTicket>
         {
@@ -477,6 +476,9 @@ namespace ScriptCanvas
         struct eTraits<eType::Matrix4x4> : Traits<Matrix4x4Type> {};
 
         template<>
+        struct eTraits<eType::MatrixMxN> : Traits<MatrixMxNType> {};
+
+        template<>
         struct eTraits<eType::Number> : Traits<NumberType> {};
 
         template<>
@@ -503,5 +505,7 @@ namespace ScriptCanvas
         template<>
         struct eTraits<eType::Vector4> : Traits<Vector4Type> {};
 
-    } 
+        template<>
+        struct eTraits<eType::VectorN> : Traits<VectorNType> {};
+    }
 } 

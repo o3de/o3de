@@ -25,6 +25,7 @@
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
+#include <SceneAPI/SceneData/Rules/UnmodifiableRule.h>
 #include <AzCore/Component/EntityId.h>
 
 namespace AZ
@@ -90,8 +91,10 @@ namespace AZ::SceneAPI
 
         // compute the filenames of the scene file
         AZStd::string relativeSourcePath = scene.GetSourceFilename();
-        // the watch folder and forward slash is used in the asset hint path of the file
         AZStd::string watchFolder = scene.GetWatchFolder() + "/";
+        // the watch folder and forward slash is used in the asset hint path of the file
+        AZ::StringFunc::Replace(relativeSourcePath, "\\", "/");
+        AZ::StringFunc::Replace(watchFolder, "\\", "/");
         AZ::StringFunc::Replace(relativeSourcePath, watchFolder.c_str(), "");
         AZ::StringFunc::Replace(relativeSourcePath, ".", "_");
         AZStd::string filenameOnly{ relativeSourcePath };
@@ -157,7 +160,18 @@ namespace AZ::SceneAPI
                         {
                             if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(childContent.get()))
                             {
-                                nodeDataForEntity.m_transformIndex = childIndex;
+                                if (!nodeDataForEntity.m_transformIndex.IsValid())
+                                {
+                                    // The first child transform of the mesh is applied to the mesh entity
+                                    nodeDataForEntity.m_transformIndex = childIndex;
+                                }
+                                else
+                                {
+                                    // All other child transforms of the mesh represent unique entities
+                                    NodeDataForEntity newNodeDataForEntity;
+                                    newNodeDataForEntity.m_transformIndex = childIndex;
+                                    nodeDataMap.emplace(NodeDataMapEntry{ childIndex, AZStd::move(newNodeDataForEntity) });
+                                }
                             }
                             else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(childContent.get()))
                             {
@@ -249,7 +263,8 @@ namespace AZ::SceneAPI
     bool DefaultProceduralPrefabGroup::AddEditorMeshComponent(
         const AZ::EntityId& entityId,
         const AZStd::string& relativeSourcePath,
-        const AZStd::string& meshGroupName) const
+        const AZStd::string& meshGroupName,
+        const AZStd::string& sourceFileExtension) const
     {
         // Since the mesh component lives in a gem, then create it by name
         AzFramework::BehaviorComponentId editorMeshComponent;
@@ -266,15 +281,14 @@ namespace AZ::SceneAPI
         }
 
         // assign mesh asset id hint using JSON
-        AZStd::string modelAssetPath;
-        modelAssetPath = relativeSourcePath;
-        AZ::StringFunc::Path::ReplaceFullName(modelAssetPath, meshGroupName.c_str());
-        AZ::StringFunc::Replace(modelAssetPath, "\\", "/"); // asset paths use forward slashes
+        AZ::IO::Path modelAssetPath(relativeSourcePath, '/');
+        modelAssetPath.ReplaceFilename(AZ::IO::PathView(meshGroupName));
+        modelAssetPath.ReplaceExtension(AZ::IO::PathView(sourceFileExtension));
 
         auto meshAssetJson = AZStd::string::format(
             R"JSON(
                    {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
-             )JSON", modelAssetPath.c_str());
+             )JSON", modelAssetPath.LexicallyNormal().String().c_str());
 
         bool result = false;
         AzToolsFramework::EntityUtilityBus::BroadcastResult(
@@ -296,62 +310,16 @@ namespace AZ::SceneAPI
         const Containers::Scene& scene,
         const AZStd::string& relativeSourcePath) const
     {
-        const auto meshNodeIndex = nodeData.m_meshIndex;
-        const auto propertyDataIndex = nodeData.m_propertyMapIndex;
-
-        const auto& graph = scene.GetGraph();
-        const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
-        const auto meshSubId =
-            DataTypes::Utilities::CreateStableUuid(scene, azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(), meshNodeName.GetPath());
-
-        AZStd::string meshGroupName = "default_";
-        meshGroupName += scene.GetName();
-        meshGroupName += meshSubId.ToFixedString().c_str();
-
-        // clean up the mesh group name
-        AZStd::replace_if(
-            meshGroupName.begin(),
-            meshGroupName.end(),
-            [](char c)
-            {
-                return (!AZStd::is_alnum(c) && c != '_');
-            },
-            '_');
-
-        AZStd::string meshNodePath{ meshNodeName.GetPath() };
-        auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
-        meshGroup->SetName(meshGroupName);
-        meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
-        for (const auto& meshGoupNamePair : nodeDataMap)
-        {
-            if (meshGoupNamePair.second.m_meshIndex.IsValid()
-                && meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
-            {
-                const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.m_meshIndex);
-                meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
-            }
-        }
-        meshGroup->OverrideId(meshSubId);
-
-        // this clears out the mesh coordinates each mesh group will be rotated and translated
-        // using the attached scene graph node
-        auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
-        coordinateSystemRule->SetUseAdvancedData(true);
-        coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
-        coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
-        coordinateSystemRule->SetScale(1.0f);
-        meshGroup->GetRuleContainer().AddRule(coordinateSystemRule);
-
-        // create an empty LOD rule in order to skip the LOD buffer creation
-        meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::LodRule>());
-
+        AZStd::shared_ptr<SceneData::MeshGroup> meshGroup(BuildMeshGroupForNode(scene, nodeData, nodeDataMap));
         manifestUpdates.emplace_back(meshGroup);
 
-        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroupName) == false)
+        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroup->GetName(), scene.GetSourceExtension()) == false)
         {
             return false;
         }
 
+        const auto& graph = scene.GetGraph();
+        const auto propertyDataIndex = nodeData.m_propertyMapIndex;
         if (propertyDataIndex.IsValid())
         {
             const auto customPropertyData = azrtti_cast<const DataTypes::ICustomPropertyData*>(graph.GetNodeContent(propertyDataIndex));
@@ -368,6 +336,85 @@ namespace AZ::SceneAPI
         }
 
         return true;
+    }
+
+    AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> DefaultProceduralPrefabGroup::GenerateDefaultPrefabMeshGroups(
+        const Scene& scene) const
+    {
+        AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>> newMeshGroups;
+        auto nodeDataMap = CalculateNodeDataMap(scene);
+        if (nodeDataMap.empty())
+        {
+            return newMeshGroups;
+        }
+
+        for (const auto& entry : nodeDataMap)
+        {
+            newMeshGroups.push_back(BuildMeshGroupForNode(scene, entry.second, nodeDataMap));
+
+        }
+
+        return newMeshGroups;
+    }
+
+    AZStd::shared_ptr<SceneData::MeshGroup> DefaultProceduralPrefabGroup::BuildMeshGroupForNode(
+            const Scene& scene,
+            const NodeDataForEntity& nodeData,
+            const NodeDataMap& nodeDataMap) const
+    {
+        const auto meshNodeIndex = nodeData.m_meshIndex;
+
+        const auto& graph = scene.GetGraph();
+        const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
+        const auto meshSubId =
+            DataTypes::Utilities::CreateStableUuid(scene, azrtti_typeid<SceneData::MeshGroup>(), meshNodeName.GetPath());
+
+        AZStd::string meshGroupName = "default_";
+        meshGroupName += scene.GetName();
+        meshGroupName += meshSubId.ToFixedString().c_str();
+
+        // clean up the mesh group name
+        AZStd::replace_if(
+            meshGroupName.begin(),
+            meshGroupName.end(),
+            [](char c)
+            {
+                return (!AZStd::is_alnum(c) && c != '_');
+            },
+            '_');
+
+        AZStd::string meshNodePath{ meshNodeName.GetPath() };
+        auto meshGroup = AZStd::make_shared<SceneData::MeshGroup>();
+        meshGroup->SetName(meshGroupName);
+        meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
+        for (const auto& meshGoupNamePair : nodeDataMap)
+        {
+            if (meshGoupNamePair.second.m_meshIndex.IsValid() && meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
+            {
+                const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.m_meshIndex);
+                meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
+            }
+        }
+        meshGroup->OverrideId(meshSubId);
+
+        // tag this mesh group as a "default mesh group" using this rule
+        meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::ProceduralMeshGroupRule>());
+
+        // Don't let users edit these mesh groups, because they're procedural they'll be re-generated and overwrite any changes.
+        meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::UnmodifiableRule>());
+
+        // this clears out the mesh coordinates each mesh group will be rotated and translated
+        // using the attached scene graph node
+        auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
+        coordinateSystemRule->SetUseAdvancedData(true);
+        coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
+        coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
+        coordinateSystemRule->SetScale(1.0f);
+        meshGroup->GetRuleContainer().AddRule(coordinateSystemRule);
+
+        // create an empty LOD rule in order to skip the LOD buffer creation
+        meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::LodRule>());
+        return meshGroup;
     }
 
     DefaultProceduralPrefabGroup::NodeEntityMap DefaultProceduralPrefabGroup::CreateNodeEntityMap(
@@ -411,23 +458,23 @@ namespace AZ::SceneAPI
                 }
             }
 
-            nodeEntityMap.insert({ thisNodeIndex, entityId });
+            nodeEntityMap.emplace(thisNodeIndex, AZStd::make_pair(entityId, nodeNameForEntity.GetName()));
         }
 
         return nodeEntityMap;
     }
 
-    DefaultProceduralPrefabGroup::EntityIdList DefaultProceduralPrefabGroup::FixUpEntityParenting(
+    DefaultProceduralPrefabGroup::EntityIdMap DefaultProceduralPrefabGroup::FixUpEntityParenting(
         const NodeEntityMap& nodeEntityMap,
         const Containers::SceneGraph& graph,
         const NodeDataMap& nodeDataMap) const
     {
-        EntityIdList entities;
-        entities.reserve(nodeEntityMap.size());
+        EntityIdMap entities;
 
         for (const auto& nodeEntity : nodeEntityMap)
         {
-            entities.emplace_back(nodeEntity.second);
+            const AZStd::pair<AZ::EntityId, AzToolsFramework::Prefab::EntityAlias>& entityIdAliasPair = nodeEntity.second;
+            entities.emplace(entityIdAliasPair.first, entityIdAliasPair.second);
 
             // find matching parent EntityId (if any)
             AZ::EntityId parentEntityId;
@@ -441,7 +488,7 @@ namespace AZ::SceneAPI
                     auto parentEntiyIterator = nodeEntityMap.find(parentNodeIterator->first);
                     if (nodeEntityMap.end() != parentEntiyIterator)
                     {
-                        parentEntityId = parentEntiyIterator->second;
+                        parentEntityId = parentEntiyIterator->second.first;
                         break;
                     }
                 }
@@ -455,7 +502,7 @@ namespace AZ::SceneAPI
                 }
             }
 
-            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(nodeEntity.second);
+            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityIdAliasPair.first);
             auto* entityTransform = entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
             if (!entityTransform)
             {
@@ -483,7 +530,7 @@ namespace AZ::SceneAPI
                 entityTransform->SetLocalTM(AZ::Transform::CreateUniformScale(1.0f));
             }
 
-            PrefabGroupNotificationBus::Broadcast(&PrefabGroupNotificationBus::Events::OnUpdatePrefabEntity, nodeEntity.second);
+            PrefabGroupNotificationBus::Broadcast(&PrefabGroupNotificationBus::Events::OnUpdatePrefabEntity, entityIdAliasPair.first);
         }
 
         return entities;
@@ -492,7 +539,7 @@ namespace AZ::SceneAPI
     bool DefaultProceduralPrefabGroup::CreatePrefabGroupManifestUpdates(
         ManifestUpdates& manifestUpdates,
         const Containers::Scene& scene,
-        const EntityIdList& entities,
+        const EntityIdMap& entities,
         const AZStd::string& filenameOnly,
         const AZStd::string& relativeSourcePath) const
     {
@@ -513,7 +560,7 @@ namespace AZ::SceneAPI
         // create prefab group for entire stack
         AzToolsFramework::Prefab::PrefabSystemScriptingBus::BroadcastResult(
             prefabTemplateId,
-            &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplate,
+            &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplateWithCustomEntityAliases,
             entities,
             prefabTemplateName);
 

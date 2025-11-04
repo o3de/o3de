@@ -1,0 +1,4 @@
+#
+# Git LFS (see https://git-lfs.github.com/)
+#
+Docs/assets/img/troubleshooting/*.png filter= diff= merge= -text

@@ -28,7 +28,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientSurfaceDataConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientSurfaceDataConfig, AZ::SystemAllocator);
         AZ_RTTI(GradientSurfaceDataConfig, "{34516BA4-2B13-4A84-A46B-01E1980CA778}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         float m_thresholdMin = 0.1f;

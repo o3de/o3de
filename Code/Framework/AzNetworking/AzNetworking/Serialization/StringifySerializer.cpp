@@ -35,12 +35,6 @@ namespace AzNetworking
         return ProcessData(name, value);
     }
 
-    bool StringifySerializer::Serialize(char& value, const char* name, char, char)
-    {
-        const int val = value; // Print chars as integers
-        return ProcessData(name, val);
-    }
-
     bool StringifySerializer::Serialize(int8_t& value, const char* name, int8_t, int8_t)
     {
         return ProcessData(name, value);
@@ -56,7 +50,12 @@ namespace AzNetworking
         return ProcessData(name, value);
     }
 
-    bool StringifySerializer::Serialize(int64_t& value, const char* name, int64_t, int64_t)
+    bool StringifySerializer::Serialize(long& value, const char* name, long, long)
+    {
+        return ProcessData(name, value);
+    }
+
+    bool StringifySerializer::Serialize(AZ::s64& value, const char* name, AZ::s64, AZ::s64)
     {
         return ProcessData(name, value);
     }
@@ -76,7 +75,12 @@ namespace AzNetworking
         return ProcessData(name, value);
     }
 
-    bool StringifySerializer::Serialize(uint64_t& value, const char* name, uint64_t, uint64_t)
+    bool StringifySerializer::Serialize(unsigned long& value, const char* name, unsigned long, unsigned long)
+    {
+        return ProcessData(name, value);
+    }
+
+    bool StringifySerializer::Serialize(AZ::u64& value, const char* name, AZ::u64, AZ::u64)
     {
         return ProcessData(name, value);
     }
@@ -136,6 +140,15 @@ namespace AzNetworking
     {
         const AZStd::string keyString = m_prefix + name;
         AZ::CVarFixedString valueString = AZ::ConsoleTypeHelpers::ValueToString(value);
+
+        // Verify that the serialization isn't silently accidentally replacing an existing key with a different value.
+        AZ_Assert(
+            !m_valueMap.contains(keyString) || (m_valueMap[keyString].compare(valueString.c_str()) == 0),
+            "Value map contains '%s' with value '%s', about to be overwritten with '%s'.",
+            keyString.c_str(),
+            m_valueMap[keyString].c_str(),
+            valueString.c_str());
+
         m_valueMap[keyString] = valueString.c_str();
         return true;
     }

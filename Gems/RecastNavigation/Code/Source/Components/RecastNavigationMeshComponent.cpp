@@ -8,7 +8,6 @@
 
 #include "RecastNavigationMeshComponent.h"
 
-#include <AzCore/Preprocessor/CodeGen.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace RecastNavigation

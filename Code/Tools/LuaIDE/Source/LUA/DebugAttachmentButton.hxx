@@ -34,7 +34,7 @@ namespace LUAEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(DebugAttachmentButton, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugAttachmentButton, AZ::SystemAllocator);
 
         DebugAttachmentButton(QWidget *pParent = 0);
         virtual ~DebugAttachmentButton();

@@ -21,7 +21,8 @@ namespace ${SanitizedCppName}
         , public AZ::Component
     {
     public:
-        AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}");
+        AZ_COMPONENT_DECL(${SanitizedCppName}EditorSystemComponent);
+
         static void Reflect(AZ::ReflectContext* context);
 
         ${SanitizedCppName}EditorSystemComponent();
@@ -34,7 +35,7 @@ namespace ${SanitizedCppName}
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // AZ::Component
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
     };
 } // namespace ${SanitizedCppName}

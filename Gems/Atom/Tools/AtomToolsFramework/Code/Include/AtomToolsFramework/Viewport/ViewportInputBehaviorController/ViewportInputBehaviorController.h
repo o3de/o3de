@@ -26,7 +26,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_TYPE_INFO(ViewportInputBehaviorController, "{569A0544-7654-4DCE-8156-00A71B408374}");
-        AZ_CLASS_ALLOCATOR(ViewportInputBehaviorController, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ViewportInputBehaviorController, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(ViewportInputBehaviorController);
 
         using KeyMask = uint32_t;
@@ -57,8 +57,9 @@ namespace AtomToolsFramework
         const AZ::EntityId& GetEnvironmentEntityId() const override;
         const AZ::Vector3& GetObjectPosition() const override;
         void SetObjectPosition(const AZ::Vector3& objectPosition) override;
-        float GetDistanceToObject() const override;
-        float GetRadius() const override;
+        float GetObjectRadiusMin() const override;
+        float GetObjectRadius() const override;
+        float GetObjectDistance() const override;
         void Reset() override;
         void SetFieldOfView(float value) override;
         bool IsCameraCentered() const override;

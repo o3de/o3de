@@ -60,6 +60,9 @@ namespace AZ
         RHI::Format GetFormat();
 
         void SetAsCubemap();
+
+        // Called automatically if size.depth > 1 in SetSize().
+        void SetAsVolumeTexture();
         
         void SetMipLevels(uint32_t mipLevels);
         uint32_t GetMipLevels();

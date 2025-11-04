@@ -7,6 +7,7 @@
  */
 
 #include <Model/MaterialAssetBuilderComponent.h>
+#include <Material/MaterialBuilderUtils.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -33,6 +34,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
+
 namespace AZ
 {
     namespace RPI
@@ -52,12 +54,12 @@ namespace AZ
 
         void MaterialAssetDependenciesComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("MaterialAssetDependenciesService", 0x28bbd0f3));
+            provided.push_back(AZ_CRC_CE("MaterialAssetDependenciesService"));
         }
 
         void MaterialAssetDependenciesComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("MaterialAssetDependenciesService", 0x28bbd0f3));
+            incompatible.push_back(AZ_CRC_CE("MaterialAssetDependenciesService"));
         }
 
         void MaterialAssetDependenciesComponent::Activate()
@@ -85,27 +87,11 @@ namespace AZ
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
 
                 AssetBuilderSDK::JobDependency jobDependency;
-                jobDependency.m_jobKey = "Atom Material Builder";
+                jobDependency.m_jobKey = "Material Type Builder (Final Stage)";
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
                 jobDependency.m_productSubIds.push_back(0);
-
-                // If FinalizeMaterialAssets is true, then a job dependency is needed so the material builder can validate
-                // MaterialAsset properties against the MaterialTypeAsset at asset build time. If FinalizeMaterialAssets is false, the
-                // material properties will be validated at runtime when the material is loaded, so the job dependency is needed only for
-                // first-time processing to set up the initial MaterialAsset. This speeds up AP processing time when a materialtype file is
-                // edited (e.g. 10s when editing StandardPBR.materialtype on AtomTest project from 45s).
-
-                // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data
-                // won't be used. However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the
-                // material type asset so the builder can get it's AssetId. This can significantly reduce AP processing time when a material
-                // type or its shaders are edited.
-
-                // Note that without the normal job dependencies, materials may not load or reload consistently or in sync with shader and
-                // material type changes without manually monitoring and handling dependency changes.
-                jobDependency.m_type = MaterialUtils::BuildersShouldFinalizeMaterialAssets()
-                    ? AssetBuilderSDK::JobDependencyType::Order
-                    : AssetBuilderSDK::JobDependencyType::OrderOnce;
+                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
 
                 jobDependencyList.push_back(jobDependency);
             }
@@ -118,8 +104,6 @@ namespace AZ
             AZStd::string conversionInfo = "[Material conversion info missing]";
             RPI::MaterialConverterBus::BroadcastResult(conversionInfo, &RPI::MaterialConverterBus::Events::GetFingerprintInfo);
             fingerprintInfo.insert(conversionInfo);
-             
-            fingerprintInfo.insert(AZStd::string::format("[BuildersShouldFinalizeMaterialAssets=%d]", MaterialUtils::BuildersShouldFinalizeMaterialAssets()));
         }
 
         void MaterialAssetBuilderComponent::Reflect(ReflectContext* context)
@@ -232,8 +216,6 @@ namespace AZ
                 }
             }
             
-            MaterialAssetProcessingMode processingMode = MaterialUtils::BuildersShouldFinalizeMaterialAssets() ? MaterialAssetProcessingMode::PreBake : MaterialAssetProcessingMode::DeferredBake;
-
             // Build material assets. 
             for (auto& itr : materialSourceDataByUid)
             {
@@ -241,7 +223,7 @@ namespace AZ
                 Data::AssetId assetId(sourceSceneUuid, GetMaterialAssetSubId(materialUid));
 
                 auto materialSourceData = itr.second;
-                Outcome<Data::Asset<MaterialAsset>> result = materialSourceData.m_data.CreateMaterialAsset(assetId, "", processingMode, false);
+                Outcome<Data::Asset<MaterialAsset>> result = materialSourceData.m_data.CreateMaterialAsset(assetId, "", false);
                 if (result.IsSuccess())
                 {
                     context.m_outputMaterialsByUid[materialUid] = { result.GetValue(), materialSourceData.m_name };

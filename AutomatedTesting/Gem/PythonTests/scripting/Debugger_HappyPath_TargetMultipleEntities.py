@@ -58,6 +58,7 @@ def Debugger_HappyPath_TargetMultipleEntities():
     from utils import TestHelper as helper
     from utils import Report
 
+    TEMPLATE_NAME ="lvl_template_name"
     LEVEL_NAME = "tmp_level"
     ASSET_NAME_1 = "ScriptCanvas_TwoComponents0.scriptcanvas"
     ASSET_NAME_2 = "ScriptCanvas_TwoComponents1.scriptcanvas"
@@ -70,7 +71,7 @@ def Debugger_HappyPath_TargetMultipleEntities():
 
     # 1) Create temp level
     general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
+    result = general.create_level_no_prompt(TEMPLATE_NAME, LEVEL_NAME, 128, 1, 512, True)
     Report.critical_result(Tests.level_created, result == 0)
     helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
     general.close_pane("Error Report")

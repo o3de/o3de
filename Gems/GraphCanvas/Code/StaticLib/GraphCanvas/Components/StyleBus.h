@@ -9,11 +9,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
-#include <QColor>
-#include <QPixmap>
-AZ_POP_DISABLE_WARNING
-
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Uuid.h>
@@ -24,6 +19,8 @@ AZ_POP_DISABLE_WARNING
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/Styling/Selector.h>
 
+class QColor;
+class QPixmap;
 class QVariant;
 
 namespace GraphCanvas
@@ -33,7 +30,7 @@ namespace GraphCanvas
         class StyleHelper;
     }
 
-    static const AZ::Crc32 StyledGraphicItemServiceCrc = AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4);
+    static const AZ::Crc32 StyledGraphicItemServiceCrc = AZ_CRC_CE("GraphCanvas_StyledGraphicItemService");
 
     ///////////////////////////////////////////////////////////////////////////////////
     //! StyledEntityRequests
@@ -63,20 +60,7 @@ namespace GraphCanvas
         virtual AZStd::string GetClass() const = 0;
 
         //! Returns <element>.<class>
-        virtual AZStd::string GetFullStyleElement() const
-        {
-            AZStd::string element = GetElement();
-            AZStd::string subStyle = GetClass();
-
-            if (subStyle.empty())
-            {
-                return element;
-            }
-            else
-            {
-                return AZStd::string::format("%s.%s", element.c_str(), subStyle.c_str());
-            }
-        }
+        virtual AZStd::string GetFullStyleElement() const;
     };
 
     using StyledEntityRequestBus = AZ::EBus<StyledEntityRequests>;
@@ -92,38 +76,12 @@ namespace GraphCanvas
 
         float m_transitionPercent = 0.1f;
 
-        void ClearPalettes()
-        {
-            m_colorPalettes.clear();
-            m_paletteCrc = AZ::Crc32();
-        }
-
-        void ReservePalettes(size_t size)
-        {
-            m_colorPalettes.reserve(size);
-        }
-
-        void SetColorPalette(AZStd::string_view paletteString)
-        {
-            ClearPalettes();
-            AddColorPalette(paletteString);
-        }
-
-        void AddColorPalette(AZStd::string_view paletteString)
-        {
-            m_colorPalettes.push_back(paletteString);
-            m_paletteCrc.Add(paletteString.data());
-        }
-
-        const AZStd::vector< AZStd::string >& GetColorPalettes() const
-        {
-            return m_colorPalettes;
-        }
-
-        AZ::Crc32 GetPaletteCrc() const
-        {
-            return m_paletteCrc;
-        }
+        void ClearPalettes();
+        void ReservePalettes(size_t size);
+        void SetColorPalette(AZStd::string_view paletteString);
+        void AddColorPalette(AZStd::string_view paletteString);
+        const AZStd::vector< AZStd::string >& GetColorPalettes() const;
+        AZ::Crc32 GetPaletteCrc() const;
 
     private:
         AZ::Crc32 m_paletteCrc;
@@ -226,3 +184,5 @@ namespace GraphCanvas
     ///////////////////////////////////////////////////////////////////////////////////
 
 }
+
+DECLARE_EBUS_EXTERN(GraphCanvas::StyleManagerNotifications);

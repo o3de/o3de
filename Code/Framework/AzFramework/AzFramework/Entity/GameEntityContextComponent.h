@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZFRAMEWORK_GAMEENTITYCONTEXTCOMPONENT_H
-#define AZFRAMEWORK_GAMEENTITYCONTEXTCOMPONENT_H
+#pragma once
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Math/Transform.h>
@@ -15,6 +14,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Entity/SliceGameEntityOwnershipService.h>
 #include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 #include "EntityContext.h"
 
@@ -26,7 +26,7 @@ namespace AzFramework
      * The game entity context owns entities in the game runtime, as well as during play-in-editor.
      * These entities typically own game/runtime components, *not* inheriting from EditorComponentBase.
      */
-    class GameEntityContextComponent
+    class AZF_API GameEntityContextComponent
         : public AZ::Component
         , public EntityContext
         , private GameEntityContextRequestBus::Handler
@@ -78,15 +78,15 @@ namespace AzFramework
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("GameEntityContextService", 0xa6f2c885));
+            provided.push_back(AZ_CRC_CE("GameEntityContextService"));
         }
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("GameEntityContextService", 0xa6f2c885));
+            incompatible.push_back(AZ_CRC_CE("GameEntityContextService"));
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("SliceSystemService", 0x1a5b7aad));
+            required.push_back(AZ_CRC_CE("SliceSystemService"));
         }
 
     private:
@@ -94,5 +94,3 @@ namespace AzFramework
         AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem;
     };
 } // namespace AzFramework
-
-#endif // AZFRAMEWORK_GAMEENTITYCONTEXTCOMPONENT_H

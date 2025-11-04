@@ -8,197 +8,141 @@
 
 #pragma once
 
+#if ENABLE_SPHERE_LIGHTS
+
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
-#include <Atom/Features/Shadow/ProjectedShadow.azsli>
 
-int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
+#ifndef PointLightUtil
+#define PointLightUtil PointLightUtil_PBR
+#endif
+
+class PointLightUtil_PBR
 {
-    const float3 toPoint = targetPos - lightPos;    
-    const float maxElement = max(abs(toPoint.z), max(abs(toPoint.x), abs(toPoint.y)));
-    if (toPoint.x == -maxElement)
-    {
-        return 0;
-    }
-    else if (toPoint.x == maxElement)
-    {
-        return 1;
-    }   
-    else if (toPoint.y == -maxElement)
-    {
-        return 2;
-    }
-    else if (toPoint.y == maxElement)
-    {
-        return 3;
-    }
-    else if (toPoint.z == -maxElement)
-    {
-        return 4;
-    }
-    else 
-    {
-        return 5;
-    }   
-}
+    real3 m_surfaceToLight;
+    real3 m_surfaceToLightDirection;
+    real  m_lightDistanceSquared;
+    real  m_falloff;
 
-// PointLight::m_shadowIndices actually consists of uint16_t x 6 on the CPU, but visible as a uint32_t x 3 on the GPU. 
-// This function returns the proper uint16_t value given an input face in the range 0-5
-int UnpackPointLightShadowIndex(const ViewSrg::PointLight light, const int face)
-{
-    const int index = face >> 1;
-    const int shiftAmount = (face & 1) * 16;
-    return (light.m_shadowIndices[index] >> shiftAmount) & 0xFFFF;
-} 
-
-uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
-{
-    // shadow map size and bias are the same across all shadowmaps used by a specific point light, so just grab the first one
-    const uint lightIndex0 = UnpackPointLightShadowIndex(light, 0);
-    const float shadowmapSize = ViewSrg::m_projectedFilterParams[lightIndex0].m_shadowmapSize;
-    
-    // Note that the normal bias offset could potentially move the shadowed position from one map to another map inside the same point light shadow.
-    const float normalBias = ViewSrg::m_projectedShadows[lightIndex0].m_normalShadowBias;
-    const float3 biasedPosition = surface.position + ComputeNormalShadowOffset(normalBias, surface.vertexNormal, shadowmapSize);
-    
-    const int shadowCubemapFace = GetPointLightShadowCubemapFace(biasedPosition, light.m_position);
-    return UnpackPointLightShadowIndex(light, shadowCubemapFace);
-}
-
-void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
-{
-    float3 posToLight = light.m_position - surface.position;
-    float posToLightDist = length(posToLight);
-    float d2 = dot(posToLight, posToLight); // light distance squared
-    float falloff = d2 * light.m_invAttenuationRadiusSquared;
-    
-    // Only calculate shading if light is in range
-    if (falloff < 1.0f)
-    {
-        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        float radiusAttenuation = 1.0 - (falloff * falloff);
-        radiusAttenuation = radiusAttenuation * radiusAttenuation;
-        
-        // Standard quadratic falloff
-        d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
-        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
-
-        // shadow
-        float litRatio = 1.0;
-
-        // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
-        // - If transmission mode is thick object -> use transmission thickness parameter instead
-        // - If transmission mode is thin object -> ignore back lighting
-        float transmissionDistance = -1.0f;
-
-        if (o_enableShadows)
-        {
-            const float3 lightDir = normalize(light.m_position - surface.position);
-            const uint shadowIndex = ComputeShadowIndex(light, surface);
-            litRatio *= ProjectedShadow::GetVisibility(
-                    shadowIndex,
-                    light.m_position,
-                    surface.position,
-                    lightDir,
-                    surface.vertexNormal);
+    // calculated in Apply(), but can be useful afterwards
+    real3 m_lightIntensity;
 
 #if ENABLE_TRANSMISSION
-            // o_transmission_mode == NONE is not taken into account because GetBackLighting already ignores this case
-            if (o_transmission_mode == TransmissionMode::ThickObject)
-            {
-                transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position);
-            }
-            else if (o_transmission_mode == TransmissionMode::ThinObject)
-            {
-                transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position - surface.transmission.GetShrinkFactor() * surface.vertexNormal);
-            }
+    // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
+    // - If transmission mode is thick object -> use transmission thickness parameter instead
+    // - If transmission mode is thin object -> ignore back lighting
+    real m_transmissionDistance;
 #endif
-        }
+
+    static PointLightUtil_PBR Init(PointLight light, Surface surface)
+    {
+        PointLightUtil_PBR result;
+
+        result.m_surfaceToLight = real3(light.m_position) - real3(surface.position);
+        result.m_surfaceToLightDirection = normalize(result.m_surfaceToLight);
+        result.m_lightDistanceSquared = dot(result.m_surfaceToLight, result.m_surfaceToLight);
+        result.m_falloff = result.m_lightDistanceSquared * real(light.m_invAttenuationRadiusSquared);
+        return result;
+    }
+
+
+    real3 GetSurfaceToLightDirection()
+    {
+        return m_surfaceToLightDirection;
+    }
+
+#if ENABLE_TRANSMISSION
+    void SetTransmissionDistance(real distance)
+    {
+        m_transmissionDistance = distance;
+    }
+#endif
+
+    real GetFalloff()
+    {
+        return m_falloff;
+    }
+
+    void Apply(PointLight light, Surface surface, real litRatio, inout LightingData lightingData)
+    {
+
+        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+        real radiusAttenuation = 1.0 - (m_falloff * m_falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+        // Standard quadratic m_falloff
+        m_lightDistanceSquared = max(0.001 * 0.001, m_lightDistanceSquared); // clamp the light to at least 1mm away to avoid extreme values.
+        m_lightIntensity = (real3(light.m_rgbIntensityCandelas) / m_lightDistanceSquared) * radiusAttenuation;
 
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, m_lightIntensity, m_surfaceToLightDirection) * litRatio;
 
         // Transmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), transmissionDistance, posToLightDist);
-
-        // Adjust the light direcion for specular based on bulb size
-
-        // Calculate the reflection off the normal from the view direction
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
-
-        // Calculate a vector from the reflection vector to the light
-        float3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;
-
-        // Adjust the direction to light based on the bulb size
-        posToLight -= reflectionPosToLight * saturate(light.m_bulbRadius / length(reflectionPosToLight));
-        
-        // Adjust the intensity of the light based on the bulb size to conserve energy
-        float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_bulbRadius, d2);
-
-        // Specular contribution
-        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
-    }
-}
-
-float3 SampleSphere(float2 randomPoint)
-{
-    // Generates uniformly distributed sample on a unit sphere from a 2d position in the 0.0 -> 1.0 range.
-    float angle = 2.0 * PI * randomPoint.y;
-    float cosTheta = 1.0 - 2.0 * randomPoint.x; // Transform x from 0.0 -> 1.0 to -1.0 -> 1.0
-    float sinTheta = sqrt(saturate(1.0 - cosTheta * cosTheta));
-    return float3(sinTheta * cos(angle), sinTheta * sin(angle), cosTheta);
-}
-
-void ValidatePointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
-{
-    const uint sampleCount = 512;
-
-    float3 diffuseAcc = float3(0.0, 0.0, 0.0);
-    float3 specularAcc = float3(0.0, 0.0, 0.0);
-    float3 translucentAcc = float3(0.0, 0.0, 0.0);
-
-    for (uint i = 0; i < sampleCount; ++i)
-    {
-        float2 randomPoint = GetHammersleyPoint(i, sampleCount);
-        float3 sampleDirection = SampleSphere(randomPoint);
-        float3 samplePoint = light.m_position + sampleDirection * light.m_bulbRadius;
-        AddSampleContribution(surface, lightingData, samplePoint, sampleDirection, 0.0, diffuseAcc, specularAcc, translucentAcc);
-    }
-
-    // Lighting value is in Candela, convert to Lumen for total light output of the light
-    float3 intensityLumens = light.m_rgbIntensityCandelas * 4.0 * PI;
-    // Each of the N samples will contribute intensity / N lumens. However it will radiate in
-    // equal directions across the hemisphere, so we need to account for that
-    float3 intensity = intensityLumens * INV_PI;
-
-    lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensity;
-    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensity;
-    lightingData.specularLighting += (specularAcc / float(sampleCount)) * intensity;
-}
-
-void ApplyPointLights(Surface surface, inout LightingData lightingData)
-{
-    lightingData.tileIterator.LoadAdvance();
-    
-    while( !lightingData.tileIterator.IsDone() ) 
-    { 
-        uint currLightIndex = lightingData.tileIterator.GetValue(); 
-        lightingData.tileIterator.LoadAdvance();
-    
-#if ENABLE_SPHERE_LIGHTS
-        
-        ViewSrg::PointLight light = ViewSrg::m_pointLights[currLightIndex];
-        
-    #if ENABLE_AREA_LIGHT_VALIDATION
-        if (o_area_light_validation)
-        {
-            ValidatePointLight(light, surface, lightingData);
-        }
-        else
-    #endif
-        {
-            ApplyPointLight(light, surface, lightingData);
-        }
-
+#if ENABLE_TRANSMISSION
+        real posToLightDist = length(m_surfaceToLight);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, m_lightIntensity, m_surfaceToLightDirection, m_transmissionDistance, posToLightDist) * litRatio;
 #endif
+
+        // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            // Calculate the reflection off the normal from the view direction
+            real3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
+
+            // Calculate a vector from the reflection vector to the light
+            real3 reflectionPosToLight = m_surfaceToLight - dot(m_surfaceToLight, reflectionDir) * reflectionDir;
+
+            // Adjust the direction to light based on the bulb size
+            real3 m_surfaceToLightAdjusted = m_surfaceToLight - (reflectionPosToLight * saturate(real(light.m_bulbRadius) / length(reflectionPosToLight)));
+            
+            // Adjust the intensity of the light based on the bulb size to conserve energy
+            real sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, real(light.m_bulbRadius), m_lightDistanceSquared);
+
+            // Specular contribution
+            lightingData.specularLighting[viewIndex] += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, m_lightIntensity, normalize(m_surfaceToLightAdjusted), viewIndex) * litRatio;
+        }
     }
-}
+
+    void ApplySampled(PointLight light, Surface surface, inout LightingData lightingData, const uint sampleCount = 512)
+    {
+        real3 diffuseAcc = real3(0.0, 0.0, 0.0);
+        real3 translucentAcc = real3(0.0, 0.0, 0.0);
+        real3 specularAcc[MAX_SHADING_VIEWS];
+        
+        [unroll]
+        for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            specularAcc[viewIndex] = float3(0.0, 0.0, 0.0);
+        }
+
+        for (uint i = 0; i < sampleCount; ++i)
+        {
+            real2 randomPoint = GetHammersleyPoint(i, sampleCount);
+            real3 sampleDirection = SampleSphere(randomPoint);
+            real3 samplePoint = real3(light.m_position) + sampleDirection * real(light.m_bulbRadius);
+            AddSampleContribution(surface, lightingData, samplePoint, sampleDirection, 0.0, diffuseAcc, specularAcc, translucentAcc);
+        }
+
+        // Lighting value is in Candela, convert to Lumen for total light output of the light
+        real3 intensityLumens = real3(light.m_rgbIntensityCandelas) * 4.0 * PI;
+        // Each of the N samples will contribute intensity / N lumens. However it will radiate in
+        // equal directions across the hemisphere, so we need to account for that
+        real3 intensity = intensityLumens * INV_PI;
+
+        lightingData.diffuseLighting += (diffuseAcc / real(sampleCount)) * intensity;
+
+        [unroll]
+        for(uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            lightingData.specularLighting[viewIndex] += (specularAcc[viewIndex] / real(sampleCount)) * intensity;
+        }
+
+    #if ENABLE_TRANSMISSION
+        lightingData.translucentBackLighting += (translucentAcc / real(sampleCount)) * intensity;
+    #endif
+    }
+
+};
+
+#endif // ENABLE_SPHERE_LIGHTS
+

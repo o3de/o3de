@@ -31,7 +31,7 @@ namespace EMotionFX
         : public MotionData
     {
     public:
-        AZ_CLASS_ALLOCATOR(NonUniformMotionData, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(NonUniformMotionData, MotionAllocator)
         AZ_RTTI(NonUniformMotionData, "{AD5CF6AD-A805-4F4C-BDBD-517538A9CB14}", MotionData)
 
         template <class T>

@@ -8,24 +8,20 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
 #include <PreviewRenderer/PreviewRendererState.h>
 
 namespace AtomToolsFramework
 {
     //! PreviewRendererLoadState pauses further rendering until all assets used for rendering a thumbnail have been loaded
-    class PreviewRendererLoadState final
-        : public PreviewRendererState
-        , public AZ::SystemTickBus::Handler
+    class PreviewRendererLoadState final : public PreviewRendererState
     {
     public:
         PreviewRendererLoadState(PreviewRenderer* renderer);
         ~PreviewRendererLoadState();
+        void Update() override;
 
     private:
-        //! AZ::SystemTickBus::Handler interface overrides...
-        void OnSystemTick() override;
-
-        AZStd::chrono::system_clock::time_point m_startTime = AZStd::chrono::system_clock::now();
+        AZStd::chrono::steady_clock::time_point m_startTime = AZStd::chrono::steady_clock::now();
+        AZStd::chrono::steady_clock::time_point m_abortTime = AZStd::chrono::steady_clock::now() + AZStd::chrono::milliseconds(5000);
     };
 } // namespace AtomToolsFramework

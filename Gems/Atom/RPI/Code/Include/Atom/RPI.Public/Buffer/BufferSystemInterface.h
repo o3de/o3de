@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
+
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Format.h>
@@ -30,12 +32,14 @@ namespace AZ
         //!     or you want to have more control over the pool such as define your own budget for the pool and not share the pool with others.
         enum class CommonBufferPoolType : uint8_t
         {
-            Constant = 0,           //<! For structured constants. They are often used as ConstantBuffer in shaders
-            StaticInputAssembly,    //<! For input assembly buffers that are not updated often. 
-            DynamicInputAssembly,   //<! For input assembly buffers that are updated per frame
-            ReadBack,               //<! For gpu write cpu read buffers which is mainly used to read back gpu data
-            ReadWrite,              //<! For gpu read/write buffers. They are often used as both StructuredBuffer and RWStructuredBuffer in different shaders
-            ReadOnly,               //<! For buffers which are read only. They are usually only used as StructuredBuffer in shaders
+            Constant = 0, //<! For structured constants. They are often used as ConstantBuffer in shaders
+            StaticInputAssembly, //<! For input assembly buffers that are not updated often.
+            DynamicInputAssembly, //<! For input assembly buffers that are updated per frame
+            ReadBack, //<! For gpu write cpu read buffers which is mainly used to read back gpu data
+            Staging, //<! For gpu write cpu read buffers which is mainly used to read back gpu data
+            ReadWrite, //<! For gpu read/write buffers. They are often used as both StructuredBuffer and RWStructuredBuffer in different shaders
+            ReadOnly, //<! For buffers which are read only. They are usually only used as StructuredBuffer in shaders
+            Indirect, //<! For buffers which are used as indirect call arguments
 
             Count,
             Invalid = Count
@@ -52,9 +56,14 @@ namespace AZ
             //! Set to true if you want this buffer to be discoverable by BufferSystemInterface::FindCommonBuffer using m_bufferName.
             //! Note that create buffer may fail if there is a buffer with the same name.
             bool m_isUniqueName = false;
+
+            //! If this is set, a cross device buffer will be created
+            //! The memory will only be allocated on one device, and then imported into the other devices
+            //! See RHI::BufferDescriptor for a more detailed description
+            AZStd::optional<int> m_ownerDeviceIndex;
         };
 
-        class BufferSystemInterface
+        class ATOM_RPI_PUBLIC_API BufferSystemInterface
         {
         public:
             AZ_RTTI(BufferSystemInterface, "{6FD805CC-C3EC-4E58-A2AF-E9E918965122}");

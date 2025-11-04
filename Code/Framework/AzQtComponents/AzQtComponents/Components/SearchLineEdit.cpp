@@ -24,7 +24,7 @@ SearchLineEdit::SearchLineEdit(QWidget* parent)
 {
     setProperty("class", "SearchLineEdit");
 
-    m_searchAction = new QAction(QIcon(":/stylesheet/img/16x16/Search.png"), QString(), this);
+    m_searchAction = new QAction(QIcon(":/stylesheet/img/search.svg"), QString(), this);
     m_searchAction->setEnabled(false);
     addAction(m_searchAction, QLineEdit::LeadingPosition);
 }

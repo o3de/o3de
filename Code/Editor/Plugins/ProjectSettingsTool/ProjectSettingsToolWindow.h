@@ -16,6 +16,8 @@
 #include "ProjectSettingsSerialization.h"
 #include "ValidatorBus.h"
 
+#include <AzCore/Math/Guid.h>
+
 #include <QProcess>
 #include <QScopedPointer>
 #include <QWidget>
@@ -46,6 +48,7 @@ namespace ProjectSettingsTool
         BaseSettings base;
         AndroidSettings android;
         IosSettings ios;
+        WindowsSettings windows;
     };
 
     // Main window for Project Settings tool

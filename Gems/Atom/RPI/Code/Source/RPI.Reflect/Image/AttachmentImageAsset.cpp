@@ -12,10 +12,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* AttachmentImageAsset::DisplayName = "AttachmentImageAsset";
-        const char* AttachmentImageAsset::Group = "Image";
-        const char* AttachmentImageAsset::Extension = "attimage";
-
         void AttachmentImageAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))

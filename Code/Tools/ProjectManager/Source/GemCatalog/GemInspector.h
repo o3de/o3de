@@ -16,25 +16,48 @@
 
 #include <QItemSelection>
 #include <QScrollArea>
+#include <QThread>
+#include <QDir>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QSpacerItem)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QComboBox)
+QT_FORWARD_DECLARE_CLASS(QThread)
+QT_FORWARD_DECLARE_CLASS(QDir)
 
 namespace O3DE::ProjectManager
 {
+    class GemInspectorWorker : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        explicit GemInspectorWorker();
+        ~GemInspectorWorker() = default;
+
+    signals:
+        void Done(QString size);
+
+    public slots:
+        void SetDir(QString dir);
+
+    private:
+        void GetDirSize(QDir dir, quint64& sizeTotal);
+    };
+
     class GemInspector
         : public QScrollArea
     {
         Q_OBJECT
 
     public:
-        explicit GemInspector(GemModel* model, QWidget* parent = nullptr);
-        ~GemInspector() = default;
+        explicit GemInspector(GemModel* model, QWidget* parent, bool readOnly = false);
+        ~GemInspector();
 
-        void Update(const QModelIndex& modelIndex);
+        void Update(const QPersistentModelIndex& modelIndex, const QString& version = "", const QString& path = "");
         static QLabel* CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString);
 
         // Fonts
@@ -46,19 +69,31 @@ namespace O3DE::ProjectManager
 
     signals:
         void TagClicked(const Tag& tag);
-        void UpdateGem(const QModelIndex& modelIndex);
-        void UninstallGem(const QModelIndex& modelIndex);
+        void UpdateGem(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
+        void UninstallGem(const QModelIndex& modelIndex, const QString& path = "");
+        void EditGem(const QModelIndex& modelIndex, const QString& path = "");
+        void DownloadGem(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
+        void ShowToastNotification(const QString& notification);
 
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+        void OnVersionChanged(int index);
+        void OnDirSizeSet(QString size);
+        void OnCopyDownloadLinkClicked();
 
     private:
         void InitMainWidget();
+        QString GetVersion() const;
+        QString GetVersionPath() const;
+
+        bool m_readOnly = false;
 
         GemModel* m_model = nullptr;
         QWidget* m_mainWidget = nullptr;
         QVBoxLayout* m_mainLayout = nullptr;
-        QModelIndex m_curModelIndex;
+        QPersistentModelIndex m_curModelIndex;
+        QThread m_workerThread;
+        GemInspectorWorker m_worker;
 
         // General info (top) section
         QLabel* m_nameLabel = nullptr;
@@ -70,21 +105,29 @@ namespace O3DE::ProjectManager
         LinkLabel* m_documentationLinkLabel = nullptr;
 
         // Requirements
-        QLabel* m_requirementsTitleLabel = nullptr;
-        QLabel* m_requirementsIconLabel = nullptr;
         QLabel* m_requirementsTextLabel = nullptr;
-        QSpacerItem* m_requirementsMainSpacer = nullptr;
+
+        // Compatibility
+        QLabel* m_compatibilityTextLabel = nullptr;
 
         // Depending gems
         GemsSubWidget* m_dependingGems = nullptr;
         QSpacerItem* m_dependingGemsSpacer = nullptr;
 
         // Additional information
+        QComboBox* m_versionComboBox = nullptr;
+        QWidget* m_versionWidget = nullptr;
         QLabel* m_versionLabel = nullptr;
+        QLabel* m_enginesTitleLabel = nullptr;
+        QLabel* m_enginesLabel = nullptr;
         QLabel* m_lastUpdatedLabel = nullptr;
         QLabel* m_binarySizeLabel = nullptr;
+        LinkLabel* m_copyDownloadLinkLabel = nullptr;
 
+        QPushButton* m_updateVersionButton = nullptr;
         QPushButton* m_updateGemButton = nullptr;
+        QPushButton* m_editGemButton = nullptr;
         QPushButton* m_uninstallGemButton = nullptr;
+        QPushButton* m_downloadGemButton = nullptr;
     };
 } // namespace O3DE::ProjectManager

@@ -77,6 +77,29 @@
                 "use_last_run_value": true,
                 "description": "The commit ID for locking the version of CDK applications to deploy."
             }
+        ],
+        "nightly-installer": [
+            {
+                "parameter_name": "O3DE_INSTALL_VERSION",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The O3DE version in the installer filename and engine version"
+            },
+            {
+                "parameter_name": "O3DE_INSTALL_DISPLAY_VERSION",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The O3DE display version in the installer filename and engine display version"
+            },
+            {
+                "parameter_name": "O3DE_INSTALL_BUILD_VERSION",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The O3DE version shown in the splash screens"
+            }
         ]
     }
 }

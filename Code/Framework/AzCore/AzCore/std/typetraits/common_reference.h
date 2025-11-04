@@ -30,6 +30,9 @@ namespace AZStd
 
 namespace AZStd::Internal
 {
+    template <class... Args>
+    constexpr bool is_valid_type_v = true;
+
     // const volatile and reference qualifier copy templates
     template <class T, class QualType>
     struct copy_cv_qual
@@ -107,14 +110,16 @@ namespace AZStd::Internal
     };
 
     template <class T, class U>
-    struct common_reference_base_reference_test<T, U, enable_if_t<is_rvalue_reference_v<T>&& is_rvalue_reference_v<U>>>
+    struct common_reference_base_reference_test<T, U, enable_if_t<is_rvalue_reference_v<T> && is_rvalue_reference_v<U>
+        && is_valid_type_v<typename common_reference_base_reference_test<remove_reference_t<T>&, remove_reference_t<U>&>::type> >>
     {
         using C = remove_reference_t<typename common_reference_base_reference_test<remove_reference_t<T>&, remove_reference_t<U>&>::type>;
-        using type = AZStd::enable_if_t<is_convertible_v<T, C>&& is_convertible_v<U, C>, C>;
+        using type = AZStd::enable_if_t<is_convertible_v<T, C> && is_convertible_v<U, C>, C>;
     };
 
     template <class T, class U>
-    struct common_reference_base_reference_test<T, U, enable_if_t<is_rvalue_reference_v<T>&& is_lvalue_reference_v<U>>>
+    struct common_reference_base_reference_test<T, U, enable_if_t<is_rvalue_reference_v<T> && is_lvalue_reference_v<U>
+        && is_valid_type_v<typename common_reference_base_reference_test<const remove_reference_t<T>&, remove_reference_t<U>&>::type> >>
     {
         // Turn rvalue references to const lvalue references
         using D = typename common_reference_base_reference_test<const remove_reference_t<T>&, remove_reference_t<U>&>::type;
@@ -122,10 +127,11 @@ namespace AZStd::Internal
     };
 
     template <class T, class U>
-    struct common_reference_base_reference_test<T, U, enable_if_t<is_lvalue_reference_v<T>&& is_rvalue_reference_v<U>>>
+    struct common_reference_base_reference_test<T, U, enable_if_t<is_lvalue_reference_v<T> && is_rvalue_reference_v<U>
+        && is_valid_type_v<typename common_reference_base_reference_test<U, T>::type>>>
+        : common_reference_base_reference_test<U, T>
     {
         // Swap the parameters to call the 3rd specialization for common_reference_base_reference_test
-        using type = typename common_reference_base_reference_test<U, T>::type;
     };
 
     template <class T, class U, typename = void>

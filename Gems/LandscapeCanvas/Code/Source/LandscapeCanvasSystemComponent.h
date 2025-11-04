@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <LandscapeCanvas/LandscapeCanvasBus.h>
@@ -23,6 +24,7 @@ namespace LandscapeCanvas
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private LandscapeCanvasNodeFactoryRequestBus::Handler
         , private LandscapeCanvasSerializationRequestBus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(LandscapeCanvasSystemComponent, "{891CA15A-725A-430F-B395-BCA005CFF606}");
@@ -41,6 +43,9 @@ namespace LandscapeCanvas
         // AztoolsFramework::EditorEvents::Bus::Handler overrides
         void NotifyRegisterViews() override;
         ////////////////////////////////////////////////////////////////////////
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionContextRegistrationHook() override;
 
     protected:
         ////////////////////////////////////////////////////////////////////////
@@ -61,7 +66,6 @@ namespace LandscapeCanvas
         ////////////////////////////////////////////////////////////////////////
         // LandscapeCanvas::LandscapeCanvasSerializationRequestBus::Handler overrides
         const LandscapeCanvasSerialization& GetSerializedMappings() override;
-        void SetSerializedNodeEntities(const AZStd::unordered_map<AZ::EntityId, AZ::Entity*>& nodeEntities) override;
         void SetDeserializedEntities(const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& entities) override;
         ////////////////////////////////////////////////////////////////////////
 

@@ -77,10 +77,11 @@ namespace EMotionFX
 
         void TearDown() override
         {
-            EntityComponentFixture::TearDown();
             m_motionSet->Clear();
             // m_motion->Destroy(); // Will be destroyed through the m_entity destructor
             delete m_motionSet;
+            m_entity.reset();
+            EntityComponentFixture::TearDown();
         }
 
         AZ::Data::AssetId m_motionAssetId;

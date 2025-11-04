@@ -7,7 +7,9 @@
  */
 
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -16,9 +18,10 @@
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
+#include <Multiplayer/MultiplayerMetrics.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
-#include <ImGui/ImGuiPass.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 
@@ -69,6 +72,10 @@ namespace Multiplayer
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
+        m_auditTrailElems.clear();
+        m_committedAuditTrail.clear();
+        m_pendingAuditTrail.clear();
+        m_filteredAuditTrail.clear();
 #endif
     }
 
@@ -93,6 +100,11 @@ namespace Multiplayer
         [[maybe_unused]] const AZStd::string& name,
         [[maybe_unused]] AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
+        if (category == AuditCategory::Desync)
+        {
+            INCREMENT_PERFORMANCE_STAT(MultiplayerStat_DesyncCorrections);
+        }
+
 #ifdef IMGUI_ENABLED
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {
@@ -133,8 +145,13 @@ namespace Multiplayer
                 if (auto console = AZ::Interface<AZ::IConsole>::Get())
                 {
                     const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
-                    const bool enableHosting = multiplayerAgentType == MultiplayerAgentType::Uninitialized;                    
-                    if (ImGui::BeginMenu(HostLevelMenuTitle, enableHosting))
+
+                    // Enable the host level selection menu if we're neither a host nor client, or if we are hosting, but haven't loaded a level yet.
+                    const bool isLevelLoaded = AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded();
+                    const bool isHosting = (multiplayerAgentType == MultiplayerAgentType::ClientServer) || (multiplayerAgentType == MultiplayerAgentType::DedicatedServer);
+                    const bool enableHostLevelSelection = multiplayerAgentType == MultiplayerAgentType::Uninitialized || (isHosting && !isLevelLoaded);
+
+                    if (ImGui::BeginMenu(HostLevelMenuTitle, enableHostLevelSelection))
                     {
                         // Run through all the assets in the asset catalog and gather up the list of level assets
                         AZ::Data::AssetType levelAssetType = azrtti_typeid<AzFramework::Spawnable>();
@@ -189,10 +206,15 @@ namespace Multiplayer
                                 if (ImGui::MenuItem(levelMenuItem.c_str()))
                                 {
                                     AZ::TickBus::QueueFunction(
-                                        [console, multiplayerLevelFilePath]()
+                                        [console, multiplayerLevelFilePath, isHosting]()
                                         {
                                             auto loadLevelString = AZStd::string::format("LoadLevel %s", multiplayerLevelFilePath.c_str());
-                                            console->PerformCommand("host");
+
+                                            if (!isHosting)
+                                            {
+                                                console->PerformCommand("host");
+                                            }
+
                                             console->PerformCommand(loadLevelString.c_str());
                                         });
                                 }
@@ -207,9 +229,8 @@ namespace Multiplayer
                         ImGui::EndMenu();
                     }
                     
-                    // Disable the launch local client button if we're not hosting
-                    const bool isHost = multiplayerAgentType == MultiplayerAgentType::DedicatedServer || multiplayerAgentType == MultiplayerAgentType::ClientServer;
-                    if (!isHost)
+                    // Disable the launch local client button if we're not hosting, or if even if we are hosting, but haven't loaded a level yet.
+                    if (!isHosting || !isLevelLoaded)
                     {
                         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.6f);
                         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -220,7 +241,7 @@ namespace Multiplayer
                         console->PerformCommand("sv_launch_local_client");
                     }
 
-                    if (!isHost)
+                    if (!isHosting || !isLevelLoaded)
                     {
                         ImGui::PopItemFlag();
                         ImGui::PopStyleVar();
@@ -236,25 +257,8 @@ namespace Multiplayer
         bool displaying = m_displayNetworkingStats || m_displayMultiplayerStats || m_displayPerEntityStats || m_displayHierarchyDebugger ||
             m_displayNetAuditTrail;
 
-        // Get the default ImGui pass.
-        AZ::Render::ImGuiPass* defaultImGuiPass = nullptr;
-        AZ::Render::ImGuiSystemRequestBus::BroadcastResult(
-            defaultImGuiPass, &AZ::Render::ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
-        if (displaying && defaultImGuiPass)
+        if (displaying)
         {
-            if (m_previousSystemCursorState == AzFramework::SystemCursorState::Unknown)
-            {
-                AzFramework::InputSystemCursorRequestBus::EventResult(
-                    m_previousSystemCursorState, AzFramework::InputDeviceMouse::Id,
-                    &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::UnconstrainedAndVisible);
-            }
-
-            // Create an ImGui context scope using the default ImGui pass context.
-            ImGui::ImGuiContextScope contextScope(defaultImGuiPass->GetContext());
-
             if (m_displayNetworkingStats)
             {
                 if (ImGui::Begin("Networking Stats", &m_displayNetworkingStats, ImGuiWindowFlags_None))
@@ -354,13 +358,6 @@ namespace Multiplayer
                     m_auditTrail.reset();
                 }
             }
-        }
-        else if (m_previousSystemCursorState != AzFramework::SystemCursorState::Unknown)
-        {
-            AzFramework::InputSystemCursorRequestBus::Event(
-                AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                m_previousSystemCursorState);
-            m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
         }
     }
 

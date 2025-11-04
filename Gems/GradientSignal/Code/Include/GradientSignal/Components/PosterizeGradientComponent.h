@@ -27,7 +27,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(PosterizeGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PosterizeGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(PosterizeGradientConfig, "{4AFDFD7F-384A-41DF-900C-9B25A4AA8D1E}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         enum class ModeType : AZ::u8

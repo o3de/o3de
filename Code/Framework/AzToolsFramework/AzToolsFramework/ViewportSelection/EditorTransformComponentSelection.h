@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/containers/vector.h>
@@ -22,7 +24,6 @@
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
@@ -44,6 +45,7 @@ namespace AzToolsFramework
     }
 
     class ActionManagerInterface;
+    class HotKeyManagerInterface;
     class MenuManagerInterface;
 
     class EditorVisibleEntityDataCacheInterface;
@@ -73,7 +75,7 @@ namespace AzToolsFramework
     };
 
     //! Temporary manipulator frame used during selection.
-    struct OptionalFrame
+    struct AZTF_API OptionalFrame
     {
         bool HasTranslationOverride() const;
         bool HasOrientationOverride() const;
@@ -107,7 +109,7 @@ namespace AzToolsFramework
     };
 
     //! Grouping of viewport ui related state for controlling the current reference space of the Editor.
-    struct SpaceCluster
+    struct AZTF_API SpaceCluster
     {
         SpaceCluster() = default;
         // disable copying and moving (implicit)
@@ -123,7 +125,7 @@ namespace AzToolsFramework
     };
 
     //! Grouping of viewport ui related state for aligning transforms to a grid.
-    struct SnappingCluster
+    struct AZTF_API SnappingCluster
     {
         SnappingCluster() = default;
         // disable copying and moving (implicit)
@@ -140,11 +142,9 @@ namespace AzToolsFramework
 
     //! Entity selection/interaction handling.
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
-    class EditorTransformComponentSelection
+    class AZTF_API EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
         , public ActionManagerRegistrationNotificationBus::Handler
-        , public EditorContextMenuBus::Handler
-        , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
@@ -208,7 +208,6 @@ namespace AzToolsFramework
 
         bool IsEntitySelected(AZ::EntityId entityId) const;
         void SetSelectedEntities(const EntityIdList& entityIds);
-        void DeselectEntities();
         bool SelectDeselect(AZ::EntityId entityId);
         void ChangeSelectedEntity(AZ::EntityId entityId);
 
@@ -217,10 +216,6 @@ namespace AzToolsFramework
         void InitializeManipulators(Manipulators& manipulators);
 
         void SetupBoxSelect();
-
-        // Legacy ActionManager
-        void RegisterActions();
-        void UnregisterActions();
 
         // ActionManagerRegistrationNotificationBus overrides ...
         void OnActionUpdaterRegistrationHook() override;
@@ -262,17 +257,10 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
         void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) override;
+        void DeselectEntities() override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
         void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
-
-        // EditorContextMenuBus overrides ...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
-        int GetMenuPosition() const override;
-        AZStd::string GetMenuIdentifier() const override;
-
-        // EditorEventsBus overrides ...
-        void OnEscape() override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
@@ -349,7 +337,6 @@ namespace AzToolsFramework
         Mode m_mode = Mode::Translation; //!< Manipulator mode - default to translation.
         Pivot m_pivotMode = Pivot::Object; //!< Entity pivot mode - default to object (authored root).
         ReferenceFrame m_referenceFrame = ReferenceFrame::Local; //!< What reference frame is the Manipulator currently operating in.
-        Influence m_influence = Influence::Group; //!< What sphere of influence does the Manipulator have.
         Frame m_axisPreview; //!< Axes of entity at the time of mouse down to indicate delta of translation.
         bool m_triedToRefresh = false; //!< Did a refresh event occur to recalculate the current Manipulator transform.
         //! Was EditorTransformComponentSelection responsible for the most recent entity selection change.
@@ -367,11 +354,17 @@ namespace AzToolsFramework
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
         //! Viewport UI Switcher for showing component mode components.
-        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher; 
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher;
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
+        HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
         MenuManagerInterface* m_menuManagerInterface = nullptr;
+
+    private:
+        // static void in order to ensure that the 'this' pointer is not captured in any lamba functions
+        // as the actions are global.
+        static void RegisterActions();
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.
@@ -384,7 +377,7 @@ namespace AzToolsFramework
     };
 
     //! Updates whether accents (icon highlights) are added/removed for a given entity based on the cursor position.
-    void HandleAccents(
+    AZTF_API void HandleAccents(
         AZ::EntityId currentEntityIdUnderCursor,
         AZ::EntityId& hoveredEntityIdUnderCursor,
         const HandleAccentsContext& handleAccentsContext,
@@ -407,23 +400,23 @@ namespace AzToolsFramework
 
         //! Calculate the orientation for an individual entity based on the incoming reference frame.
         //! Note: If the entity is in a hierarchy the Parent reference frame will return the orientation of the parent.
-        PivotOrientationResult CalculatePivotOrientation(AZ::EntityId entityId, ReferenceFrame referenceFrame);
+        AZTF_API PivotOrientationResult CalculatePivotOrientation(AZ::EntityId entityId, ReferenceFrame referenceFrame);
 
         //! Calculate the orientation for a group of entities based on the incoming reference frame.
         template<typename EntityIdMap>
-        PivotOrientationResult CalculatePivotOrientationForEntityIds(const EntityIdMap& entityIdMap, const ReferenceFrame referenceFrame);
+        AZTF_API PivotOrientationResult CalculatePivotOrientationForEntityIds(const EntityIdMap& entityIdMap, const ReferenceFrame referenceFrame);
 
         //! Calculate the orientation for a group of entities based on the incoming
         //! reference frame with possible pivot override.
         template<typename EntityIdMap>
-        PivotOrientationResult CalculateSelectionPivotOrientation(
+        AZTF_API PivotOrientationResult CalculateSelectionPivotOrientation(
             const EntityIdMap& entityIdMap, const OptionalFrame& pivotOverrideFrame, const ReferenceFrame referenceFrame);
 
-        void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation, bool& internal);
-        void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation, bool& internal);
-        void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform, bool& internal);
-        void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
-        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
-        void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
+        AZTF_API void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation, bool& internal);
+        AZTF_API void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation, bool& internal);
+        AZTF_API void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform, bool& internal);
+        AZTF_API void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
+        AZTF_API void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
+        AZTF_API void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
     } // namespace Etcs
 } // namespace AzToolsFramework

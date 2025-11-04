@@ -50,7 +50,7 @@ namespace GradientSignal
     void EditorGradientTransformComponent::OnCompositionChanged()
     {
         UpdateFromShape();
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     void EditorGradientTransformComponent::UpdateFromShape()
@@ -60,8 +60,14 @@ namespace GradientSignal
             // Update config from shape on game component, copy that back to our config.
             bool notifyDependentsOfChange = true;
             m_component.UpdateFromShape(notifyDependentsOfChange);
+
+            auto oldConfig = m_configuration;
             m_component.WriteOutConfig(&m_configuration);
-            SetDirty();
+
+            if (oldConfig != m_configuration)
+            {
+                SetDirty();
+            }
         }
     }
 } //namespace GradientSignal

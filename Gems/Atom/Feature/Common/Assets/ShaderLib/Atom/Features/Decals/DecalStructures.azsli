@@ -1,0 +1,17 @@
+#pragma once
+
+struct Decal
+{
+    float3 m_position;
+    float m_opacity;
+    float4 m_quaternion;
+    float3 m_halfSize;
+    float m_angleAttenuation;
+    float m_normalMapOpacity;
+    uint m_sortKeyPacked;
+    uint m_textureArrayIndex;
+    uint m_textureIndex;
+    float3 m_decalColor;
+    float m_decalColorFactor;
+    [[pad_to(16)]]
+};

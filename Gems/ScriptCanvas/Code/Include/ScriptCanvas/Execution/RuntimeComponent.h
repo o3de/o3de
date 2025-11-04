@@ -21,7 +21,7 @@ namespace ScriptCanvas
     struct RuntimeComponentUserData
     {
         AZ_TYPE_INFO(RuntimeComponentUserData, "{584AC6C4-0A75-49DE-93A1-1B81E58F878E}");
-        AZ_CLASS_ALLOCATOR(RuntimeComponentUserData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeComponentUserData, AZ::SystemAllocator);
 
         RuntimeComponent& component;
         const AZ::EntityId entity;
@@ -46,11 +46,12 @@ namespace ScriptCanvas
         RuntimeComponent() = default;
 
         void TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData);
+        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ScriptCanvasRuntimeService", 0x776e1e3a));
+            provided.push_back(AZ_CRC_CE("ScriptCanvasRuntimeService"));
         }
 
         void Activate() override;

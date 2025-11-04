@@ -101,7 +101,6 @@ namespace GraphCanvas
     void AssetIdNodePropertyDisplay::EditStart()
     {
         NodePropertiesRequestBus::Event(GetNodeId(), &NodePropertiesRequests::LockEditState, this);
-
         TryAndSelectNode();
     }
 
@@ -132,11 +131,10 @@ namespace GraphCanvas
             m_propertyAssetCtrl = aznew AzToolsFramework::PropertyAssetCtrl(nullptr, m_dataInterface->GetStringFilter().c_str());
             m_propertyAssetCtrl->setProperty("HasNoWindowDecorations", true);
             m_propertyAssetCtrl->setProperty("DisableFocusWindowFix", true);
-            
-            QObject::connect(m_propertyAssetCtrl, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, [this]() { this->SubmitValue(); });
-
             m_propertyAssetCtrl->SetCurrentAssetType(m_dataInterface->GetAssetType());
             m_propertyAssetCtrl->SetDefaultAssetID(AZ::Data::AssetId());
+            
+            QObject::connect(m_propertyAssetCtrl, &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged, [this]() { SubmitValue(); });
 
             m_proxyWidget->setWidget(m_propertyAssetCtrl);
 

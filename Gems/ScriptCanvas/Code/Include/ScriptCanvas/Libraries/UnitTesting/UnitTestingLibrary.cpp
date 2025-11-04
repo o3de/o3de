@@ -6,7 +6,7 @@
  *
  */
 
-#ifndef _RELEASE
+#if !defined(AZ_MONOLITHIC_BUILD)
 
 #include "UnitTestingLibrary.h"
 

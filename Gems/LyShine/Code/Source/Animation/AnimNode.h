@@ -24,7 +24,7 @@ class CUiAnimNode
     : public IUiAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CUiAnimNode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(CUiAnimNode, AZ::SystemAllocator)
     AZ_RTTI(CUiAnimNode, "{1ECF3B73-FCED-464D-82E8-CFAF31BB63DC}", IUiAnimNode);
 
     struct SParamInfo

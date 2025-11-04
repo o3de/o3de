@@ -117,6 +117,10 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
         AZ::RPI::GetRenderPipelineDescriptorFromAsset(pipelineAssetPath, AZStd::string::format("_%i", viewportContext->GetId()));
     AZ_Assert(renderPipelineDesc.has_value(), "Invalid render pipeline descriptor from asset %s", pipelineAssetPath);
 
+    const AZ::RHI::MultisampleState multiSampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+    renderPipelineDesc.value().m_renderSettings.m_multisampleState = multiSampleState;
+    AZ_Printf("UiRenderer", "UI renderer starting with multi sample %d", multiSampleState.m_samples);
+
     auto renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(renderPipelineDesc.value(), *viewportContext->GetWindowContext().get());
     atomScene->AddRenderPipeline(renderPipeline);
 
@@ -141,8 +145,8 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode |
+        AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
 
     dynamicDraw->SetOutputScope(m_scene);
     dynamicDraw->EndInit();
@@ -263,8 +267,8 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContextFo
         { "TEXCOORD", AZ::RHI::Format::R32G32_FLOAT },
         { "BLENDINDICES", AZ::RHI::Format::R16G16_UINT } }
     );
-    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState
-        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::StencilState | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode |
+        AZ::RPI::DynamicDrawContext::DrawStateOptions::ShaderVariant);
 
     dynamicDraw->SetOutputScope(rttPass);
     dynamicDraw->InitDrawListTag(rttPass->GetDrawListTag());
@@ -303,6 +307,11 @@ AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
 AZ::Vector2 UiRenderer::GetViewportSize()
 {
     auto viewportContext = GetViewportContext();
+    if (!viewportContext)
+    {
+        return AZ::Vector2::CreateZero();
+    }
+
     auto windowContext = viewportContext->GetWindowContext();
 
     const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
@@ -353,13 +362,13 @@ AZ::RPI::ShaderVariantId UiRenderer::GetCurrentShaderVariant()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32 UiRenderer::GetStencilRef()
+uint32_t UiRenderer::GetStencilRef()
 {
     return m_stencilRef;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::SetStencilRef(uint32 stencilRef)
+void UiRenderer::SetStencilRef(uint32_t stencilRef)
 {
     m_stencilRef = stencilRef;
 }

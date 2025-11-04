@@ -52,19 +52,19 @@ namespace AZ
             m_horizontalBlurChildPasses.clear();
 
             // load shaders
-            AZStd::string verticalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurVertical.azshader";
+            constexpr const char* verticalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurVertical.azshader";
             Data::Instance<AZ::RPI::Shader> verticalBlurShader = RPI::LoadCriticalShader(verticalBlurShaderFilePath);
             if (verticalBlurShader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), verticalBlurShaderFilePath.c_str());
+                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), verticalBlurShaderFilePath);
                 return;
             }
 
-            AZStd::string horizontalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurHorizontal.azshader";
+            constexpr const char* horizontalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurHorizontal.azshader";
             Data::Instance<AZ::RPI::Shader> horizontalBlurShader = RPI::LoadCriticalShader(horizontalBlurShaderFilePath);
             if (horizontalBlurShader == nullptr)
             {
-                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), horizontalBlurShaderFilePath.c_str());
+                AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), horizontalBlurShaderFilePath);
                 return;
             }
 
@@ -80,7 +80,7 @@ namespace AZ
             horizontalBlurChildDesc.m_passTemplate = blurHorizontalPassTemplate;
 
             // add child passes to perform the vertical and horizontal Gaussian blur for each roughness mip level
-            for (uint32_t mip = 0; mip < NumMipLevels - 1; ++mip)
+            for (uint32_t mip = 0; mip < m_mipLevels - 1; ++mip)
             {
                 // create Vertical blur child passes
                 {
@@ -115,17 +115,16 @@ namespace AZ
             RemoveChildren();
             m_flags.m_createChildren = true;
 
-            // retrieve the reflection, downsampled normal, and downsampled depth attachments
+            // retrieve the reflection attachment
             RPI::PassAttachment* reflectionImageAttachment = GetInputOutputBinding(0).GetAttachment().get();
-            RHI::Size imageSize = reflectionImageAttachment->m_descriptor.m_image.m_size;
-
-            RPI::PassAttachment* downsampledDepthImageAttachment = GetInputOutputBinding(1).GetAttachment().get();
+            m_imageSize = reflectionImageAttachment->m_descriptor.m_image.m_size;
+            m_mipLevels = aznumeric_cast<uint32_t>(reflectionImageAttachment->m_descriptor.m_image.m_mipLevels);
 
             // create transient attachments, one for each blur mip level
             AZStd::vector<RPI::PassAttachment*> transientPassAttachments;
-            for (uint32_t mip = 1; mip <= NumMipLevels - 1; ++mip)
+            for (uint32_t mip = 1; mip <= m_mipLevels - 1; ++mip)
             {
-                RHI::Size mipSize = imageSize.GetReducedMip(mip);
+                RHI::Size mipSize = m_imageSize.GetReducedMip(mip);
 
                 RHI::ImageBindFlags imageBindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead;
                 auto transientImageDesc = RHI::ImageDescriptor::Create2D(imageBindFlags, mipSize.m_width, mipSize.m_height, RHI::Format::R16G16B16A16_FLOAT);
@@ -150,25 +149,15 @@ namespace AZ
             for (auto& verticalBlurChildPass : m_verticalBlurChildPasses)
             {
                 // mip0 source input
-                RPI::PassAttachmentBinding& inputAttachmentBinding = verticalBlurChildPass->GetInputOutputBinding(0);
+                RPI::PassAttachmentBinding& inputAttachmentBinding = verticalBlurChildPass->GetInputBinding(0);
                 inputAttachmentBinding.SetAttachment(reflectionImageAttachment);
                 inputAttachmentBinding.m_connectedBinding = &GetInputOutputBinding(0);
 
                 // mipN transient output
-                RPI::PassAttachmentBinding& outputAttachmentBinding = verticalBlurChildPass->GetInputOutputBinding(1);
+                RPI::PassAttachmentBinding& outputAttachmentBinding = verticalBlurChildPass->GetOutputBinding(0);
                 outputAttachmentBinding.SetAttachment(transientPassAttachments[attachmentIndex]);
 
-                // setup downsampled depth output
-                // Note: this is a vertical pass output only, and each vertical child pass writes a specific mip level
-                uint32_t mipLevel = attachmentIndex + 1;
-
-                // downsampled depth output
-                RPI::PassAttachmentBinding& downsampledDepthAttachmentBinding = verticalBlurChildPass->GetInputOutputBinding(2);
-                RHI::ImageViewDescriptor downsampledDepthOutputViewDesc;
-                downsampledDepthOutputViewDesc.m_mipSliceMin = static_cast<int16_t>(mipLevel);
-                downsampledDepthOutputViewDesc.m_mipSliceMax = static_cast<int16_t>(mipLevel);
-                downsampledDepthAttachmentBinding.m_unifiedScopeDesc.SetAsImage(downsampledDepthOutputViewDesc);
-                downsampledDepthAttachmentBinding.SetAttachment(downsampledDepthImageAttachment);
+                verticalBlurChildPass->UpdateConnectedBindings();
 
                 attachmentIndex++;
             }
@@ -177,10 +166,11 @@ namespace AZ
             attachmentIndex = 0;
             for (auto& horizontalBlurChildPass : m_horizontalBlurChildPasses)
             {
-                RPI::PassAttachmentBinding& inputAttachmentBinding = horizontalBlurChildPass->GetInputOutputBinding(0);
+                RPI::PassAttachmentBinding& inputAttachmentBinding = horizontalBlurChildPass->GetInputBinding(0);
                 inputAttachmentBinding.SetAttachment(transientPassAttachments[attachmentIndex]);
+                inputAttachmentBinding.m_connectedBinding = &m_verticalBlurChildPasses[attachmentIndex]->GetOutputBinding(0);
 
-                RPI::PassAttachmentBinding& outputAttachmentBinding = horizontalBlurChildPass->GetInputOutputBinding(1);
+                RPI::PassAttachmentBinding& outputAttachmentBinding = horizontalBlurChildPass->GetOutputBinding(0);
                 uint32_t mipLevel = attachmentIndex + 1;
                 RHI::ImageViewDescriptor outputViewDesc;
                 outputViewDesc.m_mipSliceMin = static_cast<int16_t>(mipLevel);
@@ -188,8 +178,33 @@ namespace AZ
                 outputAttachmentBinding.m_unifiedScopeDesc.SetAsImage(outputViewDesc);
                 outputAttachmentBinding.SetAttachment(reflectionImageAttachment);
 
+                horizontalBlurChildPass->UpdateConnectedBindings();
+
                 attachmentIndex++;
             }
+        }
+
+        void ReflectionScreenSpaceBlurPass::FrameBeginInternal(FramePrepareParams params)
+        {
+            // get input attachment size
+            RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).GetAttachment().get();
+            AZ_Assert(inputAttachment, "ReflectionScreenSpaceBlurChildPass: Input binding has no attachment!");
+        
+            RHI::Size size = inputAttachment->m_descriptor.m_image.m_size;
+            if (m_imageSize != size)
+            {
+                m_imageSize = size;
+        
+                uint32_t mip = 1;
+                for (auto& ownedAttachment : m_ownedAttachments)
+                {
+                    RHI::Size mipSize = m_imageSize.GetReducedMip(mip);
+                    ownedAttachment->m_descriptor.m_image.m_size = mipSize;
+                    mip++;
+                }
+            }
+        
+            ParentPass::FrameBeginInternal(params);
         }
     }   // namespace RPI
 }   // namespace AZ

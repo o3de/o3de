@@ -74,7 +74,7 @@ class ArtifactManager(object):
             try:
                 logger.debug(f'Attempting to create new artifact path: "{self.dest_path}"')
                 if not os.path.exists(self.dest_path):
-                    os.makedirs(self.dest_path)
+                    os.makedirs(self.dest_path, exist_ok=True)
                     logger.info(f'Created new artifact path: "{self.dest_path}"')
                     return self.dest_path
             except (IOError, OSError, WindowsError) as err:
@@ -115,14 +115,22 @@ class ArtifactManager(object):
                                  artifact_name if artifact_name is not None else os.path.basename(artifact_path))
         if os.path.exists(dest_path):
             dest_path = self._get_collision_handled_filename(dest_path, amount)
-
         logger.debug("Copying artifact from '{}' to '{}'".format(artifact_path, dest_path))
 
-        if os.path.isdir(artifact_path):
-            shutil.copytree(artifact_path, dest_path)
-        else:
-            shutil.copy(artifact_path, dest_path)
-            os.chmod(dest_path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+        dest_folder, _ = os.path.split(dest_path)
+        try:
+            if not os.path.exists(dest_folder):
+                os.makedirs(dest_folder, exist_ok=True)
+
+            if os.path.isdir(artifact_path):
+                shutil.copytree(artifact_path, dest_path, dirs_exist_ok=True)
+            else:
+                shutil.copy(artifact_path, dest_path)
+                os.chmod(dest_path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+        except FileExistsError as exc:
+            logger.exception(f"Error occurred while trying to save {dest_path}. Printing contents of folder:\n"
+                             f"{os.listdir(dest_folder)}\n")
+            raise exc
         return dest_path
 
     def generate_artifact_file_name(self, artifact_name):

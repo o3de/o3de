@@ -36,9 +36,6 @@ namespace AZ
             const RHI::ShaderBuildArguments& m_shaderBuildArguments;
             //! Used to write temporary files during shader compilation, like *.hlsl, or *.air, or *.metallib, etc.
             const AZStd::string& m_tempDirPath;
-            //! Used to synchronize versions of the ShaderAsset and ShaderVariantAsset,
-            //! especially during hot-reload. A (ShaderVariantAsset.timestamp) >= (ShaderAsset.timestamp).
-            const AZ::u64 m_assetBuildTimestamp;
             const RPI::ShaderSourceData& m_shaderSourceDataDescriptor;
             const RPI::ShaderOptionGroupLayout& m_shaderOptionGroupLayout;
             const MapOfStringToStageType& m_shaderEntryPoints;
@@ -46,15 +43,27 @@ namespace AZ
             const AZStd::string& m_shaderStemNamePrefix; //<shaderName>-<supervariantName>
             const AZStd::string& m_hlslSourcePath;
             const AZStd::string& m_hlslSourceContent;
+            const bool m_useSpecializationConstants = false;
         };
 
+
+        // This builder listens for two file extensions:
+        // *.hashedvariantlist -> This file contains the whole list of variants that is used
+        //     to create the ShaderVariantTreeAsset (*.azshadervarianttree) per Supervariant listed in the
+        //     source *.shader file. This job will declare job dependency on the ShaderAsset + root
+        //     ShaderVariantAsset that are produced by the ShaderAssetBuilder.
+        // *.hashedvariantinfo -> This file contains the description of a single shader variant. One job
+        //     will be issued for each one of these files. This job will declare job dependency on
+        //     the ShaderVarianTreeAsset mentioned above. In turn, each one of these jobs will produce one
+        //     ShaderVariantAsset (*.azshadervariant) per RHI, AND per Supervariant listed in the source
+        //     *.shader
         class ShaderVariantAssetBuilder
             : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
         {
         public:
             AZ_TYPE_INFO(ShaderVariantAssetBuilder, "{C959AEC2-2083-4488-AD88-F61B1144535B}");
 
-            static constexpr char ShaderVariantAssetBuilderJobKey[] = "Shader Variant Asset";
+            static constexpr char ShaderVariantAssetBuilderJobKeyPrefix[] = "Shader Variant Asset";
 
             ShaderVariantAssetBuilder() = default;
             ~ShaderVariantAssetBuilder() = default;
@@ -80,12 +89,18 @@ namespace AZ
             void ShutDown() override { };
 
         private:
+            // Content of the hashedVariantBatch file 
+            static constexpr uint32_t ShaderVariantBatchJobParam = 0;
+
             AZ_DISABLE_COPY_MOVE(ShaderVariantAssetBuilder);
 
-            static constexpr uint32_t ShaderVariantLoadErrorParam = 0;
-            static constexpr uint32_t ShaderSourceFilePathJobParam = 2;
-            static constexpr uint32_t ShaderVariantJobVariantParam = 3;
-            static constexpr uint32_t ShouldExitEarlyFromProcessJobParam = 4;
+            static constexpr uint32_t ShaderSourceFilePathJobParam = 1;
+
+            void CreateShaderVariantTreeJobs(const AssetBuilderSDK::CreateJobsRequest& request
+                , AssetBuilderSDK::CreateJobsResponse& response) const;
+
+            void CreateShaderVariantJobs(const AssetBuilderSDK::CreateJobsRequest& request
+                , AssetBuilderSDK::CreateJobsResponse& response) const;
 
             //! Called from ProcessJob when the job is supposed to create a ShaderVariantTreeAsset.
             void ProcessShaderVariantTreeJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
@@ -94,8 +109,11 @@ namespace AZ
             //! supported by the platform.
             void ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
 
-            static AZStd::string GetShaderVariantTreeAssetJobKey() { return AZStd::string::format("%s_varianttree", ShaderVariantAssetBuilderJobKey); }
-            static AZStd::string GetShaderVariantAssetJobKey(RPI::ShaderVariantStableId variantStableId) { return AZStd::string::format("%s_variant_%u", ShaderVariantAssetBuilderJobKey, variantStableId.GetIndex()); }
+            // Launch rga.exe with ProcessLauncher
+            static bool LaunchRadeonGPUAnalyzer(AZStd::vector<AZStd::string> command, const AZStd::string& workingDirectory, AZStd::string& failMessage);
+
+            static AZStd::string GetShaderVariantTreeAssetJobKey();
+            static AZStd::string GetShaderVariantAssetJobKey();
 
         };
 

@@ -33,7 +33,7 @@ namespace AZ
             : public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(MaterialBrowserInteractions, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialBrowserInteractions, AZ::SystemAllocator);
 
             MaterialBrowserInteractions();
             ~MaterialBrowserInteractions();

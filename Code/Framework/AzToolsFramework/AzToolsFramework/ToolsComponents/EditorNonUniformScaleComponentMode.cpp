@@ -16,6 +16,11 @@ namespace AzToolsFramework
 {
     namespace Components
     {
+        void NonUniformScaleComponentMode::Reflect(AZ::ReflectContext* context)
+        {
+            AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<NonUniformScaleComponentMode>(context);
+        }
+
         NonUniformScaleComponentMode::NonUniformScaleComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
             : EditorBaseComponentMode(entityComponentIdPair, componentType)
@@ -26,7 +31,7 @@ namespace AzToolsFramework
             AZ::TransformBus::EventResult(worldFromLocal, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
             worldFromLocal.ExtractUniformScale();
             m_manipulators = AZStd::make_unique<ScaleManipulators>(worldFromLocal);
-            m_manipulators->Register(g_mainManipulatorManagerId);
+            m_manipulators->Register(GetMainManipulatorManagerId());
             m_manipulators->AddEntityComponentIdPair(entityComponentIdPair);
             m_manipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
             const float axisLength = 2.0f;
@@ -97,6 +102,11 @@ namespace AzToolsFramework
         AZStd::string NonUniformScaleComponentMode::GetComponentModeName() const
         {
             return "Non Uniform Scale Edit Mode";
+        }
+
+        AZ::Uuid NonUniformScaleComponentMode::GetComponentModeType() const
+        {
+            return azrtti_typeid<NonUniformScaleComponentMode>();
         }
     } // namespace Components
 } // namespace AzToolsFramework

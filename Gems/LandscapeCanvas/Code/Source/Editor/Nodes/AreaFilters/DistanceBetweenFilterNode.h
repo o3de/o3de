@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class DistanceBetweenFilterNode : public BaseAreaFilterNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(DistanceBetweenFilterNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DistanceBetweenFilterNode, AZ::SystemAllocator);
         AZ_RTTI(DistanceBetweenFilterNode, "{32D28506-B2A1-4EC6-A0A2-CBCA0B7073CF}", BaseAreaFilterNode);
 
         static void Reflect(AZ::ReflectContext* context);

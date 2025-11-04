@@ -15,7 +15,7 @@ namespace LandscapeCanvas
     class ReferenceShapeNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReferenceShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReferenceShapeNode, AZ::SystemAllocator);
         AZ_RTTI(ReferenceShapeNode, "{DD8E2150-A80C-4740-9EA5-26B7BC3C1993}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);

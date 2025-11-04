@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/vector.h>
@@ -19,7 +20,7 @@ namespace AZ
 
     namespace RPI
     {
-        struct SceneDescriptor final
+        struct ATOM_RPI_REFLECT_API SceneDescriptor final
         {
             AZ_TYPE_INFO(SceneDescriptor, "{B561F34F-A60A-4A02-82FD-E8A4A032BFDB}");
             static void Reflect(AZ::ReflectContext* context);

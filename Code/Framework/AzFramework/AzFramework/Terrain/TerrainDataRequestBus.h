@@ -18,6 +18,7 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -26,7 +27,7 @@ namespace AzFramework
         typedef AZStd::function<void(size_t xIndex, size_t yIndex, const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointRegionFillCallback;
         typedef AZStd::function<void(const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointListFillCallback;
 
-        struct FloatRange
+        struct AZF_API FloatRange
         {
             AZ_TYPE_INFO(FloatRange, "{7E6319B6-1409-4865-8AD1-6F68272A94E9}");
 
@@ -57,7 +58,7 @@ namespace AzFramework
         };
 
         //! Helper structure that defines a query region to use with the QueryRegion / QueryRegionAsync APIs.
-        struct TerrainQueryRegion
+        struct AZF_API TerrainQueryRegion
         {
             AZ_TYPE_INFO(TerrainQueryRegion, "{DE3F634D-9689-4FBC-9F43-A39CFDF425D0}");
 
@@ -76,9 +77,10 @@ namespace AzFramework
         };
 
         //! A JobContext used to run jobs spawned by calls to the various Query*Async functions.
-        class TerrainJobContext : public AZ::JobContext
+        class AZF_API TerrainJobContext : public AZ::JobContext
         {
         public:
+            AZ_CLASS_ALLOCATOR(TerrainJobContext, AZ::ThreadPoolAllocator)
             TerrainJobContext(AZ::JobManager& jobManager, int numJobsToComplete)
                 : JobContext(jobManager)
                 , m_numJobsToComplete(numJobsToComplete)
@@ -126,7 +128,7 @@ namespace AzFramework
         typedef AZStd::function<void(AZStd::shared_ptr<TerrainJobContext>)> QueryAsyncCompleteCallback;
 
         //! A parameter group struct that can optionally be passed to the various Query*Async API functions.
-        struct QueryAsyncParams
+        struct AZF_API QueryAsyncParams
         {
             //! This constant can be used with m_desiredNumberOfJobs to request the maximum
             //! number of jobs possible for splitting up async terrain requests based on the
@@ -159,7 +161,7 @@ namespace AzFramework
         };
 
         //! Shared interface for terrain system implementations
-        class TerrainDataRequests
+        class AZF_API TerrainDataRequests
             : public AZ::EBusSharedDispatchTraits<TerrainDataRequests>
         {
         public:
@@ -336,8 +338,7 @@ namespace AzFramework
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;
 
-
-        class TerrainDataNotifications
+        class AZF_API TerrainDataNotifications
             : public AZ::EBusTraits
         {
         public:
@@ -347,13 +348,14 @@ namespace AzFramework
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             //////////////////////////////////////////////////////////////////////////
 
-            enum TerrainDataChangedMask : uint8_t
+            enum class TerrainDataChangedMask : uint8_t
             {
                 None        = 0b00000000,
                 Settings    = 0b00000001,
                 HeightData  = 0b00000010,
                 ColorData   = 0b00000100,
-                SurfaceData = 0b00001000
+                SurfaceData = 0b00001000,
+                All         = 0b00001111
             };
 
             virtual void OnTerrainDataCreateBegin() {}
@@ -389,6 +391,9 @@ namespace AzFramework
             };
         };
         using TerrainDataNotificationBus = AZ::EBus<TerrainDataNotifications>;
+
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(TerrainDataNotifications::TerrainDataChangedMask);
+
     } // namespace Terrain
 } // namespace AzFramework
 
@@ -396,3 +401,6 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AzFramework::Terrain::TerrainDataRequests::Sampler, "{D29BB6D7-3006-4114-858D-355EAA256B86}");
 } // namespace AZ
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::Terrain::TerrainDataRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::Terrain::TerrainDataNotifications);

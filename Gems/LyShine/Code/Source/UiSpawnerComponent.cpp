@@ -79,7 +79,7 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spawner.svg")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spawner.svg")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(0, &UiSpawnerComponent::m_sliceAsset, "Dynamic slice", "The slice to spawn");
@@ -106,13 +106,13 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
 {
-    provided.push_back(AZ_CRC("SpawnerService", 0xd2f1d7a3));
+    provided.push_back(AZ_CRC_CE("SpawnerService"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiSpawnerComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
 {
-    dependent.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+    dependent.push_back(AZ_CRC_CE("TransformService"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ AzFramework::SliceInstantiationTicket UiSpawnerComponent::SpawnSliceViewport(con
 void UiSpawnerComponent::OnEntityContextSlicePreInstantiate(const AZ::Data::AssetId& /*sliceAssetId*/, const AZ::SliceComponent::SliceInstanceAddress& /*sliceAddress*/)
 {
     const AzFramework::SliceInstantiationTicket ticket = (*UiGameEntityContextSliceInstantiationResultsBus::GetCurrentBusId());
-    EBUS_EVENT_ID(GetEntityId(), UiSpawnerNotificationBus, OnSpawnBegin, ticket);
+    UiSpawnerNotificationBus::Event(GetEntityId(), &UiSpawnerNotificationBus::Events::OnSpawnBegin, ticket);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,19 +199,19 @@ void UiSpawnerComponent::OnEntityContextSliceInstantiated([[maybe_unused]] const
     for (AZ::Entity* currEntity : entities)
     {
         entityIds.push_back(currEntity->GetId());
-        EBUS_EVENT_ID(GetEntityId(), UiSpawnerNotificationBus, OnEntitySpawned, ticket, currEntity->GetId());
+        UiSpawnerNotificationBus::Event(GetEntityId(), &UiSpawnerNotificationBus::Events::OnEntitySpawned, ticket, currEntity->GetId());
     }
 
     // Then send one notification with all the entities spawned for this ticket
-    EBUS_EVENT_ID(GetEntityId(), UiSpawnerNotificationBus, OnEntitiesSpawned, ticket, entityIds);
+    UiSpawnerNotificationBus::Event(GetEntityId(), &UiSpawnerNotificationBus::Events::OnEntitiesSpawned, ticket, entityIds);
 
     // Then send notifications for all top level entities (there is usually only one). This will have been
     // included in the OnEntitySpawned and OnEntitiesSpawned but this is probably the most useful notification
     AZStd::vector<AZ::EntityId> topLevelEntityIds = GetTopLevelEntities(entities);
-    EBUS_EVENT_ID(GetEntityId(), UiSpawnerNotificationBus, OnTopLevelEntitiesSpawned, ticket, topLevelEntityIds);
+    UiSpawnerNotificationBus::Event(GetEntityId(), &UiSpawnerNotificationBus::Events::OnTopLevelEntitiesSpawned, ticket, topLevelEntityIds);
 
     // last, send an "OnSpawnEnd" to indicate the end of all notifications for this ticket
-    EBUS_EVENT_ID(GetEntityId(), UiSpawnerNotificationBus, OnSpawnEnd, ticket);
+    UiSpawnerNotificationBus::Event(GetEntityId(), &UiSpawnerNotificationBus::Events::OnSpawnEnd, ticket);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,7 +220,7 @@ void UiSpawnerComponent::OnEntityContextSliceInstantiationFailed(const AZ::Data:
     UiGameEntityContextSliceInstantiationResultsBus::MultiHandler::BusDisconnect(*UiGameEntityContextSliceInstantiationResultsBus::GetCurrentBusId());
 
     AZStd::string assetPath;
-    EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, sliceAssetId);
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, sliceAssetId);
 
     if (assetPath.empty())
     {
@@ -234,10 +234,19 @@ void UiSpawnerComponent::OnEntityContextSliceInstantiationFailed(const AZ::Data:
 AzFramework::SliceInstantiationTicket UiSpawnerComponent::SpawnSliceInternal(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Vector2& position, bool isViewportPosition)
 {
     AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-    EBUS_EVENT_ID_RESULT(contextId, GetEntityId(), AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+    AzFramework::EntityIdContextQueryBus::EventResult(
+        contextId, GetEntityId(), &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
 
     AzFramework::SliceInstantiationTicket ticket;
-    EBUS_EVENT_ID_RESULT(ticket, contextId, UiGameEntityContextBus, InstantiateDynamicSlice, slice, position, isViewportPosition, GetEntity(), nullptr);
+    UiGameEntityContextBus::EventResult(
+        ticket,
+        contextId,
+        &UiGameEntityContextBus::Events::InstantiateDynamicSlice,
+        slice,
+        position,
+        isViewportPosition,
+        GetEntity(),
+        nullptr);
 
     UiGameEntityContextSliceInstantiationResultsBus::MultiHandler::BusConnect(ticket);
 
@@ -258,7 +267,7 @@ AZStd::vector<AZ::EntityId> UiSpawnerComponent::GetTopLevelEntities(const AZ::Sl
     for (AZ::Entity* entity : entities)
     {
         LyShine::EntityArray children;
-        EBUS_EVENT_ID_RESULT(children, entity->GetId(), UiElementBus, GetChildElements);
+        UiElementBus::EventResult(children, entity->GetId(), &UiElementBus::Events::GetChildElements);
 
         for (auto child : children)
         {

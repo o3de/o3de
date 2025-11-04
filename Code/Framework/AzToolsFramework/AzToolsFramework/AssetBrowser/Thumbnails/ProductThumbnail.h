@@ -12,12 +12,13 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #endif
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class ProductThumbnailKey
+        class AZTF_API ProductThumbnailKey
             : public Thumbnailer::ThumbnailKey
         {
             Q_OBJECT
@@ -35,19 +36,17 @@ namespace AzToolsFramework
             AZ::Data::AssetType m_assetType;
         };
 
-        class ProductThumbnail
+        class AZTF_API ProductThumbnail
             : public Thumbnailer::Thumbnail
         {
             Q_OBJECT
         public:
             ProductThumbnail(Thumbnailer::SharedThumbnailKey key);
-
-        protected:
-            void LoadThread() override;
+            void Load() override;
         };
 
         //! ProductAssetBrowserEntry thumbnails
-        class ProductThumbnailCache
+        class AZTF_API ProductThumbnailCache
             : public Thumbnailer::ThumbnailCache<ProductThumbnail>
         {
         public:

@@ -10,6 +10,7 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
+#include <Atom/RHI.Reflect/Format.h>
 
 namespace AZ
 {
@@ -20,17 +21,17 @@ namespace AZ
             return aznew ImageView();
         }
 
-        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::Resource& resourceBase)
+        RHI::ResultCode ImageView::InitInternal(RHI::Device& deviceBase, const RHI::DeviceResource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
-            
+            auto& device = static_cast<Device&>(deviceBase);
             RHI::ImageViewDescriptor viewDescriptor = GetDescriptor();
             const RHI::ImageDescriptor& imgDesc = image.GetDescriptor();
             
             BuildImageSubResourceRange(resourceBase);
             const RHI::ImageSubresourceRange& range = GetImageSubresourceRange();
-            NSRange levelRange = {range.m_mipSliceMin, static_cast<NSUInteger>(range.m_mipSliceMax - range.m_mipSliceMin + 1)};
-            NSRange sliceRange = {range.m_arraySliceMin, static_cast<NSUInteger>(range.m_arraySliceMax - range.m_arraySliceMin + 1)};
+            NSRange levelRange = {range.m_mipSliceMin, AZStd::min(static_cast<NSUInteger>(range.m_mipSliceMax - range.m_mipSliceMin + 1), static_cast<NSUInteger>(imgDesc.m_mipLevels))};
+            NSRange sliceRange = {range.m_arraySliceMin, AZStd::min(static_cast<NSUInteger>(range.m_arraySliceMax - range.m_arraySliceMin + 1), static_cast<NSUInteger>(imgDesc.m_arraySize))};
             
             id<MTLTexture> mtlTexture = image.GetMemoryView().GetGpuAddress<id<MTLTexture>>();
             MTLPixelFormat textureFormat = ConvertPixelFormat(image.GetDescriptor().m_format);
@@ -46,16 +47,25 @@ namespace AZ
                        
             //Since we divide the array length of a cubemap by NumCubeMapSlices when creating the base texture
             //we have to do reverse of that here
-            uint32_t textureLength = mtlTexture.arrayLength;
+            uint32_t textureLength = static_cast<uint32_t>(mtlTexture.arrayLength);
             if(imgDesc.m_isCubemap)
             {
                 textureLength = textureLength * RHI::ImageDescriptor::NumCubeMapSlices;
             }
             
+            MTLTextureType imgTextureType = mtlTexture.textureType;
+            //Recreate the texture if the existing texture is not flagged as an array but the view is of an array.
+            //Essentially this will tag a 2d texture as 2darray texture to ensure that sampling works correctly.
+            if(!IsTextureTypeAnArray(imgTextureType) && viewDescriptor.m_isArray)
+            {
+                isViewFormatDifferent = true;
+                imgTextureType = ConvertTextureType(imgDesc.m_dimension, imgDesc.m_arraySize, imgDesc.m_isCubemap, viewDescriptor.m_isArray);
+            }
+            
             //Create a new view if the format, mip range or slice range has changed
             if( isViewFormatDifferent ||
-                levelRange.length != mtlTexture.mipmapLevelCount ||
-                sliceRange.length != textureLength)
+                levelRange.location != 0 || levelRange.length != mtlTexture.mipmapLevelCount ||
+                sliceRange.location != 0 || sliceRange.length != textureLength)
             {
                 //Protection against creating a view with an invalid format
                 //If view format is invalid use the base texture's format
@@ -65,7 +75,7 @@ namespace AZ
                 }
 
                 textureView = [mtlTexture newTextureViewWithPixelFormat : textureViewFormat
-                                                            textureType : mtlTexture.textureType
+                                                            textureType : imgTextureType
                                                                  levels : levelRange
                                                                  slices : sliceRange];
             }
@@ -88,9 +98,44 @@ namespace AZ
             if(textureView)
             {
                 m_format = textureView.pixelFormat;
-                AZ_Assert(m_format != MTLPixelFormatInvalid, "Invalid pixel format");
             }
+            else
+            {
+                m_format = textureFormat;
+            }
+            AZ_Assert(m_format != MTLPixelFormatInvalid, "Invalid pixel format");
 
+            // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
+            // a render target and do not need to be added to the bindless heap
+            bool isDSRendertarget = RHI::CheckBitsAny(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::DepthStencil) &&
+                                    viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
+                                    viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
+
+            // Cache the read and readwrite index of the view withn the global Bindless Argument buffer
+            if (device.GetBindlessArgumentBuffer().IsInitialized() && !viewDescriptor.m_isArray && !isDSRendertarget)
+            {
+                if (viewDescriptor.m_isCubemap)
+                {
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessArgumentBuffer().AttachReadCubeMapImage(*this);
+                    }
+                }
+                else
+                {
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessArgumentBuffer().AttachReadImage(*this);
+                    }
+                    
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        m_readWriteIndex = device.GetBindlessArgumentBuffer().AttachReadWriteImage(*this);
+                    }
+                }
+            }
+            
+            m_memoryView.SetName(AZStd::string::format("%s_View_%s", image.GetName().GetCStr(), AZ::RHI::ToString(image.GetDescriptor().m_format)));
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
             m_hash = TypeHash64(m_format, m_hash);
             return RHI::ResultCode::Success;
@@ -105,25 +150,63 @@ namespace AZ
         {
             return m_memoryView;
         }
-    
-        void ImageView::ShutdownInternal()
+
+        void ImageView::ReleaseView()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            
-            if(m_memoryView.GetMemory())
+            if (m_memoryView.GetMemory())
             {
-                device.QueueForRelease(m_memoryView.GetMemory());
+                device.QueueForRelease(m_memoryView);
+                m_memoryView = {};
             }
             else
             {
-                AZ_Assert(GetImage().IsSwapChainTexture(), "Validation check to ensure that only swapchain textures have null imageview as they are special and dont need a view for metal backend");
+                AZ_Assert(GetImage().IsSwapChainTexture(), "Validation check to ensure that only swapchain textures have null ImageView as they are special and don't need a view for metal back-end");
             }
+        }
+
+        void ImageView::ReleaseBindlessIndices()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+            if (device.GetBindlessArgumentBuffer().IsInitialized())
+            {
+                if (viewDescriptor.m_isCubemap)
+                {
+                    if (m_readIndex != ~0u)
+                    {
+                        device.GetBindlessArgumentBuffer().DetachReadCubeMapImage(m_readIndex);
+                    }
+                }
+                else
+                {
+                    if (m_readIndex != ~0u)
+                    {
+                        device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+                    }
+                    if (m_readWriteIndex != ~0u)
+                    {
+                        device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                    }
+                }
+            }
+        }
+
+        void ImageView::ShutdownInternal()
+        {
+            ReleaseView();
+            ReleaseBindlessIndices();
         }
 
         RHI::ResultCode ImageView::InvalidateInternal()
         {
-            ShutdownInternal();
-            return InitInternal(GetDevice(), GetResource());
+            ReleaseView();
+            RHI::ResultCode initResult = InitInternal(GetDevice(), GetResource());
+            if (initResult != RHI::ResultCode::Success)
+            {
+                ReleaseBindlessIndices();
+            }
+            return initResult;
         }
         
         const RHI::ImageSubresourceRange& ImageView::GetImageSubresourceRange() const
@@ -131,7 +214,7 @@ namespace AZ
             return m_imageSubresourceRange;
         }
         
-        void ImageView::BuildImageSubResourceRange(const RHI::Resource& resourceBase)
+        void ImageView::BuildImageSubResourceRange(const RHI::DeviceResource& resourceBase)
         {
             const Image& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageDescriptor& imageDesc = image.GetDescriptor();
@@ -156,6 +239,16 @@ namespace AZ
         const Image& ImageView::GetImage() const
         {
             return static_cast<const Image&>(Base::GetImage());
+        }
+    
+        uint32_t ImageView::GetBindlessReadIndex() const
+        {
+            return m_readIndex;
+        }
+
+        uint32_t ImageView::GetBindlessReadWriteIndex() const
+        {
+            return m_readWriteIndex;
         }
     }
 }

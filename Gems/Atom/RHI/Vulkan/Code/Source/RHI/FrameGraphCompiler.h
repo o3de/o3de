@@ -11,6 +11,7 @@
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/Scope.h>
 #include <RHI/Semaphore.h>
 
@@ -34,7 +35,7 @@ namespace AZ
             using Base = RHI::FrameGraphCompiler;
 
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphCompiler> Create();
 
@@ -43,7 +44,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::FrameGraphCompiler
-            RHI::ResultCode InitInternal(RHI::Device& device) override;
+            RHI::ResultCode InitInternal() override;
             void ShutdownInternal() override;
             RHI::MessageOutcome CompileInternal(const RHI::FrameGraphCompileRequest& request) override;
             //////////////////////////////////////////////////////////////////////////
@@ -64,8 +65,6 @@ namespace AZ
                 Buffer& buffer,
                 const RHI::BufferSubresourceRange& range,
                 const Scope::BarrierSlot slot,
-                VkPipelineStageFlags srcPipelineStages,
-                VkAccessFlags srcAccess,
                 const QueueId& srcQueueId,
                 const QueueId& dstQueueId) const;
 
@@ -76,8 +75,6 @@ namespace AZ
                 Image& image,
                 const RHI::ImageSubresourceRange& range,
                 const Scope::BarrierSlot slot,
-                VkPipelineStageFlags srcPipelineStages,
-                VkAccessFlags srcAccess,
                 const QueueId& srcQueueId,
                 const QueueId& dstQueueId) const;
 
@@ -86,30 +83,26 @@ namespace AZ
             RHI::BufferSubresourceRange GetSubresourceRange(const RHI::BufferScopeAttachment& scopeAttachment) const;
 
             void CompileAsyncQueueSemaphores(const RHI::FrameGraph& frameGraph);
+            void CompileSemaphoreSynchronization(const RHI::FrameGraph& frameGraph);
+
+            RHI::Scope* FindPreviousScope(RHI::ScopeAttachment& scopeAttachment) const;
+
+            // Optimize queued barriers of scopes.
+            void OptimizeBarriers(const RHI::FrameGraphCompileRequest& request);
         };
 
         template<class ResourceScopeAttachment, class ResourceType>
         void FrameGraphCompiler::CompileScopeAttachment(ResourceScopeAttachment& scopeAttachment, ResourceType& resource)
         {
-            auto& device = static_cast<Device&>(GetDevice());
-            auto& queueContext = device.GetCommandQueueContext();
             Scope& scope = static_cast<Scope&>(scopeAttachment.GetScope());
-            RHI::ScopeAttachment* prevScopeAttachment = scopeAttachment.GetPrevious();
-            Scope* prevScope = prevScopeAttachment ? &(static_cast<Scope&>(prevScopeAttachment->GetScope())) : nullptr;
+            auto& device = static_cast<Device&>(scope.GetDevice());
+            auto& queueContext = device.GetCommandQueueContext();
+            Scope* prevScope = static_cast<Scope*>(FindPreviousScope(scopeAttachment));
 
-            VkPipelineStageFlags srcPipelineStageFlags = prevScopeAttachment ? GetResourcePipelineStateFlags(*prevScopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-            VkAccessFlags srcAccessFlags = prevScopeAttachment ? GetResourceAccessFlags(*prevScopeAttachment) : 0;
-
-            // Add VK_ACCESS_TRANSFER_WRITE_BIT in case we want to do a clear operation.
-            if (HasExplicitClear(scopeAttachment, scopeAttachment.GetDescriptor()))
-            {
-                srcAccessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
-                srcAccessFlags = RHI::FilterBits(srcAccessFlags, GetSupportedAccessFlags(srcPipelineStageFlags));
-            }
-        
             auto subresourceRange = GetSubresourceRange(scopeAttachment);
             auto subresourceOwnerList = resource.GetOwnerQueue(&subresourceRange);
             const QueueId destinationQueueId = queueContext.GetCommandQueue(scope.GetHardwareQueueClass()).GetId();
+
             for (const auto& owner : subresourceOwnerList)
             {
                 // For each resource we have 2 cases:
@@ -121,7 +114,8 @@ namespace AZ
                 //    execution + memory dependency. 
 
                 const QueueId& ownerQueueId = owner.m_property;
-                if (ownerQueueId.m_familyIndex == destinationQueueId.m_familyIndex)
+                if (ownerQueueId.m_familyIndex == destinationQueueId.m_familyIndex ||
+                    resource.GetSharingMode() == VK_SHARING_MODE_CONCURRENT)
                 {
                     // Same family queue, no need for transfer ownership.
                     // If semaphores are needed they will be inserted during CompileAsyncQueueFences
@@ -131,8 +125,6 @@ namespace AZ
                         resource,
                         owner.m_range,
                         Scope::BarrierSlot::Prologue,
-                        srcPipelineStageFlags,
-                        srcAccessFlags,
                         ownerQueueId,
                         destinationQueueId);
                 }
@@ -164,8 +156,6 @@ namespace AZ
                             resource,
                             owner.m_range,
                             Scope::BarrierSlot::Epilogue,
-                            srcPipelineStageFlags,
-                            srcAccessFlags,
                             ownerQueueId,
                             destinationQueueId);
 
@@ -176,15 +166,11 @@ namespace AZ
                             resource,
                             owner.m_range,
                             Scope::BarrierSlot::Prologue,
-                            srcPipelineStageFlags,
-                            srcAccessFlags,
                             ownerQueueId,
                             destinationQueueId);
                     }
                 }
             }
-
-            resource.SetOwnerQueue(destinationQueueId, &subresourceRange);
-        }
+        }       
     }
 }

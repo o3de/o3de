@@ -17,7 +17,7 @@
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/AnimGraphNodeData.h>
-#include <EMotionFX/Source/BaseObject.h>
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/BlendSpace1DNode.h>
 #include <EMotionFX/Source/BlendSpace2DNode.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
@@ -35,12 +35,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionManager, MotionManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionManager, MotionManagerAllocator)
 
 
     // constructor
     MotionManager::MotionManager()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         // reserve space for 400 motions
         m_motions.reserve(400);

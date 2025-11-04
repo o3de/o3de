@@ -17,6 +17,8 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 
+#include <Include/ScriptCanvas/Libraries/Spawning/SpawningData.generated.h>
+
 namespace ScriptCanvas::Nodeables::Spawning
 {
     //! Node for spawning entities
@@ -26,6 +28,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         SCRIPTCANVAS_NODE(SpawnNodeable);
     public:
+        AZ_CLASS_ALLOCATOR(SpawnNodeable, AZ::SystemAllocator)
         SpawnNodeable() = default;
         SpawnNodeable(const SpawnNodeable& rhs);
         SpawnNodeable& operator=(const SpawnNodeable& rhs);
@@ -40,3 +43,4 @@ namespace ScriptCanvas::Nodeables::Spawning
         AzFramework::Scripts::SpawnableScriptMediator m_spawnableScriptMediator;
     };
 }
+

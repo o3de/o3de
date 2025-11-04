@@ -21,6 +21,12 @@
                     "ShaderInputName": "m_skyViewLUT"
                 },
                 {
+                    "Name": "SkyVolumeLUTInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_skyVolumeLUT"
+                },
+                {
                     "Name": "SpecularInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
@@ -65,7 +71,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/SkyAtmosphere/SkyRayMarching.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

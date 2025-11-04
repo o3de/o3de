@@ -11,7 +11,7 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Vector2.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 #include <Animation/AnimSplineTrack.h>
 #include <Animation/CompoundSplineTrack.h>

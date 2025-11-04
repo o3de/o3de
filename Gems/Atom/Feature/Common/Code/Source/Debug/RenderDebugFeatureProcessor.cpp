@@ -100,11 +100,22 @@ namespace AZ::Render
             Transform lightRotation = Transform::CreateRotationZ(yaw) * Transform::CreateRotationX(pitch);
             Vector3 lightDirection = lightRotation.GetBasis(1);
             m_sceneSrg->SetConstant(m_debugLightingDirectionIndex, lightDirection);
+
+            // Debug floats
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex01, m_settings->GetCustomDebugFloat01());
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex02, m_settings->GetCustomDebugFloat02());
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex03, m_settings->GetCustomDebugFloat03());
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex04, m_settings->GetCustomDebugFloat04());
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex05, m_settings->GetCustomDebugFloat05());
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex06, m_settings->GetCustomDebugFloat06());
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex07, m_settings->GetCustomDebugFloat07());
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex08, m_settings->GetCustomDebugFloat08());
+            m_sceneSrg->SetConstant(m_customDebugFloatIndex09, m_settings->GetCustomDebugFloat09());
         }
 
         for (const RPI::ViewPtr& view : packet.m_views)
         {
-            if (view->GetUsageFlags() & RPI::View::UsageFlags::UsageCamera)
+            if (view->GetUsageFlags() & (RPI::View::UsageFlags::UsageCamera | RPI::View::UsageFlags::UsageReflectiveCubeMap))
             {
                 Data::Instance<RPI::ShaderResourceGroup> viewSrg = view->GetShaderResourceGroup();
 

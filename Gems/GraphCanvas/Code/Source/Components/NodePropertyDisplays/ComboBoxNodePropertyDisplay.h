@@ -31,7 +31,7 @@ namespace GraphCanvas
         friend class ComboBoxGraphicsEventFilter;
 
     public:
-        AZ_CLASS_ALLOCATOR(ComboBoxNodePropertyDisplay, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComboBoxNodePropertyDisplay, AZ::SystemAllocator);
         ComboBoxNodePropertyDisplay(ComboBoxDataInterface* dataInterface);
         virtual ~ComboBoxNodePropertyDisplay();
 

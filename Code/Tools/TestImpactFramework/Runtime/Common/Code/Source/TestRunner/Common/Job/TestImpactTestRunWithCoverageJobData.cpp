@@ -16,6 +16,31 @@ namespace TestImpact
     {
     }
 
+    TestRunWithCoverageJobData::TestRunWithCoverageJobData(const TestRunWithCoverageJobData& other)
+        : TestRunJobData(other)
+        , m_coverageArtifact(other.m_coverageArtifact)
+    {
+    }
+
+    TestRunWithCoverageJobData::TestRunWithCoverageJobData(TestRunWithCoverageJobData&& other)
+        : TestRunJobData(AZStd::move(other))
+        , m_coverageArtifact(AZStd::move(other.m_coverageArtifact))
+    {
+    }
+
+    TestRunWithCoverageJobData& TestRunWithCoverageJobData::operator=(const TestRunWithCoverageJobData& other)
+    {
+        m_coverageArtifact = other.m_coverageArtifact;
+        return *this;
+    }
+
+    TestRunWithCoverageJobData& TestRunWithCoverageJobData::operator=(TestRunWithCoverageJobData&& other)
+    {
+        m_coverageArtifact = AZStd::move(other.m_coverageArtifact);
+        return *this;
+    }
+
+
     const RepoPath& TestRunWithCoverageJobData::GetCoverageArtifactPath() const
     {
         return m_coverageArtifact;

@@ -8,66 +8,63 @@
 
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/Factory.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    BufferFrameAttachment::BufferFrameAttachment(
+        const AttachmentId& attachmentId,
+        Ptr<Buffer> buffer)
+        : FrameAttachment(
+            attachmentId,
+            HardwareQueueClassMask::All,
+            AttachmentLifetimeType::Imported)
+        , m_bufferDescriptor{buffer->GetDescriptor()}
     {
-        BufferFrameAttachment::BufferFrameAttachment(
-            const AttachmentId& attachmentId,
-            Ptr<Buffer> buffer)
-            : FrameAttachment(
-                attachmentId,
-                HardwareQueueClassMask::All,
-                AttachmentLifetimeType::Imported)
-            , m_bufferDescriptor{buffer->GetDescriptor()}
-        {
-            SetResource(AZStd::move(buffer));
-        }
+        SetResource(AZStd::move(buffer));
+    }
 
-        BufferFrameAttachment::BufferFrameAttachment(const TransientBufferDescriptor& descriptor)
-            : FrameAttachment(
-                descriptor.m_attachmentId,
-                HardwareQueueClassMask::All,
-                AttachmentLifetimeType::Transient)
-            , m_bufferDescriptor{descriptor.m_bufferDescriptor}
-        {}
+    BufferFrameAttachment::BufferFrameAttachment(const TransientBufferDescriptor& descriptor)
+        : FrameAttachment(
+            descriptor.m_attachmentId,
+            HardwareQueueClassMask::All,
+            AttachmentLifetimeType::Transient)
+        , m_bufferDescriptor{descriptor.m_bufferDescriptor}
+    {}
 
-        const BufferScopeAttachment* BufferFrameAttachment::GetFirstScopeAttachment() const
-        {
-            return static_cast<const BufferScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
-        }
+    const BufferScopeAttachment* BufferFrameAttachment::GetFirstScopeAttachment(int deviceIndex) const
+    {
+        return static_cast<const BufferScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment(deviceIndex));
+    }
 
-        BufferScopeAttachment* BufferFrameAttachment::GetFirstScopeAttachment()
-        {
-            return static_cast<BufferScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment());
-        }
+    BufferScopeAttachment* BufferFrameAttachment::GetFirstScopeAttachment(int deviceIndex)
+    {
+        return static_cast<BufferScopeAttachment*>(FrameAttachment::GetFirstScopeAttachment(deviceIndex));
+    }
 
-        const BufferScopeAttachment* BufferFrameAttachment::GetLastScopeAttachment() const
-        {
-            return static_cast<const BufferScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
-        }
+    const BufferScopeAttachment* BufferFrameAttachment::GetLastScopeAttachment(int deviceIndex) const
+    {
+        return static_cast<const BufferScopeAttachment*>(FrameAttachment::GetLastScopeAttachment(deviceIndex));
+    }
 
-        BufferScopeAttachment* BufferFrameAttachment::GetLastScopeAttachment()
-        {
-            return static_cast<BufferScopeAttachment*>(FrameAttachment::GetLastScopeAttachment());
-        }
+    BufferScopeAttachment* BufferFrameAttachment::GetLastScopeAttachment(int deviceIndex)
+    {
+        return static_cast<BufferScopeAttachment*>(FrameAttachment::GetLastScopeAttachment(deviceIndex));
+    }
 
-        const BufferDescriptor& BufferFrameAttachment::GetBufferDescriptor() const
-        {
-            return m_bufferDescriptor;
-        }
+    const BufferDescriptor& BufferFrameAttachment::GetBufferDescriptor() const
+    {
+        return m_bufferDescriptor;
+    }
 
-        const Buffer* BufferFrameAttachment::GetBuffer() const
-        {
-            return static_cast<const Buffer*>(GetResource());
-        }
+    const Buffer* BufferFrameAttachment::GetBuffer() const
+    {
+        return static_cast<const Buffer*>(GetResource());
+    }
 
-        Buffer* BufferFrameAttachment::GetBuffer()
-        {
-            return static_cast<Buffer*>(GetResource());
-        }
+    Buffer* BufferFrameAttachment::GetBuffer()
+    {
+        return static_cast<Buffer*>(GetResource());
     }
 }

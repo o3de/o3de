@@ -102,23 +102,25 @@ namespace AZ
         // Ensure our module's static name list is up-to-date with what's in our deferred list.
         // This allows the NameDictionary to be recreated and restore and name literals that still exist
         // in e.g. unit tests.
-        Name::s_staticNameBegin = m_deferredHead.m_nextName;
+        Name::SetStaticNameBegin(m_deferredHead.m_nextName);
 
         [[maybe_unused]] bool leaksDetected = false;
 
-        for (const auto& keyValue : m_dictionary)
+        for (auto i = m_dictionary.begin(), last = m_dictionary.end(); i != last;)
         {
-            Internal::NameData* nameData = keyValue.second.m_nameData;
+            Internal::NameData* nameData = i->second.m_nameData;
             const int useCount = nameData->m_useCount;
 
             if (useCount == 0)
             {
+                i = m_dictionary.erase(i);
                 delete nameData;
             }
             else
             {
                 leaksDetected = true;
-                AZ_TracePrintf("NameDictionary", "\tLeaked Name [%3d reference(s)]: hash 0x%08X, '%.*s'\n", useCount, keyValue.first, AZ_STRING_ARG(nameData->GetName()));
+                AZ_TracePrintf("NameDictionary", "\tLeaked Name [%3d reference(s)]: hash 0x%08X, '%.*s'\n", useCount, i->first, AZ_STRING_ARG(nameData->GetName()));
+                ++i;
             }
         }
 

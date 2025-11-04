@@ -9,7 +9,7 @@
 // This is a fullscreen debug pass that draws luminance/exposure debugging information. 
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>

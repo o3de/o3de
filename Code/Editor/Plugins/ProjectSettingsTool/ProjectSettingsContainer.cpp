@@ -301,7 +301,7 @@ namespace ProjectSettingsTool
         return nullptr;
     }
 
-    rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>& ProjectSettingsContainer::GetProjectJsonAllocator()
+    rapidjson::Document::AllocatorType& ProjectSettingsContainer::GetProjectJsonAllocator()
     {
         return m_projectJson.m_document->GetAllocator();
     }

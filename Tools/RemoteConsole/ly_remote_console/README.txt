@@ -14,7 +14,7 @@ read console commands.
 REQUIREMENTS
 ------------
 
- * Python 3.10.5 (64-bit)
+ * Python 3.10.13 (64-bit)
 
 It is recommended that you completely remove any other versions of Python
 installed on your system.

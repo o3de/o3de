@@ -31,7 +31,7 @@ namespace AZ
             : public Data::InstanceData
         {
         public:
-            AZ_CLASS_ALLOCATOR(MeshletsDispatchItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshletsDispatchItem, AZ::SystemAllocator);
 
             MeshletsDispatchItem() = default;
 
@@ -49,7 +49,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> GetMeshletDataSrg() { return m_meshletsDataSrg;  }
 
         private:
-            RHI::DispatchItem m_dispatchItem;
+            RHI::DispatchItem m_dispatchItem{RHI::MultiDevice::AllDevices};
             Data::Instance<RPI::ShaderResourceGroup> m_meshletsDataSrg;
             RPI::Shader* m_shader;
         };

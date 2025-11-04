@@ -1,0 +1,31 @@
+{
+    "Source": "",
+
+    "DepthStencilState": {
+        "Depth": { "Enable": true, "CompareFunc": "LessEqual" }
+    },
+
+    // Note that lights now expose their own bias controls.
+    // It may be worth increasing their default values in the future and reducing the depthBias values encoded here.
+    "RasterState": {
+        "depthBias": "10",
+        "depthBiasSlopeScale": "4"
+    },
+    
+    "Definitions" : ["SHADOWMAP=1"],
+
+    "ProgramSettings": {
+        "EntryPoints": [
+            {
+                "name": "VertexShader",
+                "type": "Vertex"
+            },
+            {
+                "name": "PixelShader",
+                "type": "Fragment"
+            }
+        ]
+    },
+
+    "DrawList": "shadow"
+}

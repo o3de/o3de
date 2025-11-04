@@ -20,6 +20,7 @@ namespace AtomToolsFramework
         : public AtomToolsApplication
     {
     public:
+        AZ_CLASS_ALLOCATOR(AtomToolsDocumentApplication, AZ::SystemAllocator)
         AZ_TYPE_INFO(AtomToolsDocumentApplication, "{AC892170-D353-404A-A3D8-BB039C717295}");
         AZ_DISABLE_COPY_MOVE(AtomToolsDocumentApplication);
 

@@ -22,7 +22,7 @@ namespace AZ
     /**
      *
      */
-    class StreamerComponent
+    class AZCORE_API StreamerComponent
         : public Component
         , public TickBus::Handler
     {
@@ -42,7 +42,7 @@ namespace AZ
 
         static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
+        static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required);
         static void Reflect(ReflectContext* reflection);
 
         static AZStd::unique_ptr<AZ::IO::Scheduler> CreateSimpleStreamerStack();

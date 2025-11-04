@@ -18,8 +18,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyStringLineEditCtrl.hxx>
 #include <QApplication>
 #include <QComboBox>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGroupWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ParameterEditorFactory.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/ValueParameterEditor.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
@@ -48,9 +47,7 @@ namespace EMotionFX
             const AZ::u32 animGraphId = 1;
             const AZStd::string command = AZStd::string::format("CreateAnimGraph -animGraphID %d", animGraphId);
             AZStd::string commandResult;
-            auto animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID));
 
-            m_groupWindow = animGraphPlugin->GetNodeGroupWidget();
             EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(command, commandResult)) << commandResult.c_str();
             m_animGraph = GetAnimGraphManager().FindAnimGraphByID(animGraphId);
             EXPECT_NE(m_animGraph, nullptr) << "Cannot find the newly created anim graph.";
@@ -65,7 +62,6 @@ namespace EMotionFX
 
     public:
         AnimGraph* m_animGraph = nullptr;
-        EMStudio::NodeGroupWindow* m_groupWindow = nullptr;
     };
 
     TEST_F(EditGroupFixture, CanEditParameterGroup)
@@ -99,11 +95,11 @@ namespace EMotionFX
         ASSERT_TRUE(parameterWindow) << "Anim graph parameter window is invalid.";
 
         parameterWindow->SelectParameters({ "Group0" });
-        parameterWindow->OnEditButton();
+        parameterWindow->OnEditSelected();
 
-        auto groupEditWidget = static_cast<EMStudio::ParameterCreateEditDialog*>(FindTopLevelWidget("ParameterCreateEditDialog"));
+        auto groupEditWidget = static_cast<EMStudio::ParameterCreateEditWidget*>(FindTopLevelWidget("ParameterCreateEditWidget"));
         ASSERT_NE(groupEditWidget, nullptr) << "Cannot find anim graph group edit dialog";
-        auto propertyEditor = groupEditWidget->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.ParameterCreateEditDialog.ReflectedPropertyEditor.ParameterEditorWidget");
+        auto propertyEditor = groupEditWidget->findChild<AzToolsFramework::ReflectedPropertyEditor*>("EMFX.ParameterCreateEditWidget.ReflectedPropertyEditor.ParameterEditorWidget");
 
         // Get list of all PropertyRowWidgets (and their InstanceDataNodes)
         const WidgetMap& list = propertyEditor->GetWidgets();
@@ -119,9 +115,8 @@ namespace EMotionFX
 
         // Set the text for the textbox to edit AnimGraph Node name
         auto lineEdit = static_cast<AzToolsFramework::PropertyStringLineEditCtrl*>(propertyRow->GetChildWidget());
-        AZStd::string newName = "DiffGroup";
-        lineEdit->setValue(newName);
-        lineEdit->valueChanged(newName);
+        QString newName = "DiffGroup";
+        lineEdit->UpdateValue(newName);
         groupEditWidget->accept();
 
         // Verify that name was changed

@@ -50,18 +50,18 @@ namespace ScriptCanvasEditor
                     AZ_Error("Script Canvas", false, "Unable to add ScriptCanvas Asset Holder element when converting from version %u", rootElement.GetVersion())
                 }
 
-                rootElement.RemoveElementByName(AZ_CRC("m_asset", 0x4e58e538));
-                rootElement.RemoveElementByName(AZ_CRC("m_openEditorButton", 0x9bcb3d5b));
+                rootElement.RemoveElementByName(AZ_CRC_CE("m_asset"));
+                rootElement.RemoveElementByName(AZ_CRC_CE("m_openEditorButton"));
             }
 
             if (rootElement.GetVersion() <= 6)
             {
-                rootElement.RemoveElementByName(AZ_CRC("m_originalData", 0x2aee5989));
+                rootElement.RemoveElementByName(AZ_CRC_CE("m_originalData"));
             }
 
             if (rootElement.GetVersion() <= 7)
             {
-                rootElement.RemoveElementByName(AZ_CRC("m_variableEntityIdMap", 0xdc6c75a8));
+                rootElement.RemoveElementByName(AZ_CRC_CE("m_variableEntityIdMap"));
             }
 
             ScriptCanvasBuilder::BuildVariableOverrides overrides;

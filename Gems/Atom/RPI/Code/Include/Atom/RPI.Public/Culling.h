@@ -26,6 +26,7 @@
 
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/DrawList.h>
 
@@ -50,7 +51,7 @@ namespace AZ
     {
         class Scene;
 
-        struct Cullable
+        struct ATOM_RPI_PUBLIC_API Cullable
         {
             struct CullData
             {
@@ -58,21 +59,22 @@ namespace AZ
 
                 //! World-space bounding sphere
                 AZ::Sphere m_boundingSphere;
-                //! World-space bouding oriented-bounding-box
+                //! World-space bounding oriented-bounding-box
                 AZ::Obb m_boundingObb;
 
-                //! Will only pass visibity if at least one of the drawListMask bits matches the view's drawListMask.
+                //! Will only pass visibility if at least one of the drawListMask bits matches the view's drawListMask.
                 //! Set to all 1's if the object type doesn't have a drawListMask
                 RHI::DrawListMask m_drawListMask;
                 //! Will hide this object if any of the hideFlags match the View's usage flags. Useful to hide objects from certain Views.
                 //! Set to all 0's if you don't want to hide the object from any Views.
                 RPI::View::UsageFlags m_hideFlags = RPI::View::UsageNone;
 
+                //! ID of the entity owning this cullable (optional)
+                AZ::EntityId m_entityId{ AZ::EntityId::InvalidEntityId };
+
                 //! UUID and type of the component that owns this cullable (optional)
                 AZ::Uuid m_componentUuid = AZ::Uuid::CreateNull();
                 uint32_t m_componentType = 0;
-
-                class RPI::Scene* m_scene = nullptr;  //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
             };
             CullData m_cullData;
 
@@ -88,7 +90,7 @@ namespace AZ
             {
                 LodType m_lodType = LodType::Default;
                 LodOverride m_lodOverride = 0;
-                // the minimum possibe area a sphere enclosing a mesh projected onto the screen should have before it is culled.
+                // the minimum possible area a sphere enclosing a mesh projected onto the screen should have before it is culled.
                 float m_minimumScreenCoverage = 1.0f / 1080.0f; // For default, mesh should cover at least a screen pixel at 1080p to be drawn;
                 // The screen area decay between 0 and 1, i.e. closer to 1 -> lose quality immediately, closer to 0 -> never lose quality 
                 float m_qualityDecayRate = 0.5f;
@@ -98,9 +100,10 @@ namespace AZ
             {
                 struct Lod
                 {
-                    float m_screenCoverageMin;
-                    float m_screenCoverageMax;
+                    float m_screenCoverageMin = 0.0f;
+                    float m_screenCoverageMax = 1.0f;
                     AZStd::vector<const RHI::DrawPacket*> m_drawPackets;
+                    void* m_visibleObjectUserData = nullptr;
                 };
 
                 AZStd::vector<Lod> m_lods;
@@ -112,6 +115,11 @@ namespace AZ
                 LodConfiguration m_lodConfiguration;
             };
             LodData m_lodData;
+
+            using FlagType = uint32_t;
+            FlagType m_prevShaderOptionFlags = ~0u; // Init to something different than 0, so it updates on first usage.
+            AZStd::atomic<FlagType> m_shaderOptionFlags = 0;
+            FlagType m_flags;
 
             //! Flag indicating if the object is visible in any view, meaning it passed the culling tests in the previous frame.
             //! This flag must be manually cleared by the Cullable object every frame.
@@ -141,7 +149,7 @@ namespace AZ
 #endif
         };
 
-        class CullingDebugContext
+        class ATOM_RPI_PUBLIC_API CullingDebugContext
         {
         public:
             AZStd::mutex m_frozenFrustumsMutex;
@@ -171,7 +179,7 @@ namespace AZ
             {
             public:
                 AZ_TYPE_INFO(AZ::RPI::CullingDebugContext::CullStats, "{3B70C5D3-54F8-4160-8324-DFC71EB47412}");
-                AZ_CLASS_ALLOCATOR(CullStats, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(CullStats, AZ::SystemAllocator);
 
                 CullStats(AZ::Name name) : m_name(name) {}
                 CullStats() = default;
@@ -196,7 +204,7 @@ namespace AZ
 
             //! Finds or creates a new CullStats struct for a given view.
             //! Once accessed, use the CullStats to accumulate metrics for a frame.
-            //! Is designed to be threadsafe
+            //! Is designed to be thread-safe
             CullStats& GetCullStatsForView(View* view);
 
             void ResetCullStats();
@@ -218,17 +226,17 @@ namespace AZ
             AZStd::mutex m_perViewCullStatsMutex;
         };
 
-        //! Selects an lod (based on size-in-screnspace) and adds the appropriate DrawPackets to the view.
-        uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view);
+        //! Selects an lod (based on size-in-screen-space) and adds the appropriate DrawPackets to the view.
+        ATOM_RPI_PUBLIC_API uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view, AzFramework::VisibilityEntry::TypeFlags typeFlags);
 
         //! Centralized manager for culling-related processing for a given scene.
         //! There is one CullingScene owned by each Scene, so external systems (such as FeatureProcessors) should
         //! access the CullingScene via their parent Scene.
-        class CullingScene
+        class ATOM_RPI_PUBLIC_API CullingScene
         {
         public:
             AZ_RTTI(CullingScene, "{5B23B55B-8A1D-4B0D-9760-15E87FC8518A}");
-            AZ_CLASS_ALLOCATOR(CullingScene, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CullingScene, AZ::SystemAllocator);
             AZ_DISABLE_COPY_MOVE(CullingScene);
 
             CullingScene() = default;
@@ -239,7 +247,7 @@ namespace AZ
 
             struct OcclusionPlane
             {
-                // World space corners of the occluson plane
+                // World space corners of the occlusion plane
                 Vector3 m_cornerBL;
                 Vector3 m_cornerTL;
                 Vector3 m_cornerTR;
@@ -253,51 +261,51 @@ namespace AZ
             void SetOcclusionPlanes(const OcclusionPlaneVector& occlusionPlanes) { m_occlusionPlanes = occlusionPlanes; }
 
             //! Notifies the CullingScene that culling will begin for this frame.
-            void BeginCulling(const AZStd::vector<ViewPtr>& views);
+            void BeginCulling(const Scene& scene, AZStd::span<const ViewPtr> views);
 
             //! Notifies the CullingScene that the culling is done for this frame.
-            void EndCulling();
+            void EndCulling(const Scene& scene, AZStd::span<const ViewPtr> views);
 
             //! Performs render culling and lod selection for a View, then adds the visible renderpackets to that View.
             //! Must be called between BeginCulling() and EndCulling(), once for each active scene/view pair.
-            //! Will create child jobs under the parentJob to do the processing in parallel.
             //! Can be called in parallel (i.e. to perform culling on multiple views at the same time).
+            void ProcessCullables(const Scene& scene, View& view, AZ::Job* parentJob, AZ::TaskGraph* taskGraph = nullptr, AZ::TaskGraphEvent* processCullablesTGEvent = nullptr);
+            //! Variation that accumulates entries into lists to hand off to jobs. This yieldeds more
+            //! balanced jobs and thus better performance than the above Nodes variation.
+            //! Use the r_useEntryWorkListsForCulling CVAR to toggle between the two.
+            void ProcessCullablesJobsEntries(const Scene& scene, View& view, AZ::Job* parentJob);
+
+            //! Will create child jobs under the parentJob to do the processing in parallel.
             void ProcessCullablesJobs(const Scene& scene, View& view, AZ::Job& parentJob);
 
-            //! Performs render culling and lod selection for a View, then adds the visible renderpackets to that View.
-            //! Must be called between BeginCulling() and EndCulling(), once for each active scene/view pair.
             //! Will create child task graphs that signal the TaskGraphEvent to do the processing in parallel.
-            //! Can be called in parallel (i.e. to perform culling on multiple views at the same time).
-            void ProcessCullablesTG(const Scene& scene, View& view, AZ::TaskGraph& taskGraph);
+            void ProcessCullablesTG(const Scene& scene, View& view, AZ::TaskGraph& taskGraph, AZ::TaskGraphEvent& processCullablesTGEvent);
 
             //! Adds a Cullable to the underlying visibility system(s).
             //! Must be called at least once on initialization and whenever a Cullable's position or bounds is changed.
-            //! Is not threadsafe, so call this from the main thread outside of Begin/EndCulling()
+            //! Is not thread-safe, so call this from the main thread outside of Begin/EndCulling()
             void RegisterOrUpdateCullable(Cullable& cullable);
 
             //! Removes a Cullable from the underlying visibility system(s).
             //! Must be called once for each cullable object on de-initialization.
-            //! Is not threadsafe, so call this from the main thread outside of Begin/EndCulling()
+            //! Is not thread-safe, so call this from the main thread outside of Begin/EndCulling()
             void UnregisterCullable(Cullable& cullable);
 
             //! Returns the number of cullables that have been added to the CullingScene
             uint32_t GetNumCullables() const;
 
-            CullingDebugContext& GetDebugContext()
-            {
-                return m_debugCtx;
-            }
+            CullingDebugContext& GetDebugContext();
 
             //! Returns the visibility scene
-            const AzFramework::IVisibilityScene* GetVisibilityScene() const { return m_visScene; }
+            const AzFramework::IVisibilityScene* GetVisibilityScene() const;
 
         protected:
             size_t CountObjectsInScene();
 
         private:
-            void BeginCullingTaskGraph(const AZStd::vector<ViewPtr>& views);
-            void BeginCullingJobs(const AZStd::vector<ViewPtr>& views);
-            void ProcessCullablesCommon(const Scene& scene, View& view, AZ::Frustum& frustum, void*& maskedOcclusionCulling);
+            void BeginCullingTaskGraph(const Scene& scene, AZStd::span<const ViewPtr> views);
+            void BeginCullingJobs(const Scene& scene, AZStd::span<const ViewPtr> views);
+            void ProcessCullablesCommon(const Scene& scene, View& view, AZ::Frustum& frustum);
 
             const Scene* m_parentScene = nullptr;
             AzFramework::IVisibilityScene* m_visScene = nullptr;

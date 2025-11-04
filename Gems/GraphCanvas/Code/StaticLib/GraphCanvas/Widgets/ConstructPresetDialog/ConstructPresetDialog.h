@@ -54,7 +54,7 @@ namespace GraphCanvas
             Count
         };
 
-        AZ_CLASS_ALLOCATOR(ConstructPresetsTableModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConstructPresetsTableModel, AZ::SystemAllocator);
         ConstructPresetsTableModel(QObject* parent = nullptr);
         ~ConstructPresetsTableModel();
 
@@ -107,7 +107,7 @@ namespace GraphCanvas
         , public AssetEditorPresetNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConstructPresetDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConstructPresetDialog, AZ::SystemAllocator);
 
         ConstructPresetDialog(QWidget* parent);
         virtual ~ConstructPresetDialog();

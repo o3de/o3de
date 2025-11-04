@@ -22,7 +22,7 @@ namespace AZ
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(MultipleDependentJob, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MultipleDependentJob, ThreadPoolAllocator);
 
         MultipleDependentJob(bool isAutoDelete, JobContext* context = NULL)
             : Job(isAutoDelete, context)  { }

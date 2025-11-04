@@ -51,9 +51,9 @@ namespace AssetBundler
         m_unsavedChangesMsgBox->setDefaultButton(QMessageBox::Save);
 
         // Set up Quit functionality
-        m_ui->actionClose->setShortcut(Qt::Key_Q | Qt::CTRL);
+        m_ui->actionClose->setShortcut(0x0 | Qt::Key_Q | Qt::CTRL);
         m_ui->actionClose->setMenuRole(QAction::QuitRole);
-        connect(m_ui->actionClose, SIGNAL(triggered()), this, SLOT(close()));
+        connect(m_ui->actionClose, &QAction::triggered, this, &MainWindow::close);
         this->addAction(m_ui->actionClose);
 
         // Set up Tabs
@@ -82,10 +82,10 @@ namespace AssetBundler
         m_ui->tabWidget->addAction(supportAction);
 
         // Set up Save functionality
-        m_ui->actionSave->setShortcut(Qt::Key_S | Qt::CTRL);
+        m_ui->actionSave->setShortcut(0x0 | Qt::Key_S | Qt::CTRL);
         connect(m_ui->actionSave, &QAction::triggered, this, &MainWindow::SaveCurrentSelection);
 
-        m_ui->actionSaveAll->setShortcut(Qt::Key_S | Qt::CTRL | Qt::SHIFT);
+        m_ui->actionSaveAll->setShortcut(0x0 | Qt::Key_S | Qt::CTRL | Qt::SHIFT);
         connect(m_ui->actionSaveAll, &QAction::triggered, this, &MainWindow::SaveAll);
     }
 

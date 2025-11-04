@@ -27,7 +27,7 @@ namespace AZStd
         /**
          * Create and run thread
          */
-        HANDLE create_thread(const thread_desc* desc, thread_info* ti, unsigned int* id);
+        AZCORE_API HANDLE create_thread(const thread_desc* desc, thread_info* ti, unsigned int* id);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ namespace AZStd
         template <class Rep, class Period>
         AZ_FORCE_INLINE void sleep_for(const chrono::duration<Rep, Period>& rel_time)
         {
-            chrono::milliseconds toSleep = rel_time;
+            chrono::milliseconds toSleep = AZStd::chrono::duration_cast<chrono::milliseconds>(rel_time);
             ::Sleep((DWORD)toSleep.count());
         }
     }

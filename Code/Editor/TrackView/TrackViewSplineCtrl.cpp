@@ -17,6 +17,9 @@
 // Editor
 #include "AnimationContext.h"
 
+// AzCore
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/list.h>
 
 class CUndoTrackViewSplineCtrl
     : public ISplineCtrlUndo
@@ -145,12 +148,12 @@ protected:
             return false;
         }
 
-        const std::vector<bool> currentKeyState = sequence->SaveKeyStates();
+        const AZStd::vector<bool> currentKeyState = sequence->SaveKeyStates();
         return m_undoKeyStates != currentKeyState;
     }
 
 public:
-    using CTrackViewSplineCtrls = std::list<CTrackViewSplineCtrl*>;
+    using CTrackViewSplineCtrls = AZStd::list<CTrackViewSplineCtrl*>;
 
     static CTrackViewSplineCtrl* FindControl(CTrackViewSplineCtrl* pCtrl)
     {
@@ -159,7 +162,7 @@ public:
             return nullptr;
         }
 
-        auto iter = std::find(s_activeCtrls.begin(), s_activeCtrls.end(), pCtrl);
+        auto iter = AZStd::find(s_activeCtrls.begin(), s_activeCtrls.end(), pCtrl);
         if (iter == s_activeCtrls.end())
         {
             return nullptr;
@@ -227,15 +230,14 @@ private:
 
     AZ::EntityId m_sequenceEntityId;
     CTrackViewSplineCtrl* m_pCtrl;
-    std::vector<CSplineEntry> m_splineEntries;
-    std::vector<float> m_keyTimes;
-    std::vector<bool> m_undoKeyStates;
-    std::vector<bool> m_redoKeyStates;
+    AZStd::vector<CSplineEntry> m_splineEntries;
+    AZStd::vector<float> m_keyTimes;
+    AZStd::vector<bool> m_undoKeyStates;
+    AZStd::vector<bool> m_redoKeyStates;
 };
 
 CUndoTrackViewSplineCtrl::CTrackViewSplineCtrls CUndoTrackViewSplineCtrl::s_activeCtrls;
 
-//////////////////////////////////////////////////////////////////////////
 CTrackViewSplineCtrl::CTrackViewSplineCtrl(QWidget* parent)
     : SplineWidget(parent)
     , m_bKeysFreeze(false)
@@ -297,8 +299,8 @@ bool CTrackViewSplineCtrl::GetTangentHandlePts(QPoint& inTangentPt, QPoint& pt, 
     }
     else
     {
-        assert(pTrack->GetCurveType() == eAnimCurveType_BezierFloat);
-        assert(nDimension == 0);
+        AZ_Assert(pTrack->GetCurveType() == eAnimCurveType_BezierFloat, "Unexpected curve type %i", pTrack->GetCurveType());
+        AZ_Assert(nDimension == 0, "Dimension is not zero");
 
         I2DBezierKey bezierKey;
         keyHandle.GetKey(&bezierKey);
@@ -463,7 +465,9 @@ void CTrackViewSplineCtrl::RemoveAllSplines()
 
 void CTrackViewSplineCtrl::MoveSelectedTangentHandleTo(const QPoint& point)
 {
-    assert(m_pHitSpline && m_nHitKeyIndex >= 0 && m_bHitIncomingHandle >= 0);
+    AZ_Assert(m_pHitSpline, "m_pHitSpline is null");
+    AZ_Assert(m_nHitKeyIndex >= 0, "m_nHitKeyIndex is negative");
+    AZ_Assert(m_bHitIncomingHandle >= 0, "m_bHitIncomingHandle is negative")
 
     // Set the custom flag to the key.
     int nRemoveFlags, nAddFlags;
@@ -491,7 +495,7 @@ void CTrackViewSplineCtrl::MoveSelectedTangentHandleTo(const QPoint& point)
             break;
         }
     }
-    assert(splineIndex < m_splines.size());
+    AZ_Assert(splineIndex < m_splines.size(), "splineIndex %i is out of range", splineIndex);
 
     CTrackViewTrack* pTrack = m_tracks[splineIndex];
     CTrackViewKeyHandle keyHandle = pTrack->GetKey(m_nHitKeyIndex);
@@ -547,8 +551,8 @@ void CTrackViewSplineCtrl::MoveSelectedTangentHandleTo(const QPoint& point)
     }
     else
     {
-        assert(pTrack->GetCurveType() == eAnimCurveType_BezierFloat);
-        assert(m_nHitDimension == 0);
+        AZ_Assert(pTrack->GetCurveType() == eAnimCurveType_BezierFloat, "Unexpected curve type %i", pTrack->GetCurveType());
+        AZ_Assert(m_nHitDimension == 0, "Hit dimension is not zero");
 
         Vec2 tp = ClientToWorld(point);
         if (m_bHitIncomingHandle)
@@ -728,7 +732,8 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
                         }
                         else
                         {
-                            assert(pTrack->GetCurveType() == eAnimCurveType_BezierFloat);
+                            AZ_Assert(pTrack->GetCurveType() == eAnimCurveType_BezierFloat, "Unexpected curve type %i", pTrack->GetCurveType());
+
                             ISplineInterpolator::ValueType tin, tout;
                             pSpline->GetKeyTangents(i, tin, tout);
                             tipText = QStringLiteral("t=%1  v=%2 / tin=(%3,%4)  tout=(%5,%6)")
@@ -759,8 +764,8 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
     case ScrollMode:
     {
         // Set the new scrolled coordinates
-        float ofsx = m_grid.origin.x - (point.x() - m_cMouseDownPos.x()) / m_grid.zoom.x;
-        float ofsy = m_grid.origin.y + (point.y() - m_cMouseDownPos.y()) / m_grid.zoom.y;
+        const float ofsx = m_grid.origin.GetX() - (point.x() - m_cMouseDownPos.x()) / m_grid.zoom.GetX();
+        const float ofsy = m_grid.origin.GetY() + (point.y() - m_cMouseDownPos.y()) / m_grid.zoom.GetY();
         SetScrollOffset(Vec2(ofsx, ofsy));
         m_cMouseDownPos = point;
     }
@@ -771,16 +776,16 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
         float ofsx = (point.x() - m_cMouseDownPos.x()) * 0.01f;
         float ofsy = (point.y() - m_cMouseDownPos.y()) * 0.01f;
 
-        Vec2 z = m_grid.zoom;
+        AZ::Vector2 z = m_grid.zoom;
         if (ofsx != 0)
         {
-            z.x = max(z.x * (1.0f + ofsx), 0.001f);
+            z.SetX(max(z.GetX() * (1.0f + ofsx), 0.001f));
         }
         if (ofsy != 0)
         {
-            z.y = max(z.y * (1.0f + ofsy), 0.001f);
+            z.SetY(max(z.GetY() * (1.0f + ofsy), 0.001f));
         }
-        SetZoom(z, m_cMouseDownPos);
+        SetZoom(Vec2(z.GetX(), z.GetY()), m_cMouseDownPos);
         m_cMouseDownPos = point;
     }
     break;

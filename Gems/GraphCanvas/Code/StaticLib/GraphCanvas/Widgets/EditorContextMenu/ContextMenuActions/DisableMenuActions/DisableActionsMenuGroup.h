@@ -16,7 +16,7 @@ namespace GraphCanvas
     class DisableActionsMenuGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(DisableActionsMenuGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DisableActionsMenuGroup, AZ::SystemAllocator);
 
         DisableActionsMenuGroup();
         ~DisableActionsMenuGroup();

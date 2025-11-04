@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzTest/AzTest.h>
@@ -24,7 +25,7 @@ namespace UnitTest
      * Unit test fixture for setting up things commonly needed by builders' unit tests
      */
     class BuilderTestFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         // Only used to provide the serialize context for now
         , public AZ::ComponentApplicationBus::Handler
     {
@@ -55,7 +56,7 @@ namespace UnitTest
         AZ::SerializeContext* GetSerializeContext() override;
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override;
 
-        // AllocatorsFixture overrides...
+        // LeakDetectionFixture overrides...
         void SetUp() override;
         void TearDown() override;
 
@@ -66,6 +67,7 @@ namespace UnitTest
         // Required for json serializer
         AZStd::unique_ptr<AZ::JsonSystemComponent> m_jsonSystemComponent;
         AZStd::unique_ptr<AZ::JsonRegistrationContext> m_jsonRegistrationContext;
+        AZStd::unique_ptr<AZ::TaskExecutor> m_taskExecutor;
         AZStd::unique_ptr<AZ::IO::Streamer> m_streamer;
     };
 

@@ -19,7 +19,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(VariableDatum, "{E0315386-069A-4061-AD68-733DCBE393DD}");
-            AZ_CLASS_ALLOCATOR(VariableDatum, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(VariableDatum, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             VariableDatum();
@@ -63,7 +63,7 @@ namespace ScriptCanvas
         struct VariableNameValuePair
         {
             AZ_TYPE_INFO(VariableNameValuePair, "{C1732C54-5E61-4D00-9A39-5B919CF2F8E7}");
-            AZ_CLASS_ALLOCATOR(VariableNameValuePair, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(VariableNameValuePair, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             VariableNameValuePair() = default;

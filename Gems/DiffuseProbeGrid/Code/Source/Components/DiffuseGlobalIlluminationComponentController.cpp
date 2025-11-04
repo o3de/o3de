@@ -28,12 +28,12 @@ namespace AZ
 
         void DiffuseGlobalIlluminationComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("DiffuseGlobalIlluminationService", 0x11b9cbe1));
+            provided.push_back(AZ_CRC_CE("DiffuseGlobalIlluminationService"));
         }
 
         void DiffuseGlobalIlluminationComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("DiffuseGlobalIlluminationService", 0x11b9cbe1));
+            incompatible.push_back(AZ_CRC_CE("DiffuseGlobalIlluminationService"));
         }
 
         void DiffuseGlobalIlluminationComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

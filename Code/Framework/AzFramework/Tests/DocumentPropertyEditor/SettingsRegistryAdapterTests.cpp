@@ -43,27 +43,6 @@ namespace AZ::DocumentPropertyEditor::Tests
             DocumentPropertyEditorTestFixture::TearDown();
         }
 
-        static bool CreateTestFile(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
-        {
-            AZ::IO::SystemFile file;
-            if (!file.Open(
-                    testPath.c_str(),
-                    AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH |
-                        AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-            {
-                AZ_Assert(false, "Unable to open test file for writing: %s", testPath.c_str());
-                return false;
-            }
-
-            if (file.Write(content.data(), content.size()) != content.size())
-            {
-                AZ_Assert(false, "Unable to write content to test file: %s", testPath.c_str());
-                return false;
-            }
-
-            return true;
-        }
-
     protected:
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
         AZStd::unique_ptr<AZ::SettingsRegistryOriginTracker> m_settingsRegistryOriginTracker;
@@ -73,10 +52,9 @@ namespace AZ::DocumentPropertyEditor::Tests
 
     TEST_F(SettingsRegistryAdapterDpeFixture, GenerateContent_MergedSettingsFiles_Displayed)
     {
-        auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
-        AZ::IO::FixedMaxPath filePath1 = tempRootFolder / "folder1" / "file1.json";
-        AZ::IO::FixedMaxPath filePath2 = tempRootFolder / "folder2" / "file2.json";
-        ASSERT_TRUE(CreateTestFile(filePath1, R"(
+        constexpr AZ::IO::PathView filePath1 = "folder1/file1.json";
+        constexpr AZ::IO::PathView filePath2 = "folder2/file2.json";
+        ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, filePath1, R"(
            {
                "O3DE": {
                     "ArrayValue": [
@@ -91,7 +69,7 @@ namespace AZ::DocumentPropertyEditor::Tests
                }
            }
         )"));
-        ASSERT_TRUE(CreateTestFile(filePath2, R"(
+        ASSERT_TRUE(AZ::Test::CreateTestFile(m_testFolder, filePath2, R"(
            {
                "O3DE": {
                     "ArrayValue": [
@@ -106,10 +84,12 @@ namespace AZ::DocumentPropertyEditor::Tests
                 }
            }
         )"));
+
+        auto tempRootFolder = m_testFolder.GetDirectoryAsFixedMaxPath();
         m_settingsRegistry->MergeSettingsFile(
-            filePath1.FixedMaxPathString(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
+            (tempRootFolder / filePath1).Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
         m_settingsRegistry->MergeSettingsFile(
-            filePath2.FixedMaxPathString(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
+            (tempRootFolder / filePath2).Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
 
         Dom::Value result = m_adapter->GetContents();
         AZStd::string_view stringKey1Path = "/O3DE/ObjectValue/StringKey1";

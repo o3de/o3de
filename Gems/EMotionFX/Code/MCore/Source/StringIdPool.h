@@ -9,10 +9,10 @@
 #pragma once
 
 #include "StandardHeaders.h"
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include "MultiThreadManager.h"
 
 namespace AZ
@@ -85,14 +85,12 @@ namespace MCore
         AZ::u32 m_index{};
 
         operator AZ::u32() const { return m_index; }
+        bool operator==(const StringIdPoolIndex &rhs) const { return m_index == rhs.m_index; }
         bool operator==(AZ::u32 rhs) const { return m_index == rhs; }
 
         static void Reflect(AZ::ReflectContext* context);
     };
 
-} // namespace MCore
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME_DECL(StringIdPoolIndex);
 
-namespace AZ
-{
-    AZ_TYPE_INFO_SPECIALIZE(MCore::StringIdPoolIndex, "{C374F051-8323-49DB-A1BD-C6B6CF0333C0}")
-} // namespace AZ
+} // namespace MCore

@@ -12,8 +12,8 @@
 #define USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT 0
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <viewsrg.srgi>
-#include <scenesrg.srgi>
+#include <viewsrg_all.srgi>
+#include <scenesrg_all.srgi>
 
 #include <Atom/RPI/Math.azsli>
 
@@ -53,10 +53,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
         float2 m_screenSize;
         int m_lightIndex;
         int m_filterMode;
-        int m_blendBetweenCascadesEnable;        
+        int m_filteringSampleCountMode;
+        int m_blendBetweenCascadesEnable;
         int m_receiverShadowPlaneBiasEnable;
-        int m_msaaCount;
-        float m_invMsaaCount;
+        
+        [[pad_to(16)]]
     };
     
     Constants m_constantData;
@@ -71,6 +72,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 
 #include <Atom/Features/Shadow/DirectionalLightShadowCalculator.azsli>
 
+option enum class MsaaMode { MsaaNone, Msaa2x, Msaa4x, Msaa8x, Msaa16x } o_msaaMode = MsaaMode::MsaaNone;
+
 #if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
     void ComputeWorldNormalAndPosition(const uint2 screenPos, out float3 outPositionWS, out float3 outNormalWS)
 #else
@@ -78,20 +81,46 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 #endif
 {
     const float2 pixelSize = rcp(PassSrg::m_constantData.m_screenSize.xy);  // How big a pixel is in screen UV space
-    const float2 halfPixel = pixelSize * 0.5f;
+    const float2 centerRatio = float2(0.5, 0.5);
+    const float2 pixelCenter = pixelSize * centerRatio;
+
+    float2 pixelSamplePosition = pixelCenter;
+
+    // Msaa sample positions for dx12 and metal are documented to follow the dx11 standard here
+    // https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_standard_multisample_quality_levels
+    // Vulkan leaves it up to the driver, but in tests on nVidia hardware it also seems to match.
+    switch (o_msaaMode)
+    {
+        case MsaaMode::Msaa2x:
+            pixelSamplePosition = pixelSize * (centerRatio + float2(4.0, 4.0) / 16.0);
+            break;
+        case MsaaMode::Msaa4x:
+            pixelSamplePosition = pixelSize * (centerRatio + float2(-2.0, 6.0) / 16.0);
+            break;
+        case MsaaMode::Msaa8x:
+            pixelSamplePosition = pixelSize * (centerRatio + float2(1.0, -3.0) / 16.0);
+            break;
+        case MsaaMode::Msaa16x:
+            pixelSamplePosition = pixelSize * (centerRatio + float2(1.0, 1.0) / 16.0);
+            break;
+        default:
+            // defaults to pixel center.
+            break;
+    }
 
 #if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
-    const float2 screenUV  = screenPos * pixelSize + halfPixel;             // The UV value [0, 1] of the screen pixel
+    const float2 screenUV  = screenPos * pixelSize + pixelSamplePosition;             // The UV value [0, 1] of the screen pixel
 #else
-    const int2   screenPos = IN.m_position.xy;          // The coordinates of the screen pixel being shaded
-    const float2 screenUV  = IN.m_texCoord.xy;          // The UV value [0, 1] of the screen pixel
+    const int2   screenPos = IN.m_position.xy;                     // The coordinates of the screen pixel being shaded
+    const float2 centerOffset = pixelCenter - pixelSamplePosition; // full screeen triangle pass is going to be based on pixel center already, so offset from that.
+    const float2 screenUV  = IN.m_texCoord.xy + centerOffset;      // The UV value [0, 1] of the screen pixel
 #endif
 
     // Do 2 depth gather ops to get 5 depth values (cross centered on pixel being shaded). Reminder that gather is laid out like so:
     //  W Z
     //  X Y
-    float4 depthUpLeft = PassSrg::m_depthLinear.Gather(PassSrg::PointSampler, screenUV - halfPixel);
-    float4 depthBottomRight = PassSrg::m_depthLinear.Gather(PassSrg::PointSampler, screenUV + halfPixel);
+    float4 depthUpLeft = PassSrg::m_depthLinear.Gather(PassSrg::PointSampler, screenUV - pixelSamplePosition);
+    float4 depthBottomRight = PassSrg::m_depthLinear.Gather(PassSrg::PointSampler, screenUV + pixelSamplePosition);
 
     float3 positionVS = ViewSrg::GetViewSpacePosition(screenUV, depthUpLeft.y);
 
@@ -135,11 +164,12 @@ void MainCS(uint3 thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uin
     calc.SetWorldNormal(normalWS);
     calc.SetReceiverShadowPlaneBiasEnable(PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable);
     calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
+    calc.SetFilteringSampleCount((ShadowFilterSampleCount)PassSrg::m_constantData.m_filteringSampleCountMode);
     calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
     calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
     calc.SetWorldPos(positionWS);
 
-   PassSrg::m_fullscreenShadowOutput[dispatch_id.xy] = calc.GetVisibility();
+    PassSrg::m_fullscreenShadowOutput[dispatch_id.xy] = calc.GetVisibility();
 }
 
 #else
@@ -155,6 +185,7 @@ PSOutput MainPS(VSOutput IN)
     calc.SetWorldNormal(normalWS);
     calc.SetReceiverShadowPlaneBiasEnable(PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable);
     calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
+    calc.SetFilteringSampleCount((ShadowFilterSampleCount)PassSrg::m_constantData.m_filteringSampleCountMode);
     calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
     calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
     calc.SetWorldPos(positionWS);

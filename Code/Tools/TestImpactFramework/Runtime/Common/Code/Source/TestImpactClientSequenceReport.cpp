@@ -34,7 +34,7 @@ namespace TestImpact
 
         TestRunReport::TestRunReport(
             TestSequenceResult result,
-            AZStd::chrono::high_resolution_clock::time_point startTime,
+            AZStd::chrono::steady_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
             AZStd::vector<PassingTestRun>&& passingTestRuns,
             AZStd::vector<FailingTestRun>&& failingTestRuns,
@@ -69,12 +69,12 @@ namespace TestImpact
             return m_result;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRunReport::GetStartTime() const
+        AZStd::chrono::steady_clock::time_point TestRunReport::GetStartTime() const
         {
             return m_startTime;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRunReport::GetEndTime() const
+        AZStd::chrono::steady_clock::time_point TestRunReport::GetEndTime() const
         {
             return m_startTime + m_duration;
         }
@@ -164,7 +164,8 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             ImpactAnalysisSequencePolicyState policyState,
-            SuiteType suiteType,
+            SuiteSet suiteSet,
+            SuiteLabelExcludeSet suiteLabelExcludeSet,
             TestRunSelection selectedTestRuns,
             AZStd::vector<AZStd::string> discardedTestRuns,
             AZStd::vector<AZStd::string> draftedTestRuns,
@@ -175,7 +176,8 @@ namespace TestImpact
                 AZStd::move(testTargetTimeout),
                 AZStd::move(globalTimeout),
                 AZStd::move(policyState),
-                suiteType,
+                AZStd::move(suiteSet),
+                AZStd::move(suiteLabelExcludeSet),
                 AZStd::move(selectedTestRuns),
                 AZStd::move(draftedTestRuns),
                 AZStd::move(selectedTestRunReport),
@@ -201,7 +203,8 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             SafeImpactAnalysisSequencePolicyState policyState,
-            SuiteType suiteType,
+            SuiteSet suiteSet,
+            SuiteLabelExcludeSet suiteLabelExcludeSet,
             TestRunSelection selectedTestRuns,
             TestRunSelection discardedTestRuns,
             AZStd::vector<AZStd::string> draftedTestRuns,
@@ -213,7 +216,8 @@ namespace TestImpact
                 AZStd::move(testTargetTimeout),
                 AZStd::move(globalTimeout),
                 AZStd::move(policyState),
-                suiteType,
+                AZStd::move(suiteSet),
+                AZStd::move(suiteLabelExcludeSet),
                 AZStd::move(selectedTestRuns),
                 AZStd::move(draftedTestRuns),
                 AZStd::move(selectedTestRunReport),
@@ -285,7 +289,7 @@ namespace TestImpact
         {
             return DraftingSequenceReportBase::GetTotalNumUnexecutedTestRuns() + m_discardedTestRunReport.GetNumUnexecutedTestRuns();
         }
-        
+
         const TestRunSelection SafeImpactAnalysisSequenceReport::GetDiscardedTestRuns() const
         {
             return m_discardedTestRuns;

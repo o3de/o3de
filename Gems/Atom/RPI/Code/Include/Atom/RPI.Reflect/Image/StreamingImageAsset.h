@@ -10,9 +10,11 @@
 
 #include <AzCore/Math/Color.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -44,7 +46,7 @@ namespace AZ
         //! and streaming controller.
         //! This is an immutable, serialized asset. It can be either serialized-in or created dynamically using StreamingImageAssetCreator.
         //! See RPI::StreamingImage for runtime features based on this asset.
-        class StreamingImageAsset final
+        class ATOM_RPI_REFLECT_API StreamingImageAsset final
             : public ImageAsset
         {
             friend class StreamingImageAssetCreator;
@@ -52,11 +54,14 @@ namespace AZ
             friend class StreamingImageAssetHandler;
 
         public:
-            static const char* DisplayName;
-            static const char* Extension;
-            static const char* Group;
+            static constexpr const char* DisplayName{ "StreamingImage" };
+            static constexpr const char* Group{ "Image" };
+            static constexpr const char* Extension{ "streamingimage" };
+
+            using Allocator = StreamingImageAssetAllocator_for_std_t;
 
             AZ_RTTI(StreamingImageAsset, "{3C96A826-9099-4308-A604-7B19ADBF8761}", ImageAsset);
+            AZ_CLASS_ALLOCATOR_DECL
 
             static void Reflect(ReflectContext* context);
 
@@ -64,9 +69,6 @@ namespace AZ
 
             //! Returns an immutable reference to the mip chain associated by index into the array of mip chains.
             const Data::Asset<ImageMipChainAsset>& GetMipChainAsset(size_t mipChainIndex) const; 
-
-            //! Release referenced ImageMipChainAssets
-            void ReleaseMipChainAssets();
 
             //! Get the last mip chain asset data which contains lowest level of mips.
             const ImageMipChainAsset& GetTailMipChain() const;
@@ -83,7 +85,7 @@ namespace AZ
             //! Given a mip chain index, returns the number of mip levels in the chain.
             size_t GetMipCount(size_t mipChainIndex) const;
 
-            //! Get image data for specified mip and slice. It may return empty array if its mipchain assets are not loaded
+            //! Get image data for specified mip and slice. It may trigger mipchain asset loading if the asset wasn't loaded
             AZStd::span<const uint8_t> GetSubImageData(uint32_t mip, uint32_t slice);
 
             //! Returns streaming image pool asset id of the pool that will be used to create the streaming image.
@@ -103,6 +105,17 @@ namespace AZ
 
             //! Returns the image descriptor for the specified mip level.
             RHI::ImageDescriptor GetImageDescriptorForMipLevel(AZ::u32 mipLevel) const;
+
+            //! Whether the image has all referenced ImageMipChainAssets loaded
+            bool HasFullMipChainAssets() const;
+
+            //! Returns the image tags
+            using TagList = AZStd::vector<AZ::Name, Allocator>;
+            const TagList& GetTags() const;
+
+            //! Removes up to `mipChainLevel` mipchains, reducing quality (used by the image tag system).
+            //! The last mipchain won't be removed
+            void RemoveFrontMipchains(size_t mipChainLevel);
 
         private:
             struct MipChain
@@ -143,6 +156,8 @@ namespace AZ
             //! mip chain index, not the level. And will fail for any level
             //! that resides in the tail mip chain.
             const ImageMipChainAsset* GetImageMipChainAsset(AZ::u32 mipLevel) const;
+
+            TagList m_tags;
         };
     }
 }

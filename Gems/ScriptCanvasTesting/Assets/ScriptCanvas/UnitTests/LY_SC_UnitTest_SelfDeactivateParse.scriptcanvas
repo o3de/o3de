@@ -5,7 +5,7 @@
     "ClassData": {
         "m_scriptCanvas": {
             "Id": {
-                "id": 431482326046766
+                "id": 2628703457048009
             },
             "Name": "LY_SC_UnitTest_SelfDeactivateParseError",
             "Components": {
@@ -20,7 +20,7 @@
                         "m_nodes": [
                             {
                                 "Id": {
-                                    "id": 431486621014062
+                                    "id": 2628707752015305
                                 },
                                 "Name": "SC-Node(Start)",
                                 "Components": {
@@ -50,7 +50,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 431490915981358
+                                    "id": 2628712046982601
                                 },
                                 "Name": "SC-Node(DeactivateGameEntity)",
                                 "Components": {
@@ -132,7 +132,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 431495210948654
+                                    "id": 2628716341949897
                                 },
                                 "Name": "SC-Node(ActivateGameEntity)",
                                 "Components": {
@@ -216,7 +216,7 @@
                         "m_connections": [
                             {
                                 "Id": {
-                                    "id": 431499505915950
+                                    "id": 2628720636917193
                                 },
                                 "Name": "srcEndpoint=(On Graph Start: Out), destEndpoint=(DeactivateGameEntity: In)",
                                 "Components": {
@@ -225,7 +225,7 @@
                                         "Id": 4807679579704078686,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 431486621014062
+                                                "id": 2628707752015305
                                             },
                                             "slotId": {
                                                 "m_id": "{4CDB52D3-C36E-4957-894C-9360BC8D6EBB}"
@@ -233,7 +233,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 431490915981358
+                                                "id": 2628712046982601
                                             },
                                             "slotId": {
                                                 "m_id": "{19DA65F7-5075-4E91-958C-2A924D6339D8}"
@@ -244,7 +244,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 431503800883246
+                                    "id": 2628724931884489
                                 },
                                 "Name": "srcEndpoint=(DeactivateGameEntity: Out), destEndpoint=(ActivateGameEntity: In)",
                                 "Components": {
@@ -253,7 +253,7 @@
                                         "Id": 10266927351671840941,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 431490915981358
+                                                "id": 2628712046982601
                                             },
                                             "slotId": {
                                                 "m_id": "{D2F00F3C-5482-4BBA-8AF1-CAFF1F37E1B2}"
@@ -261,7 +261,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 431495210948654
+                                                "id": 2628716341949897
                                             },
                                             "slotId": {
                                                 "m_id": "{EB1793B7-C2B7-4E7C-B9FF-9603300924E8}"
@@ -281,7 +281,7 @@
                     "GraphCanvasData": [
                         {
                             "Key": {
-                                "id": 431482326046766
+                                "id": 2628703457048009
                             },
                             "Value": {
                                 "ComponentData": {
@@ -298,7 +298,7 @@
                         },
                         {
                             "Key": {
-                                "id": 431486621014062
+                                "id": 2628707752015305
                             },
                             "Value": {
                                 "ComponentData": {
@@ -328,7 +328,7 @@
                         },
                         {
                             "Key": {
-                                "id": 431490915981358
+                                "id": 2628712046982601
                             },
                             "Value": {
                                 "ComponentData": {
@@ -359,7 +359,7 @@
                         },
                         {
                             "Key": {
-                                "id": 431495210948654
+                                "id": 2628716341949897
                             },
                             "Value": {
                                 "ComponentData": {

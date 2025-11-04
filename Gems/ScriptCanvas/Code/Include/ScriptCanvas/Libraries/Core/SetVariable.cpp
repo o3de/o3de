@@ -134,7 +134,7 @@ namespace ScriptCanvas
 
                     if (oldType != newType)
                     {
-                        ScopedBatchOperation scopedBatchOperation(AZ_CRC("SetVariableIdChanged", 0xc072e633));
+                        ScopedBatchOperation scopedBatchOperation(AZ_CRC_CE("SetVariableIdChanged"));
                         RemoveSlots();
                         AddSlots();
                     }
@@ -280,7 +280,7 @@ namespace ScriptCanvas
                 VariableId removedVariableId;
                 AZStd::swap(removedVariableId, m_variableId);
                 {
-                    ScopedBatchOperation scopedBatchOperation(AZ_CRC("SetVariableRemoved", 0xd7da59f5));
+                    ScopedBatchOperation scopedBatchOperation(AZ_CRC_CE("SetVariableRemoved"));
                     RemoveSlots();
                 }
                 VariableNodeNotificationBus::Event(GetEntityId(), &VariableNodeNotifications::OnVariableRemovedFromNode, removedVariableId);

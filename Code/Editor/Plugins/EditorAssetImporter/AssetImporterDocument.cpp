@@ -8,7 +8,6 @@
 
 #include <AssetImporterDocument.h>
 #include <Util/PathUtil.h>
-#include <GFxFramework/MaterialIO/IMaterial.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/FilterIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
@@ -23,7 +22,6 @@
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <IEditor.h>
-#include <ISourceControl.h>
 #include <QFile>
 #include <QWidget>
 #include <QMessageBox>
@@ -44,7 +42,7 @@ bool AssetImporterDocument::LoadScene(const AZStd::string& sceneFullPath)
 {
     AZ_PROFILE_FUNCTION(Editor);
     namespace SceneEvents = AZ::SceneAPI::Events;
-    SceneEvents::SceneSerializationBus::BroadcastResult(m_scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sceneFullPath, AZ::Uuid::CreateNull());
+    SceneEvents::SceneSerializationBus::BroadcastResult(m_scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sceneFullPath, AZ::Uuid::CreateNull(), "");
     return !!m_scene;
 }
 
@@ -64,6 +62,13 @@ void AssetImporterDocument::SaveScene(AZStd::shared_ptr<AZ::ActionOutput>& outpu
 
         return;
     }
+
+    // If a save is requested, the user is going to want to see the asset re-processed, even if they didn't actually make a change.
+    bool fingerprintCleared = false;
+    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+        fingerprintCleared, &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, m_scene->GetManifestFilename());
+    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+        fingerprintCleared, &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, m_scene->GetSourceFilename());
 
     m_saveRunner = AZStd::make_shared<AZ::AsyncSaveRunner>();
 

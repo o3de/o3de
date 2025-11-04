@@ -11,8 +11,12 @@
 #include "EditorCoreAPI.h"
 #include "IUndoManagerListener.h"
 #include "IUndoObject.h"
+
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/vector.h>
 #include <CryCommon/StlUtils.h>
+#include <vector>
 
 struct IUndoObject;
 class CSuperUndoStep;
@@ -135,13 +139,12 @@ private: // ------------------------------------------------------
     std::vector<IUndoObject*> m_undoObjects;
 };
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /*!
  *  CUndoManager is keeping and operating on CUndo class instances.
+ *  TODO: this class is superseded by AzToolsFramework::UndoSystem
  */
 class EDITOR_CORE_API CUndoManager
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     CUndoManager();
     ~CUndoManager();
@@ -254,13 +257,10 @@ private: // ---------------------------------------------------------------
 
     AssetManagerUndoInterruptor* m_assetManagerUndoInterruptor;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    AZStd::list<CUndoStep*>      m_undoStack;
+    AZStd::list<CUndoStep*>      m_redoStack;
 
-    std::list<CUndoStep*>      m_undoStack;
-    std::list<CUndoStep*>      m_redoStack;
-
-    std::vector<IUndoManagerListener*> m_listeners;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+    AZStd::vector<IUndoManagerListener*> m_listeners;
 };
 
 class CScopedSuspendUndo

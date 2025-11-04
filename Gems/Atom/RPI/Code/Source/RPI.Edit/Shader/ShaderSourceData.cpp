@@ -21,7 +21,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderSourceData>()
-                    ->Version(7) // Rework of the blend state options
+                    ->Version(8) // Added m_keepTempFolder flag.
                     ->Field("Source", &ShaderSourceData::m_source)
                     ->Field("DrawList", &ShaderSourceData::m_drawListName)
                     ->Field("DepthStencilState", &ShaderSourceData::m_depthStencilState)
@@ -33,8 +33,10 @@ namespace AZ
                     ->Field("RemoveBuildArguments", &ShaderSourceData::m_removeBuildArguments)
                     ->Field("AddBuildArguments", &ShaderSourceData::m_addBuildArguments)
                     ->Field("Definitions", &ShaderSourceData::m_definitions)
+                    ->Field("ShaderOptions", &ShaderSourceData::m_shaderOptionValues)
                     ->Field("DisabledRHIBackends", &ShaderSourceData::m_disabledRhiBackends)
                     ->Field("Supervariants", &ShaderSourceData::m_supervariants)
+                    ->Field("KeepTempFolder", &ShaderSourceData::m_keepTempFolder)
                     ;
 
                 serializeContext->Class<ProgramSettings>()
@@ -72,8 +74,10 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_removeBuildArguments, "Remove Build Arguments", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_addBuildArguments, "Add Build Arguments", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_definitions, "Definitions", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_shaderOptionValues, "Shader Options", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_disabledRhiBackends, "Disabled RHI Backends", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_supervariants, "Super Variants", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_keepTempFolder, "Keep Temp Folder", "Preserves the Temp folder for successful shader compilations.")
                         ;
 
                     editContext->Class<ProgramSettings>("ShaderSourceData::ProgramSettings", "")
@@ -151,8 +155,10 @@ namespace AZ
                     ->Property("removeBuildArguments", BehaviorValueProperty(&ShaderSourceData::m_removeBuildArguments))
                     ->Property("addBuildArguments", BehaviorValueProperty(&ShaderSourceData::m_addBuildArguments))
                     ->Property("definitions", BehaviorValueProperty(&ShaderSourceData::m_definitions))
+                    ->Property("shaderOptions", BehaviorValueProperty(&ShaderSourceData::m_shaderOptionValues))
                     ->Property("disabledRhiBackends", BehaviorValueProperty(&ShaderSourceData::m_disabledRhiBackends))
                     ->Property("superVariants", BehaviorValueProperty(&ShaderSourceData::m_supervariants))
+                    ->Property("keepTempFolder", BehaviorValueProperty(&ShaderSourceData::m_keepTempFolder))
                     ->Method("IsRhiBackendDisabled", &ShaderSourceData::IsRhiBackendDisabled)
                     ;
 

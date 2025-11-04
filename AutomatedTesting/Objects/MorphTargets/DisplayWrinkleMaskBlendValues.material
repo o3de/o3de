@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/Skin.materialtype",
-    "materialTypeVersion": 3,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/Skin.materialtype",
+    "materialTypeVersion": 4,
     "propertyValues": {
         "wrinkleLayers.count": 3,
         "wrinkleLayers.enable": true,

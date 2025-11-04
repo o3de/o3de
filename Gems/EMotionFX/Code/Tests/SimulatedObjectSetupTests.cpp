@@ -49,19 +49,8 @@ namespace SimulatedObjectSetupTests
     using namespace EMotionFX;
 
     class SimulatedObjectSetupTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-            AZ::AllocatorInstance<ActorAllocator>::Create();
-        }
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<ActorAllocator>::Destroy();
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
     };
 
     TEST_F(SimulatedObjectSetupTestsFixture, TestSimulatedObjectSetup_AddSimulatedObject)
@@ -172,7 +161,7 @@ namespace SimulatedObjectSetupTests
         EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().m_expectedSimulatedJointCount);
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, AddSimulatedJointAndChildrenFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, AddSimulatedJointAndChildrenFixture,
         testing::ValuesIn(std::vector<AddSimulatedJointAndChildrenParams>
         {
             {PrefabLeftArmSkeleton::leftShoulderIndex, 13}, // leftShoulder is a root joint
@@ -291,7 +280,7 @@ namespace SimulatedObjectSetupTests
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(Test, GetSimulatedRootJointFixture,
+    INSTANTIATE_TEST_SUITE_P(Test, GetSimulatedRootJointFixture,
         ::testing::Combine(
             ::testing::Values(
                 PrefabLeftArmSkeleton::leftShoulderIndex,

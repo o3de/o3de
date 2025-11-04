@@ -24,17 +24,18 @@ namespace EMStudio
     {
         Init();
         SetMotionEvent(motion, motionEvent);
+        connect(&m_eventDataEditor, &EventDataEditor::eventsChanged, this, &MotionEventEditor::SetMotionEvent);
     }
 
     void MotionEventEditor::Init()
     {
-        AZ::SerializeContext* context;
+        AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         m_baseObjectEditor = new EMotionFX::ObjectEditor(context);
 
         QVBoxLayout* layout = new QVBoxLayout(this);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(m_baseObjectEditor);
         layout->addWidget(&m_eventDataEditor);
     }

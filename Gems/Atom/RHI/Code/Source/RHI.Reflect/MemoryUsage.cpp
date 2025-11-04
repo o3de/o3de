@@ -7,34 +7,32 @@
  */
 #include <Atom/RHI.Reflect/MemoryUsage.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    HeapMemoryTransfer::HeapMemoryTransfer(const HeapMemoryTransfer& rhs)
     {
-        HeapMemoryTransfer::HeapMemoryTransfer(const HeapMemoryTransfer& rhs)
-        {
-            *this = rhs;
-        }
+        *this = rhs;
+    }
 
-        HeapMemoryTransfer& HeapMemoryTransfer::operator=(const HeapMemoryTransfer& rhs)
-        {
-            m_bytesPerFrame = rhs.m_bytesPerFrame.load();
-            m_accumulatedInBytes = rhs.m_accumulatedInBytes;
-            return *this;
-        }
+    HeapMemoryTransfer& HeapMemoryTransfer::operator=(const HeapMemoryTransfer& rhs)
+    {
+        m_bytesPerFrame = rhs.m_bytesPerFrame.load();
+        m_accumulatedInBytes = rhs.m_accumulatedInBytes;
+        return *this;
+    }
 
-        HeapMemoryUsage::HeapMemoryUsage(const HeapMemoryUsage& rhs)
-        {
-            *this = rhs;
-        }
+    HeapMemoryUsage::HeapMemoryUsage(const HeapMemoryUsage& rhs)
+    {
+        *this = rhs;
+    }
 
-        HeapMemoryUsage& HeapMemoryUsage::operator=(const HeapMemoryUsage& rhs)
-        {
-            m_budgetInBytes = rhs.m_budgetInBytes;
-            m_reservedInBytes = rhs.m_reservedInBytes.load();
-            m_residentInBytes = rhs.m_residentInBytes.load();
-            m_fragmentation = rhs.m_fragmentation;
-            return *this;
-        }
+    HeapMemoryUsage& HeapMemoryUsage::operator=(const HeapMemoryUsage& rhs)
+    {
+        m_budgetInBytes = rhs.m_budgetInBytes;
+        m_totalResidentInBytes = rhs.m_totalResidentInBytes.load();
+        m_usedResidentInBytes = rhs.m_usedResidentInBytes.load();
+        m_uniqueAllocationBytes = rhs.m_uniqueAllocationBytes.load();
+        m_fragmentation = rhs.m_fragmentation;
+        return *this;
     }
 }

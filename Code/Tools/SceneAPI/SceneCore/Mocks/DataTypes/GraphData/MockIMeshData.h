@@ -43,14 +43,10 @@ namespace AZ
                     const Face&(unsigned int index));
                 MOCK_CONST_METHOD1(GetFaceMaterialId,
                     unsigned int(unsigned int index));
-                MOCK_CONST_METHOD1(GetControlPointIndex,
-                     int(int index));
-                MOCK_CONST_METHOD0(GetUsedControlPointCount,
+                MOCK_CONST_METHOD0(GetVertexIndexCount,
                     size_t());
                 MOCK_CONST_METHOD2(GetVertexIndex,
                     unsigned int(int faceIndex, int vertexIndexInFace));
-                MOCK_CONST_METHOD1(GetUsedPointIndexForControlPoint,
-                    int(int controlPointIndex));
             };
         }  // namespace DataTypes
     }  //namespace SceneAPI

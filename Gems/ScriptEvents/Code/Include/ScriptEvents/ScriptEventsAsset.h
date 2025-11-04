@@ -9,16 +9,17 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 
 #include "ScriptEventDefinition.h"
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace ScriptEvents
 {
@@ -30,12 +31,12 @@ namespace ScriptEvents
     public:
 
         AZ_RTTI(ScriptEventsAsset, "{CB4D603E-8CB0-4D80-8165-4244F28AF187}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(ScriptEventsAsset, AZ::SystemAllocator, 0);
-        
+        AZ_CLASS_ALLOCATOR(ScriptEventsAsset, AZ::SystemAllocator);
+
         ScriptEventsAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
             : AZ::Data::AssetData(assetId, status)
         {
-            
+
         }
 
         ScriptEventsAsset(const ScriptEventsAsset& rhs)
@@ -50,25 +51,7 @@ namespace ScriptEvents
 
         AZ::Crc32 GetBusId() const { return AZ::Crc32(GetId().ToString<AZStd::string>().c_str()); }
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<ScriptEventsAsset>()
-                    ->Version(1)
-                    ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
-                    ->Field("m_definition", &ScriptEventsAsset::m_definition)
-                    ;
-
-                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<ScriptEventsAsset>("Script Events Asset", "")
-                        ->DataElement(0, &ScriptEventsAsset::m_definition, "Definition", "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ;
-                }
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
         ScriptEvents::ScriptEvent m_definition;
     };
@@ -81,7 +64,7 @@ namespace ScriptEvents
     public:
 
         AZ_RTTI(ScriptEventsAssetPtr, "{CE2C30CB-709B-4BC0-BAEE-3D192D33367D}", BaseType);
-        AZ_CLASS_ALLOCATOR(ScriptEventsAssetPtr, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsAssetPtr, AZ::SystemAllocator);
 
         explicit ScriptEventsAssetPtr(AZ::Data::AssetLoadBehavior loadBehavior = AZ::Data::AssetLoadBehavior::PreLoad)
             : AZ::Data::Asset<ScriptEventsAsset>(loadBehavior)
@@ -97,14 +80,7 @@ namespace ScriptEvents
         ScriptEventsAssetPtr& operator=(const ScriptEventsAssetPtr&) = default;
         ScriptEventsAssetPtr& operator=(ScriptEventsAssetPtr&&) = default;
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (AZ::SerializeContext * serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<ScriptEventsAssetPtr>()
-                    ;
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
     };
 
     // This is the Script Event asset handler used by the builder (and at runtime)

@@ -18,6 +18,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/string/string.h>
 
+
 namespace ScriptCanvasPhysics
 {
     namespace WorldFunctions
@@ -95,3 +96,6 @@ namespace ScriptCanvasPhysics
             AZ::EntityId ignore);
     } // namespace WorldFunctions
 } // namespace ScriptCanvasPhysics
+
+#include <Source/World.generated.h>
+

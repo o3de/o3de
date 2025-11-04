@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/ShaderModule.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -25,22 +26,23 @@ namespace AZ
             Base::Init(*descriptor.m_device);
 
             m_descriptor = descriptor;
-            const size_t alignedByteCodeSize = ((descriptor.m_bytecode.size() + 3) / 4) * 4;
+            const size_t alignedByteCodeSize = (descriptor.m_bytecode.size() + 3) / 4;
             // pCode is declared as uint32_t*, and remained bytes should be padded by 0.
-            m_alignedByteCode.resize(alignedByteCodeSize, 0);
-            memcpy(m_alignedByteCode.data(), descriptor.m_bytecode.data(), descriptor.m_bytecode.size());
+            AZStd::vector<uint32_t> alignedByteCode(alignedByteCodeSize, 0);
+            memcpy(alignedByteCode.data(), descriptor.m_bytecode.data(), descriptor.m_bytecode.size());
 
             VkShaderModuleCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
             createInfo.pNext = nullptr;
             createInfo.flags = 0;
             createInfo.codeSize = descriptor.m_bytecode.size();
-            createInfo.pCode = m_alignedByteCode.data();
+            createInfo.pCode = alignedByteCode.data();
 
             const VkResult result =
                 static_cast<Device&>(GetDevice())
                     .GetContext()
-                    .CreateShaderModule(descriptor.m_device->GetNativeDevice(), &createInfo, nullptr, &m_nativeShaderModule);
+                    .CreateShaderModule(
+                        descriptor.m_device->GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeShaderModule);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -72,10 +74,9 @@ namespace AZ
             if (m_nativeShaderModule != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyShaderModule(device.GetNativeDevice(), m_nativeShaderModule, nullptr);
+                device.GetContext().DestroyShaderModule(device.GetNativeDevice(), m_nativeShaderModule, VkSystemAllocator::Get());
                 m_nativeShaderModule = VK_NULL_HANDLE;
             }
-            m_alignedByteCode.clear();
 
             Base::Shutdown();
         }

@@ -33,10 +33,13 @@
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
+
 namespace Testing
 {
     struct SceneScriptTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
         static void TestExpectTrue(bool value)
         {
@@ -69,7 +72,7 @@ namespace Testing
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
             AZ::NameDictionary::Create();
             m_data.reset(new DataMembers);
 
@@ -111,8 +114,11 @@ namespace Testing
             AZ::SettingsRegistry::Unregister(&m_data->m_settings);
             m_data.reset();
 
+            CleanUpSceneDataGenericClassInfo();
+            CleanUpSceneCoreGenericClassInfo();
+
             AZ::NameDictionary::Destroy();
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         struct DataMembers

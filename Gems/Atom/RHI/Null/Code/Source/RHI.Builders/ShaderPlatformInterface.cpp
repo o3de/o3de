@@ -21,6 +21,9 @@ namespace AZ
 
         static const char* WindowsAzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Null/AzslcHeader.azsli";
         static const char* MacAzslShaderHeader = "Builders/ShaderHeaders/Platform/Mac/Null/AzslcHeader.azsli";
+        static const char* iOSsAzslShaderHeader = "Builders/ShaderHeaders/Platform/iOS/Null/AzslcHeader.azsli";
+        static const char* LinuxAzslShaderHeader = "Builders/ShaderHeaders/Platform/Linux/Null/AzslcHeader.azsli";
+        static const char* AndroidAzslShaderHeader = "Builders/ShaderHeaders/Platform/Android/Null/AzslcHeader.azsli";
 
         ShaderPlatformInterface::ShaderPlatformInterface(uint32_t apiUniqueIndex)
             : RHI::ShaderPlatformInterface(apiUniqueIndex)
@@ -90,6 +93,18 @@ namespace AZ
             {
                 return MacAzslShaderHeader;
             }
+            else if (platform.m_identifier == "ios")
+            {
+                return iOSsAzslShaderHeader;
+            }
+            else if (platform.m_identifier == "linux")
+            {
+                return LinuxAzslShaderHeader;
+            }
+            else if (platform.m_identifier == "android")
+            {
+                return AndroidAzslShaderHeader;
+            }
             else
             {
                 return WindowsAzslShaderHeader;
@@ -100,7 +115,8 @@ namespace AZ
             [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform, [[maybe_unused]] const AZStd::string& shaderSourcePath,
             [[maybe_unused]] const AZStd::string& functionName, [[maybe_unused]] RHI::ShaderHardwareStage shaderStage,
             [[maybe_unused]] const AZStd::string& tempFolderPath, [[maybe_unused]] StageDescriptor& outputDescriptor,
-            [[maybe_unused]] const RHI::ShaderBuildArguments& shaderBuildArguments) const
+            [[maybe_unused]] const RHI::ShaderBuildArguments& shaderBuildArguments,
+            [[maybe_unused]] const bool useSpecializationConstants) const
         {
             outputDescriptor.m_stageType = shaderStage;
             return true;

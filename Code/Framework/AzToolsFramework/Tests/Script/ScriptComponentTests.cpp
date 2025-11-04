@@ -11,6 +11,7 @@
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Script/ScriptContext.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 
@@ -31,7 +32,7 @@ namespace UnitTest
     int myReloadValue = 0;
 
     class ScriptComponentTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AZ_TYPE_INFO(ScriptComponentTest, "{85CDBD49-70FF-416A-8154-B5525EDD30D4}");
@@ -42,10 +43,12 @@ namespace UnitTest
             appDesc.m_memoryBlocksByteSize = 100 * 1024 * 1024;
             //appDesc.m_recordsMode = AllocationRecords::RECORD_FULL;
             //appDesc.m_stackRecordLevels = 20;
-            Entity* systemEntity = m_app.Create(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            Entity* systemEntity = m_app.Create(appDesc, startupParameters);
 
-            systemEntity->CreateComponent<MemoryComponent>();
             systemEntity->CreateComponent(AZ::TypeId{ "{CAE3A025-FAC9-4537-B39E-0A800A2326DF}" }); // JobManager component
+            systemEntity->CreateComponent<TaskGraphSystemComponent>();
             systemEntity->CreateComponent<StreamerComponent>();
             systemEntity->CreateComponent<AssetManagerComponent>();
             systemEntity->CreateComponent(AZ::TypeId{ "{A316662A-6C3E-43E6-BC61-4B375D0D83B4}" }); // Usersettings component
@@ -54,9 +57,9 @@ namespace UnitTest
             systemEntity->Init();
             systemEntity->Activate();
 
-            EBUS_EVENT_RESULT(m_scriptContext, ScriptSystemRequestBus, GetContext, DefaultScriptContextId);
-            EBUS_EVENT_RESULT(m_behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
-            EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            ScriptSystemRequestBus::BroadcastResult(m_scriptContext, &ScriptSystemRequestBus::Events::GetContext, DefaultScriptContextId);
+            AZ::ComponentApplicationBus::BroadcastResult(m_behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
+            AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
             AzToolsFramework::Components::ScriptEditorComponent::CreateDescriptor(); // descriptor is deleted by app
             AzToolsFramework::Components::ScriptEditorComponent::Reflect(m_serializeContext);
@@ -82,7 +85,7 @@ namespace UnitTest
                 Data::Asset<ScriptAsset> scriptAsset = Data::AssetManager::Instance().CreateAsset<ScriptAsset>(Data::AssetId(id));
                 scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                 scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
-                EBUS_EVENT(Data::AssetManagerBus, OnAssetReady, scriptAsset);
+                Data::AssetManagerBus::Broadcast(&Data::AssetManagerBus::Events::OnAssetReady, scriptAsset);
                 m_app.Tick();
                 m_app.TickSystem(); // flush assets etc.
 

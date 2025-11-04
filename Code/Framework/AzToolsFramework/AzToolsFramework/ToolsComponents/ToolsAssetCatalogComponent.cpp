@@ -28,12 +28,12 @@ namespace AssetProcessor
 
     void ToolsAssetCatalogComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("AssetCatalogService", 0xc68ffc57));
+        services.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     void ToolsAssetCatalogComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
+        services.push_back(AZ_CRC_CE("AssetDatabaseService"));
     }
 
     void ToolsAssetCatalogComponent::Activate()

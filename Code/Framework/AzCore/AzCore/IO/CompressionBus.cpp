@@ -8,6 +8,8 @@
 
 #include <AzCore/IO/CompressionBus.h>
 
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::IO::Compression);
+
 namespace AZ::IO
 {
     CompressionInfo::CompressionInfo(CompressionInfo&& rhs)

@@ -27,6 +27,10 @@
             "isTemplated": true
         },
         {
+            "file": "Source/AutoGen/ScriptCanvasNodeable.xsd",
+            "isTemplated": false
+        },
+        {
             "file": "${Name}_files.cmake",
             "isTemplated": true
         },

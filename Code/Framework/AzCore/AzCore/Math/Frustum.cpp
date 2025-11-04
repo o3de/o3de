@@ -219,10 +219,10 @@ namespace AZ
         viewFrustumAttributes.m_worldTransform = Transform::CreateFromMatrix3x3AndTranslation(orientation, origin);
 
         const float originDotForward = origin.Dot(forward);
-        const float nearClip = -Vec4::SelectFourth(m_planes[PlaneId::Near]) - originDotForward;
+        const float nearClip = -Vec4::SelectIndex3(m_planes[PlaneId::Near]) - originDotForward;
 
         viewFrustumAttributes.m_nearClip = nearClip;
-        viewFrustumAttributes.m_farClip = Vec4::SelectFourth(m_planes[PlaneId::Far]) - originDotForward;
+        viewFrustumAttributes.m_farClip = Vec4::SelectIndex3(m_planes[PlaneId::Far]) - originDotForward;
 
         const float leftNormalDotForward = left.GetNormal().Dot(forward);
         const float frustumNearHeight =

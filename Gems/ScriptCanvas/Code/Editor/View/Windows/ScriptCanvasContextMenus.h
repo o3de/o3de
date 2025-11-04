@@ -23,7 +23,13 @@
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuAction.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuAction.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuAction.h>
+#include <ScriptCanvas/Core/Slot.h>
 #endif
+
+namespace AzToolsFramework::AssetBrowser
+{
+    class AssetBrowserFilterModel;
+}
 
 namespace ScriptCanvasEditor
 {
@@ -38,7 +44,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EndpointSelectionAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EndpointSelectionAction, AZ::SystemAllocator);
 
         EndpointSelectionAction(const GraphCanvas::Endpoint& endpoint);
         ~EndpointSelectionAction() = default;
@@ -53,7 +59,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::SceneContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoveUnusedVariablesMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoveUnusedVariablesMenuAction, AZ::SystemAllocator);
 
         RemoveUnusedVariablesMenuAction(QObject* parent);
         virtual ~RemoveUnusedVariablesMenuAction() = default;
@@ -73,7 +79,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ConvertVariableNodeToReferenceAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConvertVariableNodeToReferenceAction, AZ::SystemAllocator);
 
         ConvertVariableNodeToReferenceAction(QObject* parent);
         virtual ~ConvertVariableNodeToReferenceAction() = default;
@@ -96,7 +102,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(SlotManipulationMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotManipulationMenuAction, AZ::SystemAllocator);
 
         SlotManipulationMenuAction(AZStd::string_view actionName, QObject* parent);
 
@@ -109,7 +115,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ConvertReferenceToVariableNodeAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConvertReferenceToVariableNodeAction, AZ::SystemAllocator);
 
         ConvertReferenceToVariableNodeAction(QObject* parent);
         virtual ~ConvertReferenceToVariableNodeAction() = default;
@@ -131,7 +137,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExposeSlotMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExposeSlotMenuAction, AZ::SystemAllocator);
 
         ExposeSlotMenuAction(QObject* parent);
         virtual ~ExposeSlotMenuAction() = default;
@@ -151,7 +157,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SetDataSlotTypeMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SetDataSlotTypeMenuAction, AZ::SystemAllocator);
 
         explicit SetDataSlotTypeMenuAction(QObject* parent);
         virtual ~SetDataSlotTypeMenuAction() = default;
@@ -175,7 +181,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateAzEventHandlerSlotMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateAzEventHandlerSlotMenuAction, AZ::SystemAllocator);
 
         CreateAzEventHandlerSlotMenuAction(QObject* parent);
 
@@ -203,7 +209,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(SceneContextMenu, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneContextMenu, AZ::SystemAllocator);
 
         SceneContextMenu(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel);
         ~SceneContextMenu() = default;
@@ -227,7 +233,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ConnectionContextMenu, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConnectionContextMenu, AZ::SystemAllocator);
 
         ConnectionContextMenu(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel);
         ~ConnectionContextMenu() = default;
@@ -252,7 +258,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::NodeContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(RenameFunctionDefinitionNodeAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RenameFunctionDefinitionNodeAction, AZ::SystemAllocator);
 
         RenameFunctionDefinitionNodeAction(NodeDescriptorComponent* descriptor, QObject* parent);
         virtual ~RenameFunctionDefinitionNodeAction() = default;

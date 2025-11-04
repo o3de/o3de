@@ -100,7 +100,7 @@ def LayerSpawner_InstancesRefreshUsingCorrectViewportCamera():
                                                          surface_height)
 
     # Create the two vegetation areas
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "SpawnerViewportRefresh_PinkFlower")[0]
     first_veg_entity = dynveg.create_temp_prefab_vegetation_area("Veg Area 1", first_entity_center_point, box_size, box_size,
                                                                  box_size, pink_flower_prefab)

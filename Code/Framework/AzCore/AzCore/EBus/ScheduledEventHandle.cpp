@@ -75,4 +75,13 @@ namespace AZ
     {
         return m_event;
     }
+
+    void ScheduledEventHandle::Clear()
+    {
+        // We can nullptr events we don't own, but events that we do own need to go back into the free pool
+        if (!m_ownsScheduledEvent)
+        {
+            m_event = nullptr;
+        }
+    }
 }

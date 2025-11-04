@@ -16,9 +16,19 @@
 
 namespace Platform
 {
-    bool RunEditorWithArg(const QString editor, const QString arg)
+    bool RunCommandWithArguments(const QString& command, const QStringList& argsList)
     {
-        return QProcess::execute(QString("/usr/bin/open"), { "-a", gSettings.textureEditor, editor }) == 0;
+        return QProcess::startDetached(command, argsList);
+    }
+
+    bool RunEditorWithArg(const QString& editor, const QString& arg)
+    {
+        return RunCommandWithArguments(QString("/usr/bin/open"), { "-a", gSettings.textureEditor, editor });
+    }
+
+    bool OpenUri(const QUrl& uri)
+    {
+        return RunCommandWithArguments(QString("/usr/bin/open"), { uri.toString() });
     }
 
     QString GetDefaultEditor(const Common::EditFileType fileType)

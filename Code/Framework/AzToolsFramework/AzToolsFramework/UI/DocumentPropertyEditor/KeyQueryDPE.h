@@ -8,16 +8,18 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include "AzToolsFramework/UI/DocumentPropertyEditor/ui_KeyQueryDPE.h"
 #include <QDialog>
 
 namespace AzToolsFramework
 {
-    class KeyQueryDPE
+    class AZTF_API KeyQueryDPE
         : public QDialog
         , Ui::KeyQueryDPE
     {
     public:
-        KeyQueryDPE(AZ::DocumentPropertyEditor::DocumentAdapterPtr* keyQueryAdatper, QWidget* parentWidget = nullptr);
+        KeyQueryDPE(AZ::DocumentPropertyEditor::DocumentAdapterPtr keyQueryAdapter, QWidget* parentWidget = nullptr);
     };
 } // namespace AzToolsFramework

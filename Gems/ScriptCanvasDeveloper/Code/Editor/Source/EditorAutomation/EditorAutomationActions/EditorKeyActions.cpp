@@ -6,10 +6,17 @@
  *
  */
 
+#include <AzCore/PlatformIncl.h>
+
 #include <QApplication>
 #include <QKeyEvent>
-#include <QtTest/qtest.h>
 #include <QWidget>
+
+// MSVC: warning suppressed: constant used in conditional expression
+// CLANG: warning suppressed: implicit conversion loses integer precision
+AZ_PUSH_DISABLE_WARNING(4127, "-Wshorten-64-to-32")
+#include <QtTest/qtest.h>
+AZ_POP_DISABLE_WARNING
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/EditorKeyActions.h>
 

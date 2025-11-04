@@ -98,7 +98,7 @@ namespace ScriptCanvasEditor
                 editContext->Class<Settings>("Script Canvas Settings", "Per-graph Script Canvas settings")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC_CE("PropertyVisibility_ShowChildrenOnly"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Settings::m_enableLogging, "Logging", "Will enable logging for this Script Canvas graph")
                 ;
             }
@@ -153,7 +153,7 @@ namespace ScriptCanvasEditor
         // General properties
         AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> previewSettings =
             AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(
-                AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+                AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
 
         // Store a copy to revert if needed.
         m_originalEditorSettings = *previewSettings;
@@ -207,7 +207,7 @@ namespace ScriptCanvasEditor
             // General properties
             AZStd::intrusive_ptr<EditorSettings::ScriptCanvasEditorSettings> previewSettings =
                 AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(
-                    AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+                    AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
             *previewSettings = m_originalEditorSettings;
         }
 

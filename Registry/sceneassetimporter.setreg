@@ -1,39 +1,52 @@
 {
-	"O3DE":
-	{
-		"SceneAPI":
-		{
-			"AssetImporter":
-			{
-				"SupportedFileTypeExtensions":
-				[
-					".fbx",
-					".stl",
-					".gltf",
-					".glb"
-				]
-			},
-			"MaterialConverter": 
-			{
-				"Enable": true,
-				"DefaultMaterial": "Materials/Presets/PBR/default_grid.material"
-			},
-			"TangentGenerateComponent":
-			{
-				"DefaultGenerationMethod": "FromSourceScene",
-				"DebugBitangentFlip": false
-			},
-			"SkinRule":
-			{
-				"DefaultMaxSkinInfluencesPerVertex": 8,
-				"DefaultWeightThreshold": 0.001
-			},
-			"ModelBuilder": 
-			{
-				// When false, scenes with multiple meshes assigned to the same material but with different vertex layouts will successfully process
-				// When true, stricter error checking will cause the asset to fail to process with an error message indicating why
-				"MismatchedVertexLayoutsAreErrors": false 
-			}
-		}
-	}
+    "O3DE":
+    {
+        "SceneAPI":
+        {
+            "AssetImporter":
+            {
+                "SupportedFileTypeExtensions":
+                [
+                    ".fbx",
+                    ".stl",
+                    ".gltf",
+                    ".glb",
+                    ".usd",
+                    ".usda",
+                    ".usdz",
+                    ".usdc",
+                    ".obj"
+                ]
+            },
+            "MaterialConverter": 
+            {
+                "Enable": true,
+                "DefaultMaterial": "Materials/Presets/PBR/default_grid.material"
+            },
+            "TangentGenerateComponent":
+            {
+                "DefaultGenerationMethod": "FromSourceScene",
+                "DebugBitangentFlip": false
+            },
+            "UVsGenerateComponent":
+            {
+                // you may have to reprocess assets if you change these defaults.
+                // When the user has not added any rules regarding UV generation, what should we do? Choose from "SphericalProjection" or "LeaveSceneDataAsIs"
+                "DefaultGenerationMethodIfNoRulePresent" : "LeaveSceneDataAsIs",
+                // when the user actually clicks to add a new Rule or a script adds a new rule to generate uvs, what method should it use by default?
+                "DefaultGenerationMethodWhenRuleIsPresent" : "SphericalProjection"
+            },
+            "SkinRule":
+            {
+                "DefaultMaxSkinInfluencesPerVertex": 8,
+                "DefaultWeightThreshold": 0.001
+            },
+            "ModelBuilder": 
+            {
+                // When false, scenes with multiple meshes assigned to the same material but with different vertex layouts will successfully process
+                // When true, stricter error checking will cause the asset to fail to process with an error message indicating why
+                "MismatchedVertexLayoutsAreErrors": false 
+            }
+        }
+    }
 }

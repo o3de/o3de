@@ -18,8 +18,7 @@
 
 namespace AZ::Render
 {
-    RenderDebugSettings::RenderDebugSettings(RenderDebugFeatureProcessor* featureProcessor)
-        : m_featureProcessor(featureProcessor)
+    RenderDebugSettings::RenderDebugSettings([[maybe_unused]] RenderDebugFeatureProcessor* featureProcessor)
     {
     }
 

@@ -47,7 +47,7 @@ namespace ScriptCanvasEditor
 
     HighlightElementValidationEffect::HighlightElementValidationEffect()
     {
-        m_templateConfiguration.m_blurRadius = 5;
+        m_templateConfiguration.m_blurRadius = 0; // #17174 using blur degrades performance
 
         m_templateConfiguration.m_pen = QPen();
         m_templateConfiguration.m_pen.setBrush(Qt::red);
@@ -542,12 +542,12 @@ namespace ScriptCanvasEditor
 
     void GraphValidationSortFilterProxyModel::SetFilter(const QString& filterString)
     {
-        QString escapedString = QRegExp::escape(filterString);
+        QString escapedString = QRegularExpression::escape(filterString);
 
         if (m_filter != escapedString)
         {
             m_filter = escapedString;
-            m_regex = QRegExp(m_filter, Qt::CaseInsensitive);
+            m_regex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
 
             invalidateFilter();
         }

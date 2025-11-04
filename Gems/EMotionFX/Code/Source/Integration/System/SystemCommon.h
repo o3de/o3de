@@ -13,12 +13,13 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 #include <MCore/Source/Vector.h>
-#include <MCore/Source/MemoryObject.h>
+#include <MCore/Source/RefCounted.h>
 
 #include <EMotionFX/Source/Transform.h>
 
@@ -28,14 +29,14 @@ namespace AZStd
      * Intrusive ptr for EMotionFX-owned objects (uses EMotionFX's internal ref-counting MCore::Destroy()).
      */
     template<>
-    struct IntrusivePtrCountPolicy<MCore::MemoryObject>
+    struct IntrusivePtrCountPolicy<MCore::RefCounted>
     {
-        static AZ_FORCE_INLINE void add_ref(MCore::MemoryObject* ptr) 
-        { 
+        static AZ_FORCE_INLINE void add_ref(MCore::RefCounted* ptr)
+        {
             ptr->IncreaseReferenceCount();
         }
-        static AZ_FORCE_INLINE void release(MCore::MemoryObject* ptr) 
-        { 
+        static AZ_FORCE_INLINE void release(MCore::RefCounted* ptr)
+        {
             MCore::Destroy(ptr); // Calls DecreaseReferenceCount.
         }
     };
@@ -48,18 +49,7 @@ namespace EMotionFX
         /**
          * System allocator to be used for all EMotionFX and EMotionFXAnimation gem persistent allocations.
          */
-        class EMotionFXAllocator
-            : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
-        {
-        public:
-            AZ_TYPE_INFO(EMotionFXAllocator, "{00AEC34F-4A00-4ECB-BC9C-7221E76337D6}");
-            using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-            using Descriptor = Base::Descriptor;
-
-            EMotionFXAllocator() : Base("EMotion FX System Allocator", "EMotion FX general memory allocator") 
-            {
-            }
-        };
+        AZ_CHILD_ALLOCATOR_WITH_NAME(EMotionFXAllocator, "EMotionFXAllocator", "{00AEC34F-4A00-4ECB-BC9C-7221E76337D6}", AZ::SystemAllocator);
 
         /**
          * Intrusive ptr for EMotionFX-owned objects.

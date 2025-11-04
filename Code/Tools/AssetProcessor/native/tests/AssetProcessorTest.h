@@ -13,18 +13,26 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Application/Application.h>
 #include <native/utilities/assetUtils.h>
-#include <native/unittests/UnitTestRunner.h> // for the assert absorber.
+#include <native/unittests/UnitTestUtils.h> // for the assert absorber.
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <tests/ApplicationManagerTests.h>
+#include "UnitTestUtilities.h"
 
 namespace AssetProcessor
 {
+    struct IUnitTestAppManager
+    {
+        AZ_RTTI(IUnitTestAppManager, "{37578207-790A-4928-BD47-B9C4F4B49C3A}");
+
+        virtual PlatformConfiguration& GetConfig() = 0;
+    };
+
     // This is an utility class for Asset Processor Tests
     // Any gmock based fixture class can derived from this class and this will automatically do system allocation and teardown for you
     // It is important to note that if you are overriding Setup and Teardown functions of your fixture class than please call the base class functions.
     class AssetProcessorTest
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     protected:
         AZStd::unique_ptr<UnitTestUtils::AssertAbsorber> m_errorAbsorber{};
@@ -63,6 +71,7 @@ namespace AssetProcessor
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "FileIOUnavailable");
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "LegacySystemInterfaceCreated");
                 AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "CriticalAssetsCompiled");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "LegacyCommandLineProcessed");
             }
         }
 

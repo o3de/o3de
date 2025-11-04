@@ -7,6 +7,9 @@
  */
 
 #include "Exporter.h"
+
+#include <AzCore/Serialization/Locale.h>
+
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/Source/Actor.h>
@@ -22,6 +25,8 @@ namespace ExporterLib
     // save the given morph target
     void SaveMorphTarget(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::MorphTarget* inputMorphTarget, size_t lodLevel, MCore::Endian::EEndianType targetEndianType)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // Ensures that %f uses "." as decimal separator
+
         MCORE_ASSERT(file);
         MCORE_ASSERT(actor);
         MCORE_ASSERT(inputMorphTarget);

@@ -1,0 +1,8 @@
+{
+	"DCCSI_CONFIG_DCC_BLENDER": "True",
+	"DCCSI_GDEBUG": "False",
+	"DCCSI_DEV_MODE": "False",
+	"DCCSI_LOGLEVEL": 20,
+	"DCCSI_BLENDER_VERSION": "3.5"
+}
+

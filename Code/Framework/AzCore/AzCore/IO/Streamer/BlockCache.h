@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include <AzCore/IO/Streamer/RecentlyUsedIndex.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Statistics/RunningStatistic.h>
 #include <AzCore/std/limits.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -28,11 +29,11 @@ namespace AZ::IO
         struct ReportData;
     }
 
-    struct BlockCacheConfig final :
+    struct AZCORE_API BlockCacheConfig final :
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::BlockCacheConfig, "{70120525-88A4-40B6-A75B-BAA7E8FD77F3}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(BlockCacheConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BlockCacheConfig, AZ::SystemAllocator);
 
         ~BlockCacheConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
@@ -57,10 +58,12 @@ namespace AZ::IO
         BlockSize m_blockSize{ BlockSize::MemoryAlignment };
     };
 
-    class BlockCache
+    class AZCORE_API BlockCache
         : public StreamStackEntry
     {
     public:
+        using RecentlyUsedBlockIndex = RecentlyUsedIndex<u32>;
+
         BlockCache(u64 cacheSize, u32 blockSize, u32 alignment, bool onlyEpilogWrites);
         BlockCache(BlockCache&& rhs) = delete;
         BlockCache(const BlockCache& rhs) = delete;
@@ -73,7 +76,7 @@ namespace AZ::IO
         bool ExecuteRequests() override;
 
         void UpdateStatus(Status& status) const override;
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+        void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
         void AddDelayedRequests(AZStd::vector<FileRequest*>& internalPending);
         void UpdatePendingRequestEstimations();
@@ -114,7 +117,7 @@ namespace AZ::IO
             void Prefix(const Section& section);
         };
 
-        using TimePoint = AZStd::chrono::system_clock::time_point;
+        using TimePoint = AZStd::chrono::steady_clock::time_point;
 
         void ReadFile(FileRequest* request, Requests::ReadData& data);
         void ContinueReadFile(FileRequest* request, u64 fileLength);
@@ -126,7 +129,6 @@ namespace AZ::IO
             u64 offset, u64 size, u8* buffer) const;
 
         u8* GetCacheBlockData(u32 index);
-        void TouchBlock(u32 index);
         AZ::u32 RecycleOldestBlock(const RequestPath& filePath, u64 offset);
         u32 FindInCache(const RequestPath& filePath, u64 offset) const;
         bool IsCacheBlockInFlight(u32 index) const;
@@ -143,6 +145,8 @@ namespace AZ::IO
         AZ::Statistics::RunningStatistic m_hitRateStat;
         AZ::Statistics::RunningStatistic m_cacheableStat;
 
+        RecentlyUsedBlockIndex m_recentlyUsed;
+
         u8* m_cache;
         u64 m_cacheSize;
         u32 m_blockSize;
@@ -153,8 +157,6 @@ namespace AZ::IO
         AZStd::unique_ptr<RequestPath[]> m_cachedPaths; // Array of m_numBlocks size.
         //! The offset into the file the cache blocks starts at.
         AZStd::unique_ptr<u64[]> m_cachedOffsets; // Array of m_numBlocks size.
-        //! The last time the cache block was read from.
-        AZStd::unique_ptr<TimePoint[]> m_blockLastTouched; // Array of m_numBlocks size.
         //! The file request that's currently read data into the cache block. If null, the block has been read.
         AZStd::unique_ptr<FileRequest*[]> m_inFlightRequests; // Array of m_numbBlocks size.
 

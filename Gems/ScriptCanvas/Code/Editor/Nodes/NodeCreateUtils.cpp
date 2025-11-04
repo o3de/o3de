@@ -32,22 +32,6 @@
 namespace ScriptCanvasEditor::Nodes
 {
 
-    void DataDrivenNodeCreationData::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
-        if (serializeContext)
-        {
-            serializeContext->Class<DataDrivenNodeCreationData>()
-                ->Version(0)
-                ->Field("LexicalId", &DataDrivenNodeCreationData::m_lexicalId)
-                ->Field("UserData", &DataDrivenNodeCreationData::m_userData)
-                ->Field("Title", &DataDrivenNodeCreationData::m_title)
-                ->Field("ToolTip", &DataDrivenNodeCreationData::m_toolTip)
-                ->Field("DataType", &DataDrivenNodeCreationData::m_dataType)
-                ->Field("SubStyle", &DataDrivenNodeCreationData::m_subStyle);
-        }
-    }
-
     NodeIdPair CreateFunctionDefinitionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, bool isInput, AZStd::string rootName)
     {
         ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;
@@ -252,47 +236,6 @@ namespace ScriptCanvasEditor::Nodes
         EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
 
         nodeIdPair.m_graphCanvasId = DisplayEbusWrapperNode(graphCanvasGraphId, busNode);
-
-        return nodeIdPair;
-    }
-
-    NodeIdPair CreateDataDrivenNode(const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData& nodeData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
-    {
-        ScriptCanvas::Node* node = aznew ScriptCanvas::Node();
-        node->SetNodeName(nodeData.m_title);
-        node->SetNodeToolTip(nodeData.m_toolTip);
-        node->SetNodeLexicalId(nodeData.m_lexicalId);
-
-        ScriptCanvas::DynamicDataSlotConfiguration inputPin;
-        inputPin.m_name = " ";
-        inputPin.m_toolTip = "Input";
-        inputPin.m_canHaveInputField = false;
-        inputPin.SetConnectionType(ScriptCanvas::ConnectionType::Input);
-        inputPin.m_displayType = nodeData.m_dataType;
-
-        ScriptCanvas::DynamicDataSlotConfiguration outputPin;
-        outputPin.m_name = " ";
-        outputPin.m_toolTip = "Output";
-        outputPin.SetConnectionType(ScriptCanvas::ConnectionType::Output);
-        outputPin.m_displayType = nodeData.m_dataType;
-
-        AZ::Entity* nodeEntity{ aznew AZ::Entity };
-        nodeEntity->Init();
-        nodeEntity->SetName(node->GetNodeName());
-        nodeEntity->AddComponent(node);
-        ScriptCanvas::GraphRequestBus::Event(scriptCanvasId, &ScriptCanvas::GraphRequests::AddNode, nodeEntity->GetId());
-
-        node->AddSlot(inputPin, true);
-        node->AddSlot(outputPin, true);
-
-        node->SetNodeStyle(nodeData.m_subStyle);
-
-        AZ::EntityId graphCanvasGraphId;
-        EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
-
-        NodeIdPair nodeIdPair;
-        nodeIdPair.m_scriptCanvasId = nodeEntity->GetId();
-        nodeIdPair.m_graphCanvasId = DisplayScriptCanvasNode(graphCanvasGraphId, node);
 
         return nodeIdPair;
     }

@@ -33,6 +33,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 namespace AssetProcessor
 {
@@ -58,8 +60,10 @@ namespace AssetProcessor
     //! we filter the main app logs to only include non-job-thread messages:
     class FilteredLogComponent
         : public AzFramework::LogComponent
+        , public AssetUtilities::AssetProcessorUserSettingsNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(FilteredLogComponent, AZ::SystemAllocator)
         void OutputMessage(AzFramework::LogFile::SeverityLevel severity, const char* window, const char* message) override
         {
             // if we receive an exception it means we are likely to crash.  in that case, even if it occurred in a job thread
@@ -87,11 +91,40 @@ namespace AssetProcessor
                 return;
             }
 
-            AzFramework::LogComponent::OutputMessage(severity, window, message);
+            if ((m_verboseMode) || (severity >= AzFramework::LogFile::SEV_NORMAL))
+            {
+                AzFramework::LogComponent::OutputMessage(severity, window, message);
+            }
+        }
+
+        void Activate() override
+        {
+            if (AZ::SettingsRegistry::Get())
+            {
+                m_verboseMode = AssetUtilities::GetUserSetting(AssetUtilities::VerboseLoggingOptionName, false);
+            }
+
+            AssetUtilities::AssetProcessorUserSettingsNotificationBus::Handler::BusConnect();
+            AzFramework::LogComponent::Activate();
+        }
+
+        void Deactivate() override
+        {
+            AzFramework::LogComponent::Deactivate();
+            AssetUtilities::AssetProcessorUserSettingsNotificationBus::Handler::BusDisconnect();
+        }
+
+        void OnSettingChanged(const AZStd::string_view& settingName) override
+        {
+            if (settingName == AssetUtilities::VerboseLoggingOptionName)
+            {
+                m_verboseMode = AssetUtilities::GetUserSetting(AssetUtilities::VerboseLoggingOptionName, false);
+            }
         }
 
     protected:
         bool m_inException = false;
+        bool m_verboseMode = false;
     };
 }
 
@@ -109,10 +142,19 @@ namespace AssetProcessorBuildTarget
     AZStd::string_view GetBuildTargetName();
 }
 
-
 AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent)
+    : AssetProcessorAZApplication(argc, argv, parent, {})
+{
+}
+
+AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : AssetProcessorAZApplication(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+AssetProcessorAZApplication::AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
     : QObject(parent)
-    , AzToolsFramework::ToolsApplication(argc, argv)
+    , AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
 {
     // The settings registry has been created at this point, so add the CMake target
     // specialization to the settings
@@ -155,6 +197,8 @@ AZ::ComponentTypeList AssetProcessorAZApplication::GetRequiredSystemComponents()
     components.push_back(azrtti_typeid<AzToolsFramework::PerforceComponent>());
     components.push_back(azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>());
     components.push_back(azrtti_typeid<AzToolsFramework::ArchiveComponent>()); // AP manages compressed files using ArchiveComponent
+    components.push_back(azrtti_typeid<AzToolsFramework::MetadataManager>());
+    components.push_back(azrtti_typeid<AzToolsFramework::UuidUtilComponent>());
 
     return components;
 }
@@ -182,8 +226,18 @@ void AssetProcessorAZApplication::SetSettingsRegistrySpecializations(AZ::Setting
 }
 
 ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+    : ApplicationManager(argc, argv, parent, {})
+{
+}
+
+ApplicationManager::ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : ApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+{
+}
+
+ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
     : QObject(parent)
-    , m_frameworkApp(argc, argv)
+    , m_frameworkApp(argc, argv, AZStd::move(componentAppSettings))
 {
     qInstallMessageHandler(&AssetProcessor::MessageHandler);
 }
@@ -222,7 +276,7 @@ ApplicationManager::~ApplicationManager()
     }
 
     //Unregistering and deleting all the components
-    EBUS_EVENT_ID(azrtti_typeid<AzFramework::LogComponent>(), AZ::ComponentDescriptorBus, ReleaseDescriptor);
+    AZ::ComponentDescriptorBus::Event(azrtti_typeid<AzFramework::LogComponent>(), &AZ::ComponentDescriptorBus::Events::ReleaseDescriptor);
 
     //Stop AZFramework
     m_frameworkApp.Stop();
@@ -323,10 +377,11 @@ void ApplicationManager::QuitRequested()
     m_duringShutdown = true;
 
     //Inform all the builders to shutdown
-    EBUS_EVENT(AssetBuilderSDK::AssetBuilderCommandBus, ShutDown);
+    AssetBuilderSDK::AssetBuilderCommandBus::Broadcast(&AssetBuilderSDK::AssetBuilderCommandBus::Events::ShutDown);
 
     // the following call will invoke on the main thread of the application, since its a direct bus call.
-    EBUS_EVENT(AssetProcessor::ApplicationManagerNotifications::Bus, ApplicationShutdownRequested);
+    AssetProcessor::ApplicationManagerNotifications::Bus::Broadcast(
+        &AssetProcessor::ApplicationManagerNotifications::Bus::Events::ApplicationShutdownRequested);
 
     // while it may be tempting to just collapse all of this to a bus call,  Qt Objects have the advantage of being
     // able to automatically queue calls onto their own thread, and a lot of these involved objects are in fact
@@ -440,7 +495,7 @@ void ApplicationManager::PopulateApplicationDependencies()
             AZ::DynamicModuleHandle* handle = moduleData.GetDynamicModuleHandle();
             if (handle)
             {
-                QFileInfo fi(handle->GetFilename().c_str());
+                QFileInfo fi(handle->GetFilename());
                 if (fi.exists())
                 {
                     m_filesOfInterest.push_back(fi.absoluteFilePath());

@@ -165,6 +165,34 @@ POSTFX_LAYER_CATEGORY = {
     'Default': 2147483647,
 }
 
+# Directional Light Intensity Mode
+DIRECTIONAL_LIGHT_INTENSITY_MODE = {
+    'Ev100': 5,
+    'Lux': 2,
+}
+
+# Directional Light Shadow Filter Method
+DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD = {
+    'None': 0,
+    'PCF': 1,
+    'ESM': 2,
+    'PCF+ESM': 3,
+}
+
+#Origin type for Sky Atmosphere component
+ATMOSPHERE_ORIGIN = {
+    'GroundAtWorldOrigin': 0,
+    'GroundAtLocalOrigin': 1,
+    'PlanetCenterAtLocalOrigin': 2,
+}
+
+# Fog Mode
+FOG_MODES = {
+    'Linear': 0,
+    'Exponential': 1,
+    'ExponentialSquared': 2
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -283,6 +311,30 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def chromatic_aberration(property: str = 'name') -> str:
+        """
+        Chromatic Aberration component properties
+          - 'Enable Chromatic Aberration' Toggle active state of the component (bool) default False
+          - 'Strength' Strength of effect. 0.0 (default) to 1.0 (float)
+          - 'Blend' Factor for additive blending with original image. 0.0 (default) to 1.0 (float)
+          - 'Enabled Override'  Toggle use of overrides on the Chromatic Aberration component (bool) default False
+          - 'Strength Override' Override for Strength factor. 0.0 (default) to 1.0 (float)
+          - 'Blend Override' Override for Blend factor. 0.0 (default) to 1.0 (float)
+        parameter property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Chromatic Aberration',
+            'Enable Chromatic Aberration': 'Controller|Configuration|Enable Chromatic Aberration',
+            'Strength': 'Controller|Configuration|Strength',
+            'Blend': 'Controller|Configuration|Blend',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
+            'Blend Override': 'Controller|Configuration|Overrides|Blend Override',
+        }
+        return properties[property]
+
+    @staticmethod
     def cube_map_capture(property: str = 'name') -> str:
         """
         CubeMap capture component properties.
@@ -347,6 +399,13 @@ class AtomComponentProperties:
           - 'Octaves Blend Factor' Blend factor between the noise octaves (0.0, 1.0).
           - 'Enable Turbulence Properties' Enables Turbulence Properties (bool).
           - 'Enable Fog Layer' Enables the fog layer (bool).
+          - 'Fog Mode' Set the fog formula
+          (enum, Uses above dictionary FOG_MODES)
+               Linear: f = (end - d)/(end - start)
+               Exponential: f = 1/exp(d * density)
+               ExponentialSquared: f = 1/exp((d * density)^2)
+          - 'Fog Density': Density control for Exponential and ExponentialSquared modes.
+          - 'Fog Density Clamp': The maximum density that the fog can reach. 
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -355,18 +414,21 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable Deferred Fog': 'Controller|Configuration|Enable Deferred Fog',
             'Fog Color': 'Controller|Configuration|Fog Color',
-            'Fog Start Distance': 'Controller|Configuration|Fog Start Distance',
-            'Fog End Distance': 'Controller|Configuration|Fog End Distance',
-            'Fog Bottom Height': 'Controller|Configuration|Fog Bottom Height',
-            'Fog Max Height': 'Controller|Configuration|Fog Max Height',
-            'Noise Texture': 'Controller|Configuration|Noise Texture',
-            'Noise Texture First Octave Scale': 'Controller|Configuration|Noise Texture First Octave Scale',
-            'Noise Texture First Octave Velocity': 'Controller|Configuration|Noise Texture First Octave Velocity',
-            'Noise Texture Second Octave Scale': 'Controller|Configuration|Noise Texture Second Octave Scale',
-            'Noise Texture Second Octave Velocity': 'Controller|Configuration|Noise Texture Second Octave Velocity',
-            'Octaves Blend Factor': 'Controller|Configuration|Octaves Blend Factor',
+            'Fog Start Distance': 'Controller|Configuration|Distance|Fog Start Distance',
+            'Fog End Distance': 'Controller|Configuration|Distance|Fog End Distance',
+            'Fog Bottom Height': 'Controller|Configuration|Fog Layer|Fog Bottom Height',
+            'Fog Max Height': 'Controller|Configuration|Fog Layer|Fog Max Height',
+            'Noise Texture': 'Controller|Configuration|Turbulence|Noise Texture',
+            'Noise Texture First Octave Scale': 'Controller|Configuration|Turbulence|Noise Texture First Octave Scale',
+            'Noise Texture First Octave Velocity': 'Controller|Configuration|Turbulence|Noise Texture First Octave Velocity',
+            'Noise Texture Second Octave Scale': 'Controller|Configuration|Turbulence|Noise Texture Second Octave Scale',
+            'Noise Texture Second Octave Velocity': 'Controller|Configuration|Turbulence|Noise Texture Second Octave Velocity',
+            'Octaves Blend Factor': 'Controller|Configuration|Turbulence|Octaves Blend Factor',
             'Enable Turbulence Properties': 'Controller|Configuration|Enable Turbulence Properties',
             'Enable Fog Layer': 'Controller|Configuration|Enable Fog Layer',
+            'Fog Density': 'Controller|Configuration|Density Control|Fog Density',
+            'Fog Density Clamp': 'Controller|Configuration|Density Control|Fog Density Clamp',
+            'Fog Mode': 'Controller|Configuration|Fog Mode',
         }
         return properties[property]
 
@@ -407,7 +469,7 @@ class AtomComponentProperties:
         :return: Full property path OR component name if no property specified.
         """
         properties = {
-            'name': 'DepthOfField',
+            'name': 'Depth Of Field',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Camera Entity': 'Controller|Configuration|Camera Entity',
             'CameraEntityId Override': 'Controller|Configuration|Overrides|CameraEntityId Override',
@@ -485,13 +547,85 @@ class AtomComponentProperties:
         """
         Directional Light component properties.
           - 'Camera' an EditorEntity.id reference to the Camera component that controls cascaded shadow view frustum.
-            Must be a different entity than the one which hosts Directional Light component.\n
+               Must be a different entity than the one which hosts Directional Light component.
+          - 'Color' Color of the Light. (Color imported from azlmbr.math (0.0, 0.0, 0.0, 0.0))
+          - 'Intensity mode' Allows specifying light values in Lux or Ev100. (enum, Lux, Ev100)
+               (Uses above dictionary DIRECTIONAL_LIGHT_INTENSITY_MODE)
+          - 'Intensity' Intensity of the light in the set photometric unit. (float, default 4.0, range -4.0 to 16.0)
+          - 'Angular diameter' Angular diameter of the directional light in degrees. The sun is about 0.5.
+               (float, Default 0.5, range 0.0 - 1.0)
+          - 'Camera' Entity of the camera for cascaded shadowmap view frustum.
+          - 'Shadow far clip' Shadow specific far clip distance. (default 100.0, range -INF to INF)
+          - 'Shadowmap size' Width/Height of shadowmap. (4 enum values selectable from dropdown: 256, 512, 1024, 2048))
+          - 'Cascade count' Number of cascades. (integer default 4, range 0 to 4)
+          - 'Automatic splitting' Switch splitting of shadowmap frustum to cascades automatically or not. (bool)
+          - 'Split ratio' Ratio to lerp between the two types of frustrum splitting scheme.
+               (float, default 0.9, range 0.0 - 1.0)
+               0 = Uniform scheme which will split the frustum evenly across all cascades.
+               1 = Logarithmic scheme which is designed to split the frustrum in a logarithmic fashion in order to
+                   enable us
+              to produce a more optimal perspective aliasing across the frustrum.
+          - 'Far depth cascade' Far depth of each cascade. The value of the index greater than or equal to cascade
+               count is ignored.
+               (Vector4 imported from azlmbr.math (0.0, 0.0, 0.0, 0.0) each value should be greater than the previous,
+               range 0 to current value of Shadow far clip.)
+          - 'Ground height' Height of the ground.  Used to correct position of cascades.
+               (float, default 0.0, range -INF - INF)
+          - 'Cascade correction' Enable position correction of cascades to optimize the appearance for certain
+               camera positions. (bool)
+          - 'Debug coloring' Enable coloring to see how cascades places 0:red, 1:green, 2:blue, 3:yellow.
+          - 'Shadow filter method' Filtering method of edge-softening of shadows.
+               (enum, Uses above dictionary DIRECTIONAL_LIGHT_SHADOW_FILTER_METHOD)
+               None: no Filtering
+               PCF: Percentage-closer filtering
+               ESM: Exponential shadow maps
+               ESM+PCF: ESM with a PCF fallback
+               For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM=PCF=3
+          - 'Filtering sample count' This is used only when the pixel is predicted to be on the boundary.
+               (integer, default 32, range 4 to 64)
+          - 'Shadow Receiver Plan Bias Enable' This reduces shadow acne when using large pcf kernels. (bool)
+          - 'Shadow Bias' Reduces acne by applying a fixed bias along z in shadow-space.
+               If this is 0, no biasing is applied. (float, default 0.002, range 0.002 to 0.2)
+          - 'Normal Shadow Bias' Reducing acne by biasing the shadowmap lookup along the geometric normal.
+               If this is 0, no biasing is applied. (float, default 2.5, range 0.0 to 10.0)
+          - 'Blend between cascades' Enable smooth blending between shadowmap cascades. (bool)
+          - 'Fullscreen Blur' Enables fullscreen blur on fullscreen sunlight shadows. (bool)
+          - 'Fullscreen Blur Strength' Affects how strong the fullscreen is. (float, default is 0.667 range 0 to 0.95)
+          - 'Fullscreen Blur Sharpness' Affect how sharp the fullscreen shadow blur appears around edges.
+               (float, default 50.0 range 0.0 to 400.0)
+          - 'Affects GI' Controls whether this light affects diffuse global illumination. (bool)
+          - 'Factor' Multiplier on the amount of contribution to diffuse global illumination.
+                (float, default 1.0 range 0.0 to 2.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Directional Light',
+            'Color': 'Controller|Configuration|Color',
+            'Intensity mode': 'Controller|Configuration|Intensity mode',
+            'Intensity': 'Controller|Configuration|Intensity',
+            'Angular diameter': 'Controller|Configuration|Angular diameter',
             'Camera': 'Controller|Configuration|Shadow|Camera',
+            'Shadow far clip': 'Controller|Configuration|Shadow|Shadow far clip',
+            'Shadowmap size': 'Controller|Configuration|Shadow|Shadowmap size',
+            'Cascade count': 'Controller|Configuration|Shadow|Cascade count',
+            'Automatic splitting': 'Controller|Configuration|Shadow|Automatic splitting',
+            'Split ratio': 'Controller|Configuration|Shadow|Split ratio',
+            'Far depth cascade': 'Controller|Configuration|Shadow|Far depth cascade',
+            'Ground height': 'Controller|Configuration|Shadow|Ground height',
+            'Cascade correction': 'Controller|Configuration|Shadow|Cascade correction',
+            'Debug coloring': 'Controller|Configuration|Shadow|Debug coloring',
+            'Shadow filter method': 'Controller|Configuration|Shadow|Shadow filter method',
+            'Filtering sample count': 'Controller|Configuration|Shadow|Filtering sample count',
+            'Shadow Receiver Plane Bias Enable': 'Controller|Configuration|Shadow|Shadow Receiver Plane Bias Enable',
+            'Shadow Bias': 'Controller|Configuration|Shadow|Shadow Bias',
+            'Normal Shadow Bias': 'Controller|Configuration|Shadow|Normal Shadow Bias',
+            'Blend between cascades': 'Controller|Configuration|Shadow|Blend between cascades',
+            'Fullscreen Blur': 'Controller|Configuration|Shadow|Fullscreen Blur',
+            'Fullscreen Blur Strength': 'Controller|Configuration|Shadow|Fullscreen Blur Strength',
+            'Fullscreen Blur Sharpness': 'Controller|Configuration|Shadow|Fullscreen Blur Sharpness',
+            'Affects GI': 'Controller|Configuration|Global Illumination|Affects GI',
+            'Factor': 'Controller|Configuration|Global Illumination|Factor',
         }
         return properties[property]
 
@@ -611,9 +745,9 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Global Skylight (IBL)',
-            'Diffuse Image': 'Controller|Configuration|Diffuse Image',
-            'Specular Image': 'Controller|Configuration|Specular Image',
-            'Exposure': 'Controller|Configuration|Exposure',
+            'Diffuse Image': 'Diffuse Image',
+            'Specular Image': 'Specular Image',
+            'Exposure': 'Exposure',
         }
         return properties[property]
 
@@ -905,7 +1039,7 @@ class AtomComponentProperties:
             'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
             'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
-            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal shadow bias',
             'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
             'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
             'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',
@@ -1192,6 +1326,74 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def sky_atmosphere(property: str = 'name') -> str:
+        """
+        Sky Atmosphere component properties
+          - 'Ground albedo' Additional light from the surface of the ground (Vector3 float) default (0.0,0.0,0.0)
+          - 'Ground radius' Kilometers 0.0 to 100000.0 (float) default 6360.0
+          - 'Origin' The origin to use for the atmosphere (int)
+          - 'Atmosphere height' Kilometers 0.0 to 10000.0 (float) default 100.0
+          - 'Illuminance factor' An additional factor to brighten or darken the overall atmosphere (Vector3 float) default (1.0,1.0,1.0)
+          - 'Mie absorption scale' 0.0 to 1.0 (float) default 0.004
+          - 'Mie absorption' (Vector3 float) default (1.0,1.0,1.0)
+          - 'Mie exponential distribution' Altitude in kilometers at which Mie scattering is reduced to roughly 40%. 0.0 to 400.0 (float) default 1.2
+          - 'Mie scattering scale' 0.0 to 1.0 (float) default 0.004
+          - 'Mie scattering' Mie scattering coefficients from aerosole molecules at surface of the planet. (Vector3 float) default (1.0,1.0,1.0)
+          - 'Ozone absorption scale' Ozone molecule absorption scale 0.0 to 1.0 (float) default 0.001881
+          - 'Ozone absorption' Absorption coefficients from ozone molecules (Vector3 float) default (1.0,1.0,1.0)
+          - 'Rayleigh exponential distribution' Altitude in kilometers at which Rayleigh scattering is reduced to roughly 40%. 0.0 to 400.0 (float) default 8.0
+          - 'Rayleigh scattering scale' 0.0 to 1.0 (float) default 0.033100f
+          - 'Rayleigh scattering' Raleigh scattering coefficients from air molecules at surface of the planet. (Vector3 float) default (1.0,1.0,1.0)
+          - 'Show sun' display a sun (bool) default True
+          - 'Sun color' (azlmbr.math.Color RGBA) default (255.0,255.0,255.0,255.0)
+          - 'Sun falloff factor' 0.0 to 200.0 (float) default 1.0
+          - 'Sun limb color' for adjusting outer edge color of sun. (azlmbr.math.Color RGBA) default (255.0,255.0,255.0,255.0)
+          - 'Sun luminance factor' 0.0 to 100000.0 (float) default 0.05
+          - 'Sun orientation' Optional sun entity to use for orientation (EntityId)
+          - 'Sun radius factor' 0.0 to 100.0 (float) default 1.0
+          - 'Enable shadows' (bool) default False
+          - 'Fast sky' (bool) default True
+          - 'Max samples' 1 to 64 (unsigned int) default 14
+          - 'Min samples' 1 to 64 (unsigned int) default 4
+          - 'Near clip' 0.0 to inf (float) default 0.0
+          - 'Near fade distance' 0.0 to inf (float) default 0.0
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Sky Atmosphere',
+            'Ground albedo': 'Controller|Configuration|Planet|Ground albedo',
+            'Ground radius': 'Controller|Configuration|Planet|Ground radius',
+            'Origin': 'Controller|Configuration|Planet|Origin',
+            'Atmosphere height': 'Controller|Configuration|Atmosphere|Atmosphere height',
+            'Illuminance factor': 'Controller|Configuration|Atmosphere|Illuminance factor',
+            'Mie absorption scale': 'Controller|Configuration|Atmosphere|Mie absorption scale',
+            'Mie absorption': 'Controller|Configuration|Atmosphere|Mie absorption',
+            'Mie exponential distribution': 'Controller|Configuration|Atmosphere|Mie exponential distribution',
+            'Mie scattering scale': 'Controller|Configuration|Atmosphere|Mie scattering scale',
+            'Mie scattering': 'Controller|Configuration|Atmosphere|Mie scattering',
+            'Ozone absorption scale': 'Controller|Configuration|Atmosphere|Ozone absorption scale',
+            'Ozone absorption': 'Controller|Configuration|Atmosphere|Ozone absorption',
+            'Rayleigh exponential distribution': 'Controller|Configuration|Atmosphere|Rayleigh exponential distribution',
+            'Rayleigh scattering scale': 'Controller|Configuration|Atmosphere|Rayleigh scattering scale',
+            'Rayleigh scattering': 'Controller|Configuration|Atmosphere|Rayleigh scattering',
+            'Show sun': 'Controller|Configuration|Sun|Show sun',
+            'Sun color': 'Controller|Configuration|Sun|Sun color',
+            'Sun falloff factor': 'Controller|Configuration|Sun|Sun falloff factor',
+            'Sun limb color': 'Controller|Configuration|Sun|Sun limb color',
+            'Sun luminance factor': 'Controller|Configuration|Sun|Sun luminance factor',
+            'Sun orientation': 'Controller|Configuration|Sun|Sun orientation',
+            'Sun radius factor': 'Controller|Configuration|Sun|Sun radius factor',
+            'Enable shadows': 'Controller|Configuration|Advanced|Enable shadows',
+            'Fast sky': 'Controller|Configuration|Advanced|Fast sky',
+            'Max samples': 'Controller|Configuration|Advanced|Max samples',
+            'Min samples': 'Controller|Configuration|Advanced|Min samples',
+            'Near clip': 'Controller|Configuration|Advanced|Near clip',
+            'Near fade distance': 'Controller|Configuration|Advanced|Near fade distance',
+        }
+        return properties[property]
+
+    @staticmethod
     def ssao(property: str = 'name') -> str:
         """
         SSAO component properties. Requires PostFX Layer component.
@@ -1237,3 +1439,189 @@ class AtomComponentProperties:
             'EnableDownsample Override': 'Controller|Configuration|Overrides|EnableDownsample Override',
         }
         return properties[property]
+
+    @staticmethod
+    def stars(property: str = 'name') -> str:
+        """
+        Stars component properties
+          - 'Stars Asset' Asset.id of the star asset file (default.star)
+          - 'Exposure' controls how bright the stars are. 0.0 to 32.0 default 1.0 (float)
+          - 'Twinkle rate' how frequently stars twinkle. 0.0 to 10.0 default 0.5 (float)
+          - 'Radius factor' star radius multiplier. 0.0 to 64.0 default 7.0 (float)
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Stars',
+            'Stars Asset': 'Controller|Configuration|Stars Asset',
+            'Exposure': 'Controller|Configuration|Exposure',
+            'Twinkle rate': 'Controller|Configuration|Twinkle rate',
+            'Radius factor': 'Controller|Configuration|Radius factor',
+        }
+        return properties[property]
+
+
+class AtomToolsDocumentRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsDocumentRequestBus
+    """
+    GET_ABSOLUTE_PATH = "GetAbsolutePath"
+    OPEN = "Open"
+    REOPEN = "Reopen"
+    CLOSE = "Close"
+    SAVE = "Save"
+    SAVE_AS_CHILD = "SaveAsChild"
+    SAVE_AS_COPY = "SaveAsCopy"
+    IS_OPEN = "IsOpen"
+    IS_MODIFIED = "IsModified"
+    CAN_SAVE_AS_CHILD = "CanSaveAsChild"
+    CAN_UNDO = "CanUndo"
+    CAN_REDO = "CanRedo"
+    UNDO = "Undo"
+    REDO = "Redo"
+    BEGIN_EDIT = "BeginEdit"
+    END_EDIT = "EndEdit"
+
+
+class AtomToolsDocumentSystemRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsDocumentSystemRequestBus
+    """
+    CREATE_DOCUMENT_FROM_TYPE_NAME = "CreateDocumentFromTypeName"
+    CREATE_DOCUMENT_FROM_FILE_TYPE = "CreateDocumentFromFileType"
+    CREATE_DOCUMENT_FROM_FILE_PATH = "CreateDocumentFromFilePath"
+    DESTROY_DOCUMENT = "DestroyDocument"
+    OPEN_DOCUMENT = "OpenDocument"
+    CLOSE_DOCUMENT = "CloseDocument"
+    CLOSE_ALL_DOCUMENTS = "CloseAllDocuments"
+    CLOSE_ALL_DOCUMENTS_EXCEPT = "CloseAllDocumentsExcept"
+    SAVE_DOCUMENT = "SaveDocument"
+    SAVE_DOCUMENT_AS_COPY = "SaveDocumentAsCopy"
+    SAVE_DOCUMENT_AS_CHILD = "SaveDocumentAsChild"
+    SAVE_ALL_DOCUMENTS = "SaveAllDocuments"
+    SAVE_ALL_MODIFIED_DOCUMENTS = "SaveAllModifiedDocuments"
+    QUEUE_REOPEN_MODIFIED_DOCUMENTS = "QueueReopenModifiedDocuments"
+    REOPEN_MODIFIED_DOCUMENTS = "ReopenModifiedDocuments"
+    GET_DOCUMENT_COUNT = "GetDocumentCount"
+    IS_DOCUMENT_OPEN = "IsDocumentOpen"
+    ADD_RECENT_FILE_PATH = "AddRecentFilePath"
+    CLEAR_RECENT_FILE_PATHS = "ClearRecentFilePaths"
+    SET_RECENT_FILE_PATHS = "SetRecentFilePaths"
+    GET_RECENT_FILE_PATHS = "GetRecentFilePaths"
+
+
+class AtomToolsMainWindowRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.AtomToolsMainWindowRequestBus
+    """
+    ACTIVATE_WINDOW = "ActivateWindow"
+    SET_DOCK_WIDGET_VISIBLE = "SetDockWidgetVisible"
+    IS_DOCK_WIDGET_VISIBLE = "IsDockWidgetVisible"
+    GET_DOCK_WIDGET_NAMES = "GetDockWidgetNames"
+    QUEUE_UPDATE_MENUS = "QueueUpdateMenus"
+    SET_STATUS_MESSAGE = "SetStatusMessage"
+    SET_STATUS_WARNING = "SetStatusWarning"
+    SET_STATUS_ERROR = "SetStatusError"
+    RESIZE_VIEWPORT_RENDER_TARGET = "ResizeViewportRenderTarget"
+    LOCK_VIEWPORT_RENDER_TARGET_SIZE = "LockViewportRenderTargetSize"
+    UNLOCK_VIEWPORT_RENDER_TARGET_SIZE = "UnlockViewportRenderTargetSize"
+
+
+class EntityPreviewViewportSettingsRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.bus.EntityPreviewViewportSettingsRequestBus
+    """
+    SET_LIGHTING_PRESET = "SetLightingPreset"
+    GET_LIGHTING_PRESET = "GetLightingPreset"
+    GET_LAST_LIGHTING_PRESET_ASSET_ID = "GetLastLightingPresetAssetId"
+    SAVE_LIGHTING_PRESET = "SaveLightingPreset"
+    LOAD_LIGHTING_PRESET = "LoadLightingPreset"
+    LOAD_LIGHTING_PRESET_BY_ASSET_ID = "LoadLightingPresetByAssetId"
+    GET_LAST_LIGHTING_PRESET_PATH = "GetLastLightingPresetPath"
+    GET_LAST_LIGHTING_PRESET_PATH_WITHOUT_ALIAS = "GetLastLightingPresetPathWithoutAlias"
+    REGISTER_LIGHTING_PRESET_PATH = "RegisterLightingPresetPath"
+    UNREGISTER_LIGHTING_PRESET_PATH = "UnregisterLightingPresetPath"
+    GET_REGISTERED_LIGHTING_PRESET_PATHS = "GetRegisteredLightingPresetPaths"
+    SET_MODEL_PRESET = "SetModelPreset"
+    GET_MODEL_PRESET = "GetModelPreset"
+    GET_LAST_MODEL_PRESET_ASSET_ID = "GetLastModelPresetAssetId"
+    SAVE_MODEL_PRESET = "SaveModelPreset"
+    LOAD_MODEL_PRESET = "LoadModelPreset"
+    LOAD_MODEL_PRESET_BY_ASSET_ID = "LoadModelPresetByAssetId"
+    GET_LAST_MODEL_PRESET_PATH = "GetLastModelPresetPath"
+    GET_LAST_MODEL_PRESET_PATH_WITHOUT_ALIAS = "GetLastModelPresetPathWithoutAlias"
+    REGISTER_MODEL_PRESET_PATH = "RegisterModelPresetPath"
+    UNREGISTER_MODEL_PRESET_PATH = "UnregisterModelPresetPath"
+    GET_REGISTERED_MODEL_PRESET_PATHS = "GetRegisteredModelPresetPaths"
+    LOAD_RENDER_PIPELINE = "LoadRenderPipeline"
+    LOAD_RENDER_PIPELINE_BY_ASSET_ID = "LoadRenderPipelineByAssetId"
+    GET_LAST_RENDER_PIPELINE_PATh = "GetLastRenderPipelinePath"
+    GET_LAST_RENDER_PIPELINE_PATH_WITHOUT_ALIAS = "GetLastRenderPipelinePathWithoutAlias"
+    REGISTER_RENDER_PIPELINE_PATH = "RegisterRenderPipelinePath"
+    UNREGISTER_RENDER_PIPELINE_PATH = "UnregisterRenderPipelinePath"
+    GET_REGISTERED_RENDER_PIPELINE_PATHS = "GetRegisteredRenderPipelinePaths"
+    SET_SHADOW_CATCHER_ENABLED = "SetShadowCatcherEnabled"
+    GET_SHADOW_CATCHER_ENABLED = "GetShadowCatcherEnabled"
+    SET_GRID_ENABLED = "SetGridEnabled"
+    GET_GRID_ENABLED = "GetGridEnabled"
+    SET_ALTERNATE_SKYBOX_ENABLED = "SetAlternateSkyboxEnabled"
+    GET_ALTERNATE_SKYBOX_ENABLED = "GetAlternateSkyboxEnabled"
+    SET_FIELD_OF_VIEW = "SetFieldOfView"
+    GET_FIELD_OF_VIEW = "GetFieldOfView"
+
+
+class DynamicNodeManagerRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.atomtools.DynamicNodeManagerRequestBus
+    """
+    LOAD_CONFIG_FILES = "LoadConfigFiles"
+    REGISTER_CONFIG = "RegisterConfig"
+    GET_CONFIG_BY_ID = "GetConfigById"
+    CLEAR = "Clear"
+    CREATE_NODE_BY_ID = "CreateNodeById"
+    CREATE_NODE_BY_NAME = "CreateNodeByName"
+
+
+class GraphDocumentRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.atomtools.GraphDocumentRequestBus
+    """
+    GET_GRAPH = "GetGraph"
+    GET_GRAPH_ID = "GetGraphId"
+    GET_GRAPH_NAME = "GetGraphName"
+    SET_GENERATED_FILE_PATHS = "SetGeneratedFilePaths"
+    GET_GENERATED_FILE_PATHS = "GetGeneratedFilePaths"
+    COMPILE_GRAPH = "CompileGraph"
+    QUEUE_COMPILE_GRAPH = "QueueCompileGraph"
+    IS_COMPILE_GRAPH_QUEUED = "IsCompileGraphQueued"
+
+
+class GraphControllerRequestBusEvents(object):
+    """
+    Used to store string constants representing the bus options for azlmbr.editor.graph.GraphControllerRequestBus
+    """
+    ADD_NODE = "AddNode"
+    REMOVE_NODE = "RemoveNode"
+    GET_POSITION = "GetPosition"
+    WRAP_NODE = "WrapNode"
+    WRAP_NODE_ORDERED = "WrapNodeOrdered"
+    UNWRAP_NODE = "UnwrapNode"
+    IS_NODE_WRAPPED = "IsNodeWrapped"
+    SET_WRAPPER_NODE_ACTION_STRING = "SetWrapperNodeActionString"
+    ADD_CONNECTION = "AddConnection"
+    ADD_CONNECTION_BY_SLOT_ID = "AddConnectionBySlotId"
+    ARE_SLOTS_CONNECTED = "AreSlotsConnected"
+    REMOVE_CONNECTION = "RemoveConnection"
+    EXTEND_SLOT = "ExtendSlot"
+    GET_NODE_BY_ID = "GetNodeById"
+    GET_NODES_FROM_GRAPH_NODE_IDS = "GetNodesFromGraphNodeIds"
+    GET_NODE_IDS_BY_NODE = "GetNodeIdByNode"
+    GET_SLOT_ID_BY_SLOT = "GetSlotIdBySlot"
+    GET_NODES = "GetNodes"
+    GET_SELECTED_NODES = "GetSelectedNodes"
+    SET_SELECTED = "SetSelected"
+    CLEAR_SELECTION = "ClearSelection"
+    ENABLE_NODE = "EnableNode"
+    DISABLE_NODE = "DisableNode"
+    CENTER_ON_NODES = "CenterOnNodes"
+    GET_MAJOR_PITCH = "GetMajorPitch"

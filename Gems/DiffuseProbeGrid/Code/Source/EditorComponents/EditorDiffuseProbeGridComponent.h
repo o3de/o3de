@@ -69,6 +69,10 @@ namespace AZ
             AZ::u32 OnNumRaysPerProbeChanged();
             AZ::Outcome<void, AZStd::string> OnScrollingChangeValidate(void* newValue, const AZ::Uuid& valueType);
             AZ::u32 OnScrollingChanged();
+            AZ::u32 OnEdgeBlendIblChanged();
+            AZ::u32 OnFrameUpdateCountChanged();
+            AZ::u32 OnTransparencyModeChanged();
+            AZ::u32 OnEmissiveMultiplierChanged();
             AZ::u32 OnEditorModeChanged();
             AZ::u32 OnRuntimeModeChanged();
             AZ::u32 OnShowVisualizationChanged();
@@ -89,6 +93,10 @@ namespace AZ
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
             DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
             bool m_scrolling = false;
+            bool m_edgeBlendIbl = true;
+            uint32_t m_frameUpdateCount = 1;
+            DiffuseProbeGridTransparencyMode m_transparencyMode = DefaultDiffuseProbeGridTransparencyMode;
+            float m_emissiveMultiplier = DefaultDiffuseProbeGridEmissiveMultiplier;
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
             bool m_showVisualization = false;
@@ -98,6 +106,9 @@ namespace AZ
             // flags
             bool m_editorModeSet = false;
             AZStd::atomic_bool m_bakeInProgress = false;
+
+            // handler for the diffuse probe grid changing the underlying box dimensions
+            AZ::Event<bool>::Handler m_boxChangedByGridHandler;
         };
     } // namespace Render
 } // namespace AZ

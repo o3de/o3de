@@ -23,7 +23,7 @@ namespace EMotionFX
     const char* AnimGraphVector2Condition::s_operationGetX = "Get X";
     const char* AnimGraphVector2Condition::s_operationGetY = "Get Y";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphVector2Condition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphVector2Condition, AnimGraphAllocator)
 
     AnimGraphVector2Condition::AnimGraphVector2Condition()
         : AnimGraphTransitionCondition()
@@ -409,10 +409,10 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("AnimGraphVector2Parameter", 0x151dfae7), &AnimGraphVector2Condition::m_parameterName, "Parameter", "The parameter name to apply the condition on.")
+            ->DataElement(AZ_CRC_CE("AnimGraphVector2Parameter"), &AnimGraphVector2Condition::m_parameterName, "Parameter", "The parameter name to apply the condition on.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphVector2Condition::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                ->Attribute(AZ_CRC("AnimGraph", 0x0d53d4b3), &AnimGraphVector2Condition::GetAnimGraph)
+                ->Attribute(AZ_CRC_CE("AnimGraph"), &AnimGraphVector2Condition::GetAnimGraph)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AnimGraphVector2Condition::m_operation, "Operation", "The type of operation to perform on the vector.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphVector2Condition::Reinit)
                 ->EnumAttribute(OPERATION_LENGTH,   s_operationLength)

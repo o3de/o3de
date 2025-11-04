@@ -6,41 +6,37 @@
  *
  */
 
-#pragma once
-
 #include <TestRunner/Common/Job/TestImpactTestJobInfoUtils.h>
 
 namespace TestImpact
 {
-    //! Generates the path to the enumeration cache file for the specified test target.
+    RepoPath GenerateFullQualifiedTargetNameStem(const TestTarget* testTarget)
+    {
+        if (testTarget->GetNamespace().empty())
+        {
+            return RepoPath(testTarget->GetName().c_str());
+        }
+        else
+        {
+            return RepoPath(AZStd::string::format("%s_%s", testTarget->GetNamespace().c_str(), testTarget->GetName().c_str()));
+        }
+    }
+
     RepoPath GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget, const RepoPath& cacheDir)
     {
         return AZStd::string::format("%s.cache", (cacheDir / RepoPath(testTarget->GetName())).c_str());
     }
 
-    //! Generates the path to the enumeration artifact file for the specified test target.
     RepoPath GenerateTargetEnumerationArtifactFilePath(const TestTarget* testTarget, const RepoPath& artifactDir)
     {
         return AZStd::string::format("%s.Enumeration.xml", (artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
-    //! Generates the path to the test run artifact file for the specified test target.
     RepoPath GenerateTargetRunArtifactFilePath(const TestTarget* testTarget, const RepoPath& artifactDir)
     {
-        AZStd::string targetName;
-        if (testTarget->GetNamespace().empty())
-        {
-            targetName = testTarget->GetName().c_str();
-        }
-        else
-        {
-            targetName = AZStd::string::format("%s_%s", testTarget->GetNamespace().c_str(), testTarget->GetName().c_str());
-        }
-
-        return AZStd::string::format("%s.xml", (artifactDir / RepoPath(targetName)).c_str());
+        return AZStd::string::format("%s.xml", (artifactDir / GenerateFullQualifiedTargetNameStem(testTarget)).c_str());
     }
 
-    //! Generates the path to the test coverage artifact file for the specified test target.
     RepoPath GenerateTargetCoverageArtifactFilePath(const TestTarget* testTarget, const RepoPath& artifactDir)
     {
         return AZStd::string::format("%s.xml", (artifactDir / RepoPath(testTarget->GetName())).c_str());

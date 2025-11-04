@@ -32,6 +32,7 @@ namespace EMotionFX
         : public EmptyAnimGraph
     {
     public:
+        AZ_CLASS_ALLOCATOR(JustAReferenceNodeGraph, AnimGraphAllocator)
         JustAReferenceNodeGraph()
         {
             /*
@@ -76,6 +77,7 @@ namespace EMotionFX
         : public JustAReferenceNodeGraph
     {
     public:
+        AZ_CLASS_ALLOCATOR(ReferenceNodeWithParameterGraph, AnimGraphAllocator)
         ReferenceNodeWithParameterGraph()
         {
             /*
@@ -110,6 +112,7 @@ namespace EMotionFX
         : public EmptyAnimGraph
     {
     public:
+        AZ_CLASS_ALLOCATOR(BlendTreeTransformNodeAnimGraph, AnimGraphAllocator)
         BlendTreeTransformNodeAnimGraph()
         {
             /*
@@ -247,6 +250,12 @@ namespace EMotionFX
             return referenceAnimGraphAsset;
         }
 
+        void TearDown() override
+        {
+            m_referencedAsset.Release();
+            AnimGraphReferenceNodeWithAssetTests::TearDown();
+        }
+
         AZ::Data::Asset<Integration::AnimGraphAsset> m_referencedAsset;
         Parameter* m_parameter = nullptr;
         BlendTreeTransformNode* m_transformNode = nullptr;
@@ -292,6 +301,12 @@ namespace EMotionFX
             secondReferenceNode->OnAssetReady(thirdLevel);
 
             m_topLevelParameter = static_cast<ReferenceNodeWithParameterGraph*>(m_animGraph.get())->GetParameter();
+        }
+
+        void TearDown() override
+        {
+            m_secondLevelAsset.Release();
+            AnimGraphFixture::TearDown();
         }
 
         AZ::Data::Asset<Integration::AnimGraphAsset> m_secondLevelAsset{};
@@ -389,6 +404,12 @@ namespace EMotionFX
             AddTransitionWithTimeCondition(referenceEntryState, referenceEndState, 1.0f, 1.0f);
 
             return referenceAnimGraph;
+        }
+
+        void TearDown() override
+        {
+            m_referenceNode->GetReferencedAnimGraphAsset().Release();
+            AnimGraphFixture::TearDown();
         }
 
     public:

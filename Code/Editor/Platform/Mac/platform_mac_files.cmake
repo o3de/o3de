@@ -8,7 +8,6 @@
 
 set(FILES
     Editor/Core/QtEditorApplication_mac.mm
-    ../../LogFile_mac.mm
     ../../WindowObserver_mac.h
     ../../WindowObserver_mac.mm
     ../../MainWindow_mac.mm

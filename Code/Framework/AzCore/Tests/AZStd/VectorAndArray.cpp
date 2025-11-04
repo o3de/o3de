@@ -93,12 +93,12 @@ namespace UnitTest
     };
 
     class Arrays
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             MyCtorClass::s_numConstructedObjects = 0;
         }
     };
@@ -405,8 +405,8 @@ namespace UnitTest
         static_buffer_16KB myMemoryManager1;
         static_buffer_16KB myMemoryManager2;
         using static_allocator_ref_type = AZStd::allocator_ref<static_buffer_16KB>;
-        static_allocator_ref_type allocator1(myMemoryManager1, "Mystack allocator 1");
-        static_allocator_ref_type allocator2(myMemoryManager2, "Mystack allocator 2");
+        static_allocator_ref_type allocator1(myMemoryManager1);
+        static_allocator_ref_type allocator2(myMemoryManager2);
 
         using IntVectorMyAllocator = AZStd::vector<int, static_allocator_ref_type >;
         IntVectorMyAllocator int_vector10(100, 13, allocator1); /// Allocate 100 elements using memory manager 1
@@ -424,10 +424,9 @@ namespace UnitTest
 
         int_vector10.set_allocator(allocator2);
         AZ_TEST_VALIDATE_VECTOR(int_vector10, 100);
-        // now we move the allocated size from menager1 to manager2 (without freeing menager1)
-        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == myMemoryManager2.get_allocated_size());
-
-        myMemoryManager1.reset(); // flush manager 1 again (int_vector10 is stored in manager 2)
+        // now we move the allocated size from menager1 to manager2
+        AZ_TEST_ASSERT(myMemoryManager2.get_allocated_size() == 100 * sizeof(int));
+        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == 0); // setting the allocator moved the allocation from manage1 to manager2, freeing manager1
 
         // swap with different allocators
         IntVectorMyAllocator int_vector11(50, 25, allocator1); // create copy in manager1
@@ -707,6 +706,44 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 #endif
         // FixedVectorContainerTest-End
+    }
+
+    constexpr size_t s_testPoolPageSize = 1024;
+    constexpr size_t s_testPoolMinAllocationSize = 64;
+    constexpr size_t s_testPoolMaxAllocationSize = 256;
+
+    // Define a custom pool allocator
+    class TestVectorPoolAllocator final : public AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(TestVectorPoolAllocator, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(TestVectorPoolAllocator, "{4645067B-6A6D-4A45-996E-DA10671159E1}");
+
+        TestVectorPoolAllocator()
+            // Invoke the base constructor explicitely to use the override that takes custom page, min, and max allocation sizes
+            : AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>(
+                  s_testPoolPageSize, s_testPoolMinAllocationSize, s_testPoolMaxAllocationSize)
+        {
+        }
+    };
+
+    TEST_F(Arrays, Vector_CustomPoolAllocatorInstance_AllocatesMemory)
+    {
+        // Verify the vector functions with a custom pool allocator instance
+        AZStd::vector<int, AZ::AZStdAlloc<TestVectorPoolAllocator>> poolTestVector;
+        poolTestVector.push_back(1);
+        EXPECT_EQ(poolTestVector.size(), 1);
+        EXPECT_EQ(poolTestVector[0], 1);
+    }
+
+    TEST_F(Arrays, Vector_ExplicitCustomPoolAllocator_AllocatesMemory)
+    {
+        TestVectorPoolAllocator testPoolAllocator;
+        // Verify the vector functions with an explicit custom pool allocator
+        AZStd::vector<int, AZ::AZStdIAllocator> poolTestVector{ AZ::AZStdIAllocator(&testPoolAllocator) };
+        poolTestVector.push_back(1);
+        EXPECT_EQ(poolTestVector.size(), 1);
+        EXPECT_EQ(poolTestVector[0], 1);
     }
 
     TEST_F(Arrays, FixedVectorSwapSucceeds)

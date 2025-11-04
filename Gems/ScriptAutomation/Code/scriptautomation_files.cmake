@@ -7,6 +7,10 @@
 #
 
 set(FILES
+    Source/ImageComparisonConfig.cpp
+    Source/ImageComparisonConfig.h
+    Source/ImageComparisonSettings.cpp
+    Source/ImageComparisonSettings.h
     Source/ScriptAutomationScriptBindings.cpp
     Source/ScriptAutomationScriptBindings.h
     Source/ScriptAutomationSystemComponent.cpp

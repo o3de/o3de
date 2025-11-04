@@ -1,5 +1,5 @@
 {
-    "materialType": "TestData/Materials/Types/MinimalPBR.materialtype",
+    "materialType": "@gemroot:Atom_TestData@/Assets/TestData/Materials/Types/MinimalPBR.materialtype",
     "materialTypeVersion": 3,
     "propertyValues": {
         "settings.color": [

@@ -44,7 +44,7 @@ namespace AzFramework::AssetBenchmark
         {
             // Define the set of loading stats to track
             [[maybe_unused]] const size_t initialRequests = assetList.size();
-            size_t previouslyLoadedAssets = 0;
+            [[maybe_unused]] size_t previouslyLoadedAssets = 0;
             size_t newlyLoadedAssets = 0;
             size_t loadErrors = 0;
 
@@ -54,7 +54,7 @@ namespace AzFramework::AssetBenchmark
             AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> processedAssets;
 
             // Start timing.
-            auto start = AZStd::chrono::system_clock::now();
+            auto start = AZStd::chrono::steady_clock::now();
 
             // Part 1:  Queue up all the requested assets.
             // If loadBlocking is true, each asset will be synchronously and serially loaded.
@@ -129,7 +129,7 @@ namespace AzFramework::AssetBenchmark
                     requestedAssets.end());
 
                 // Update our total running time so far.
-                runMs = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start);
+                runMs = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
 
                 if (!requestedAssets.empty())
                 {

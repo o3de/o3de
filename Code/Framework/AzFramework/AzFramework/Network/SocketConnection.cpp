@@ -9,6 +9,8 @@
 #include <AzCore/Module/Environment.h>
 #include <AzFramework/Network/SocketConnection.h>
 
+AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::EngineConnectionEvents);
+
 namespace AzFramework
 {
     static AZ::EnvironmentVariable<SocketConnection*> g_socketConnectionInstance;

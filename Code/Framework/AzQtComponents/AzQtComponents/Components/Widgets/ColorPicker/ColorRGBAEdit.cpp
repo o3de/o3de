@@ -23,7 +23,7 @@ ColorRGBAEdit::ColorRGBAEdit(QWidget* parent)
     , m_red(0.0)
     , m_green(0.0)
     , m_blue(0.0)
-    , m_alpha(0.0)
+    , m_alpha(1.0)
 {
     m_layout = new QGridLayout(this);
     m_layout->setContentsMargins(0, 0, 0, 0);
@@ -31,6 +31,7 @@ ColorRGBAEdit::ColorRGBAEdit(QWidget* parent)
     auto doubleChanged = static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged);
 
     m_redSpin = createComponentSpinBox();
+    m_redSpin->setValue(m_red);
     connect(m_redSpin, doubleChanged, this, &ColorRGBAEdit::redValueChanged);
     connect(m_redSpin, &DoubleSpinBox::valueChangeBegan, this, &ColorRGBAEdit::valueChangeBegan);
     connect(m_redSpin, &DoubleSpinBox::valueChangeEnded, this, &ColorRGBAEdit::valueChangeEnded);
@@ -41,6 +42,7 @@ ColorRGBAEdit::ColorRGBAEdit(QWidget* parent)
     m_layout->addWidget(redLabel, 1, 0);
 
     m_greenSpin = createComponentSpinBox();
+    m_greenSpin->setValue(m_green);
     connect(m_greenSpin, doubleChanged, this, &ColorRGBAEdit::greenValueChanged);
     connect(m_greenSpin, &DoubleSpinBox::valueChangeBegan, this, &ColorRGBAEdit::valueChangeBegan);
     connect(m_greenSpin, &DoubleSpinBox::valueChangeEnded, this, &ColorRGBAEdit::valueChangeEnded);
@@ -51,6 +53,7 @@ ColorRGBAEdit::ColorRGBAEdit(QWidget* parent)
     m_layout->addWidget(greenLabel, 1, 1);
 
     m_blueSpin = createComponentSpinBox();
+    m_blueSpin->setValue(m_blue);
     connect(m_blueSpin, doubleChanged, this, &ColorRGBAEdit::blueValueChanged);
     connect(m_blueSpin, &DoubleSpinBox::valueChangeBegan, this, &ColorRGBAEdit::valueChangeBegan);
     connect(m_blueSpin, &DoubleSpinBox::valueChangeEnded, this, &ColorRGBAEdit::valueChangeEnded);
@@ -61,6 +64,7 @@ ColorRGBAEdit::ColorRGBAEdit(QWidget* parent)
     m_layout->addWidget(blueLabel, 1, 2);
 
     m_alphaSpin = createComponentSpinBox();
+    m_alphaSpin->setValue(m_alpha);
     connect(m_alphaSpin, doubleChanged, this, &ColorRGBAEdit::alphaValueChanged);
     connect(m_alphaSpin, &DoubleSpinBox::valueChangeBegan, this, &ColorRGBAEdit::valueChangeBegan);
     connect(m_alphaSpin, &DoubleSpinBox::valueChangeEnded, this, &ColorRGBAEdit::valueChangeEnded);

@@ -241,7 +241,7 @@ namespace LyShineExamples
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiImage.png")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiImage.png")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
                 editInfo->DataElement("Sprite", &UiCustomImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
@@ -257,12 +257,12 @@ namespace LyShineExamples
 
                 editInfo->DataElement(0, &UiCustomImageComponent::m_uvs, "UV Rect", "The UV coordinates of the rectangle for rendering the texture.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnRenderSettingChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show); // needed because sub-elements are hidden
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCustomImageComponent::m_clamp, "Clamp", "Whether the image should be clamped or not.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCustomImageComponent::OnRenderSettingChange)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshValues", 0x28e720d4));
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshValues"));
             }
         }
 
@@ -335,7 +335,7 @@ namespace LyShineExamples
     void UiCustomImageComponent::RenderToCache(LyShine::IRenderGraph* renderGraph)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
         // points are a clockwise quad
         const AZ::Vector2 uvs[4] = {
@@ -391,9 +391,9 @@ namespace LyShineExamples
     bool UiCustomImageComponent::IsPixelAligned()
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         bool isPixelAligned = true;
-        EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+        UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
         return isPixelAligned;
     }
 
@@ -442,8 +442,8 @@ namespace LyShineExamples
     {
         // tell the canvas to invalidate the render graph (never want to do this while rendering)
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
     }
 
 }

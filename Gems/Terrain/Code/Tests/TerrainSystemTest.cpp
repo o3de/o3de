@@ -8,7 +8,6 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/std/parallel/semaphore.h>
 
 #include <AzTest/AzTest.h>
@@ -24,6 +23,8 @@
 #include <MockAxisAlignedBoxShapeComponent.h>
 #include <TerrainTestFixtures.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+
+#include <random>
 
 using ::testing::AtLeast;
 using ::testing::FloatNear;
@@ -1419,6 +1420,64 @@ namespace UnitTest
         terrainSystem->QueryRegion(
             queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::All, perPositionCallback,
             AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+    }
+
+    TEST_F(TerrainSystemTest, TerrainGetClosestIntersection)
+    {
+        // Create a Terrain Spawner with a box from (-200, -200, 0) to (200, 200, 50) that always returns a height of 0.
+        // We intentionally match the bottom of the box with the returned height so that the terrain intersection tests need
+        // to match intersections that occur on the box surface.
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(-200.0f, -200.0f, 0.0f, 200.0f, 200.0f, 50.0f);
+        auto entity = CreateAndActivateMockTerrainLayerSpawner(
+            spawnerBox,
+            [](AZ::Vector3& position, bool& terrainExists)
+            {
+                position.SetZ(0.0f);
+                terrainExists = true;
+            });
+
+        // Create a random number generator in the -100 to 100 range. We'll use this to generate XY coordinates that
+        // always exist within the Terrain Spawner XY dimensions. These are guaranteed to cause an intersection with
+        // the terrain as long as we use a +Z value for the start coordinate and a -Z value for the end.
+        constexpr unsigned int Seed = 1;
+        std::mt19937_64 rng(Seed);
+        std::uniform_real_distribution<float> unif(-100.0f, 100.0f);
+
+        // We'll track the total number of intersections failures so that we have a quick reference number to look at if we
+        // get spammed with failures.
+        int32_t numFailures = 0;
+
+        // Run through a variety of query resolutions to ensure that changing it doesn't break the intersection tests.
+        for (float queryResolution : { 0.13f, 0.25f, 0.5f, 1.0f, 2.0f, 3.0f })
+        {
+            // Create and activate the terrain system.
+            auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
+
+            // Run through an arbitrary number of random rays and ensure that they all collide with the terrain.
+            constexpr uint32_t NumRays = 100;
+            for (uint32_t test = 0; test < NumRays; test++)
+            {
+                // Generate a ray with random XY values in the -100 to 100 range,
+                // but with a start Z of 1 to 101 and an end Z of -1 to -101 so that we're guaranteed an intersection for every ray.
+                AzFramework::RenderGeometry::RayRequest ray;
+                ray.m_startWorldPosition = AZ::Vector3(unif(rng), unif(rng), abs(unif(rng)) + 1.0f);
+                ray.m_endWorldPosition = AZ::Vector3(unif(rng), unif(rng), -abs(unif(rng)) - 1.0f);
+
+                // Get our intersection.
+                auto result = terrainSystem->GetClosestIntersection(ray);
+
+                // Every ray should intersect at a height of 0 and a normal pointing directly up.
+                EXPECT_TRUE(result);
+                EXPECT_NEAR(result.m_worldPosition.GetZ(), 0.0f, 0.001f);
+                EXPECT_THAT(result.m_worldNormal, IsClose(AZ::Vector3::CreateAxisZ()));
+
+                // Track any intersection failures
+                numFailures += (result ? 0 : 1);
+            }
+        }
+
+        // This is here just to give us a final tally of how many rays failed this test.
+        EXPECT_EQ(numFailures, 0);
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessAsyncCancellation)

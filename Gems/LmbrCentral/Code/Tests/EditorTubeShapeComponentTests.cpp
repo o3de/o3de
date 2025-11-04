@@ -22,13 +22,13 @@ namespace AZ
 namespace UnitTest
 {
     class EditorTubeShapeFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<bool>
     {
     };
 
     // test both open and closed versions of the spline
-    INSTANTIATE_TEST_CASE_P(GenerateTubeManipulatorStates, EditorTubeShapeFixture, ::testing::Values(true, false));
+    INSTANTIATE_TEST_SUITE_P(GenerateTubeManipulatorStates, EditorTubeShapeFixture, ::testing::Values(true, false));
 
     TEST_P(EditorTubeShapeFixture, GenerateTubeManipulatorStates_returns_no_TubeManipulatorStates_when_spline_is_empty)
     {

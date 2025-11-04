@@ -61,10 +61,10 @@ def Tick_InterpolatedRigidBodyMotionIsSmooth():
         azlmbr.bus.Event, "SetWorldTranslation", test_entity.id, math.Vector3(0.0, 0.0, 0.0))
 
     # 3) Add rigid body component
-    rigid_body_component = test_entity.add_component("PhysX Rigid Body")
+    rigid_body_component = test_entity.add_component("PhysX Dynamic Rigid Body")
     rigid_body_component.set_component_property_value("Configuration|Interpolate motion", True)
     azlmbr.physics.RigidBodyRequestBus(azlmbr.bus.Event, "SetLinearDamping", test_entity.id, 0.0)
-    Report.result(Tests.rigid_body_added, test_entity.has_component("PhysX Rigid Body"))
+    Report.result(Tests.rigid_body_added, test_entity.has_component("PhysX Dynamic Rigid Body"))
 
     # 4) Enter game mode and collect data for the rigid body's z co-ordinate and the time values for a series of frames
     t = []

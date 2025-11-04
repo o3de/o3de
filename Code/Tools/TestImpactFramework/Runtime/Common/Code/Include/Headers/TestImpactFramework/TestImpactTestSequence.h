@@ -11,28 +11,28 @@
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 #include <TestImpactFramework/TestImpactPolicy.h>
 
-#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/set.h>
 
 namespace TestImpact
 {
-    //! Configuration for test targets that opt in to test sharding.
-    enum class ShardConfiguration
-    {
-        Never, //!< Never shard this test target.
-        FixtureContiguous, //!< Each shard contains contiguous fixtures of tests (safest but least optimal).
-        TestContiguous, //!< Each shard contains contiguous tests agnostic of fixtures.
-        FixtureInterleaved, //!< Fixtures of tests are interleaved across shards.
-        TestInterleaved //!< Tests are interlaced across shards agnostic of fixtures (fastest but prone to inter-test dependency problems).
-    };
+    //! Set of test suites that tests can be drawn from.
+    //! @note An ordered set is used so that the serialized string of the set order is always the same regardless of the order that the
+    //! suites are specified.
+    using SuiteSet = AZStd::set<AZStd::string>;
 
-    //! Test suite types to select from.
-    enum class SuiteType : AZ::u8
-    {
-        Main = 0,
-        Periodic,
-        Sandbox,
-        AWSI
-    };
+    //! Set of test suite labels that will be used to exclude any test targets that have test suite labels matching any labels in this set.
+    //! @note An ordered set is used so that the serialized string of the set order is always the same regardless of the order that the
+    //! labels are specified.
+    using SuiteLabelExcludeSet = AZStd::set<AZStd::string>;
+
+    //! The CTest label that test target suites need to have in order to be run as part of TIAF.
+    inline constexpr const char* RequiresTiafLabel = "REQUIRES_tiaf";
+
+    //! The CTest label that test target suites need to have in order to be sharded test-by-test.
+    inline constexpr const char* TiafShardingTestInterleavedLabel = "TIAF_shard_test";
+
+    //! The CTest label that test target suites need to have in order to be sharded fixture-by-fixture.
+    inline constexpr const char* TiafShardingFixtureInterleavedLabel = "TIAF_shard_fixture";
 
     //! Result of a test sequence that was run.
     enum class TestSequenceResult
@@ -49,7 +49,6 @@ namespace TestImpact
         Policy::FailedTestCoverage m_failedTestCoveragePolicy = Policy::FailedTestCoverage::Keep;
         Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
         Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
-        Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;
         Policy::TargetOutputCapture m_targetOutputCapture = Policy::TargetOutputCapture::None;
     };
 

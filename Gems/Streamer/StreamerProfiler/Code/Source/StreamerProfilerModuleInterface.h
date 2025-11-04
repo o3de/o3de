@@ -17,7 +17,7 @@ namespace Streamer
     {
     public:
         AZ_RTTI(StreamerProfilerModuleInterface, "{27fc3f53-8e85-43be-b121-3fef086f8f22}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(StreamerProfilerModuleInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StreamerProfilerModuleInterface, AZ::SystemAllocator);
 
         StreamerProfilerModuleInterface()
         {

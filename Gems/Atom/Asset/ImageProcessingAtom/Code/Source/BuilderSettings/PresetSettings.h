@@ -23,7 +23,7 @@ namespace ImageProcessingAtom
     {
     public:
         AZ_TYPE_INFO(PresetSettings, "{4F4DEC5C-48DD-40FD-97B4-5FB6FC7242E9}");
-        AZ_CLASS_ALLOCATOR(PresetSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PresetSettings, AZ::SystemAllocator);
 
         //! Custom overrides for how to handle the output format
         enum OutputTypeHandling
@@ -121,7 +121,7 @@ namespace ImageProcessingAtom
     {
     public:
         AZ_TYPE_INFO(MultiplatformPresetSettings, "{05603AB1-FFC2-48F2-8322-BD265D6FB321}");
-        AZ_CLASS_ALLOCATOR(MultiplatformPresetSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiplatformPresetSettings, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

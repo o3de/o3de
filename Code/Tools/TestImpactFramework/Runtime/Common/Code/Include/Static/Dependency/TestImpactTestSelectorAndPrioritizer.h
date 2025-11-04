@@ -68,17 +68,17 @@ namespace TestImpact
             Continue, //!< Continue with actions for this CRUD operation.
             ConcludeSelection, //!< Conclude selection (no further actions).
         };
-        
+
         //! Iterate over the production and test targets for newly created sources with no coverage and act on them.
         [[nodiscard]] virtual SourceOperationActionResult IterateCreateParentedSourcesWithNoCoverage(
             const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
-        
+
         //! Iterate over the production and test targets for updated sources with coverage and act on them.
         [[nodiscard]] virtual SourceOperationActionResult IterateUpdateParentedSourcesWithCoverage(
             const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
-        
+
         //! Iterate over the production and test targets for updated sources with no coverage and act on them.
         [[nodiscard]] virtual SourceOperationActionResult IterateUpdateParentedSourcesWithoutCoverage(
             const SourceDependency<ProductionTarget, TestTarget>& sourceDependency,
@@ -182,10 +182,10 @@ namespace TestImpact
                 }
             }
         }
-    
+
         return SourceOperationActionResult::Continue;
     }
-    
+
     template<typename ProductionTarget, typename TestTarget>
     typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
     TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::IterateUpdateParentedSourcesWithCoverage(
@@ -227,10 +227,10 @@ namespace TestImpact
                 }
             }
         }
-    
+
         return SourceOperationActionResult::Continue;
     }
-    
+
     template<typename ProductionTarget, typename TestTarget>
     typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SourceOperationActionResult
     TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::IterateUpdateParentedSourcesWithoutCoverage(
@@ -272,7 +272,7 @@ namespace TestImpact
                 }
             }
         }
-    
+
         return SourceOperationActionResult::Continue;
     }
 
@@ -705,7 +705,9 @@ namespace TestImpact
                 AZStd::optional<AZStd::size_t> minimum;
                 buildGraph.WalkBuildDependencies(
                     buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
-                    [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, AZStd::size_t distance)
+                    // Workaround for C++ Standard bug where structured bindings names aren't capturable in lambdas
+                    // https://stackoverflow.com/a/46115028
+                    [&, productionTargets = productionTargets](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, AZStd::size_t distance)
                     {
                         if (const auto productionTarget = vertex.m_buildTarget.GetProductionTarget();
                             productionTarget && productionTargets.contains(productionTarget))

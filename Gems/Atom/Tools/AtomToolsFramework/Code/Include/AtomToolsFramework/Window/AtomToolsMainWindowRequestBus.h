@@ -50,6 +50,15 @@ namespace AtomToolsFramework
         //! Get a list of registered docked widget names
         virtual AZStd::vector<AZStd::string> GetDockWidgetNames() const = 0;
 
+        //! Display message on main windows status bar
+        virtual void SetStatusMessage(const AZStd::string& message) = 0;
+
+        //! Display warning on main window status bar
+        virtual void SetStatusWarning(const AZStd::string& message) = 0;
+
+        //! Display error on main menu window status bar
+        virtual void SetStatusError(const AZStd::string& message) = 0;
+
         //! Prepare to update menus
         virtual void QueueUpdateMenus(bool rebuildMenus) = 0;
 

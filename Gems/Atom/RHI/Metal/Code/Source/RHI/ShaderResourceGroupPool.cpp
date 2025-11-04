@@ -34,21 +34,21 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
+        RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::DeviceShaderResourceGroup& groupBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
 
             for (size_t i = 0; i < RHI::Limits::Device::FrameCountMax; ++i)
             {
                 auto argBuffer = ArgumentBuffer::Create();
-                argBuffer->Init(m_device, m_srgLayout, group, this);
+                argBuffer->Init(m_device, m_srgLayout, this);
                 group.m_compiledArgBuffers[i] = argBuffer;
             }
 
             return RHI::ResultCode::Success;
         }
 
-        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void ShaderResourceGroupPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
             for (size_t i = 0; i < RHI::Limits::Device::FrameCountMax; ++i)
@@ -58,9 +58,9 @@ namespace AZ
             Base::ShutdownResourceInternal(resourceBase);
         }
 
-        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
+        RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::DeviceShaderResourceGroup& groupBase, const RHI::DeviceShaderResourceGroupData& groupData)
         {
-            typedef AZ::RHI::ShaderResourceGroupData::ResourceTypeMask ResourceMask;
+            typedef AZ::RHI::DeviceShaderResourceGroupData::ResourceTypeMask ResourceMask;
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);
 
             group.UpdateCompiledDataIndex();
@@ -79,7 +79,7 @@ namespace AZ
                 for (const RHI::ShaderInputImageDescriptor& shaderInputImage : layout->GetShaderInputListForImages())
                 {
                     const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
-                    AZStd::span<const RHI::ConstPtr<RHI::ImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::DeviceImageView>> imageViews = groupData.GetImageViewArray(imageInputIndex);
                     argBuffer.UpdateImageViews(shaderInputImage, imageViews);
                     ++shaderInputIndex;
                 }
@@ -91,7 +91,7 @@ namespace AZ
                 for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : layout->GetShaderInputListForBuffers())
                 {
                     const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
-                    AZStd::span<const RHI::ConstPtr<RHI::BufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
+                    AZStd::span<const RHI::ConstPtr<RHI::DeviceBufferView>> bufferViews = groupData.GetBufferViewArray(bufferInputIndex);
                     argBuffer.UpdateBufferViews(shaderInputBuffer, bufferViews);
                     ++shaderInputIndex;
                 }

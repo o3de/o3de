@@ -8,9 +8,12 @@
 #pragma once
 
 #include <AzCore/Math/Color.h>
+#include <QObject>
 
 #include <GraphCanvas/Components/NodePropertyDisplay/VectorDataInterface.h>
+#include <AzQtComponents/Utilities/Conversions.h>
 
+#include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include "ScriptCanvasDataInterface.h"
 
 namespace ScriptCanvasEditor
@@ -19,7 +22,7 @@ namespace ScriptCanvasEditor
         : public ScriptCanvasDataInterface<GraphCanvas::VectorDataInterface>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasColorDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasColorDataInterface, AZ::SystemAllocator);
         ScriptCanvasColorDataInterface(const AZ::EntityId& nodeId, const ScriptCanvas::SlotId& slotId)
             : ScriptCanvasDataInterface(nodeId, slotId)
         {
@@ -31,7 +34,56 @@ namespace ScriptCanvasEditor
         {
             return 4;
         }
-        
+
+        void OnPressButton() override
+        {
+            ScriptCanvas::ModifiableDatumView datumView;
+            ModifySlotObject(datumView);
+            if (datumView.IsValid())
+            {
+                const AZ::Color currentColor = (*datumView.GetAs<AZ::Color>());
+
+                AzQtComponents::ColorPicker dialog(AzQtComponents::ColorPicker::Configuration::RGBA);
+                dialog.setCurrentColor(currentColor);
+                dialog.setSelectedColor(currentColor);
+                dialog.setWindowTitle(QObject::tr("Select Color"));
+                dialog.setWindowModality(Qt::ApplicationModal);
+                if (dialog.exec() == QDialog::DialogCode::Accepted)
+                {
+                    if (datumView.IsValid())
+                    {
+                        datumView.SetAs(dialog.currentColor());
+
+                        PostUndoPoint();
+                        PropertyGridRequestBus::Broadcast(&PropertyGridRequests::RefreshPropertyGrid);
+                    }
+                }
+            }
+        }
+
+        QPixmap GetIcon() const override
+        {
+            const ScriptCanvas::Datum* object = GetSlotObject();
+            if (object)
+            {
+                const AZ::Color* retVal = object->GetAs<AZ::Color>();
+                if (retVal)
+                {
+                    QColor color = AzQtComponents::toQColor(*retVal);
+                    static const int colorIconWidth = 32;
+                    static const int colorIconHeight = 16;
+                    QPixmap pixmap(QSize(colorIconWidth, colorIconHeight));
+                    pixmap.fill(color);
+                    QPainter painter(&pixmap);
+                    painter.setPen(QColor("#333333"));
+                    painter.drawRect(pixmap.rect().adjusted(0, 0, -1, -1));
+                    return pixmap;
+                }
+            }
+
+            return QPixmap();
+        }
+
         double GetValue(int index) const override
         {
             if (index < GetElementCount())

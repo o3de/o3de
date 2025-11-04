@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_VectorNFunctions_Dot",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Dot"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_VectorNFunctions_Dot",
+                    "details": {
+                        "name": "Dot"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

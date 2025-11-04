@@ -8,12 +8,13 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 
 namespace AzToolsFramework
 {
-    class EditorEntityManager
+    class AZTF_API EditorEntityManager
         : public EditorEntityAPI
     {
     public:

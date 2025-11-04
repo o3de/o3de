@@ -16,7 +16,7 @@
             {
                 "LocalSlot": "DepthInputOutput",
                 "AttachmentRef": {
-                    "Pass": "DepthPrePass",
+                    "Pass": "PipelineGlobal",
                     "Attachment": "Depth"
                 }
             }

@@ -14,10 +14,6 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ModelLodAsset::DisplayName = "ModelLodAsset";
-        const char* ModelLodAsset::Group = "Model";
-        const char* ModelLodAsset::Extension = "azlod";
-
         void ModelLodAsset::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -121,6 +117,69 @@ namespace AZ
             return m_aabb;
         }
         
+        const BufferAssetView* ModelLodAsset::GetSemanticBufferAssetView(const AZ::Name& semantic, uint32_t meshIndex) const
+        {
+            AZ_Assert(meshIndex < m_meshes.size(), "Mesh index out of range");
+            return m_meshes[meshIndex].GetSemanticBufferAssetView(semantic);
+        }
+
+        void ModelLodAsset::LoadBufferAssets()
+        {
+            m_indexBuffer.QueueLoad();
+
+            for (auto& streamBuffer : m_streamBuffers)
+            {
+                streamBuffer.QueueLoad();
+            }
+
+            m_indexBuffer.BlockUntilLoadComplete();
+            for (auto& streamBuffer : m_streamBuffers)
+            {
+                streamBuffer.BlockUntilLoadComplete();
+            }
+
+            // update buffer asset references in meshes
+            for (auto& mesh : m_meshes)
+            {
+                mesh.LoadBufferAssets();
+            }
+        }
+
+        void ModelLodAsset::ReleaseBufferAssets()
+        {
+            m_indexBuffer.Release();
+
+            for (auto& streamBuffer : m_streamBuffers)
+            {
+                streamBuffer.Release();
+            }
+             
+            for (auto& mesh : m_meshes)
+            {
+                mesh.ReleaseBufferAssets();
+            }
+        }
+
+        void ModelLodAsset::Mesh::LoadBufferAssets()
+        {
+            m_indexBufferAssetView.LoadBufferAsset();
+
+            for (auto& bufferInfo : m_streamBufferInfo)
+            {
+                bufferInfo.m_bufferAssetView.LoadBufferAsset();
+            }
+        }
+        
+        void ModelLodAsset::Mesh::ReleaseBufferAssets()
+        {
+            m_indexBufferAssetView.ReleaseBufferAsset();
+
+            for (auto& bufferInfo : m_streamBufferInfo)
+            {
+                bufferInfo.m_bufferAssetView.ReleaseBufferAsset();
+            }
+        }
+
         const BufferAssetView* ModelLodAsset::Mesh::GetSemanticBufferAssetView(const AZ::Name& semantic) const
         {
             const AZStd::span<const ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = GetStreamBufferInfoList();

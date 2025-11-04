@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Math/Color.h>
 #include "EMotionFXConfig.h"
 #include "AnimGraphStateTransition.h"
 #include "AnimGraphStateMachine.h"
@@ -28,9 +29,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::StateFilterLocal, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::UniqueData, AnimGraphObjectUniqueDataAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::StateFilterLocal, AnimGraphAllocator)
 
     bool AnimGraphStateTransition::StateFilterLocal::IsEmpty() const
     {
@@ -719,11 +720,6 @@ namespace EMotionFX
         }
     }
 
-    uint32 AnimGraphStateTransition::GetVisualColor() const
-    {
-        return MCore::RGBA(150, 150, 150);
-    }
-
     bool AnimGraphStateTransition::GetIsStateTransitionNode() const
     {
         return true;
@@ -1047,13 +1043,13 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphStateTransition::m_isDisabled, "Disabled", "Is disabled? If yes the transition will not be used by the state machine.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphStateTransition::SyncVisualObject)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphStateTransition::m_priority, "Priority", "The priority level of the transition.")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AnimGraphStateTransition::m_priority, "Priority", "The priority level of the transition. Smaller values mean lower priority.")
             ->Attribute(AZ::Edit::Attributes::Min, 0)
             ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<AZ::s32>::max())
-            ->DataElement(AZ_CRC("TransitionStateFilterLocal", 0x7c4000ff), &AnimGraphStateTransition::m_allowTransitionsFrom, "Allow transitions from", "States and groups of states from which the wildcard transition can get activated.")
+            ->DataElement(AZ_CRC_CE("TransitionStateFilterLocal"), &AnimGraphStateTransition::m_allowTransitionsFrom, "Allow transitions from", "States and groups of states from which the wildcard transition can get activated.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphStateTransition::GetVisibilityAllowedStates)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->Attribute(AZ_CRC("StateMachine", 0xe5f2e7a8), &AnimGraphStateTransition::GetStateMachine)
+            ->Attribute(AZ_CRC_CE("StateMachine"), &AnimGraphStateTransition::GetStateMachine)
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphStateTransition::m_transitionTime, "Transition time", "The transition time, in seconds.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphStateTransition::GetVisibilityHideWhenExitOrEntry)
             ->Attribute(AZ::Edit::Attributes::Suffix, " seconds")
@@ -1082,7 +1078,7 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphStateTransition::m_canBeInterruptedByOthers, "Can be interrupted by others", "Can be interrupted? If enabled the transition can be interrupted by other transitions, while it is already transitioning.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphStateTransition::GetVisibilityHideWhenExitOrEntry)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-            ->DataElement(AZ_CRC("AnimGraphStateTransitionIds", 0x7b2468f7), &AnimGraphStateTransition::m_canBeInterruptedByTransitionIds, "Can be interrupted by", "List of candidates that can interrupt the transition.")
+            ->DataElement(AZ_CRC_CE("AnimGraphStateTransitionIds"), &AnimGraphStateTransition::m_canBeInterruptedByTransitionIds, "Can be interrupted by", "List of candidates that can interrupt the transition.")
             ->Attribute(AZ::Edit::Attributes::Visibility, &AnimGraphStateTransition::GetVisibilityCanBeInterruptedBy)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphStateTransition::Reinit)
             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)

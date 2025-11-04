@@ -104,7 +104,7 @@ namespace AZ::EntityUtils
     SerializeContext* GetApplicationSerializeContext()
     {
         SerializeContext* context = nullptr;
-        EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+        ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
         return context;
     }
 
@@ -295,4 +295,23 @@ namespace AZ::EntityUtils
         }
         return duplicateFound;
     }
+
+    void ConvertComponentVectorToMap(
+        AZStd::span<AZ::Component* const> components, AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut)
+    {
+        for (AZ::Component* component : components)
+        {
+            if (component)
+            {
+                AZStd::string componentAlias = component->GetSerializedIdentifier();
+                if (componentAlias.empty())
+                {
+                    // Component alias can be empty for non-editor components. Fallback to use the id as the component alias.
+                    componentAlias = AZStd::string::format("Component_[%llu]", component->GetId());
+                }
+                componentMapOut.emplace(AZStd::move(componentAlias), component);
+            }
+        }
+    }
+
 } // namespace AZ::EntityUtils

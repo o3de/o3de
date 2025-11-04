@@ -39,7 +39,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GradientSurfaceDataConfig::m_shapeConstraintEntityId, "Surface Bounds", "Optionally constrain surface data to the shape on the selected entity")
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("ShapeService", 0xe86aa5fe))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("ShapeService"))
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientSurfaceDataConfig::m_thresholdMin, "Threshold Min", "Minimum value accepted from input gradient that allows tags to be applied.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)

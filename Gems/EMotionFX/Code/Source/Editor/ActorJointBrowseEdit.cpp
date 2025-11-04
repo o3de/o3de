@@ -15,7 +15,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorJointBrowseEdit, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorJointBrowseEdit, AZ::SystemAllocator)
 
     ActorJointBrowseEdit::ActorJointBrowseEdit(QWidget* parent)
         : AzQtComponents::BrowseEdit(parent)
@@ -68,7 +68,7 @@ namespace EMStudio
         connect(m_jointSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(), &QTreeWidget::itemSelectionChanged, this, &ActorJointBrowseEdit::OnSelectionChanged);
         connect(m_jointSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &ActorJointBrowseEdit::OnSelectionDone);
 
-        NodeSelectionWindow::connect(m_jointSelectionWindow, &QDialog::finished, [=]([[maybe_unused]] int resultCode)
+        NodeSelectionWindow::connect(m_jointSelectionWindow, &QDialog::finished, [this]([[maybe_unused]] int resultCode)
             {
                 m_jointSelectionWindow->deleteLater();
                 m_jointSelectionWindow = nullptr;

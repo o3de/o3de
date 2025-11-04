@@ -8,10 +8,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedCommon, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJoint, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObject, EMotionFX::ActorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectSetup, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedCommon, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJoint, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObject, EMotionFX::ActorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectSetup, EMotionFX::ActorAllocator)
 
     void SimulatedJoint::Reflect(AZ::ReflectContext* context)
     {
@@ -72,10 +72,10 @@ namespace EMotionFX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SimulatedJoint::m_pinned, "Pinned", "Pinned joints follow the original joint, so in a way they are pinned to a given skeletal joint. Unpinned joints can move freely away from the joint they are linked to. Root joints are always pinned.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &SimulatedJoint::GetPinnedOptionVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SimulatedJoint::m_autoExcludeGeometric, "Geometric auto exclude", "When enabled we will check whether the joint is inside the collider that is tested for automatic exclusion from collision detection. If not, we just use the list of colliders that are relevant.")
-                    ->DataElement(AZ_CRC("SimulatedJointColliderExclusionTags", 0x27b61cea), &SimulatedJoint::m_colliderExclusionTags, "Collider exclusions", "Ignore collision detection with the colliders inside this list.")
+                    ->DataElement(AZ_CRC_CE("SimulatedJointColliderExclusionTags"), &SimulatedJoint::m_colliderExclusionTags, "Collider exclusions", "Ignore collision detection with the colliders inside this list.")
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
-                    ->Attribute(AZ_CRC("SimulatedObject", 0x2076ba91), &SimulatedJoint::GetSimulatedObject)
+                    ->Attribute(AZ_CRC_CE("SimulatedObject"), &SimulatedJoint::GetSimulatedObject)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SimulatedJoint::m_autoExcludeMode, "Auto exclude mode", "The mode used to automatically place colliders on the collision exclusion list. This option controls which colliders are automatically added to the exclusion list when they this joint is inside the collider.")
                     ->EnumAttribute(AutoExcludeMode::None, "None")
                     ->EnumAttribute(AutoExcludeMode::Self, "Self")
@@ -364,12 +364,12 @@ namespace EMotionFX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ_CRC("SimulatedObjectName", 0xd11d7db9), &SimulatedObject::m_objectName, "Object name", "Object name")
+                    ->DataElement(AZ_CRC_CE("SimulatedObjectName"), &SimulatedObject::m_objectName, "Object name", "Object name")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SimulatedObject::m_joints, "Joints to be simulated", "The numbers of joints that belong to this simulated object.")
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
-                        ->Attribute(AZ_CRC("ValueText"), &SimulatedObject::GetJointsTextOverride)
+                        ->Attribute(AZ::Edit::Attributes::ValueText, &SimulatedObject::GetJointsTextOverride)
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &SimulatedObject::m_gravityFactor, "Gravity factor", "The gravity multiplier, which is a multiplier over the individual joint gravity values.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
@@ -382,7 +382,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                    ->DataElement(AZ_CRC("SimulatedObjectColliderTags", 0x80cfa635), &SimulatedObject::m_colliderTags, "Collides with", "The list of collider tags which define what to collide with.")
+                    ->DataElement(AZ_CRC_CE("SimulatedObjectColliderTags"), &SimulatedObject::m_colliderTags, "Collides with", "The list of collider tags which define what to collide with.")
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
                         ;

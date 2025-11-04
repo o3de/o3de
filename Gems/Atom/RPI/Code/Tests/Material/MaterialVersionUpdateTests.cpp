@@ -90,6 +90,41 @@ namespace UnitTest
         EXPECT_EQ(action.GetArgAsName(Name{ "to"   }), AZ::Name(toStr));
     }
 
+    TEST_F(MaterialVersionUpdateTests, Action_RenamePrefix)
+    {
+        // Test alternative ways of creating the same action
+        const AZStd::string fromStr = "oldPrefix_";
+        const AZStd::string toStr = "newPrefix.";
+        MaterialVersionUpdate::Action action(
+            AZ::Name{"renamePrefix"},
+            {
+                { Name{ "from" }, fromStr },
+                { Name{ "to"   }, toStr }
+            });
+
+        MaterialVersionUpdate::Action action2(
+            {
+                { AZStd::string("op"),   AZStd::string("renamePrefix") },
+                { AZStd::string("from"), fromStr },
+                { AZStd::string("to"),   toStr }
+            });
+
+        MaterialVersionUpdate::Action action3(AZ::Name("renamePrefix"), {});
+        action3.AddArg(Name{"from"}, fromStr);
+        action3.AddArg(Name{"to"}, toStr);
+
+        EXPECT_EQ(action, action2);
+        EXPECT_EQ(action, action3);
+        EXPECT_TRUE(action.Validate());
+
+        // Test properties
+        EXPECT_EQ(action.GetArgCount(), 2);
+        EXPECT_EQ(action.GetArg(Name{"from"}), fromStr);
+        EXPECT_EQ(action.GetArg(Name{"to"}), toStr);
+        EXPECT_EQ(action.GetArgAsName(Name{"from"}), AZ::Name(fromStr));
+        EXPECT_EQ(action.GetArgAsName(Name{"to"}), AZ::Name(toStr));
+    }
+
     TEST_F(MaterialVersionUpdateTests, Action_SetValue)
     {
         // Test alternative ways of creating the same action

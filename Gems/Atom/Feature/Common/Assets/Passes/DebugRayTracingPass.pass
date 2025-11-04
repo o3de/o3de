@@ -1,0 +1,58 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DebugRayTracingPassTemplate",
+            "PassClass": "RayTracingPass",
+            "Slots": [
+                {
+                    "Name": "ColorInputOutput",
+                    "ShaderInputName": "m_fallbackColor",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ColorInputOutput",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "PipelineOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "Parent",
+                        "Attachment": "PipelineOutput"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "ColorInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "AuxGeomPass",
+                        "Attachment": "ColorInputOutput"
+                    }
+                }
+            ],
+            "PassData":  {
+                "$type": "RayTracingPassData",
+                "RayGenerationShaderAsset": { "FilePath": "Shaders/Debug/RayTracingDebugRayGeneration.shader" },
+                "RayGenerationShaderName": "RayGeneration",
+                "ClosestHitShaderAsset": { "FilePath": "Shaders/Debug/RayTracingDebugClosestHit.shader" },
+                "ClosestHitShaderName": "ClosestHit",
+                "ClosestHitProceduralShaderAsset": { "FilePath": "Shaders/Debug/RayTracingDebugClosestHitProcedural.shader" },
+                "ClosestHitProceduralShaderName": "ClosestHitProcedural",
+                "MissShaderAsset": { "FilePath": "Shaders/Debug/RayTracingDebugMiss.shader" },
+                "MissShaderName": "Miss",
+                "MaxPayloadSize": 16,
+                "MaxRecursionDepth": 1,
+                "FullscreenDispatch": true,
+                "BindViewSrg": true
+            }
+        }
+    }
+}

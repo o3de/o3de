@@ -8,6 +8,8 @@
 
 #include "Quaternion.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/Quaternion.generated.h>
+
 namespace ScriptCanvas
 {
     namespace QuaternionFunctions
@@ -143,6 +145,11 @@ namespace ScriptCanvas
         {
             AZ::Vector3 eulerDegress = AZ::Vector3(static_cast<float>(pitch), static_cast<float>(roll), static_cast<float>(yaw));
             return AZ::ConvertEulerDegreesToQuaternion(eulerDegress);
+        }
+
+        QuaternionType CreateFromValues(NumberType x, NumberType y, NumberType z, NumberType w)
+        {
+            return QuaternionType(aznumeric_cast<float>(x), aznumeric_cast<float>(y), aznumeric_cast<float>(z), aznumeric_cast<float>(w));
         }
 
         Vector3Type RotateVector3(QuaternionType source, Vector3Type vector3)

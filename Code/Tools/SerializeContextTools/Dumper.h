@@ -32,6 +32,7 @@ namespace AZ::SerializeContextTools
 
         static bool DumpTypes(Application& application);
         static bool CreateType(Application& application);
+        static bool CreateUuid(Application& application);
 
     private:
         static AZStd::vector<Uuid> CreateFilterListByNames(SerializeContext* context, AZStd::string_view name);

@@ -1,19 +1,16 @@
 {
-    "description": "",
-    "parentMaterial": "08_purplish_blue.material",
     "materialType": "../../Types/StandardPBR.materialtype",
     "materialTypeVersion": 5,
-    "properties": {
-        "baseColor": {
-            "color": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "textureBlendMode": "Lerp",
-            "textureMap": "08_purplish_blue_sRGB.tif",
-            "useTexture": true
-        }
+    "parentMaterial": "08_purplish_blue.material",
+    "propertyValues": {
+        "baseColor.color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "baseColor.textureBlendMode": "Lerp",
+        "baseColor.textureMap": "08_purplish_blue_sRGB.tif",
+        "baseColor.useTexture": true
     }
 }

@@ -15,6 +15,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QTimer>
 #include <QTreeView>
 #include <QSortFilterProxyModel>
+#include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -36,7 +37,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::GraphCanvasTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(PivotTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PivotTreeItem, AZ::SystemAllocator);
         AZ_RTTI(PivotTreeItem, "{F310C0EA-9CFE-4A8F-9CDA-46E24673B01A}", GraphCanvas::GraphCanvasTreeItem);
 
         enum Column
@@ -84,7 +85,7 @@ namespace ScriptCanvasEditor
         : public PivotTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(PivotTreeEntityItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PivotTreeEntityItem, AZ::SystemAllocator);
         AZ_RTTI(PivotTreeEntityItem, "{67725865-7004-441D-84BB-D38FF491A3FD}", PivotTreeItem);
 
         PivotTreeEntityItem(const AZ::NamedEntityId& entityId);
@@ -104,7 +105,7 @@ namespace ScriptCanvasEditor
         : public PivotTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(PivotTreeGraphItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PivotTreeGraphItem, AZ::SystemAllocator);
         AZ_RTTI(PivotTreeGraphItem, "{37FCAC77-DE32-4B1B-97FD-66852EC31CAB}", PivotTreeItem);
 
         PivotTreeGraphItem(const AZ::Data::AssetId& assetId);
@@ -126,7 +127,7 @@ namespace ScriptCanvasEditor
         : public PivotTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(PivotTreeRoot, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PivotTreeRoot, AZ::SystemAllocator);
         AZ_RTTI(PivotTreeRoot, "{E172AB89-49BA-429F-AC83-9CCBD6A3B1B9}", PivotTreeItem);
 
         PivotTreeRoot() = default;
@@ -152,7 +153,7 @@ namespace ScriptCanvasEditor
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(PivotTreeSortProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PivotTreeSortProxyModel, AZ::SystemAllocator);
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
 
@@ -163,7 +164,7 @@ namespace ScriptCanvasEditor
     private:
 
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 
     class PivotTreeWidget

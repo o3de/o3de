@@ -13,10 +13,10 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
@@ -24,6 +24,7 @@
 
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
@@ -38,11 +39,25 @@
 
 namespace AssetBundler
 {
+    // Added a declaration of GetBuildTargetName which retrieves the name of the build target
+    // The build target changes depending on which shared library/executable applicationManager.cpp
+    // is linked to 
+    AZStd::string_view GetBuildTargetName();
+
     const char compareVariablePrefix = '$';
 
     ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent)
+        : ApplicationManager(argc, argv, parent, {})
+    {
+    }
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+        : ApplicationManager(argc, argv, nullptr, AZStd::move(componentAppSettings))
+    {
+    }
+
+    ApplicationManager::ApplicationManager(int* argc, char*** argv, QObject* parent, AZ::ComponentApplicationSettings componentAppSettings)
         : QObject(parent)
-        , AzToolsFramework::ToolsApplication(argc, argv)
+        , AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
     {
     }
 
@@ -60,8 +75,8 @@ namespace AssetBundler
         startupParameters.m_loadDynamicModules = false;
         Start(AzFramework::Application::Descriptor(), startupParameters);
 
-        AZ::SerializeContext* context;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::SerializeContext* context = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialize context");
         AzToolsFramework::AssetSeedManager::Reflect(context);
         AzToolsFramework::AssetFileInfoListComparison::Reflect(context);
@@ -190,7 +205,7 @@ namespace AssetBundler
     void ApplicationManager::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
     {
         AzToolsFramework::ToolsApplication::SetSettingsRegistrySpecializations(specializations);
-        specializations.Append("assetbundler");
+        specializations.Append(GetBuildTargetName());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -1474,9 +1489,45 @@ namespace AssetBundler
         {
             // Add Seeds
             PlatformFlags platformFlag = AzFramework::PlatformHelper::GetPlatformFlagFromPlatformIndex(platformId);
+
+            auto cacheFolderPath = AssetBundler::GetProjectCacheFolderPath();
+            AZ::IO::Path cachePath;
+            if (cacheFolderPath.IsSuccess())
+            {
+                cachePath = cacheFolderPath.GetValue() / AZ::PlatformDefaults::PlatformHelper::GetPlatformName(platformId);
+            }
+
             for (const AZStd::string& assetPath : params.m_addSeedList)
             {
-                m_assetSeedManager->AddSeedAsset(assetPath, platformFlag);
+                if (AZ::StringFunc::Contains(assetPath, '*'))
+                {
+                    auto filter = cachePath / assetPath;
+                    AZStd::string path = filter.ParentPath().Native();
+                    AZStd::string ext = filter.Filename().Native();
+
+                    bool bRecursive = AZ::StringFunc::Contains(filter.Filename().Native(), "**");
+
+                    // we search all files and filter by extension later
+                    // because recursive is not working with extension
+                    auto result = AzFramework::FileFunc::FindFilesInPath(path, "*", bRecursive);
+                    if (result.IsSuccess())
+                    {
+                        auto list = result.GetValue();
+                        for (auto& file : list)
+                        {
+                            if (AZStd::wildcard_match(ext, file))
+                            {
+                                AZ::IO::Path filepath(file);
+                                filepath = filepath.LexicallyRelative(cachePath);
+                                m_assetSeedManager->AddSeedAsset(filepath.Native(), platformFlag);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    m_assetSeedManager->AddSeedAsset(assetPath, platformFlag);
+                }
             }
 
             // Remove Seeds
@@ -2147,6 +2198,16 @@ namespace AssetBundler
                     return false;
                 }
 
+                if (!AZ::IO::FileIOBase::GetInstance()->Exists(params.m_assetListFile.AbsolutePath().c_str()))
+                {
+                    AZ_Error(
+                        AppWindowName,
+                        false,
+                        "Cannot load Asset List file ( %.*s ): File does not exist.\n",
+                        AZ_STRING_ARG(params.m_assetListFile.AbsolutePath()));
+                    return false;
+                }
+
                 AZStd::vector<FilePath> allAssetListFilePaths = GetAllPlatformSpecificFilesOnDisk(params.m_assetListFile, params.m_platformFlags);
 
                 // Create temporary Bundle Settings structs for every Asset List file
@@ -2203,7 +2264,7 @@ namespace AssetBundler
                 {
                     // Metric event has already been sent
                     AZ_Error(AppWindowName, false, overrideOutcome.GetError().c_str());
-                    failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                    failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                     return;
                 }
 
@@ -2214,7 +2275,7 @@ namespace AssetBundler
                 {
                     AZ_Error(AssetBundler::AppWindowName, false, "Bundle ( %s ) already exists, running this command would perform a destructive overwrite.\n\n"
                         "Run your command again with the ( --%s ) arg if you want to save over the existing file.", bundleFilePath.AbsolutePath().c_str(), AllowOverwritesFlag);
-                    failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                    failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                     return;
                 }
 
@@ -2224,7 +2285,7 @@ namespace AssetBundler
                 if (!result)
                 {
                     AZ_Error(AssetBundler::AppWindowName, false, "Unable to create bundle, target Bundle file path is ( %s ).", bundleFilePath.AbsolutePath().c_str());
-                    failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                    failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                     return;
                 }
                 AZ_TracePrintf(AssetBundler::AppWindowName, "Bundle ( %s ) created successfully!\n", bundleFilePath.AbsolutePath().c_str());
@@ -2496,7 +2557,7 @@ namespace AssetBundler
             {
                 AZ_Error(AssetBundler::AppWindowName, false, "Asset List file ( %s ) already exists, running this command would perform a destructive overwrite.\n\n"
                     "Run your command again with the ( --%s ) arg if you want to save over the existing file.\n", assetListFileAbsolutePath.c_str(), AllowOverwritesFlag);
-                failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                 return;
             }
 
@@ -2512,7 +2573,7 @@ namespace AssetBundler
             if (!m_assetSeedManager->SaveAssetFileInfo(assetListFileAbsolutePath, platformFlag, exclusionList, debugListFileAbsolutePath, wildcardPatternExclusionList))
             {
                 AZ_Error(AssetBundler::AppWindowName, false, "Unable to save Asset List file to ( %s ).\n", assetListFileAbsolutePath.c_str());
-                failureCount.fetch_add(1, AZStd::memory_order::memory_order_relaxed);
+                failureCount.fetch_add(1, AZStd::memory_order_relaxed);
                 return;
             }
 
@@ -2768,9 +2829,9 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Edits the Comparison Step at the input line number using values from other input arguments.\n", EditComparisonStepArg);
         AZ_Printf(AppWindowName, "%-31s---When editing, other input arguments may only contain one input value.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of Comparison types.\n", ComparisonTypeArg);
-        AZ_Printf(AppWindowName, "%-31s---Valid inputs: 0 (Delta), 1 (Union), 2 (Intersection), 3 (Complement), 4 (FilePattern).\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Valid inputs: delta, union, intersection, complement, filepattern.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of file pattern matching types.\n", ComparisonFilePatternTypeArg);
-        AZ_Printf(AppWindowName, "%-31s---Valid inputs: 0 (Wildcard), 1 (Regex).\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Valid inputs: wildcard, regex.\n", "");
         AZ_Printf(AppWindowName, "%-31s---Must match the number of FilePattern comparisons specified in ( --%s ) argument list.\n", "", ComparisonTypeArg);
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of file patterns.\n", ComparisonFilePatternArg);
         AZ_Printf(AppWindowName, "%-31s---Must match the number of FilePattern comparisons specified in ( --%s ) argument list.\n", "", ComparisonTypeArg);
@@ -2790,9 +2851,9 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "%-31s---When entering input and output values, input the single '$' character to use the default values defined in the file.\n", "");
         AZ_Printf(AppWindowName, "%-31s---All additional comparison rules specified in this command will be done after the comparison operations loaded from the rules file.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of comparison types.\n", ComparisonTypeArg);
-        AZ_Printf(AppWindowName, "%-31s---Valid inputs: 0 (Delta), 1 (Union), 2 (Intersection), 3 (Complement), 4 (FilePattern), 5 (IntersectionCount).\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Valid inputs: delta, union, intersection, complement, filepattern, intersectioncount.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of file pattern matching types.\n", ComparisonFilePatternTypeArg);
-        AZ_Printf(AppWindowName, "%-31s---Valid inputs: 0 (Wildcard), 1 (Regex).\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Valid inputs: wildcard, regex.\n", "");
         AZ_Printf(AppWindowName, "%-31s---Must match the number of FilePattern comparisons specified in ( --%s ) argument list.\n", "", ComparisonTypeArg);
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of file patterns.\n", ComparisonFilePatternArg);
         AZ_Printf(AppWindowName, "%-31s---Must match the number of FilePattern comparisons specified in ( --%s ) argument list.\n", "", ComparisonTypeArg);

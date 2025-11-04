@@ -14,6 +14,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -27,13 +28,14 @@ namespace InputUnitTests
     using namespace UnitTest;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    class InputTest : public ScopedAllocatorSetupFixture
+    class InputTest : public LeakDetectionFixture
     {
     public:
-        InputTest() : ScopedAllocatorSetupFixture()
+        InputTest() : LeakDetectionFixture()
         {
             // Many input tests are only valid if the GamePad device is supported on this platform.
-            m_gamepadSupported = InputDeviceGamepad::GetMaxSupportedGamepads() > 0;
+            auto deviceGamepadImplFactory = AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Get();
+            m_gamepadSupported = (deviceGamepadImplFactory != nullptr) && (deviceGamepadImplFactory->GetMaxSupportedGamepads() > 0);
         }
 
     protected:

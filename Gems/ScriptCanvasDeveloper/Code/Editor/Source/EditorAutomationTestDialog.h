@@ -46,7 +46,7 @@ namespace ScriptCanvas::Developer
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(TestListModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestListModel, AZ::SystemAllocator);
 
         enum ColumnIndex
         {
@@ -121,7 +121,7 @@ namespace ScriptCanvas::Developer
         int m_runCount = 0;
         int m_successCount = 0;
 
-        AZStd::chrono::time_point<AZStd::chrono::system_clock> m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
 
         EditorAutomationTest* m_activeTest = nullptr;
         AZStd::unordered_set< EditorAutomationTest* > m_testQueue;

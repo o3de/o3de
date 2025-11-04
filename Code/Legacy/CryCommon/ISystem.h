@@ -55,7 +55,6 @@ struct INameTable;
 struct ILevelSystem;
 class IXMLBinarySerializer;
 struct IAVI_Reader;
-class CPNoise3;
 struct ILocalizationManager;
 struct IOutputPrintSink;
 struct IWindowMessageHandler;
@@ -591,7 +590,6 @@ struct SSystemGlobalEnvironment
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
-    IMovieSystem*              pMovieSystem;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_4
@@ -887,9 +885,6 @@ struct ISystem
     //   Retrieves localized strings manager interface.
     virtual ILocalizationManager* GetLocalizationManager() = 0;
 
-    // Summary:
-    //   Retrieves the perlin noise singleton instance.
-    virtual CPNoise3* GetNoiseGen() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Error callback handling
@@ -1208,7 +1203,10 @@ namespace Detail
         const char* GetHelp() { return NULL; }
         bool IsConstCVar() const { return true; }
         void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) { (void)pChangeFunc; }
-        uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) { (void)pChangeFunctor; return 0; }
+        bool AddOnChangeFunctor(AZ::Name, const AZStd::function<void()>&)
+        {
+            return false;
+        }
         ConsoleVarFunc GetOnChangeCallback() const { InvalidAccess(); return NULL; }
         int GetRealIVal() const { return GetIVal(); }
         void SetLimits([[maybe_unused]] float min, [[maybe_unused]] float max) { return; }

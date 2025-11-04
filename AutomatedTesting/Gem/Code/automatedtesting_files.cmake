@@ -11,12 +11,6 @@ set(FILES
     Source/AutoGen/NetworkTestPlayerComponent.AutoComponent.xml
     Source/AutoGen/NetworkTestLevelEntityComponent.AutoComponent.xml
     Source/AutoGen/SimpleScriptPlayerComponent.AutoComponent.xml
-    Source/AutoGen/NetworkPlayerSpawnerComponent.AutoComponent.xml
-    Source/Components/NetworkPlayerSpawnerComponent.cpp
-    Source/Components/NetworkPlayerSpawnerComponent.h
-    Source/Spawners/IPlayerSpawner.h
-    Source/Spawners/RoundRobinSpawner.h
-    Source/Spawners/RoundRobinSpawner.cpp
     Source/AutomatedTestingModule.cpp
     Source/AutomatedTestingSystemComponent.cpp
     Source/AutomatedTestingSystemComponent.h

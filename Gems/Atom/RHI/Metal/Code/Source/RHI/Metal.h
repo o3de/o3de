@@ -28,14 +28,6 @@ namespace AZ
             CommandEncoderTypeCount = 4
         };
         
-        enum class MetalShaderStages
-        {
-            ShaderStageVertex = 0,
-            ShaderStageFragment = 1,
-            ShaderStageCount = 2,
-            ShaderStageNotSupported
-        };
-        
         static const int MaxSamplersPerStage = 16;
         static const int MaxTexturesPerStage = AZ_TRAIT_ATOM_METAL_MAX_TEXTURES_PER_STAGE;
     
@@ -63,7 +55,7 @@ namespace AZ
 
 namespace Platform
 {
-    void SynchronizeBufferOnCPU(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize);
-    void SynchronizeBufferOnGPU(id<MTLBlitCommandEncoder> blitEncoder, id<MTLBuffer> mtlBuffer);
-    void SynchronizeTextureOnGPU(id<MTLBlitCommandEncoder> blitEncoder, id<MTLTexture> mtlBuffer);
+    void PublishBufferCpuChangeOnGpu(id<MTLBuffer> mtlBuffer, size_t bufferOffset, size_t bufferSize);
+    void PublishBufferGpuChangeOnCpu(id<MTLBlitCommandEncoder> blitEncoder, id<MTLBuffer> mtlBuffer);
+    void PublishTextureGpuChangeOnCpu(id<MTLBlitCommandEncoder> blitEncoder, id<MTLTexture> mtlBuffer);
 }

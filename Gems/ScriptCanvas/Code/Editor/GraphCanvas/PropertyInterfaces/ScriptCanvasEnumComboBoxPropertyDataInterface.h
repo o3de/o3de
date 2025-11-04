@@ -15,7 +15,7 @@ namespace ScriptCanvasEditor
         : public ScriptCanvasComboBoxPropertyDataInterface<int>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasEnumComboBoxPropertyDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasEnumComboBoxPropertyDataInterface, AZ::SystemAllocator);
 
         ScriptCanvasEnumComboBoxPropertyDataInterface(AZ::EntityId scriptCanvasNodeId, ScriptCanvas::EnumComboBoxNodePropertyInterface* propertyInterface)
             : ScriptCanvasComboBoxPropertyDataInterface<int>(scriptCanvasNodeId, propertyInterface)

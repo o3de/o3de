@@ -243,7 +243,7 @@ class MayaToLumberyard(QtWidgets.QWidget):
         # Setup Lumberyard Material File Values
         self.map_materials()
         print ('MaterialDefinitions:'.format(self.material_definitions))
-        print json.dumps(self.material_definitions, sort_keys=True, indent=4)
+        print(json.dumps(self.material_definitions, sort_keys=True, indent=4))
 
         # Update UI Layout
         self.set_material_view()

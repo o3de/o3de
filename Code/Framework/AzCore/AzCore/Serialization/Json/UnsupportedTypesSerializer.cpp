@@ -11,10 +11,10 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsupportedTypesSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonVariantSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonOptionalSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonBitsetSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsupportedTypesSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonVariantSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonOptionalSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonBitsetSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonUnsupportedTypesSerializer::Load(void*, const Uuid&, const rapidjson::Value&,
         JsonDeserializerContext& context)

@@ -202,7 +202,7 @@ namespace ImGui
     float ImGuiLYCameraMonitor::GetAngleBetweenVectors(const AZ::Vector3& v1, const AZ::Vector3& v2)
     {
         float dot = v1.Dot(v2) / (v1.GetLength() * v2.GetLength());
-        return !isnan(dot) ? acosf(AZ::GetClamp(dot, -1.0f, 1.0f)) : 0.0f;
+        return !AZStd::isnan(dot) ? acosf(AZ::GetClamp(dot, -1.0f, 1.0f)) : 0.0f;
     }
 
     void ImGuiLYCameraMonitor::OnTick_GatherCameraData_PushNewCameraToHistory(AZ::EntityId newCamId)

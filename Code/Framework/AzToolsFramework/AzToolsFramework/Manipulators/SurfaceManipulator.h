@@ -13,6 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -20,7 +21,7 @@ namespace AzToolsFramework
 
     //! Surface manipulator will ensure the point(s) it controls snap precisely to the xy grid
     //! while also staying aligned exactly to the height of the terrain.
-    class SurfaceManipulator
+    class AZTF_API SurfaceManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalPosition
     {
@@ -29,7 +30,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(SurfaceManipulator, "{75B8EF42-A5F0-48EB-893E-84BED1BC8BAF}", BaseManipulator)
-        AZ_CLASS_ALLOCATOR(SurfaceManipulator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SurfaceManipulator, AZ::SystemAllocator)
 
         SurfaceManipulator() = delete;
         SurfaceManipulator(const SurfaceManipulator&) = delete;

@@ -21,13 +21,15 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/parallel/thread.h>
 
+// #define JOBMANAGER_ENABLE_STATS
+
 namespace AZ
 {
     class Job;
 
     namespace Internal
     {
-        class WorkQueue final
+        class AZCORE_API WorkQueue final
         {
         public:
             void LocalInsert(Job *job);
@@ -54,7 +56,7 @@ namespace AZ
          * those sticky points (if they are a problem). In addition we can think about writing a more advanced
          * scheduler or use some off the shelf.
          */
-        class JobManagerWorkStealing final
+        class AZCORE_API JobManagerWorkStealing final
             : public JobManagerBase
         {
         public:
@@ -84,9 +86,10 @@ namespace AZ
 
             void ActivateWorker();
 
+        public:
             struct ThreadInfo
             {
-                AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator, 0)
+                AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator);
 
                 AZStd::thread::id m_threadId;
                 bool m_isWorker = false;
@@ -105,10 +108,12 @@ namespace AZ
                 unsigned int m_jobsForked = 0;
                 unsigned int m_jobsDone = 0;
                 unsigned int m_jobsStolen = 0;
-                u64 m_jobTime = 0;
-                u64 m_stealTime = 0;
+                AZStd::chrono::milliseconds m_jobTime;
+                AZStd::chrono::milliseconds m_stealTime;
 #endif
             };
+
+        private:
             using ThreadList = AZStd::vector<ThreadInfo*>;
 
             void ProcessJobsWorker(ThreadInfo* info);
@@ -139,10 +144,6 @@ namespace AZ
 
             volatile bool               m_quitRequested = false;
             AZStd::atomic_uint          m_numAvailableWorkers{0};
-
-            //thread-local pointer to the info for this thread. This is set for worker threads all the time,
-            //and user threads only while they are processing jobs
-            static AZ_THREAD_LOCAL ThreadInfo* m_currentThreadInfo;
         };
     }
 }

@@ -30,11 +30,7 @@
 
 namespace EMotionFX
 {
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(AnimGraphUIFixture, DISABLED_CanAddMotionToAnimGraphNode)
-#else
     TEST_F(AnimGraphUIFixture, CanAddMotionToAnimGraphNode)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C2187169");
 

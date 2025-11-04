@@ -12,15 +12,15 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <QtCore/QSortFilterProxyModel>
-#include <QtWidgets/QMainWindow>
-#include <QtCore/QSet>
+#include <QSortFilterProxyModel>
+#include <QMainWindow>
+#include <QSet>
 
 
 class ClassReferenceFilterModel : public QSortFilterProxyModel
 {
 public:
-    AZ_CLASS_ALLOCATOR(ClassReferenceFilterModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(ClassReferenceFilterModel, AZ::SystemAllocator);
     ClassReferenceFilterModel( QObject *pParent );
 
     void SetFilter( QString newFilter );

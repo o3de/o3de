@@ -56,7 +56,7 @@ namespace AZ
         class AssetDatabaseJob;
         class WaitForAsset;
 
-        struct IDebugAssetEvent
+        struct AZCORE_API IDebugAssetEvent
         {
             AZ_RTTI(IDebugAssetEvent, "{1FEF8289-C730-426D-B3B9-4BBA66339D66}");
 
@@ -67,7 +67,7 @@ namespace AZ
             virtual void ReleaseAsset(AZ::Data::AssetId id) = 0;
         };
 
-        struct AssetContainerKey
+        struct AZCORE_API AssetContainerKey
         {
             AssetId m_assetId;
             AssetLoadParameters m_loadParameters;
@@ -78,7 +78,7 @@ namespace AZ
             }
         };
 
-        class AssetStreamInfo
+        class AZCORE_API AssetStreamInfo
         {
         public:
             AssetStreamInfo()
@@ -98,7 +98,7 @@ namespace AZ
             u64             m_dataOffset;
         };
 
-        struct AssetDependencyEntry
+        struct AZCORE_API AssetDependencyEntry
         {
             AssetId     m_assetId;
             AssetType   m_assetType;
@@ -108,7 +108,7 @@ namespace AZ
         /*
          * This is the base class for Async AssetDatabase jobs
          */
-        class AssetDatabaseJob
+        class AZCORE_API AssetDatabaseJob
             : public AZStd::intrusive_list_node<AssetDatabaseJob>
         {
             friend class AssetManager;
@@ -133,7 +133,7 @@ namespace AZ
          * If an asset is ready at the time you connect to AssetBus or GetAsset() is called,
          * your handler will be notified immediately, otherwise all events are dispatched asynchronously.
          */
-        class AssetManager
+        class AZCORE_API AssetManager
             : private AssetManagerBus::Handler
         {
             friend class AssetData;
@@ -145,7 +145,7 @@ namespace AZ
             friend class WaitForAsset;
 
         public:
-            struct Descriptor
+            struct AZCORE_API Descriptor
             {
                 Descriptor() = default;
             };
@@ -156,7 +156,7 @@ namespace AZ
             typedef AZStd::unordered_map<AssetContainerKey, AZStd::weak_ptr<AssetContainer>> WeakAssetContainerMap;
             typedef AZStd::unordered_map<AssetContainer*, AZStd::shared_ptr<AssetContainer>> OwnedAssetContainerMap;
 
-            AZ_CLASS_ALLOCATOR(AssetManager, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetManager, SystemAllocator);
 
             static bool Create(const Descriptor& desc);
             static void Destroy();
@@ -324,6 +324,9 @@ namespace AZ
             */
             bool HasActiveJobsOrStreamerRequests();
 
+            // memory debug output
+            void DumpLoadedAssetsInfo();
+
         protected:
             AssetManager(const Descriptor& desc);
             virtual ~AssetManager();
@@ -343,7 +346,7 @@ namespace AZ
             void AddJob(AssetDatabaseJob* job);
             void RemoveJob(AssetDatabaseJob* job);
             void AddActiveStreamerRequest(AssetId assetId, AZStd::shared_ptr<AssetDataStream> readRequest);
-            void RescheduleStreamerRequest(AssetId assetId, AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
+            void RescheduleStreamerRequest(AssetId assetId, AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority);
             void RemoveActiveStreamerRequest(AssetId assetId);
             void AddBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);
             void RemoveBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);
@@ -511,7 +514,7 @@ namespace AZ
          }
 
          */
-        class AssetHandler
+        class AZCORE_API  AssetHandler
         {
             friend class AssetManager;
             friend class AssetData;

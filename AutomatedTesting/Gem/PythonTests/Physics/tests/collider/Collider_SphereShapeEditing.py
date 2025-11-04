@@ -13,8 +13,8 @@ Test Case Title : Verify that the shape Sphere can be selected from the drop dow
 # fmt: off
 class Tests():
     entity_created           = ("Test Entity created successfully",          "Failed to create Test Entity")
-    collider_added           = ("PhysX Collider added successfully",         "Failed to add PhysX Collider")
-    collider_shape_changed   = ("PhysX Collider shape changed successfully", "Failed change PhysX Collider shape")
+    collider_added           = ("PhysX Primitive Collider added successfully",         "Failed to add PhysX Primitive Collider")
+    collider_shape_changed   = ("PhysX Primitive Collider shape changed successfully", "Failed change PhysX Primitive Collider shape")
     shape_dimensions_changed = ("Shape dimensions modified successfully",    "Failed to modify Shape dimensions")
 # fmt: on
 
@@ -22,7 +22,7 @@ class Tests():
 def Collider_SphereShapeEditing():
     """
     Summary:
-     Adding PhysX Collider and Shape components to test entity, then attempting to modify the shape's dimensions
+     Adding PhysX Primitive Collider and Shape components to test entity, then attempting to modify the shape's dimensions
 
     Expected Behavior:
      Sphere shape can be selected for the Shape Component and the value for Radius can be changed
@@ -30,8 +30,8 @@ def Collider_SphereShapeEditing():
     Test Steps:
      1) Load the empty level
      2) Create the test entity
-     3) Add PhysX Collider component to test entity
-     4) Change the PhysX Collider shape and store the original dimensions
+     3) Add PhysX Primitive Collider component to test entity
+     4) Change the PhysX Primitive Collider shape and store the original dimensions
      5) Modify the dimensions
      6) Verify they have been changed
 
@@ -47,6 +47,7 @@ def Collider_SphereShapeEditing():
     from editor_python_test_tools.editor_entity_utils import EditorEntity as Entity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER
 
     # Open 3D Engine Imports
     import azlmbr.math as math
@@ -61,13 +62,14 @@ def Collider_SphereShapeEditing():
 
     # 2) Create the test entity
     test_entity = Entity.create_editor_entity("Test Entity")
+    test_entity.add_component("PhysX Static Rigid Body")
     Report.result(Tests.entity_created, test_entity.id.IsValid())
 
-    # 3) Add PhysX Collider component to test entity
-    test_component = test_entity.add_component("PhysX Collider")
-    Report.result(Tests.collider_added, test_entity.has_component("PhysX Collider"))
+    # 3) Add PhysX Primitive Collider component to test entity
+    test_component = test_entity.add_component(PHYSX_PRIMITIVE_COLLIDER)
+    Report.result(Tests.collider_added, test_entity.has_component(PHYSX_PRIMITIVE_COLLIDER))
 
-    # 4) Change the PhysX Collider shape and store the original dimensions
+    # 4) Change the PhysX Primitive Collider shape and store the original dimensions
     test_component.set_component_property_value("Shape Configuration|Shape", SPHERE_SHAPETYPE_ENUM)
     add_check = test_component.get_component_property_value("Shape Configuration|Shape") == SPHERE_SHAPETYPE_ENUM
     Report.result(Tests.collider_shape_changed, add_check)

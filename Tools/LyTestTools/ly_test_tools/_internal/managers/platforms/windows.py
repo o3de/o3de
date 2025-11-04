@@ -24,21 +24,12 @@ from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = 'pc'
-CONFIG_FILE = 'system_windows_pc.cfg'
 
 
 class _WindowsResourceLocator(AbstractResourceLocator):
     """
     Override for locating resources in a Windows operating system running LyTestTools.
     """
-
-    def platform_config_file(self):
-        """
-        Return the path to the platform config file.
-        ex. engine_root/dev/system_osx_mac.cfg
-        :return: path to the platform config file
-        """
-        return os.path.join(self.engine_root(), CONFIG_FILE)
 
     def platform_cache(self):
         """

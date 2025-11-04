@@ -41,7 +41,7 @@ namespace AZ
 
             public:
                 AZ_RTTI(HairPPLLResolvePass, "{240940C1-4A47-480D-8B16-176FF3359B01}", RPI::FullscreenTrianglePass);
-                AZ_CLASS_ALLOCATOR(HairPPLLResolvePass, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairPPLLResolvePass, SystemAllocator);
                 ~HairPPLLResolvePass() = default;
 
                 static RPI::Ptr<HairPPLLResolvePass> Create(const RPI::PassDescriptor& descriptor);
@@ -76,7 +76,6 @@ namespace AZ
 
                 HairGlobalSettings m_hairGlobalSettings;
                 HairFeatureProcessor* m_featureProcessor = nullptr;
-                AZ::RPI::ShaderVariantKey m_shaderOptions;
             };
 
         } // namespace Hair

@@ -18,19 +18,19 @@ namespace LmbrCentral
 {
     void BoxShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        provided.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
+        provided.push_back(AZ_CRC_CE("ShapeService"));
+        provided.push_back(AZ_CRC_CE("BoxShapeService"));
     }
 
     void BoxShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
-        incompatible.push_back(AZ_CRC("BoxShapeService", 0x946a0032));
+        incompatible.push_back(AZ_CRC_CE("ShapeService"));
+        incompatible.push_back(AZ_CRC_CE("BoxShapeService"));
     }
 
     void BoxShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void BoxShapeComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -113,17 +113,22 @@ namespace LmbrCentral
             serializeContext->Class<BoxShapeConfig, ShapeComponentConfig>()
                 ->Version(2)
                 ->Field("Dimensions", &BoxShapeConfig::m_dimensions)
+                ->Field("TranslationOffset", &BoxShapeConfig::m_translationOffset)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<BoxShapeConfig>("Configuration", "Box shape configuration parameters")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Shape Configuration")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_dimensions, "Dimensions", "Dimensions of the box along its axes")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                        ;
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_dimensions, "Dimensions", "Dimensions of the box along its axes")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_translationOffset, "Translation Offset", "Translation offset of shape relative to its entity")
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f);
             }
         }
 

@@ -10,6 +10,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderVariantAsyncLoader.h>
 
@@ -23,7 +24,7 @@ namespace AZ
         /**
          * Manages system-wide initialization and support for shader classes
          */
-        class ShaderSystem
+        class ATOM_RPI_PUBLIC_API ShaderSystem
             : public ShaderSystemInterface
         {
         public:

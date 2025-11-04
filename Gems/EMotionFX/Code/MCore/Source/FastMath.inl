@@ -235,7 +235,7 @@ MCORE_INLINE uint32 Math::NextPowerOfTwo(uint32 x)
 // returns an approximation to 1/sqrt(x)
 MCORE_INLINE float Math::FastInvSqrt(float x)
 {
-    return AZ::Simd::Vec1::SelectFirst(AZ::Simd::Vec1::SqrtInvEstimate(AZ::Simd::Vec1::Splat(x)));
+    return AZ::Simd::Vec1::SelectIndex0(AZ::Simd::Vec1::SqrtInvEstimate(AZ::Simd::Vec1::Splat(x)));
 }
 
 /*

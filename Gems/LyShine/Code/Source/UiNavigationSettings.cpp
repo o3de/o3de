@@ -134,7 +134,7 @@ void UiNavigationSettings::Reflect(AZ::ReflectContext* context)
                 ->EnumAttribute(NavigationMode::Automatic, "Automatic")
                 ->EnumAttribute(NavigationMode::Custom, "Custom")
                 ->EnumAttribute(NavigationMode::None, "None")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiNavigationSettings::m_onUpEntity, "Up Element", "The element to receive focus on an up event")
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiNavigationSettings::PopulateNavigableEntityList)

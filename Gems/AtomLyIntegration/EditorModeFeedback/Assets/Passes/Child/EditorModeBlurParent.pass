@@ -71,7 +71,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/EditorModeBlur.shader"
                         },
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "ShaderDataMappings": {
                             "UintMappings": [
                                 {
@@ -114,7 +114,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/EditorModeBlur.shader"
                         },
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "ShaderDataMappings": {
                             "UintMappings": [
                                 {

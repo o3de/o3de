@@ -11,14 +11,17 @@ import re
 import sys
 import time
 import errno
-import shutil
 import fnmatch
-import filecmp
 import fileinput
-import importlib
+import logging
 import argparse
 import hashlib
+import pathlib
 from xml.sax.saxutils import escape, unescape, quoteattr
+
+logging.basicConfig(format='[%(levelname)s] %(name)s: %(message)s')
+logger = logging.getLogger('AzAutoGen')
+logger.setLevel(logging.INFO)
 
 # Maximum number of errors before bailing on AutoGen
 MAX_ERRORS = 100
@@ -79,7 +82,19 @@ def CreateHashGuid(string):
     hashStr = hash.hexdigest()
     return ("{" + hashStr[0:8] + "-" + hashStr[8:12] + "-" + hashStr[12:16] + "-" + hashStr[16:20] + "-" + hashStr[20:] + "}").upper()
 
+def CreateAZHashValue64(btyes):
+    hash = hashlib.new('sha256')
+    hash.update(btyes)
+    hashStr = hash.hexdigest()
+    return ("AZ::HashValue64{ 0x" + hashStr[0:16] + " }")  # grab the first 64-bits of a sha256; any 64-bits of a sha256 are just as secure as any other 64.
+
 def EtreeToString(xmlNode):
+    return etree.tostring(xmlNode)
+
+def EtreeToStringStripped(xmlNode):
+    for elem in xmlNode.iter():
+        if elem.text: elem.text = elem.text.strip()
+        if elem.tail: elem.tail = elem.tail.strip()
     return etree.tostring(xmlNode)
 
 def SanitizePath(path):
@@ -132,7 +147,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
 #                    if xmlSchema:
 #                        # check the template directory, the template include dir, and the folder that houses the nvdef file, and the xml's location for the xsd
 #                        searchPaths = [os.path.dirname(templateFile)]
-#                        searchPaths += [os.path.dirname(dataInputFile)] 
+#                        searchPaths += [os.path.dirname(dataInputFile)]
 #                        xmlShemaLoc = SearchPaths(xmlSchema, searchPaths)
 #                        try:
 #                            xmlSchemaDoc = etree.parse(xmlShemaLoc)
@@ -176,7 +191,9 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
         templateEnv.filters['camelToHuman'  ] = CamelToHuman
         templateEnv.filters['booleanTrue'   ] = BooleanTrue
         templateEnv.filters['createHashGuid'] = CreateHashGuid
+        templateEnv.filters['createAZHashValue64'] = CreateAZHashValue64
         templateEnv.filters['etreeToString' ] = EtreeToString
+        templateEnv.filters['etreeToStringStripped' ] = EtreeToStringStripped
         templateJinja  = templateEnv.get_template(os.path.basename(templateFile))
         templateVars   = \
             { \
@@ -197,7 +214,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                 compareFD.write('<!-- SPDX-License-Identifier: Apache-2.0 OR MIT                                -->\n')
                 compareFD.write('\n')
                 compareFD.write('<!-- This file is generated automatically at compile time, DO NOT EDIT BY HAND -->\n')
-                compareFD.write('<!-- Template Source {0}; XML Sources {1}-->\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write('<!-- Template Source {0};\n * XML Sources {1}-->\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".lua":
                 compareFD.write('-- Copyright (c) Contributors to the Open 3D Engine Project.\n')
@@ -206,7 +223,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                 compareFD.write('-- SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write('\n')
                 compareFD.write('-- This file is generated automatically at compile time, DO NOT EDIT BY HAND\n')
-                compareFD.write('-- Template Source {0}; XML Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write('-- Template Source {0};\n * XML Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write('\n')
             elif outputExtension == ".h" or outputExtension == ".hpp" or outputExtension == ".inl" or outputExtension == ".c" or outputExtension == ".cpp":
                 compareFD.write('/*\n')
@@ -216,7 +233,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                 compareFD.write(' * SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                 compareFD.write(' *\n')
                 compareFD.write(' * This file is generated automatically at compile time, DO NOT EDIT BY HAND\n')
-                compareFD.write(' * Template Source {0}; Data Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
+                compareFD.write(' * Template Source {0};\n * Data Sources {1}\n'.format(templateFile, ', '.join(dataInputFiles)))
                 compareFD.write(' */\n')
                 compareFD.write('\n')
             compareFD.write(templateJinja.render(templateVars))
@@ -243,7 +260,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                 currentFileStringData = currentFile.read()
                 if currentFileStringData == compareFD.getvalue():
                     if autogenConfig.verbose == True:
-                        print('Generated file %s is unchanged, skipping' % (outputFile))                    
+                        print('Generated file %s is unchanged, skipping' % (outputFile))
                 else:
                     currentFile.truncate()
                     with open(outputFile, 'w+') as currentFile:
@@ -304,7 +321,7 @@ def ProcessExpansionRule(autogenConfig, sourceFiles, templateFiles, templateCach
             outputFileAbsolute = outputFileAbsolute.replace("$file", os.path.splitext(os.path.basename(testSingle))[0])
             outputFileAbsolute = SanitizePath(outputFileAbsolute)
             ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache)
-            outputFiles.append(outputFileAbsolute)
+            outputFiles.append(pathlib.PurePath(outputFileAbsolute))
         else:
             # We've wildcarded the data input field, so we may have to handle one-to-one mapping of data files to output, or many-to-one mapping of data files to output
             if "$fileprefix" in outputFile or "$file" in outputFile:
@@ -316,10 +333,10 @@ def ProcessExpansionRule(autogenConfig, sourceFiles, templateFiles, templateCach
                     outputFileAbsolute = outputFileAbsolute.replace("$file", os.path.splitext(os.path.basename(filename))[0])
                     outputFileAbsolute = SanitizePath(outputFileAbsolute)
                     ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache)
-                    outputFiles.append(outputFileAbsolute)
+                    outputFiles.append(pathlib.PurePath(outputFileAbsolute))
             else:
                 # Process all matches in one batch
-                # Due to the lack of wildcards in the output file, we've determined we'll glob all matching input files into the template conversion 
+                # Due to the lack of wildcards in the output file, we've determined we'll glob all matching input files into the template conversion
                 dataInputFiles = [os.path.abspath(file) for file in fnmatch.filter(sourceFiles, inputFiles)]
                 if "$path" in outputFile:
                     outputFileAbsolute = outputFile.replace("$path", ComputeOutputPath(dataInputFiles, autogenConfig.projectDir, autogenConfig.outputDir))
@@ -327,7 +344,7 @@ def ProcessExpansionRule(autogenConfig, sourceFiles, templateFiles, templateCach
                     outputFileAbsolute = os.path.join(autogenConfig.outputDir, outputFile)
                 outputFileAbsolute = SanitizePath(outputFileAbsolute)
                 ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templateFile, outputFileAbsolute, templateCache)
-                outputFiles.append(outputFileAbsolute)
+                outputFiles.append(pathlib.PurePath(outputFileAbsolute))
     except IOError as e:
         PrintError('%s : error I/O(%s) accessing %s : %s' % (expansionRule, e.errno, e.filename, e.strerror))
     except:
@@ -335,7 +352,7 @@ def ProcessExpansionRule(autogenConfig, sourceFiles, templateFiles, templateCach
         PrintUnhandledExcptionInfo()
         raise
 
-def ExecuteExpansionRules(autogenConfig, dataInputSet, outputFiles):
+def ExecuteExpansionRules(autogenConfig, dataInputSet, outputFiles, pruneNonGenerated):
     # Get Globals
     global MAX_ERRORS, errorCount
     currentPath = os.getcwd()
@@ -359,13 +376,41 @@ def ExecuteExpansionRules(autogenConfig, dataInputSet, outputFiles):
     for expansionRule in autogenConfig.expansionRules:
         ProcessExpansionRule(autogenConfig, sourceFiles, templateFiles, templateCache, expansionRule, dataInputSet, outputFiles)
     if not autogenConfig.dryrun:
+        if pruneNonGenerated:
+            PruneNonGeneratedFiles(autogenConfig, outputFiles)
         elapsedTime = time.time() - startTime
         millis = int(round(elapsedTime * 10))
         m, s = divmod(elapsedTime, 60)
-        h, m = divmod(m, 60)    
+        h, m = divmod(m, 60)
         print('Total Time %d:%02d:%02d.%02d' % (h, m, s, millis))
     # Return true on success
     return errorCount == 0
+
+def PruneNonGeneratedFiles(autogenConfig : AutoGenConfig, outputFiles : list[pathlib.PurePath]):
+    '''
+    Removes all files from the generated files output directories which was not generated during this invocation
+    :param autogenConfig: Stores the configuration structure containing the output directory paths for generated files
+    :param outputFiles: Contains the list of output files generated during the current run
+    '''
+    # First generate a set of output directories to iterate using the outputFiles
+    generatedOutputDirs = set()
+    for outputFile in outputFiles:
+        generatedOutputDirs.add(pathlib.Path(outputFile.parent))
+
+    # iterate over all the output directories where generated files are output
+    # and gather a list of files that were not generated during the current invocation
+    for outputDir in generatedOutputDirs:
+        filesToRemove = []
+        if outputDir.is_dir():
+            for genFile in outputDir.iterdir():
+                if genFile.is_file() and not genFile in outputFiles:
+                    filesToRemove.append(genFile)
+        if filesToRemove:
+            logger.info(f'The following files will be pruned from the generated output directory "{outputDir}":\n' \
+                f'{[str(path) for path in filesToRemove]}')
+            for fileToRemove in filesToRemove:
+                fileToRemove.unlink()
+
 
 # Main Function
 if __name__ == '__main__':
@@ -380,7 +425,9 @@ if __name__ == '__main__':
     parser.add_argument("-n", "--dryrun", action='store_true', help="does not execute autogen, only outputs the set of files that autogen would generate")
     parser.add_argument("-v", "--verbose", action='store_true', help="output only the set of files that would be generated by an expansion run")
     parser.add_argument("-p", "--pythonPaths", action='append', nargs='+', default=[""], help="set of additional python paths to use for module imports")
-    
+    parser.add_argument("--prune", action='store_true', default=False,
+        help="Prunes any files in the outputDir that was not generated by the current invocation")
+
     args = parser.parse_args()
     autogenConfig = AutoGenConfig(SanitizeTargetName(args.targetName),
                                   os.path.abspath(SanitizePath(args.cacheDir)),
@@ -402,9 +449,9 @@ if __name__ == '__main__':
 
     dataInputSet = {}
     outputFiles  = []
-    autoGenResult = ExecuteExpansionRules(autogenConfig, dataInputSet, outputFiles)
+    autoGenResult = ExecuteExpansionRules(autogenConfig, dataInputSet, outputFiles, args.prune)
     if autogenConfig.dryrun:
-        print("%s" % ';'.join(outputFiles))
+        print("%s" % ';'.join([str(path) for path in outputFiles]))
     if autoGenResult:
         sys.exit(0)
     else:

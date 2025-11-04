@@ -18,7 +18,7 @@ namespace AZ
     namespace EntityUtils
     {
         /// Return default application serialization context.
-        SerializeContext* GetApplicationSerializeContext();
+        AZCORE_API SerializeContext* GetApplicationSerializeContext();
 
         /**
          * Serializable container for entities, useful for data patching and serializer enumeration.
@@ -26,7 +26,7 @@ namespace AZ
          */
         struct SerializableEntityContainer
         {
-            AZ_CLASS_ALLOCATOR(SerializableEntityContainer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SerializableEntityContainer, SystemAllocator);
             AZ_TYPE_INFO(SerializableEntityContainer, "{E98CF1B5-6B72-46C5-AB87-3DB85FD1B48D}");
 
             AZStd::vector<AZ::Entity*> m_entities;
@@ -35,7 +35,7 @@ namespace AZ
         /**
          * Reflect entity utils data types.
          */
-        void Reflect(ReflectContext* context);
+        AZCORE_API void Reflect(ReflectContext* context);
 
         /**
         * Given key, return the EntityId to map to
@@ -67,7 +67,7 @@ namespace AZ
         * \param classUuid - the object instance's type Id.
         * \param visitor - the visitor callback to be invoked for Entity::m_id (isEntityId==true) or reflected EntityId field, aka reference (isEntityId==false).
         */
-        void EnumerateEntityIds(const void* classPtr, const Uuid& classUuid, const EntityIdVisitor& visitor, SerializeContext* context = nullptr);
+        AZCORE_API void EnumerateEntityIds(const void* classPtr, const Uuid& classUuid, const EntityIdVisitor& visitor, SerializeContext* context = nullptr);
 
         template<class T>
         void EnumerateEntityIds(const T* classPtr, const EntityIdVisitor& visitor, SerializeContext* context = nullptr)
@@ -145,8 +145,8 @@ namespace AZ
 
 
         /// Return the first component that is either of the specified type or derive from the specified type
-        Component* FindFirstDerivedComponent(const Entity* entity, const Uuid& typeId);
-        Component* FindFirstDerivedComponent(EntityId entityId, const Uuid& typeId);
+        AZCORE_API Component* FindFirstDerivedComponent(const Entity* entity, const Uuid& typeId);
+        AZCORE_API Component* FindFirstDerivedComponent(EntityId entityId, const Uuid& typeId);
 
         /// Return the first component that is either of the specified type or derive from the specified type
         template<class ComponentType>
@@ -164,8 +164,8 @@ namespace AZ
         }
 
         /// Return a vector of all components that are either of the specified type or derive from the specified type
-        Entity::ComponentArrayType FindDerivedComponents(const Entity* entity, const Uuid& typeId);
-        Entity::ComponentArrayType FindDerivedComponents(EntityId entityId, const Uuid& typeId);
+        AZCORE_API Entity::ComponentArrayType FindDerivedComponents(const Entity* entity, const Uuid& typeId);
+        AZCORE_API Entity::ComponentArrayType FindDerivedComponents(EntityId entityId, const Uuid& typeId);
 
         /// Return a vector of all components that are either of the specified type or derive from the specified type
         template<class ComponentType>
@@ -192,15 +192,15 @@ namespace AZ
         }
 
         using EnumerateBaseRecursiveVisitor = AZStd::function< bool(const SerializeContext::ClassData*, const Uuid&)>;
-        bool EnumerateBaseRecursive(SerializeContext* context, const EnumerateBaseRecursiveVisitor& baseClassVisitor, const TypeId& typeToExamine);
+        AZCORE_API bool EnumerateBaseRecursive(SerializeContext* context, const EnumerateBaseRecursiveVisitor& baseClassVisitor, const TypeId& typeToExamine);
 
         //! Performs a recursive search of all classes declared in the serialize hierarchy of typeToExamine
         //! and returns true it has been marked as deprecated, false otherwise.
-        bool CheckIfClassIsDeprecated(SerializeContext* context, const TypeId& typeToExamine);
+        AZCORE_API bool CheckIfClassIsDeprecated(SerializeContext* context, const TypeId& typeToExamine);
 
         //! performs a recursive search of all classes declared in the serialize hierarchy of typeToExamine
         //! and returns true if it finds typeToFind, false otherwise.
-        bool CheckDeclaresSerializeBaseClass(SerializeContext* context, const TypeId& typeToFind, const TypeId& typeToExamine);
+        AZCORE_API bool CheckDeclaresSerializeBaseClass(SerializeContext* context, const TypeId& typeToFind, const TypeId& typeToExamine);
 
         //! Checks if the provided service array has any duplicates of the iterator, after that iterator.
         //! If a duplicate is found, a warning is given and the duplicate is removed from the providedServiceArray.
@@ -209,10 +209,16 @@ namespace AZ
         //! \param providedServiceArray The container of services to scan for duplicates.
         //! \param entity An optional associated entity, used in error reporting.
         //! \return True if a duplicate service was found, false if not.
-        bool RemoveDuplicateServicesOfAndAfterIterator(
+        AZCORE_API bool RemoveDuplicateServicesOfAndAfterIterator(
             const ComponentDescriptor::DependencyArrayType::iterator& iterator,
             ComponentDescriptor::DependencyArrayType& providedServiceArray,
             const Entity* entity);
+
+        //! Converts a vector of components to a map of pairs of component alias and component.
+        //! \param components Component vector to be converted.
+        //! \param[out] componentMapOut Component map that stores a component alias as key and a component as value.
+        AZCORE_API void ConvertComponentVectorToMap(
+            AZStd::span<AZ::Component* const> components, AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut);
 
     } // namespace EntityUtils
 }   // namespace AZ

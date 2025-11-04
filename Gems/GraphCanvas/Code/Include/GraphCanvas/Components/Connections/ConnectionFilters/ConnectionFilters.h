@@ -28,7 +28,7 @@ namespace GraphCanvas
         friend class SlotConnectionFilterComponent;
     public:
         AZ_RTTI(SlotTypeFilter, "{210FB521-041E-4932-BC7F-C91079125F68}", ConnectionFilter);
-        AZ_CLASS_ALLOCATOR(SlotTypeFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotTypeFilter, AZ::SystemAllocator);
 
         SlotTypeFilter()
             : m_filterType(ConnectionFilterType::Invalid)
@@ -86,7 +86,7 @@ namespace GraphCanvas
         friend class SlotConnectionFilterComponent;
     public:
         AZ_RTTI(ConnectionTypeFilter, "{57D65203-51AB-47A8-A7D2-248AFF92E058}", ConnectionFilter);
-        AZ_CLASS_ALLOCATOR(ConnectionTypeFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConnectionTypeFilter, AZ::SystemAllocator);
 
         ConnectionTypeFilter()
             : m_filterType(ConnectionFilterType::Invalid)

@@ -6,7 +6,7 @@
  *
  */
 
-#include <viewsrg.srgi>
+#include <viewsrg_all.srgi>
 
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 
@@ -14,11 +14,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     // D32_FLOAT_S8X24_UINT (Format:15) depthStencil texture
     Texture2D<float2> m_depthStencil;
-    Sampler LinearSampler
+    Sampler PointSampler
     {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
         AddressU = Clamp;
         AddressV = Clamp;
         AddressW = Clamp;
@@ -34,7 +34,7 @@ PSOutput MainPS(VSOutput IN)
 {
     PSOutput OUT;
 
-    float depth = PassSrg::m_depthStencil.Sample(PassSrg::LinearSampler, IN.m_texCoord).r;
+    float depth = PassSrg::m_depthStencil.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
 
     // If depth is 0, that means depth is on the far plane. This should be treated as being infinitely far
     // away, not actually on the far plane, because the infinitely far background shouldn't move as a result

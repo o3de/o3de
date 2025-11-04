@@ -29,6 +29,7 @@ namespace ScriptCanvas
                 SCRIPTCANVAS_NODE(DurationNodeable);
 
             public:
+                AZ_CLASS_ALLOCATOR(DurationNodeable, AZ::SystemAllocator)
 
                 ~DurationNodeable() override;
 

@@ -28,6 +28,7 @@ namespace GraphModelIntegration
         , protected GraphControllerNotificationBus::MultiHandler
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorMainWindow, AZ::SystemAllocator)
         explicit EditorMainWindow(GraphCanvas::AssetEditorWindowConfig* config, QWidget* parent = nullptr);
         ~EditorMainWindow() override;
 
@@ -49,7 +50,7 @@ namespace GraphModelIntegration
 
         /// Client can override this to handle click events on a wrapper node's action widget
         /// using a GraphModel::NodePtr instead of the lower-level GraphCanvas::NodeId
-        virtual void HandleWrapperNodeActionWidgetClicked(GraphModel::NodePtr wrapperNode, [[maybe_unused]] const QRect& actionWidgetBoundingRect, [[maybe_unused]] const QPointF& scenePoint, [[maybe_unused]] const QPoint& screenPoint) {}
+        virtual void HandleWrapperNodeActionWidgetClicked([[maybe_unused]] GraphModel::NodePtr wrapperNode, [[maybe_unused]] const QRect& actionWidgetBoundingRect, [[maybe_unused]] const QPointF& scenePoint, [[maybe_unused]] const QPoint& screenPoint) {}
 
         /// Keep track of the graphs we create on behalf of the client when
         /// new editor dock widgets are created.

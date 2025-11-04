@@ -192,6 +192,9 @@ float3 CalculateLighting(
     float3 vPositionWS, float3 vViewDirWS, float3 vTangent, 
     float thickness, in HairShadeParams material )
 {    
+    float3 views[MAX_SHADING_VIEWS];
+    views[0] = ViewSrg::m_worldPosition.xyz;    // Assume one view for forward pass for now
+
     //-------- Surface init --------
     Surface surface;
 
@@ -207,7 +210,6 @@ float3 CalculateLighting(
     surface.CalculateRoughnessA();
     surface.SetAlbedoAndSpecularF0( material.m_color, specularF0Factor);
 
-    // The trasmission / back lighting does not seem to work!
     surface.transmission.InitializeToZero();    // Assuming thin layer
     surface.transmission.tint = material.m_color;
     surface.transmission.thickness = 0.001;     // 1 mm settings
@@ -215,22 +217,29 @@ float3 CalculateLighting(
 
     //------- LightingData init -------
     LightingData lightingData;
-
-    float4 screenPositionForLighting = mul(ViewSrg::m_viewProjectionMatrix, float4(vPositionWS, 1.0));
-    uint2 dimensions;
-    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
-    screenPositionForLighting.y = 1.0 - screenPositionForLighting.y;
-    screenPositionForLighting.xy = (screenPositionForLighting.xy * 0.5 + 0.5) * dimensions;
-
-    // Light iterator - required for the init but the culling is not used yet.
-    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-
+    
     // The normal assignment will be overriden afterwards per light
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+    lightingData.Init(surface.position, surface.GetSpecularNormal(), surface.roughnessLinear, views);
+    
 
-    ApplyLighting(surface, lightingData, screenCoords);
+    // Light iterator -> not used, since we don't support light culling yet
+    LightCullingTileIterator tileIterator;
+    // tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    tileIterator.InitNoCulling();
 
-    return lightingData.diffuseLighting + lightingData.specularLighting;
+    ApplyLighting(surface, lightingData, screenCoords, views, tileIterator);
+
+    // We need to call FinalizeLighting to apply the transmission to the diffuse lighting
+    lightingData.FinalizeLighting(surface.transmission.tint);
+
+    float3 ligthingOutput = lightingData.diffuseLighting;
+
+    for(uint i = 0; i < GET_SHADING_VIEW_COUNT; ++i)
+    {
+        ligthingOutput += lightingData.specularLighting[i];
+    }
+
+    return ligthingOutput;
 }
 
 float3 TressFXShading(float2 pixelCoord, float depth, float3 tangent, float3 baseColor, float thickness, int shaderParamIndex)

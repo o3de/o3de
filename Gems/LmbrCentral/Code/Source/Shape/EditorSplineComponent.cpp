@@ -26,20 +26,20 @@ namespace LmbrCentral
 
     void EditorSplineComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void EditorSplineComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SplineService", 0x2b674d3c));
-        provided.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-        provided.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+        provided.push_back(AZ_CRC_CE("SplineService"));
+        provided.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+        provided.push_back(AZ_CRC_CE("FixedVertexContainerService"));
     }
 
     void EditorSplineComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("VariableVertexContainerService", 0x70c58740));
-        incompatible.push_back(AZ_CRC("FixedVertexContainerService", 0x83f1bbf2));
+        incompatible.push_back(AZ_CRC_CE("VariableVertexContainerService"));
+        incompatible.push_back(AZ_CRC_CE("FixedVertexContainerService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
@@ -62,8 +62,8 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spline.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spline.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/spline/")
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/spline/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_visibleInEditor, "Visible", "Always display this shape in the editor viewport")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorSplineComponent::m_splineCommon, "Configuration", "Spline Configuration")
@@ -74,6 +74,8 @@ namespace LmbrCentral
                         ;
             }
         }
+
+        EditorSplineComponentMode::Reflect(context);
     }
 
     void EditorSplineComponent::Activate()
@@ -396,7 +398,7 @@ namespace LmbrCentral
         return m_splineCommon.m_spline;
     }
 
-    void EditorSplineComponent::ChangeSplineType(const AZ::u64 splineType)
+    void EditorSplineComponent::ChangeSplineType(const SplineType splineType)
     {
         m_splineCommon.ChangeSplineType(splineType);
     }
@@ -473,14 +475,14 @@ namespace LmbrCentral
         return m_splineCommon.m_spline->m_vertexContainer.Empty();
     }
 
-    AZ::Aabb EditorSplineComponent::GetWorldBounds()
+    AZ::Aabb EditorSplineComponent::GetWorldBounds() const
     {
         AZ::Aabb aabb = AZ::Aabb::CreateNull();
         m_splineCommon.m_spline->GetAabb(aabb, m_cachedUniformScaleTransform);
         return aabb;
     }
 
-    AZ::Aabb EditorSplineComponent::GetLocalBounds()
+    AZ::Aabb EditorSplineComponent::GetLocalBounds() const
     {
         AZ::Aabb aabb = AZ::Aabb::CreateNull();
         m_splineCommon.m_spline->GetAabb(aabb, AZ::Transform::CreateIdentity());

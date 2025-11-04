@@ -14,6 +14,7 @@
 
 #include <TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h>
 #include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
+#include <TestEngine/Common/Run/TestImpactTestEngineRegularRun.h>
 #include <TestEngine/Common/TestImpactTestEngine.h>
 #include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 
@@ -23,18 +24,18 @@
 namespace TestImpact
 {
     class PythonTestTarget;
-    class PythonTestRunJobInfoGenerator;
+    class PythonInstrumentedTestRunJobInfoGenerator;
+    class PythonRegularTestRunJobInfoGenerator;
     class PythonTestEnumerator;
-    class PythonTestRunner;
-    class PythonNullTestRunner;
+    class PythonInstrumentedTestRunner;
+    class PythonInstrumentedNullTestRunner;
+    class PythonRegularTestRunner;
+    class PythonRegularNullTestRunner;
 
     //! Provides the front end for performing test enumerations and test runs.
     class PythonTestEngine
     {
     public:
-        using TestTargetType = PythonTestTarget;
-        using TestCaseCoverageType = TestCoverage;
-
         //! Configures the test engine with the necessary path information for launching test targets and managing the artifacts they
         //! produce.
         //! @param repoDir Root path to where the repository is located.
@@ -49,36 +50,56 @@ namespace TestImpact
 
         ~PythonTestEngine();
 
-        //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics
-        //! about the run.
+        //! Performs a test run without any instrumentation and, for each test target, returns the test run results and metrics about the
+        //! run.
         //! @param testTargets The test targets to run.
         //! @param executionFailurePolicy Policy for how test execution failures should be handled.
-        //! @param integrityFailurePolicy Policy for how integrity failures of the test impact data and source tree model should be handled.
         //! @param testFailurePolicy Policy for how test targets with failing tests should be handled.
         //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.
         //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if
         //! empty).
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if
         //! empty).
-        //! @param callback The client callback function to handle completed test target runs.
-        //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
-        [[nodiscard]] TestEngineInstrumentedRunResult<TestTargetType, TestCaseCoverageType>
-        InstrumentedRun(
+        //! @ returns The sequence result and the test run results for the test targets that were run.
+        [[nodiscard]] TestEngineRegularRunResult<PythonTestTarget> RegularRun(
             const AZStd::vector<const PythonTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
-            Policy::IntegrityFailure integrityFailurePolicy,
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const;
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
+            const;
+
+        //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics
+        //! about the run.
+        //! @param testTargets The test targets to run.
+        //! @param executionFailurePolicy Policy for how test execution failures should be handled.
+        //! @param testFailurePolicy Policy for how test targets with failing tests should be handled.
+        //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.
+        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if
+        //! empty).
+        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if
+        //! emptytestRunCompleteCallback
+        //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
+        [[nodiscard]] TestEngineInstrumentedRunResult<PythonTestTarget, TestCoverage>
+        InstrumentedRun(
+            const AZStd::vector<const PythonTestTarget*>& testTargets,
+            Policy::ExecutionFailure executionFailurePolicy,
+            Policy::TestFailure testFailurePolicy,
+            Policy::TargetOutputCapture targetOutputCapture,
+            AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
+            const;
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.
-        void DeleteArtifactXmls() const;
+        void DeleteXmlArtifacts() const;
 
-        AZStd::unique_ptr<PythonTestRunJobInfoGenerator> m_testJobInfoGenerator;
-        AZStd::unique_ptr<PythonTestRunner> m_testRunner;
-        AZStd::unique_ptr<PythonNullTestRunner> m_nullTestRunner;
+        AZStd::unique_ptr<PythonInstrumentedTestRunJobInfoGenerator> m_instrumentedTestJobInfoGenerator;
+        AZStd::unique_ptr<PythonRegularTestRunJobInfoGenerator> m_regularTestJobInfoGenerator;
+        AZStd::unique_ptr<PythonInstrumentedTestRunner> m_instrumentedTestRunner;
+        AZStd::unique_ptr<PythonInstrumentedNullTestRunner> m_instrumentedNullTestRunner;
+        AZStd::unique_ptr<PythonRegularTestRunner> m_regularTestRunner;
+        AZStd::unique_ptr<PythonRegularNullTestRunner> m_regularNullTestRunner;
         ArtifactDir m_artifactDir;
         Policy::TestRunner m_testRunnerPolicy;
     };

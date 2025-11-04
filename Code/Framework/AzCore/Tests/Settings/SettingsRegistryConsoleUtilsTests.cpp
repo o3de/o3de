@@ -18,12 +18,12 @@
 namespace SettingsRegistryConsoleUtilsTests
 {
     class SettingsRegistryConsoleUtilsFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
 
         SettingsRegistryConsoleUtilsFixture()
-            : ScopedAllocatorSetupFixture()
+            : LeakDetectionFixture()
         {
             AZ::NameDictionary::Create();
         }

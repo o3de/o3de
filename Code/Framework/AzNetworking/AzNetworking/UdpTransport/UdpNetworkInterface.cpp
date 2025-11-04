@@ -56,20 +56,23 @@ namespace AzNetworking
         outReliability = ((timeoutId & 0x8000000000000000) > 0) ? ReliabilityType::Reliable : ReliabilityType::Unreliable;
     }
 
-    UdpNetworkInterface::UdpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread)
+    UdpNetworkInterface::UdpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, UdpReaderThread& readerThread, UdpHeartbeatThread& heartbeatThread)
         : m_name(name)
         , m_trustZone(trustZone)
         , m_connectionListener(connectionListener)
         , m_socket(net_UdpUseEncryption ? new DtlsSocket() : new UdpSocket())
         , m_readerThread(readerThread)
+        , m_heartbeatThread(heartbeatThread)
         , m_timeoutMs(net_UdpDefaultTimeoutMs)
     {
         const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_UdpCompressor);
         m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressor);
+        m_heartbeatThread.RegisterNetworkInterface(this);
     }
 
     UdpNetworkInterface::~UdpNetworkInterface()
     {
+        m_heartbeatThread.UnregisterNetworkInterface(this);
         m_readerThread.UnregisterSocket(m_socket.get());
     }
 
@@ -170,6 +173,8 @@ namespace AzNetworking
 
     void UdpNetworkInterface::Update()
     {
+        m_lastSystemTickUpdate = AZ::GetElapsedTimeMs();
+
         if (!m_socket->IsOpen())
         {
             return;
@@ -788,5 +793,10 @@ namespace AzNetworking
         }
 
         return TimeoutResult::Delete;
+    }
+
+    AZStd::atomic<AZ::TimeMs> UdpNetworkInterface::GetLastSystemTickUpdate() const
+    {
+        return m_lastSystemTickUpdate.load();
     }
 }

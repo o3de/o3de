@@ -20,7 +20,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandBarPlugin::ProgressHandler, EMotionFX::EventHandlerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandBarPlugin::ProgressHandler, EMotionFX::EventHandlerAllocator)
 
     CommandBarPlugin::CommandBarPlugin()
         : EMStudio::ToolBarPlugin()

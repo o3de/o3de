@@ -700,7 +700,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(PerformanceTests,
+    INSTANTIATE_TEST_SUITE_P(PerformanceTests,
         PerformanceTestFixture,
         ::testing::ValuesIn(performanceTestData));
 

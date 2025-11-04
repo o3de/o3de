@@ -5,8 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef PROPERTY_MANAGER_COMPONENT_H
-#define PROPERTY_MANAGER_COMPONENT_H
+#pragma once
+
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/map.h>
@@ -14,6 +16,7 @@
 #include <AzCore/Component/Component.h>
 #include "PropertyEditorAPI.h"
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
 
 // the property manager component's job is to provide the services for registration of property editors.
 // it also registers all of our built-in property manager types
@@ -21,7 +24,7 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        class PropertyManagerComponent
+        class AZTF_API PropertyManagerComponent
             : public AZ::Component
             , private PropertyTypeRegistrationMessages::Bus::Handler
             , private PropertyEditorGUIMessages::Bus::Handler
@@ -47,12 +50,12 @@ namespace AzToolsFramework
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
             {
-                provided.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
+                provided.push_back(AZ_CRC_CE("PropertyManagerService"));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
+                incompatible.push_back(AZ_CRC_CE("PropertyManagerService"));
             }
 
             static void Reflect(AZ::ReflectContext* context);
@@ -81,9 +84,9 @@ namespace AzToolsFramework
 
             AZStd::vector<PropertyHandlerBase*> m_builtInHandlers; // exists purely to delete them later.
 
+            AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoBatch = nullptr;
+
             void CreateBuiltInHandlers();
         };
     } // namespace Components
 } // namespace AzToolsFramework
-
-#endif

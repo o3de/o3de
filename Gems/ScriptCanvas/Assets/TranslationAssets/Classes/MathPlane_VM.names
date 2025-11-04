@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetPlaneEquationCoefficients",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetPlaneEquationCoefficients"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "GetDistance",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetDistance"
@@ -74,7 +72,6 @@
                 },
                 {
                     "base": "Project",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Project"
@@ -112,7 +109,6 @@
                 },
                 {
                     "base": "FromNormalAndPoint",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromNormalAndPoint"
@@ -150,7 +146,6 @@
                 },
                 {
                     "base": "IsFinite",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsFinite"
@@ -182,7 +177,6 @@
                 },
                 {
                     "base": "Transform",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Transform"
@@ -220,7 +214,6 @@
                 },
                 {
                     "base": "DistanceToPoint",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke DistanceToPoint"
@@ -258,7 +251,6 @@
                 },
                 {
                     "base": "FromCoefficients",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromCoefficients"
@@ -308,7 +300,6 @@
                 },
                 {
                     "base": "FromNormalAndDistance",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromNormalAndDistance"
@@ -346,7 +337,6 @@
                 },
                 {
                     "base": "GetNormal",
-                    "context": "MathPlane_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetNormal"

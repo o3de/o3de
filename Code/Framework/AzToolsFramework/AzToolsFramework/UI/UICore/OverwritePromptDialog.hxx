@@ -5,9 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
-#ifndef OVERWRITEPROMPTDIALOG_HXX
-#define OVERWRITEPROMPTDIALOG_HXX
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -25,12 +26,12 @@ namespace Ui
 
 namespace AzToolsFramework
 {
-    class OverwritePromptDialog
+    class AZTF_API OverwritePromptDialog
         : public QDialog
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(OverwritePromptDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OverwritePromptDialog, AZ::SystemAllocator);
         OverwritePromptDialog(QWidget* pParent);
         virtual ~OverwritePromptDialog();
 
@@ -46,5 +47,3 @@ namespace AzToolsFramework
         Ui::OverwritePromptDialog* guiConstructor;
     };
 }
-
-#endif//SAVECHANGESDIALOG_HXX

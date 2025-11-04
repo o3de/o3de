@@ -20,7 +20,7 @@ namespace GraphCanvas
         : QAbstractTableModel(parent)
         , m_constructType(ConstructType::Unknown)
         , m_presetsContainer(nullptr)
-    {        
+    {
     }
 
     ConstructPresetsTableModel::~ConstructPresetsTableModel()
@@ -199,10 +199,9 @@ namespace GraphCanvas
         return modifiedData;
     }
 
-    Qt::ItemFlags ConstructPresetsTableModel::flags(const QModelIndex &index) const
+    Qt::ItemFlags ConstructPresetsTableModel::flags(const QModelIndex& index) const
     {
-        Qt::ItemFlags itemFlags = Qt::ItemFlags(Qt::ItemIsEnabled |
-                                                Qt::ItemIsSelectable);
+        Qt::ItemFlags itemFlags = Qt::ItemFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
         if (index.column() == ColumnIndex::Name)
         {
@@ -357,6 +356,7 @@ namespace GraphCanvas
         m_ui->constructListing->horizontalHeader()->setSectionResizeMode(ConstructPresetsTableModel::ColumnIndex::Name, QHeaderView::ResizeMode::Stretch);
         m_ui->constructListing->horizontalHeader()->setSectionResizeMode(ConstructPresetsTableModel::ColumnIndex::DefaultPreset, QHeaderView::ResizeMode::Fixed);
         m_ui->constructListing->setItemDelegateForColumn(ConstructPresetsTableModel::ColumnIndex::Name, aznew GraphCanvas::IconDecoratedNameDelegate(m_ui->constructListing));
+        m_ui->constructListing->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
 
         m_ui->removePreset->setEnabled(false);
 
@@ -456,16 +456,10 @@ namespace GraphCanvas
 
     void ConstructPresetDialog::RemoveSelected()
     {
-        auto selectedIndexes = m_ui->constructListing->selectionModel()->selectedIndexes();
-
         AZStd::vector<int> rows;
-
-        for (auto selectedIndex : selectedIndexes)
+        for (const auto& index : m_ui->constructListing->selectionModel()->selectedRows())
         {
-            if (selectedIndex.column() == ConstructPresetsTableModel::ColumnIndex::Name)
-            {
-                rows.push_back(selectedIndex.row());
-            }
+            rows.push_back(index.row());
         }
 
         m_ui->constructListing->clearSelection();

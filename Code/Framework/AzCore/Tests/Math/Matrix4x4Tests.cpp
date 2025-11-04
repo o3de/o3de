@@ -22,35 +22,35 @@ namespace UnitTest
     TEST(MATH_Matrix4x4, TestCreate)
     {
         Matrix4x4 m1 = Matrix4x4::CreateIdentity();
-        AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(1.0f, 0.0f, 0.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(0.0f, 1.0f, 0.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(0.0f, 0.0f, 1.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        EXPECT_THAT(m1.GetRow(0), IsCloseTolerance(Vector4(1.0f, 0.0f, 0.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(1), IsCloseTolerance(Vector4(0.0f, 1.0f, 0.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(2), IsCloseTolerance(Vector4(0.0f, 0.0f, 1.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(3), IsCloseTolerance(Vector4(0.0f, 0.0f, 0.0f, 1.0f), 1e-6f));
         m1 = Matrix4x4::CreateZero();
-        AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(0.0f));
+        EXPECT_THAT(m1.GetRow(0), IsCloseTolerance(Vector4(0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(1), IsCloseTolerance(Vector4(0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(2), IsCloseTolerance(Vector4(0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(3), IsCloseTolerance(Vector4(0.0f), 1e-6f));
         m1 = Matrix4x4::CreateFromValue(2.0f);
-        AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(2.0f));
-        AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(2.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(2.0f));
-        AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(2.0f));
+        EXPECT_THAT(m1.GetRow(0), IsCloseTolerance(Vector4(2.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(1), IsCloseTolerance(Vector4(2.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(2), IsCloseTolerance(Vector4(2.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(3), IsCloseTolerance(Vector4(2.0f), 1e-6f));
         m1 = Matrix4x4::CreateScale(Vector3(1.0f, 2.0f, 3.0f));
-        AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(1.0f, 0.0f, 0.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(0.0f, 2.0f, 0.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(0.0f, 0.0f, 3.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        EXPECT_THAT(m1.GetRow(0), IsCloseTolerance(Vector4(1.0f, 0.0f, 0.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(1), IsCloseTolerance(Vector4(0.0f, 2.0f, 0.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(2), IsCloseTolerance(Vector4(0.0f, 0.0f, 3.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(3), IsCloseTolerance(Vector4(0.0f, 0.0f, 0.0f, 1.0f), 1e-6f));
         m1 = Matrix4x4::CreateDiagonal(Vector4(2.0f, 3.0f, 4.0f, 5.0f));
-        AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(2.0f, 0.0f, 0.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(0.0f, 3.0f, 0.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(0.0f, 0.0f, 4.0f, 0.0f));
-        AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(0.0f, 0.0f, 0.0f, 5.0f));
+        EXPECT_THAT(m1.GetRow(0), IsCloseTolerance(Vector4(2.0f, 0.0f, 0.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(1), IsCloseTolerance(Vector4(0.0f, 3.0f, 0.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(2), IsCloseTolerance(Vector4(0.0f, 0.0f, 4.0f, 0.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(3), IsCloseTolerance(Vector4(0.0f, 0.0f, 0.0f, 5.0f), 1e-6f));
         m1 = Matrix4x4::CreateTranslation(Vector3(1.0f, 2.0f, 3.0f));
-        AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-        AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(0.0f, 1.0f, 0.0f, 2.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(0.0f, 0.0f, 1.0f, 3.0f));
-        AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+        EXPECT_THAT(m1.GetRow(0), IsCloseTolerance(Vector4(1.0f, 0.0f, 0.0f, 1.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(1), IsCloseTolerance(Vector4(0.0f, 1.0f, 0.0f, 2.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(2), IsCloseTolerance(Vector4(0.0f, 0.0f, 1.0f, 3.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(3), IsCloseTolerance(Vector4(0.0f, 0.0f, 0.0f, 1.0f), 1e-6f));
     }
 
     TEST(MATH_Matrix4x4, TestCreateFrom)
@@ -64,19 +64,19 @@ namespace UnitTest
         };
         float testFloatMtx[16];
         Matrix4x4 m1 = Matrix4x4::CreateFromRowMajorFloat16(thisTestFloats);
-        AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(1.0f, 2.0f, 3.0f, 4.0f));
-        AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(5.0f, 6.0f, 7.0f, 8.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(9.0f, 10.0f, 11.0f, 12.0f));
-        AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(13.0f, 14.0f, 15.0f, 16.0f));
+        EXPECT_THAT(m1.GetRow(0), IsCloseTolerance(Vector4(1.0f, 2.0f, 3.0f, 4.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(1), IsCloseTolerance(Vector4(5.0f, 6.0f, 7.0f, 8.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(2), IsCloseTolerance(Vector4(9.0f, 10.0f, 11.0f, 12.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(3), IsCloseTolerance(Vector4(13.0f, 14.0f, 15.0f, 16.0f), 1e-6f));
         m1.StoreToRowMajorFloat16(testFloatMtx);
-        AZ_TEST_ASSERT(memcmp(testFloatMtx, thisTestFloats, sizeof(testFloatMtx)) == 0);
+        EXPECT_EQ(memcmp(testFloatMtx, thisTestFloats, sizeof(testFloatMtx)), 0);
         m1 = Matrix4x4::CreateFromColumnMajorFloat16(thisTestFloats);
-        AZ_TEST_ASSERT(m1.GetRow(0) == Vector4(1.0f, 5.0f, 9.0f, 13.0f));
-        AZ_TEST_ASSERT(m1.GetRow(1) == Vector4(2.0f, 6.0f, 10.0f, 14.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2) == Vector4(3.0f, 7.0f, 11.0f, 15.0f));
-        AZ_TEST_ASSERT(m1.GetRow(3) == Vector4(4.0f, 8.0f, 12.0f, 16.0f));
+        EXPECT_THAT(m1.GetRow(0), IsCloseTolerance(Vector4(1.0f, 5.0f, 9.0f, 13.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(1), IsCloseTolerance(Vector4(2.0f, 6.0f, 10.0f, 14.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(2), IsCloseTolerance(Vector4(3.0f, 7.0f, 11.0f, 15.0f), 1e-6f));
+        EXPECT_THAT(m1.GetRow(3), IsCloseTolerance(Vector4(4.0f, 8.0f, 12.0f, 16.0f), 1e-6f));
         m1.StoreToColumnMajorFloat16(testFloatMtx);
-        AZ_TEST_ASSERT(memcmp(testFloatMtx, thisTestFloats, sizeof(testFloatMtx)) == 0);
+        EXPECT_EQ(memcmp(testFloatMtx, thisTestFloats, sizeof(testFloatMtx)), 0);
     }
 
     TEST(MATH_Matrix4x4, TestCreateFromMatrix3x4)
@@ -108,125 +108,125 @@ namespace UnitTest
     TEST(MATH_Matrix4x4, TestCreateRotation)
     {
         Matrix4x4 m1 = Matrix4x4::CreateRotationX(DegToRad(30.0f));
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(1.0f, 0.0f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 0.866f, -0.5f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.5f, 0.866f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(1.0f, 0.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 0.866f, -0.5f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.5f, 0.866f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
         m1 = Matrix4x4::CreateRotationY(DegToRad(30.0f));
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(0.866f, 0.0f, 0.5f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 1.0f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(-0.5f, 0.0f, 0.866f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(0.866f, 0.0f, 0.5f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 1.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(-0.5f, 0.0f, 0.866f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
         m1 = Matrix4x4::CreateRotationZ(DegToRad(30.0f));
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(0.866f, -0.5f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.5f, 0.866f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.0f, 1.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(0.866f, -0.5f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.5f, 0.866f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
         m1 = Matrix4x4::CreateFromQuaternion(AZ::Quaternion::CreateRotationX(DegToRad(30.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(1.0f, 0.0f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 0.866f, -0.5f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.5f, 0.866f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(1.0f, 0.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 0.866f, -0.5f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.5f, 0.866f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
         m1 = Matrix4x4::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateRotationX(DegToRad(30.0f)), Vector3(1.0f, 2.0f, 3.0f));
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(1.0f, 0.0f, 0.0f, 1.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 0.866f, -0.5f, 2.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.5f, 0.866f, 3.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(1.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 0.866f, -0.5f, 2.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.5f, 0.866f, 3.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
     }
 
     TEST(MATH_Matrix4x4, TestCreateProjection)
     {
         Matrix4x4 m1 = Matrix4x4::CreateProjection(DegToRad(30.0f), 16.0f / 9.0f, 1.0f, 1000.0f);
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(-2.099279f, 0.0f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 3.732f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.0f, 1.002f, -2.002f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(-2.099279f, 0.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 3.732f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.0f, 1.002f, -2.002f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 1.0f, 0.0f)));
         m1 = Matrix4x4::CreateProjectionFov(DegToRad(30.0f), DegToRad(60.0f), 1.0f, 1000.0f);
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(-3.732f, 0.0f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 1.732f, 0.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.0f, 1.002f, -2.002f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(-3.732f, 0.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 1.732f, 0.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.0f, 1.002f, -2.002f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 1.0f, 0.0f)));
         m1 = Matrix4x4::CreateProjectionOffset(0.5f, 1.0f, 0.0f, 0.5f, 1.0f, 1000.0f);
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(-4.0f, 0.0f, -3.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 4.0f, -1.0f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.0f, 1.002f, -2.002f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(-4.0f, 0.0f, -3.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 4.0f, -1.0f, 0.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.0f, 1.002f, -2.002f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 1.0f, 0.0f)));
     }
 
     TEST(MATH_Matrix4x4, TestElementAccess)
     {
         Matrix4x4 m1 = Matrix4x4::CreateRotationX(DegToRad(30.0f));
-        AZ_TEST_ASSERT_FLOAT_CLOSE(m1.GetElement(1, 2), -0.5f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(m1.GetElement(2, 2), 0.866f);
+        EXPECT_NEAR(m1.GetElement(1, 2), -0.5f, 2e-3f);
+        EXPECT_NEAR(m1.GetElement(2, 2), 0.866f, 2e-3f);
         m1.SetElement(2, 1, 5.0f);
-        AZ_TEST_ASSERT(m1.GetElement(2, 1) == 5.0f);
+        EXPECT_NEAR(m1.GetElement(2, 1), 5.0f, 2e-3f);
     }
 
     TEST(MATH_Matrix4x4, TestIndexAccessors)
     {
         Matrix4x4 m1 = Matrix4x4::CreateRotationX(DegToRad(30.0f));
-        AZ_TEST_ASSERT_FLOAT_CLOSE(m1(1, 2), -0.5f);
-        AZ_TEST_ASSERT_FLOAT_CLOSE(m1(2, 2), 0.866f);
+        EXPECT_NEAR(m1(1, 2), -0.5f, 2e-3f);
+        EXPECT_NEAR(m1(2, 2), 0.866f, 2e-3f);
         m1.SetElement(2, 1, 15.0f);
-        AZ_TEST_ASSERT(m1(2, 1) == 15.0f);
+        EXPECT_NEAR(m1(2, 1), 15.0f, 1e-6f);
     }
 
     TEST(MATH_Matrix4x4, TestRowAccess)
     {
         Matrix4x4 m1 = Matrix4x4::CreateRotationX(DegToRad(30.0f));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.5f, 0.866f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetRowAsVector3(2).IsClose(Vector3(0.0f, 0.5f, 0.866f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.5f, 0.866f, 0.0f)));
+        EXPECT_THAT(m1.GetRowAsVector3(2), IsClose(Vector3(0.0f, 0.5f, 0.866f)));
         m1.SetRow(0, 1.0f, 2.0f, 3.0f, 4.0f);
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(1.0f, 2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(1.0f, 2.0f, 3.0f, 4.0f)));
         m1.SetRow(1, Vector3(5.0f, 6.0f, 7.0f), 8.0f);
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(5.0f, 6.0f, 7.0f, 8.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(5.0f, 6.0f, 7.0f, 8.0f)));
         m1.SetRow(2, Vector4(3.0f, 4.0f, 5.0f, 6.0));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(3.0f, 4.0f, 5.0f, 6.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(3.0f, 4.0f, 5.0f, 6.0f)));
         m1.SetRow(3, Vector4(7.0f, 8.0f, 9.0f, 10.0));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(7.0f, 8.0f, 9.0f, 10.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(7.0f, 8.0f, 9.0f, 10.0f)));
         //test GetRow with non-constant, we have different implementations for constants and variables
-        AZ_TEST_ASSERT(m1.GetRow(testIndices4x4[0]).IsClose(Vector4(1.0f, 2.0f, 3.0f, 4.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(testIndices4x4[1]).IsClose(Vector4(5.0f, 6.0f, 7.0f, 8.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(testIndices4x4[2]).IsClose(Vector4(3.0f, 4.0f, 5.0f, 6.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(testIndices4x4[3]).IsClose(Vector4(7.0f, 8.0f, 9.0f, 10.0f)));
+        EXPECT_THAT(m1.GetRow(testIndices4x4[0]), IsClose(Vector4(1.0f, 2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(m1.GetRow(testIndices4x4[1]), IsClose(Vector4(5.0f, 6.0f, 7.0f, 8.0f)));
+        EXPECT_THAT(m1.GetRow(testIndices4x4[2]), IsClose(Vector4(3.0f, 4.0f, 5.0f, 6.0f)));
+        EXPECT_THAT(m1.GetRow(testIndices4x4[3]), IsClose(Vector4(7.0f, 8.0f, 9.0f, 10.0f)));
     }
 
     TEST(MATH_Matrix4x4, TestColumnAccess)
     {
         Matrix4x4 m1 = Matrix4x4::CreateRotationX(DegToRad(30.0f));
-        AZ_TEST_ASSERT(m1.GetColumn(1).IsClose(Vector4(0.0f, 0.866f, 0.5f, 0.0f)));
+        EXPECT_THAT(m1.GetColumn(1), IsClose(Vector4(0.0f, 0.866f, 0.5f, 0.0f)));
         m1.SetColumn(3, 1.0f, 2.0f, 3.0f, 4.0f);
-        AZ_TEST_ASSERT(m1.GetColumn(3).IsClose(Vector4(1.0f, 2.0f, 3.0f, 4.0f)));
-        AZ_TEST_ASSERT(m1.GetColumnAsVector3(3).IsClose(Vector3(1.0f, 2.0f, 3.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(1.0f, 0.0f, 0.0f, 1.0f))); //checking all components in case others get messed up with the shuffling
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 0.866f, -0.5f, 2.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.5f, 0.866f, 3.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 0.0f, 4.0f)));
+        EXPECT_THAT(m1.GetColumn(3), IsClose(Vector4(1.0f, 2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(m1.GetColumnAsVector3(3), IsClose(Vector3(1.0f, 2.0f, 3.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(1.0f, 0.0f, 0.0f, 1.0f))); //checking all components in case others get messed up with the shuffling
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 0.866f, -0.5f, 2.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.5f, 0.866f, 3.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 0.0f, 4.0f)));
         m1.SetColumn(0, Vector4(2.0f, 3.0f, 4.0f, 5.0f));
-        AZ_TEST_ASSERT(m1.GetColumn(0).IsClose(Vector4(2.0f, 3.0f, 4.0f, 5.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(2.0f, 0.0f, 0.0f, 1.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(3.0f, 0.866f, -0.5f, 2.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(4.0f, 0.5f, 0.866f, 3.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(5.0f, 0.0f, 0.0f, 4.0f)));
+        EXPECT_THAT(m1.GetColumn(0), IsClose(Vector4(2.0f, 3.0f, 4.0f, 5.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(2.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(3.0f, 0.866f, -0.5f, 2.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(4.0f, 0.5f, 0.866f, 3.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(5.0f, 0.0f, 0.0f, 4.0f)));
         //test GetColumn with non-constant, we have different implementations for constants and variables
-        AZ_TEST_ASSERT(m1.GetColumn(testIndices4x4[0]).IsClose(Vector4(2.0f, 3.0f, 4.0f, 5.0f)));
-        AZ_TEST_ASSERT(m1.GetColumn(testIndices4x4[1]).IsClose(Vector4(0.0f, 0.866f, 0.5f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetColumn(testIndices4x4[2]).IsClose(Vector4(0.0f, -0.5f, 0.866f, 0.0f)));
-        AZ_TEST_ASSERT(m1.GetColumn(testIndices4x4[3]).IsClose(Vector4(1.0f, 2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(m1.GetColumn(testIndices4x4[0]), IsClose(Vector4(2.0f, 3.0f, 4.0f, 5.0f)));
+        EXPECT_THAT(m1.GetColumn(testIndices4x4[1]), IsClose(Vector4(0.0f, 0.866f, 0.5f, 0.0f)));
+        EXPECT_THAT(m1.GetColumn(testIndices4x4[2]), IsClose(Vector4(0.0f, -0.5f, 0.866f, 0.0f)));
+        EXPECT_THAT(m1.GetColumn(testIndices4x4[3]), IsClose(Vector4(1.0f, 2.0f, 3.0f, 4.0f)));
     }
 
     TEST(MATH_Matrix4x4, TestTranslationAccess)
     {
         Matrix4x4 m1 = Matrix4x4::CreateTranslation(Vector3(5.0f, 6.0f, 7.0f));
-        AZ_TEST_ASSERT(m1.GetTranslation().IsClose(Vector3(5.0f, 6.0f, 7.0f)));
+        EXPECT_THAT(m1.GetTranslation(), IsClose(Vector3(5.0f, 6.0f, 7.0f)));
         m1.SetTranslation(1.0f, 2.0f, 3.0f);
-        AZ_TEST_ASSERT(m1.GetTranslation().IsClose(Vector3(1.0f, 2.0f, 3.0f)));
+        EXPECT_THAT(m1.GetTranslation(), IsClose(Vector3(1.0f, 2.0f, 3.0f)));
         m1.SetTranslation(Vector3(2.0f, 3.0f, 4.0f));
-        AZ_TEST_ASSERT(m1.GetTranslation().IsClose(Vector3(2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(m1.GetTranslation(), IsClose(Vector3(2.0f, 3.0f, 4.0f)));
         m1.SetTranslation(4.0f, 5.0f, 6.0f);
-        AZ_TEST_ASSERT(m1.GetTranslation().IsClose(Vector3(4.0f, 5.0f, 6.0f)));
+        EXPECT_THAT(m1.GetTranslation(), IsClose(Vector3(4.0f, 5.0f, 6.0f)));
         m1.SetTranslation(Vector3(2.0f, 3.0f, 4.0f));
-        AZ_TEST_ASSERT(m1.GetTranslation().IsClose(Vector3(2.0f, 3.0f, 4.0f)));
+        EXPECT_THAT(m1.GetTranslation(), IsClose(Vector3(2.0f, 3.0f, 4.0f)));
     }
 
     TEST(MATH_Matrix4x4, TestMatrixMultiplication)
@@ -413,16 +413,16 @@ namespace UnitTest
         m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
         m1.SetRow(3, 13.0f, 14.0f, 15.0f, 16.0f);
         Matrix4x4 m2 = m1.GetTranspose();
-        AZ_TEST_ASSERT(m2.GetRow(0).IsClose(Vector4(1.0f, 5.0f, 9.0f, 13.0f)));
-        AZ_TEST_ASSERT(m2.GetRow(1).IsClose(Vector4(2.0f, 6.0f, 10.0f, 14.0f)));
-        AZ_TEST_ASSERT(m2.GetRow(2).IsClose(Vector4(3.0f, 7.0f, 11.0f, 15.0f)));
-        AZ_TEST_ASSERT(m2.GetRow(3).IsClose(Vector4(4.0f, 8.0f, 12.0f, 16.0f)));
+        EXPECT_THAT(m2.GetRow(0), IsClose(Vector4(1.0f, 5.0f, 9.0f, 13.0f)));
+        EXPECT_THAT(m2.GetRow(1), IsClose(Vector4(2.0f, 6.0f, 10.0f, 14.0f)));
+        EXPECT_THAT(m2.GetRow(2), IsClose(Vector4(3.0f, 7.0f, 11.0f, 15.0f)));
+        EXPECT_THAT(m2.GetRow(3), IsClose(Vector4(4.0f, 8.0f, 12.0f, 16.0f)));
         m2 = m1;
         m2.Transpose();
-        AZ_TEST_ASSERT(m2.GetRow(0).IsClose(Vector4(1.0f, 5.0f, 9.0f, 13.0f)));
-        AZ_TEST_ASSERT(m2.GetRow(1).IsClose(Vector4(2.0f, 6.0f, 10.0f, 14.0f)));
-        AZ_TEST_ASSERT(m2.GetRow(2).IsClose(Vector4(3.0f, 7.0f, 11.0f, 15.0f)));
-        AZ_TEST_ASSERT(m2.GetRow(3).IsClose(Vector4(4.0f, 8.0f, 12.0f, 16.0f)));
+        EXPECT_THAT(m2.GetRow(0), IsClose(Vector4(1.0f, 5.0f, 9.0f, 13.0f)));
+        EXPECT_THAT(m2.GetRow(1), IsClose(Vector4(2.0f, 6.0f, 10.0f, 14.0f)));
+        EXPECT_THAT(m2.GetRow(2), IsClose(Vector4(3.0f, 7.0f, 11.0f, 15.0f)));
+        EXPECT_THAT(m2.GetRow(3), IsClose(Vector4(4.0f, 8.0f, 12.0f, 16.0f)));
     }
 
     TEST(MATH_Matrix4x4, TestFastInverse)
@@ -430,16 +430,16 @@ namespace UnitTest
         Matrix4x4 m1;
         m1 = Matrix4x4::CreateRotationX(1.0f);
         m1.SetTranslation(Vector3(10.0f, -3.0f, 5.0f));
-        AZ_TEST_ASSERT((m1 * m1.GetInverseFast()).IsClose(Matrix4x4::CreateIdentity(), 0.02f));
+        EXPECT_THAT((m1 * m1.GetInverseFast()), IsCloseTolerance(Matrix4x4::CreateIdentity(), 0.02f));
         Matrix4x4 m2 = Matrix4x4::CreateRotationZ(2.0f) * Matrix4x4::CreateRotationX(1.0f);
         m2.SetTranslation(Vector3(-5.0f, 4.2f, -32.0f));
         Matrix4x4 m3 = m2.GetInverseFast();
         // allow a little bigger threshold, because of the 2 rot matrices (sin,cos differences)
-        AZ_TEST_ASSERT((m2 * m3).IsClose(Matrix4x4::CreateIdentity(), 0.1f));
-        AZ_TEST_ASSERT(m3.GetRow(0).IsClose(Vector4(-0.420f, 0.909f, 0.0f, -5.920f), 0.06f));
-        AZ_TEST_ASSERT(m3.GetRow(1).IsClose(Vector4(-0.493f, -0.228f, 0.841f, 25.418f), 0.06f));
-        AZ_TEST_ASSERT(m3.GetRow(2).IsClose(Vector4(0.765f, 0.353f, 0.542f, 19.703f), 0.06f));
-        AZ_TEST_ASSERT(m3.GetRow(3).IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT((m2 * m3), IsCloseTolerance(Matrix4x4::CreateIdentity(), 0.1f));
+        EXPECT_THAT(m3.GetRow(0), IsCloseTolerance(Vector4(-0.420f, 0.909f, 0.0f, -5.920f), 0.06f));
+        EXPECT_THAT(m3.GetRow(1), IsCloseTolerance(Vector4(-0.493f, -0.228f, 0.841f, 25.418f), 0.06f));
+        EXPECT_THAT(m3.GetRow(2), IsCloseTolerance(Vector4(0.765f, 0.353f, 0.542f, 19.703f), 0.06f));
+        EXPECT_THAT(m3.GetRow(3), IsClose(Vector4(0.0f, 0.0f, 0.0f, 1.0f)));
     }
 
     TEST(MATH_Matrix4x4, TestTransformInverse)
@@ -449,7 +449,8 @@ namespace UnitTest
         m1 = Matrix4x4::CreateRotationX(1.0f);
         m1.SetTranslation(Vector3(10.0f, -3.0f, 5.0f));
         m1.SetElement(0, 1, 23.1234f);
-        AZ_TEST_ASSERT((m1 * m1.GetInverseTransform()).IsClose(Matrix4x4::CreateIdentity(), 0.01f));
+        m1.MultiplyByScale(Vector3(0.1f, 0.07f, 0.09f));
+        EXPECT_THAT((m1 * m1.GetInverseTransform()), IsCloseTolerance(Matrix4x4::CreateIdentity(), 0.01f));
     }
 
     TEST(MATH_Matrix4x4, TestFullInverse)
@@ -459,19 +460,19 @@ namespace UnitTest
         m1.SetRow(1, 3.0f, 4.0f, 5.0f, 6.0f);
         m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
         m1.SetRow(3, 13.0f, 14.0f, 15.0f, -16.0f);
-        AZ_TEST_ASSERT((m1 * m1.GetInverseFull()).IsClose(Matrix4x4::CreateIdentity()));
+        EXPECT_THAT((m1 * m1.GetInverseFull()), IsClose(Matrix4x4::CreateIdentity()));
     }
 
     TEST(MATH_Matrix4x4, TestIsClose)
     {
         Matrix4x4 m1 = Matrix4x4::CreateRotationX(DegToRad(30.0f));
         Matrix4x4 m2 = m1;
-        AZ_TEST_ASSERT(m1.IsClose(m2));
+        EXPECT_TRUE(m1.IsClose(m2));
         m2.SetElement(0, 0, 2.0f);
-        AZ_TEST_ASSERT(!m1.IsClose(m2));
+        EXPECT_FALSE(m1.IsClose(m2));
         m2 = m1;
         m2.SetElement(0, 3, 2.0f);
-        AZ_TEST_ASSERT(!m1.IsClose(m2));
+        EXPECT_FALSE(m1.IsClose(m2));
     }
 
     TEST(MATH_Matrix4x4, TestSetRotationPart)
@@ -479,10 +480,10 @@ namespace UnitTest
         Matrix4x4 m1 = Matrix4x4::CreateTranslation(Vector3(1.0f, 2.0f, 3.0f));
         m1.SetRow(3, 5.0f, 6.0f, 7.0f, 8.0f);
         m1.SetRotationPartFromQuaternion(AZ::Quaternion::CreateRotationX(DegToRad(30.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(0).IsClose(Vector4(1.0f, 0.0f, 0.0f, 1.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(1).IsClose(Vector4(0.0f, 0.866f, -0.5f, 2.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(2).IsClose(Vector4(0.0f, 0.5f, 0.866f, 3.0f)));
-        AZ_TEST_ASSERT(m1.GetRow(3).IsClose(Vector4(5.0f, 6.0f, 7.0f, 8.0f)));
+        EXPECT_THAT(m1.GetRow(0), IsClose(Vector4(1.0f, 0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(m1.GetRow(1), IsClose(Vector4(0.0f, 0.866f, -0.5f, 2.0f)));
+        EXPECT_THAT(m1.GetRow(2), IsClose(Vector4(0.0f, 0.5f, 0.866f, 3.0f)));
+        EXPECT_THAT(m1.GetRow(3), IsClose(Vector4(5.0f, 6.0f, 7.0f, 8.0f)));
     }
 
     TEST(MATH_Matrix4x4, TestGetDiagonal)
@@ -492,7 +493,7 @@ namespace UnitTest
         m1.SetRow(1, 5.0f, 6.0f, 7.0f, 8.0f);
         m1.SetRow(2, 9.0f, 10.0f, 11.0f, 12.0f);
         m1.SetRow(3, 13.0f, 14.0f, 15.0f, 16.0f);
-        AZ_TEST_ASSERT(m1.GetDiagonal() == Vector4(1.0f, 6.0f, 11.0f, 16.0f));
+        EXPECT_THAT(m1.GetDiagonal(), IsCloseTolerance(Vector4(1.0f, 6.0f, 11.0f, 16.0f), 1e-6f));
     }
 
     TEST(MATH_Matrix4x4, TestScaleAccess)

@@ -16,6 +16,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <Tests/Streamer/StreamStackEntryConformityTests.h>
 #include <Tests/Streamer/StreamStackEntryMock.h>
 
@@ -31,25 +32,13 @@ namespace AZ::IO
         {
             return FullFileDecompressor(2, 2, m_arbitrarilyLargeAlignment);
         }
-
-        void SetUp() override
-        {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-        }
     };
 
-    INSTANTIATE_TYPED_TEST_CASE_P(
+    INSTANTIATE_TYPED_TEST_SUITE_P(
         Streamer_FullFileDecompressorConformityTests, StreamStackEntryConformityTests, FullFileDecompressorTestDescription);
 
     class Streamer_FullDecompressorTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         enum CompressionState
@@ -68,10 +57,10 @@ namespace AZ::IO
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
+            m_taskExecutor = AZStd::make_unique<TaskExecutor>();
+            TaskExecutor::SetInstance(m_taskExecutor.get());
         }
 
         void TearDown() override
@@ -88,10 +77,10 @@ namespace AZ::IO
             delete m_context;
             m_context = nullptr;
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
+            TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
 
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void SetupEnvironment(u32 maxNumReads, u32 maxNumJobs)
@@ -315,6 +304,7 @@ namespace AZ::IO
         StreamerContext* m_context;
         AZStd::shared_ptr<FullFileDecompressor> m_decompressor;
         AZStd::shared_ptr<StreamStackEntryMock> m_mock;
+        AZStd::unique_ptr<TaskExecutor> m_taskExecutor;
         u64 m_fakeFileLength{ 1 * 1024 * 1024 };
     };
 

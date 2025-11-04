@@ -9,101 +9,40 @@
 #include <CoreLights/LightCullingPass.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
 
-#include <Atom/RPI.Public/Pass/PassUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
+#include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Public/View.h>
-#include <AzCore/std/algorithm.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <AzCore/Math/Plane.h>
+#include <AzCore/std/algorithm.h>
+#include <CoreLights/CapsuleLightFeatureProcessor.h>
+#include <CoreLights/DiskLightFeatureProcessor.h>
+#include <CoreLights/LightCullingConstants.h>
+#include <CoreLights/PointLightFeatureProcessor.h>
+#include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 #include <CoreLights/SimpleSpotLightFeatureProcessor.h>
-#include <CoreLights/PointLightFeatureProcessor.h>
-#include <CoreLights/DiskLightFeatureProcessor.h>
-#include <CoreLights/CapsuleLightFeatureProcessor.h>
-#include <CoreLights/QuadLightFeatureProcessor.h>
-#include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
-#include <CoreLights/LightCullingConstants.h>
-#include <AzCore/Math/Plane.h>
 #include <cmath>
-#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
-#include <Atom/RHI/ImagePool.h>
-#include <Atom/RPI.Public/Image/AttachmentImage.h>
 
 namespace AZ
 {
     namespace Render
     {
-        enum PlaneType
-        {
-            PlaneLeft,
-            PlaneRight,
-            PlaneBottom,
-            PlaneTop,
-            PlaneNear,
-            PlaneFar,
-
-            PlanesNum
-        };
-
-        static void ViewProjectionMatrixToPlanes(const AZ::Matrix4x4& viewToClip, AZStd::array<AZ::Plane, PlanesNum>& planes)
-        {
-            AZ::Vector4 l = viewToClip.GetRow(3) + viewToClip.GetRow(0);
-            AZ::Vector4 r = viewToClip.GetRow(3) - viewToClip.GetRow(0);
-            AZ::Vector4 b = viewToClip.GetRow(3) + viewToClip.GetRow(1);
-            AZ::Vector4 t = viewToClip.GetRow(3) - viewToClip.GetRow(1);
-            AZ::Vector4 f = viewToClip.GetRow(3) - viewToClip.GetRow(2);
-            AZ::Vector4 n = viewToClip.GetRow(2);
-
-            l /= sqrtf(l.Dot3(l.GetAsVector3()));
-            r /= sqrtf(r.Dot3(r.GetAsVector3()));
-            b /= sqrtf(b.Dot3(b.GetAsVector3()));
-            t /= sqrtf(t.Dot3(t.GetAsVector3()));
-            n /= AZStd::max(sqrtf(n.Dot3(n.GetAsVector3())), FLT_MIN);
-            f /= AZStd::max(sqrtf(f.Dot3(f.GetAsVector3())), FLT_MIN);
-
-            bool reversedDepthBuffer = abs(n.GetW()) > abs(f.GetW());
-            if (reversedDepthBuffer)
-            {
-                AZStd::swap(n, f);
-            }
-
-            planes[PlaneLeft].Set(l);
-            planes[PlaneRight].Set(r);
-            planes[PlaneBottom].Set(b);
-            planes[PlaneTop].Set(t);
-            planes[PlaneNear].Set(n);
-            planes[PlaneFar].Set(f);
-        }
-
-        // given a 0 to 1 screen uv position, these constants can be used to construct a view-space ray to that location
-        static AZStd::array<float, 4> GenerateScreenUVToRayConstants(const AZ::Matrix4x4& viewToClip)
-        {
-            AZStd::array<Plane, PlanesNum> planes;
-            ViewProjectionMatrixToPlanes(viewToClip, planes);
-
-            // What we are doing here is converting from a plane normal to (eventually in the shader) a ray with a z length of 1.0
-            // Once we have that we simply multiply by the tile depth to get a view space position
-
-            // The reciprocal here is from our desire to get a ray with a length of 1.0
-            float leftX, rightX, bottomY, topY;
-            leftX = planes[PlaneLeft].GetNormal().GetZ() / planes[PlaneLeft].GetNormal().GetX();
-            rightX = planes[PlaneRight].GetNormal().GetZ() / planes[PlaneRight].GetNormal().GetX();
-            bottomY = planes[PlaneBottom].GetNormal().GetZ() / planes[PlaneBottom].GetNormal().GetY();
-            topY = planes[PlaneTop].GetNormal().GetZ() / planes[PlaneTop].GetNormal().GetY();
-
-            return AZStd::array<float, 4>{rightX - leftX, bottomY - topY, leftX, topY};
-        }
-
         RPI::Ptr<LightCullingPass> LightCullingPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<LightCullingPass> pass = aznew LightCullingPass(descriptor);
@@ -139,6 +78,10 @@ namespace AZ
             SetConstantdataToSRG();
 
             BindPassSrg(context, m_shaderResourceGroup);
+            if (RPI::ViewPtr view = GetView())
+            {
+                BindSrg(view->GetRHIShaderResourceGroup());
+            }
 
             m_shaderResourceGroup->Compile();
         }
@@ -147,14 +90,17 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            SetSrgsForDispatch(commandList);
+            SetSrgsForDispatch(context);
 
             RHI::Size res = GetDepthBufferResolution();
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = res.m_width;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = res.m_height;
-            m_dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-            commandList->Submit(m_dispatchItem);
+            auto arguments{m_dispatchItem.GetArguments()};
+            arguments.m_direct.m_totalNumberOfThreadsX = res.m_width;
+            arguments.m_direct.m_totalNumberOfThreadsY = res.m_height;
+            arguments.m_direct.m_totalNumberOfThreadsZ = 1;
+            m_dispatchItem.SetArguments(arguments);
+
+            commandList->Submit(m_dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
         }
 
         void LightCullingPass::ResetInternal()
@@ -205,17 +151,12 @@ namespace AZ
         {
             struct LightCullingConstants
             {
-                AZStd::array<float, 16> m_worldToView;
-                AZStd::array<float, 4> m_screenUVToRay;
                 AZStd::array<float, 2> m_gridPixel;
                 AZStd::array<float, 2> m_gridHalfPixel;
-                uint32_t             m_gridWidth;
-                uint32_t             m_padding[3];
+                uint32_t m_gridWidth;
+                uint32_t m_padding[3];
             } cullingConstants{};
 
-            RPI::ViewPtr view = m_pipeline->GetDefaultView();
-            view->GetWorldToViewMatrix().StoreToRowMajorFloat16(cullingConstants.m_worldToView.data());
-            cullingConstants.m_screenUVToRay = GenerateScreenUVToRayConstants(view->GetViewToClipMatrix());
             cullingConstants.m_gridPixel = ComputeGridPixelSize();
             cullingConstants.m_gridHalfPixel[0] = cullingConstants.m_gridPixel[0] * 0.5f;
             cullingConstants.m_gridHalfPixel[1] = cullingConstants.m_gridPixel[1] * 0.5f;

@@ -16,6 +16,8 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
+
 namespace ScriptCanvas::Nodeables::Spawning
 {
     //! Node for despawning entities
@@ -25,6 +27,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         SCRIPTCANVAS_NODE(DespawnNodeable);
     public:
+        AZ_CLASS_ALLOCATOR(DespawnNodeable, AZ::SystemAllocator)
         DespawnNodeable() = default;
         DespawnNodeable(const DespawnNodeable& rhs);
         DespawnNodeable& operator=(const DespawnNodeable& rhs);

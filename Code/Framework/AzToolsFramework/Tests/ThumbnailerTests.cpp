@@ -25,7 +25,9 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
-            m_app.Start(m_descriptor);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(m_descriptor, startupParameters);
             // Without this, the user settings component would sometimes attempt to save
             // changes on shutdown. In some cases this would cause a crash while the unit test
             // was running, because the environment wasn't setup for it to save these settings.

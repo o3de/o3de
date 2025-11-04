@@ -15,7 +15,7 @@
 namespace AZ::DocumentPropertyEditor::Tests
 {
     class DocumentPropertyEditorTestFixture
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override;

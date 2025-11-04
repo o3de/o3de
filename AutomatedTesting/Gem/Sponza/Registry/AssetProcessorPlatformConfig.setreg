@@ -6,7 +6,7 @@
                 // Sample Gems, Block source folders
                 // ------------------------------------------------------------------------------
                 "Exclude Work In Progress Folders": {
-                    "pattern": "(^|.+/).[Ss]rc(/.*)?$"
+                    "glob": ".src/*"
                 }
             }
         }

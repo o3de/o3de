@@ -9,17 +9,22 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
-#include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Entity/BehaviorEntity.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzToolsFramework
 {
-    struct ComponentDetails
+    struct AZTF_API ComponentDetails
     {
         AZ_TYPE_INFO(AzToolsFramework::ComponentDetails, "{107D8379-4AD4-4547-BEE1-184B120F23E9}");
 
@@ -57,7 +62,7 @@ namespace AzToolsFramework
 
     using EntityUtilityBus = AZ::EBus<EntityUtilityTraits>;
 
-    struct EntityUtilityComponent : AZ::Component
+    struct AZTF_API EntityUtilityComponent : AZ::Component
         , EntityUtilityBus::Handler
     {
         inline const static AZ::Uuid UtilityEntityContextId = AZ::Uuid("{9C277B88-E79E-4F8A-BAFF-A4C175BD565F}");

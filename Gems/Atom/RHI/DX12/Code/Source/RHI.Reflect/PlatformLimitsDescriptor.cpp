@@ -21,8 +21,7 @@ namespace AZ
                 serializeContext->Class<PlatformLimitsDescriptor, Base>()
                     ->Version(1)
                     ->Field("DescriptorHeapLimits", &PlatformLimitsDescriptor::m_descriptorHeapLimits)
-                    ->Field("NumShaderVisibleCbvSrvUavStaticHandles", &PlatformLimitsDescriptor::m_numShaderVisibleCbvSrvUavStaticHandles)
-                    ->Field("AllowDescriptorHeapCompaction", &PlatformLimitsDescriptor::m_allowDescriptorHeapCompaction)
+                    ->Field("StaticDescriptorRatio", &PlatformLimitsDescriptor::m_staticDescriptorRatio)
                     ->Field("FrameGraphExecuterData", &PlatformLimitsDescriptor::m_frameGraphExecuterData)
                     ;
             }

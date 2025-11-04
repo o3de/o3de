@@ -15,6 +15,7 @@
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Configuration/JointConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzPhysics
 {
@@ -34,6 +35,11 @@ namespace AzPhysics
         //! @param sceneName The name of the scene to look up.
         //! @returns Will return a SceneHandle to a Scene connected with the given name, otherwise will return InvalidSceneHandle.
         virtual SceneHandle GetSceneHandle(const AZStd::string& sceneName) = 0;
+
+        //! Get the Scene of the requested SceneHandle.
+        //! @param handle The SceneHandle of the requested scene.
+        //! @return Returns a Scene pointer if found, otherwise nullptr.
+        virtual Scene* GetScene(SceneHandle handle) = 0;
 
         //! Start the simulation process.
         //! As an example, this is a good place to trigger and queue any long running work in separate threads.
@@ -126,6 +132,13 @@ namespace AzPhysics
         //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
         //! @return Returns a structure that contains a list of Hits. Depending on flags set in the request, this may only contain 1 result.
         virtual SceneQueryHits QueryScene(SceneHandle sceneHandle, const SceneQueryRequest* request) = 0;
+
+        //! Make a blocking query into the scene.
+        //! @param sceneHandle A handle to the scene to make the scene query with.
+        //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
+        //! @param result A structure that contains a list of Hits. Depending on flags set in the request, this may only contain 1 result.
+        //! @return Returns true if there is at least one hit.
+        virtual bool QueryScene(SceneHandle sceneHandle, const SceneQueryRequest* request, SceneQueryHits& result) = 0;
 
         //! Make many blocking queries into the scene.
         //! @param sceneHandle A handle to the scene to make the scene query with.
@@ -242,7 +255,7 @@ namespace AzPhysics
     };
 
     //! Interface of a Physics Scene
-    class Scene
+    class AZF_API Scene
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
@@ -338,6 +351,12 @@ namespace AzPhysics
         //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
         //! @return Returns a structure that contains a list of Hits. Depending on flags set in the request, this may only contain 1 result.
         virtual SceneQueryHits QueryScene(const SceneQueryRequest* request) = 0;
+
+        //! Make a blocking query into the scene.
+        //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
+        //! @param result A structure that contains a list of Hits. Depending on flags set in the request, this may only contain 1 result.
+        //! @return Returns true if there is at least one hit.
+        virtual bool QueryScene(const SceneQueryRequest* request, SceneQueryHits& result) = 0;
 
         //! Make many blocking queries into the scene.
         //! @param requests A list of requests to make. Each entry should be one of RayCastRequest || ShapeCastRequest || OverlapRequest

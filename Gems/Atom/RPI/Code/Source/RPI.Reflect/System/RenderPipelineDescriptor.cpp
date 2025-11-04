@@ -23,9 +23,12 @@ namespace AZ
                     ->Field("Name", &RenderPipelineDescriptor::m_name)
                     ->Field("MainViewTag", &RenderPipelineDescriptor::m_mainViewTagName)
                     ->Field("RootPassTemplate", &RenderPipelineDescriptor::m_rootPassTemplate)
+                    ->Field("MaterialPipelineTag", &RenderPipelineDescriptor::m_materialPipelineTag)
                     ->Field("ExecuteOnce", &RenderPipelineDescriptor::m_executeOnce)
                     ->Field("RenderSettings", &RenderPipelineDescriptor::m_renderSettings)
+                    ->Field("DefaultAAMethod", &RenderPipelineDescriptor::m_defaultAAMethod)
                     ->Field("AllowModification", &RenderPipelineDescriptor::m_allowModification)
+                    ->Field("AllowSubpassMerging", &RenderPipelineDescriptor::m_allowSubpassMerging)
                 ;
             }
         }

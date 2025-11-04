@@ -13,7 +13,7 @@ namespace AZ
     namespace Render
     {
         template <typename T>
-        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::Buffer> buffer, const AZStd::vector<T>& data)
+        AZ::Outcome<void> WriteToBuffer(RHI::Ptr<RHI::DeviceBuffer> buffer, const AZStd::vector<T>& data)
         {
             const size_t byteCount = data.size() * sizeof(T);
             return WriteToBuffer(buffer, data.data(), byteCount);
@@ -28,7 +28,7 @@ namespace AZ
 
             if (!asset && path.size() > 0)
             {
-                AZ_Warning("CreateAssetFromPath", false, "Unable to find asset Id for path %.*s.", aznumeric_cast<int>(path.size()), path.data());
+                AZ_Warning("GetAssetFromPath", false, "Unable to find asset Id for path %.*s.", aznumeric_cast<int>(path.size()), path.data());
             }
             return asset;
         }

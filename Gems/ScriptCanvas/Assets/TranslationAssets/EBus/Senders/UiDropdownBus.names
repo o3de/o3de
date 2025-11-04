@@ -383,6 +383,7 @@
                     },
                     "details": {
                         "name": "Set Text Element",
+                        "subtitle": "UI Dropdown",
                         "tooltip": "Sets the text element that displays the text of the currently selected option"
                     },
                     "params": [

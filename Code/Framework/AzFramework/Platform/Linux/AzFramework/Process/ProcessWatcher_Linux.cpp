@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/ioctl.h>
+#include <sys/prctl.h>
 #include <sys/resource.h> // for iopolicy
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -326,9 +327,19 @@ namespace AzFramework
         // This configures the write end of the pipe to close on calls to `exec`
         fcntl(childErrorPipeFds[1], F_SETFD, fcntl(childErrorPipeFds[1], F_GETFD) | FD_CLOEXEC);
 
+        const pid_t parentPid = getpid();
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
         {
+            if (processLaunchInfo.m_tetherLifetime)
+            {
+                prctl(PR_SET_PDEATHSIG, SIGTERM);
+                if (getppid() != parentPid)
+                {
+                    _exit(1);  // Close if we've already been orphaned from our original parent process.
+                }
+            }
+
             ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo, childErrorPipeFds);
         }
 
@@ -357,6 +368,10 @@ namespace AzFramework
             {
                 AZ_TracePrintf("Process Watcher", "ProcessLauncher::LaunchProcess: Unable to launch process %s : errno = %s\n", commandAndArgs[0], strerror(errorCodeFromChild));
                 processData.m_childProcessIsDone = true;
+                if (errorCodeFromChild == ENOENT)
+                {
+                    processLaunchInfo.m_launchResult = PLR_MissingFile; // Note for future maintainers, m_launchResult is mutable
+                }
                 child_pid = -1;
             }
         }
@@ -371,7 +386,13 @@ namespace AzFramework
         delete [] commandAndArgs;
 
         // If an error occurs, exit the application.
-        return child_pid >= 0;
+        if (child_pid >= 0)
+        {
+            processLaunchInfo.m_launchResult = PLR_Success; // Note for future maintainers, m_launchResult is mutable
+            return true;
+        }
+        
+        return false;
     }
 
     StdProcessCommunicator* ProcessWatcher::CreateStdCommunicator()

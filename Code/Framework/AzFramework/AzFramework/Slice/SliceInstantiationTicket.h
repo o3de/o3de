@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -22,7 +23,7 @@ namespace AzFramework
      * Identifies an asynchronous slice instantiation request.
      * This can be used to get the results of a slice instantiation request.
      */
-    class SliceInstantiationTicket
+    class AZF_API SliceInstantiationTicket
     {
     public:
         /**
@@ -82,7 +83,7 @@ namespace AzFramework
          */
         AZ::u64 m_requestId;
     };
-}
+} // namespace AzFramework
 
 namespace AZStd
 {
@@ -99,4 +100,4 @@ namespace AZStd
             return result;
         }
     };
-}
+} // namespace AZStd

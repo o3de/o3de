@@ -12,6 +12,7 @@
 
 #include <ACES/Aces.h>
 
+#include <Atom/Feature/Base.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
@@ -26,7 +27,7 @@ namespace AZ
          * The ACES display mapper parameter overrides.
          * These parameters override default ACES parameters when m_overrideDefaults is true.
          */
-        struct AcesParameterOverrides final
+        struct ATOM_FEATURE_COMMON_API AcesParameterOverrides final
         {
             AZ_TYPE_INFO(AcesParameterOverrides, "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}");
             static void Reflect(ReflectContext* context);
@@ -66,7 +67,7 @@ namespace AZ
         };
 
         //! A descriptor used to configure the DisplayMapper
-        struct DisplayMapperConfigurationDescriptor final
+        struct ATOM_FEATURE_COMMON_API DisplayMapperConfigurationDescriptor final
         {
             AZ_TYPE_INFO(DisplayMapperConfigurationDescriptor, "{655B0C35-C96D-4EDA-810E-B50D58BC1D20}");
             static void Reflect(AZ::ReflectContext* context);
@@ -74,7 +75,7 @@ namespace AZ
             //! Configuration name
             AZStd::string m_name;
 
-            DisplayMapperOperationType m_operationType;
+            DisplayMapperOperationType m_operationType = DisplayMapperOperationType::Aces;
 
             bool m_ldrGradingLutEnabled = false;
             Data::Asset<RPI::AnyAsset> m_ldrColorGradingLut;
@@ -83,12 +84,12 @@ namespace AZ
         };
 
         //! Custom pass data for DisplayMapperPass.
-        struct DisplayMapperPassData
+        struct ATOM_FEATURE_COMMON_API DisplayMapperPassData
             : public RPI::PassData
         {
             using Base = RPI::PassData;
             AZ_RTTI(DisplayMapperPassData, "{2F7576F1-41C1-408A-96BF-F4B8ED280CBC}", Base);
-            AZ_CLASS_ALLOCATOR(DisplayMapperPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DisplayMapperPassData, SystemAllocator);
 
             DisplayMapperPassData() = default;
             virtual ~DisplayMapperPassData() = default;
@@ -96,6 +97,8 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             DisplayMapperConfigurationDescriptor m_config;
+            bool m_mergeLdrGradingLut = false;
+            RPI::AssetReference m_outputTransformOverride;
         };
     } // namespace Render
 } // namespace AZ

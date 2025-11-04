@@ -20,7 +20,7 @@ namespace AZ
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(JobEmpty, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(JobEmpty, ThreadPoolAllocator);
 
         JobEmpty(bool isAutoDelete, JobContext* context = nullptr)
             : Job(isAutoDelete, context)

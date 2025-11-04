@@ -17,7 +17,7 @@ namespace Terrain
     {
     public:
         AZ_RTTI(TerrainModule, "{B1CFB3A0-EA27-4AF0-A16D-E943C98FED88}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(TerrainModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainModule, AZ::SystemAllocator);
 
         TerrainModule();
 

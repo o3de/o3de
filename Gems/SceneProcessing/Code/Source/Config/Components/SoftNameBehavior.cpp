@@ -25,15 +25,17 @@ namespace AZ
             SceneAPI::Events::GraphMetaInfoBus::Handler::BusDisconnect();
         }
 
-        void SoftNameBehavior::GetVirtualTypes(AZStd::set<Crc32>& types, const SceneAPI::Containers::Scene& scene,
+        void SoftNameBehavior::GetVirtualTypes(
+            SceneAPI::Events::GraphMetaInfo::VirtualTypesSet& types,
+            const SceneAPI::Containers::Scene& scene,
             SceneAPI::Containers::SceneGraph::NodeIndex node)
         {
-            const AZStd::vector<SoftNameSetting*>* softNames = nullptr;
+            const AZStd::vector<AZStd::unique_ptr<SoftNameSetting>>* softNames = nullptr;
             SceneProcessingConfigRequestBus::BroadcastResult(softNames, &SceneProcessingConfigRequestBus::Events::GetSoftNames);
 
             if (softNames)
             {
-                for (const SoftNameSetting* softName : *softNames)
+                for (const AZStd::unique_ptr<SoftNameSetting>& softName : *softNames)
                 {
                     if (types.find(softName->GetVirtualTypeHash()) != types.end())
                     {
@@ -51,18 +53,18 @@ namespace AZ
 
         void SoftNameBehavior::GetVirtualTypeName(AZStd::string& name, Crc32 type)
         {
-            if (type == AZ_CRC("Ignore", 0x0d88d6e2))
+            if (type == AZ_CRC_CE("Ignore"))
             {
                 name = "Ignore";
             }
         }
 
-        void SoftNameBehavior::GetAllVirtualTypes(AZStd::set<Crc32>& types)
+        void SoftNameBehavior::GetAllVirtualTypes(SceneAPI::Events::GraphMetaInfo::VirtualTypesSet& types)
         {
             // Add types that aren't handled by one specific behavior and have a more global utility.
-            if (types.find(AZ_CRC("Ignore", 0x0d88d6e2)) == types.end())
+            if (types.find(AZ_CRC_CE("Ignore")) == types.end())
             {
-                types.insert(AZ_CRC("Ignore", 0x0d88d6e2));
+                types.insert(AZ_CRC_CE("Ignore"));
             }
         }
 

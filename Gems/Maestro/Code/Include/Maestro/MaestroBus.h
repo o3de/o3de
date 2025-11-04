@@ -18,7 +18,8 @@ namespace Maestro
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        // Public functions
+
     };
     using MaestroRequestBus = AZ::EBus<MaestroRequests>;
+
 } // namespace Maestro

@@ -66,6 +66,8 @@ set(FILES
     Source/LUA/LUAStackTrackerMessages.h
     Source/LUA/LUATargetContextTrackerMessages.h
     Source/LUA/LUAWatchesDebuggerMessages.h
+    Source/LUA/RecentFiles.cpp
+    Source/LUA/RecentFiles.h
     Source/LUA/StackPanel.cpp
     Source/LUA/StackPanel.hxx
     Source/LUA/TargetContextButton.cpp

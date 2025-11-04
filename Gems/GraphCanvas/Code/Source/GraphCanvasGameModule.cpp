@@ -20,4 +20,8 @@ namespace GraphCanvas
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(GraphCanvas_875b6fcbdeea44deaae7984ad9bb6cdc, GraphCanvas::GraphCanvasModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), GraphCanvas::GraphCanvasModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_GraphCanvas, GraphCanvas::GraphCanvasModule)
+#endif

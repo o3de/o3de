@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 
 #include <AzCore/IO/Path/Path.h>
@@ -33,12 +34,12 @@ namespace AzToolsFramework
         /**
         * The Prefab Loader helps saving/loading Prefab files.
         */
-        class PrefabLoader final
+        class AZTF_API PrefabLoader final
             : public PrefabLoaderInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator, 0);
-            AZ_RTTI(PrefabLoader, "{A302B072-4DC4-4B7E-9188-226F56A3429C8}", PrefabLoaderInterface);
+            AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator);
+            AZ_RTTI(PrefabLoader, "{A302B072-4DC4-4B7E-9188-226F56A3429C}", PrefabLoaderInterface);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -59,7 +60,7 @@ namespace AzToolsFramework
              * in the source file.
              * @param relativePath A Prefab Template relative file path.
              */
-            void ReloadTemplateFromFile(AZ::IO::PathView relativePath);
+            void ReloadTemplateFromFile(AZ::IO::PathView relativePath) override;
 
             /**
              * Load Prefab Template from given content string to memory and return the id of loaded Template.

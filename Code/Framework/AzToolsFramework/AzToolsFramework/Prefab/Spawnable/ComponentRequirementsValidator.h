@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentExport.h>
 #include <AzCore/Component/Entity.h>
@@ -19,10 +21,10 @@
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class ComponentRequirementsValidator
+    class AZTF_API ComponentRequirementsValidator
     {
     public:
-        AZ_CLASS_ALLOCATOR(ComponentRequirementsValidator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentRequirementsValidator, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::ComponentRequirementsValidator, "{1E9CD55D-FFEA-4E71-A316-731E25E6C981}");
 
         virtual ~ComponentRequirementsValidator() = default;

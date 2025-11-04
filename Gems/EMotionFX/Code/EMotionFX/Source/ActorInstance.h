@@ -18,7 +18,6 @@
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Ray.h>
 #include <MCore/Source/MultiThreadManager.h>
-#include "BaseObject.h"
 #include "Actor.h"
 #include "Transform.h"
 #include "AnimGraphPosePool.h"
@@ -47,13 +46,13 @@ namespace EMotionFX
      * the transformation and mesh information. Still, each actor instance can be controlled and animated individually.
      */
     class EMFX_API ActorInstance
-        : public BaseObject
+        : public MCore::RefCounted
     {
         AZ_CLASS_ALLOCATOR_DECL
         friend class Attachment;
 
     public:
-        AZ_RTTI(EMotionFX::ActorInstance, "{280A0170-EB6A-4E90-B2F1-E18D8EAEFB36}", BaseObject);
+        AZ_RTTI(EMotionFX::ActorInstance, "{280A0170-EB6A-4E90-B2F1-E18D8EAEFB36}");
         /**
          * The bounding volume generation types.
          */
@@ -350,9 +349,16 @@ namespace EMotionFX
          * Get the normalized percentage that the calculated bounding box is expanded with.
          * This can be used to add a tolerance area to the calculated bounding box to avoid clipping the character too early.
          * A static bounding box together with the expansion is the recommended way for maximum performance.
-         * @result A value of 1.0 means that the calculated bounding box won't be expanded at all, while 2.0 means it is twice the size.
+         * @result A value of 0.0 means that the calculated bounding box won't be expanded at all, while .25 means it will become 125% the original size.
          */
         float GetExpandBoundsBy() const { return m_boundsExpandBy; }
+
+        /**
+        * Expand a bounding box by a given percentage
+        * @param aabb The bounding box to expand
+        * @param expandBoundsBy Percentage to expand the bounds by. A value of 0.0 means that the calculated bounding box won't be expanded at all, while .25 means it will become 125% the original size.
+        */
+        static void ExpandBounds(AZ::Aabb& aabb, float expandByPercentage);
 
         /**
          * Get the bounding volume auto-update item frequency.
@@ -862,6 +868,8 @@ namespace EMotionFX
         void UpdateVisualizeScale();                    // not automatically called on creation for performance reasons (this method relatively is slow as it updates all meshes)
         float GetVisualizeScale() const;
         void SetVisualizeScale(float factor);
+        MCORE_INLINE void SetLightingChannelMask(uint32_t lightingChannelMask){ m_lightingChannelMask = lightingChannelMask; }
+        MCORE_INLINE uint32_t GetLightingChannelMask() const { return m_lightingChannelMask; }
 
     private:
         TransformData*          m_transformData;         /**< The transformation data for this instance. */
@@ -902,6 +910,7 @@ namespace EMotionFX
         float m_boundsExpandBy = 0.25f; /**< Expand bounding box by normalized percentage. (Default: 25% greater than the calculated bounding box) */
         uint8                   m_numAttachmentRefs;     /**< Specifies how many actor instances use this actor instance as attachment. */
         uint8                   m_boolFlags;             /**< Boolean flags. */
+        uint32_t m_lightingChannelMask = 1;
 
         /**
          * Boolean masks, as replacement for having several bools as members.

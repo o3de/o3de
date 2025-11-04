@@ -5,10 +5,10 @@
                 // The terrain shader doesn't work on mac due to unbounded arrays, so disable problematic materials and material types
                 // in the terrain gem to prevent dependencies from failing.
                 "Exclude Terrain DefaultPbrTerrain.material": {
-                    "pattern": "^Materials/Terrain/DefaultPbrTerrain.material"
+                    "glob": "Materials/Terrain/DefaultPbrTerrain.material"
                 },
                 "Exclude Terrain PbrTerrain.materialtype": {
-                    "pattern": "^Materials/Terrain/PbrTerrain.materialtype"
+                    "glob": "Materials/Terrain/PbrTerrain.materialtype"
                 }
             }
         }

@@ -31,7 +31,7 @@ namespace GraphCanvas
         , public NodePropertyRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodePropertyDisplayWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePropertyDisplayWidget, AZ::SystemAllocator);
 
         NodePropertyDisplayWidget(QGraphicsItem* parent = nullptr);
         ~NodePropertyDisplayWidget() override;
@@ -64,7 +64,6 @@ namespace GraphCanvas
         void UpdateLayout(bool forceUpdate = false);
         void UpdateGeometry();
     
-        NodePropertyConfiguration   m_propertyConfiguration;
         NodePropertyDisplay*        m_nodePropertyDisplay;
         
         QGraphicsLayoutItem*   m_layoutItem;

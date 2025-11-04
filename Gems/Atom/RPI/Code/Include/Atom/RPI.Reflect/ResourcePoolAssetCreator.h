@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Reflect/AssetCreator.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
 namespace AZ
@@ -17,7 +18,7 @@ namespace AZ
         //! Use a ResourcePoolAssetCreator to create and configure a new ResourcePoolAsset which can either be BufferPoolAsset or ImagePoolAsset.
         //! (Note this class generally follows the builder design pattern, but is called a "creator" rather 
         //! than a "builder" to avoid confusion with the AssetBuilderSDK).
-        class ResourcePoolAssetCreator
+        class ATOM_RPI_REFLECT_API ResourcePoolAssetCreator
             : public AssetCreator<ResourcePoolAsset>
         {
         public:

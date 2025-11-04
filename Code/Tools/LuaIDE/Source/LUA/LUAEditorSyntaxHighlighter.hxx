@@ -8,10 +8,14 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
-#include <QSyntaxHighlighter>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/function/function_template.h>
+#include <AzCore/std/string/string.h>
+#include <QColor>
+#include <QRegularExpression>
+#include <QSyntaxHighlighter>
 #include <QTextEdit>
 #endif
 
@@ -26,7 +30,7 @@ namespace LUAEditor
     public:
         class StateMachine;
 
-        AZ_CLASS_ALLOCATOR(LUASyntaxHighlighter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUASyntaxHighlighter, AZ::SystemAllocator);
         LUASyntaxHighlighter(QWidget* parent);
         LUASyntaxHighlighter(QTextDocument* parent);
         ~LUASyntaxHighlighter();
@@ -34,7 +38,6 @@ namespace LUAEditor
         void highlightBlock(const QString& text) override;
         //set to -1 to disable bracket highlighting
         void SetBracketHighlighting(int openBracketPos, int closeBracketPos);
-        void SetFont(QFont font) { m_font = font; }
 
         //this is done using QT extraSelections not regular highlighting
         QList<QTextEdit::ExtraSelection> HighlightMatchingNames(const QTextCursor& cursor, const QString& text) const;
@@ -46,14 +49,23 @@ namespace LUAEditor
         void LUANamesInScopeChanged(const QStringList& luaNames) const;
 
     private:
+        void BuildRegExes();
         void AddBlockKeywords();
 
         StateMachine* m_machine;
         AZStd::unordered_set<AZStd::string> m_LUAStartBlockKeywords;
         AZStd::unordered_set<AZStd::string> m_LUAEndBlockKeywords;
+
+        struct HighlightingRule
+        {
+            bool stopProcessingMoreRulesAfterThis = false;
+            QRegularExpression pattern;
+            AZStd::function<QColor()> colorCB;
+        };
+        AZStd::vector<HighlightingRule> m_highlightingRules;
+
         int m_openBracketPos{-1};
         int m_closeBracketPos{-1};
-        QFont m_font{"OpenSans", 10};
         mutable int m_currentScopeBlock{-1};
     };
 }

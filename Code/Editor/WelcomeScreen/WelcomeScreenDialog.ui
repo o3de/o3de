@@ -527,7 +527,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>No level file created yet for this project. &lt;a href=&quot;#&quot;&gt;Create one&lt;/a&gt; now.</string>
+             <string>No recent level file in this project yet. &lt;a href=&quot;Open&quot;&gt;Open an existing level&lt;/a&gt; or &lt;a href=&quot;Create&quot;&gt;create a new level&lt;/a&gt; now.</string>
             </property>
             <property name="textFormat">
              <enum>Qt::RichText</enum>

@@ -9,6 +9,7 @@
 #include <AzCore/IO/Streamer/StorageDrive_Windows.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -19,7 +20,7 @@
 
 namespace AZ::IO
 {
-    constexpr AZ::u32 TestMaxFileHandles = 1;
+    constexpr AZ::u32 TestMaxFileHandles = 4;
     constexpr AZ::u32 TestMaxMetaDataEntries = 16;
     constexpr size_t TestPhysicalSectorSize = 4_kib;
     constexpr size_t TestLogicalSectorSize = 512;
@@ -49,7 +50,7 @@ namespace AZ::IO
         }
     };
 
-    INSTANTIATE_TYPED_TEST_CASE_P(
+    INSTANTIATE_TYPED_TEST_SUITE_P(
         Streamer_StorageDriveWindowsConformityTests, StreamStackEntryConformityTests, StorageDriveWindowsTestDescription);
 
 
@@ -103,7 +104,7 @@ namespace AZ::IO
     //
 
     class Streamer_StorageDriveWindowsTestFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::SetRestoreFileIOBaseRAII
     {
     public:
@@ -123,6 +124,7 @@ namespace AZ::IO
         AZStd::vector<AZStd::unique_ptr<char[]>> m_dummyBuffers;
         StreamerTraceBusDetector m_traceDetector;
         StorageDriveWin::ConstructionOptions m_configurationOptions;
+        TaskExecutor m_taskExecutor;
 
         // Methods...
         Streamer_StorageDriveWindowsTestFixture()
@@ -157,6 +159,7 @@ namespace AZ::IO
 
         void SetUp() override
         {
+            TaskExecutor::SetInstance(&m_taskExecutor);
             m_dummyRequestPath = RequestPath(AZ::IO::PathView(m_dummyFilepath));
 
             SetupStorageDrive(TestOverCommit);
@@ -171,6 +174,7 @@ namespace AZ::IO
             RemoveDummyFiles();
             m_dummyBuffers.clear();
             m_dummyBuffers.shrink_to_fit();
+            TaskExecutor::SetInstance(nullptr);
         }
 
         // Create a file filled with a single character.
@@ -231,7 +235,7 @@ namespace AZ::IO
         void WaitTillCompleted()
         {
             StreamStackEntry::Status status;
-            auto startTime = AZStd::chrono::system_clock::now();
+            auto startTime = AZStd::chrono::steady_clock::now();
             do
             {
                 m_storageDriveWin->ExecuteRequests();
@@ -240,7 +244,7 @@ namespace AZ::IO
                 status.m_isIdle = true;
                 m_storageDriveWin->UpdateStatus(status);
 
-                if (AZStd::chrono::system_clock::now() - startTime > AZStd::chrono::seconds(5))
+                if (AZStd::chrono::steady_clock::now() - startTime > AZStd::chrono::seconds(5))
                 {
                     FAIL();
                 }
@@ -920,6 +924,7 @@ namespace AZ::IO
 
         void SetUp() override
         {
+            Streamer_StorageDriveWindowsTestFixture::SetUp();
             SetupStorageDrive(TestOverCommit);
         }
 
@@ -1171,6 +1176,9 @@ namespace Benchmark
             AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
             delete m_fileIO;
             m_fileIO = nullptr;
+
+            AZ::TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
         }
     public:
         constexpr static const char* TestFileName = "StreamerBenchmark.bin";
@@ -1179,6 +1187,9 @@ namespace Benchmark
         void SetupStreamer(bool enableFileSharing)
         {
             using namespace AZ::IO;
+
+            m_taskExecutor = AZStd::make_unique<AZ::TaskExecutor>();
+            AZ::TaskExecutor::SetInstance(m_taskExecutor.get());
 
             m_fileIO = new UnitTest::TestFileIOBase();
             m_previousFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -1233,18 +1244,18 @@ namespace Benchmark
             for ([[maybe_unused]] auto _ : state)
             {
                 AZStd::binary_semaphore waitForReads;
-                AZStd::atomic<system_clock::time_point> end;
+                AZStd::atomic<steady_clock::time_point> end;
                 auto callback = [&end, &waitForReads]([[maybe_unused]] FileRequestHandle request)
                 {
-                    benchmark::DoNotOptimize(end = high_resolution_clock::now());
+                    benchmark::DoNotOptimize(end = steady_clock::now());
                     waitForReads.release();
                 };
 
                 FileRequestPtr request = m_streamer->Read(m_absolutePath, buffer.get(), state.range(0), state.range(0));
                 m_streamer->SetRequestCompleteCallback(request, callback);
 
-                system_clock::time_point start;
-                benchmark::DoNotOptimize(start = high_resolution_clock::now());
+                steady_clock::time_point start;
+                benchmark::DoNotOptimize(start = steady_clock::now());
                 m_streamer->QueueRequest(request);
 
                 waitForReads.try_acquire_for(AZStd::chrono::seconds(5));
@@ -1260,6 +1271,7 @@ namespace Benchmark
         AZ::IO::Streamer* m_streamer{};
         AZ::IO::FileIOBase* m_previousFileIO{};
         UnitTest::TestFileIOBase* m_fileIO{};
+        AZStd::unique_ptr<AZ::TaskExecutor> m_taskExecutor;
     };
 
     BENCHMARK_DEFINE_F(StorageDriveWindowsFixture, ReadsBaseline)(benchmark::State& state)

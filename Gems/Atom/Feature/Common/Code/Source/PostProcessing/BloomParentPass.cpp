@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
+
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -18,6 +20,9 @@ namespace AZ
 {
     namespace Render
     {
+
+        AZ_CVAR(bool, r_enableBloom, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable bloom effect support");
+
         RPI::Ptr<BloomParentPass> BloomParentPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<BloomParentPass> pass = aznew BloomParentPass(descriptor);
@@ -30,6 +35,11 @@ namespace AZ
 
         bool BloomParentPass::IsEnabled() const
         {
+            if (!r_enableBloom)
+            {
+                return false;
+            }
+
             if (!ParentPass::IsEnabled())
             {
                 return false;
@@ -40,7 +50,7 @@ namespace AZ
                 return false;
             }
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            const RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
             if (!fp)
             {
                 return false;

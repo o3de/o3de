@@ -21,10 +21,13 @@
 #include <AzCore/Math/Color.h>
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <Atom/RPI.Reflect/Configuration.h>
+#include <Atom/RHI.Reflect/SamplerState.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
+#include <AzCore/Asset/AssetCommon.h>
 
 namespace AZ
 {
@@ -34,7 +37,7 @@ namespace AZ
         //! For convenience, it supports all the types necessary for *both* the runtime data (MaterialAsset) as well as .material file data (MaterialSourceData).
         //! For example, Instance<Image> is exclusive to the runtime data and AZStd::string is primarily for image file paths in .material files. Most other
         //! data types are relevant in both contexts.
-        class MaterialPropertyValue final
+        class ATOM_RPI_REFLECT_API MaterialPropertyValue final
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialPropertyValue, "{59815051-BBA2-4C6A-A414-A82834A84CB2}");
@@ -47,7 +50,20 @@ namespace AZ
             //!   Data::Asset<ImageAsset> is used in MaterialTypeAsset, MaterialAsset
             //!   AZStd::string           is used in MaterialTypeSourceData, MaterialSourceData
             //! These are included in one MaterialPropertyValue type for convenience, rather than having to maintain three separate classes that are very similar
-            using ValueType = AZStd::variant<AZStd::monostate, bool, int32_t, uint32_t, float, Vector2, Vector3, Vector4, Color, Data::Asset<ImageAsset>, Data::Instance<Image>, AZStd::string>;
+            using ValueType = AZStd::variant<
+                AZStd::monostate,
+                bool,
+                int32_t,
+                uint32_t,
+                float,
+                Vector2,
+                Vector3,
+                Vector4,
+                Color,
+                Data::Asset<ImageAsset>,
+                Data::Instance<Image>,
+                AZStd::string,
+                RHI::SamplerState>;
 
             //! Two-way conversion to AZStd::any
             //! If the type in AZStd::any is not in ValueType, a warning will be reported and AZStd::monostate will be returned.
@@ -68,9 +84,16 @@ namespace AZ
             MaterialPropertyValue(const Data::Instance<Image>& value) : m_value(value) {}
             MaterialPropertyValue(const AZStd::string& value) : m_value(value) {}
             MaterialPropertyValue(const Name& value) : m_value(AZStd::string{value.GetStringView()}) {}
+            MaterialPropertyValue(const RHI::SamplerState& value)
+                : m_value(value)
+            {
+            }
 
             //! Copy constructor
-            MaterialPropertyValue(const MaterialPropertyValue& value) : m_value(value.m_value) {}
+            MaterialPropertyValue(const MaterialPropertyValue& value)
+                : m_value(value.m_value)
+            {
+            }
 
             //! Templated assignment.
             //! The type will be restricted to those defined in the variant at compile time.

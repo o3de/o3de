@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/tuple.h>
 
+
 namespace ScriptCanvas
 {
     namespace AABBFunctions
@@ -73,3 +74,6 @@ namespace ScriptCanvas
         double ZExtent(const AZ::Aabb& source);
     } // namespace AABBFunctions
 } // namespace ScriptCanvas
+
+
+#include <Include/ScriptCanvas/Libraries/Math/AABB.generated.h>

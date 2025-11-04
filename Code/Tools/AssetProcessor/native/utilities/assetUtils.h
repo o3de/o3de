@@ -22,6 +22,9 @@
 #include <AzToolsFramework/Asset/AssetProcessorMessages.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AssetManager/SourceAssetReference.h>
+#include <AzCore/EBus/Event.h>
+#include <AzCore/std/parallel/mutex.h>
 
 namespace AzToolsFramework
 {
@@ -49,7 +52,43 @@ namespace AssetProcessor
 
 namespace AssetUtilities
 {
+    // option and parameter names
     inline constexpr char ProjectPathOverrideParameter[] = "project-path";
+    inline constexpr char ZeroAnalysisModeOptionName[] = "zeroAnalysisMode";
+    inline constexpr char EnableBuilderDebugFlagOptionName[] = "enableBuilderDebugFlag";
+    inline constexpr char SkipInitialScanOptionName[] = "initialScanSkippingEnabled";
+    inline constexpr char VerboseLoggingOptionName[] = "verboseLogging";
+
+    //! You can read and write any sub-keys to this key and it will be persisted to the project user registry folder:
+    inline constexpr AZStd::string_view AssetProcessorUserSettingsRootKey = "/O3DE/AssetProcessor/UserSettings";
+
+    class AssetProcessorUserSettingsNotifications : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // any number of connected listeners
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // no addressing used.
+        typedef AZStd::recursive_mutex MutexType; // protect bus addition and removal since listeners can disconnect in threads.
+
+        //! Invoked on SetUserSetting(settingName, ...) and the settingName will be just the name of the setting, not the full registry path.
+        //! If you hanle your own reading and writing to the above sub-keys, consider invoking this yourself.
+        virtual void OnSettingChanged(const AZStd::string_view& settingName) = 0;
+    };
+
+    using AssetProcessorUserSettingsNotificationBus = AZ::EBus<AssetProcessorUserSettingsNotifications>;
+
+    //! Set a named user setting.  The name must be json-path compatible name (avoid dots, slashes, spaces, etc)
+    //! The value must be something that can be written into the settings registry.
+    //! Really only meant to be used for very simple types (ints, strings, bools, etc).  Don't use it for structs.
+    //! You can write your own structs as a sub key of AssetProcessorUserSettingsRootKey and invoke SaveSettingsFile.
+    template<typename T>
+    bool SetUserSetting(const char* settingName, T value);
+
+    //! Gets a named user setting, it will be persisted only for this project, for this user.
+    template<typename T>
+    T GetUserSetting(const char* settingName, T defaultValue);
+
+    //! Save user settings into the default settings file.
+    bool SaveSettingsFile();
 
     //! Set precision fingerprint timestamps will be truncated to avoid mismatches across systems/packaging with different file timestamp precisions
     //! Timestamps default to milliseconds.  A value of 1 will keep the default millisecond precision.  A value of 1000 will reduce the precision to seconds
@@ -164,6 +203,9 @@ namespace AssetUtilities
     // UUID generation defaults to lowercase SHA1 of the source name, this does normalization and such
     AZ::Uuid CreateSafeSourceUUIDFromName(const char* sourceName, bool caseInsensitive = true);
 
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset);
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset);
+
     //! Compute a CRC given a null-terminated string
     //! @param[in] priorCRC     If supplied, continues an existing CRC by feeding it more data
     unsigned int ComputeCRC32(const char* inString, unsigned int priorCRC = 0xFFFFFFFF);
@@ -246,12 +288,11 @@ namespace AssetUtilities
 
     QString GuessProductNameInDatabase(QString path, QString platform, AssetProcessor::AssetDatabaseConnection* databaseConnection);
 
-    //! Given a list of source asset Uuids, it returns a list that contains the same source assets Uuids along with all of their dependencies
-    //! which are discovered recursively. All the returned Uuids are unique, meaning they appear once in the returned list.
-    AZStd::vector<AZ::Uuid> CollectAssetAndDependenciesRecursively(AssetProcessor::AssetDatabaseConnection& databaseConnection, const AZStd::vector<AZ::Uuid>& assetList);
-
     //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.
-    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot);
+    //! Set checkEntirePath to false if the caller is absolutely sure the path is correct and only the last element (file name or extension)
+    //! is potentially wrong. This can happen when for example taking a real file found from a real file directory that is already correct
+    //! and modifying just the file path or extension.  It is significantly faster to avoid checking the entire path.
+    bool UpdateToCorrectCase(const QString& rootPath, QString& relativePathFromRoot, bool checkEntirePath = true);
 
     //! Returns true if the path is in the cachePath and *not* in the intermediate assets folder.
     //! If cachePath is empty, it will be computed using ComputeProjectCacheRoot.
@@ -268,12 +309,17 @@ namespace AssetUtilities
     AZStd::string GetIntermediateAssetDatabaseName(AZ::IO::PathView relativePath);
 
     //! Finds the top level source that produced an intermediate product.  If the source is not yet recorded in the database or has no top level source, this will return nothing
-    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForProduct(AZ::IO::PathView relativePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+    AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
+    //! Gets the absolute path to the top level source that produced an intermediate product. Returns nothing if the source is not yet recorded, there is no top level source, or other issues are encountered.
+    //! Does not check if the file exists.
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
 
     //! Finds all the sources (up and down) in an intermediate output chain
-    AZStd::vector<AZStd::string> GetAllIntermediateSources(
-        AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
-    
+    AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
     //! Given a source path for an intermediate asset, constructs the product path.
     //! This does not verify either exist, it just manipulates the string.
     AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath);
@@ -305,6 +351,7 @@ namespace AssetUtilities
         : public AssetBuilderSDK::FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(BuilderFilePatternMatcher, AZ::SystemAllocator)
         BuilderFilePatternMatcher() = default;
         BuilderFilePatternMatcher(const BuilderFilePatternMatcher& copy);
         BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID);
@@ -380,4 +427,21 @@ namespace AssetUtilities
 
         void AppendLog(AzFramework::LogFile::SeverityLevel severity, const char* window, const char* message);
     };
+
+    extern template bool SetUserSetting<bool>(const char* settingName, bool value);
+    extern template bool GetUserSetting<bool>(const char* settingName, bool defaultValue);
+
+    extern template bool SetUserSetting<AZ::s64>(const char* settingName, AZ::s64 value);
+    extern template AZ::s64 GetUserSetting<AZ::s64>(const char* settingName, AZ::s64 defaultValue);
+
+    extern template bool SetUserSetting<AZ::u64>(const char* settingName, AZ::u64 value);
+    extern template AZ::u64 GetUserSetting<AZ::u64>(const char* settingName, AZ::u64 defaultValue);
+
+    extern template bool SetUserSetting<double>(const char* settingName, double value);
+    extern template double GetUserSetting<double>(const char* settingName, double defaultValue);
+
+    extern template bool SetUserSetting<AZStd::string>(const char* settingName, AZStd::string value);
+    extern template AZStd::string GetUserSetting<AZStd::string>(const char* settingName, AZStd::string defaultValue);
+
+    //! Gets a named user setting, it will be persisted only for this project, for this user.
 } // namespace AssetUtilities

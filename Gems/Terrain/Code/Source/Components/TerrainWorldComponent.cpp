@@ -57,7 +57,7 @@ namespace Terrain
             "Failed to load TerrainWorldConfig information.");
     }
     
-    AZ_CLASS_ALLOCATOR_IMPL(JsonTerrainWorldConfigSerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonTerrainWorldConfigSerializer, AZ::SystemAllocator);
 
     void TerrainWorldConfig::Reflect(AZ::ReflectContext* context)
     {

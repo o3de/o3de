@@ -8,17 +8,18 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 namespace AzToolsFramework
 {
     //! Implementation of PropertyEditorToolsSystemInterface, 
-    class PropertyEditorToolsSystem : public PropertyEditorToolsSystemInterface
+    class AZTF_API PropertyEditorToolsSystem : public PropertyEditorToolsSystemInterface
     {
     public:
         AZ_RTTI(PropertyEditorToolsSystem, "{78954B5C-D147-411F-BBDA-A28D2CA50A3A}", PropertyEditorToolsSystemInterface);
-        AZ_CLASS_ALLOCATOR(PropertyEditorToolsSystem, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyEditorToolsSystem, AZ::OSAllocator);
 
         PropertyEditorToolsSystem();
         ~PropertyEditorToolsSystem() override;
@@ -35,5 +36,7 @@ namespace AzToolsFramework
         AZStd::vector<PropertyHandlerId> m_defaultHandlers;
         // PropertyEditorSystem contains all non-UI system logic for the DPE, like the DOM schema
         AZ::DocumentPropertyEditor::PropertyEditorSystem m_lowLevelSystem;
+
+        PropertyHandlerId GetPropertyHandlerForType(AZStd::string_view handlerName, const AZ::TypeId& typeId);
     };
 } // namespace AzToolsFramework

@@ -1,0 +1,217 @@
+{
+    "name": "ParticleSystem",
+    "systemConfig": {
+        "loop": true
+    },
+    "emitters": [
+        {
+            "name": "Emitter0",
+            "config": {
+                "type": "CPU",
+                "maxSize": 500,
+                "startTime": 0.0,
+                "localSpace": false,
+                "duration": 4.0,
+                "loop": true
+            },
+            "material": "Materials/OpenParticle/ParticleMesh.material",
+            "model": "MaterialEditor/ViewportModels/Cube.fbx.azmodel",
+            "OpenParticle::MeshConfig": {
+                "facing": "CUSTOM",
+                "sortId": 0
+            },
+            "OpenParticle::EmitBurstList": {
+                "isProcessBurstList": true,
+                "burstList": [
+                    {
+                        "time": 0.0,
+                        "count": 1,
+                        "minCount": -1
+                    }
+                ]
+            },
+            "OpenParticle::SpawnVelDirection": {
+                "strengthObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                },
+                "directionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        10.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocPoint": {
+                "positionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::UpdateConstForce": {
+                "forceObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        -5.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Emitter1",
+            "config": {
+                "type": "CPU",
+                "maxSize": 500,
+                "startTime": 2.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": "Materials/OpenParticle/ParticleMesh.material",
+            "model": "MaterialEditor/ViewportModels/Cube.fbx.azmodel",
+            "OpenParticle::MeshConfig": {
+                "facing": "CUSTOM",
+                "sortId": 0
+            },
+            "OpenParticle::EmitBurstList": {
+                "isProcessBurstList": true,
+                "burstList": [
+                    {
+                        "time": 0.0,
+                        "count": 100,
+                        "minCount": -1
+                    }
+                ]
+            },
+            "OpenParticle::SpawnVelSphere": {
+                "strengthObject": {
+                    "dataValue": [
+                        5.0,
+                        5.0,
+                        5.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocPoint": {
+                "positionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        10.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Random",
+                    "distIndex": [
+                        1
+                    ]
+                }
+            },
+            "OpenParticle::UpdateSubUv": {
+                "framePerSecond": 5,
+                "frameNum": 16
+            },
+            "OpenParticle::UpdateConstForce": {
+                "forceObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        -5.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::UpdateSizeLinear": {
+                "sizeObject": {
+                    "dataValue": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            }
+        }
+    ],
+    "LODs": [],
+    "distribution": {
+        "randoms": [
+            {
+                "min": 1.0,
+                "max": 3.0,
+                "tickMode": "PerFrame"
+            }
+        ],
+        "curves": []
+    }
+}

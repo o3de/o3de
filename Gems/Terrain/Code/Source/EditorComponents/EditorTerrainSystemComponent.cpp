@@ -8,11 +8,15 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <EditorComponents/EditorTerrainSystemComponent.h>
+#include <TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.h>
 
 namespace Terrain
 {
     void EditorTerrainSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        GradientSignal::ImageCreatorUtils::
+            PaintableImageAssetHelper<EditorTerrainMacroMaterialComponent, EditorTerrainMacroMaterialComponentMode>::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorTerrainSystemComponent, AZ::Component>()->Version(1);

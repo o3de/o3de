@@ -47,11 +47,7 @@ namespace AZ
                 //assume consistent winding - no stripping or fanning expected (3 index per face)
                 SCENE_DATA_API virtual void AddFace(const Face& face);
 
-                SCENE_DATA_API void SetVertexIndexToControlPointIndexMap(int vertexIndex, int controlPointIndex);
-
-                SCENE_DATA_API size_t GetUsedControlPointCount() const override;
-                SCENE_DATA_API int GetControlPointIndex(int vertexIndex) const override;
-                SCENE_DATA_API int GetUsedPointIndexForControlPoint(int controlPointIndex) const override;
+                SCENE_DATA_API size_t GetVertexIndexCount() const override;
 
                 //assume consistent winding - no stripping or fanning expected (3 index per face)
                 SCENE_DATA_API unsigned int GetVertexCount() const override;
@@ -62,6 +58,12 @@ namespace AZ
                 SCENE_DATA_API const Vector3& GetNormal(unsigned int index) const override;
                 SCENE_DATA_API const Vector2& GetUV(unsigned int vertexIndex, unsigned int uvSetIndex) const;
 
+                SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetPositions();
+                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetPositions() const;
+                SCENE_DATA_API AZStd::vector<AZ::Vector3>& GetNormals();
+                SCENE_DATA_API const AZStd::vector<AZ::Vector3>& GetNormals() const;
+                SCENE_DATA_API AZStd::vector<Face>& GetFaces();
+                SCENE_DATA_API const AZStd::vector<Face>& GetFaces() const;
                 SCENE_DATA_API AZStd::vector<Vector4>& GetTangents();
                 SCENE_DATA_API const AZStd::vector<Vector4>& GetTangents() const;
                 SCENE_DATA_API AZStd::vector<Vector3>& GetBitangents();
@@ -82,9 +84,6 @@ namespace AZ
                 AZStd::vector<SceneAPI::DataTypes::Color> m_colors[MaxNumColorSets];
 
                 AZStd::vector<Face>     m_faces;
-
-                AZStd::unordered_map<int, int>                          m_vertexIndexToControlPointIndexMap;
-                AZStd::unordered_map<int, int>                          m_controlPointToUsedVertexIndexMap;
             };
         } // GraphData
     } // SceneData

@@ -106,4 +106,23 @@ namespace AzManipulatorTestFramework
     {
         return { cameraState.m_viewportSize.m_width / 2, cameraState.m_viewportSize.m_height / 2 };
     }
+
+    void DragMouse(
+        const AzFramework::CameraState& cameraState,
+        AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
+        const AZ::Vector3& worldStart,
+        const AZ::Vector3& worldEnd,
+        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier)
+    {
+        const auto screenStart = AzFramework::WorldToScreen(worldStart, cameraState);
+        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, cameraState);
+
+        actionDispatcher
+            ->CameraState(cameraState)
+            ->MousePosition(screenStart)
+            ->KeyboardModifierDown(keyboardModifier)
+            ->MouseLButtonDown()
+            ->MousePosition(screenEnd)
+            ->MouseLButtonUp();
+    }
 } // namespace AzManipulatorTestFramework

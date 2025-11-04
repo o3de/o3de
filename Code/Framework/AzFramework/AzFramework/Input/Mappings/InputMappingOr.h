@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/Input/Mappings/InputMapping.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -16,7 +17,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class that maps multiple different sources to a single output using 'OR' logic.
     //! Example: "gamepad_button_a" OR "keyboard_key_edit_space" -> "gameplay_jump"
-    class InputMappingOr : public InputMapping
+    class AZF_API InputMappingOr : public InputMapping
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +27,7 @@ namespace AzFramework
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // Type Info
@@ -53,7 +54,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputMappingOr, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputMappingOr, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

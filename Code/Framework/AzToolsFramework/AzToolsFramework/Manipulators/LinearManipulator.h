@@ -13,6 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -20,7 +21,7 @@ namespace AzToolsFramework
 
     //! LinearManipulator serves as a visual tool for users to modify values
     //! in one dimension on an axis defined in 3D space.
-    class LinearManipulator
+    class AZTF_API LinearManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalTransform
     {
@@ -29,7 +30,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(LinearManipulator, "{4AA805DA-7D3C-4AFA-8110-EECF32B8F530}", BaseManipulator)
-        AZ_CLASS_ALLOCATOR(LinearManipulator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(LinearManipulator, AZ::SystemAllocator)
 
         LinearManipulator() = delete;
         LinearManipulator(const LinearManipulator&) = delete;
@@ -166,7 +167,7 @@ namespace AzToolsFramework
         ManipulatorViews m_manipulatorViews; //!< Look of manipulator.
     };
 
-    LinearManipulator::Starter CalculateLinearManipulationDataStart(
+    AZTF_API LinearManipulator::Starter CalculateLinearManipulationDataStart(
         const LinearManipulator::Fixed& fixed,
         const AZ::Transform& worldFromLocal,
         const AZ::Vector3& nonUniformScale,
@@ -175,7 +176,7 @@ namespace AzToolsFramework
         float intersectionDistance,
         const AzFramework::CameraState& cameraState);
 
-    LinearManipulator::Action CalculateLinearManipulationDataAction(
+    AZTF_API LinearManipulator::Action CalculateLinearManipulationDataAction(
         const LinearManipulator::Fixed& fixed,
         const LinearManipulator::Starter& starter,
         const AZ::Transform& worldFromLocal,

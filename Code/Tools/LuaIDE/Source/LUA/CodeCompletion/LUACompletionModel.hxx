@@ -11,7 +11,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
-#include <QtCore/QStringListModel>
+#include <QStringListModel>
 #include <Source/LUA/LUAEditorStyleMessages.h>
 #include <QRegularExpression>
 #endif
@@ -27,7 +27,7 @@ namespace LUAEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(CompletionModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CompletionModel, AZ::SystemAllocator);
 
         CompletionModel(QObject *pParent = nullptr);
         virtual ~CompletionModel();
@@ -44,8 +44,6 @@ namespace LUAEditor
         void OnScopeNamesUpdated(const QStringList& scopeNames);
 
     private:
-        const char* c_luaSplit{R"([.:])"};
-
         void LUALibraryFunctionsUpdated() override;
         void UpdateKeywords();
 

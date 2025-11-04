@@ -17,9 +17,8 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Connection.h>
@@ -291,7 +290,7 @@ namespace ScriptCanvasBuilder
     AZ::Outcome<void, AZStd::string> SaveSubgraphInterface(ProcessTranslationJobInput& input, ScriptCanvas::SubgraphInterfaceData& subgraphInterface)
     {
         AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> runtimeAsset;
-        runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72)));
+        runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC_CE("SubgraphInterface")));
         runtimeAsset.Get()->m_interfaceData = subgraphInterface;
 
         AZStd::vector<AZ::u8> byteBuffer;
@@ -319,7 +318,7 @@ namespace ScriptCanvasBuilder
         jobProduct.m_dependenciesHandled = true;
         jobProduct.m_productFileName = input.runtimeScriptCanvasOutputPath;
         jobProduct.m_productAssetType = azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
-        jobProduct.m_productSubID = AZ_CRC("SubgraphInterface", 0xdfe6dc72);
+        jobProduct.m_productSubID = AZ_CRC_CE("SubgraphInterface");
         input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
         return AZ::Success();
     }

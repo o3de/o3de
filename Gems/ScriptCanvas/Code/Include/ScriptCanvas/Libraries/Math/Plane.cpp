@@ -8,6 +8,8 @@
 
 #include "Plane.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/Plane.generated.h>
+
 namespace ScriptCanvas
 {
     namespace PlaneFunctions

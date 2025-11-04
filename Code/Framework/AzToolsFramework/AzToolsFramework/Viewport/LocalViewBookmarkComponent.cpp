@@ -14,6 +14,26 @@
 
 namespace AzToolsFramework
 {
+    void ViewBookmark::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ViewBookmark>()
+                ->Version(0)
+                ->Field("Position", &ViewBookmark::m_position)
+                ->Field("Rotation", &ViewBookmark::m_rotation);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<ViewBookmark>("ViewBookmark Data", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "ViewBookmark")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_position, "Position", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Vector3, &ViewBookmark::m_rotation, "Rotation", "");
+            }
+        }
+    }
+
     void LocalViewBookmarkComponent::Reflect(AZ::ReflectContext* context)
     {
         ViewBookmark::Reflect(context);

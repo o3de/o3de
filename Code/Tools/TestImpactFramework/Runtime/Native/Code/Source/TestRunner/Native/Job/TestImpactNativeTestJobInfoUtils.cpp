@@ -7,6 +7,7 @@
  */
 
 #include <Target/Native/TestImpactNativeTestTarget.h>
+#include <TestRunner/Common/Job/TestImpactTestJobInfoUtils.h>
 #include <TestEngine/Native/TestImpactNativeTestTargetExtension.h>
 #include <TestRunner/Native/Job/TestImpactNativeTestJobInfoUtils.h>
 
@@ -30,5 +31,20 @@ namespace TestImpact
                        testTarget->GetCustomArgs().c_str())
                 .c_str();
         }
+    }
+
+    NativeTestEnumerator::Command GenerateTestEnumeratorJobInfoCommand(
+        const AZStd::string& launchArguement, const RepoPath& runArtifact)
+    {
+        const auto regularCommand = GenerateRegularTestJobInfoCommand(launchArguement, runArtifact);
+        return { AZStd::string::format("%s --gtest_list_tests", regularCommand.m_args.c_str()) };
+    }
+
+    NativeRegularTestRunner::Command GenerateRegularTestJobInfoCommand(
+        const AZStd::string& launchArguement,
+        const RepoPath& runArtifact
+    )
+    {
+        return { AZStd::string::format("%s --gtest_output=xml:\"%s\"", launchArguement.c_str(), runArtifact.c_str()) };
     }
 } // namespace TestImpact

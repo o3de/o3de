@@ -112,6 +112,22 @@ class Tests:
     deletion_redo = (
         "REDO deletion success",
         "P0: REDO deletion failed")
+    edit_fog_mode = (
+        "Fog mode updated",
+        "P1: Failed to set the fog mode")
+    fog_density_min = (
+        "Fog Density set to minimum value",
+        "P1: Fog Density failed to be set to minimum value")
+    fog_density_clamp_min = (
+        "Fog Density Clamp set to minimum value",
+        "P1: Fog Density Clamp failed to be set to minimum value")
+    fog_density_max = (
+        "Fog Density set to maximum value",
+        "P1: Fog Density failed to be set to maximum value")
+    fog_density_clamp_max = (
+        "Fog Density Clamp set to maximum value",
+        "P1: Fog Density Clamp failed to be set to maximum value")
+    
 
 
 def AtomEditorComponents_DeferredFog_AddedToEntity():
@@ -165,7 +181,7 @@ def AtomEditorComponents_DeferredFog_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import AtomComponentProperties
+    from Atom.atom_utils.atom_constants import (AtomComponentProperties, FOG_MODES)
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -229,176 +245,215 @@ def AtomEditorComponents_DeferredFog_AddedToEntity():
             AtomComponentProperties.deferred_fog('Enable Deferred Fog'), True)
         general.idle_wait_frames(1)
 
-        # 9. Enable/Disable the Enable Turbulence Properties parameter.
-        # Enable the Enable Turbulence Properties parameter.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Enable Turbulence Properties'), True)
-        Report.result(Tests.enable_turbulence_properties_parameter_enabled,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Enable Turbulence Properties')) is True)
+        # Cycle through the fog modes
+        for fog_mode in FOG_MODES.keys():
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Mode'), FOG_MODES[fog_mode])
 
-        # Disable the Enable Turbulence Properties parameter.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Enable Turbulence Properties'), False)
-        Report.result(Tests.enable_turbulence_properties_parameter_disabled,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Enable Turbulence Properties')) is False)
+            general.idle_wait_frames(1)
+            Report.result(Tests.edit_fog_mode,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Mode')) == FOG_MODES[fog_mode])
 
-        # Re-enable the Enable Turbulence Properties parameter for game mode verification.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Enable Turbulence Properties'), True)
+            # 9. Enable/Disable the Enable Turbulence Properties parameter.
+            # Enable the Enable Turbulence Properties parameter.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Enable Turbulence Properties'), True)
+            Report.result(Tests.enable_turbulence_properties_parameter_enabled,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Enable Turbulence Properties')) is True)
 
-        # 10. Enable/Disable the Enable Fog Layer parameter.
-        # Enable the Enable Fog Layer parameter.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Enable Fog Layer'), True)
-        Report.result(Tests.enable_fog_layer_parameter_enabled,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Enable Fog Layer')) is True)
+            # Disable the Enable Turbulence Properties parameter.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Enable Turbulence Properties'), False)
+            Report.result(Tests.enable_turbulence_properties_parameter_disabled,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Enable Turbulence Properties')) is False)
 
-        # Disable the Enable Fog Layer parameter.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Enable Fog Layer'), False)
-        Report.result(Tests.enable_fog_layer_parameter_disabled,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Enable Fog Layer')) is False)
+            # Re-enable the Enable Turbulence Properties parameter for game mode verification.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Enable Turbulence Properties'), True)
 
-        # Re-enable the Enable Fog Layer parameter for game mode verification.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Enable Fog Layer'), True)
-        general.idle_wait_frames(1)
+            # 10. Enable/Disable the Enable Fog Layer parameter.
+            # Enable the Enable Fog Layer parameter.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Enable Fog Layer'), True)
+            Report.result(Tests.enable_fog_layer_parameter_enabled,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Enable Fog Layer')) is True)
 
-        # 11. Edit the Fog Color parameter.
-        violet_color_value = math.Vector3(0.498, 0.0, 1.0)
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog Color'), violet_color_value)
-        fog_color_value = deferred_fog_component.get_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog Color'))
-        Report.result(Tests.edit_fog_color, fog_color_value.IsClose(violet_color_value))
+            # Disable the Enable Fog Layer parameter.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Enable Fog Layer'), False)
+            Report.result(Tests.enable_fog_layer_parameter_disabled,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Enable Fog Layer')) is False)
 
-        # 12. Update the Fog Start Distance parameter to min/max values.
-        # Update the Fog Start Distance parameter to its minimum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog Start Distance'), 0.0)
-        Report.result(Tests.fog_start_min,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Fog Start Distance')) == 0.0)
+            # Re-enable the Enable Fog Layer parameter for game mode verification.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Enable Fog Layer'), True)
+            general.idle_wait_frames(1)
 
-        # Update the Fog Start Distance parameter to its maximum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog Start Distance'), 5000.0)
-        Report.result(Tests.fog_start_max,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Fog Start Distance')) == 5000.0)
+            # 11. Edit the Fog Color parameter.
+            violet_color_value = math.Vector3(0.498, 0.0, 1.0)
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Color'), violet_color_value)
+            fog_color_value = deferred_fog_component.get_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Color'))
+            Report.result(Tests.edit_fog_color, fog_color_value.IsClose(violet_color_value))
 
-        # 13. Update the Fog End Distance parameter to min/max values.
-        # Update the Fog End Distance parameter to its maximum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog End Distance'), 5000.0)
-        Report.result(Tests.fog_end_max,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Fog End Distance')) == 5000.0)
+            # 12. Update the Fog Start Distance parameter to min/max values.
+            # Update the Fog Start Distance parameter to its minimum value.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Start Distance'), 0.0)
+            Report.result(Tests.fog_start_min,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Start Distance')) == 0.0)
 
-        # Update the Fog End Distance parameter to its minimum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog End Distance'), 0.0)
-        Report.result(Tests.fog_end_min,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Fog End Distance')) == 0.0)
+            # Update the Fog Start Distance parameter to its maximum value.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Start Distance'), 5000.0)
+            Report.result(Tests.fog_start_max,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Start Distance')) == 5000.0)
 
-        # 14. Update the Fog Bottom Height parameter to min/max values.
-        # Update the Fog Bottom Height parameter to its maximum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog Bottom Height'), 5000.0)
-        Report.result(Tests.fog_bottom_height_max,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Fog Bottom Height')) == 5000.0)
+            if FOG_MODES[fog_mode] == FOG_MODES['Linear']:
+                # 13. Update the Fog End Distance parameter to min/max values.
+                # Update the Fog End Distance parameter to its maximum value.
+                deferred_fog_component.set_component_property_value(
+                    AtomComponentProperties.deferred_fog('Fog End Distance'), 5000.0)
+                Report.result(Tests.fog_end_max,
+                              deferred_fog_component.get_component_property_value(
+                                  AtomComponentProperties.deferred_fog('Fog End Distance')) == 5000.0)
 
-        # Update the Fog Bottom Height parameter to its minimum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog Bottom Height'), -5000.0)
-        Report.result(Tests.fog_bottom_height_min,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Fog Bottom Height')) == -5000.0)
+                # Update the Fog End Distance parameter to its minimum value.
+                deferred_fog_component.set_component_property_value(
+                    AtomComponentProperties.deferred_fog('Fog End Distance'), 0.0)
+                Report.result(Tests.fog_end_min,
+                              deferred_fog_component.get_component_property_value(
+                                  AtomComponentProperties.deferred_fog('Fog End Distance')) == 0.0)
 
-        # 15. Update the Fog Max Height parameter to min/max values.
-        # Update the Fog Max Height parameter to its minimum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog Max Height'), -5000.0)
-        Report.result(Tests.fog_max_height_min,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Fog Max Height')) == -5000.0)
+            # 14. Update the Fog Bottom Height parameter to min/max values.
+            # Update the Fog Bottom Height parameter to its maximum value.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Bottom Height'), 5000.0)
+            Report.result(Tests.fog_bottom_height_max,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Bottom Height')) == 5000.0)
 
-        # Update the Fog Max Height parameter to its maximum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Fog Max Height'), 5000.0)
-        Report.result(Tests.fog_max_height_max,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Fog Max Height')) == 5000.0)
-        general.idle_wait_frames(1)
+            # Update the Fog Bottom Height parameter to its minimum value.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Bottom Height'), -5000.0)
+            Report.result(Tests.fog_bottom_height_min,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Bottom Height')) == -5000.0)
 
-        # 16. Edit the Noise Texture parameter.
-        # This field cannot currently be edited. It will be fixed in a future sprint.
+            # 15. Update the Fog Max Height parameter to min/max values.
+            # Update the Fog Max Height parameter to its minimum value.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Max Height'), -5000.0)
+            Report.result(Tests.fog_max_height_min,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Max Height')) == -5000.0)
 
-        # Store Noise Texture First/Second Scale & Velocity value:
-        set_octave = math.Vector2(-100.0, 100.0)
+            # Update the Fog Max Height parameter to its maximum value.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Max Height'), 5000.0)
+            Report.result(Tests.fog_max_height_max,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Max Height')) == 5000.0)
 
-        # 17. Update the Noise Texture First Octave Scale parameter to low/high values.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Noise Texture First Octave Scale'), set_octave)
-        get_first_octave_scale = deferred_fog_component.get_component_property_value(
-            AtomComponentProperties.deferred_fog('Noise Texture First Octave Scale'))
-        Report.result(Tests.first_octave_scale, get_first_octave_scale.IsClose(set_octave))
+            # Update the Fog Density Clamp to it's min/max values
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Density Clamp'), 1.0)
+            Report.result(Tests.fog_density_clamp_max,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Density Clamp')) == 1.0)
 
-        # 18. Update the Noise Texture First Octave Velocity parameter to low/high values.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Noise Texture First Octave Velocity'), set_octave)
-        get_first_octave_velocity = deferred_fog_component.get_component_property_value(
-            AtomComponentProperties.deferred_fog('Noise Texture First Octave Velocity'))
-        Report.result(Tests.first_octave_velocity, get_first_octave_velocity.IsClose(set_octave))
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Fog Density Clamp'), 0.0)
+            Report.result(Tests.fog_density_clamp_min,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Fog Density Clamp')) == 0.0)
 
-        # 19. Update the Noise Texture Second Octave Scale parameter to low/high values.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Noise Texture Second Octave Scale'), set_octave)
-        get_second_octave_scale = deferred_fog_component.get_component_property_value(
-            AtomComponentProperties.deferred_fog('Noise Texture Second Octave Scale'))
-        Report.result(Tests.second_octave_scale, get_second_octave_scale.IsClose(set_octave))
+            if FOG_MODES[fog_mode] in (FOG_MODES['Exponential'], FOG_MODES['ExponentialSquared']):
+                # Update the Fog Density to it's min/max values
+                deferred_fog_component.set_component_property_value(
+                    AtomComponentProperties.deferred_fog('Fog Density'), 1.0)
+                Report.result(Tests.fog_density_max,
+                              deferred_fog_component.get_component_property_value(
+                                  AtomComponentProperties.deferred_fog('Fog Density')) == 1.0)
 
-        # 20. Update the Noise Texture Second Octave Velocity parameter to low/high values.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Noise Texture Second Octave Velocity'), set_octave)
-        get_second_octave_velocity = deferred_fog_component.get_component_property_value(
-            AtomComponentProperties.deferred_fog('Noise Texture Second Octave Velocity'))
-        Report.result(Tests.second_octave_velocity, get_second_octave_velocity.IsClose(set_octave))
+                deferred_fog_component.set_component_property_value(
+                    AtomComponentProperties.deferred_fog('Fog Density'), 0.0)
+                Report.result(Tests.fog_density_min,
+                              deferred_fog_component.get_component_property_value(
+                                  AtomComponentProperties.deferred_fog('Fog Density')) == 0.0)
 
-        # 21. Update the Octaves Blend Factor parameter to min/max values.
-        # Update the Octaves Blend Factor to its minimum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Octaves Blend Factor'), 0.0)
-        Report.result(Tests.octaves_blend_factor_min,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Octaves Blend Factor')) == 0.0)
+            general.idle_wait_frames(1)
 
-        # Update the Octave Blend Factor to its maximum value.
-        deferred_fog_component.set_component_property_value(
-            AtomComponentProperties.deferred_fog('Octaves Blend Factor'), 1.0)
-        Report.result(Tests.octaves_blend_factor_max,
-                      deferred_fog_component.get_component_property_value(
-                          AtomComponentProperties.deferred_fog('Octaves Blend Factor')) == 1.0)
+            # 16. Edit the Noise Texture parameter.
+            # This field cannot currently be edited. It will be fixed in a future sprint.
 
-        # 22. Enter/Exit game mode.
-        TestHelper.enter_game_mode(Tests.enter_game_mode)
-        general.idle_wait_frames(1)
-        TestHelper.exit_game_mode(Tests.exit_game_mode)
+            # Store Noise Texture First/Second Scale & Velocity value:
+            set_octave = math.Vector2(-100.0, 100.0)
 
-        # 23. Test IsHidden.
-        deferred_fog_entity.set_visibility_state(False)
-        Report.result(Tests.is_hidden, deferred_fog_entity.is_hidden() is True)
+            # 17. Update the Noise Texture First Octave Scale parameter to low/high values.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Noise Texture First Octave Scale'), set_octave)
+            get_first_octave_scale = deferred_fog_component.get_component_property_value(
+                AtomComponentProperties.deferred_fog('Noise Texture First Octave Scale'))
+            Report.result(Tests.first_octave_scale, get_first_octave_scale.IsClose(set_octave))
 
-        # 24. Test IsVisible.
-        deferred_fog_entity.set_visibility_state(True)
-        general.idle_wait_frames(1)
-        Report.result(Tests.is_visible, deferred_fog_entity.is_visible() is True)
+            # 18. Update the Noise Texture First Octave Velocity parameter to low/high values.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Noise Texture First Octave Velocity'), set_octave)
+            get_first_octave_velocity = deferred_fog_component.get_component_property_value(
+                AtomComponentProperties.deferred_fog('Noise Texture First Octave Velocity'))
+            Report.result(Tests.first_octave_velocity, get_first_octave_velocity.IsClose(set_octave))
+
+            # 19. Update the Noise Texture Second Octave Scale parameter to low/high values.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Noise Texture Second Octave Scale'), set_octave)
+            get_second_octave_scale = deferred_fog_component.get_component_property_value(
+                AtomComponentProperties.deferred_fog('Noise Texture Second Octave Scale'))
+            Report.result(Tests.second_octave_scale, get_second_octave_scale.IsClose(set_octave))
+
+            # 20. Update the Noise Texture Second Octave Velocity parameter to low/high values.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Noise Texture Second Octave Velocity'), set_octave)
+            get_second_octave_velocity = deferred_fog_component.get_component_property_value(
+                AtomComponentProperties.deferred_fog('Noise Texture Second Octave Velocity'))
+            Report.result(Tests.second_octave_velocity, get_second_octave_velocity.IsClose(set_octave))
+
+            # 21. Update the Octaves Blend Factor parameter to min/max values.
+            # Update the Octaves Blend Factor to its minimum value.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Octaves Blend Factor'), 0.0)
+            Report.result(Tests.octaves_blend_factor_min,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Octaves Blend Factor')) == 0.0)
+
+            # Update the Octave Blend Factor to its maximum value.
+            deferred_fog_component.set_component_property_value(
+                AtomComponentProperties.deferred_fog('Octaves Blend Factor'), 1.0)
+            Report.result(Tests.octaves_blend_factor_max,
+                          deferred_fog_component.get_component_property_value(
+                              AtomComponentProperties.deferred_fog('Octaves Blend Factor')) == 1.0)
+
+            # 22. Enter/Exit game mode.
+            TestHelper.enter_game_mode(Tests.enter_game_mode)
+            general.idle_wait_frames(1)
+            TestHelper.exit_game_mode(Tests.exit_game_mode)
+
+            # 23. Test IsHidden.
+            deferred_fog_entity.set_visibility_state(False)
+            Report.result(Tests.is_hidden, deferred_fog_entity.is_hidden() is True)
+
+            # 24. Test IsVisible.
+            deferred_fog_entity.set_visibility_state(True)
+            general.idle_wait_frames(1)
+            Report.result(Tests.is_visible, deferred_fog_entity.is_visible() is True)
 
         # 25. Delete Deferred Fog entity.
         deferred_fog_entity.delete()

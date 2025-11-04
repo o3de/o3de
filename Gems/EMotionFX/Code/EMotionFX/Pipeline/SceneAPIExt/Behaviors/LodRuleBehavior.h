@@ -51,6 +51,10 @@ namespace EMotionFX
                     RequestingApplication requester) override;
 
                 void GetVirtualTypeName(AZStd::string& name, AZ::Crc32 type) override;
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "LodRuleBehavior";
+                }
 
             private:
                 void UpdateLodRules(SceneContainers::Scene& scene) const;

@@ -22,12 +22,14 @@ namespace AZ
         {
             friend class SubsurfaceTransmissionParameterFunctorSourceData;
         public:
+            AZ_CLASS_ALLOCATOR(SubsurfaceTransmissionParameterFunctor, SystemAllocator)
             AZ_RTTI(SubsurfaceTransmissionParameterFunctor, "{1F95BF80-354E-4A65-9A9E-4C7276F8558F}", RPI::MaterialFunctor);
 
             static void Reflect(ReflectContext* context);
 
             using RPI::MaterialFunctor::Process;
-            void Process(RuntimeContext& context) override;
+            void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override;
+            bool UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout) override;
 
         private:
 
@@ -47,9 +49,9 @@ namespace AZ
             RPI::MaterialPropertyIndex m_scatterDistanceIntensity;
 
             // Shader setting output...
-            RHI::ShaderInputConstantIndex m_scatterDistance;
-            RHI::ShaderInputConstantIndex m_transmissionParams;
-            RHI::ShaderInputConstantIndex m_transmissionTintThickness;
+            RPI::MaterialShaderParameterNameIndex m_scatterDistance;
+            RPI::MaterialShaderParameterNameIndex m_transmissionParams;
+            RPI::MaterialShaderParameterNameIndex m_transmissionTintThickness;
         };
     } // namespace Render
 } // namespace AZ

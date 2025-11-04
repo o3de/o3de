@@ -39,19 +39,34 @@
                     }
                 }
             ],
+            "ImageAttachments": [
+                {
+                    "Name": "DepthInputOutputImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "RenderTargetOutput"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "Parent",
+                        "Attachment": "DepthInputOutput"
+                    }
+                }
+            ],
             "Connections": [
                 {
                     "LocalSlot": "DepthInputOutput",
                     "AttachmentRef": {
-                        "Pass": "Parent",
-                        "Attachment": "DepthInputOutput"
+                        "Pass": "This",
+                        "Attachment": "DepthInputOutputImage"
                     }
                 }
             ],
             "PassData": {
                 "$type": "RasterPassData",
                 "DrawListTag": "lyshinerttpass",
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

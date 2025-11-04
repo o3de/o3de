@@ -127,8 +127,6 @@ public:
 
     static void PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath);
 
-    static void GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase = false, bool bMakeUnixPath = false);
-
     // Get file attributes include source control attributes if available
     static uint32 GetAttributes(const char* filename, bool bUseSourceControl = true);
 

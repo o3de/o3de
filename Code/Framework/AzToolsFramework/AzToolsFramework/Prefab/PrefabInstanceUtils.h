@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/utils.h>
 
@@ -22,6 +24,10 @@ namespace AzToolsFramework
         {
             //! Instance pointer to the destination.
             const Instance* m_reachedInstance = nullptr;
+
+            //! Flag to tell if reached instance is the target instance.
+            bool m_isTargetInstanceReached = false;
+
             //! Instance list that contains instances that are climbed up from bottom to top.
             //! The list does not include the reached instance.
             AZStd::vector<const Instance*> m_climbedInstances;
@@ -34,25 +40,27 @@ namespace AzToolsFramework
             //! @param startInstance The instance as the starting point in an instance hierarchy tree.
             //! @param targetInstance The instance to climb up to. If not provided, root instance will be hit.
             //! @return InstanceClimbUpResult that shows the climb-up info.
-            InstanceClimbUpResult ClimbUpToTargetOrRootInstance(const Instance& startInstance, const Instance* targetInstance);
+            AZTF_API InstanceClimbUpResult ClimbUpToTargetOrRootInstance(const Instance& startInstance, const Instance* targetInstance);
 
             //! Generates a relative path from a parent instance to its child instance.
             //! @param parentInstance The parent instance that the path points from.
             //! @param childInstance The child instance that the path points to.
             //! @return The relative path string. Or empty string if the parent instance is not a valid parent.
-            AZStd::string GetRelativePathBetweenInstances(const Instance& parentInstance, const Instance& childInstance);
+            AZTF_API AZStd::string GetRelativePathBetweenInstances(const Instance& parentInstance, const Instance& childInstance);
 
             //! Generates a relative path from a list of climbed instances.
             //! @param climbedInstances The list of climbed instances from bottom to top.
+            //! @param skipTopClimbedInstance A flag to determine if returned path should include the top instance of climbedInstances.
             //! @return The relative path string.
-            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances);
+            AZTF_API AZStd::string GetRelativePathFromClimbedInstances(
+                const AZStd::vector<const Instance*>& climbedInstances,
+                bool skipTopClimbedInstance = false);
 
             //! Checks if the child instance is a descendant of the parent instance.
             //! @param childInstance The given child instance.
             //! @param parentInstance The given parent instance.
             //! @return bool on whether the relation is valid. Returns true if two instances are identical.
-            bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance);
-
+            AZTF_API bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance);
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

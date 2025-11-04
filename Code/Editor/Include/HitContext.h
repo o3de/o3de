@@ -14,10 +14,11 @@
 #define CRYINCLUDE_EDITOR_INCLUDE_HITCONTEXT_H
 #pragma once
 
-class CGizmo;
-class CBaseObject;
 struct IDisplayViewport;
-struct AABB;
+namespace AZ
+{
+    class Aabb;
+}
 
 #include <QRect>
 #include <platform.h>
@@ -65,7 +66,7 @@ struct HitContext
     //! 2D Selection rectangle (Only when HitTestRect)
     QRect rect;
     //! Optional limiting bounding box for hit testing.
-    AABB* bounds;
+    AZ::Aabb* bounds;
 
     //! Testing performed in 2D viewport.
     bool b2DViewport;
@@ -75,8 +76,6 @@ struct HitContext
     bool bOnlyGizmo;
     //! Test objects using advanced selection helpers.
     bool bUseSelectionHelpers;
-    //! an object excluded in hittest.
-    CBaseObject* pExcludedObject;
 
     // Input parameters.
 
@@ -100,10 +99,6 @@ struct HitContext
     int manipulatorMode;
     //! distance to the object from src.
     float dist;
-    //! object that have been hit.
-    CBaseObject* object;
-    //! gizmo object that have been hit.
-    CGizmo* gizmo;
     //! For linking tool
     const char* name;
     //! true if this hit was from the object icon
@@ -120,7 +115,6 @@ struct HitContext
         raySrc(0, 0, 0);
         rayDir(0, 0, 0);
         dist = 0;
-        object = 0;
         weakHit = false;
         manipulatorMode = 0;
         nSubObjFlags = 0;

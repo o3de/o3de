@@ -11,10 +11,10 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Serialization/Utils.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-
 #include <ScriptCanvas/Execution/ExecutionStateHandler.h>
 
 namespace ScriptCanvas
@@ -25,11 +25,6 @@ namespace ScriptCanvas
         {
             StopAndClearExecutable();
         }
-    }
-
-    ActivationInfo ExecutionStateHandler::CreateActivationInfo() const
-    {
-        return ActivationInfo(GraphInfo(m_executionState));
     }
 
     void ExecutionStateHandler::Execute()
@@ -45,7 +40,8 @@ namespace ScriptCanvas
 #endif // defined(SC_RUNTIME_CHECKS_ENABLED)
         AZ_PROFILE_SCOPE(ScriptCanvas, "ExecutionStateHandler::Execute (%s)"
             , m_executionState->GetRuntimeDataOverrides().m_runtimeAsset.GetId().ToString<AZStd::string>().c_str());
-        SC_EXECUTION_TRACE_GRAPH_ACTIVATED(CreateActivationInfo());
+        ScriptCanvas::ExecutionNotificationsBus::Broadcast(
+            &ScriptCanvas::ExecutionNotifications::GraphActivated, ActivationInfo(GraphInfo(m_executionState)));
         SCRIPT_CANVAS_PERFORMANCE_SCOPE_EXECUTION(m_executionState);
         m_executionState->Execute();
     }
@@ -130,9 +126,10 @@ namespace ScriptCanvas
         if (m_executionState)
         {
             m_executionState->StopExecution();
-            Execution::Destruct(m_executionStateStorage);
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
-            SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
+            ScriptCanvas::ExecutionNotificationsBus::Broadcast(
+                &ScriptCanvas::ExecutionNotifications::GraphDeactivated, GraphDeactivation(GraphInfo(m_executionState)));
+            Execution::Destruct(m_executionStateStorage);
             m_executionState = nullptr;
         }
     }
@@ -142,7 +139,8 @@ namespace ScriptCanvas
         {
             m_executionState->StopExecution();
             SCRIPT_CANVAS_PERFORMANCE_FINALIZE_TIMER(m_executionState);
-            SC_EXECUTION_TRACE_GRAPH_DEACTIVATED(CreateActivationInfo());
+            ScriptCanvas::ExecutionNotificationsBus::Broadcast(
+                &ScriptCanvas::ExecutionNotifications::GraphDeactivated, GraphDeactivation(GraphInfo(m_executionState)));
         }
     }
 }

@@ -1,6 +1,0 @@
-<ObjectTemplates>
-	<AudioAreaAmbience SuperType="StdEntity" Category="Audio" File="AudioAreaAmbience" />
-	<AudioAreaEntity SuperType="StdEntity" Category="Audio" File="AudioAreaEntity" />
-	<AudioAreaRandom SuperType="StdEntity" Category="Audio" File="AudioAreaRandom" />
-	<AudioTriggerSpot SuperType="StdEntity" Category="Audio" File="AudioTriggerSpot" />
-</ObjectTemplates>

@@ -8,6 +8,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <SceneAPI/SceneData/GraphData/SkinWeightData.h>
+#include "SkinWeightData.h"
 
 namespace AZ
 {
@@ -88,6 +89,15 @@ namespace AZ
             void SkinWeightData::GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const
             {
                 output.Write("VertexLinks", m_vertexLinks);
+            }
+
+            AZStd::vector<AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>>& SkinWeightData::GetLinks()
+            {
+                return m_vertexLinks;
+            }
+            const AZStd::vector<AZStd::vector<SceneAPI::DataTypes::ISkinWeightData::Link>>& SkinWeightData::GetLinks() const
+            {
+                return m_vertexLinks;
             }
         } // GraphData
     } // SceneData

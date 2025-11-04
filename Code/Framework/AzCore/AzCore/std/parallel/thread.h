@@ -10,7 +10,7 @@
 #include <AzCore/std/parallel/config.h>
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/typetraits/alignment_of.h>
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #define AFFINITY_MASK_ALL          AZ_TRAIT_THREAD_AFFINITY_MASK_ALLTHREADS
 #define AFFINITY_MASK_MAINTHREAD   AZ_TRAIT_THREAD_AFFINITY_MASK_MAINTHREAD
@@ -55,7 +55,7 @@ namespace AZStd
 
         //! Thread stack size. Default is -1, which means we will use the default stack size for each platform.
         int             m_stackSize{ -1 };
-        
+
         //! Windows: One of the following values:
         //!     THREAD_PRIORITY_IDLE
         //!     THREAD_PRIORITY_LOWEST
@@ -78,7 +78,7 @@ namespace AZStd
 
 
     // 30.3.1
-    class thread
+    class AZCORE_API thread
     {
     public:
         // types:
@@ -139,7 +139,7 @@ namespace AZStd
 
         // Extensions
         //thread(AZStd::delegate<void ()> d,const thread_desc* desc = 0);
-        
+
     private:
         thread(const thread&) = delete;
         thread& operator=(const thread&) = delete;
@@ -151,10 +151,10 @@ namespace AZStd
     class thread;
     inline void swap(thread& x, thread& y)      { x.swap(y); }
     namespace this_thread {
-        thread::id get_id();
-        void yield();
+        AZCORE_API thread::id get_id();
+        AZCORE_API void yield();
         ///extension, spins for the specified number of loops, yielding correctly on hyper threaded processors
-        void pause(int numLoops);
+        AZCORE_API void pause(int numLoops);
         //template <class Clock, class Duration>
         //void sleep_until(const chrono::time_point<Clock, Duration>& abs_time);
         template <class Rep, class Period>
@@ -252,7 +252,7 @@ namespace AZStd
             }
         }
     }
-    
+
     template <>
     struct hash<thread_id>
     {

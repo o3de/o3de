@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Serialization/Locale.h>
+
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/Recorder.h>
@@ -1082,6 +1084,8 @@ namespace CommandSystem
 
         if (!m_useUnitType)
         {
+            AZ::Locale::ScopedSerializationLocale locale; // make sure '%f' sends using the "C" locale.
+
             const AZStd::string command = AZStd::string::format("ScaleActorData -id %d -scaleFactor %.8f", m_actorId, 1.0f / m_scaleFactor);
             GetCommandManager()->ExecuteCommandInsideCommand(command, outResult);
         }

@@ -31,7 +31,8 @@ namespace AZ
     } // namespace Metal
 } // namespace AZ
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_Atom_RHI_Metal_Builders, AZ::Metal::BuilderModule);
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Builders), AZ::Metal::BuilderModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_Atom_RHI_Metal_Builders, AZ::Metal::BuilderModule)
+#endif

@@ -15,7 +15,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(HeaderHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(HeaderHandler, SystemAllocator);
 
             HeaderHandler* HeaderHandler::s_instance = nullptr;
 
@@ -26,7 +26,7 @@ namespace AZ
 
             u32 HeaderHandler::GetHandlerName() const
             {
-                return AZ_CRC("Header", 0x6e72a8c1);
+                return AZ_CRC_CE("Header");
             }
 
             bool HeaderHandler::AutoDelete() const
@@ -75,6 +75,18 @@ namespace AZ
                     delete s_instance;
                     s_instance = nullptr;
                 }
+            }
+
+            bool HeaderHandler::ModifyTooltip(QWidget* widget, QString& toolTipString)
+            {
+                HeaderWidget* headerWidget = qobject_cast<HeaderWidget*>(widget);
+                if (!headerWidget)
+                {
+                    return false;
+                }
+
+                return headerWidget->ModifyTooltip(toolTipString);
+                
             }
         } // UI
     } // SceneAPI

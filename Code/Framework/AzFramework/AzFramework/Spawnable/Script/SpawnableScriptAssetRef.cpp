@@ -49,11 +49,16 @@ namespace AzFramework::Scripts
         {
             behaviorContext->Class<SpawnableScriptAssetRef>("SpawnableScriptAssetRef")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::EnableAsScriptEventParamType, true)
                 ->Attribute(AZ::Script::Attributes::Category, "Prefab/Spawning")
                 ->Attribute(AZ::Script::Attributes::Module, "prefabs")
                 ->Constructor()
                 ->Method("GetAsset", &SpawnableScriptAssetRef::GetAsset)
-                ->Method("SetAsset", &SpawnableScriptAssetRef::SetAsset);
+                ->Method("SetAsset", &SpawnableScriptAssetRef::SetAsset)
+                ->Method("GetAssetId", &SpawnableScriptAssetRef::GetAssetId)
+                ->Method("SetAssetId", &SpawnableScriptAssetRef::SetAssetId)
+                ->Method("IsValid", &SpawnableScriptAssetRef::IsValid)
+                ;
         }
     }
 
@@ -113,5 +118,27 @@ namespace AzFramework::Scripts
     void SpawnableScriptAssetRef::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         m_asset = asset;
+    }
+
+    void SpawnableScriptAssetRef::SetAssetId(const AZ::Data::AssetId& assetId)
+    {
+        if (assetId == m_asset.GetId())
+        {
+            return;
+        }
+
+        AZ::Data::Asset<Spawnable> newAsset =
+            AZ::Data::AssetManager::Instance().GetAsset<Spawnable>(assetId, AZ::Data::AssetLoadBehavior::NoLoad);
+        SetAsset(newAsset);
+    }
+
+    AZ::Data::AssetId SpawnableScriptAssetRef::GetAssetId() const
+    {
+        return m_asset.GetId();
+    }
+
+    bool SpawnableScriptAssetRef::IsValid() const
+    {
+        return m_asset.GetId().IsValid();
     }
 }

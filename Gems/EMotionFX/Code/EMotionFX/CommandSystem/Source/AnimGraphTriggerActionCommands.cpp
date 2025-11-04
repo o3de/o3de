@@ -53,7 +53,7 @@ namespace CommandSystem
         CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAddTransitionAction, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAddTransitionAction, EMotionFX::CommandAllocator)
     const char* CommandAnimGraphAddTransitionAction::s_commandName = "AnimGraphAddTransitionAction";
 
     CommandAnimGraphAddTransitionAction::CommandAnimGraphAddTransitionAction(MCore::Command* orgCommand)
@@ -207,7 +207,7 @@ namespace CommandSystem
         CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphRemoveTransitionAction, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphRemoveTransitionAction, EMotionFX::CommandAllocator)
     const char* CommandAnimGraphRemoveTransitionAction::s_commandName = "AnimGraphRemoveTransitionAction";
 
     CommandAnimGraphRemoveTransitionAction::CommandAnimGraphRemoveTransitionAction(MCore::Command* orgCommand)
@@ -326,7 +326,7 @@ namespace CommandSystem
         CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAddStateAction, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphAddStateAction, EMotionFX::CommandAllocator)
     const char* CommandAnimGraphAddStateAction::s_commandName = "AnimGraphAddStateAction";
 
     CommandAnimGraphAddStateAction::CommandAnimGraphAddStateAction(MCore::Command* orgCommand)
@@ -494,7 +494,7 @@ namespace CommandSystem
         CommandSystem::GetCommandManager()->ExecuteCommandOrAddToGroup(command, commandGroup, executeInsideCommand);
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphRemoveStateAction, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAnimGraphRemoveStateAction, EMotionFX::CommandAllocator)
     const char* CommandAnimGraphRemoveStateAction::s_commandName = "AnimGraphRemoveStateAction";
 
     CommandAnimGraphRemoveStateAction::CommandAnimGraphRemoveStateAction(MCore::Command* orgCommand)

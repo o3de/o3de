@@ -7,6 +7,7 @@
  */
 
 // include required headers
+#include <MCore/Source/RefCounted.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/AnimGraphInstance.h>
@@ -28,10 +29,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphInstance, AnimGraphInstanceAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphInstance, AnimGraphInstanceAllocator)
 
     AnimGraphInstance::AnimGraphInstance(AnimGraph* animGraph, ActorInstance* actorInstance, MotionSet* motionSet, const InitSettings* initSettings)
-        : BaseObject()
+        : MCore::RefCounted()
     {
         // register at the animgraph
         animGraph->AddAnimGraphInstance(this);
@@ -1125,7 +1126,7 @@ namespace EMotionFX
     {
         return m_eventBuffer;
     }
-   
+
 
     void AnimGraphInstance::AddFollowerGraph(AnimGraphInstance* follower, bool registerLeaderInsideFollower)
     {
@@ -1406,7 +1407,7 @@ namespace EMotionFX
     }
 
     void AnimGraphInstance::SetParentAnimGraphInstance(AnimGraphInstance* parentAnimGraphInstance)
-    { 
+    {
         if (m_parentAnimGraphInstance)
         {
             m_parentAnimGraphInstance->m_childAnimGraphInstances.erase(
@@ -1414,8 +1415,8 @@ namespace EMotionFX
                 m_parentAnimGraphInstance->m_childAnimGraphInstances.end());
         }
 
-        m_parentAnimGraphInstance = parentAnimGraphInstance; 
-        
+        m_parentAnimGraphInstance = parentAnimGraphInstance;
+
         // Add myself to the parent
         if (parentAnimGraphInstance)
         {

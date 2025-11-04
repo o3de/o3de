@@ -41,7 +41,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "2dpass",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "DrawListSortType": "KeyThenReverseDepth"
                     }
                 },
@@ -60,7 +60,7 @@
                     ],
                     "PassData": {
                         "$type": "ImGuiPassData",
-                        "IsDefaultImGui": true
+                        "isDefaultImGui": true
                     }
                 }
             ]

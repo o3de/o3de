@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <QTextEdit>
@@ -15,7 +17,7 @@
 
 namespace AzToolsFramework
 {
-    class DPEDebugTextView : public QTextEdit
+    class AZTF_API DPEDebugTextView : public QTextEdit
     {
         Q_OBJECT
 

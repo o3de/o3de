@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Cry_Geo.h"
+#include <AzCore/Math/Aabb.h>
 #include "Viewport.h"
 #include "QtViewPaneManager.h"
 // forward declaration.
@@ -27,13 +27,11 @@ namespace AzToolsFramework
     class ManipulatorManager;
 }
 
-AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 /** Manages set of viewports.
 */
 class SANDBOX_API CViewManager
     : public IEditorNotifyListener
 {
-AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 public:
     static bool IsMultiViewportEnabled();
 
@@ -44,6 +42,10 @@ public:
 
     //! Find viewport at Screen point.
     CViewport* GetViewportAtPoint(const QPoint& point) const;
+
+    //! Retrieves the position in world space corresponding to the point clicked by the user.
+    //! Will take context menus and cursor position into account as appropriate.
+    AZ::Vector3 GetClickPositionInViewportSpace() const;
 
     void SelectViewport(CViewport* pViewport);
     CViewport* GetSelectedViewport() const { return m_pSelectedView; }
@@ -58,8 +60,8 @@ public:
     //! Update all views.
     void    UpdateViews(int flags = 0xFFFFFFFF);
 
-    void SetUpdateRegion(const AABB& updateRegion) { m_updateRegion = updateRegion; };
-    const AABB& GetUpdateRegion() { return m_updateRegion; };
+    void SetUpdateRegion(const AZ::Aabb& updateRegion) { m_updateRegion = updateRegion; };
+    const AZ::Aabb& GetUpdateRegion() { return m_updateRegion; };
 
     /** Get 2D viewports origin.
     */
@@ -76,12 +78,6 @@ public:
     /** Get zoom factor of 2d viewports.
     */
     float GetZoom2D() const { return m_zoom2D; };
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Get currently active camera object id.
-    REFGUID GetCameraObjectId() const { return m_cameraObjectId; };
-    //! Sets currently active camera object id.
-    void SetCameraObjectId(REFGUID cameraObjectId) { m_cameraObjectId = cameraObjectId; };
 
     //////////////////////////////////////////////////////////////////////////
     //! Get number of currently existing viewports.
@@ -124,16 +120,12 @@ private:
     //FIELDS.
     float   m_zoomFactor;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    AABB m_updateRegion;
+    AZ::Aabb m_updateRegion;
 
     //! Origin of 2d viewports.
     Vec3 m_origin2D;
     //! Zoom of 2d viewports.
     float m_zoom2D;
-
-    //! Id of camera object.
-    GUID m_cameraObjectId;
 
     int m_nGameViewports;
     bool m_bGameViewportsUpdated;
@@ -144,7 +136,6 @@ private:
     CViewport* m_pSelectedView;
 
     AZStd::shared_ptr<AzToolsFramework::ManipulatorManager> m_manipulatorManager;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 #endif // CRYINCLUDE_EDITOR_VIEWMANAGER_H

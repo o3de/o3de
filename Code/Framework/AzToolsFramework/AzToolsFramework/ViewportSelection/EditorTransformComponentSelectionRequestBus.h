@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -34,6 +35,8 @@ namespace AzToolsFramework
     constexpr inline AZ::Crc32 ViewportUiVisible = AZ_CRC_CE("org.o3de.action.editortransform.viewportuivisible");
     constexpr inline AZ::Crc32 Helpers = AZ_CRC_CE("org.o3de.action.editor.helpers");
     constexpr inline AZ::Crc32 Icons = AZ_CRC_CE("org.o3de.action.editor.icons");
+    constexpr inline AZ::Crc32 OnlyShowHelpersForSelectedEntitiesAction = AZ_CRC_CE("org.o3de.action.editor.onlyshowselectedentitieshelpers");
+    constexpr inline AZ::Crc32 HideHelpers = AZ_CRC_CE("org.o3de.action.editor.hidehelpers");
     //@}
 
     namespace ComponentModeFramework
@@ -42,7 +45,7 @@ namespace AzToolsFramework
     }
 
     //! Provide interface for EditorTransformComponentSelection requests.
-    class EditorTransformComponentSelectionRequests : public AZ::EBusTraits
+    class AZTF_API EditorTransformComponentSelectionRequests : public AZ::EBusTraits
     {
     public:
         using BusIdType = AzFramework::EntityContextId;
@@ -133,6 +136,9 @@ namespace AzToolsFramework
         //! Replace ComponentModeSwitcher with overridden ComponentModeSwitcher
         virtual void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) = 0;
 
+        //! Deselect all entities
+        virtual void DeselectEntities() = 0;
+
     protected:
         ~EditorTransformComponentSelectionRequests() = default;
     };
@@ -141,3 +147,5 @@ namespace AzToolsFramework
     using EditorTransformComponentSelectionRequestBus = AZ::EBus<EditorTransformComponentSelectionRequests>;
 
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::EditorTransformComponentSelectionRequests);

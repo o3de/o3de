@@ -8,8 +8,8 @@
  */
 #pragma once
 
-#include <qgraphicswidget.h>
-#include <qcolor.h>
+#include <QGraphicsWidget>
+#include <QColor>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>

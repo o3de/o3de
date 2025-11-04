@@ -23,15 +23,16 @@ namespace AZ
         {
             friend class Transform2DFunctorSourceData;
         public:
+            AZ_CLASS_ALLOCATOR(Transform2DFunctor, SystemAllocator)
             AZ_RTTI(Transform2DFunctor, "{3E9C4357-6B2D-4A22-89DB-462441C9D8CD}", RPI::MaterialFunctor);
 
             static void Reflect(ReflectContext* context);
 
             using RPI::MaterialFunctor::Process;
-            void Process(RuntimeContext& context) override;
+            void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override;
+            bool UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout) override;
 
         private:
-
             AZStd::vector<TransformType> m_transformOrder; //!< Controls the order in which Scale, Translate, Rotate are performed
 
             // Material property inputs...
@@ -44,8 +45,8 @@ namespace AZ
             RPI::MaterialPropertyIndex m_rotateDegrees; //!< index of material property for rotating
 
             // Shader setting output...
-            RHI::ShaderInputConstantIndex m_transformMatrix;        //!< the index of a float3x3 shader input
-            RHI::ShaderInputConstantIndex m_transformMatrixInverse; //!< the index of the inverse float3x3 shader input
+            RPI::MaterialShaderParameterNameIndex m_transformMatrix; //!< the index of a float3x3 shader input
+            RPI::MaterialShaderParameterNameIndex m_transformMatrixInverse; //!< the index of the inverse float3x3 shader input
         };
 
     } // namespace Render

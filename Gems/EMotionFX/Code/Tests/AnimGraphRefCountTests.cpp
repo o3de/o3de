@@ -112,27 +112,27 @@ namespace EMotionFX
         },
         {
             3,
-            0.0,
-            1.0
+            0.0f,
+            1.0f
         },
         {
             3,
-            0.0,
-            0.0
+            0.0f,
+            0.0f
         },
         {
             8,
-            0.5,
-            0.5
+            0.5f,
+            0.5f
         },
         {
             16,
-            0.2,
-            0.2
+            0.2f,
+            0.2f
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AnimGraphRefCountTest_SimpleChain,
+    INSTANTIATE_TEST_SUITE_P(AnimGraphRefCountTest_SimpleChain,
          AnimGraphRefCountTest_SimpleChain,
          ::testing::ValuesIn(animGraphRefCountTest_SimpleChainTestData)
     );
@@ -165,18 +165,18 @@ namespace EMotionFX
                 AnimGraphBindPoseNode* subBetweenNode = aznew AnimGraphBindPoseNode();
                 subBetweenNode->SetName("Sub In-between");
                 stateMachine->AddChildNode(subBetweenNode);
-                AddTransitionWithTimeCondition(subEntryNode, subBetweenNode, 0.0, 0.3);
+                AddTransitionWithTimeCondition(subEntryNode, subBetweenNode, 0.0f, 0.3f);
 
                 AnimGraphExitNode* exitNode = aznew AnimGraphExitNode();
                 exitNode->SetName("Exit");
                 stateMachine->AddChildNode(exitNode);
-                AddTransitionWithTimeCondition(subBetweenNode, exitNode, 1.0, 1.0);
+                AddTransitionWithTimeCondition(subBetweenNode, exitNode, 1.0f, 1.0f);
             }
 
             AnimGraphBindPoseNode* stateEnd = aznew AnimGraphBindPoseNode();
             stateEnd->SetName("End");
             m_rootStateMachine->AddChildNode(stateEnd);
-            AddTransitionWithTimeCondition(stateMachine, stateEnd, 1.0, 3.0);
+            AddTransitionWithTimeCondition(stateMachine, stateEnd, 1.0f, 3.0f);
         }
     };
 

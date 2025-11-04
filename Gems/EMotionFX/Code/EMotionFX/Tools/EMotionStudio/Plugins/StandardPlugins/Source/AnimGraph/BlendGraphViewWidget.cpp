@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
@@ -33,6 +34,8 @@
 
 namespace EMStudio
 {
+    constexpr AZStd::string_view AnimationEditorAnimGraphActionContextIdentifier = "o3de.context.animationEditor.animGraph";
+
     BlendGraphViewWidget::BlendGraphViewWidget(AnimGraphPlugin* plugin, QWidget* parentWidget)
         : QWidget(parentWidget)
         , m_parentPlugin(plugin)
@@ -48,7 +51,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/AlignLeft.svg"),
             FromStdString(AnimGraphPlugin::s_alignLeftShortcutName),
             this);
-        m_actions[SELECTION_ALIGNLEFT]->setShortcut(Qt::Key_L | Qt::ControlModifier);
+        m_actions[SELECTION_ALIGNLEFT]->setShortcut(0x0 | Qt::Key_L | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNLEFT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_ALIGNLEFT], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignLeft);
 
@@ -56,7 +59,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/AlignRight.svg"),
             FromStdString(AnimGraphPlugin::s_alignRightShortcutName),
             this);
-        m_actions[SELECTION_ALIGNRIGHT]->setShortcut(Qt::Key_R | Qt::ControlModifier);
+        m_actions[SELECTION_ALIGNRIGHT]->setShortcut(0x0 | Qt::Key_R | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNRIGHT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_ALIGNRIGHT], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignRight);
 
@@ -64,7 +67,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/AlignTop.svg"),
             FromStdString(AnimGraphPlugin::s_alignTopShortcutName),
             this);
-        m_actions[SELECTION_ALIGNTOP]->setShortcut(Qt::Key_T | Qt::ControlModifier);
+        m_actions[SELECTION_ALIGNTOP]->setShortcut(0x0 | Qt::Key_T | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNTOP], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_ALIGNTOP], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignTop);
 
@@ -72,7 +75,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/AlignBottom.svg"),
             FromStdString(AnimGraphPlugin::s_alignBottomShortcutName),
             this);
-        m_actions[SELECTION_ALIGNBOTTOM]->setShortcut(Qt::Key_B | Qt::ControlModifier);
+        m_actions[SELECTION_ALIGNBOTTOM]->setShortcut(0x0 | Qt::Key_B | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_ALIGNBOTTOM], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_ALIGNBOTTOM], &QAction::triggered, &m_parentPlugin->GetActionManager(), &AnimGraphActionManager::AlignBottom);
 
@@ -80,7 +83,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_selectAllShortcutName),
             this
         );
-        m_actions[SELECTION_SELECTALL]->setShortcut(Qt::Key_A | Qt::ControlModifier);
+        m_actions[SELECTION_SELECTALL]->setShortcut(0x0 | Qt::Key_A | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_SELECTALL], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_SELECTALL], &QAction::triggered, [this]
         {
@@ -95,7 +98,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_unselectAllShortcutName),
             this
         );
-        m_actions[SELECTION_UNSELECTALL]->setShortcut(Qt::Key_D | Qt::ControlModifier);
+        m_actions[SELECTION_UNSELECTALL]->setShortcut(0x0 | Qt::Key_D | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[SELECTION_UNSELECTALL], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[SELECTION_UNSELECTALL], &QAction::triggered, [this]
         {
@@ -156,6 +159,7 @@ namespace EMStudio
             QIcon(":/EMotionFX/List.svg"),
             tr("Show/hide navigation pane"),
             this);
+        m_actions[NAVIGATION_NAVPANETOGGLE]->setCheckable(true);
         connect(m_actions[NAVIGATION_NAVPANETOGGLE], &QAction::triggered, this, &BlendGraphViewWidget::ToggleNavigationPane);
 
         m_actions[NAVIGATION_OPEN_SELECTED] = new QAction(
@@ -218,11 +222,26 @@ namespace EMStudio
         m_actions[VISUALIZATION_PLAYPOSITIONS]->setCheckable(true);
         connect(m_actions[VISUALIZATION_PLAYPOSITIONS], &QAction::triggered, this, &BlendGraphViewWidget::OnDisplayPlayPositions);
 
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+        m_actions[VISUALIZATION_PROFILING_NONE] = new QAction(tr("None"), this);
+        m_actions[VISUALIZATION_PROFILING_NONE]->setCheckable(false);
+        connect(m_actions[VISUALIZATION_PROFILING_NONE], &QAction::triggered, this, [this]{ OnDisplayAllProfiling(false); });
+        
+        m_actions[VISUALIZATION_PROFILING_ALL] = new QAction(tr("All"), this);
+        m_actions[VISUALIZATION_PROFILING_ALL]->setCheckable(false);
+        connect(m_actions[VISUALIZATION_PROFILING_ALL], &QAction::triggered, this, [this]{ OnDisplayAllProfiling(true); });
+
+        AddProfilingAction("Update", VISUALIZATION_PROFILING_UPDATE);
+        AddProfilingAction("TopDownUpdate", VISUALIZATION_PROFILING_TOPDOWN);
+        AddProfilingAction("PostUpdate", VISUALIZATION_PROFILING_POSTUPDATE);
+        AddProfilingAction("Output", VISUALIZATION_PROFILING_OUTPUT);
+#endif
+
         m_actions[EDIT_CUT] = new QAction(
             FromStdString(AnimGraphPlugin::s_cutShortcutName),
             this
         );
-        m_actions[EDIT_CUT]->setShortcut(Qt::Key_X | Qt::ControlModifier);
+        m_actions[EDIT_CUT]->setShortcut(0x0 | Qt::Key_X | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_CUT], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[EDIT_CUT], &QAction::triggered, this, [this]
         {
@@ -233,7 +252,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_copyShortcutName),
             this
         );
-        m_actions[EDIT_COPY]->setShortcut(Qt::Key_C | Qt::ControlModifier);
+        m_actions[EDIT_COPY]->setShortcut(0x0 | Qt::Key_C | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_COPY], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[EDIT_COPY], &QAction::triggered, this, [this]
         {
@@ -244,7 +263,7 @@ namespace EMStudio
             FromStdString(AnimGraphPlugin::s_pasteShortcutName),
             this
         );
-        m_actions[EDIT_PASTE]->setShortcut(Qt::Key_V | Qt::ControlModifier);
+        m_actions[EDIT_PASTE]->setShortcut(0x0 | Qt::Key_V | Qt::ControlModifier);
         shortcutManager->RegisterKeyboardShortcut(m_actions[EDIT_PASTE], AnimGraphPlugin::s_animGraphWindowShortcutGroupName, true);
         connect(m_actions[EDIT_PASTE], &QAction::triggered, this, [this]
         {
@@ -351,6 +370,20 @@ namespace EMStudio
             contextMenu->addAction(m_actions[VISUALIZATION_PLAYPOSITIONS]);
 
             menuAction->setMenu(contextMenu);
+
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+            // Profiler options
+            {
+                QMenu* profilerMenu = new QMenu("Profiler", toolBar);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_NONE]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_UPDATE]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_TOPDOWN]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_POSTUPDATE]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_OUTPUT]);
+                profilerMenu->addAction(m_actions[VISUALIZATION_PROFILING_ALL]);
+                contextMenu->addMenu(profilerMenu);
+            }
+#endif
         }
 
         toolBar->addSeparator();
@@ -394,7 +427,7 @@ namespace EMStudio
         QVBoxLayout* verticalLayout = new QVBoxLayout(this);
         verticalLayout->setSizeConstraint(QLayout::SetNoConstraint);
         verticalLayout->setSpacing(0);
-        verticalLayout->setMargin(2);
+        verticalLayout->setContentsMargins(2, 2, 2, 2);
 
         // Create toolbars
         CreateActions();
@@ -414,14 +447,29 @@ namespace EMStudio
         QList<int> sizes = { this->width(), 0 };
         m_viewportSplitter->setSizes(sizes);
         m_viewportStack.addWidget(m_viewportSplitter);
+        connect(m_viewportSplitter, &QSplitter::splitterMoved,
+                this,
+                [this]{m_actions[NAVIGATION_NAVPANETOGGLE]->setChecked(m_viewportSplitter->sizes().at(1) > 0 );});
 
         UpdateNavigation();
         UpdateAnimGraphOptions();
         UpdateEnabledActions();
+
+        // Register this window as the widget for the Animation Editor Action Context.
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->AssignWidgetToActionContext(AnimationEditorAnimGraphActionContextIdentifier, this);
+        }
     }
 
     BlendGraphViewWidget::~BlendGraphViewWidget()
     {
+        // Unregister this window as the widget for the Animation Editor Action Context.
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(AnimationEditorAnimGraphActionContextIdentifier, this);
+        }
+
         for (auto entry : m_nodeTypeToWidgetMap)
         {
             AnimGraphNodeWidget* widget = entry.second;
@@ -560,6 +608,55 @@ namespace EMStudio
             }
         }
     }
+
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+    void BlendGraphViewWidget::AddProfilingAction(const char* actionName, EOptionFlag optionFlag)
+    {
+        m_actions[optionFlag] = new QAction(
+            tr(actionName),
+            this);
+        m_actions[optionFlag]->setCheckable(true);
+        connect(m_actions[optionFlag], &QAction::triggered, this, [this, optionFlag]{ OnDisplayProfiling(optionFlag); });
+    }
+
+    void BlendGraphViewWidget::OnDisplayProfiling(EOptionFlag profileOption)
+    {
+        bool show = GetOptionFlag(profileOption);
+
+        uint32 displayFlags = m_parentPlugin->GetDisplayFlags();
+        switch (profileOption)
+        {
+        case VISUALIZATION_PROFILING_UPDATE:
+            displayFlags = AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE;
+            break;
+        case VISUALIZATION_PROFILING_TOPDOWN:
+            displayFlags = AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN;
+            break;
+        case VISUALIZATION_PROFILING_POSTUPDATE:
+            displayFlags = AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE;
+            break;
+        case VISUALIZATION_PROFILING_OUTPUT:
+            displayFlags = AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT;
+            break;
+        default:
+            AZ_Error("EMotionFX", true,
+                     "Undefined profile option flags.");
+        };
+        m_parentPlugin->SetDisplayFlagEnabled(displayFlags, show);
+    }
+
+    void BlendGraphViewWidget::OnDisplayAllProfiling(bool enabledAll)
+    {
+        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_UPDATE, enabledAll);
+        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_TOPDOWN, enabledAll);
+        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_POSTUPDATE, enabledAll);
+        m_parentPlugin->SetDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PROFILING_OUTPUT, enabledAll);
+        SetOptionFlag(VISUALIZATION_PROFILING_UPDATE, enabledAll);
+        SetOptionFlag(VISUALIZATION_PROFILING_TOPDOWN, enabledAll);
+        SetOptionFlag(VISUALIZATION_PROFILING_POSTUPDATE, enabledAll);
+        SetOptionFlag(VISUALIZATION_PROFILING_OUTPUT, enabledAll);
+    }
+#endif
 
     void BlendGraphViewWidget::SetOptionFlag(EOptionFlag option, bool isEnabled)
     {
@@ -769,6 +866,7 @@ namespace EMStudio
             sizes[1] = 0;
         }
         m_viewportSplitter->setSizes(sizes);
+        m_actions[NAVIGATION_NAVPANETOGGLE]->setChecked(m_viewportSplitter->sizes().at(1) > 0 );
     }
 
     // toggle playspeed viz

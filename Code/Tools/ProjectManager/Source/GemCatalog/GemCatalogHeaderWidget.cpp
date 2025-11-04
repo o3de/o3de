@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
 
         m_layout = new QVBoxLayout();
         m_layout->setSpacing(0);
-        m_layout->setMargin(5);
+        m_layout->setContentsMargins(5, 5, 5, 5);
         m_layout->setAlignment(Qt::AlignTop);
         setLayout(m_layout);
         setMinimumHeight(400);
@@ -47,7 +47,7 @@ namespace O3DE::ProjectManager
         closeButton->setFlat(true);
         closeButton->setFocusPolicy(Qt::NoFocus);
         closeButton->setIcon(QIcon(":/WindowClose.svg"));
-        connect(closeButton, &QPushButton::clicked, this, [=]
+        connect(closeButton, &QPushButton::clicked, this, [this]
             {
                 deleteLater();
             });
@@ -59,7 +59,7 @@ namespace O3DE::ProjectManager
         CreateDownloadSection();
 
         // added
-        CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [=]
+        CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [this]
             {
                 QVector<QModelIndex> gems;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/false);
@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
             });
 
         // removed
-        CreateGemSection( tr("Gem to be deactivated"), tr("Gems to be deactivated"), [=]
+        CreateGemSection( tr("Gem to be deactivated"), tr("Gems to be deactivated"), [this]
             {
                 QVector<QModelIndex> gems;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/false);
@@ -93,7 +93,7 @@ namespace O3DE::ProjectManager
             });
 
         // added dependencies 
-        CreateGemSection( tr("Dependency to be activated"), tr("Dependencies to be activated"), [=]
+        CreateGemSection( tr("Dependency to be activated"), tr("Dependencies to be activated"), [this]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
@@ -110,7 +110,7 @@ namespace O3DE::ProjectManager
             });
 
         // removed dependencies 
-        CreateGemSection( tr("Dependency to be deactivated"), tr("Dependencies to be deactivated"), [=]
+        CreateGemSection( tr("Dependency to be deactivated"), tr("Dependencies to be deactivated"), [this]
             {
                 QVector<QModelIndex> dependencies;
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
@@ -125,12 +125,6 @@ namespace O3DE::ProjectManager
                 }
                 return dependencies;
             });
-    }
-
-    GemCartWidget::~GemCartWidget()
-    {
-        // disconnect from all download controller signals
-        disconnect(m_downloadController, nullptr, this, nullptr);
     }
 
     void GemCartWidget::CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices)
@@ -150,7 +144,7 @@ namespace O3DE::ProjectManager
         TagContainerWidget* tagContainer = new TagContainerWidget();
         layout->addWidget(tagContainer);
 
-        auto update = [=]()
+        auto update = [this, widget, getTagIndices, tagContainer, singularTitle, pluralTitle, label]()
         {
             const QVector<QModelIndex> tagIndices = getTagIndices();
             if (tagIndices.isEmpty())
@@ -195,7 +189,7 @@ namespace O3DE::ProjectManager
         downloadingGemsWidget->setObjectName("GemCatalogCartOverlayGemDownloadHeader");
         layout->addWidget(downloadingGemsWidget);
         QVBoxLayout* gemDownloadLayout = new QVBoxLayout();
-        gemDownloadLayout->setMargin(0);
+        gemDownloadLayout->setContentsMargins(0, 0, 0, 0);
         gemDownloadLayout->setAlignment(Qt::AlignTop);
         downloadingGemsWidget->setLayout(gemDownloadLayout);
         QLabel* processingQueueLabel = new QLabel("Processing Queue");
@@ -353,7 +347,32 @@ namespace O3DE::ProjectManager
         tags.reserve(gems.size());
         for (const QModelIndex& modelIndex : gems)
         {
-            tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
+            const GemInfo& gemInfo = GemModel::GetGemInfo(modelIndex);
+            if(gemInfo.m_isEngineGem)
+            {
+                // don't show engine gem versions
+                tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
+            }
+            else
+            {
+                // show non-engine gem versions if available
+                QString version =  GemModel::GetNewVersion(modelIndex);
+                if (version.isEmpty())
+                {
+                    version =  gemInfo.m_version;
+                }
+
+                if (version.isEmpty() || version.contains("Unknown", Qt::CaseInsensitive) || gemInfo.m_displayName.contains(version))
+                {
+                    tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
+                }
+                else
+                {
+                    const QString& title = QString("%1 %2").arg(gemInfo.m_displayName, version);
+                    tags.push_back({ title, gemInfo.m_name });
+                }
+            }
+
         }
         return tags;
     }
@@ -364,7 +383,7 @@ namespace O3DE::ProjectManager
         , m_downloadController(downloadController)
     {
         m_layout = new QHBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         setLayout(m_layout);
 
         QPushButton* iconButton = new QPushButton();
@@ -389,7 +408,7 @@ namespace O3DE::ProjectManager
         m_layout->addWidget(m_dropDownButton);
 
         // Adjust the label text whenever the model gets updated.
-        connect(gemModel, &GemModel::dataChanged, [=]
+        connect(gemModel, &GemModel::dataChanged, [this]
             {
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
@@ -439,7 +458,7 @@ namespace O3DE::ProjectManager
         }
 
         m_gemCart = new GemCartWidget(m_gemModel, m_downloadController, this);
-        connect(m_gemCart, &QWidget::destroyed, this, [=]
+        connect(m_gemCart, &QWidget::destroyed, this, [this]
             {
                 // Reset the overlay pointer on destruction to prevent dangling pointers.
                 m_gemCart = nullptr;
@@ -479,7 +498,6 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
         m_filterLineEdit = new AzQtComponents::SearchLineEdit();
-        m_filterLineEdit->setStyleSheet("background-color: #DDDDDD;");
         connect(m_filterLineEdit, &QLineEdit::textChanged, this, [=](const QString& text)
             {
                 filterProxyModel->SetSearchString(text);
@@ -519,7 +537,7 @@ namespace O3DE::ProjectManager
         hLayout->addSpacing(16);
 
         QMenu* gemMenu = new QMenu(this);
-        gemMenu->addAction( tr("Refresh"), [this]() { emit RefreshGems(); });
+        gemMenu->addAction(tr("Refresh"), [this]() { emit RefreshGems(/*refreshRemoteRepos*/true); });
         gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
         gemMenu->addSeparator();
         gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit AddGem(); });

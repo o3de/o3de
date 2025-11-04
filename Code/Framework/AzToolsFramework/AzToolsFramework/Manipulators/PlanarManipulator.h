@@ -13,6 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -21,7 +22,7 @@ namespace AzToolsFramework
 
     //! PlanarManipulator serves as a visual tool for users to modify values
     //! in two dimension in a plane defined two non-collinear axes in 3D space.
-    class PlanarManipulator
+    class AZTF_API PlanarManipulator
         : public BaseManipulator
         , public ManipulatorSpaceWithLocalTransform
     {
@@ -30,7 +31,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(PlanarManipulator, "{2B1C2140-F3B1-4DB2-B066-156B67B57B97}", BaseManipulator)
-        AZ_CLASS_ALLOCATOR(PlanarManipulator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PlanarManipulator, AZ::SystemAllocator)
 
         PlanarManipulator() = delete;
         PlanarManipulator(const PlanarManipulator&) = delete;

@@ -94,6 +94,7 @@ namespace EMotionFX
                 m_actorInstance->Destroy();
                 m_actorInstance = nullptr;
             }
+            m_actor.reset();
 
             SystemComponentFixture::TearDown();
         }
@@ -243,7 +244,7 @@ namespace EMotionFX
         }
     };
 
-    INSTANTIATE_TEST_CASE_P(AutoSkeletonLOD_Tests,
+    INSTANTIATE_TEST_SUITE_P(AutoSkeletonLOD_Tests,
         AutoSkeletonLODFixture,
             ::testing::ValuesIn(testParams)
         );

@@ -7,10 +7,12 @@
  */
 
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/string/conversions.h>
 
 #include <stdlib.h>
+#include <shlobj_core.h>
 
 namespace AZ::Utils
 {
@@ -39,6 +41,14 @@ namespace AZ::Utils
                 AZ::IO::FixedMaxPath path{overrideHomeDir};
                 return path.Native();
             }
+        }
+
+        wchar_t sysUserProfilePathW[MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPath(0, CSIDL_PROFILE, 0, SHGFP_TYPE_DEFAULT, sysUserProfilePathW)))
+        {
+            AZ::IO::FixedMaxPathString sysUserProfilePathStr;
+            AZStd::to_string(sysUserProfilePathStr, sysUserProfilePathW);
+            return sysUserProfilePathStr;
         }
 
         char userProfileBuffer[AZ::IO::MaxPathLength]{};

@@ -68,17 +68,17 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetBus::Handler::BusDisconnect();
     }
 
-    void FunctionNodeDescriptorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void FunctionNodeDescriptorComponent::OnAssetReloaded([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         TriggerUpdate();
     }
 
-    void FunctionNodeDescriptorComponent::OnAssetReloadError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void FunctionNodeDescriptorComponent::OnAssetReloadError([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         TriggerUpdate();
     }
 
-    void FunctionNodeDescriptorComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void FunctionNodeDescriptorComponent::OnAssetError([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         TriggerUpdate();
     }

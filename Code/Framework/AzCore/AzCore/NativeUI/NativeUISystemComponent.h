@@ -13,12 +13,12 @@
 
 namespace AZ::NativeUI
 {
-    class NativeUISystem
+    class AZCORE_API NativeUISystem
         : public NativeUIRequestBus::Handler
     {
     public:
         AZ_RTTI(NativeUISystem, "{FF534B2C-11BE-4DEA-A5B7-A4FA96FE1EDE}", NativeUIRequests);
-        AZ_CLASS_ALLOCATOR(NativeUISystem, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeUISystem, AZ::OSAllocator);
 
         NativeUISystem();
         ~NativeUISystem() override;

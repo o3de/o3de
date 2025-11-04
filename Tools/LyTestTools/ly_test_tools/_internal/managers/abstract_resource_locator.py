@@ -314,20 +314,16 @@ class AbstractResourceLocator(object):
         """
         return os.path.join(self.project_log(), "Editor.log")
 
+    def material_canvas_log(self):
+        """
+        Return path to the project's MaterialCanvas log dir using the builds project and platform
+        :return: path to MaterialCanvas.log
+        """
+        return os.path.join(self.project_log(), "MaterialCanvas.log")
+
     #
     #   The following are OS specific paths and must be defined by an override
     #
-
-    @abstractmethod
-    def platform_config_file(self):
-        """
-        Return the path to the platform config file.
-        :return: path to the platform config file (i.e. engine_root/dev/system_windows_pc.cfg)
-        """
-        raise NotImplementedError(
-            "platform_config_file() is not implemented on the base AbstractResourceLocator() class. "
-            "It must be defined by the inheriting class - "
-            "i.e. _WindowsResourceLocator(AbstractResourceLocator).platform_config_file()")
 
     @abstractmethod
     def platform_cache(self):

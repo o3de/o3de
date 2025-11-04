@@ -13,7 +13,7 @@ include(${pal_source_dir}/PAL2_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 if(NOT PAL_TRAIT_ATOM_RHI_METAL_SUPPORTED)
     ly_add_target(
-        NAME Atom_RHI_Metal.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAME ${gem_name}.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_metal_stub_module.cmake
@@ -29,9 +29,18 @@ if(NOT PAL_TRAIT_ATOM_RHI_METAL_SUPPORTED)
                 Gem::Atom_RHI.Reflect
     )
 
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+        Source/Platform/Common/Unimplemented/ModuleStub_Unimplemented.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME Atom_RHI_Metal.Builders GEM_MODULE
+            NAME ${gem_name}.Builders GEM_MODULE
             NAMESPACE Gem
             FILES_CMAKE
                 Source/Platform/${PAL_PLATFORM_NAME}/platform_builders_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -54,7 +63,7 @@ if(NOT PAL_TRAIT_ATOM_RHI_METAL_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME Atom_RHI_Metal.Reflect STATIC
+    NAME ${gem_name}.Reflect STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_metal_reflect_common_files.cmake
@@ -69,7 +78,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_RHI_Metal.Private.Static STATIC
+    NAME ${gem_name}.Private.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_metal_private_common_files.cmake
@@ -89,11 +98,11 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
-            Gem::Atom_RHI_Metal.Reflect
+            Gem::${gem_name}.Reflect
 )
 
 ly_add_target(
-    NAME Atom_RHI_Metal.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name}.Private ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_metal_private_common_shared_files.cmake
@@ -110,14 +119,23 @@ ly_add_target(
             AZ::AzCore
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI.Public
-            Gem::Atom_RHI_Metal.Reflect
-            Gem::Atom_RHI_Metal.Private.Static
+            Gem::${gem_name}.Reflect
+            Gem::${gem_name}.Private.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/RHI/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME Atom_RHI_Metal.Builders.Static STATIC
+        NAME ${gem_name}.Builders.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_metal_builders_common_files.cmake
@@ -135,11 +153,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::Atom_RHI.Edit
                 Gem::Atom_RHI.Reflect
-                Gem::Atom_RHI_Metal.Reflect
+                Gem::${gem_name}.Reflect
     )
 
    ly_add_target(
-        NAME Atom_RHI_Metal.Builders GEM_MODULE
+        NAME ${gem_name}.Builders GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -155,13 +173,23 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::Atom_RHI.Edit
                 Gem::Atom_RHI.Reflect
-                Gem::Atom_RHI_Metal.Reflect
-                Gem::Atom_RHI_Metal.Builders.Static
+                Gem::${gem_name}.Reflect
+                Gem::${gem_name}.Builders.Static
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/RHI.Builders/BuilderModule.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
+
     if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
         ly_add_target(
-            NAME Atom_RHI_Metal.Builders.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Builders.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 atom_rhi_metal_builders_tests_files.cmake
@@ -177,19 +205,19 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 PRIVATE
                     AZ::AzTest
                     Gem::Atom_RHI.Reflect
-                    Gem::Atom_RHI_Metal.Reflect
-                    Gem::Atom_RHI_Metal.Builders.Static
+                    Gem::${gem_name}.Reflect
+                    Gem::${gem_name}.Builders.Static
         )
 
         ly_add_googletest(
-            NAME Gem::Atom_RHI_Metal.Builders.Tests
+            NAME Gem::${gem_name}.Builders.Tests
         )
     endif()
 endif()
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME Atom_RHI_Metal.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             atom_rhi_metal_private_tests_files.cmake
@@ -205,11 +233,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Gem::Atom_RHI.Reflect
-                Gem::Atom_RHI_Metal.Reflect
-                Gem::Atom_RHI_Metal.Private.Static
+                Gem::${gem_name}.Reflect
+                Gem::${gem_name}.Private.Static
     )
 
     ly_add_googletest(
-        NAME Gem::Atom_RHI_Metal.Tests
+        NAME Gem::${gem_name}.Tests
     )
 endif()

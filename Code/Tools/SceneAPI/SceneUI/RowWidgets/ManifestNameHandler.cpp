@@ -16,7 +16,7 @@ namespace AZ
     {
         namespace SceneUI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ManifestNameHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(ManifestNameHandler, SystemAllocator);
 
             ManifestNameHandler* ManifestNameHandler::s_instance = nullptr;
 
@@ -33,7 +33,7 @@ namespace AZ
 
             u32 ManifestNameHandler::GetHandlerName() const
             {
-                return AZ_CRC("ManifestName", 0x5215b349);
+                return AZ_CRC_CE("ManifestName");
             }
 
             bool ManifestNameHandler::AutoDelete() const
@@ -46,7 +46,7 @@ namespace AZ
             {
                 AZ_TraceContext("Attribute name", debugName);
 
-                if (attrib == AZ_CRC("FilterType", 0x2661cf01))
+                if (attrib == AZ_CRC_CE("FilterType"))
                 {
                     ConsumeFilterTypeAttribute(widget, attrValue);
                 }

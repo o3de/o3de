@@ -8,48 +8,97 @@
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/ContainerActionButtonHandler.h>
 
+#include <QMessageBox>
+
 namespace AzToolsFramework
 {
     ContainerActionButtonHandler::ContainerActionButtonHandler()
     {
-        setAutoRaise(true);
-
-        connect(
-            this, &QToolButton::clicked, this,
-            [this]()
-            {
-                using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
-                ContainerActionButton::OnActivate.InvokeOnDomNode(m_node);
-            });
     }
 
     void ContainerActionButtonHandler::SetValueFromDom(const AZ::Dom::Value& node)
     {
-        static QIcon s_iconAdd(QStringLiteral(":/stylesheet/img/UI20/add-16.svg"));
-        static QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
-        static QIcon s_iconClear(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
+
+        static const QIcon s_iconAdd(QStringLiteral(":/stylesheet/img/UI20/add-16.svg"));
+        static const QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
+        static const QIcon s_iconClear(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
+        static const QIcon s_iconUp(QStringLiteral(":/stylesheet/img/indicator-arrow-up.svg"));
+        static const QIcon s_iconDown(QStringLiteral(":/stylesheet/img/indicator-arrow-down.svg"));
 
         using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
         using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
 
-        // Cache the node so we can query OnActivate on it when we're pressed.
-        m_node = node;
+        GenericButtonHandler::SetValueFromDom(node);
 
-        ContainerAction action = ContainerActionButton::Action.ExtractFromDomNode(node).value_or(ContainerAction::AddElement);
-        switch (action)
+        auto oldAction = m_action;
+        m_action = ContainerActionButton::Action.ExtractFromDomNode(node).value_or(ContainerAction::AddElement);
+
+        if (m_action == oldAction)
+        {
+            return;
+        }
+
+        switch (m_action)
         {
         case ContainerAction::AddElement:
-            setIcon(s_iconAdd);
-            setToolTip("Add new child element");
-            break;
+            {
+                setIcon(s_iconAdd);
+                setToolTip(tr("Add new child element"));
+                break;
+            }
         case ContainerAction::RemoveElement:
-            setIcon(s_iconRemove);
-            setToolTip(tr("Remove this element"));
-            break;
+            {
+                setIcon(s_iconRemove);
+                setToolTip(tr("Remove this element"));
+                break;
+            }
         case ContainerAction::Clear:
-            setIcon(s_iconClear);
-            setToolTip(tr("Remove all elements"));
-            break;
+            {
+                setIcon(s_iconClear);
+                setToolTip(tr("Remove all elements"));
+                break;
+            }
+        case ContainerAction::MoveUp:
+            {
+                setIcon(s_iconUp);
+                setToolTip(tr("move this element up"));
+                break;
+            }
+        case ContainerAction::MoveDown:
+            {
+                setIcon(s_iconDown);
+                setToolTip(tr("move this element down"));
+                break;
+            }
+        case ContainerAction::None:
+        default:
+            {
+                AZ_Error("DPE", false, "ContainerActionButtonHandler::SetValueFromDom passed invalid action!");
+                break;
+            }
         }
+    }
+
+    bool ContainerActionButtonHandler::ResetToDefaults()
+    {
+        return GenericButtonHandler::ResetToDefaults();
+    }
+
+    void ContainerActionButtonHandler::OnClicked()
+    {
+        using AZ::DocumentPropertyEditor::Nodes::Container;
+        using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
+
+        if (m_action == ContainerAction::Clear)
+        {
+            auto result = QMessageBox::question(
+                this, QObject::tr("Clear container?"), QObject::tr("Are you sure you want to remove all elements from this container?"));
+            if (result == QMessageBox::No)
+            {
+                return;
+            }
+        }
+
+        GenericButtonHandler::OnClicked();
     }
 } // namespace AzToolsFramework

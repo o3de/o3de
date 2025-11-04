@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/PassSystemBus.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
@@ -200,8 +201,21 @@ namespace AZ
             outputSlot.m_name = "Output";
             outputSlot.m_slotType = PassSlotType::Output;
             outputSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Copy;
-            outputSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Clear;
+            outputSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Load;
             passTemplate->m_slots.emplace_back(outputSlot);
+
+            AddPassTemplate(passTemplate->m_name, std::move(passTemplate));
+
+            passTemplate = AZStd::make_shared<PassTemplate>();
+            passTemplate->m_passClass = "CopyPass";
+            passTemplate->m_name = "MultiDeviceCopyPassTemplate";
+
+            PassSlot inputOutputSlot;
+            inputOutputSlot.m_name = "InputOutput";
+            inputOutputSlot.m_slotType = PassSlotType::InputOutput;
+            inputOutputSlot.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Copy;
+            inputOutputSlot.m_loadStoreAction.m_loadAction = RHI::AttachmentLoadAction::Load;
+            passTemplate->m_slots.emplace_back(inputOutputSlot);
 
             AddPassTemplate(passTemplate->m_name, std::move(passTemplate));
         }
@@ -229,6 +243,10 @@ namespace AZ
                     "Pass template alias [%s] is different than its name [%s]", name.GetCStr(), passTemplate->m_name.GetCStr());
                 passTemplate->m_name = name;
             }
+
+            // Signal that the pass template is being added in case somebody wants to add attachments.
+            PassSystemTemplateNotificationsBus::Event(
+                name, &PassSystemTemplateNotificationsBus::Events::OnAddingPassTemplate, passTemplate);
 
             ValidateDeviceFormats(passTemplate);
 

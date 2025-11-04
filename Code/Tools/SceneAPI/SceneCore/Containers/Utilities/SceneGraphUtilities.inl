@@ -32,8 +32,12 @@ namespace AZ
                     auto view = Containers::Views::MakeFilterView(contentStorage, Containers::DerivedTypeFilter<T>());
                     for (auto it = view.begin(); it != view.end(); ++it)
                     {
-                        AZStd::set<Crc32> types;
-                        EBUS_EVENT(Events::GraphMetaInfoBus, GetVirtualTypes, types, scene, graph.ConvertToNodeIndex(it.GetBaseIterator()));
+                        Events::GraphMetaInfo::VirtualTypesSet types;
+                        Events::GraphMetaInfoBus::Broadcast(
+                            &Events::GraphMetaInfoBus::Events::GetVirtualTypes,
+                            types,
+                            scene,
+                            graph.ConvertToNodeIndex(it.GetBaseIterator()));
                         // Check if the type is not a virtual type. If it is, this isn't a valid type for T.
                         if (types.empty())
                         {

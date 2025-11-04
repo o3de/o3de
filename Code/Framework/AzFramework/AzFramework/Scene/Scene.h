@@ -15,14 +15,15 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
-    class Scene final
+    class AZF_API Scene final
     {
     public:
         AZ_TYPE_INFO(Scene, "{DB449BB3-7A95-434D-BC61-47ACBB1F3436}");
-        AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator);
 
         friend class ISceneSystem;
 

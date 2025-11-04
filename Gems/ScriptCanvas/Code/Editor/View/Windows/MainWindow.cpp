@@ -33,6 +33,8 @@
 #include <QProgressDialog>
 #include <QToolButton>
 
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+
 #include <ScriptEvents/ScriptEventsAsset.h>
 
 #include <Editor/GraphCanvas/Components/MappingComponent.h>
@@ -79,14 +81,18 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
@@ -131,7 +137,6 @@
 #include <GraphCanvas/Types/ConstructPresets.h>
 
 #include <Editor/View/Windows/ScriptCanvasContextMenus.h>
-#include <Editor/View/Windows/ScriptEventMenu.h>
 #include <Editor/View/Windows/EBusHandlerActionMenu.h>
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
@@ -145,10 +150,11 @@
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 ////
 
+#include <ScriptCanvasContextIdentifiers.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <ScriptCanvas/Asset/AssetDescription.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-
 
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -157,8 +163,6 @@
 
 namespace ScriptCanvasEditor
 {
-    using namespace AzToolsFramework;
-
     namespace
     {
         template <typename T>
@@ -202,7 +206,7 @@ namespace ScriptCanvasEditor
 
     void Workspace::Save()
     {
-        auto workspace = AZ::UserSettings::CreateFind<EditorSettings::EditorWorkspace>(AZ_CRC("ScriptCanvasEditorWindowState", 0x10c47d36), AZ::UserSettings::CT_LOCAL);
+        auto workspace = AZ::UserSettings::CreateFind<EditorSettings::EditorWorkspace>(AZ_CRC_CE("ScriptCanvasEditorWindowState"), AZ::UserSettings::CT_LOCAL);
         if (workspace)
         {
             workspace->Init(m_mainWindow->saveState(), m_mainWindow->saveGeometry());
@@ -268,7 +272,7 @@ namespace ScriptCanvasEditor
     void Workspace::Restore()
     {
 
-        auto workspace = AZ::UserSettings::Find<EditorSettings::EditorWorkspace>(AZ_CRC("ScriptCanvasEditorWindowState", 0x10c47d36), AZ::UserSettings::CT_LOCAL);
+        auto workspace = AZ::UserSettings::Find<EditorSettings::EditorWorkspace>(AZ_CRC_CE("ScriptCanvasEditorWindowState"), AZ::UserSettings::CT_LOCAL);
         if (workspace)
         {
             workspace->Restore(qobject_cast<QMainWindow*>(m_mainWindow));
@@ -296,7 +300,7 @@ namespace ScriptCanvasEditor
                 {
                     // load all the files
 //                     AssetTrackerNotificationBus::MultiHandler::BusConnect(assetSaveData.m_assetId);
-// 
+//
 //                     Callbacks::OnAssetReadyCallback onAssetReady = [this, assetSaveData](ScriptCanvasMemoryAsset& asset)
 //                     {
 //                         // If we get an error callback. Just remove it from out active lists.
@@ -306,21 +310,21 @@ namespace ScriptCanvasEditor
 //                             {
 //                                 m_queuedAssetFocus = SourceHandle();
 //                             }
-// 
+//
 //                             SignalAssetComplete(asset.GetFileAssetId());
 //                         }
 //                     };
-// 
+//
 //                     bool loadedFile = true;
 //                     AssetTrackerRequestBus::BroadcastResult(loadedFile, &AssetTrackerRequests::Load, assetSaveData.m_assetId, assetSaveData.m_assetType, onAssetReady);
-// 
+//
 //                     if (!loadedFile)
 //                     {
 //                         if (assetSaveData.m_assetId == m_queuedAssetFocus)
 //                         {
 //                             m_queuedAssetFocus = SourceHandle();
 //                         }
-// 
+//
 //                         SignalAssetComplete(assetSaveData.m_assetId);
 //                     }
                 }
@@ -340,7 +344,7 @@ namespace ScriptCanvasEditor
 //         {
 //             m_loadingAssets.erase(it);
 //         }
-// 
+//
 //         if (m_loadingAssets.empty())
 //         {
 //             m_mainWindow->OnWorkspaceRestoreEnd(m_queuedAssetFocus);
@@ -357,7 +361,7 @@ namespace ScriptCanvasEditor
     // MainWindow
     ////////////////
 
-    MainWindow::MainWindow(QWidget* parent)
+    MainWindow::MainWindow(const AZ::Crc32& toolId, QWidget* parent)
         : QMainWindow(parent, Qt::Widget | Qt::WindowMinMaxButtonsHint)
         , ui(new Ui::MainWindow)
         , m_loadingNewlySavedFile(false)
@@ -373,11 +377,34 @@ namespace ScriptCanvasEditor
         , m_systemTickActions(0)
         , m_closeCurrentGraphAfterSave(false)
         , m_styleManager(ScriptCanvasEditor::AssetEditorId, "ScriptCanvas/StyleSheet/graphcanvas_style.json")
+        , m_toolId(toolId)
+    {
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        VariablePaletteRequestBus::Handler::BusConnect();
+        GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusConnect(ScriptCanvasEditor::AssetEditorId);
+        AssetBrowserComponentNotificationBus::Handler::BusConnect();
+
+        bool isReady = false;
+        AzToolsFramework::AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(
+            isReady, &AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests::AreEntriesReady);
+        if (isReady)
+        {
+            InitMainWindow(); // Will be init during OnAssetBrowserComponentReady() otherwise
+        }
+    }
+
+    void MainWindow::InitMainWindow()
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
 
-        VariablePaletteRequestBus::Handler::BusConnect();
-        GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusConnect(ScriptCanvasEditor::AssetEditorId);
+        static bool alreadyInit = false;
+        if (alreadyInit)
+        {
+            assert(false && "ScriptCanvas InitMainWindow() called twice, this shouldn't happen");
+            return;
+        }
+
+        alreadyInit = true;
 
         AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
         AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/translation/scriptcanvas_en_us.qm", unresolvedPath.data(), unresolvedPath.size());
@@ -439,6 +466,11 @@ namespace ScriptCanvasEditor
 
         m_editorToolbar = aznew GraphCanvas::AssetEditorToolbar(ScriptCanvasEditor::AssetEditorId);
 
+        if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
+        }
+        
         // Custom Actions
         {
             m_assignToSelectedEntity = new QToolButton();
@@ -574,7 +606,9 @@ namespace ScriptCanvasEditor
         m_propertyGrid->setObjectName("NodeInspector");
 
         m_bookmarkDockWidget = aznew GraphCanvas::BookmarkDockWidget(ScriptCanvasEditor::AssetEditorId, this);
-                
+
+        m_graphOutlinerDockWidget = aznew GraphCanvas::GraphOutlinerDockWidget(ScriptCanvasEditor::AssetEditorId, this);
+
         QObject::connect(m_variableDockWidget, &VariableDockWidget::OnVariableSelectionChanged, this, &MainWindow::OnVariableSelectionChanged);
 
         // This needs to happen after the node palette is created, because we scrape for the variable data from inside
@@ -633,7 +667,7 @@ namespace ScriptCanvasEditor
 
         UINotificationBus::Broadcast(&UINotifications::MainWindowCreationEvent, this);
 
-        m_userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC("ScriptCanvasPreviewSettings", 0x1c5a2965), AZ::UserSettings::CT_LOCAL);
+        m_userSettings = AZ::UserSettings::CreateFind<EditorSettings::ScriptCanvasEditorSettings>(AZ_CRC_CE("ScriptCanvasPreviewSettings"), AZ::UserSettings::CT_LOCAL);
         if (m_userSettings)
         {
             m_allowAutoSave = m_userSettings->m_autoSaveConfig.m_enabled;
@@ -652,6 +686,7 @@ namespace ScriptCanvasEditor
         connect(m_minimap, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_propertyGrid, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_bookmarkDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
+        connect(m_graphOutlinerDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_variableDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_loggingWindow, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
         connect(m_validationDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
@@ -659,12 +694,14 @@ namespace ScriptCanvasEditor
         m_autoSaveTimer.setSingleShot(true);
         connect(&m_autoSaveTimer, &QTimer::timeout, this, &MainWindow::OnAutoSave);
         UpdateMenuState(false);
+
     }
 
     MainWindow::~MainWindow()
     {
         m_workspace->Save();
 
+        AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
         ScriptCanvas::BatchOperationNotificationBus::Handler::BusDisconnect();
         GraphCanvas::AssetEditorRequestBus::Handler::BusDisconnect();
         UndoNotificationBus::Handler::BusDisconnect();
@@ -673,6 +710,12 @@ namespace ScriptCanvasEditor
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusDisconnect();
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
+
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
+        }
 
         Clear();
 
@@ -693,22 +736,17 @@ namespace ScriptCanvasEditor
         // File menu
         connect(ui->action_New_Script, &QAction::triggered, this, &MainWindow::OnFileNew);
         ui->action_New_Script->setShortcut(QKeySequence(QKeySequence::New));
+        addAction(ui->action_New_Script);
 
         connect(ui->action_Open, &QAction::triggered, this, &MainWindow::OnFileOpen);
         ui->action_Open->setShortcut(QKeySequence(QKeySequence::Open));
+        addAction(ui->action_Open);
 
         connect(ui->action_UpgradeTool, &QAction::triggered, this, &MainWindow::RunUpgradeTool);
         ui->action_UpgradeTool->setVisible(true);
 
         connect(ui->action_Interpreter, &QAction::triggered, this, &MainWindow::ShowInterpreter);
         ui->action_Interpreter->setVisible(true);
-
-        connect(ui->actionAdd_Script_Event_Helpers, &QAction::triggered, this, &MainWindow::OnScriptEventAddHelpers);
-        connect(ui->actionClear_Script_Event_Status, &QAction::triggered, this, &MainWindow::OnScriptEventClearStatus);
-        connect(ui->actionOpen_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventOpen);
-        connect(ui->actionParse_As_Script_Event, &QAction::triggered, this, &MainWindow::OnScriptEventParseAs);
-        connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, &MainWindow::OnScriptEventSaveAs);
-        connect(ui->menuScript_Events_PREVIEW, &QMenu::aboutToShow, this, &MainWindow::OnScriptEventMenuPreShow);
 
         // List of recent files.
         {
@@ -765,6 +803,7 @@ namespace ScriptCanvasEditor
 
         // View menu
         connect(ui->action_ViewNodePalette, &QAction::triggered, this, &MainWindow::OnViewNodePalette);
+        connect(ui->action_ViewGraphOutliner, &QAction::triggered, this, &MainWindow::OnViewGraphOutliner);
         connect(ui->action_ViewMiniMap, &QAction::triggered, this, &MainWindow::OnViewMiniMap);
 
         connect(ui->action_ViewProperties, &QAction::triggered, this, &MainWindow::OnViewProperties);
@@ -928,6 +967,10 @@ namespace ScriptCanvasEditor
 
         m_workspace->Save();
         event->accept();
+
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+
+
     }
 
     UnsavedChangesOptions MainWindow::ShowSaveDialog(const QString& filename)
@@ -1022,6 +1065,14 @@ namespace ScriptCanvasEditor
         return output;
     }
 
+    void MainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
+    {
+        AZStd::string result;
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
+            result, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+        OpenFile(result.c_str());
+    }
+
     void MainWindow::OpenValidationPanel()
     {
         if (!m_validationDockWidget->isVisible())
@@ -1051,7 +1102,7 @@ namespace ScriptCanvasEditor
         , AZStd::string scanFolder
         , AZ::Uuid fileAssetId)
     {
-        auto handle = SourceHandle::FromRelativePathAndScenFolder(scanFolder, relativePath, fileAssetId);
+        auto handle = SourceHandle::FromRelativePathAndScanFolder(scanFolder, relativePath, fileAssetId);
 
         if (!IsRecentSave(handle))
         {
@@ -1148,26 +1199,26 @@ namespace ScriptCanvasEditor
 //         {
 //             return AZ::Failure(AZStd::string("Unable to open asset with invalid asset id"));
 //         }
-// 
+//
 //         if (!scriptCanvasAsset.IsDescriptionValid())
 //         {
 //             if (!m_isRestoringWorkspace)
 //             {
 //                 AZStd::string errorPath = scriptCanvasAsset.Path().c_str();
-// 
+//
 //                 if (errorPath.empty())
 //                 {
 //                     errorPath = m_errorFilePath;
 //                 }
-// 
+//
 //                 if (m_queuedFocusOverride.AnyEquals(fileAssetId))
 //                 {
 //                     m_queuedFocusOverride = fileAssetId;
 //                 }
-// 
+//
 //                 QMessageBox::warning(this, "Unable to open source file", QString("Source File(%1) is in error and cannot be opened").arg(errorPath.c_str()), QMessageBox::StandardButton::Ok);
 //             }
-// 
+//
 //             return AZ::Failure(AZStd::string("Source File is in error"));
 //         }
 
@@ -1177,6 +1228,9 @@ namespace ScriptCanvasEditor
         {
             m_tabBar->setCurrentIndex(outTabIndex);
             SetActiveAsset(scriptCanvasAsset);
+
+            EnableOpenDocumentActions(true);
+
             return AZ::Success(outTabIndex);
         }
 
@@ -1200,6 +1254,9 @@ namespace ScriptCanvasEditor
         GraphCanvas::GraphId graphCanvasGraphId = GetGraphCanvasGraphId(scriptCanvasAsset.Get()->GetScriptCanvasId());
         GraphCanvas::AssetEditorNotificationBus::Event(ScriptCanvasEditor::AssetEditorId, &GraphCanvas::AssetEditorNotifications::OnGraphLoaded, graphCanvasGraphId);
         GeneralAssetNotificationBus::Event(fileAssetId, &GeneralAssetNotifications::OnAssetVisualized);
+
+        EnableOpenDocumentActions(true);
+
         return AZ::Success(outTabIndex);
     }
 
@@ -1342,13 +1399,14 @@ namespace ScriptCanvasEditor
 
         auto activeGraph =  SourceHandle::FromRelativePath(result.m_handle, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
         activeGraph = SourceHandle::MarkAbsolutePath(activeGraph, fullPath);
-        
+
         auto openOutcome = OpenScriptCanvasAsset(activeGraph, Tracker::ScriptCanvasFileState::UNMODIFIED);
         if (openOutcome)
         {
             RunGraphValidation(false);
             SetActiveAsset(activeGraph);
             SetRecentAssetId(activeGraph);
+            EnableOpenDocumentActions(true);
         }
         else
         {
@@ -1471,7 +1529,7 @@ namespace ScriptCanvasEditor
         {
             newAssetName = AZStd::string::format(SourceDescription::GetAssetNamePattern()
                 , ++scriptCanvasEditorDefaultNewNameCount);
-            
+
             AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
             if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(SourceDescription::GetSuggestedSavePath()
                 , assetRootArray.data(), assetRootArray.size()))
@@ -1493,6 +1551,8 @@ namespace ScriptCanvasEditor
         {
             AZ_Warning("Script Canvas", createOutcome, "%s", createOutcome.GetError().data());
         }
+
+        EnableOpenDocumentActions(true);
     }
 
     int MainWindow::InsertTabForAsset(AZStd::string_view assetPath, SourceHandle assetId, int tabIndex)
@@ -1535,9 +1595,10 @@ namespace ScriptCanvasEditor
         AZ::Uuid assetId = AZ::Uuid::CreateRandom();
         auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(SourceHandle(graph, assetId), assetPath);
         SourceHandle handle = relativeOption ? *relativeOption : SourceHandle(graph, assetId);
+        handle.SetSuggestedFileName(assetPath);
 
         outTabIndex = InsertTabForAsset(assetPath, handle, tabIndex);
-        
+
         if (outTabIndex == -1)
         {
             return AZ::Failure(AZStd::string::format("Script Canvas Asset %.*s is not open in a tab"
@@ -1617,34 +1678,6 @@ namespace ScriptCanvasEditor
             return false;
         }
 
-        if (sourceHandle.Get()->IsScriptEventExtension())
-        {
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , QObject::tr("Select ScriptCanvas or ScriptEvent source type:")
-                , QObject::tr("Graph defines a ScriptEvent. Press 'Discard' and use Script Event menu to save it as .scriptevent, or 'Ok' to continue to save as .scriptcanvas")
-                , QMessageBox::Ok | QMessageBox::Discard    
-                , nullptr);
-
-            if (mb.exec() == QMessageBox::Discard)
-            {
-                return false;
-            }
-        }
-
-        if (sourceHandle.AbsolutePath().Extension() == ".scriptevents")
-        {
-            auto newPath = sourceHandle.AbsolutePath();
-            newPath.ReplaceExtension(".scriptcanvas");
-
-            if (auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(sourceHandle, newPath))
-            {
-                sourceHandle = *relativeOption;
-            }
-
-            sourceHandle = SourceHandle::MarkAbsolutePath(sourceHandle, newPath);
-        }        
-
         if (!m_activeGraph.AnyEquals(sourceHandle))
         {
             OnChangeActiveGraphTab(sourceHandle);
@@ -1658,14 +1691,14 @@ namespace ScriptCanvasEditor
         bool isValidFileName = false;
 
         AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
-        projectSourcePath /= "ScriptCanvas//";
+        projectSourcePath /= "Assets/ScriptCanvas";
         QString selectedFile;
 
         if (save == Save::InPlace)
         {
             isValidFileName = true;
             suggestedFileFilter = SourceDescription::GetFileExtension();
-            
+
             auto sourceHandlePath = sourceHandleIn.AbsolutePath();
             selectedFile = sourceHandleIn.AbsolutePath().Native().c_str();
             suggestedFilename = sourceHandleIn.AbsolutePath().Filename().Native();
@@ -1691,37 +1724,43 @@ namespace ScriptCanvasEditor
 
             selectedFile = suggestedFilename.c_str();
         }
-        
+
         QString filter = suggestedFileFilter.c_str();
-        
+
         while (!isValidFileName)
         {
-            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), suggestedDirectoryPath.data(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"));
+            AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
+
+            QDir dir(suggestedDirectoryPath.c_str());
+            if (!dir.exists())
+            {
+                auto result = AZ::IO::SystemFile::CreateDir(suggestedDirectoryPath.c_str());
+                if (!result)
+                {
+                    AZ_Error("Script Canvas", false, "Failed to make new folder: %s", suggestedDirectoryPath.c_str());
+                    return false;
+                }
+            }
+
+            AZ::IO::FixedMaxPath fullPath = suggestedDirectoryPath.c_str();
+            AZStd::string suggestedFileName = sourceHandle.GetSuggestedFileName() + SourceDescription::GetFileExtension();
+            fullPath /= suggestedFileName;
+
+            QString localSelectedFilter;
+            QFileDialog::Options options;
+            QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
+
+            selectedFile = filePath.toUtf8().toStdString().c_str();
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.
-            if (!selectedFile.isEmpty())
+            if (selectedFile.isEmpty())
             {
-                AZStd::string filePath = selectedFile.toUtf8().data();
-
-                if (!AZ::StringFunc::EndsWith(filePath, SourceDescription::GetFileExtension(), false))
-                {
-                    filePath += SourceDescription::GetFileExtension();
-                }
-
-                AZStd::string fileName;
-
-                if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
-                {
-                    isValidFileName = !(fileName.empty());
-                }
-                else
-                {
-                    QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
-                }
+                QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
             }
             else
             {
+                isValidFileName = true;
                 break;
             }
         }
@@ -1729,7 +1768,6 @@ namespace ScriptCanvasEditor
         if (isValidFileName)
         {
             AZStd::string internalStringFile = selectedFile.toUtf8().data();
-
 
             if (!AZ::StringFunc::EndsWith(internalStringFile, SourceDescription::GetFileExtension(), false))
             {
@@ -1751,23 +1789,38 @@ namespace ScriptCanvasEditor
 
         return false;
     }
-    
+
     void MainWindow::OnSaveCallBack(const VersionExplorer::FileSaveResult& result)
     {
-        const bool saveSuccess = result.IsSuccess();
+        auto memoryAsset = OnSaveComplete(m_fileSaver->GetSource(), result);
 
+        const bool displayAsNotification = true;
+        RunGraphValidation(displayAsNotification);
+
+        m_closeCurrentGraphAfterSave = false;
+
+        EnableAssetView(memoryAsset);
+
+        UpdateSaveState(true);
+        UnblockCloseRequests();
+        m_fileSaver.reset();
+    }
+
+    SourceHandle MainWindow::OnSaveComplete(const SourceHandle& sourceHandle, const VersionExplorer::FileSaveResult& result)
+    {
+        const bool saveSuccess = result.IsSuccess();
         int saveTabIndex = -1;
         SourceHandle memoryAsset;
         {
-            int saverIndex = m_tabBar->FindTab(m_fileSaver->GetSource());
+            int saverIndex = m_tabBar->FindTab(sourceHandle);
             if (saverIndex >= 0)
             {
                 saveTabIndex = saverIndex;
-                memoryAsset = m_fileSaver->GetSource();
+                memoryAsset = sourceHandle;
             }
             else
             {
-                auto completeDescription = CompleteDescription(m_fileSaver->GetSource());
+                auto completeDescription = CompleteDescription(sourceHandle);
                 if (completeDescription)
                 {
                     memoryAsset = *completeDescription;
@@ -1830,16 +1883,13 @@ namespace ScriptCanvasEditor
 
         OnSaveToast toast(tabName, GetActiveGraphCanvasGraphId(), saveSuccess);
 
-        const bool displayAsNotification = true;
-        RunGraphValidation(displayAsNotification);
+        // If we are in the process of closing tabs, resume closing
+        if (m_isClosingTabs)
+        {
+            CloseNextTab();
+        }
 
-        m_closeCurrentGraphAfterSave = false;
-
-        EnableAssetView(memoryAsset);
-
-        UpdateSaveState(true);
-        UnblockCloseRequests();
-        m_fileSaver.reset();
+        return memoryAsset;
     }
 
     bool MainWindow::ActivateAndSaveAsset(const SourceHandle& unsavedAssetId)
@@ -1869,24 +1919,59 @@ namespace ScriptCanvasEditor
         MarkRecentSave(sourceHandle);
         m_fileSaver->Save(sourceHandle, path);
 
-        BlockCloseRequests();        
+        BlockCloseRequests();
     }
 
     void MainWindow::OnFileOpen()
     {
-        const auto sourcePath = AZ::IO::FixedMaxPath(AZ::Utils::GetProjectPath()) / "scriptcanvas";
-        const QStringList nameFilters = { "All ScriptCanvas Files (*.scriptcanvas)" };
+        AssetSelectionModel selection;
 
-        QFileDialog dialog(nullptr, tr("Open..."), sourcePath.c_str());
-        dialog.setFileMode(QFileDialog::ExistingFiles);
-        dialog.setNameFilters(nameFilters);
+        StringFilter* stringFilter = new StringFilter();
+        stringFilter->SetName("Script Canvas (*.scriptcanvas)");
+        stringFilter->SetFilterString(".scriptcanvas");
+        stringFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        auto stringFilterPtr = FilterConstType(stringFilter);
 
-        if (dialog.exec() == QDialog::Accepted)
+        selection.SetDisplayFilter(stringFilterPtr);
+        selection.SetSelectionFilter(stringFilterPtr);
+        selection.SetMultiselect(true);
+
+        AssetBrowserComponentRequestBus::Broadcast(
+            &AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
+
+        if (!selection.IsValid())
         {
-            m_filesToOpen = dialog.selectedFiles();
-
-            OpenNextFile();
+            return;
         }
+
+        for (const auto& result : selection.GetResults())
+        {
+            m_filesToOpen.push_back(result->GetFullPath().c_str());
+        }
+
+        OpenNextFile();
+        EnableOpenDocumentActions(true);
+    }
+
+    void MainWindow::EnableOpenDocumentActions(bool enable)
+    {
+        ui->action_Save->setEnabled(enable);
+        ui->action_Save_As->setEnabled(enable);
+        ui->action_EnableSelection->setEnabled(enable);
+        ui->action_DisableSelection->setEnabled(enable);
+        ui->action_ClearSelection->setEnabled(enable);
+        ui->action_ZoomSelection->setEnabled(enable);
+        ui->action_GotoStartOfChain->setEnabled(enable);
+        ui->action_GotoEndOfChain->setEnabled(enable);
+    }
+
+    void MainWindow::EnableAlignmentActions(bool enable)
+    {
+        ui->menuAlign->setEnabled(enable);
+        ui->action_AlignTop->setEnabled(enable);
+        ui->action_AlignBottom->setEnabled(enable);
+        ui->action_AlignLeft->setEnabled(enable);
+        ui->action_AlignRight->setEnabled(enable);
     }
 
     void MainWindow::SetupEditMenu()
@@ -1896,6 +1981,12 @@ namespace ScriptCanvasEditor
         ui->action_Copy->setShortcut(QKeySequence(QKeySequence::Copy));
         ui->action_Paste->setShortcut(QKeySequence(QKeySequence::Paste));
         ui->action_Delete->setShortcut(QKeySequence(QKeySequence::Delete));
+        addAction(ui->action_Undo);
+        addAction(ui->action_Cut);
+        addAction(ui->action_Copy);
+        addAction(ui->action_Paste);
+        addAction(ui->action_Delete);
+        addAction(ui->action_Duplicate);
 
         connect(ui->menuEdit, &QMenu::aboutToShow, this, &MainWindow::OnEditMenuShow);
 
@@ -1924,8 +2015,14 @@ namespace ScriptCanvasEditor
         connect(ui->action_AlignLeft, &QAction::triggered, this, &MainWindow::OnAlignLeft);
         connect(ui->action_AlignRight, &QAction::triggered, this, &MainWindow::OnAlignRight);
 
-        ui->action_ZoomIn->setShortcuts({ QKeySequence(Qt::CTRL + Qt::Key_Plus),
-                                          QKeySequence(Qt::CTRL + Qt::Key_Equal)
+        // Prevent QAction::eventFilter: Ambiguous shortcut overload
+        ui->action_AlignTop->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        ui->action_AlignBottom->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        ui->action_AlignLeft->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        ui->action_AlignRight->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+        ui->action_ZoomIn->setShortcuts({ QKeySequence(0x0 | Qt::CTRL | Qt::Key_Plus),
+                                          QKeySequence(0x0 | Qt::CTRL | Qt::Key_Equal)
                                         });
 
         // View Menu
@@ -1975,7 +2072,6 @@ namespace ScriptCanvasEditor
         ui->action_Screenshot->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
         ui->menuSelect->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
         ui->action_ClearSelection->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
-        ui->menuAlign->setEnabled(GetActiveGraphCanvasGraphId().IsValid());
     }
 
     void MainWindow::RefreshPasteAction()
@@ -2446,7 +2542,7 @@ namespace ScriptCanvasEditor
         }
 
         UpdateUndoCache(fileAssetId);
-        RefreshSelection();        
+        RefreshSelection();
     }
 
     void MainWindow::RefreshActiveAsset()
@@ -2472,6 +2568,7 @@ namespace ScriptCanvasEditor
     {
         m_tabBar->CloseAllTabs();
         SetActiveAsset({});
+        EnableOpenDocumentActions(false);
     }
 
     void MainWindow::OnTabCloseButtonPressed(int index)
@@ -2568,6 +2665,7 @@ namespace ScriptCanvasEditor
             {
                 m_isClosingTabs = false;
                 m_skipTabOnClose.Clear();
+                EnableOpenDocumentActions(false);
                 return;
             }
 
@@ -2622,6 +2720,11 @@ namespace ScriptCanvasEditor
             {
                 // The last tab has been removed.
                 SetActiveAsset({});
+            }
+
+            if (m_tabBar->count() == 0)
+            {
+                EnableOpenDocumentActions(false);
             }
 
             // Handling various close all events because the save is async need to deal with this in a bunch of different ways
@@ -2722,6 +2825,13 @@ namespace ScriptCanvasEditor
             m_nodePalette->show();
         }
 
+        if (m_graphOutlinerDockWidget)
+        {
+            addDockWidget(Qt::LeftDockWidgetArea, m_graphOutlinerDockWidget);
+            m_graphOutlinerDockWidget->setFloating(false);
+            m_graphOutlinerDockWidget->show();
+        }
+
         if (m_variableDockWidget)
         {
             addDockWidget(Qt::RightDockWidgetArea, m_variableDockWidget);
@@ -2819,14 +2929,18 @@ namespace ScriptCanvasEditor
             {
                 hasSelection = true;
                 m_propertyGrid->SetSelection(selection);
+
+                EnableAlignmentActions((selection.size() > 1));
             }
             else
             {
+                EnableAlignmentActions(false);
                 m_propertyGrid->ClearSelection();
             }
         }
         else
         {
+            EnableAlignmentActions(false);
             m_propertyGrid->ClearSelection();
         }
 
@@ -2844,6 +2958,14 @@ namespace ScriptCanvasEditor
         if (m_nodePalette)
         {
             m_nodePalette->toggleViewAction()->trigger();
+        }
+    }
+
+    void MainWindow::OnViewGraphOutliner()
+    {
+        if (m_graphOutlinerDockWidget)
+        {
+            m_graphOutlinerDockWidget->toggleViewAction()->trigger();
         }
     }
 
@@ -2992,6 +3114,12 @@ namespace ScriptCanvasEditor
 
     void MainWindow::UpdateViewMenu()
     {
+        if (ui->action_ViewGraphOutliner->isChecked() != m_graphOutlinerDockWidget->isVisible())
+        {
+            QSignalBlocker signalBlocker(ui->action_ViewGraphOutliner);
+            ui->action_ViewGraphOutliner->setChecked(m_graphOutlinerDockWidget->isVisible());
+        }
+
         if (ui->action_ViewBookmarks->isChecked() != m_bookmarkDockWidget->isVisible())
         {
             QSignalBlocker signalBlocker(ui->action_ViewBookmarks);
@@ -3475,24 +3603,20 @@ namespace ScriptCanvasEditor
         return findChild<QObject*>(elementName);
     }
 
-    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const SourceHandle& assetId
-        , [[maybe_unused]] AZ::EntityId assetNodeId) const
+    AZ::EntityId MainWindow::FindEditorNodeIdByAssetNodeId([[maybe_unused]] const SourceHandle& assetId, [[maybe_unused]] AZ::EntityId assetNodeId) const
     {
-        AZ::EntityId editorEntityId{};
-//         AssetTrackerRequestBus::BroadcastResult
-//             ( editorEntityId, &AssetTrackerRequests::GetEditorEntityIdFromSceneEntityId, assetId.Id(), assetNodeId);
-        // #sc_editor_asset_redux fix logger
-        return editorEntityId;
+        const ScriptCanvas::ScriptCanvasId scriptId = GetActiveScriptCanvasId();
+        AZ::EntityId newNodeId;
+        EditorGraphRequestBus::EventResult(newNodeId, scriptId, &EditorGraphRequests::FindNewIdFromOriginal, assetNodeId);
+        return newNodeId;
     }
 
-    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const SourceHandle& assetId
-        , [[maybe_unused]] AZ::EntityId editorNodeId) const
+    AZ::EntityId MainWindow::FindAssetNodeIdByEditorNodeId([[maybe_unused]] const SourceHandle& assetId, [[maybe_unused]] AZ::EntityId editorNodeId) const
     {
-        AZ::EntityId sceneEntityId{};
-        // AssetTrackerRequestBus::BroadcastResult
-        // ( sceneEntityId, &AssetTrackerRequests::GetSceneEntityIdFromEditorEntityId, assetId.Id(), editorNodeId);
-        // #sc_editor_asset_redux fix logger
-        return sceneEntityId;
+        const ScriptCanvas::ScriptCanvasId scriptId = GetActiveScriptCanvasId();
+        AZ::EntityId originalNodeId;
+        EditorGraphRequestBus::EventResult(originalNodeId, scriptId, &EditorGraphRequests::FindOriginalIdFromNew, editorNodeId);
+        return originalNodeId;
     }
 
     GraphCanvas::Endpoint MainWindow::CreateNodeForProposalWithGroup(const AZ::EntityId& connectionId
@@ -3899,6 +4023,11 @@ namespace ScriptCanvasEditor
         PopPreventUndoStateUpdate();
     }
 
+    void MainWindow::OnAssetBrowserComponentReady()
+    {
+        InitMainWindow();
+    }
+
     void MainWindow::PrepareActiveAssetForSave()
     {
         PrepareAssetForSave(m_activeGraph);
@@ -3926,14 +4055,6 @@ namespace ScriptCanvasEditor
 
         for (const AZ::EntityId& entityId : selectedEntityIds)
         {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-            if (isLayerEntity)
-            {
-                continue;
-            }
-
             AZ::NamedEntityId namedEntityId(entityId);
 
             QAction* actionElement = new QAction(namedEntityId.GetName().data(), m_selectedEntityMenu);
@@ -3949,58 +4070,26 @@ namespace ScriptCanvasEditor
     void MainWindow::OnAssignToSelectedEntities()
     {
         Tracker::ScriptCanvasFileState fileState = GetAssetFileState(m_activeGraph);;
-        
+
         bool isDocumentOpen = false;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(isDocumentOpen, &AzToolsFramework::EditorRequests::IsLevelDocumentOpen);
- 
+
         if (fileState == Tracker::ScriptCanvasFileState::NEW || fileState == Tracker::ScriptCanvasFileState::SOURCE_REMOVED || !isDocumentOpen)
         {
             return;
         }
- 
+
         AzToolsFramework::EntityIdList selectedEntityIds;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
- 
-        auto selectedEntityIdIter = selectedEntityIds.begin();
- 
-        bool isLayerAmbiguous = false;
-        AZ::EntityId targetLayer;
- 
-        while (selectedEntityIdIter != selectedEntityIds.end())
-        {
-            bool isLayerEntity = false;
-            AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, (*selectedEntityIdIter), &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
- 
-            if (isLayerEntity)
-            {
-                if (targetLayer.IsValid())
-                {
-                    isLayerAmbiguous = true;
-                }
- 
-                targetLayer = (*selectedEntityIdIter);
- 
-                selectedEntityIdIter = selectedEntityIds.erase(selectedEntityIdIter);
-            }
-            else
-            {
-                ++selectedEntityIdIter;
-            }
-        }
- 
+
         if (selectedEntityIds.empty())
         {
             AZ::EntityId createdId;
             AzToolsFramework::EditorRequests::Bus::BroadcastResult(createdId, &AzToolsFramework::EditorRequests::CreateNewEntity, AZ::EntityId());
- 
+
             selectedEntityIds.emplace_back(createdId);
- 
-            if (targetLayer.IsValid() && !isLayerAmbiguous)
-            {
-                AZ::TransformBus::Event(createdId, &AZ::TransformBus::Events::SetParent, targetLayer);
-            }
         }
- 
+
         for (const AZ::EntityId& entityId : selectedEntityIds)
         {
             AssignGraphToEntityImpl(entityId);
@@ -4026,13 +4115,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::AssignGraphToEntityImpl(const AZ::EntityId& entityId)
     {
-        bool isLayerEntity = false;
-        AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(isLayerEntity, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-        if (isLayerEntity)
-        {
-            return;
-        }
+        using namespace AzToolsFramework;
 
         EditorScriptCanvasComponentRequests* firstRequestBus = nullptr;
         EditorScriptCanvasComponentRequests* firstEmptyRequestBus = nullptr;
@@ -4061,16 +4144,25 @@ namespace ScriptCanvasEditor
 
         if (usableRequestBus == nullptr)
         {
-            AzToolsFramework::EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::AddComponentsToEntities, AzToolsFramework::EntityIdList{ entityId }
+            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome;
+            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(outcome, &EntityCompositionRequests::AddComponentsToEntities, AzToolsFramework::EntityIdList{ entityId }
                                                                                                                         , AZ::ComponentTypeList{ azrtti_typeid<EditorScriptCanvasComponent>() });
 
-            usableRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(entityId);
+            if (outcome.IsSuccess())
+            {
+                auto& addedComponent = outcome.GetValue()[entityId].m_componentsAdded[0];
+                AZ_Assert(addedComponent->GetUnderlyingComponentType() == azrtti_typeid<EditorScriptCanvasComponent>(), "Added component returned was not the type requested to add");
+
+                if (EditorScriptCanvasComponent* editorComponent = azrtti_cast<EditorScriptCanvasComponent*>(addedComponent))
+                {
+                    SourceHandle focusedAssetId = m_tabBar->FindAssetId(m_tabBar->currentIndex());
+
+                    AZ::Data::AssetId assetId = static_cast<AZ::Data::AssetId>(focusedAssetId.Id());
+                    editorComponent->SetPrimaryAsset(assetId);
+                }
+            }
         }
 
-        if (usableRequestBus)
-        {
-            usableRequestBus->SetAssetId(m_activeGraph.Describe());
-        }
     }
 
     bool MainWindow::HasSystemTickAction(SystemTickActionFlag action)
@@ -4101,6 +4193,7 @@ namespace ScriptCanvasEditor
 
             if (m_hasQueuedClose)
             {
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
                 qobject_cast<QWidget*>(parent())->close();
             }
         }
@@ -4396,6 +4489,7 @@ namespace ScriptCanvasEditor
         }
 
         m_tabBar->setEnabled(false);
+        m_graphOutlinerDockWidget->setEnabled(false);
         m_bookmarkDockWidget->setEnabled(false);
         m_variableDockWidget->setEnabled(false);
         m_propertyGrid->DisableGrid();
@@ -4406,6 +4500,7 @@ namespace ScriptCanvasEditor
         m_createScriptCanvas->setEnabled(false);
 
         UpdateMenuState(false);
+        EnableOpenDocumentActions(false);
 
         ui->action_New_Script->setEnabled(false);
 
@@ -4420,6 +4515,7 @@ namespace ScriptCanvasEditor
         }
 
         m_tabBar->setEnabled(true);
+        m_graphOutlinerDockWidget->setEnabled(true);
         m_bookmarkDockWidget->setEnabled(true);
         m_variableDockWidget->setEnabled(true);
         m_propertyGrid->EnableGrid();
@@ -4438,10 +4534,10 @@ namespace ScriptCanvasEditor
     void MainWindow::ClearStaleSaves()
     {
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-        auto timeNow = AZStd::chrono::system_clock::now();
+        auto timeNow = AZStd::chrono::steady_clock::now();
         AZStd::erase_if(m_saves, [&timeNow](const auto& item)
         {
-            AZStd::sys_time_t delta = AZStd::chrono::seconds(timeNow - item.second).count();
+            AZStd::sys_time_t delta = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(timeNow - item.second).count();
             return delta > 2.0f;
         });
     }
@@ -4460,128 +4556,9 @@ namespace ScriptCanvasEditor
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         AZStd::string key = handle.AbsolutePath().Native();
         AZStd::to_lower(key.begin(), key.end());
-        m_saves[key] = AZStd::chrono::system_clock::now();
+        m_saves[key] = AZStd::chrono::steady_clock::now();
     }
 
-    void MainWindow::OnScriptEventAddHelpers()
-    {
-        if (ScriptEvents::Editor::MakeHelpersAction(m_activeGraph).first)
-        {
-            GraphCanvas::GraphModelRequestBus::Event
-                ( m_activeGraph.Mod()->GetEntityId()
-                , &GraphCanvas::GraphModelRequests::RequestUndoPoint);
-        }
-    }
-
-    void MainWindow::OnScriptEventClearStatus()
-    {
-        ScriptEvents::Editor::ClearStatusAction(m_activeGraph);
-    }
-
-    void MainWindow::OnScriptEventMenuPreShow()
-    {
-        auto result = ScriptEvents::Editor::UpdateMenuItemsEnabled(m_activeGraph);
-        ui->actionAdd_Script_Event_Helpers->setEnabled(result.m_addHelpers);
-        ui->actionClear_Script_Event_Status->setEnabled(result.m_clear);
-        ui->actionParse_As_Script_Event->setEnabled(result.m_parse);
-        ui->actionSave_As_ScriptEvent->setEnabled(result.m_save);
-    }
-
-    void MainWindow::OnScriptEventOpen()
-    {
-        AZStd::pair<ScriptCanvas::SourceHandle, AZStd::string> result = ScriptEvents::Editor::OpenAction();
-
-        if (result.first.Get())
-        {
-            OpenScriptCanvasAssetImplementation(result.first, Tracker::ScriptCanvasFileState::UNMODIFIED);
-        }
-        else
-        {
-            if (!result.second.empty())
-            {
-                QMessageBox mb
-                    ( QMessageBox::Warning
-                    , tr("Failed to open ScriptEvent file into ScriptCanvas Editor.")
-                    , result.second.c_str()
-                    , QMessageBox::Close
-                    , nullptr);
-
-                mb.exec();
-            }
-        }
-    }
-
-    void MainWindow::OnScriptEventParseAs()
-    {
-        if (!m_activeGraph.IsGraphValid())
-        {
-            return;
-        }
-
-        AZStd::pair<bool, AZStd::vector<AZStd::string>> result = ScriptEvents::Editor::ParseAsAction(m_activeGraph);
-
-        if (result.first)
-        {
-            QMessageBox mb
-                ( QMessageBox::Information
-                , QObject::tr("Success!")
-                , QObject::tr("Graph parsed as ScriptEvent, and may be saved as one.")
-                , QMessageBox::Close
-                , nullptr);
-
-            mb.exec();
-        }
-        else
-        {
-            AZStd::string parseErrorString;
-
-            if (!result.second.empty())
-            {
-                parseErrorString = "Parse Errors:\n";
-
-                for (auto& entry : result.second)
-                {
-                    parseErrorString += "* ";
-                    parseErrorString += entry;
-                    parseErrorString += "\n";
-                }
-            }
-
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , QObject::tr("Graph did not parse as ScriptEvent, please fix issues below to save as a ScriptEvent")
-                , parseErrorString.c_str()
-                , QMessageBox::Close
-                , nullptr);
-
-            mb.exec();
-        }
-    }
-
-    void MainWindow::OnScriptEventSaveAs()
-    {
-        auto result = ScriptEvents::Editor::SaveAsAction(m_activeGraph);
-        if (result.first)
-        {
-            OnSaveToast toast
-                ( result.second
-                , GetActiveGraphCanvasGraphId()
-                , true
-                , AZStd::string("Graph Saved .scriptevent, and this editor can open that file.\n"
-                    "No .scriptcanvas file was saved from this graph."));
-        }
-        else
-        {
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , QObject::tr("Failed to Save As Script Event")
-                , result.second.c_str()
-                , QMessageBox::Close
-                , nullptr);
-
-            mb.exec();
-        }
-    }
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>
-}
+} // namespace ScriptCanvasEditor

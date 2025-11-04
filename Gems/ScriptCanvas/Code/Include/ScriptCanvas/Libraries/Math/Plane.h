@@ -38,3 +38,5 @@ namespace ScriptCanvas
         PlaneType Transform(PlaneType source, const TransformType& transform);
     } // namespace PlaneFunctions
 } // namespace ScriptCanvas
+
+#include <Include/ScriptCanvas/Libraries/Math/Plane.generated.h>

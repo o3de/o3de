@@ -8,7 +8,6 @@
 
 // include required headers
 #include "Ray.h"
-#include "AABB.h"
 #include "BoundingSphere.h"
 #include "PlaneEq.h"
 #include "FastMath.h"
@@ -200,62 +199,4 @@ namespace MCore
         return true;
     }
 
-
-    // ray-axis aligned bounding box
-    bool Ray::Intersects(const AABB& b, AZ::Vector3* intersectA, AZ::Vector3* intersectB) const
-    {
-        float tNear = -FLT_MAX, tFar = FLT_MAX;
-
-        const AZ::Vector3& minVec = b.GetMin();
-        const AZ::Vector3& maxVec = b.GetMax();
-
-        // For all three axes, check the near and far intersection point on the two slabs
-        for (int32 i = 0; i < 3; i++)
-        {
-            if (Math::Abs(m_direction.GetElement(i)) < Math::epsilon)
-            {
-                // direction is parallel to this plane, check if we're somewhere between min and max
-                if ((m_origin.GetElement(i) < minVec.GetElement(i)) || (m_origin.GetElement(i) > maxVec.GetElement(i)))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // calculate t's at the near and far slab, see if these are min or max t's
-                float t1 = (minVec.GetElement(i) - m_origin.GetElement(i)) / m_direction.GetElement(i);
-                float t2 = (maxVec.GetElement(i) - m_origin.GetElement(i)) / m_direction.GetElement(i);
-                if (t1 > t2)
-                {
-                    float temp = t1;
-                    t1 = t2;
-                    t2 = temp;
-                }
-                if (t1 > tNear)
-                {
-                    tNear = t1;                                 // accept nearest value
-                }
-                if (t2 < tFar)
-                {
-                    tFar  = t2;                                 // accept farthest value
-                }
-                if ((tNear > tFar) || (tFar < 0.0f))
-                {
-                    return false;
-                }
-            }
-        }
-
-        if (intersectA)
-        {
-            *intersectA = m_origin + m_direction * tNear;
-        }
-
-        if (intersectB)
-        {
-            *intersectB = m_origin + m_direction * tFar;
-        }
-
-        return true;
-    }
 }   // namespace MCore

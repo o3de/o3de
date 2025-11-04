@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/ConfigurableStack.h>
@@ -19,10 +21,10 @@
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    class PrefabConversionPipeline final
+    class AZTF_API PrefabConversionPipeline final
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabConversionPipeline, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabConversionPipeline, AZ::SystemAllocator);
         
         using PrefabProcessorStack = AZ::ConfigurableStack<PrefabProcessor>;
 

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Configuration.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Debug/Trace.h>
 
@@ -21,7 +22,7 @@ namespace AZ
         //! Utility for printing trace statements about the callstack when doing shader and material hot-reload activities.
         //! (nothing about this class is necessarily specific to shader and material hot-reload though, so the class could
         //!  be generalized if needed elsewhere).
-        class ShaderReloadDebugTracker final
+        class ATOM_RPI_PUBLIC_API ShaderReloadDebugTracker final
         {
         public:
             static void Init();
@@ -72,7 +73,7 @@ namespace AZ
             }
 
             //! Use this utility to call BeginSection(), and automatically call EndSection() when the object goes out of scope.
-            class ScopedSection final
+            class ATOM_RPI_PUBLIC_API ScopedSection final
             {
             public:
                 static constexpr uint32_t MaxSectionNameLength = 1024;

@@ -22,7 +22,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterWindow.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterCreateEditWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 
@@ -219,11 +219,7 @@ namespace EMotionFX
         QString m_workspaceSavePath;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CanOpenWorkspaceFixture, DISABLED_CanAddAnimGraph)
-#else
     TEST_F(CanOpenWorkspaceFixture, CanAddAnimGraph)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C953542");
 

@@ -93,12 +93,12 @@ namespace UnitTest
     }
 
     class JsonSerializationUtilsTests
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
@@ -130,7 +130,7 @@ namespace UnitTest
             m_serializeContext.reset();
             m_jsonSystemComponent.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<SerializeContext> m_serializeContext;
@@ -164,6 +164,51 @@ namespace UnitTest
         EXPECT_TRUE(loadResult.IsSuccess());
 
         EXPECT_TRUE(dataToSave == loadedData);
+    }
+
+    TEST_F(JsonSerializationUtilsTests, SaveLoadObjectToStream_WithCustomLocales_Success)
+    {
+        // This test is nearly identical to the above, but makes sure that if the system has a locale set
+        // which uses a comma as a decimal separator, that the system can still serialize and deserialize
+        // and does so in a way that is locale agnostic.  We do this by setting the locale to one that uses commas
+        // and writing to the buffer (saving) and then setting it to a DIFFERENT locale and reading, in both directions
+        // if the system is sensitive to locale, the test will fail becuase either one direction or the other will use the
+        // system locale.
+
+        auto testLocales = [&](const char* locale1, const char* locale2)
+        {
+            const char* priorLocale = setlocale(LC_ALL, nullptr);
+            setlocale(LC_ALL, locale1);
+            char buffer[1024];
+            IO::MemoryStream stream(buffer, 1024, 0);
+
+            m_serializationSettings.m_keepDefaults = true;
+
+            Test1::TestClass dataToSave;
+            dataToSave.Init();
+            dataToSave.m_float = 10;
+            dataToSave.m_string = "SaveObjectToStreamSuccess";
+
+            Outcome<void, AZStd::string> saveResult = JsonSerializationUtils::SaveObjectToStream(&dataToSave, stream, (Test1::TestClass*)nullptr, &m_serializationSettings);
+
+            EXPECT_TRUE(saveResult.IsSuccess());
+
+            setlocale(LC_ALL, locale2);
+            Test1::TestClass loadedData;
+            stream.Seek(0, IO::GenericStream::ST_SEEK_BEGIN);
+            Outcome<void, AZStd::string> loadResult = JsonSerializationUtils::LoadObjectFromStream(loadedData, stream, &m_deserializationSettings);
+        
+            EXPECT_TRUE(loadResult.IsSuccess());
+
+            EXPECT_TRUE(dataToSave == loadedData);
+
+            setlocale(LC_ALL, priorLocale);
+        };
+
+        testLocales("en-US", "pl-PL");
+        testLocales("pl-PL", "en-US");
+        testLocales("en-US", "pl-PL");
+        testLocales("pl-PL", "en-US");
     }
 
     TEST_F(JsonSerializationUtilsTests, SaveObjectToStream_Failed_NoSerializationContext)

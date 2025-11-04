@@ -31,6 +31,20 @@
 //!             Ex. AZ_CLASS_ENUM(E, (a, 1), (b, 2), (c, 2) )
 //!             Invoking either ToString(E::b) or ToString(E::c) will result in the string "b" being returned
 //! limitation: maximum of 125 enumerators
+//!
+//! By default, all enums declared with these macros will be assigned a default UUID due to the default enum specialization in TypeInfo.h.
+//! To create a unique UUID, you must use the AZ_TYPE_INFO_SPECIALIZE macro as well. This macro must be declared in the AZ namespace.
+//! Ex:
+//! namespace MyNamespace
+//! {
+//!     AZ_ENUM(MyCoolEnum, A, B);
+//! }
+//!
+//! namespace AZ
+//! {
+//!     AZ_TYPE_INFO_SPECIALIZE(MyNamespace::MyCoolEnum, "{<SomeGuid>}");
+//! }
+//!
 #define AZ_ENUM(EnumTypeName, ...)                                                      MAKE_REFLECTABLE_ENUM_UNSCOPED(EnumTypeName, __VA_ARGS__)
 
 //! Generate a decorated enumeration as AZ_ENUM, but with a specific underlying type.
@@ -55,18 +69,32 @@
 #include <AzCore/variadic.h>
 
 
+// Indirection macro to allow expansion of macro parameters in a macro call that joins parameters together
+#define AZ_ENUM_CALL_II(macro, ...) macro(__VA_ARGS__)
+#define AZ_ENUM_CALL_I(macro, ...) AZ_ENUM_CALL_II(macro, __VA_ARGS__)
+#define AZ_ENUM_CALL(macro, ...) AZ_ENUM_CALL_I(macro, __VA_ARGS__)
+
 // 1. as a plain `EnumTypeName` argument in which case the enum has no underlying type
 // 2. surrounded by parenthesis `(EnumTypeName, AZ::u8)` in which case the enum underlying type is the second element
 // The underlying type of the enum is the second argument
+#define GET_ENUM_OPTION_NAME_0()
 #define GET_ENUM_OPTION_NAME_1(_name) _name
 #define GET_ENUM_OPTION_NAME_2(_name, _initializer) _name
 #define GET_ENUM_OPTION_NAME(_name) AZ_MACRO_CALL_INDEX(GET_ENUM_OPTION_NAME_, _name)
+#define GET_ENUM_OPTION_INITIALIZER_0()
 #define GET_ENUM_OPTION_INITIALIZER_1(_name) _name,
 #define GET_ENUM_OPTION_INITIALIZER_2(_name, _initializer) _name = _initializer,
 #define GET_ENUM_OPTION_INITIALIZER(_name) AZ_MACRO_CALL_INDEX(GET_ENUM_OPTION_INITIALIZER_, _name)
 
 #define INIT_ENUM_STRING_PAIR_IMPL(_enumname, _optionname) { _enumname::_optionname, AZ_STRINGIZE(_optionname) },
-#define INIT_ENUM_STRING_PAIR(_enumname, _optionname) INIT_ENUM_STRING_PAIR_IMPL(_enumname, GET_ENUM_OPTION_NAME(_optionname))
+#define INIT_ENUM_STRING_PAIR(_enumname, _optionname) AZ_ENUM_CALL( \
+    AZ_JOIN(INIT_ENUM_STRING_PAIR_, AZ_VA_NUM_ARGS(AZ_UNWRAP(_optionname))), \
+    _enumname, _optionname)
+// Wrapper macro used to delegate to the enum option name to string macro
+// If a line only contains a comma it would expand to an empty argument
+#define INIT_ENUM_STRING_PAIR_0(_enumname, _optionname)
+#define INIT_ENUM_STRING_PAIR_1(_enumname, _optionname) INIT_ENUM_STRING_PAIR_IMPL(_enumname, GET_ENUM_OPTION_NAME(_optionname))
+#define INIT_ENUM_STRING_PAIR_2(_enumname, _optionname) INIT_ENUM_STRING_PAIR_1(_enumname, _optionname)
 
 #define MAKE_REFLECTABLE_ENUM_UNSCOPED(EnumTypeName, ...) MAKE_REFLECTABLE_ENUM_(, EnumTypeName,, __VA_ARGS__)
 #define MAKE_REFLECTABLE_ENUM_UNSCOPED_WITH_UNDERLYING_TYPE(EnumTypeName, EnumUnderlyingType, ...) MAKE_REFLECTABLE_ENUM_(, EnumTypeName, : EnumUnderlyingType, __VA_ARGS__)
@@ -74,25 +102,25 @@
 #define MAKE_REFLECTABLE_ENUM_SCOPED_WITH_UNDERLYING_TYPE(EnumTypeName, EnumUnderlyingType, ...)   MAKE_REFLECTABLE_ENUM_(class, EnumTypeName, : EnumUnderlyingType, __VA_ARGS__)
 #define MAKE_REFLECTABLE_ENUM_(SCOPE_QUAL, EnumTypeName, EnumUnderlyingType, ...) \
     MAKE_REFLECTABLE_ENUM_ARGS(SCOPE_QUAL, EnumTypeName \
-    , EnumUnderlyingType, AZ_VA_NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
+    , EnumUnderlyingType, __VA_ARGS__)
 
-#define MAKE_REFLECTABLE_ENUM_ARGS(SCOPE_QUAL, EnumTypeName, EnumUnderlyingType, EnumTypeCount, ...) \
+#define MAKE_REFLECTABLE_ENUM_ARGS(SCOPE_QUAL, EnumTypeName, EnumUnderlyingType, ...) \
 inline namespace AZ_JOIN(EnumTypeName, Namespace) \
 { \
     enum SCOPE_QUAL EnumTypeName EnumUnderlyingType \
     { \
-        AZ_IDENTITY_128(AZ_FOR_EACH_BIND1ST(AZ_MACRO_CALL_WRAP, GET_ENUM_OPTION_INITIALIZER, __VA_ARGS__)) \
+        AZ_FOR_EACH(GET_ENUM_OPTION_INITIALIZER, __VA_ARGS__) \
     };\
-    inline constexpr size_t AZ_JOIN(EnumTypeName, Count) = EnumTypeCount; \
     struct AZ_JOIN(EnumTypeName, EnumeratorValueAndString) \
     { \
         EnumTypeName m_value; \
         AZStd::string_view m_string; \
     }; \
-    constexpr AZStd::array<AZ_JOIN(EnumTypeName, EnumeratorValueAndString), AZ_JOIN(EnumTypeName, Count)> AZ_JOIN(EnumTypeName, Members) = \
-    {{ \
-        AZ_IDENTITY_128(AZ_FOR_EACH_BIND1ST(INIT_ENUM_STRING_PAIR, EnumTypeName, __VA_ARGS__)) \
-    }}; \
+    constexpr auto AZ_JOIN(EnumTypeName, Members) = AZStd::to_array<AZ_JOIN(EnumTypeName, EnumeratorValueAndString)> \
+    ({ \
+        AZ_FOR_EACH_BIND1ST(INIT_ENUM_STRING_PAIR, EnumTypeName, __VA_ARGS__) \
+    }); \
+    inline constexpr size_t AZ_JOIN(EnumTypeName, Count) = AZ_JOIN(EnumTypeName, Members).size(); \
     constexpr AZStd::optional<EnumTypeName> FromString(AZStd::string_view stringifiedEnumerator)\
     { \
         auto cbegin = AZ_JOIN(EnumTypeName, Members).cbegin();\

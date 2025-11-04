@@ -15,7 +15,7 @@
 #include "UiAnimUndoObject.h"
 #include "UiAnimUndo.h"
 
-#include <QtCore/QString>
+#include <QString>
 
 class QWidget;
 

@@ -9,7 +9,7 @@
         Category="Timing"
         Description="Provides a basic interaciton layer for all time based nodes for users(handles swapping between ticks and seconds).">
 
-        <Property Name="m_timeUnits" Type="int" DefaultValue="0" Serialize="true">
+        <Property Name="m_timeUnits" Type="int" DefaultValue="0">
             <PropertyData Name="Units"
                 Description="Units to represent the time in."
                 Serialize="true"
@@ -19,7 +19,7 @@
             </PropertyData>
         </Property>
 
-        <Property Name="m_tickOrder" Type="int" DefaultValue="static_cast&lt;int&gt;(AZ::TICK_DEFAULT)" Serialize="true">
+        <Property Name="m_tickOrder" Type="int" DefaultValue="static_cast&lt;int&gt;(AZ::TICK_DEFAULT)">
             <PropertyData Name="TickOrder" Description="When the tick for this time update should be handled."/>
         </Property>
     </Class>

@@ -282,6 +282,7 @@ namespace UnitTest
 
     TEST_F(AssetManagerShutdownTest, AssetManagerShutdown_UnregisteringHandler_WhileJobsFlight_Assert)
     {
+        AssetWithCustomData* assetPtr[6];
         {
             Asset<AssetWithCustomData> asset1 = AssetManager::Instance().GetAsset<AssetWithCustomData>(MyAsset1Id, AZ::Data::AssetLoadBehavior::Default);
             Asset<AssetWithCustomData> asset2 = AssetManager::Instance().GetAsset<AssetWithCustomData>(MyAsset2Id, AZ::Data::AssetLoadBehavior::Default);
@@ -301,12 +302,27 @@ namespace UnitTest
             AZ_TEST_STOP_TRACE_SUPPRESSION(6);
             AssetManager::Instance().UnregisterCatalog(m_assetHandlerAndCatalog);
             AZ_TEST_START_TRACE_SUPPRESSION;
+
+            assetPtr[0] = asset1.Get();
+            assetPtr[1] = asset2.Get();
+            assetPtr[2] = asset3.Get();
+            assetPtr[3] = asset4.Get();
+            assetPtr[4] = asset5.Get();
+            assetPtr[5] = asset6.Get();
         }
         AZ_TEST_STOP_TRACE_SUPPRESSION(6); // all the above assets ref count will go to zero here but we have already unregistered the handler
 
         // we have to manually delete the handler since we have already unregistered the handler
         // we do not expect asserts here as they will have already notified of problems up above.
         delete m_assetHandlerAndCatalog;
+
+        // Manually delete the Asset data so we dont have leaks
+        delete assetPtr[0];
+        delete assetPtr[1];
+        delete assetPtr[2];
+        delete assetPtr[3];
+        delete assetPtr[4];
+        delete assetPtr[5];
 
         // destroy asset manager
         AssetManager::Destroy();
@@ -319,7 +335,7 @@ namespace UnitTest
         : public AssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MyAssetActiveAssetCountHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MyAssetActiveAssetCountHandler, AZ::SystemAllocator);
 
         //////////////////////////////////////////////////////////////////////////
         // AssetHandler
@@ -369,7 +385,7 @@ namespace UnitTest
     struct MyAssetHolder
     {
         AZ_TYPE_INFO(MyAssetHolder, "{1DA71115-547B-4f32-B230-F3C70608AD68}");
-        AZ_CLASS_ALLOCATOR(MyAssetHolder, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MyAssetHolder, AZ::SystemAllocator);
         Asset<AssetWithCustomData>  m_asset1;
         Asset<AssetWithCustomData>  m_asset2;
     };

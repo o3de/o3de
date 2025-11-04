@@ -39,16 +39,16 @@ namespace AZ::Utils
             }
         }
 
-        if (const char* homePath = std::getenv("HOME"); homePath != nullptr)
-        {
-            AZ::IO::FixedMaxPath path{homePath};
-            return path.Native();
-        }
-
         struct passwd* pass = getpwuid(getuid());
         if (pass)
         {
             AZ::IO::FixedMaxPath path{pass->pw_dir};
+            return path.Native();
+        }
+
+        if (const char* homePath = std::getenv("HOME"); homePath != nullptr)
+        {
+            AZ::IO::FixedMaxPath path{homePath};
             return path.Native();
         }
 
@@ -92,6 +92,34 @@ namespace AZ::Utils
         }
         azstrcpy(absolutePath, maxLength, path);
         return AZ::IO::PathView(absolutePath).IsAbsolute();
+    }
+
+    GetEnvOutcome GetEnv(AZStd::span<char> valueBuffer, const char* envname)
+    {
+        if (const char* envValue = std::getenv(envname);
+            envValue != nullptr)
+        {
+            if (AZStd::string_view utf8Value(envValue);
+                valueBuffer.size() >= utf8Value.size())
+            {
+                // copy the utf8 string value over to the value buffer
+                utf8Value.copy(valueBuffer.data(), valueBuffer.size());
+                // return a string that points the beginning of the span buffer
+                // with a size that is set to the environment variable value string
+                return AZStd::string_view(valueBuffer.data(), utf8Value.size());
+            }
+            else
+            {
+                return AZ::Failure(GetEnvErrorResult{ GetEnvErrorCode::BufferTooSmall, utf8Value.size() });
+            }
+        }
+
+        return AZ::Failure(GetEnvErrorResult{ GetEnvErrorCode::EnvNotSet });
+    }
+
+    bool IsEnvSet(const char* envname)
+    {
+        return std::getenv(envname) != nullptr;
     }
 
     bool SetEnv(const char* envname, const char* envvalue, bool overwrite)

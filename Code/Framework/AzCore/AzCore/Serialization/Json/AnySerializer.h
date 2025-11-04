@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    class JsonAnySerializer
+    class AZCORE_API JsonAnySerializer
         : public BaseJsonSerializer
     {
     public:

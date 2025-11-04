@@ -27,22 +27,22 @@ namespace GraphCanvas
         contextMenu->AddActionGroup(AlignmentContextMenuAction::GetAlignmentContextMenuActionGroupId());
 
         m_alignTop = aznew AlignSelectionMenuAction("Align top", GraphUtils::VerticalAlignment::Top, GraphUtils::HorizontalAlignment::None, contextMenu);
-        m_alignTop->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Up));
+        m_alignTop->setShortcut(QKeySequence(0x0 | Qt::SHIFT | Qt::Key_Up));
 
         contextMenu->AddMenuAction(m_alignTop);
 
         m_alignBottom = aznew AlignSelectionMenuAction("Align bottom", GraphUtils::VerticalAlignment::Bottom, GraphUtils::HorizontalAlignment::None, contextMenu);
-        m_alignBottom->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Down));
+        m_alignBottom->setShortcut(QKeySequence(0x0 | Qt::SHIFT | Qt::Key_Down));
 
         contextMenu->AddMenuAction(m_alignBottom);
 
         m_alignLeft = aznew AlignSelectionMenuAction("Align left", GraphUtils::VerticalAlignment::None, GraphUtils::HorizontalAlignment::Left, contextMenu);
-        m_alignLeft->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Left));
+        m_alignLeft->setShortcut(QKeySequence(0x0 | Qt::SHIFT | Qt::Key_Left));
 
         contextMenu->AddMenuAction(m_alignLeft);
 
         m_alignRight = aznew AlignSelectionMenuAction("Align right", GraphUtils::VerticalAlignment::None, GraphUtils::HorizontalAlignment::Right, contextMenu);
-        m_alignRight->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Right));
+        m_alignRight->setShortcut(QKeySequence(0x0 | Qt::SHIFT | Qt::Key_Right));
 
         contextMenu->AddMenuAction(m_alignRight);
 

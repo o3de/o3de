@@ -10,17 +10,18 @@
 
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
         /// Undo command to track entering and leaving ComponentMode.
-        class ComponentModeCommand
+        class AZTF_API ComponentModeCommand
             : public UndoSystem::URSequencePoint
         {
         public:
-            AZ_CLASS_ALLOCATOR(ComponentModeCommand, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComponentModeCommand, AZ::SystemAllocator);
             AZ_RTTI(ComponentModeCommand, "{6D574E94-4D67-47D8-8C93-825BF82E2A28}");
 
             /// Type of transition - did we enter or leave ComponentMode.

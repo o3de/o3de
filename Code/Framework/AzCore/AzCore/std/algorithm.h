@@ -771,6 +771,8 @@ namespace AZStd
 
     //////////////////////////////////////////////////////////////////////////
     // Search
+    using std::equal_range;
+
     // TEMPLATE FUNCTION lower_bound
     template<class ForwardIterator, class T>
     constexpr ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last, const T& value)

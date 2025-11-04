@@ -78,6 +78,7 @@ class TestSetTestName(unittest.TestCase):
         assert self.mock_artifact_manager.dest_path == expected_path
 
 
+@mock.patch('os.makedirs', mock.MagicMock())
 class TestSaveArtifact(unittest.TestCase):
 
     def setUp(self):
@@ -102,7 +103,8 @@ class TestSaveArtifact(unittest.TestCase):
         self.mock_artifact_manager.save_artifact(updated_path, mock_artifact_name)
 
         assert self.mock_artifact_manager.dest_path == updated_path
-        mock_copy_tree.assert_called_once_with(updated_path, os.path.join(updated_path, mock_artifact_name[:-5]))
+        mock_copy_tree.assert_called_once_with(updated_path, os.path.join(updated_path, mock_artifact_name[:-5]),
+                                               dirs_exist_ok=True)
         mock_reducer.assert_called_once_with(file_name=mock_artifact_name, max_length=25)
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=False))
@@ -120,7 +122,7 @@ class TestSaveArtifact(unittest.TestCase):
         assert self.mock_artifact_manager.dest_path == self.mock_artifact_manager.artifact_path
         mock_copy_tree.assert_called_once_with(
             self.mock_artifact_manager.artifact_path,
-            os.path.join(self.mock_artifact_manager.artifact_path, 'pytest_results'))
+            os.path.join(self.mock_artifact_manager.artifact_path, 'pytest_results'), dirs_exist_ok=True)
         mock_reducer.assert_not_called()
 
     @mock.patch('os.path.exists', mock.MagicMock(return_value=False))

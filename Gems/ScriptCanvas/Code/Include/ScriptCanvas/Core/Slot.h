@@ -43,7 +43,7 @@ namespace ScriptCanvas
     };
 
     class Slot final
-        : public VariableNotificationBus::Handler
+        : public VariableNotificationBus::MultiHandler
     {
         friend class Node;
     public:
@@ -55,7 +55,7 @@ namespace ScriptCanvas
             VariableReference
         };
 
-        AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator);
         AZ_TYPE_INFO(Slot, "{FBFE0F02-4C26-475F-A28B-18D3A533C13C}");
 
         static void Reflect(AZ::ReflectContext* reflection);
@@ -152,6 +152,10 @@ namespace ScriptCanvas
 
         bool CanHaveInputField() const;
 
+        bool CreatesImplicitConnections() const;
+
+        bool IsNameHidden() const;
+
         bool CanConvertTypes() const;
 
         bool CanConvertToValue() const;
@@ -226,9 +230,17 @@ namespace ScriptCanvas
         ////
 
     protected:
+
+        // VariableNotificationBus...
+        void OnVariableRenamed(AZStd::string_view /*newVariableName*/) override;
+        ///
+
+        void DisconnectVariableNotificationBus();
+
         bool m_isOverload = false;
         bool m_isVisible = true;
         bool m_isUserAdded = false;
+        bool m_createsImplicitConnections = false;
 
         void SetDynamicGroup(const AZ::Crc32& dynamicGroup);
 
@@ -238,6 +250,8 @@ namespace ScriptCanvas
         AZ::Crc32 m_dynamicGroup;
 
         bool m_canHaveInputField = true;
+
+        bool m_isNameHidden = false;
 
         bool               m_isLatentSlot  = false;
         SlotDescriptor     m_descriptor;

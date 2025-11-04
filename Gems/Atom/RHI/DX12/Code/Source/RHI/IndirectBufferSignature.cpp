@@ -23,7 +23,7 @@ namespace AZ
             return m_signature.get();
         }
 
-        RHI::ResultCode IndirectBufferSignature::InitInternal(RHI::Device& deviceBase, const RHI::IndirectBufferSignatureDescriptor& descriptor)
+        RHI::ResultCode IndirectBufferSignature::InitInternal(RHI::Device& deviceBase, const RHI::DeviceIndirectBufferSignatureDescriptor& descriptor)
         {
             auto& device = static_cast<Device&>(deviceBase);
             auto commands = descriptor.m_layout.GetCommands();
@@ -53,6 +53,10 @@ namespace AZ
                     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
                     m_stride += sizeof(D3D12_DISPATCH_ARGUMENTS);
                     break;
+                case RHI::IndirectCommandType::DispatchRays:
+                    argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH_RAYS;
+                    m_stride += sizeof(D3D12_DISPATCH_RAYS_DESC);
+                    break;
                 case RHI::IndirectCommandType::VertexBufferView:
                     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_VERTEX_BUFFER_VIEW;
                     argDesc.VertexBuffer.Slot = command.m_vertexBufferArgs.m_slot;
@@ -70,11 +74,18 @@ namespace AZ
                         return RHI::ResultCode::InvalidArgument;
                     }
 
-                    const PipelineLayoutDescriptor& pipelineLayoutDesc = static_cast<const PipelineLayoutDescriptor&>(pipelineState->GetPipelineLayout().GetPipelineLayoutDescriptor());
+                    const PipelineLayout* pipelineLayout = pipelineState->GetPipelineLayout();
+                    if (!pipelineLayout)
+                    {
+                        AZ_Assert(pipelineState, "PipelineLayout is null");
+                        return RHI::ResultCode::InvalidArgument;
+                    }
+
+                    const PipelineLayoutDescriptor& pipelineLayoutDesc = static_cast<const PipelineLayoutDescriptor&>(pipelineLayout->GetPipelineLayoutDescriptor());
                     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT;
                     argDesc.Constant.DestOffsetIn32BitValues = 0;
                     argDesc.Constant.Num32BitValuesToSet = pipelineLayoutDesc.GetRootConstantBinding().m_constantCount;
-                    argDesc.Constant.RootParameterIndex = pipelineState->GetPipelineLayout().GetRootConstantsRootParameterIndex().GetIndex();
+                    argDesc.Constant.RootParameterIndex = pipelineLayout->GetRootConstantsRootParameterIndex().GetIndex();
 
                     m_stride += sizeof(uint32_t) * argDesc.Constant.Num32BitValuesToSet;
                     break;
@@ -85,7 +96,7 @@ namespace AZ
                 }
             }
 
-            ID3D12RootSignature* rootSignature = pipelineState ? pipelineState->GetPipelineLayout().Get() : nullptr;
+            ID3D12RootSignature* rootSignature = pipelineState ? pipelineState->GetPipelineLayout()->Get() : nullptr;
 
             D3D12_COMMAND_SIGNATURE_DESC desc = {};
             desc.ByteStride = m_stride;

@@ -9,6 +9,7 @@
 #include <SceneAPI/SceneData/GraphData/AnimationData.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include "AnimationData.h"
 
 namespace AZ
 {
@@ -84,6 +85,15 @@ namespace AZ
                 output.Write("TimeStepBetweenFrames", m_timeStepBetweenFrames);
             }
 
+            AZStd::vector<SceneAPI::DataTypes::MatrixType>& AnimationData::GetKeyFrames()
+            {
+                return m_keyFrames;
+            }
+
+            const AZStd::vector<SceneAPI::DataTypes::MatrixType>& AnimationData::GetKeyFrames() const
+            {
+                return m_keyFrames;
+            }
 
             void BlendShapeAnimationData::Reflect(ReflectContext* context)
             {
@@ -172,6 +182,16 @@ namespace AZ
                 output.Write("BlendShapeName", m_blendShapeName);
                 output.Write("KeyFrames", m_keyFrames);
                 output.Write("TimeStepBetweenFrames", m_timeStepBetweenFrames);
+            }
+
+            AZStd::vector<double>& BlendShapeAnimationData::GetKeyFrames()
+            {
+                return m_keyFrames;
+            }
+
+            const AZStd::vector<double>& BlendShapeAnimationData::GetKeyFrames() const
+            {
+                return m_keyFrames;
             }
         }
     }

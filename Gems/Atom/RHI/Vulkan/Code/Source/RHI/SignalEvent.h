@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/std/containers/bitset.h>
 #include <AzCore/std/parallel/conditional_variable.h>
 #include <AzCore/std/parallel/mutex.h>
 
@@ -17,18 +18,19 @@ namespace AZ
         class SignalEvent
         {
         public:
+            static constexpr const int MaxSignalEvents = 64;
+            using BitSet = AZStd::bitset<MaxSignalEvents>;
             SignalEvent() = default;
             ~SignalEvent() = default;
 
-            void Signal();
-            void SetValue(bool ready);
-            void Wait() const;
+            void Signal(int bit);
+            void Wait(BitSet dependentBits) const;
 
         private:
             // Condition variable to handle the signal of the event
             mutable AZStd::condition_variable m_eventSignal;
             mutable AZStd::mutex m_eventMutex;
-            bool m_ready = false;
+            BitSet m_readyBits = 0;
         };
     }
 }

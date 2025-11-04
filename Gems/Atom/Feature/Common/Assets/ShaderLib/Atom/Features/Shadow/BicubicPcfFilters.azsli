@@ -22,12 +22,15 @@
 // Computes shadows using a 3x3 kernel, but optimized to 4-taps using bilinear fetches.
 //--------------------------------------------------------------------------------------------------
 
+// Margin to avoid counting samples past the shadows bounds as being in shadow.
+static const real DepthMargin = 1.0 - 1e-3;
+
 struct SampleShadowMapBicubicParameters
 {
     Texture2DArray<float> shadowMap;
     float3 shadowPos;
-    float shadowMapSize;
-    float invShadowMapSize;
+    real shadowMapSize;
+    real invShadowMapSize;
     SamplerComparisonState samplerState;
     float comparisonValue;
 
@@ -36,34 +39,37 @@ struct SampleShadowMapBicubicParameters
 };
 
 
-float SampleShadowMapBicubic_4Tap(SampleShadowMapBicubicParameters param)
+real SampleShadowMapBicubic_4Tap(SampleShadowMapBicubicParameters param)
 {
     // Compute the shadow map UV and fractionals.
-    float2 shadowXY = param.shadowPos.xy * param.shadowMapSize + float2(0.5, 0.5);
-    float2 shadowUV = floor(shadowXY);
-    float2 fractionalUV = shadowXY - shadowUV;
+    real2 shadowXY = param.shadowPos.xy * param.shadowMapSize + real2(0.5, 0.5);
+    real2 shadowUV = floor(shadowXY);
+    real2 fractionalUV = shadowXY - shadowUV;
 
-    float2 texelCenter = (shadowUV - float2(0.5, 0.5)) * param.invShadowMapSize;
+    real2 texelCenter = (shadowUV - real2(0.5, 0.5)) * param.invShadowMapSize;
 
     // Compute the offsets and weights for the 4 bilinear taps.
-    float2 weights0 = 3.0 - 2.0 * fractionalUV;
-    float2 weights1 = 1.0 + 2.0 * fractionalUV;
+    real2 weights0 = 3.0 - 2.0 * fractionalUV;
+    real2 weights1 = 1.0 + 2.0 * fractionalUV;
 
-    float2 uv0 = ((2.0 - fractionalUV) / weights0) - 1.0;
-    float2 uv1 = (fractionalUV / weights1) + 1.0;
+    real2 uv0 = ((2.0 - fractionalUV) / weights0) - 1.0;
+    real2 uv1 = (fractionalUV / weights1) + 1.0;
 
     // Accumulate the shadow results and return the resolve value.
-    float shadow = 0;
+    real shadow = 0;
 
-    const float2 uvOffsets[4] = {float2(uv0.x, uv0.y), float2(uv1.x, uv0.y), float2(uv0.x, uv1.y), float2(uv1.x, uv1.y)};
-    const float weights[4] = {weights0.x * weights0.y, weights1.x * weights0.y, weights0.x * weights1.y, weights1.x * weights1.y};
+    const real2 uvOffsets[4] = {real2(uv0.x, uv0.y), real2(uv1.x, uv0.y), real2(uv0.x, uv1.y), real2(uv1.x, uv1.y)};
+    const real weights[4] = {weights0.x * weights0.y, weights1.x * weights0.y, weights0.x * weights1.y, weights1.x * weights1.y};
 
     [unroll]
     for(int i = 0 ; i < 4; ++i)
     {
-        const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;       
-        const float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
-        shadow += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
+        const real2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
+        real fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(real2(param.receiverPlaneDepthBias), texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
+        fragmentDistance = min(fragmentDistance, DepthMargin);
+
+        shadow += weights[i] * real(param.shadowMap.SampleCmpLevelZero(param.samplerState, real3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance));
     }
 
     shadow /= 16.0;
@@ -74,43 +80,45 @@ float SampleShadowMapBicubic_4Tap(SampleShadowMapBicubicParameters param)
 // Computes shadows using a 5x5 kernel, but optimized to 9-taps using bilinear fetches.
 //--------------------------------------------------------------------------------------------------
 
-float SampleShadowMapBicubic_9Tap(SampleShadowMapBicubicParameters param)
+real SampleShadowMapBicubic_9Tap(SampleShadowMapBicubicParameters param)
 {
     // Compute the shadow map UV and fractionals.
-    float2 shadowScaled = param.shadowPos.xy * param.shadowMapSize + float2(0.5, 0.5);
-    float2 shadowUv = floor(shadowScaled);
-    float2 fractionalUV = shadowScaled - shadowUv;
+    real2 shadowScaled = param.shadowPos.xy * param.shadowMapSize + real2(0.5, 0.5);
+    real2 shadowUv = floor(shadowScaled);
+    real2 fractionalUV = shadowScaled - shadowUv;
 
-    float2 texelCenter = (shadowUv - float2(0.5, 0.5)) * param.invShadowMapSize;
+    real2 texelCenter = (shadowUv - real2(0.5, 0.5)) * param.invShadowMapSize;
 
     // Compute the offsets and weights for the 9 bilinear taps.
-    float2 weights0 = 4.0 - 3.0 * fractionalUV;
-    float2 weights1 = 7.0;
-    float2 weights2 = 1.0 + 3.0 * fractionalUV;
+    real2 weights0 = 4.0 - 3.0 * fractionalUV;
+    real2 weights1 = 7.0;
+    real2 weights2 = 1.0 + 3.0 * fractionalUV;
 
-    float2 uv0 = ((3.0 - 2.0 * fractionalUV) / weights0) - 2.0;
-    float2 uv1 = (3.0 + fractionalUV) / weights1;
-    float2 uv2 = (fractionalUV / weights2) + 2.0;
+    real2 uv0 = ((3.0 - 2.0 * fractionalUV) / weights0) - 2.0;
+    real2 uv1 = (3.0 + fractionalUV) / weights1;
+    real2 uv2 = (fractionalUV / weights2) + 2.0;
 
 
-    const float2 uvOffsets[9] = {float2(uv0.x, uv0.y), float2(uv1.x, uv0.y), float2(uv2.x, uv0.y), 
-                                 float2(uv0.x, uv1.y), float2(uv1.x, uv1.y), float2(uv2.x, uv1.y), 
-                                 float2(uv0.x, uv2.y), float2(uv1.x, uv2.y), float2(uv2.x, uv2.y) };
+    const real2 uvOffsets[9] = {real2(uv0.x, uv0.y), real2(uv1.x, uv0.y), real2(uv2.x, uv0.y),
+                                real2(uv0.x, uv1.y), real2(uv1.x, uv1.y), real2(uv2.x, uv1.y),
+                                real2(uv0.x, uv2.y), real2(uv1.x, uv2.y), real2(uv2.x, uv2.y) };
 
-    const float weights[9] = {weights0.x * weights0.y, weights1.x * weights0.y, weights2.x * weights0.y, 
-                              weights0.x * weights1.y, weights1.x * weights1.y, weights2.x * weights1.y, 
+    const real weights[9] = {weights0.x * weights0.y, weights1.x * weights0.y, weights2.x * weights0.y,
+                              weights0.x * weights1.y, weights1.x * weights1.y, weights2.x * weights1.y,
                               weights0.x * weights2.y, weights1.x * weights2.y, weights2.x * weights2.y};
 
     // Accumulate the shadow results and return the resolve value.
-    float shadowResult = 0;
+    real shadowResult = 0;
 
     [unroll]
     for(int i = 0 ; i < 9 ; ++i)
     {
-        const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
-        const float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        const real2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
+        real fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(real2(param.receiverPlaneDepthBias), texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
+        fragmentDistance = min(fragmentDistance, DepthMargin);
        
-        shadowResult += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
+        shadowResult += weights[i] * real(param.shadowMap.SampleCmpLevelZero(param.samplerState, real3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance));
     }
 
     shadowResult /= 144.0;
@@ -121,46 +129,48 @@ float SampleShadowMapBicubic_9Tap(SampleShadowMapBicubicParameters param)
 // Computes shadows using a 7x7 kernel, but optimized to 16-taps using bilinear fetches.
 //--------------------------------------------------------------------------------------------------
 
-float SampleShadowMapBicubic_16Tap(SampleShadowMapBicubicParameters param)
+real SampleShadowMapBicubic_16Tap(SampleShadowMapBicubicParameters param)
 {
     // Compute the shadow map UV and fractionals.
-    float2 shadowXY = param.shadowPos.xy * param.shadowMapSize + float2(0.5, 0.5);
-    float2 shadowUV = floor(shadowXY);
-    float2 fractionalUV = shadowXY - shadowUV;
+    real2 shadowXY = param.shadowPos.xy * param.shadowMapSize + real2(0.5, 0.5);
+    real2 shadowUV = floor(shadowXY);
+    real2 fractionalUV = shadowXY - shadowUV;
 
-    float2 texelCenter = (shadowUV - float2(0.5, 0.5)) * param.invShadowMapSize;
+    real2 texelCenter = (shadowUV - real2(0.5, 0.5)) * param.invShadowMapSize;
 
     // Compute the offsets and weights for the 16 bilinear taps.
-    float2 weights0 = 5.0 * fractionalUV - 6.0;
-    float2 weights1 = 11.0 * fractionalUV - 28.0;
-    float2 weights2 = -(11.0 * fractionalUV + 17.0);
-    float2 weights3 = -(5.0 * fractionalUV + 1.0);
+    real2 weights0 = 5.0 * fractionalUV - 6.0;
+    real2 weights1 = 11.0 * fractionalUV - 28.0;
+    real2 weights2 = -(11.0 * fractionalUV + 17.0);
+    real2 weights3 = -(5.0 * fractionalUV + 1.0);
 
-    float2 uv0 = ((4.0 * fractionalUV - 5.0) / weights0) - 3.0;
-    float2 uv1 = ((4.0 * fractionalUV - 16.0) / weights1) - 1.0;
-    float2 uv2 = -((7.0 * fractionalUV + 5.0) / weights2) + 1.0;
-    float2 uv3 = -(fractionalUV / weights3) + 3.0;
+    real2 uv0 = ((4.0 * fractionalUV - 5.0) / weights0) - 3.0;
+    real2 uv1 = ((4.0 * fractionalUV - 16.0) / weights1) - 1.0;
+    real2 uv2 = -((7.0 * fractionalUV + 5.0) / weights2) + 1.0;
+    real2 uv3 = -(fractionalUV / weights3) + 3.0;
 
-    const float2 uvOffsets[16] = {float2(uv0.x, uv0.y), float2(uv1.x, uv0.y), float2(uv2.x, uv0.y), float2(uv3.x, uv0.y),
-                                  float2(uv0.x, uv1.y), float2(uv1.x, uv1.y), float2(uv2.x, uv1.y), float2(uv3.x, uv1.y),
-                                  float2(uv0.x, uv2.y), float2(uv1.x, uv2.y), float2(uv2.x, uv2.y), float2(uv3.x, uv2.y),
-                                  float2(uv0.x, uv3.y), float2(uv1.x, uv3.y), float2(uv2.x, uv3.y), float2(uv3.x, uv3.y)};
+    const real2 uvOffsets[16] = {real2(uv0.x, uv0.y), real2(uv1.x, uv0.y), real2(uv2.x, uv0.y), real2(uv3.x, uv0.y),
+                                real2(uv0.x, uv1.y), real2(uv1.x, uv1.y), real2(uv2.x, uv1.y), real2(uv3.x, uv1.y),
+                                real2(uv0.x, uv2.y), real2(uv1.x, uv2.y), real2(uv2.x, uv2.y), real2(uv3.x, uv2.y),
+                                real2(uv0.x, uv3.y), real2(uv1.x, uv3.y), real2(uv2.x, uv3.y), real2(uv3.x, uv3.y)};
 
-    const float weights[16] = {weights0.x * weights0.y, weights1.x * weights0.y, weights2.x * weights0.y, weights3.x * weights0.y,
-                               weights0.x * weights1.y, weights1.x * weights1.y, weights2.x * weights1.y, weights3.x * weights1.y, 
+    const real weights[16] = {weights0.x * weights0.y, weights1.x * weights0.y, weights2.x * weights0.y, weights3.x * weights0.y,
+                               weights0.x * weights1.y, weights1.x * weights1.y, weights2.x * weights1.y, weights3.x * weights1.y,
                                weights0.x * weights2.y, weights1.x * weights2.y, weights2.x * weights2.y, weights3.x * weights2.y,
                                weights0.x * weights3.y, weights1.x * weights3.y, weights2.x * weights3.y, weights3.x * weights3.y};
 
     // Accumulate the shadow results and return the resolve value.    
-    float shadow = 0;
+    real shadow = 0;
 
     [unroll]
     for(int i = 0 ; i < 16 ; ++i)
     {
-        const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
-        const float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        const real2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
+        real fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(real2(param.receiverPlaneDepthBias), texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
+        fragmentDistance = min(fragmentDistance, DepthMargin);
 
-        shadow += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
+        shadow += weights[i] * real(param.shadowMap.SampleCmpLevelZero(param.samplerState, real3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance));
     }
 
     shadow /= 2704;

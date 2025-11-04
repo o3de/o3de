@@ -23,7 +23,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EdgeTranslationModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EdgeTranslationModifier, AZ::SystemAllocator)
 
     static bool BeginningExtrude(
         const AzToolsFramework::PlanarManipulator::Action& action, const AppendStage appendStage)
@@ -117,7 +117,7 @@ namespace WhiteBox
 
         CreateView();
 
-        m_translationManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
+        m_translationManipulator->Register(AzToolsFramework::GetMainManipulatorManagerId());
 
         struct SharedState
         {

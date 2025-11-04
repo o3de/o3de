@@ -15,6 +15,7 @@
 #include "LessEqual.h"
 #include "GreaterEqual.h"
 #include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
+#include <AutoGen/ScriptCanvasAutoGenRegistry.h>
 
 namespace ScriptCanvas::ComparisonLibrary
 {

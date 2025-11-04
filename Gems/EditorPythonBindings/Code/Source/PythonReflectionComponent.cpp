@@ -6,28 +6,26 @@
  *
  */
 
+#include <AzCore/PlatformDef.h>
 #include <PythonReflectionComponent.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <Source/PythonCommon.h>
-#include <Source/PythonUtility.h>
-#include <Source/PythonTypeCasters.h>
+#include <EditorPythonBindings/PythonUtility.h>
+#include <EditorPythonBindings/PythonCommon.h>
 #include <Source/PythonProxyBus.h>
 #include <Source/PythonProxyObject.h>
 #include <Source/PythonSymbolsBus.h>
+#include <Source/PythonTypeCasters.h>
 #include <pybind11/embed.h>
 
-#include <AzCore/PlatformDef.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
-#include <AzCore/PlatformDef.h>
-#include <AzCore/IO/SystemFile.h>
-#include <AzCore/IO/SystemFile.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 namespace EditorPythonBindings
@@ -41,7 +39,7 @@ namespace EditorPythonBindings
         // a structure for pybind11 to bind to hold constants, properties, and enums from the Behavior Context
         struct StaticPropertyHolder final
         {
-            AZ_CLASS_ALLOCATOR(StaticPropertyHolder, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StaticPropertyHolder, AZ::SystemAllocator);
 
             StaticPropertyHolder() = default;
             ~StaticPropertyHolder() = default;
@@ -163,32 +161,13 @@ namespace EditorPythonBindings
             }
         };
 
-        AZStd::string PyResolvePath(AZStd::string_view path)
-        {
-            char pyPath[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(path.data(), pyPath, AZ_MAX_PATH_LEN);
-            return { pyPath };
-        }
-
-        void RegisterAliasIfExists(pybind11::module pathsModule, AZStd::string_view alias, AZStd::string_view attribute)
-        {
-            const char* aliasPath = AZ::IO::FileIOBase::GetInstance()->GetAlias(alias.data());
-            if (aliasPath)
-            {
-                pathsModule.attr(attribute.data()) = aliasPath;
-            }
-            else
-            {
-                pathsModule.attr(attribute.data()) = "";
-            }
-        }
-
         void RegisterPaths(pybind11::module parentModule)
         {
             pybind11::module pathsModule = parentModule.def_submodule("paths");
-            pathsModule.def("resolve_path", [](const char* path)
+            pathsModule.def("resolve_path", [](const char* path) -> AZStd::string
             {
-                return PyResolvePath(path);
+                AZStd::optional<AZ::IO::FixedMaxPath> pyPath = AZ::IO::FileIOBase::GetInstance()->ResolvePath(path);
+                return pyPath ? pyPath->String() : AZStd::string{};
             });
             pathsModule.def("ensure_alias", [](const char* alias, const char* path)
             {
@@ -199,17 +178,18 @@ namespace EditorPythonBindings
                 }
             });
 
-            RegisterAliasIfExists(pathsModule, "@engroot@", "engroot");
-            RegisterAliasIfExists(pathsModule, "@products@", "products");
-            RegisterAliasIfExists(pathsModule, "@projectroot@", "projectroot");
-            RegisterAliasIfExists(pathsModule, "@log@", "log");
+            pathsModule.attr("engroot") = AZ::Utils::GetEnginePath().c_str();
+            pathsModule.attr("products") = AZ::Utils::GetProjectProductPathForPlatform().c_str();
+            pathsModule.attr("projectroot") = AZ::Utils::GetProjectPath().c_str();
+            pathsModule.attr("log") = AZ::Utils::GetProjectLogPath().c_str();
 
-            const char* executableFolder = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(executableFolder, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
-            if (executableFolder)
+            // Add a gemroot method for querying gem paths
+            pathsModule.def("gemroot", [](const char* gemName) -> AZStd::string
             {
-                pathsModule.attr("executableFolder") = executableFolder;
-            }
+                return AZStd::string(AZ::Utils::GetGemPath(gemName));
+            });
+
+            pathsModule.attr("executableFolder") = AZ::Utils::GetExecutableDirectory().c_str();
         }
     }
 
@@ -366,7 +346,7 @@ namespace EditorPythonBindings
     {
         pybind11::module parentModule = pybind11::cast<pybind11::module>(module);
         std::string pythonModuleName = pybind11::cast<std::string>(parentModule.attr("__name__"));
-        if (AzFramework::StringFunc::Equal(pythonModuleName.c_str(), Internal::s_azlmbr))
+        if (AZ::StringFunc::Equal(pythonModuleName.c_str(), Internal::s_azlmbr))
         {
             // declare the default module to capture behavior that did not define a "Module" attribute
             pybind11::module defaultModule = parentModule.def_submodule(Internal::s_default);

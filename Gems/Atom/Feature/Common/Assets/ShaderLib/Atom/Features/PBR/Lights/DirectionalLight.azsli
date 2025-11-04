@@ -9,89 +9,64 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
-#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 
-void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv)
-{
-    // Shadowed check
-    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    float litRatio = 1.0f;
-    float camToSurfDist = distance(ViewSrg::m_worldPosition, surface.position);
-
-    // Distance travelled by the light inside the object. If not redefined to a non-negative value, it will take the following behavior:
-    // - If transmission mode is thick object -> use transmission thickness parameter instead
-    // - If transmission mode is thin object -> ignore back lighting
-    float transmissionDistance = -1.0f;
-
-    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
-    {           
-#if ENABLE_TRANSMISSION
-        if (o_transmission_mode == TransmissionMode::ThickObject)
-        {
-            float2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThickTransmission(shadowIndex, surface.position, surface.vertexNormal, screenUv);
-            litRatio = visibilityAndThickness.x;
-            transmissionDistance = visibilityAndThickness.y;
-        } 
-        else if (o_transmission_mode == TransmissionMode::ThinObject) 
-        {
-            float2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThinTransmission(
-                                                shadowIndex, surface.position, surface.vertexNormal, screenUv, surface.transmission.GetShrinkFactor());
-
-            litRatio = visibilityAndThickness.x;
-            transmissionDistance = visibilityAndThickness.y;
-        }
-        else
-        {
-            litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
-        }
-#else
-        litRatio = DirectionalLightShadow::GetVisibility(shadowIndex, surface.position, surface.vertexNormal, screenUv);
+#ifndef DirectionalLightUtil
+#define DirectionalLightUtil DirectionalLightUtil_PBR
 #endif
 
+class DirectionalLightUtil_PBR
+{
+#if ENABLE_TRANSMISSION
+    real m_transmissionDistance;
+#endif
+
+    static DirectionalLightUtil_PBR Init(DirectionalLight light, Surface surface)
+    {
+        DirectionalLightUtil_PBR result;
+#if ENABLE_TRANSMISSION
+        result.m_transmissionDistance = 0.0f;
+#endif
+        return result;
     }
 
-    // Add the lighting contribution for each directional light
-    for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
+#if ENABLE_TRANSMISSION
+    void SetTransmissionDistance(real distance)
     {
-        SceneSrg::DirectionalLight light = SceneSrg::m_directionalLights[index];
-        float3 dirToLight = normalize(-light.m_direction);
+        m_transmissionDistance = distance;
+    }
+#endif
 
-        // Adjust the direction of the light based on its angular diameter.
-        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
-        float3 lightDirToReflectionDir = reflectionDir - dirToLight;
-        float lightDirToReflectionDirLen = length(lightDirToReflectionDir);
-        lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
-        lightDirToReflectionDirLen = min(light.m_angularRadius, lightDirToReflectionDirLen);
-        dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
-
-        // [GFX TODO][ATOM-2012] care of multiple directional light
-        // Currently shadow check is done only for index == shadowIndex.
-        float currentLitRatio = 1.0f;
-        float currentTransmissionDistance = -1.0f;
-
-        if (o_enableShadows && index == shadowIndex)
-        {
-            // Add contribution only if current directional light is the active one for shadows
-            currentLitRatio = litRatio;
-            currentTransmissionDistance = transmissionDistance;
-        }
+    void Apply(DirectionalLight light, Surface surface, real litRatio, inout LightingData lightingData)
+    {
+        real3 dirToLight = normalize(real3(-light.m_direction));
 
         // Transmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentTransmissionDistance, camToSurfDist);
+#if ENABLE_TRANSMISSION
+        // We evaluate translucent backlighting only for one camera
+        real camToSurfDist = real(distance(ViewSrg::m_worldPosition, surface.position));
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, real3(light.m_rgbIntensityLux), dirToLight, real(m_transmissionDistance), camToSurfDist);
+#endif
         
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
-
+        // Calculate diffuse lighting (same for all views)
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, real3(light.m_rgbIntensityLux), dirToLight) * litRatio;
+                // Calculate specular lighting for each view
+        [unroll]
+        for (uint viewIndex = 0; viewIndex < GET_SHADING_VIEW_COUNT; ++viewIndex)
+        {
+            // Adjust the direction of the light based on its angular diameter for this view
+            real3 reflectionDir = reflect(-lightingData.dirToCamera[viewIndex], surface.GetSpecularNormal());
+            real3 lightDirToReflectionDir = reflectionDir - dirToLight;
+            real lightDirToReflectionDirLen = length(lightDirToReflectionDir);
+            lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
+            lightDirToReflectionDirLen = min(real(light.m_angularRadius), lightDirToReflectionDirLen);
+            real3 viewDirToLight = dirToLight + lightDirToReflectionDir * lightDirToReflectionDirLen;
+            lightingData.specularLighting[viewIndex] += GetSpecularLighting(surface, lightingData, real3(light.m_rgbIntensityLux), dirToLight, viewIndex) * litRatio;
+        }
+#if ENABLE_SHADER_DEBUGGING
         if(IsDebuggingEnabled_PLACEHOLDER() && GetRenderDebugViewMode() == RenderDebugViewMode::CascadeShadows)
         {
-            customDebugFloats.rgb = currentLitRatio.xxx;
+            customDebugFloats.rgb = litRatio.xxx;
         }
+#endif
     }
-    
-    // Add debug coloring for directional light shadow
-    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
-    {
-        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(lightingData.specularLighting, shadowIndex, surface.position, surface.vertexNormal, screenUv);
-    }
-
-}
+};

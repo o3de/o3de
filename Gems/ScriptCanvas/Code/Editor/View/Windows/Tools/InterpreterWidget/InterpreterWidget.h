@@ -14,7 +14,7 @@
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <Editor/Framework/Interpreter.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #endif
 
 namespace AzToolsFramework
@@ -50,7 +50,7 @@ namespace ScriptCanvasEditor
 
     public:
         AZ_TYPE_INFO(InterpreterWidget, "{3D2FAD9B-47C0-494A-9BE0-57C14820B40F}");
-        AZ_CLASS_ALLOCATOR(InterpreterWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InterpreterWidget, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

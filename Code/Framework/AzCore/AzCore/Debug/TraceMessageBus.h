@@ -60,3 +60,5 @@ namespace AZ
         typedef AZ::EBus<TraceMessageEvents> TraceMessageBus;
     } // namespace Debug
 } // namespace AZ
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZCORE_API, AZ::Debug::TraceMessageEvents);

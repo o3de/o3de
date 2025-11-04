@@ -24,7 +24,7 @@ namespace UnitTest
         : public AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestPrefabProcessorContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestPrefabProcessorContext, AZ::SystemAllocator);
         AZ_RTTI(TestPrefabProcessorContext, "{2FFFAA06-BA78-4CB3-AE0E-6532822A9B69}",
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext);
 

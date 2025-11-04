@@ -10,6 +10,7 @@
 // This header file is for declaring types used for RPI System classes to avoid recursive includes
  
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
@@ -25,16 +26,16 @@ namespace AZ
         namespace PassUtils
         {
             //! Function for applying shader data mappings from a PassDescriptor to a shader resource group
-            bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup);
+            ATOM_RPI_PUBLIC_API bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup);
 
             //! Retrieves PassData from a PassDescriptor
-            const PassData* GetPassData(const PassDescriptor& descriptor);
+            ATOM_RPI_PUBLIC_API const PassData* GetPassData(const PassDescriptor& descriptor);
 
             //! Finds all PipelineGlobalConnections in the descriptor and adds them to the provided list
-            void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList);
+            ATOM_RPI_PUBLIC_API void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList);
 
             //! Retrieves PassData from a PassDescriptor
-            AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor);
+            ATOM_RPI_PUBLIC_API AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor);
 
             //! Templated function for retrieving specific data types from a PassDescriptor
             template<typename PassDataType>
@@ -62,8 +63,8 @@ namespace AZ
                 return passData;
             }
 
-            void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList);
-            void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList);
+            ATOM_RPI_PUBLIC_API void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList);
+            ATOM_RPI_PUBLIC_API void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList);
         }
     }
 }

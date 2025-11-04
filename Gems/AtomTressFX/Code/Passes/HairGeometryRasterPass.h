@@ -41,7 +41,7 @@ namespace AZ
 
             public:
                 AZ_RTTI(HairGeometryRasterPass, "{0F07360A-A286-4060-8C62-137AFFA50561}", RasterPass);
-                AZ_CLASS_ALLOCATOR(HairGeometryRasterPass, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairGeometryRasterPass, SystemAllocator);
 
                 //! Creates a HairGeometryRasterPass
                 static RPI::Ptr<HairGeometryRasterPass> Create(const RPI::PassDescriptor& descriptor);
@@ -81,6 +81,9 @@ namespace AZ
                 // Scope producer functions...
                 void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
+                //! Updates the shader variant being used by the pass
+                bool UpdateShaderOptions(const RPI::ShaderVariantId& variantId);
+
             protected:
                 HairFeatureProcessor* m_featureProcessor = nullptr;
 
@@ -104,6 +107,7 @@ namespace AZ
                 AZStd::unordered_set<HairRenderObject*> m_newRenderObjects;
 
                 bool m_initialized = false;
+                RPI::ShaderVariantId m_currentShaderVariantId;
             };
 
         } // namespace Hair

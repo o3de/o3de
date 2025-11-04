@@ -6,8 +6,9 @@
  *
  */
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Script/ScriptAsset.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/TickBus.h>
 #include "LUAEditorFindDialog.hxx"
@@ -21,6 +22,7 @@
 #include <QListWidgetItem>
 #include <QTextDocument>
 #include <QTimer>
+#include <QRegularExpression>
 
 namespace LUAEditorInternal
 {
@@ -30,7 +32,7 @@ namespace LUAEditorInternal
     {
     public:
         AZ_RTTI(FindSavedState, "{2B880623-63A9-4B39-B8B9-47609590D7D2}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(FindSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindSavedState, AZ::SystemAllocator);
         FindSavedState()
         {
             m_lastSearchInFilesMode = 0;
@@ -77,12 +79,12 @@ namespace LUAEditor
         m_gui->searchAndReplaceGroupBox->setChecked(false);
         m_gui->regularExpressionCheckBox->setChecked(false);
 
-        auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
+        auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
         m_gui->wrapCheckBox->setChecked((pState ? pState->m_findWrap : true));
 
         connect(m_gui->wrapCheckBox, &QCheckBox::stateChanged, this, [](int newState)
         {
-            auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
+            auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
             pState->m_findWrap = (newState == Qt::Checked);
         });
 
@@ -200,7 +202,7 @@ namespace LUAEditor
     {
         if (m_bAnyDocumentsOpen)
         {
-            auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(m_bWasFindInAll ? AZ_CRC("LUAFindInAny", 0x9b85f4f9) : AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
+            auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(m_bWasFindInAll ? AZ_CRC_CE("LUAFindInAny") : AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
             pState->m_lastSearchInFilesMode = m_gui->searchWhereComboBox->currentIndex();
         }
     }
@@ -211,7 +213,7 @@ namespace LUAEditor
         // restore prior global mode:
         if (m_bAnyDocumentsOpen)
         {
-            auto pState = AZ::UserSettings::Find<LUAEditorInternal::FindSavedState>(findInAny ? AZ_CRC("LUAFindInAny", 0x9b85f4f9) : AZ_CRC("FindInCurrent", 0xba0962af), AZ::UserSettings::CT_LOCAL);
+            auto pState = AZ::UserSettings::Find<LUAEditorInternal::FindSavedState>(findInAny ? AZ_CRC_CE("LUAFindInAny") : AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
             if (pState)
             {
                 m_gui->searchWhereComboBox->setCurrentIndex(pState->m_lastSearchInFilesMode); // theres three options!
@@ -233,6 +235,9 @@ namespace LUAEditor
         m_gui->findAllButton->setDefault(!m_gui->findNextButton->isEnabled());
         m_gui->findNextButton->setAutoDefault(m_gui->findNextButton->isEnabled());
         m_gui->findAllButton->setAutoDefault(!m_gui->findNextButton->isEnabled());
+        m_gui->findAllButton->setEnabled(pLUAEditorMainWindow->HasAtLeastOneFileOpen());
+        m_gui->replaceButton->setEnabled(pLUAEditorMainWindow->HasAtLeastOneFileOpen());
+        m_gui->replaceAllButton->setEnabled(pLUAEditorMainWindow->HasAtLeastOneFileOpen());
 
         if (m_bWasFindInAll)
         {
@@ -514,8 +519,13 @@ namespace LUAEditor
         {
             AZ_Assert(false, "Fix assets!");
             //AZ::u32 platformFeatureFlags = PLATFORM_FEATURE_FLAGS_ALL;
-            //EBUS_EVENT_RESULT(platformFeatureFlags, EditorFramework::EditorAssetCatalogMessages::Bus, GetCurrentPlatformFeatureFlags);
-            //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByType, m_dFindAllLUAAssetsInfo, AZ::ScriptAsset::StaticAssetType(), platformFeatureFlags);
+            //EditorFramework::EditorAssetCatalogMessages::Bus::BroadcastResult(
+            //    platformFeatureFlags, &EditorFramework::EditorAssetCatalogMessages::Bus::Events::GetCurrentPlatformFeatureFlags);
+            //EditorFramework::EditorAssetCatalogMessages::Bus::Broadcast(
+            //    &EditorFramework::EditorAssetCatalogMessages::Bus::Events::FindEditorAssetsByType,
+            //    m_dFindAllLUAAssetsInfo,
+            //    AZ::ScriptAsset::StaticAssetType(),
+            //    platformFeatureFlags);
         }
 
 
@@ -557,7 +567,11 @@ namespace LUAEditor
                 // successful sync between the QScintilla document and the raw buffer version that we need
                 const char* buffer = nullptr;
                 AZStd::size_t actualSize = 0;
-                EBUS_EVENT(Context_DocumentManagement::Bus, GetDocumentData, (*m_FIFData.m_openViewIter)->m_Info.m_assetId, &buffer, actualSize);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::GetDocumentData,
+                    (*m_FIFData.m_openViewIter)->m_Info.m_assetId,
+                    &buffer,
+                    actualSize);
 
                 /************************************************************************/
                 /* Open files are similar but not identical to closed file processing   */
@@ -589,7 +603,10 @@ namespace LUAEditor
                     ResultEntry entry;
                     entry.m_lineText = dLines[line];
 
-                    QRegExp regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                    QRegularExpression regex(
+                        m_FIFData.m_SearchText,
+                        m_FIFData.m_bCaseSensitiveIsChecked ? QRegularExpression::NoPatternOption
+                                                            : QRegularExpression::CaseInsensitiveOption);
                     int index = 0;
                     if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                     {
@@ -613,25 +630,29 @@ namespace LUAEditor
                         entry.m_lineNumber = line + 1;
                         entry.m_lineText = entry.m_lineText.trimmed();
 
-                        while (index > -1)
+                        if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                         {
-                            if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
+                            QRegularExpressionMatch match = regex.match(entry.m_lineText);
+                            index = match.capturedStart();
+                            while (match.hasMatch())
                             {
-                                entry.m_matches.push_back(AZStd::make_pair(index, regex.matchedLength()));
+                                const int length = match.capturedLength();
+                                entry.m_matches.push_back(AZStd::make_pair(index, length));
+
+                                match = regex.match(entry.m_lineText, index + length);
+                                index = match.capturedStart();
                             }
-                            else
+                        }
+                        else
+                        {
+                            while (index > -1)
                             {
                                 entry.m_matches.push_back(AZStd::make_pair(index, m_FIFData.m_SearchText.length()));
-                            }
-
-                            index++;
-                            if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
-                            {
-                                index = entry.m_lineText.indexOf(regex, index);
-                            }
-                            else
-                            {
-                                index = entry.m_lineText.indexOf(m_FIFData.m_SearchText, index, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                                index++;
+                                index = entry.m_lineText.indexOf(
+                                    m_FIFData.m_SearchText,
+                                    index,
+                                    m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
                             }
                         }
 
@@ -726,7 +747,7 @@ namespace LUAEditor
                             ResultEntry entry;
                             entry.m_lineText = dLines[line];
 
-                            QRegExp regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                            QRegularExpression regex(m_FIFData.m_SearchText, m_FIFData.m_bCaseSensitiveIsChecked ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
                             int index = 0;
                             if(m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                                 index = entry.m_lineText.indexOf(regex, index);
@@ -781,7 +802,7 @@ namespace LUAEditor
             if (!m_bCancelFindSignal)
             {
                 PostProcessOn();
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::ProcessFindItems, this);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::ProcessFindItems, this);
             }
             else
             {
@@ -937,16 +958,15 @@ namespace LUAEditor
                 pLUAViewWidget->m_Info.m_bSourceControl_BusyGettingStats ||
                 pLUAViewWidget->m_Info.m_bSourceControl_Ready == false)
             {
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::OnReplace, this);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::OnReplace, this);
             }
             else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite &&
                      pLUAViewWidget->m_Info.m_bSourceControl_CanCheckOut)
             {
                 // check it out for edit
-                EBUS_EVENT(Context_DocumentManagement::Bus,
-                    DocumentCheckOutRequested,
-                    pLUAViewWidget->m_Info.m_assetId);
-                EBUS_QUEUE_FUNCTION(AZ::SystemTickBus, &LUAEditorFindDialog::OnReplace, this);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::DocumentCheckOutRequested, pLUAViewWidget->m_Info.m_assetId);
+                AZ::SystemTickBus::QueueFunction(&LUAEditorFindDialog::OnReplace, this);
             }
             else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)
             {
@@ -984,8 +1004,13 @@ namespace LUAEditor
         AZ_Assert(false, "Fix assets!");
 
         //AZ::u32 platformFeatureFlags = PLATFORM_FEATURE_FLAGS_ALL;
-        //EBUS_EVENT_RESULT(platformFeatureFlags, EditorFramework::EditorAssetCatalogMessages::Bus, GetCurrentPlatformFeatureFlags);
-        //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByType, m_RIFData.m_dReplaceAllLUAAssetsInfo, AZ::ScriptAsset::StaticAssetType(), platformFeatureFlags);
+        //EditorFramework::EditorAssetCatalogMessages::Bus::BroadcastResult(
+        //    platformFeatureFlags, &EditorFramework::EditorAssetCatalogMessages::Bus::Events::GetCurrentPlatformFeatureFlags);
+        //EditorFramework::EditorAssetCatalogMessages::Bus::Broadcast(
+        //    &EditorFramework::EditorAssetCatalogMessages::Bus::Events::FindEditorAssetsByType,
+        //    m_RIFData.m_dReplaceAllLUAAssetsInfo,
+        //    AZ::ScriptAsset::StaticAssetType(),
+        //    platformFeatureFlags);
 
         m_RIFData.m_OpenView = pLUAEditorMainWindow->GetAllViews();
 
@@ -1086,7 +1111,7 @@ namespace LUAEditor
                         for(AZStd::size_t line=0; line<dLines.size(); ++line)
                         {
                             QString str(dLines[line]);
-                            QRegExp regex(m_RIFData.m_SearchText, m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                            QRegularExpression regex(m_RIFData.m_SearchText, m_bCaseSensitiveIsChecked ? QRegularExpression::NoPatternOption : QRegularExpression::CaseInsensitiveOption);
                             int index = 0;
                             if(m_bRegExIsChecked || m_bWholeWordIsChecked)
                                 index = str.indexOf(regex, index);
@@ -1147,7 +1172,7 @@ namespace LUAEditor
 
             //split physical path into the components saved by the database
             AZStd::string projectRoot, databaseRoot, databasePath, databaseFile, fileExtension;
-            if (!AzFramework::StringFunc::AssetDatabasePath::Split(assetName.c_str(), &projectRoot, &databaseRoot, &databasePath, &databaseFile, &fileExtension))
+            if (!AZ::StringFunc::AssetDatabasePath::Split(assetName.c_str(), &projectRoot, &databaseRoot, &databasePath, &databaseFile, &fileExtension))
             {
                 AZ_Warning("LUAEditorFindDialog", false, AZStd::string::format("<span severity=\"err\">Path is invalid: '%s'</span>", assetName.c_str()).c_str());
                 return;
@@ -1155,16 +1180,22 @@ namespace LUAEditor
 
             //find it in the database
             //AZStd::vector<EditorFramework::EditorAsset> dAssetInfo;
-            //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByName, dAssetInfo, databaseRoot.c_str(), databasePath.c_str(), databaseFile.c_str(), fileExtension.c_str());
+            //EditorFramework::EditorAssetCatalogMessages::Bus::Broadcast(
+            //    &EditorFramework::EditorAssetCatalogMessages::Bus::Events::FindEditorAssetsByName,
+            //    dAssetInfo,
+            //    databaseRoot.c_str(),
+            //    databasePath.c_str(),
+            //    databaseFile.c_str(),
+            //    fileExtension.c_str());
             //if (dAssetInfo.empty())
             //  return;
 
             //request it be opened
-            //EBUS_EVENT_ID(    LUAEditor::ContextID,
-            //EditorFramework::AssetManagementMessages::Bus,
-            // AssetOpenRequested,
-            // dAssetInfo[0].m_databaseAsset.m_assetId,
-            // AZ::ScriptAsset::StaticAssetType());
+            //EditorFramework::AssetManagementMessages::Bus::Event(
+            //    LUAEditor::ContextID,
+            //    &EditorFramework::AssetManagementMessages::Bus::Events::AssetOpenRequested,
+            //    dAssetInfo[0].m_databaseAsset.m_assetId,
+            //    AZ::ScriptAsset::StaticAssetType());
 
             QTimer::singleShot(0, this, &LUAEditorFindDialog::ProcessReplaceItems);
         }
@@ -1259,9 +1290,8 @@ namespace LUAEditor
                  pLUAViewWidget->m_Info.m_bSourceControl_CanCheckOut)
         {
             // check it out for edit
-            EBUS_EVENT(Context_DocumentManagement::Bus,
-                DocumentCheckOutRequested,
-                pLUAViewWidget->m_Info.m_assetId);
+            Context_DocumentManagement::Bus::Broadcast(
+                &Context_DocumentManagement::Bus::Events::DocumentCheckOutRequested, pLUAViewWidget->m_Info.m_assetId);
             return -2;
         }
         else if (!pLUAViewWidget->m_Info.m_bSourceControl_CanWrite)

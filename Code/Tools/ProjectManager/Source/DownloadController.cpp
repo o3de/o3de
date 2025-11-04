@@ -48,6 +48,16 @@ namespace O3DE::ProjectManager
         }
     }
 
+    bool DownloadController::IsDownloadingObject(const QString& objectName, DownloadObjectType objectType)
+    {
+        auto findResult = AZStd::ranges::find_if(m_objects,
+            [objectName, objectType](const DownloadableObject& object)
+            {
+                return (object.m_objectType == objectType && object.m_objectName == objectName);
+            });
+        return findResult != m_objects.end();
+    }
+
     void DownloadController::CancelObjectDownload(const QString& objectName, DownloadObjectType objectType)
     {
         auto findResult = AZStd::ranges::find_if(m_objects,

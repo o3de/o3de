@@ -12,6 +12,8 @@
 #include "MainStatusBar.h"
 
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Style.h>
@@ -305,8 +307,21 @@ void SourceControlItem::UpdateAndShowMenu()
 
 void SourceControlItem::ConnectivityStateChanged(const AzToolsFramework::SourceControlState state)
 {
+    AzToolsFramework::SourceControlState oldState = m_SourceControlState;
     m_SourceControlState = state;
     UpdateMenuItems();
+
+    if (oldState != m_SourceControlState)
+    {
+        // if the user has turned the system on or off, signal the asset processor
+        // we know the user has turned the system off if the old state was disabled
+        // or if the new state is disabled (when the state changed)
+        if ((oldState == AzToolsFramework::SourceControlState::Disabled) || (m_SourceControlState == AzToolsFramework::SourceControlState::Disabled))
+        {
+            bool enabled = m_SourceControlState != AzToolsFramework::SourceControlState::Disabled;
+            AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::UpdateSourceControlStatus, enabled);
+        }
+    }
 }
 
 void SourceControlItem::InitMenu()
@@ -340,11 +355,7 @@ void SourceControlItem::InitMenu()
             UpdateMenuItems();
         }
 
-        connect(m_settingsAction, &QAction::triggered, this, [&]()
-        {
-            GetIEditor()->GetSourceControl()->ShowSettings();
-        });
-
+        connect(m_settingsAction, &QAction::triggered, this, &SourceControlItem::OnOpenSettings);
         connect(m_checkBox, &QCheckBox::stateChanged, this, [this](int state) {SetSourceControlEnabledState(state); });
     }
     else
@@ -354,7 +365,21 @@ void SourceControlItem::InitMenu()
     }
     SetText("P4V");
 }
+void SourceControlItem::OnOpenSettings() {
 
+    // LEGACY note - GetIEditor and GetSourceControl are both legacy functions
+    // but are currently the only way to actually show the source control settings.
+    // They come from an editor plugin which should be moved to a gem eventually instead.
+    // For now, the actual function of the p4 plugin (so for example, checking file status, checking out files, etc)
+    // lives in AzToolsFramework, and is always available,
+    // but the settings dialog lives in the plugin, which is not always available, on all platforms, and thus
+    // this pointer could be null despite P4 still functioning.  (For example, it can function via command line on linux,
+    // and its settings can come from the P4 ENV or P4 Client env, without having to show the GUI).  Therefore
+    // it is still valid to have m_sourceControlAvailable be true yet GetIEditor()->GetSourceControl() be null.
+    using namespace AzToolsFramework;
+    SourceControlConnectionRequestBus::Broadcast(&SourceControlConnectionRequestBus::Events::OpenSettings);
+
+}
 void SourceControlItem::SetSourceControlEnabledState(bool state)
 {
     using SCRequest = AzToolsFramework::SourceControlConnectionRequestBus;
@@ -367,6 +392,7 @@ void SourceControlItem::UpdateMenuItems()
     QString toolTip;
     bool disabled = false;
     bool errorIcon = false;
+    bool invalidConfig = false;
 
     switch (m_SourceControlState)
     {
@@ -377,6 +403,7 @@ void SourceControlItem::UpdateMenuItems()
         break;
     case AzToolsFramework::SourceControlState::ConfigurationInvalid:
         errorIcon = true;
+        invalidConfig = true;
         toolTip = tr("Perforce configuration invalid");
         break;
     case AzToolsFramework::SourceControlState::Active:
@@ -386,7 +413,7 @@ void SourceControlItem::UpdateMenuItems()
 
     m_settingsAction->setEnabled(!disabled);
     m_checkBox->setChecked(!disabled);
-    m_checkBox->setText(disabled ? tr("Status: Offline") : tr("Status: Online"));
+    m_checkBox->setText(disabled ? tr("Status: Offline") : invalidConfig ? tr("Status: Invalid Configuration - check the console log") : tr("Status: Online"));
     SetIcon(errorIcon ? disabled ? m_scIconDisabled : m_scIconWarning : m_scIconOk);
     SetToolTip(toolTip);
 }
@@ -406,10 +433,10 @@ MemoryStatusItem::~MemoryStatusItem()
 
 void MemoryStatusItem::updateStatus()
 {
-    ProcessMemInfo mi;
-    CProcessInfo::QueryMemInfo(mi);
+    AZ::ProcessMemInfo mi;
+    AZ::QueryMemInfo(mi);
 
-    uint64 nSizeMb = (uint64)(mi.WorkingSet / (1024 * 1024));
+    uint64 nSizeMb = (uint64)(mi.m_workingSet / (1024 * 1024));
 
     SetText(QString("%1 Mb").arg(nSizeMb));
 }

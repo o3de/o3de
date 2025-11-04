@@ -385,6 +385,17 @@ void SliderDoubleCombo::setSoftRange(double min, double max)
 
 }
 
+void SliderDoubleCombo::resetLimits()
+{
+    m_useSoftMinimum = false;
+    m_useSoftMaximum = false;
+    m_minimum = 0.0;
+    m_minimum = 100.0;
+    m_softMinimum = m_minimum;
+    m_softMaximum = m_minimum;
+    refreshUi();
+}
+
 int SliderDoubleCombo::numSteps() const
 {
     return m_slider->numSteps();

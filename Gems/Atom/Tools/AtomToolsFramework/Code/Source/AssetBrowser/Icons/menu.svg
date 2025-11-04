@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="20px" height="12px" viewBox="0 0 20 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
-    <title>Buttons / Dropdown button with Icon / Default</title>
-    <desc>Created with Sketch.</desc>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="component-header" transform="translate(-426.000000, -6.000000)" fill="#FFFFFF">
-            <g id="Buttons-/-Dropdown-button-with-Icon-/-Default" transform="translate(424.000000, 4.000000)">
-                <polygon id="Triangle" transform="translate(19.000000, 8.500000) scale(1, -1) translate(-19.000000, -8.500000) " points="20 9 23 12 17 12"></polygon>
-                <g id="Sky-Icon-/-System-/-Menu">
-                    <rect id="Rectangle-11" x="2" y="2" width="12" height="2"></rect>
-                    <rect id="Rectangle-11" x="2" y="7" width="12" height="2"></rect>
-                    <rect id="Rectangle-11" x="2" y="12" width="12" height="2"></rect>
-                </g>
-            </g>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Buttons / Dropdown button with Icon / no arrow</title>
+    <g id="Buttons-/-Dropdown-button-with-Icon-/-no-arrow" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons-/-System-/-Menu" fill="#FFFFFF">
+            <rect id="Rectangle-11" x="4" y="2.66666667" width="12" height="2"></rect>
+            <rect id="Rectangle-11" x="4" y="7.33333333" width="12" height="2"></rect>
+            <rect id="Rectangle-11" x="4" y="12" width="12" height="2"></rect>
         </g>
     </g>
 </svg>

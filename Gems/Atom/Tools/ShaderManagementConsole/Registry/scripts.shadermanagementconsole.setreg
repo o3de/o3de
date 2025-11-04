@@ -1,9 +1,25 @@
 {
     "O3DE": {
         "AtomToolsFramework": {
+            "MainWindow": {
+                "FileMenuScripts": {
+                    "": [ "@gemroot:ShaderManagementConsole@/Scripts/GenerateShaderVariantListForAllShaders.py" ]
+                }
+            },
             "AssetBrowser": {
                 "ContextMenuScripts": {
-                    "": [ "@gemroot:ShaderManagementConsole@/Scripts/GenerateShaderVariantListForMaterials.py" ]
+                    "": [
+                        "@gemroot:ShaderManagementConsole@/Scripts/CreateShaderVariantListDocumentFromShader.py",
+                        "@gemroot:ShaderManagementConsole@/Scripts/CreateShaderVariantListDocumentFromShaderInProjectFolder.py",
+                        "@gemroot:ShaderManagementConsole@/Scripts/CreateShaderVariantListDocumentFromShaderInSameFolder.py"
+                    ]
+                }
+            }
+        },
+        "ShaderManagementConsole": {
+            "DocumentTableView": {
+                "ContextMenuScripts": {
+                    "": [ "@gemroot:ShaderManagementConsole@/Scripts/ExpandOptionsFullCombinatorials.py" ]
                 }
             }
         }

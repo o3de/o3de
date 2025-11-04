@@ -118,7 +118,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget"/>
+        <widget class="AzToolsFramework::AssetBrowser::AssetBrowserListView" name="m_assetBrowserListViewWidget"/>
        </item>
        <item>
         <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTreeView" name="m_assetBrowserTreeViewWidget">
@@ -139,6 +139,9 @@
            <width>16777215</width>
            <height>16777215</height>
           </size>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::EditKeyPressed</set>
          </property>
          <property name="dragDropMode">
           <enum>QAbstractItemView::DragOnly</enum>
@@ -201,9 +204,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserListView</class>
    <extends>QTableView</extends>
-   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

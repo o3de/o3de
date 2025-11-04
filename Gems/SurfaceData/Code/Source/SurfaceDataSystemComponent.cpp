@@ -18,7 +18,9 @@
 #include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <SurfaceDataProfiler.h>
 
+AZ_DEFINE_BUDGET(SurfaceData);
 
 namespace SurfaceData
 {
@@ -36,7 +38,6 @@ namespace SurfaceData
             {
                 ec->Class<SurfaceDataSystemComponent>("Surface Data System", "Manages registration of surface data providers and forwards intersection data requests to them")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -58,7 +59,27 @@ namespace SurfaceData
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
-                ->Event("GetSurfacePoints", &SurfaceDataSystemRequestBus::Events::GetSurfacePoints)
+                ->Event(
+                    "GetSurfacePoints",
+                    [](SurfaceData::SurfaceDataSystem* handler, const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags) -> AZStd::vector<AzFramework::SurfaceData::SurfacePoint>
+                    {
+                        AZStd::vector<AzFramework::SurfaceData::SurfacePoint> result;
+                        SurfaceData::SurfacePointList surfacePointList;
+                        handler->GetSurfacePoints(inPosition, desiredTags, surfacePointList);
+                        surfacePointList.EnumeratePoints(
+                        [&result](
+                            [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position, const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks)-> bool
+                        {
+                            AzFramework::SurfaceData::SurfacePoint point;
+                            point.m_position = position;
+                            point.m_normal = normal;
+                            point.m_surfaceTags = masks.GetSurfaceTagWeightList();
+
+                            result.emplace_back(point);
+                            return true;
+                        });
+                        return result;
+                    })
                 ->Event("RefreshSurfaceData", &SurfaceDataSystemRequestBus::Events::RefreshSurfaceData)
                 ->Event("GetSurfaceDataProviderHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataProviderHandle)
                 ->Event("GetSurfaceDataModifierHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle)
@@ -75,12 +96,12 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
+        provided.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
     }
 
     void SurfaceDataSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
+        incompatible.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
     }
 
     void SurfaceDataSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -237,7 +258,7 @@ namespace SurfaceData
         auto entryItr = m_registeredSurfaceDataProviders.find(providerHandle);
         if (entryItr != m_registeredSurfaceDataProviders.end())
         {
-            // Get the set of surface tags that can be affected by refreshing a surface data provider. 
+            // Get the set of surface tags that can be affected by refreshing a surface data provider.
             // This includes all of the provider's tags, as well as any surface modifier tags that exist in the bounds,
             // because the affected surface points have the potential of getting the modifier tags applied as well.
             SurfaceTagSet affectedSurfaceTags = GetAffectedSurfaceTags(dirtyBounds, entryItr->second.m_tags);
@@ -322,7 +343,7 @@ namespace SurfaceData
         AZStd::span<const AZ::Vector3> inPositions, const AZ::Aabb& inPositionBounds,
         const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        SURFACE_DATA_PROFILE_FUNCTION_VERBOSE
 
         AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
@@ -377,14 +398,14 @@ namespace SurfaceData
         }
 
         {
-            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: StartListConstruction");
+            SURFACE_DATA_PROFILE_SCOPE_VERBOSE("GetSurfacePointsFromListInternal: StartListConstruction");
             surfacePointLists.StartListConstruction(inPositions, maxPointsCreatedPerInput, tagFilters);
         }
 
         // Loop through each data provider and generate surface points from the set of input positions.
         // Any generated points that have the same XY coordinates and extremely similar Z values will get combined together.
         {
-            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: GetSurfacePointsFromList");
+            SURFACE_DATA_PROFILE_SCOPE_VERBOSE("GetSurfacePointsFromListInternal: GetSurfacePointsFromList");
             for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
             {
                 if (ProviderIsApplicable(provider))
@@ -401,7 +422,7 @@ namespace SurfaceData
         // are used to annotate points that occur within a volume.  A common example is marking points as "underwater" for points that occur
         // within a water volume.
         {
-            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: ModifySurfaceWeights");
+            SURFACE_DATA_PROFILE_SCOPE_VERBOSE("GetSurfacePointsFromListInternal: ModifySurfaceWeights");
             for (const auto& [modifierHandle, modifier] : m_registeredSurfaceDataModifiers)
             {
                 bool hasInfiniteBounds = !modifier.m_bounds.IsValid();

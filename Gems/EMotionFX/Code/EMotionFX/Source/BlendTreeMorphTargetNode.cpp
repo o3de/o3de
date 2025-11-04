@@ -17,8 +17,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMorphTargetNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMorphTargetNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMorphTargetNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMorphTargetNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeMorphTargetNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -216,7 +216,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("ActorMorphTargetName", 0xed53e3a5), &BlendTreeMorphTargetNode::m_morphTargetNames, "Morph Target", "The morph target to apply the weight changes to.")
+            ->DataElement(AZ_CRC_CE("ActorMorphTargetName"), &BlendTreeMorphTargetNode::m_morphTargetNames, "Morph Target", "The morph target to apply the weight changes to.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMorphTargetNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)

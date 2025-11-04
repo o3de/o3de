@@ -33,7 +33,7 @@ from o3de import manifest
 
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
 GRADLE_MIN_VERSION = Version('6.5')
-GRADLE_MAX_VERSION = Version('7.0.2')
+GRADLE_MAX_VERSION = Version('7.5.1')
 GRADLE_VERSION_REGEX = re.compile(r"Gradle\s(\d+.\d+.?\d*)")
 GRADLE_EXECUTABLE = 'gradle.bat' if platform.system() == 'Windows' else 'gradle'
 
@@ -143,8 +143,8 @@ def wrap_parsed_args(parsed_args):
     Function to add a method to the parsed argument object to transform a long-form argument name to and get the
     parsed values based on the input long form.
 
-    This will allow us to read an argument like '--foo-bar=Orange' by using the built in method rather than looking for
-    the argparsed transformed attrobite 'foo_bar'
+    This will allow us to read an argument like '--foo-bar=Orange' by using the built-in method rather than looking for
+    the argparsed transformed attribute 'foo_bar'.
 
     :param parsed_args: The parsed args object to wrap
     """

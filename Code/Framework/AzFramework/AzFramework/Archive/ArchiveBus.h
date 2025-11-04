@@ -12,6 +12,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/Asset/AssetRegistry.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::IO
 {
@@ -26,7 +27,7 @@ namespace AZ::IO
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        virtual void BundleOpened([[maybe_unused]] const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, [[maybe_unused]] const char* nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog) {}
+        virtual void BundleOpened([[maybe_unused]] const char* bundleName, [[maybe_unused]] AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, [[maybe_unused]] const char* nextBundle, [[maybe_unused]] AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog) {}
         virtual void BundleClosed([[maybe_unused]] const char* bundleName) {}
 
         // Sent when a file is accessed through Archive
@@ -35,3 +36,5 @@ namespace AZ::IO
     using ArchiveNotificationBus = AZ::EBus<ArchiveNotifications>;
 
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AZ::IO::ArchiveNotifications);

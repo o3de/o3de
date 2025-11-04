@@ -9,16 +9,18 @@
 #pragma once
 
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/parallel/mutex.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
     /**
     * SocketConnection - an interface for creating a socket connection using AzSocket
     */
-    class SocketConnection
+    class AZF_API SocketConnection
     {
     public:
         AZ_RTTI(SocketConnection, "{CF95282C-B514-4AB8-8C72-6063AD03725B}");
@@ -77,6 +79,12 @@ namespace AzFramework
 
         //! Remove callback for specific typeId (allows multiple callbacks per id)
         virtual void RemoveMessageHandler(AZ::u32 typeId, TMessageCallbackHandle callbackHandle) = 0;
+
+        //! Get the last socket result code from any socket call 
+        virtual AZ::s32 GetLastResult() const { return 0; }
+
+        //! Get the last socket-related error from any socket call
+        virtual AZStd::string GetLastErrorMessage() const { return AZStd::string(); };        
     };
 
     class EngineConnectionEvents
@@ -96,3 +104,5 @@ namespace AzFramework
         virtual void Disconnected(SocketConnection*) {}
     };
 } // namespace AzFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZF_API, AzFramework::EngineConnectionEvents);

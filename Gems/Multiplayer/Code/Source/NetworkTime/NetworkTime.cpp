@@ -20,13 +20,30 @@ namespace Multiplayer
     AZ_CVAR(float, sv_RewindVolumeExtrudeDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount to increase rewind volume checks to account for fast moving entities");
     AZ_CVAR(bool, bg_RewindDebugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If true enables debug draw of rewind operations");
 
+    void NetworkTime::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<INetworkTimeRequestBus>("Network Time Requests")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
+                ->Event("IsTimeRewound", &INetworkTimeRequestBus::Events::IsTimeRewound)
+                ->Event("GetHostFrameId", &INetworkTimeRequestBus::Events::GetHostFrameId)
+                ->Event("GetHostFrameId (Unaltered)", &INetworkTimeRequestBus::Events::GetUnalteredHostFrameId)
+                ;
+        }
+    }
+
     NetworkTime::NetworkTime()
     {
         AZ::Interface<INetworkTime>::Register(this);
+        INetworkTimeRequestBus::Handler::BusConnect();
     }
 
     NetworkTime::~NetworkTime()
     {
+        INetworkTimeRequestBus::Handler::BusDisconnect();
         AZ::Interface<INetworkTime>::Unregister(this);
     }
 
@@ -50,6 +67,7 @@ namespace Multiplayer
         AZ_Assert(!IsTimeRewound(), "Incrementing the global application frameId is unsupported under a rewound time scope");
         ++m_unalteredFrameId;
         m_hostFrameId = m_unalteredFrameId;
+        m_hostTimeMs = AZ::GetElapsedTimeMs();
     }
 
     AZ::TimeMs NetworkTime::GetHostTimeMs() const

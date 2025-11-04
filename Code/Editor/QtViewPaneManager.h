@@ -10,7 +10,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include "Include/EditorCoreAPI.h"
-#include <QtViewPane.h>
 #include "Resource.h"
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -35,6 +34,8 @@
 class QMainWindow;
 class ViewportEditorModeNotificationsBusImpl;
 struct ViewLayoutState;
+struct QtViewPane;
+class XmlNodeRef;
 
 namespace AzQtComponents
 {
@@ -149,9 +150,11 @@ public:
     void UnregisterPane(const QString& name);
     QtViewPane* GetPane(int id);
     QtViewPane* GetPane(const QString& name);
+    QtViewPane* GetFirstVisiblePaneMatching(const QString& name);
     QtViewPane* GetViewportPane(int viewportType);
     QDockWidget* GetView(const QString& name);
     bool IsVisible(const QString& name);
+    bool IsEnumeratedInstanceVisible(const QString& name);
     bool IsPaneRegistered(const QString& name) const;
 
     /**
@@ -233,7 +236,6 @@ private:
 
     bool ClosePane(QtViewPane* pane, QtViewPane::CloseModes closeModes = QtViewPane::CloseMode::None);
     int NextAvailableId();
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QtViewPanes m_registeredPanes;
     QByteArray m_defaultMainWindowState;
     QByteArray m_loadedMainWindowState;
@@ -252,7 +254,6 @@ private:
     using EditorWindowRequestBusImpl = AzToolsFramework::EditorWindowRequestBusImpl;
     EditorWindowRequestBusImpl m_windowRequest;                         //!< Helper for EditorWindowRequestBus so
                                                                         //!< QtViewPaneManager does not need to inherit directly from it. */
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
 template<class TWidget>

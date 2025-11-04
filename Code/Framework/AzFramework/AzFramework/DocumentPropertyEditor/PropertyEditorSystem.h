@@ -9,14 +9,15 @@
 #pragma once
 
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
-    class PropertyEditorSystem : public PropertyEditorSystemInterface
+    class AZF_API PropertyEditorSystem : public PropertyEditorSystemInterface
     {
     public:
         AZ_RTTI(PropertyEditorSystem, "{5DD4E43F-B17C-463E-8D4C-5A1E22DD452D}", PropertyEditorSystemInterface);
-        AZ_CLASS_ALLOCATOR(PropertyEditorSystem, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyEditorSystem, AZ::OSAllocator);
 
         PropertyEditorSystem();
         ~PropertyEditorSystem();
@@ -40,6 +41,6 @@ namespace AZ::DocumentPropertyEditor
 
         mutable AZStd::unordered_map<AZ::Crc32, AZ::Name> m_crcToName;
         AZStd::unordered_map<AZ::Name, NodeMetadata> m_nodeMetadata;
-        AZStd::unordered_map<AZ::Name, AZStd::unordered_map<AZ::Name, const AttributeDefinitionInterface*>> m_attributeMetadata;
+        AZStd::unordered_map<AZ::Name, AZStd::unordered_multimap<AZ::Name, const AttributeDefinitionInterface*>> m_attributeMetadata;
     };
 } // namespace AZ::DocumentPropertyEditor

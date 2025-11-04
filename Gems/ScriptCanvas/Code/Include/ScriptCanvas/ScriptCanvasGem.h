@@ -18,7 +18,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(ScriptCanvasModuleCommon, "{FDEA6784-C26A-435A-8A07-D8BCE87B13B0}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasModuleCommon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasModuleCommon, AZ::SystemAllocator);
 
         ScriptCanvasModuleCommon();
         ~ScriptCanvasModuleCommon();
@@ -34,7 +34,7 @@ namespace ScriptCanvas
     public:
         
         AZ_RTTI(ScriptCanvasModule, "{098376F1-D0C2-4B92-9FCF-AFC8C7DFA172}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasModule, AZ::SystemAllocator);
 
         ScriptCanvasModule();
         

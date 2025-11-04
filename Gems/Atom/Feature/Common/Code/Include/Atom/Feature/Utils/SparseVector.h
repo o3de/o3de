@@ -26,7 +26,13 @@ namespace AZ::Render
     {
     public:
 
+        // Elements must be at least as large as size_t because empty slots are used to hold the index of the next
+        // empty slot, which is a size_t. In the future this could be relaxed with an additional template argument
+        // that would control the index type and therefor the maximum size of the SparseVector.
+        static_assert(sizeof(T) >= sizeof(size_t), "Data stored in SparseVector must be at least as large as a size_t.");
+
         SparseVector();
+        ~SparseVector();
 
         //! Reserves an element in the underlying vector and returns the index to that element.
         size_t Reserve();
@@ -59,8 +65,13 @@ namespace AZ::Render
     template<typename T>
     SparseVector<T>::SparseVector()
     {
-        static_assert(sizeof(T) >= sizeof(size_t), "Data stored in SparseVector must be at least as large as a size_t.");
         m_data.reserve(InitialReservedCount);
+    }
+
+    template<typename T>
+    SparseVector<T>::~SparseVector()
+    {
+        Clear();
     }
 
     template<typename T>
@@ -72,7 +83,7 @@ namespace AZ::Render
             // If there's a free slot, then use that space and update the linked list of free slots.
             slotToReturn = m_nextFreeSlot;
             m_nextFreeSlot = reinterpret_cast<size_t&>(m_data.at(m_nextFreeSlot));
-            m_data.at(slotToReturn) = T();
+            new (&m_data.at(slotToReturn)) T();
         }
         else
         {
@@ -98,6 +109,18 @@ namespace AZ::Render
     template<typename T>
     void SparseVector<T>::Clear()
     {
+        if constexpr (!AZStd::is_trivially_destructible<T>())
+        {
+            // Because the memory in the underlying vector is used to store a linked list of the removed items,
+            // a destructor could be called on bogus memory when the vector is cleared or destroyed. To fix this,
+            // iterate through each free slot and default-construct an object there so it can be safely deleted.
+            while (m_nextFreeSlot != NoFreeSlot)
+            {
+                size_t thisSlot = m_nextFreeSlot;
+                m_nextFreeSlot = reinterpret_cast<size_t&>(m_data.at(m_nextFreeSlot));
+                new (&m_data.at(thisSlot)) T();
+            }
+        }
         m_data.clear();
         m_nextFreeSlot = NoFreeSlot;
     }

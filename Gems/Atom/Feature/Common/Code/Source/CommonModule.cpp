@@ -34,7 +34,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(CommonModule, "{116699A4-176B-41BE-8D07-77590319687B}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(CommonModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommonModule, AZ::SystemAllocator);
 
             CommonModule()
                 : AZ::Module()
@@ -74,7 +74,16 @@ namespace AZ
     } // namespace Render
 } // namespace AZ
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_Atom_Feature_Common, AZ::Render::CommonModule)
+#if O3DE_HEADLESS_SERVER
+    #if defined(O3DE_GEM_NAME)
+    AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Headless), AZ::Render::CommonModule)
+    #else
+    AZ_DECLARE_MODULE_CLASS(Gem_Atom_Feature_Common_Headless, AZ::Render::CommonModule)
+    #endif
+#else
+    #if defined(O3DE_GEM_NAME)
+    AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), AZ::Render::CommonModule)
+    #else
+    AZ_DECLARE_MODULE_CLASS(Gem_Atom_Feature_Common, AZ::Render::CommonModule)
+    #endif
+#endif // O3DE_HEADLESS_SERVER

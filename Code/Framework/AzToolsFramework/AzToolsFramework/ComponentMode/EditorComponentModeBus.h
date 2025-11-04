@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -37,6 +38,9 @@ namespace AzToolsFramework
 
             /// The type of the underlying Component this mode is for.
             virtual AZ::Uuid GetComponentType() const = 0;
+
+            /// The type of the Component Mode.
+            virtual AZ::Uuid GetComponentModeType() const = 0;
 
             /// The Id of the underlying Component this mode is associated with.
             virtual AZ::ComponentId GetComponentId() const = 0;
@@ -263,3 +267,6 @@ namespace AzToolsFramework
         }
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS_WITH_TRAITS(AZTF_API, AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)

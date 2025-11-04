@@ -20,33 +20,58 @@ namespace AZ
         namespace SceneCore
         {
             PatternMatcher::PatternMatcher(const char* pattern, MatchApproach matcher)
-                : m_pattern(pattern)
+                : m_patterns({ AZStd::string(pattern) })
                 , m_matcher(matcher)
             {
             }
 
             PatternMatcher::PatternMatcher(const AZStd::string& pattern, MatchApproach matcher)
-                : m_pattern(pattern)
+                : m_patterns({ pattern })
                 , m_matcher(matcher)
             {
             }
 
             PatternMatcher::PatternMatcher(AZStd::string&& pattern, MatchApproach matcher)
-                : m_pattern(AZStd::move(pattern))
+                : m_patterns({ AZStd::move(pattern) })
                 , m_matcher(matcher)
             {
             }
 
-            PatternMatcher::PatternMatcher(PatternMatcher&& rhs)
-                : m_pattern(AZStd::move(rhs.m_pattern))
+            PatternMatcher::PatternMatcher(const AZStd::span<const AZStd::string_view> patterns, MatchApproach matcher)
+                : m_matcher(matcher)
+            {
+                m_patterns.reserve(patterns.size());
+                for (auto& pattern : patterns)
+                {
+                    m_patterns.emplace_back(pattern);
+                }
+            }
+
+            PatternMatcher::PatternMatcher(const PatternMatcher& rhs)
+                : m_patterns(rhs.m_patterns)
                 , m_matcher(rhs.m_matcher)
             {
             }
 
+            PatternMatcher::PatternMatcher(PatternMatcher&& rhs)
+                : m_patterns(AZStd::move(rhs.m_patterns))
+                , m_matcher(rhs.m_matcher)
+            {
+            }
+
+            PatternMatcher& PatternMatcher::operator=(const PatternMatcher& rhs)
+            {
+                m_patterns = rhs.m_patterns;
+                m_matcher = rhs.m_matcher;
+                m_regexMatchers.clear();
+                return *this;
+            }
+
             PatternMatcher& PatternMatcher::operator=(PatternMatcher&& rhs)
             {
-                m_pattern = AZStd::move(rhs.m_pattern);
+                m_patterns = AZStd::move(rhs.m_patterns);
                 m_matcher = rhs.m_matcher;
+                m_regexMatchers.clear();
                 return *this;
             }
 
@@ -97,31 +122,65 @@ namespace AZ
                     return false;
                 }
 
-                m_pattern = patternValue.GetString();
+                m_patterns = { patternValue.GetString() };
 
                 return true;
             }
 
             bool PatternMatcher::MatchesPattern(const char* name, size_t nameLength) const
             {
+                return MatchesPattern(AZStd::string_view(name, nameLength));
+            }
+
+            bool PatternMatcher::MatchesPattern(AZStd::string_view name) const
+            {
+                constexpr bool caseSensitive = false;
+
                 switch (m_matcher)
                 {
                 case MatchApproach::PreFix:
-                    return AzFramework::StringFunc::Equal(name, m_pattern.c_str(), false, m_pattern.size());
-                case MatchApproach::PostFix:
-                {
-                    if (m_pattern.size() > nameLength)
+                    for (const auto& pattern : m_patterns)
                     {
-                        return false;
+                        // Perform a case-insensitive prefix match.
+                        if (AZ::StringFunc::StartsWith(name, pattern, caseSensitive))
+                        {
+                            return true;
+                        }
                     }
-                    size_t offset = nameLength - m_pattern.size();
-                    return AzFramework::StringFunc::Equal(name + offset, m_pattern.c_str());
-                }
+                    return false;
+                case MatchApproach::PostFix:
+                    for (const auto& pattern : m_patterns)
+                    {
+                        // Perform a case-insensitive postfix match.
+                        if (AZ::StringFunc::EndsWith(name, pattern, caseSensitive))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
                 case MatchApproach::Regex:
                 {
-                    AZStd::regex comparer(m_pattern, AZStd::regex::extended);
-                    AZStd::smatch match;
-                    return AZStd::regex_match(name, match, comparer);
+                    for (size_t index = 0; index < m_patterns.size(); index++)
+                    {
+                        // Because PatternMatcher can get default constructed and serialized into directly, there's no good place
+                        // to initialize the regex matchers on construction, so we'll lazily initialize it here on first use.
+
+                        if (m_regexMatchers.empty())
+                        {
+                            m_regexMatchers.resize(m_patterns.size());
+                        }
+
+                        if (m_regexMatchers[index] == nullptr)
+                        {
+                            m_regexMatchers[index] = AZStd::make_unique<AZStd::regex>(m_patterns[index], AZStd::regex::extended);
+                        }
+                        AZStd::cmatch match;
+                        if (AZStd::regex_match(name.begin(), name.end(), match, *(m_regexMatchers[index])))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
                 default:
                     AZ_Assert(false, "Unknown option '%i' for pattern matcher.", m_matcher);
@@ -129,14 +188,10 @@ namespace AZ
                 }
             }
 
-            bool PatternMatcher::MatchesPattern(const AZStd::string& name) const
-            {
-                return MatchesPattern(name.c_str(), name.length());
-            }
-
             const AZStd::string& PatternMatcher::GetPattern() const
             {
-                return m_pattern;
+                const static AZStd::string emptyString{};
+                return !m_patterns.empty() ? m_patterns.front() : emptyString;
             }
 
             PatternMatcher::MatchApproach PatternMatcher::GetMatchApproach() const
@@ -150,8 +205,8 @@ namespace AZ
                 if (serializeContext)
                 {
                     serializeContext->Class<PatternMatcher>()
-                        ->Version(1)
-                        ->Field("pattern", &PatternMatcher::m_pattern)
+                        ->Version(2)
+                        ->Field("patterns", &PatternMatcher::m_patterns)
                         ->Field("matcher", &PatternMatcher::m_matcher);
 
                     EditContext* editContext = serializeContext->GetEditContext();
@@ -160,7 +215,7 @@ namespace AZ
                         editContext->Class<PatternMatcher>("Pattern matcher", "")
                             ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                            ->DataElement(Edit::UIHandlers::Default, &PatternMatcher::m_pattern, "Pattern", "The pattern the matcher will check against.")
+                            ->DataElement(Edit::UIHandlers::Default, &PatternMatcher::m_patterns, "Patterns", "The patterns the matcher will check against.")
                             ->DataElement(Edit::UIHandlers::ComboBox, &PatternMatcher::m_matcher, "Matcher", "The used approach for matching.")
                                 ->EnumAttribute(MatchApproach::PreFix, "PreFix")
                                 ->EnumAttribute(MatchApproach::PostFix, "PostFix")

@@ -42,7 +42,6 @@
         <file>file browser.png</file>
     </qresource>
     <qresource prefix="/general">
-        <file alias="hex_profiler_icon">profile_icon.png</file>
         <file alias="hex_lua_icon">hex_lua.png</file>
         <file alias="breakpoints">breakpoints.png</file>
         <file alias="callstack">callstack.png</file>
@@ -82,24 +81,5 @@
     </qresource>    
     <qresource prefix="/styles">
         <file>style_dark.qss</file>
-    </qresource>
-    <qresource prefix="/">
-        <file>StyleSheetImages/arrow_up_V2.png</file>
-        <file>StyleSheetImages/arrow_down_V2.png</file>
-        <file>StyleSheetImages/arrow_left_V2.png</file>
-        <file>StyleSheetImages/arrow_right_V2.png</file>
-        <file>StyleSheetImages/checkbox_checked.png</file>
-        <file>StyleSheetImages/checkbox_checked_disabled.png</file>
-        <file>StyleSheetImages/checkbox_unchecked.png</file>
-        <file>StyleSheetImages/checkbox_unchecked_disabled.png</file>
-        <file>StyleSheetImages/dropdown_arrow.png</file>
-        <file>StyleSheetImages/radiobutton_checked.png</file>
-        <file>StyleSheetImages/radiobutton_checked_disabled.png</file>
-        <file>StyleSheetImages/radiobutton_unchecked.png</file>
-        <file>StyleSheetImages/radiobutton_unchecked_disabled.png</file>
-        <file>StyleSheetImages/spinbox_down.png</file>
-        <file>StyleSheetImages/spinbox_up.png</file>
-        <file>StyleSheetImages/treeview_arrow_down.png</file>
-        <file>StyleSheetImages/treeview_arrow_right.png</file>
     </qresource>
 </RCC>

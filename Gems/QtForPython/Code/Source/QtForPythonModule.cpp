@@ -22,7 +22,7 @@ namespace QtForPython
     {
     public:
         AZ_RTTI(QtForPythonModule, "{81545CD5-79FA-47CE-96F2-1A9C5D59B4B9}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(QtForPythonModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QtForPythonModule, AZ::SystemAllocator);
 
         QtForPythonModule()
             : AZ::Module()
@@ -47,7 +47,8 @@ namespace QtForPython
     };
 }
 
-// DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
-// The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(Gem_QtForPython, QtForPython::QtForPythonModule)
+#if defined(O3DE_GEM_NAME)
+AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME, _Editor), QtForPython::QtForPythonModule)
+#else
+AZ_DECLARE_MODULE_CLASS(Gem_QtForPython_Editor, QtForPython::QtForPythonModule)
+#endif

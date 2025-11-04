@@ -26,7 +26,7 @@ class Editor_ComponentPropertyCommands_visibility(BaseClass):
         entityId = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)[0]
         check_result(entityId, "entityId was found")
 
-        # Find Infinite Ocean component
+        # Find Mesh component
         typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', ['Mesh'], entity.EntityType().Game)
         getComponentOutcome =  editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', entityId, typeIdsList[0])
         check_result(getComponentOutcome.IsSuccess(), "Found component")
@@ -34,7 +34,7 @@ class Editor_ComponentPropertyCommands_visibility(BaseClass):
 
         # Get the PTE from the Mesh Component
         pteObj = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyTreeEditor', componentId)
-        check_result(pteObj.IsSuccess(), "Created a PropertyTreeEditor for the infiniteOceanId")
+        check_result(pteObj.IsSuccess(), "Created a PropertyTreeEditor for the Mesh component")
         pte = pteObj.GetValue()
 
         paths = pte.build_paths_list_with_types()

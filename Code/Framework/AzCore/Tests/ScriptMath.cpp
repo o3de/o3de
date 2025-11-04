@@ -41,12 +41,12 @@ namespace UnitTest
     }
 
     class ScriptMathTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             behavior = aznew BehaviorContext();
             behavior->Method("AZTestAssert", &AZTestAssert);
@@ -64,7 +64,7 @@ namespace UnitTest
             delete script;
             delete behavior;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         BehaviorContext* behavior = nullptr;
@@ -356,7 +356,14 @@ namespace UnitTest
         script->Execute("AZTestAssert(v1:IsClose(Vector3(6, 8, 0)))");
         script->Execute("v1:Set(3, 4, 0)");
         script->Execute("v1:SetLengthEstimate(10)");
-        script->Execute("AZTestAssert(v1:IsClose(Vector3(6, 8, 0), 0.001))");
+
+
+        #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        #define LUA_VECTOR3_TEST_LENGTH_ESTIMATE_TOLERANCE "0.0195" // 10*2^(-9) ~= 0.0195 <- NEON Reciprocal ~ 9 bits
+        #else
+        #define LUA_VECTOR3_TEST_LENGTH_ESTIMATE_TOLERANCE "0.0049" // 10*2^(-11) ~= 0.0049 <- x86 Reciprocal ~ 11 bits
+        #endif
+        script->Execute("AZTestAssert(v1:IsClose(Vector3(6, 8, 0), " LUA_VECTOR3_TEST_LENGTH_ESTIMATE_TOLERANCE "))");
 
         ////distance
         script->Execute("v1:Set(1, 2, 3)");

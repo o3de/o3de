@@ -9,6 +9,7 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/Serialization/Locale.h>
 
 #include <ctype.h>
 #include <wctype.h>
@@ -25,6 +26,11 @@ namespace AZStd
 {
     namespace Internal
     {
+        inline bool IsValidUtf8(const char* str, size_t length)
+        {
+            return Utf8::is_valid(str, str + length);
+        }
+
         template<size_t Size = sizeof(wchar_t)>
         struct WCharTPlatformConverter
         {
@@ -81,28 +87,43 @@ namespace AZStd
             }
 
             template<class Allocator>
-            static inline void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
+            static inline bool to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
             {
+                if (!IsValidUtf8(src.begin(), src.size()))
+                {
+                    return false;
+                }
+
                 if constexpr (Size == 2)
                 {
                     Utf8::Unchecked::utf8to16(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf8to32(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
             }
 
+            // note that this template is only ever instantiated on size 2 and 4 so adding anything after the if statements will result in unreachable code.
             template<size_t MaxElementCount>
-            static inline void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
+            static inline bool to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
             {
+                if (!IsValidUtf8(src.begin(), src.size()))
+                {
+                    return false;
+                }
+
                 if constexpr (Size == 2)
                 {
                     Utf8::Unchecked::utf8to16(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
                 else if constexpr (Size == 4)
                 {
                     Utf8::Unchecked::utf8to32(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
+                    return true;
                 }
             }
 
@@ -184,6 +205,8 @@ namespace AZStd
     template<class Allocator>
     float stof(const AZStd::basic_string<AZStd::string::value_type, AZStd::string::traits_type, Allocator>& str, AZStd::size_t* idx = 0)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for converting strings to values.
+
         char* ptr;
         const char* sChar = str.c_str();
         float result = (float)strtod(sChar, &ptr);
@@ -196,6 +219,7 @@ namespace AZStd
     template<class Allocator>
     double stod(const AZStd::basic_string<AZStd::string::value_type, AZStd::string::traits_type, Allocator>& str, AZStd::size_t* idx = 0)
     {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // invariant locale for converting strings to values.
         char* ptr;
         const char* sChar = str.c_str();
         double result = strtod(sChar, &ptr);
@@ -205,17 +229,6 @@ namespace AZStd
         }
         return result;
     }
-    /*
-    template<class Allocator>
-    long double stold(const AZStd::basic_string<string::value_type,string::traits_type,Allocator>& str, size_t *idx = 0)
-    {
-        char* ptr;
-        const char * sChar = str.c_str();
-        long double result = strtold(sChar,&ptr);
-        if(idx)
-            *idx = ptr - sChar;
-        return result;
-    }*/
 
     // Standard is messy when it comes to custom string. Let's say we have a string with different allocator ???
     // so we have our (custom) implementations here and wrappers so we are compatible with the standard.
@@ -433,26 +446,41 @@ namespace AZStd
     inline AZStd::wstring to_wstring(long double val)           { AZStd::wstring wstr; to_wstring(wstr, val); return wstr; }
 
     template<class Allocator>
-    void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
+    bool to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
     {
         dest.clear();
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         Internal::WCharTPlatformConverter<>::to_wstring(dest, src);
+        return true;
     }
 
     template<size_t MaxElementCount>
-    void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
+    bool to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
     {
         dest.clear();
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         Internal::WCharTPlatformConverter<>::to_wstring(dest, src);
+        return true;
     }
 
-    inline void to_wstring(wchar_t* dest, size_t destSize, AZStd::string_view src)
+    inline bool to_wstring(wchar_t* dest, size_t destSize, AZStd::string_view src)
     {
+        if (!Internal::IsValidUtf8(src.begin(), src.size()))
+        {
+            return false;
+        }
         wchar_t* endWStr = Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, src);
         if (endWStr < (dest + destSize))
         {
             *endWStr = '\0'; // null terminator
         }
+        return true;
     }
 
 

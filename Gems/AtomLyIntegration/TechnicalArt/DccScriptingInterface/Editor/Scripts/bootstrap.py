@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -8,119 +6,601 @@
 #
 #
 # -------------------------------------------------------------------------
-"""This module is for use in bootstrapping the DccScriptingInterface Gem
-with O3DE. Note: this bootstrap is only designed to be py3 compatible.
-If you need DCCsi access in py27 (Autodesk Maya for instance) you may need
-to implement your own bootstrapper module. Currently this is bootstrapped
-from add_dccsi.py, as a temporty measure related to this Jira:
-SPEC-2581"""
+"""! This module is for use in bootstrapping the DccScriptingInterface Gem
+< dccsi > with O3DE.  The dccsi package if a framework, which includes DCC
+tool integrations for O3DE workflows; and also provides technical artists
+and out-of-box python development environment.
+
+azlmbr represents the O3DE editor python bindings API
+This bootstrap file requires azlmbr and thus only runs within O3DE.
+
+:file: DccScriptingInterface\\editor\\scripts\\boostrap.py
+:Status: Prototype
+:Version: 0.0.2
+:Future: is unknown
+:Entrypoint: is an entrypoint and thus configures logging
+:Notice:
+    Currently windows only (not tested on other platforms)
+    No support for legacy DCC tools stuck on py2 (py3 only)
+"""
 # standard imports
 import sys
 import os
 import site
-import timeit
+import subprocess
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-_START = timeit.default_timer() # start tracking
-_MODULENAME = 'O3DE.DCCsi.bootstrap'
+# global scope
+_DCCSI_SLUG = 'DccScriptingInterface'
+_MODULENAME = 'DCCsi.Editor.Scripts.bootstrap'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
-# we don't use dynaconf setting here as we might not yet have access
-# we need to set up basic access to the DCCsi
-_MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
-_PATH_DCCSIG = Path(os.path.join(_MODULE_PATH, '../../..'))
-site.addsitedir(_PATH_DCCSIG)
+# this file
+_MODULE_PATH = Path(__file__)
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
-# set envar so DCCsi synthetic env bootstraps with it (config.py)
-from azpy.constants import ENVAR_PATH_DCCSIG
-os.environ[ENVAR_PATH_DCCSIG] = str(_PATH_DCCSIG.resolve())
+# we can't import DccScriptingInterface yet, need to bootstrap core access
+#from DccScriptingInterface import PATH_O3DE_TECHART_GEMS
+#from DccScriptingInterface import PATH_DCCSIG
+
+# add gems parent, dccsi lives under:
+# < o3de >\Gems\AtomLyIntegration\TechnicalArt
+PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[3].resolve()
+os.chdir(PATH_O3DE_TECHART_GEMS.as_posix())
+
+#sys.path.append(PATH_O3DE_TECHART_GEMS.as_posix())
+from DccScriptingInterface import add_site_dir
+add_site_dir(PATH_O3DE_TECHART_GEMS)
+
+# < o3de >\Gems\AtomLyIntegration\TechnicalArt\< dccsi >
+PATH_DCCSIG = _MODULE_PATH.parents[2].resolve()
+from DccScriptingInterface.azpy.constants import ENVAR_PATH_DCCSIG
+os.environ[ENVAR_PATH_DCCSIG] = PATH_DCCSIG.as_posix()
+
+# make the dccsi cwd
+os.chdir(PATH_DCCSIG.as_posix())
+PATH_DCCSIG_SETTINGS = PATH_DCCSIG.joinpath('settings.json')
+os.environ['SETTINGS_MODULE_FOR_DYNACONF'] = PATH_DCCSIG_SETTINGS.as_posix()
 # -------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------
-# now we have azpy api access
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG
-from azpy.constants import STR_CROSSBAR
+# ---- debug stuff --------------------------------------------------------
+# local dccsi imports
+# this accesses common global state, e.g. DCCSI_GDEBUG (is True or False)
+from DccScriptingInterface.globals import *
 
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+# auto-attach ide debugging at the earliest possible point in module
+from DccScriptingInterface.azpy.config_utils import attach_debugger
+if DCCSI_DEV_MODE: # from DccScriptingInterface.globals
+    attach_debugger()
+#
+import DccScriptingInterface.config as dccsi_core_config
+
+# note: if you used win_launch_wingide.bat, settings will be over populated
+# because of the .bat file env chain that includes active apps
+
+# note: initializing the config PySide2 access here may not be ideal
+# it will set envars that may propagate, and have have the side effect
+# of interfering with apps like Wing because it is a Qt5 app and the
+# envars set cause a boot failure
+
+# if your tool is running inside of o3de you already have PySide2/Qt
+
+# if you are launching a standalone tool that does need access,
+# that application will need to run and manage config on it's own
+
+# # to do: refactor config.py and implement ConfigClass
+# from DccScriptingInterface.config import ConfigClass
+# dccsi_config = ConfigClass(config_name='dccsi', auto_set=True)
+# for now, use the legacy code, until CoreConfig class is complete
+_settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
+                                                       enable_o3de_pyside2=False,
+                                                       set_env=True)
+
+# configure basic logger
+# it is suggested that this be replaced with a common logging module later
+if DCCSI_GDEBUG or DCCSI_DEV_MODE:
+    DCCSI_LOGLEVEL = _logging.DEBUG
+    _LOGGER.setLevel(DCCSI_LOGLEVEL) # throttle up help
+
+_logging.basicConfig(level=DCCSI_LOGLEVEL,
+                     format=FRMT_LOG_LONG,
+                     datefmt='%m-%d %H:%M')
 
 _LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug(STR_CROSSBAR)
-_LOGGER.debug(f'Initializing: {_MODULENAME}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def attach_debugger():
-    from azpy.test.entry_test import connect_wing
-    _debugger = connect_wing()
-    return _debugger
+O3DE_EDITOR = Path(sys.executable).resolve() # executible
+_LOGGER.debug(f'The sys.executable is: {O3DE_EDITOR}')
+
+# O3DE imports
+import azlmbr
+import azlmbr.bus
+import azlmbr.paths
+import azlmbr.action
+
+# put the Action Manager handler into a global scope so it's not deleted
+handler_action_manager = azlmbr.action.ActionManagerRegistrationNotificationBusHandler()
+
+# path devs might be interested in retreiving
+_LOGGER.debug(f'engroot: {azlmbr.paths.engroot}')
+_LOGGER.debug(f'executableFolder: {azlmbr.paths.executableFolder}')
+_LOGGER.debug(f'log: {azlmbr.paths.log}')
+_LOGGER.debug(f'products: {azlmbr.paths.products}')
+_LOGGER.debug(f'projectroot: {azlmbr.paths.projectroot}')
+
+# base paths
+O3DE_DEV = Path(azlmbr.paths.engroot).resolve()
+PATH_O3DE_BIN = Path(azlmbr.paths.executableFolder).resolve()
+PATH_O3DE_PROJECT = Path(azlmbr.paths.projectroot).resolve()
+
+# the DCCsi Gem expects QtForPython Gem is active
+try:
+    azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'IsActive')
+except Exception as e:
+    _LOGGER.error(f'O3DE Qt / PySide2 not available, exception: {e}')
+    raise e
+
+# debug logging, these are where Qt lives
+params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, 'GetQtBootstrapParameters')
+_LOGGER.debug(f'qtPluginsFolder: {params.qtPluginsFolder}')
+_LOGGER.debug(f'qtBinaryFolder: {params.qtBinaryFolder}')
+
+#PySide2 imports
+from PySide2 import QtWidgets
+from PySide2.QtWidgets import QMenuBar, QMenu, QAction
+from PySide2 import QtGui
+from PySide2.QtCore import Slot, QObject, QUrl
+from shiboken2 import wrapInstance, getCppPointer
+
+# additional DCCsi imports that utilize PySide2
+from DccScriptingInterface.Editor.Scripts.ui import start_service
+from DccScriptingInterface.Editor.Scripts.ui import hook_register_action_sampleui
+
+# SLUGS
+START_SLUG = 'Start'
+HELP_SLUG = 'Help ...'
+
+# slug for editor action context
+editor_mainwindow_context_slug = 'o3de.context.editor.mainwindow'
+
+# slug is a string path.to.object.name
+editor_mainwindow_menubar_slug = 'o3de.menubar.editor.mainwindow'
+
+# actions are similar path.to.action.name
+dccsi_action_context = 'o3de.action.python.dccsi'
+
+# name to display for DCCsi Menu
+dccsi_menu_name = 'studiotools'
+
+# add to slug.path.to.object.name
+dccsi_menu_slug = 'o3de.menu.studiotools'
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+# as the list of slots/actions grows, refactor into sub-modules
+def click_action_blender_start() -> start_service:
+    """Start Blender DCC application"""
+    _LOGGER.debug(f'Clicked: click_action_blender_start')
+    from DccScriptingInterface.Tools.DCC.Blender import PATH_DCCSI_TOOLS_DCC_BLENDER
+    py_file = Path(PATH_DCCSI_TOOLS_DCC_BLENDER, 'start.py').resolve()
+    return start_service(py_file)
+# - hook ------------------------------------------------------------------
+def hook_register_action_blender_start(parameters):
+    # Create an Action Hook for starting Blender from menu
+    _LOGGER.debug(f'Registered: hook_register_action_blender_start')
+    action_properties = azlmbr.action.ActionProperties()
+    action_properties.name = START_SLUG
+    action_properties.description = "A menu item to call an action to Start Blender"
+    action_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                editor_mainwindow_context_slug,
+                                                'o3de.action.python.dccsi.dcc.blender.start',
+                                                action_properties,
+                                                click_action_blender_start)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+def click_action_blender_help():
+    """Open Blender DCCsi docs (readme currently)"""
+    _LOGGER.debug(f'Clicked: click_action_blender_help')
+
+    url = "https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/readme.md"
+
+    return QtGui.QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
+# - hook ------------------------------------------------------------------
+def hook_register_action_blender_help(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_blender_help')
+    action_properties = azlmbr.action.ActionProperties()
+    action_properties.name = HELP_SLUG
+    action_properties.description = "A menu item to open Dccsi Blender Readme (help docs)"
+    action_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                editor_mainwindow_context_slug,
+                                                'o3de.action.python.dccsi.dcc.blender.help',
+                                                action_properties,
+                                                click_action_blender_help)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+def click_action_maya_start() -> start_service:
+    """Start Maya DCC application"""
+    _LOGGER.debug(f'Clicked: click_action_maya_start')
+    from DccScriptingInterface.Tools.DCC.Maya import PATH_DCCSI_TOOLS_DCC_MAYA
+    py_file = Path(PATH_DCCSI_TOOLS_DCC_MAYA, 'start.py').resolve()
+    return start_service(py_file)
+# - hook ------------------------------------------------------------------
+def hook_register_action_maya_start(parameters):
+    # Create an Action Hook for starting Maya from menu
+    _LOGGER.debug(f'Registered: hook_register_action_maya_start')
+    action_properties = azlmbr.action.ActionProperties()
+    action_properties.name = START_SLUG
+    action_properties.description = "A menu item to call an action to Start Maya"
+    action_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                editor_mainwindow_context_slug,
+                                                'o3de.action.python.dccsi.dcc.maya.start',
+                                                action_properties,
+                                                click_action_maya_start)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+def click_action_maya_help():
+    """Open Maya DCCsi docs (readme currently)"""
+    _LOGGER.debug(f'Clicked: click_action_maya_help')
+
+    url = "https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Maya/readme.md"
+
+    return QtGui.QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
+# - hook ------------------------------------------------------------------
+def hook_register_action_maya_help(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_maya_help')
+    action_properties = azlmbr.action.ActionProperties()
+    action_properties.name = HELP_SLUG
+    action_properties.description = "A menu item to open Dccsi Maya Readme (help docs)"
+    action_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                editor_mainwindow_context_slug,
+                                                'o3de.action.python.dccsi.dcc.maya.help',
+                                                action_properties,
+                                                click_action_blender_help)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+def click_action_wing_start() -> start_service:
+    """Start Wing IDE"""
+    _LOGGER.debug(f'Clicked: click_action_wing_start')
+    from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING
+    py_file = Path(PATH_DCCSI_TOOLS_IDE_WING, 'start.py').resolve()
+    return start_service(py_file)
+# - hook ------------------------------------------------------------------
+def hook_register_action_wing_start(parameters):
+    # Create an Action Hook for starting WingIDE from menu
+    _LOGGER.debug(f'Registered: hook_register_action_wing_start')
+    action_properties = azlmbr.action.ActionProperties()
+    action_properties.name = START_SLUG
+    action_properties.description = "A menu item to call an action to Start Wing IDE"
+    action_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                editor_mainwindow_context_slug,
+                                                'o3de.action.python.dccsi.ide.wing.start',
+                                                action_properties,
+                                                click_action_wing_start)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+def click_action_wing_help():
+    """Open Wing IDE DCCsi docs (readme currently)"""
+    _LOGGER.debug(f'Clicked: click_action_wing_help')
+
+    url = "https://github.com/o3de/o3de/tree/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/IDE/Wing/readme.md"
+
+    return QtGui.QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
+# - hook ------------------------------------------------------------------
+def hook_register_action_wing_help(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_wing_help')
+    action_properties = azlmbr.action.ActionProperties()
+    action_properties.name = HELP_SLUG
+    action_properties.description = "A menu item to open Dccsi Wing IDE Readme (help docs)"
+    action_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                editor_mainwindow_context_slug,
+                                                'o3de.action.python.dccsi.ide.wing.help',
+                                                action_properties,
+                                                click_action_wing_help)
+# -------------------------------------------------------------------------
+
+
+# - slot ------------------------------------------------------------------
+from DccScriptingInterface.Editor.Scripts.about import DccsiAbout
+
+def click_action_dccsi_about():
+    """Open DCCsi About Dialog"""
+    _LOGGER.debug(f'Clicked: click_action_dccsi_about')
+
+    # import additional O3DE QtForPython Gem modules
+    import az_qt_helpers
+    EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
+
+    about_dialog = DccsiAbout(EDITOR_MAIN_WINDOW)
+    return about_dialog.exec_()
+# - hook ------------------------------------------------------------------
+def hook_register_action_dccsi_about(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_dccsi_about')
+    action_properties = azlmbr.action.ActionProperties()
+    action_properties.name = 'About'
+    action_properties.description = "Open DccScriptingInterface About Dialog"
+    action_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                editor_mainwindow_context_slug,
+                                                'o3de.action.python.dccsi.about',
+                                                action_properties,
+                                                click_action_dccsi_about)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# _settings.setenv()  # doing this will add the additional DYNACONF_ envars
-import importlib.util
-def get_dccsi_config(PATH_DCCSIG=_PATH_DCCSIG):
-    """Convenience method to set and retreive settings directly from module."""
-    
-    # we can go ahead and just make sure the the DCCsi env is set
-    # _config is SO generic this ensures we are importing a specific one
-    _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi._config",
-                                                                Path(PATH_DCCSIG,
-                                                                     "config.py"))
-    _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
-    _spec_dccsi_config.loader.exec_module(_dccsi_config)
+def hook_on_menu_registration(parameters):
 
-    return _dccsi_config
+    _LOGGER.debug('DCCsi:bootstrap_Editor:hook_on_menu_registration')
+
+    # Create a StudioTools Menu (o3de.menu.studiotools)
+    menu_studiotools_properties = azlmbr.action.MenuProperties()
+    menu_studiotools_properties.name = "Studio Tools"
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              'o3de.menu.studiotools',
+                                              menu_studiotools_properties)
+
+    # Studio Tools > DCC
+    menu_studiotools_dcc_properties = azlmbr.action.MenuProperties()
+    menu_studiotools_dcc_properties.name = "DCC"
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              'o3de.menu.studiotools.dcc',
+                                              menu_studiotools_dcc_properties)
+
+    # Studio Tools > DCC > Blender
+    menu_studiotools_dcc_blender_properties = azlmbr.action.MenuProperties()
+    menu_studiotools_dcc_blender_properties.name = "Blender"
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              'o3de.menu.studiotools.dcc.blender',
+                                              menu_studiotools_dcc_blender_properties)
+
+    # Studio Tools > DCC > Maya
+    menu_studiotools_dcc_maya_properties = azlmbr.action.MenuProperties()
+    menu_studiotools_dcc_maya_properties.name = "Maya"
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              'o3de.menu.studiotools.dcc.maya',
+                                              menu_studiotools_dcc_maya_properties)
+
+    # Studio Tools > IDE
+    menu_studiotools_ide_properties = azlmbr.action.MenuProperties()
+    menu_studiotools_ide_properties.name = "IDE"
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              'o3de.menu.studiotools.ide',
+                                              menu_studiotools_ide_properties)
+
+    # Studio Tools > IDE > Wing
+    menu_studiotools_ide_wing_properties = azlmbr.action.MenuProperties()
+    menu_studiotools_ide_wing_properties.name = "Wing"
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              'o3de.menu.studiotools.ide.wing',
+                                              menu_studiotools_ide_wing_properties)
+
+    # Studio Tools > examples
+    menu_studiotools_examples_properties = azlmbr.action.MenuProperties()
+    menu_studiotools_examples_properties.name = "Examples"
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              'o3de.menu.studiotools.examples',
+                                              menu_studiotools_examples_properties)
+# -------------------------------------------------------------------------
+
+
+
+# -------------------------------------------------------------------------
+def hook_on_menu_binding(parameters):
+
+    _LOGGER.debug('DCCsi:bootstrap_Editor:hook_on_menu_binding')
+
+    # Add Blender Actions to menu tree
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.dcc.blender',
+                                              'o3de.action.python.dccsi.dcc.blender.start',
+                                              100)
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.dcc.blender',
+                                              'o3de.action.python.dccsi.dcc.blender.help',
+                                              200)
+    # Add Maya Actions to menu tree
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.dcc.maya',
+                                              'o3de.action.python.dccsi.dcc.maya.start',
+                                              100)
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.dcc.maya',
+                                              'o3de.action.python.dccsi.dcc.maya.help',
+                                              200)
+    # Add Wing Actions to menu tree
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.ide.wing',
+                                              'o3de.action.python.dccsi.ide.wing.start',
+                                              100)
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.ide.wing',
+                                              'o3de.action.python.dccsi.ide.wing.help',
+                                              200)
+    # Add examples SampleUI
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.examples',
+                                              'o3de.action.python.dccsi.examples.sampleui',
+                                              100)
+    # Add dccsi About
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools',
+                                              'o3de.action.python.dccsi.about',
+                                              100)
+
+    # manage dccsi menu tree
+    # Add StudioTools > DCC (subMenu)
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddSubMenuToMenu',
+                                              'o3de.menu.studiotools',
+                                              'o3de.menu.studiotools.dcc',
+                                              100)
+
+    # Add StudioTools > DCC > Blender (subMenu)
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddSubMenuToMenu',
+                                              'o3de.menu.studiotools.dcc',
+                                              'o3de.menu.studiotools.dcc.blender',
+                                              100)
+
+    # Add StudioTools > DCC > Maya (subMenu)
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddSubMenuToMenu',
+                                              'o3de.menu.studiotools.dcc',
+                                              'o3de.menu.studiotools.dcc.maya',
+                                              200)
+
+    # Add StudioTools > IDE (subMenu)
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddSubMenuToMenu',
+                                              'o3de.menu.studiotools',
+                                              'o3de.menu.studiotools.ide',
+                                              200)
+
+    # Add StudioTools > IDE > Wing (subMenu)
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddSubMenuToMenu',
+                                              'o3de.menu.studiotools.ide',
+                                              'o3de.menu.studiotools.ide.wing',
+                                              100)
+
+    # Add StudioTools > Examples (subMenu)
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddSubMenuToMenu',
+                                              'o3de.menu.studiotools',
+                                              'o3de.menu.studiotools.examples',
+                                              300)
+
+    # Add our 'Studio Tools' Menu to O3DE Editor Menu Bar
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddMenuToMenuBar',
+                                              editor_mainwindow_menubar_slug,
+                                              'o3de.menu.studiotools',
+                                              1000)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# bootstrap in AssetProcessor
-def bootstrap_Editor(test_config=_DCCSI_GDEBUG,
-                     test_pyside2=_DCCSI_GDEBUG):
-    """Put bootstrapping code here to execute in O3DE Editor.exe"""
-    
-    _settings = None
+def hook_on_action_registration(parameters):
+    """DCCsi Action Registration"""
 
-    if test_config:
-        # set and retreive the base env context/_settings on import
-        _config = get_dccsi_config()
-        _settings = _config.get_config_settings(enable_o3de_python=True,
-                                               enable_o3de_pyside2=True)
-        # note: this can impact start up times so currently we are only
-        # running it to test.
-        # To Do: slim down start up times so we can init _settings
-    
-    if test_pyside2:
-        _config.test_pyside2()
-    
-    return _settings
+    _LOGGER.debug('DCCsi:bootstrap_Editor:hook_on_action_registration')
+
+    hook_register_action_blender_start(parameters)
+    hook_register_action_blender_help(parameters)
+    hook_register_action_maya_start(parameters)
+    hook_register_action_maya_help(parameters)
+    hook_register_action_wing_start(parameters)
+    hook_register_action_wing_help(parameters)
+    hook_register_action_sampleui(parameters)
+    hook_register_action_dccsi_about(parameters)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# bootstrap in AssetProcessor
+def bootstrap_Editor(handler_action_manager):
+    """! Put bootstrapping code here to execute in O3DE Editor.exe"""
+
+    _LOGGER.debug('DCCsi:bootstrap_Editor')
+    handler_action_manager.connect()
+
+    # dccsi actions
+    handler_action_manager.add_callback('OnActionRegistrationHook', hook_on_action_registration)
+
+    # dccsi StudioTools menu
+    handler_action_manager.add_callback('OnMenuRegistrationHook', hook_on_menu_registration)
+    handler_action_manager.add_callback('OnMenuBindingHook', hook_on_menu_binding)
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 def bootstrap_MaterialEditor():
-    """Put bootstrapping code here to execute in O3DE MaterialEdito.exe"""
+    """Put bootstrapping code here to execute in O3DE MaterialEditor.exe"""
     pass
     return None
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# bootstrap in AssetProcessor
+def bootstrap_MaterialCanvas():
+    """Put bootstrapping code here to execute in O3DE MaterialCanvas.exe"""
+    pass
+    return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def bootstrap_PassCanvas():
+    """Put bootstrapping code here to execute in O3DE PassCanvas.exe"""
+    pass
+    return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 def bootstrap_AssetProcessor():
     """Put boostrapping code here to execute in O3DE AssetProcessor.exe"""
     pass
@@ -129,52 +609,10 @@ def bootstrap_AssetProcessor():
 
 
 # -------------------------------------------------------------------------
-# bootstrap in AssetProcessor
 def bootstrap_AssetBuilder():
     """Put boostrapping code here to execute in O3DE AssetBuilder.exe"""
     pass
     return None
-# -------------------------------------------------------------------------
-
-        
-# -------------------------------------------------------------------------
-if _DCCSI_DEV_MODE:
-    foo = attach_debugger()  # attempts to start debugger
-
-# set and retreive the *basic* env context/_settings on import
-# What application is executing the bootstrap?
-# Python is being run from:
-#    editor.exe
-#    materialeditor.exe
-#    assetprocessor.exe
-#    assetbuilder.exe, or the Python executable.
-# Exclude the .exe so it works on other platforms
-
-_O3DE_Editor = Path(sys.executable)
-_LOGGER.debug(f'The sys.executable is: {_O3DE_Editor}')
-
-if _O3DE_Editor.stem.lower() == "editor":
-    # if _DCCSI_GDEBUG then run the pyside2 test
-    _settings = bootstrap_Editor(_DCCSI_GDEBUG)
-    
-elif _O3DE_Editor.stem.lower() == "materialeditor":
-    _settings = bootstrap_MaterialEditor()
-    
-elif _O3DE_Editor.stem.lower() == "assetprocessor":
-    _settings = bootstrap_AssetProcessor()
-    
-elif _O3DE_Editor.stem.lower() == "assetbuilder":
-    _settings= bootstrap_AssetBuilder()
-    
-elif _O3DE_Editor.stem.lower() == "python":
-    # in this case, we can re-use the editor settings
-    # which will init python and pyside2 access externally
-    _settings= bootstrap_Editor(_DCCSI_GDEBUG)
-    
-else:
-    _LOGGER.warning(f'No bootstrapping code for: {_O3DE_Editor}')
-    
-_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
 # -------------------------------------------------------------------------
 
 
@@ -182,124 +620,44 @@ _LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    """Run this file as main (external commandline for testing)"""
-    # ---------------------------------------------------------------------
-    # force enable debug settings manually
-    _DCCSI_GDEBUG = False # enable here to force temporarily
-    _DCCSI_DEV_MODE = False
+    # set and retreive the *basic* env context/_settings on import
+    # What application is executing the bootstrap?
+    # Python is being run from:
+    #    editor.exe
+    #    materialeditor.exe
+    #    assetprocessor.exe
+    #    assetbuilder.exe, or the Python executable.
+    # Exclude the .exe so it works on other platforms
 
-    # default loglevel to info unless set
-    _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
-    if _DCCSI_GDEBUG:
-        # override loglevel if runnign debug
-        _DCCSI_LOGLEVEL = _logging.DEBUG
-        
-    # set up module logging
-    #for handler in _logging.root.handlers[:]:
-        #_logging.root.removeHandler(handler)
-        
-    # configure basic logger
-    # note: not using a common logger to reduce cyclical imports
-    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                        format=FRMT_LOG_LONG,
-                        datefmt='%m-%d %H:%M')
-            
-    # happy print
-    _LOGGER.info(STR_CROSSBAR)
-    _LOGGER.info('DCCsi: bootstrap.py ... Running script as __main__')
-    # ---------------------------------------------------------------------
-    
-    
-    # ---------------------------------------------------------------------
-    _O3DE_RUNNING=None    
-    try:
-        import azlmbr
-        _O3DE_RUNNING=True
-    except:
-        _O3DE_RUNNING=False
-    # ---------------------------------------------------------------------
+    if sys.platform.startswith('win'):
 
+        if O3DE_EDITOR.stem.lower() == "editor":
+            # if _DCCSI_GDEBUG then run the pyside2 test
+            _settings = bootstrap_Editor(handler_action_manager)
 
-    # ---------------------------------------------------------------------
-    # this is a simple commandline interface for running and testing externally
-    if not _O3DE_RUNNING: # external tool or commandline
-        
-        # parse the command line args
-        import argparse
-        parser = argparse.ArgumentParser(
-            description='O3DE DCCsi Boostrap (Test)',
-            epilog="Will externally test the DCCsi boostrap")
+        elif O3DE_EDITOR.stem.lower() == "materialeditor":
+            _settings = bootstrap_MaterialEditor()
 
-        parser.add_argument('-gd', '--global-debug',
-                            type=bool,
-                            required=False,
-                            help='Enables global debug flag.')
-    
-        parser.add_argument('-sd', '--set-debugger',
-                            type=str,
-                            required=False,
-                            help='Default debugger: WING, others: PYCHARM, VSCODE (not yet implemented).')
-        
-        parser.add_argument('-dm', '--developer-mode',
-                            type=bool,
-                            required=False,
-                            help='Enables dev mode for early auto attaching debugger.')
-        
-        parser.add_argument('-tp', '--test-pyside2',
-                            type=bool,
-                            required=False,
-                            help='Runs Qt/PySide2 tests and reports.')
-        
-        args = parser.parse_args()
+        elif O3DE_EDITOR.stem.lower() == "materialcanvas":
+            _settings = bootstrap_MaterialCanvas()
 
-        # easy overrides
-        if args.global_debug:
-            _DCCSI_GDEBUG = True
-            _DCCSI_LOGLEVEL = _logging.DEBUG
-            _LOGGER.setLevel(_DCCSI_LOGLEVEL)
+        elif O3DE_EDITOR.stem.lower() == "passcanvas":
+            _settings = bootstrap_PassCanvas()
 
-        if args.set_debugger:
-            _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
-            # To Do: implement debugger plugin pattern
-    
-        if args.developer_mode or _DCCSI_DEV_MODE:
-            _DCCSI_DEV_MODE = True
-            foo = attach_debugger()  # attempts to start debugger
-        
-        _TEST_PYSIDE2 = False
-        if args.test_pyside2:
-            _TEST_PYSIDE2 = True
-        
-        _settings= bootstrap_Editor(_DCCSI_GDEBUG, _TEST_PYSIDE2)
-        
-        if _DCCSI_GDEBUG:
-            _LOGGER.info(f'PATH_DCCSIG: {_settings.PATH_DCCSIG}')
-            _LOGGER.info(f'DCCSI_G_DEBUG: {_settings.DCCSI_GDEBUG}')
-            _LOGGER.info(f'DCCSI_DEV_MODE: {_settings.DCCSI_DEV_MODE}')
-        
-            _LOGGER.info(f'DCCSI_OS_FOLDER: {_settings.DCCSI_OS_FOLDER}')
-            _LOGGER.info(f'O3DE_PROJECT: {_settings.O3DE_PROJECT}')
-            _LOGGER.info(f'PATH_O3DE_PROJECT: {_settings.PATH_O3DE_PROJECT}')
-            _LOGGER.info(f'O3DE_DEV: {_settings.O3DE_DEV}')
-            _LOGGER.info(f'PATH_O3DE_BUILD: {_settings.PATH_O3DE_BUILD}')
-            _LOGGER.info(f'PATH_O3DE_BIN: {_settings.PATH_O3DE_BIN}')
-            
-            _LOGGER.info(f'PATH_DCCSIG: {_settings.PATH_DCCSIG}')
-            _LOGGER.info(f'PATH_DCCSI_PYTHON_LIB: {_settings.PATH_DCCSI_PYTHON_LIB}')
-            _LOGGER.info(f'DCCSI_PY_BASE: {_settings.DCCSI_PY_BASE}')
+        elif O3DE_EDITOR.stem.lower() == "assetprocessor":
+            _settings = bootstrap_AssetProcessor()
 
-        if args.test_pyside2:
-            _LOGGER.info(f'PySide2: {PySide2}')
-            _LOGGER.info(f'PATH_O3DE_BIN: {_settings.PATH_O3DE_BIN}')
-            _LOGGER.info(f'QT_PLUGIN_PATH: {_settings.QT_PLUGIN_PATH}')
-            _LOGGER.info(f'QT_QPA_PLATFORM_PLUGIN_PATH: {_settings.QT_QPA_PLATFORM_PLUGIN_PATH}')
-    # ---------------------------------------------------------------------
-        
-    # -- DONE ----
-    _LOGGER.info('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
-    _LOGGER.info(STR_CROSSBAR)
-    
-    # custom prompt
-    sys.ps1 = "[{}]>>".format(_MODULENAME)
-    
-# --- END -----------------------------------------------------------------
+        elif O3DE_EDITOR.stem.lower() == "assetbuilder":
+            _settings= bootstrap_AssetBuilder()
+
+        elif O3DE_EDITOR.stem.lower() == "python":
+            # in this case, we can re-use the editor settings
+            # which will init python and pyside2 access externally
+            _settings = bootstrap_Editor()
+
+        else:
+            _LOGGER.warning(f'No bootstrapping code for: {O3DE_EDITOR}')
+
+    else:
+        _LOGGER.warning(f'Non-windows platforms not implemented or tested.')
+    # -------------------------------------------------------------------------

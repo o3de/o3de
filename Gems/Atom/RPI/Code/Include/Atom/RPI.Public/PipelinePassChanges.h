@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 namespace AZ::RPI
 {
@@ -27,9 +28,9 @@ namespace AZ::RPI
 
     };
 
-    bool PipelineNeedsRebuild(u32 flags);
+    ATOM_RPI_PUBLIC_API bool PipelineNeedsRebuild(u32 flags);
 
-    bool PipelineViewsNeedRebuild(u32 flags);
+    ATOM_RPI_PUBLIC_API bool PipelineViewsNeedRebuild(u32 flags);
 
-    bool PipelineStateLookupNeedsRebuild(u32 flags);
+    ATOM_RPI_PUBLIC_API bool PipelineStateLookupNeedsRebuild(u32 flags);
 }

@@ -34,8 +34,12 @@ set(CPACK_AWS_PROFILE "" CACHE STRING
 "AWS CLI profile for uploading artifacts."
 )
 
+set(CPACK_SNAP_DISTRO "" CACHE STRING
+  "Sets the base snap OS distro (core20, 22, etc) for the snap build"
+)
+
 set(CPACK_THREADS 0)
-set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
+set(CPACK_DESIRED_CMAKE_VERSION 3.24.0)
 if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
     message(FATAL_ERROR
         "The desired version of CMake to be included in the package is "
@@ -50,8 +54,17 @@ set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_FULL_NAME "Open3D Engine")
 set(CPACK_PACKAGE_VENDOR "O3DE Binary Project a Series of LF Projects, LLC")
 set(CPACK_PACKAGE_CONTACT "info@o3debinaries.org")
-set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
+# prefer the display engine version if available.
+# during development, the display version will be "00.00" or "" in which case we want
+# to use the actual engine version  
+if(NOT ((${O3DE_INSTALL_DISPLAY_VERSION_STRING} STREQUAL "00.00") OR (${O3DE_INSTALL_DISPLAY_VERSION_STRING} STREQUAL "")))
+    set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_DISPLAY_VERSION_STRING}")
+else()
+    set(CPACK_PACKAGE_VERSION "${O3DE_INSTALL_VERSION_STRING}")
+endif()
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
+
+message(STATUS "CPack Package Version: ${CPACK_PACKAGE_VERSION}")
 
 string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}" CPACK_PACKAGE_FILE_NAME)
 
@@ -78,6 +91,7 @@ include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
 if(NOT CPACK_GENERATOR)
+    message(STATUS "Packaging is not supported for this platform/configuration")
     return()
 endif()
 
@@ -106,8 +120,11 @@ configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/LicenseScan.cmake.in
 ly_install(SCRIPT ${CPACK_BINARY_DIR}/LicenseScan.cmake
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
+
+cmake_path(SET _destination_normalized NORMALIZE .)
+
 ly_install(FILES ${CPACK_3P_LICENSE_FILE} ${CPACK_3P_MANIFEST_FILE}
-    DESTINATION .
+    DESTINATION ${_destination_normalized}
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 

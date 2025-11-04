@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/Debug.azsli>
+
+// This file provides utilities for common handling of inputs for roughness of PBR materials.
+
+// These macros can be used to declare common shader inputs for this feature. 
+// Use the COMMON_SRG_INPUTS_* macro in your material SRG definition, and use the COMMON_OPTIONS_* macro at the global scope in your shader. Then you can pass these variables to the Get*Input() function below.
+// You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
+
+#define COMMON_SRG_INPUTS_ROUGHNESS(prefix) \
+float       prefix##m_roughnessFactor;      \
+float       prefix##m_roughnessLowerBound;  \
+float       prefix##m_roughnessUpperBound;  \
+Texture2D   prefix##m_roughnessMap;         \
+uint        prefix##m_roughnessMapUvIndex;
+
+#define COMMON_OPTIONS_ROUGHNESS(prefix) \
+option bool prefix##o_roughness_useTexture; 
+
+real GetRoughnessInput(Texture2D map, sampler mapSampler, float2 uv, real factor, real roughnessLowerBound, real roughnessUpperBound, bool useTexture, float4 uvDxDy = float4(0.0, 0.0, 0.0, 0.0), bool customDerivatives = false)
+{
+    if(OverrideRoughnessEnabled())
+    {
+        return GetRoughnessOverride();
+    }
+
+    // [GFX TODO][ATOM-1793]: Figure out how we want our base material to expect channels to be encoded, and apply that to the way we pack roughness.
+    if (useTexture)
+    {
+        real sampledValue;
+        if (customDerivatives)
+        {
+            sampledValue = real(map.SampleGrad(mapSampler, uv, uvDxDy.xy, uvDxDy.zw).r);
+        }
+        else
+        {
+            #ifdef CS_SAMPLERS
+            sampledValue = real(map.SampleLevel(mapSampler, uv, 0).r);
+            #else
+            sampledValue = real(map.Sample(mapSampler, uv).r);
+            #endif
+        }
+        return lerp(roughnessLowerBound, roughnessUpperBound, sampledValue);
+    }
+    else
+    {
+        return factor;
+    }
+}

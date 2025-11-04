@@ -25,7 +25,10 @@ namespace EditorInternal
         , public AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorToolsApplication, AZ::SystemAllocator);
         EditorToolsApplication(int* argc, char*** argv);
+        explicit EditorToolsApplication(AZ::ComponentApplicationSettings componentAppSettings);
+        EditorToolsApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings);
         ~EditorToolsApplication();
 
         bool IsStartupAborted() const;
@@ -59,8 +62,8 @@ namespace EditorInternal
         bool OpenLevel(AZStd::string_view levelName) override;
         bool OpenLevelNoPrompt(AZStd::string_view levelName) override;
 
-        int CreateLevel(AZStd::string_view levelName, bool bUseTerrain) override;
-        int CreateLevelNoPrompt(AZStd::string_view levelName, int terrainExportTextureSize, bool useTerrain) override;
+        int CreateLevel(AZStd::string_view templateName, AZStd::string_view levelName, bool bUseTerrain) override;
+        int CreateLevelNoPrompt(AZStd::string_view templateName, AZStd::string_view levelName, int terrainExportTextureSize, bool useTerrain) override;
 
         void Exit() override;
         void ExitNoPrompt() override;

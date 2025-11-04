@@ -22,7 +22,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::SsaoParentPass, "{A03B5913-B201-4146-AF0A-999E6BF31A1A}", AZ::RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(SsaoParentPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SsaoParentPass, SystemAllocator);
             virtual ~SsaoParentPass() = default;
 
             //! Creates an SsaoParentPass
@@ -54,7 +54,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::SsaoComputePass, "{0BA5F6F7-15D2-490A-8254-7E61F25B62F9}", AZ::RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(SsaoComputePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SsaoComputePass, SystemAllocator);
             virtual ~SsaoComputePass() = default;
 
             //! Creates an SsaoComputePass

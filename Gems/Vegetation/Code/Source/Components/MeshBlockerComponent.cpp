@@ -12,7 +12,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>
@@ -20,6 +19,10 @@
 #include <Vegetation/Ebuses/FilterRequestBus.h>
 #include <Vegetation/InstanceData.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+
+#include <VegetationProfiler.h>
+
+AZ_DECLARE_BUDGET(Vegetation);
 
 namespace Vegetation
 {
@@ -77,13 +80,13 @@ namespace Vegetation
     void MeshBlockerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         AreaComponentBase::GetIncompatibleServices(services);
-        services.push_back(AZ_CRC("VegetationModifierService", 0xc551fca6));
+        services.push_back(AZ_CRC_CE("VegetationModifierService"));
     }
 
     void MeshBlockerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         AreaComponentBase::GetRequiredServices(services);
-        services.push_back(AZ_CRC("MeshService", 0x71d8a455));
+        services.push_back(AZ_CRC_CE("MeshService"));
     }
 
     void MeshBlockerComponent::Reflect(AZ::ReflectContext* context)
@@ -198,7 +201,7 @@ namespace Vegetation
 
     bool MeshBlockerComponent::PrepareToClaim([[maybe_unused]] EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 
@@ -218,7 +221,7 @@ namespace Vegetation
 
     bool MeshBlockerComponent::ClaimPosition(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 
@@ -284,7 +287,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         //adding entity id to the stack of entity ids affecting vegetation
         EntityIdStack emptyIds;
@@ -376,7 +379,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::UpdateMeshData()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 

@@ -33,7 +33,7 @@ To do this, it uses the pattern:
     _SOME_ENVAR = os.getenv('ENVAR_TAG', <default>)
 
 The environment is conveniently packed into a dictionary,
-this allows the dictionar to be imported into another module,
+this allows the dictionary to be imported into another module,
 the import will resolve and standup the synthetic environment.
 
 Configures several useful environment config settings and paths,
@@ -60,10 +60,10 @@ Configures several useful environment config settings and paths,
     (activates the env, starts py interpreter)
     set DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.exe
 
-    :: shared location for 64bit python 3.10 BASE location 
+    :: shared location for 64bit python 3.10 BASE location
     set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%\Launch_pyBASE.bat
 
-    :: Override DCCSI_PY_DCCSI to set a defualt version for the DCCsi
+    :: Override DCCSI_PY_DCCSI to set a default version for the DCCsi
 
     :: ide and debugger plugs
     :: for instance with WingIDE this defines using the default py interpreter
@@ -142,7 +142,7 @@ _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
 if _DCCSI_DEV_MODE:
     from azpy.test.entry_test import connect_wing
     foo = connect_wing()
-    
+
 # we can go ahead and just make sure the the DCCsi env is set
 # config is SO generic this ensures we are importing a specific one
 _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi.config",
@@ -381,7 +381,7 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     # explicitly set
     _O3DE_PROJECT = os.getenv(ENVAR_O3DE_PROJECT)
     _SYNTH_ENV_DICT[ENVAR_O3DE_PROJECT] = _O3DE_PROJECT
-    
+
     _O3DE_BUILD_DIR_NAME = os.getenv(ENVAR_O3DE_BUILD_DIR_NAME,
                                    TAG_DIR_O3DE_BUILD_FOLDER)
     _SYNTH_ENV_DICT[ENVAR_O3DE_BUILD_DIR_NAME] = _O3DE_BUILD_DIR_NAME
@@ -493,8 +493,8 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
         # https://stackoverflow.com/questions/214852/python-module-dlls
         os.environ['PATH'] = _QT_PLUGIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
 
-  
-    
+
+
     QTFORPYTHON_PATH = Path.joinpath(O3DE_DEV,
                                      'Gems',
                                      'QtForPython',
@@ -522,7 +522,7 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
     os.environ["QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH)
     site.addsitedir(str(QT_PLUGIN_PATH))
     sys.path.insert(1, str(QT_PLUGIN_PATH))
-    
+
     QT_QPA_PLATFORM_PLUGIN_PATH = Path.joinpath(QT_PLUGIN_PATH,
                                                 'platforms').resolve()
     os.environ["DYNACONF_QT_QPA_PLATFORM_PLUGIN_PATH"] = str(QT_QPA_PLATFORM_PLUGIN_PATH)
@@ -552,7 +552,7 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
         _LOGGER.debug('DCCsi, config.py: FAILURE: import PySide2')
         status = False
         raise(e)
-    
+
     try:
         import shiboken2
         _LOGGER.debug('DCCsi, config.py: SUCCESS: import shiboken2')
@@ -584,7 +584,7 @@ def set_env(dict_object):
 # will trigger on any import
 # suggested use: from synthetic_env import _SYNTH_ENV_DICT
 #_SYNTH_ENV_DICT = set_env(_SYNTH_ENV_DICT)
-        
+
 # -------------------------------------------------------------------------
 def test_Qt():
     try:
@@ -596,7 +596,7 @@ def test_Qt():
     except IOError as e:
         _LOGGER.error('ERROR: {0}'.format(e))
         raise e
-    
+
     try:
         qapp = QtWidgets.QApplication([])
     except:
@@ -627,7 +627,7 @@ def main(argv, env_dict_object, debug=False, devmode=False):
         if opt == '-h':
             _LOGGER.info('synthetic_env.py -v <print_dict> -t <run test>')
             sys.exit()
-            
+
         elif opt in ("-t", "--test"):
             debug = True
             devmode = True
@@ -656,20 +656,20 @@ if __name__ == '__main__':
     # run simple tests?
     _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
-    
+
     if _DCCSI_DEV_MODE:
         try:
             import azpy.test.entry_test
             _LOGGER.info('SUCCESS: import azpy.test.entry_test')
-            azpy.test.entry_test.main(verbose=True, connect_debugger=True)            
+            azpy.test.entry_test.main(verbose=True, connect_debugger=True)
         except ImportError as e:
             _LOGGER.error('ERROR: {0}'.format(e))
-            raise e  
+            raise e
 
     # init, stash and then activate
     _SYNTH_ENV_DICT = OrderedDict()
     _SYNTH_ENV_DICT = stash_env(_SYNTH_ENV_DICT)
-    _SYNTH_ENV_DICT = set_env(_SYNTH_ENV_DICT)      
+    _SYNTH_ENV_DICT = set_env(_SYNTH_ENV_DICT)
 
     main(sys.argv[1:], _SYNTH_ENV_DICT, _DCCSI_GDEBUG, _DCCSI_DEV_MODE)
 
@@ -699,7 +699,7 @@ if __name__ == '__main__':
         try:
             #_SYNTH_ENV_DICT.to_json(filename=None, encoding='utf-8', errors='strict')
             #from os import fspath
-            #tempBoxJsonFilePath = fspath(tempBoxJsonFilePath)          
+            #tempBoxJsonFilePath = fspath(tempBoxJsonFilePath)
             _SYNTH_ENV_DICT.to_json(filename=tempBoxJsonFilePath.as_posix(),
                                     sort_keys=False,
                                     indent=4)
@@ -716,15 +716,15 @@ if __name__ == '__main__':
         _LOGGER.info('~ read Box.from_json')
 
         parseJsonBox = Box.from_json(filename=tempBoxJsonFilePath,
-                                     encoding="utf-8",
+                                    encoding="utf-8",
                                      errors="strict",
                                      object_pairs_hook=OrderedDict)
 
         _LOGGER.info('~ pretty print parsed Box.from_json')
 
         _LOGGER.info(json.dumps(parseJsonBox, indent=4, sort_keys=False, ensure_ascii=False))
-        
+
         # also run the Qt/PySide2 test
         test_Qt()
-        
+
     del _LOGGER

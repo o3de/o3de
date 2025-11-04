@@ -12,6 +12,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Name/Name.h>
+#include <Atom/RPI.Reflect/Configuration.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
 
@@ -25,7 +26,7 @@ namespace AZ
         //! to be performed on a MaterialAsset when updating it to MaterialType version 'toVersion'
         //! [cf. @ref MaterialVersionUpdate(uint32_t toVersion) and @ref GetVersion()], given that
         //! the MaterialAsset was based on a MaterialType one version below.
-        class MaterialVersionUpdate
+        class ATOM_RPI_REFLECT_API MaterialVersionUpdate
         {
             friend class MaterialVersionUpdates;
 
@@ -39,7 +40,7 @@ namespace AZ
 
             //! Wrapper around a MaterialPropertyValue object that enables
             //! efficient conversion of string values to AZ::Name objects.
-            class MaterialPropertyValueWrapper {
+            class ATOM_RPI_REFLECT_API MaterialPropertyValueWrapper {
             public:
                 AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate::MaterialPropertyValueWrapper, "{B56677E7-762C-4CDE-AAA7-1361F487A760}");
                 static void Reflect(ReflectContext* context);
@@ -63,7 +64,7 @@ namespace AZ
                 AZ::Name m_nameCache = s_invalidName;
             };
 
-            class Action
+            class ATOM_RPI_REFLECT_API Action
             {
                 friend class MaterialVersionUpdate;
 
@@ -228,7 +229,7 @@ namespace AZ
         //! This class takes old MaterialAssets that were created based on outdated
         //! MaterialTypeAssets and updates them to align themselves with their latest
         //! MaterialTypeAsset, using a series of MaterialVersionUpdate steps.
-        class MaterialVersionUpdates
+        class ATOM_RPI_REFLECT_API MaterialVersionUpdates
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdates, "{91EBA78E-83F6-4EA5-916A-A3C81B08137C}");

@@ -12,12 +12,20 @@
 
 #include <AzCore/Debug/Trace.h>
 
-void FileEventStreamCallback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo, size_t numEvents, void *eventPaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[]);
+// set this to 1 if you find yourself debugging this code and want to see the debug spam:
+#define ALLOW_FILEWATCHER_DEBUG_SPAM 0
+
+#if ALLOW_FILEWATCHER_DEBUG_SPAM
+#define DEBUG_FILEWATCHER(...) printf(__VA_ARGS__)
+#else
+#define DEBUG_FILEWATCHER(...)
+#endif
 
 bool FileWatcher::PlatformStart()
 {
-    m_shutdownThreadSignal = false;
-
+    // by the time this function exits, we must already have established the watch
+    // and no events may be dropped
+    
     CFMutableArrayRef pathsToWatch = CFArrayCreateMutable(nullptr, this->m_folderWatchRoots.size(), nullptr);
     for (const auto& root : this->m_folderWatchRoots)
     {
@@ -38,11 +46,12 @@ bool FileWatcher::PlatformStart()
     // the file change events
     FSEventStreamContext streamContext{
         /*.version =*/ 0,
-        /*.info =*/ this,
+        /*.info =*/ m_platformImpl.get(),
     };
 
+    m_platformImpl->m_watcher = this;
     m_platformImpl->m_stream = FSEventStreamCreate(nullptr,
-                                 FileEventStreamCallback,
+                                 FileWatcher::PlatformImplementation::FileEventStreamCallback,
                                  &streamContext,
                                  pathsToWatch,
                                  kFSEventStreamEventIdSinceNow,
@@ -51,6 +60,8 @@ bool FileWatcher::PlatformStart()
 
     AZ_Error("FileWatcher", (m_platformImpl->m_stream != nullptr), "FSEventStreamCreate returned a nullptr. No file events will be reported.");
 
+    m_platformImpl->m_dispatchQueue = dispatch_queue_create("EventStreamQueue", DISPATCH_QUEUE_CONCURRENT);
+    
     const CFIndex pathCount = CFArrayGetCount(pathsToWatch);
     for(CFIndex i = 0; i < pathCount; ++i)
     {
@@ -59,12 +70,13 @@ bool FileWatcher::PlatformStart()
     CFRelease(pathsToWatch);
 
     return m_platformImpl->m_stream != nullptr;
+    
+    DEBUG_FILEWATCHER("Started watching for file events\n");
 }
 
 void FileWatcher::PlatformStop()
 {
-    m_shutdownThreadSignal = true;
-
+    DEBUG_FILEWATCHER("Stopped watching for file events\n");
     if (m_thread.joinable())
     {
         m_thread.join(); // wait for the thread to finish
@@ -77,72 +89,109 @@ void FileWatcher::PlatformStop()
 
 void FileWatcher::WatchFolderLoop()
 {
+    DEBUG_FILEWATCHER("Watch loop entry\n");
     // Use a half second timeout interval so that we can check if
     // m_shutdownThreadSignal has been changed while we were running the RunLoop
     static const CFTimeInterval secondsToProcess = 0.5;
 
     m_platformImpl->m_runLoop = CFRunLoopGetCurrent();
-    FSEventStreamScheduleWithRunLoop(m_platformImpl->m_stream, m_platformImpl->m_runLoop, kCFRunLoopDefaultMode);
+    FSEventStreamSetDispatchQueue(m_platformImpl->m_stream, m_platformImpl->m_dispatchQueue);
     FSEventStreamStart(m_platformImpl->m_stream);
 
     const bool returnAfterFirstEventHandled = false;
 
+    DEBUG_FILEWATCHER("Watch loop begins\n");
+    m_startedSignal = true; // signal that we are no longer going to drop any events.``
     while (!m_shutdownThreadSignal)
     {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, secondsToProcess, returnAfterFirstEventHandled);
     }
 }
 
-void FileEventStreamCallback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo, size_t numEvents, void *eventPaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[])
+void FileWatcher::PlatformImplementation::FileEventStreamCallback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *clientCallBackInfo, size_t numEvents, void *eventPaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[])
 {
-    auto* watcher = reinterpret_cast<FileWatcher*>(clientCallBackInfo);
-
+    auto* platformImpl = reinterpret_cast<FileWatcher::PlatformImplementation*>(clientCallBackInfo);
     const char** filePaths = reinterpret_cast<const char**>(eventPaths);
+    platformImpl->ConsumeEvents(numEvents, filePaths, eventFlags, eventIds);
+}
 
+void FileWatcher::PlatformImplementation::ConsumeEvents(size_t numEvents, const char **filePaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[])
+{
     for (int i = 0; i < numEvents; ++i)
     {
         const QFileInfo fileInfo(QDir::cleanPath(filePaths[i]));
         const QString fileAndPath = fileInfo.absoluteFilePath();
+        
+        // avoid repeats
+        if (m_lastSeenEventId >= eventIds[i])
+        {
+            DEBUG_FILEWATCHER("File monitor: eventId %" PRIu64 " was repeated, ignoring\n", eventIds[i]);
+            continue;
+        }
 
+        m_lastSeenEventId = eventIds[i];
+        
+        DEBUG_FILEWATCHER("File monitor: %s eventflags %x eventId %" PRIu64 "\n", fileAndPath.toUtf8().constData(), eventFlags[i], eventIds[i]);
         if (!fileInfo.isHidden())
         {
-            // Some events will be aggreated into one so it is possible we will get
-            // multiple event flags set for a single file (create/modify as an example)
-            // so check for all of them
+            // Some events will be aggregated into one so it is possible we will get
+            // multiple event flags set for a single file (create/modify/delete all in one as an example)
+            // so check for all of them!
+            
+            // one tricky caveat is that deletion will usually include created (even if the file
+            // was already created).  So you can expect to get a 'create' for every delete.
             if (eventFlags[i] & kFSEventStreamEventFlagItemCreated)
             {
-                watcher->rawFileAdded(fileAndPath, {});
+                if (!m_sentCreateAlready.contains(fileAndPath))
+                {
+                    DEBUG_FILEWATCHER("    - sending rawFileAdded\n");
+                    m_watcher->rawFileAdded(fileAndPath, {});
+                    m_sentCreateAlready.insert(fileAndPath);
+                }
+                
             }
 
             if (eventFlags[i] & kFSEventStreamEventFlagItemModified)
             {
-                watcher->rawFileModified(fileAndPath, {});
+                DEBUG_FILEWATCHER("    - sending rawFileModified\n");
+                m_watcher->rawFileModified(fileAndPath, {});
             }
 
             if (eventFlags[i] & kFSEventStreamEventFlagItemRemoved)
             {
-                watcher->rawFileRemoved(fileAndPath, {});
+                DEBUG_FILEWATCHER("    - sending rawFileRemoved\n");
+                m_watcher->rawFileRemoved(fileAndPath, {});
+                m_sentCreateAlready.remove(fileAndPath);
             }
 
             if (eventFlags[i] & kFSEventStreamEventFlagItemRenamed)
             {
                 if (fileInfo.exists())
                 {
-                    watcher->rawFileAdded(fileAndPath, {});
+                    if (!m_sentCreateAlready.contains(fileAndPath))
+                    {
+                        DEBUG_FILEWATCHER("    - renamed sending rawFileAdded\n");
+                        m_watcher->rawFileAdded(fileAndPath, {});
+                        m_sentCreateAlready.insert(fileAndPath);
+                    }
 
                     // macOS does not send out an event for the directory being
                     // modified when a file has been renamed but the FileWatcher
                     // API expects it so send out the modification event ourselves.
-                    watcher->rawFileModified(fileInfo.absolutePath(), {});
+                    DEBUG_FILEWATCHER("    - renamed - sending rawFileModified for parent dir\n");
+                    m_watcher->rawFileModified(fileInfo.absolutePath(), {});
                 }
                 else
                 {
-                    watcher->rawFileRemoved(fileAndPath, {});
+                    m_watcher->rawFileRemoved(fileAndPath, {});
+                    m_sentCreateAlready.remove(fileAndPath);
 
                     // macOS does not send out an event for the directory being
                     // modified when a file has been renamed but the FileWatcher
                     // API expects it so send out the modification event ourselves.
-                    watcher->rawFileModified(fileInfo.absolutePath(), {});
+                    DEBUG_FILEWATCHER("    - renamed - sending rawFileModified for parent dir\n");
+                    m_watcher->rawFileModified(fileInfo.absolutePath(), {});
+                    
                 }
             }
         }

@@ -56,7 +56,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouse::InputDeviceMouse(const InputDeviceId& inputDeviceId,
-                                       ImplementationFactory implementationFactory)
+                                       ImplementationFactory* implementationFactory)
         : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
@@ -87,7 +87,7 @@ namespace AzFramework
         m_allChannelsById[SystemCursorPosition] = m_cursorPositionChannel;
 
         // Create the platform specific or custom implementation
-        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
 
         // Connect to the system cursor request bus
         InputSystemCursorRequestBus::Handler::BusConnect(GetInputDeviceId());
@@ -185,13 +185,24 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputDeviceMouse::SetCaptureCursor(bool captureCursor)
+    {
+        if (m_pimpl)
+        {
+            m_pimpl->SetCaptureCursor(captureCursor);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouse::Implementation::Implementation(InputDeviceMouse& inputDevice)
         : m_inputDevice(inputDevice)
         , m_rawMovementSampleRate()
         , m_rawButtonEventQueuesById()
         , m_rawMovementEventQueuesById()
-        , m_timeOfLastRawMovementSample(AZStd::chrono::system_clock::now())
+        , m_captureCursor()
     {
+        m_timeOfLastRawMovementSample[0] = m_timeOfLastRawMovementSample[1] = m_timeOfLastRawMovementSample[2] = AZStd::chrono::steady_clock::now();
+
         SetRawMovementSampleRate(MovementSampleRateDefault);
     }
 
@@ -213,8 +224,15 @@ namespace AzFramework
     void InputDeviceMouse::Implementation::QueueRawMovementEvent(const InputChannelId& inputChannelId,
                                                                  float rawMovementDelta)
     {
-        auto now = AZStd::chrono::system_clock::now();
-        auto deltaTime = now - m_timeOfLastRawMovementSample;
+        AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
+        
+        AZStd::chrono::steady_clock::time_point& lastSampleForThisAxis = 
+            inputChannelId == Movement::X ? m_timeOfLastRawMovementSample[0] :
+            inputChannelId == Movement::Y ? m_timeOfLastRawMovementSample[1] : 
+            inputChannelId == Movement::Z ? m_timeOfLastRawMovementSample[2] : 
+            now;   // read and write to 'now' if its not a movement axis which is why 'now' is non-const
+
+        auto deltaTime = now - lastSampleForThisAxis;
         auto& rawEventQueue = m_rawMovementEventQueuesById[inputChannelId];
 
         // Depending on the movement sample rate, multiple mouse movements within a frame are either:
@@ -222,13 +240,14 @@ namespace AzFramework
         {
             // queued (to give a better response at low frame rates)
             rawEventQueue.push_back(rawMovementDelta);
-            m_timeOfLastRawMovementSample = now;
         }
         else
         {
             // or accumulated (to avoid flooding the event queue)
             rawEventQueue.back() += rawMovementDelta;
         }
+
+        lastSampleForThisAxis = now; // note:  this is intentionally tautology when its not a movement axis.
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -240,18 +259,29 @@ namespace AzFramework
         m_inputDevice.m_cursorPositionData2D->m_normalizedPosition = newNormalizedPosition;
         m_inputDevice.m_cursorPositionData2D->m_normalizedPositionDelta = newNormalizedPosition - oldNormalizedPosition;
 
+        // One issue with the way mouse events propagate is that the driver only sends events when the mouse physically moves.
+        // This can lead to the situation where the mouse starts moving, and so we get a movement "BEGIN" event,
+        // and it continues moving smoothly, each frame, correctly leading to a "Update" event many frames,
+        // but when it stops moving, no event occurs (from the driver).  Because only events ending up in the queue
+        // can cause transitions from UPDATE to IDLE, it can't ever settle and the "UPDATE" state will never end.
+
+        // we can detect the situation where the mouse has not moved this tick by seeing if any events were in the
+        // queue.  If there was no event for this game tick, we can assume the mouse has stopped moving.
+        for (const InputChannelId& movementChannelId : Movement::All)
+        {
+            // if the channel was already idle, there's no reason to add synthetic events to it.
+            if (!m_inputDevice.m_movementChannelsById[movementChannelId]->IsStateIdle())
+            {
+                if (m_rawMovementEventQueuesById[movementChannelId].empty())
+                {
+                    m_rawMovementEventQueuesById[movementChannelId].push_back(0.0f);
+                }
+            }
+        }
+
         // Process all raw input events that were queued since the last call to this function
         ProcessRawInputEventQueues(m_rawButtonEventQueuesById, m_inputDevice.m_buttonChannelsById);
         ProcessRawInputEventQueues(m_rawMovementEventQueuesById, m_inputDevice.m_movementChannelsById);
-
-        // Mouse movement events are distinct in that we may not receive an 'ended' event with delta
-        // value of zero when the mouse stops moving, so queueing one here ensures the channels will
-        // always correctly transition into the 'ended' state the next time this function is called,
-        // unless another movement delta is queued above in which case it will simply be added to 0.
-        for (const InputChannelId& movementChannelId : Movement::All)
-        {
-            QueueRawMovementEvent(movementChannelId, 0.0f);
-        }
 
         // Finally, update the cursor position input channel, treating it as active if it has moved
         const float distanceMoved = newNormalizedPosition.GetDistance(oldNormalizedPosition);
@@ -276,5 +306,11 @@ namespace AzFramework
         {
             m_rawMovementSampleRate = static_cast<AZStd::sys_time_t>(1000000 / sampleRateHertz);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputDeviceMouse::Implementation::SetCaptureCursor(bool captureCursor)
+    {
+        m_captureCursor = captureCursor;
     }
 } // namespace AzFramework

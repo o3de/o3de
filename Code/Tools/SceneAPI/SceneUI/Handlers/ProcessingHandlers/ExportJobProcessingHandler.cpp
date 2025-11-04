@@ -6,7 +6,7 @@
  *
  */
 
-#include <QRegExp>
+#include <QRegularExpression>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/UI/Logging/LogEntry.h>

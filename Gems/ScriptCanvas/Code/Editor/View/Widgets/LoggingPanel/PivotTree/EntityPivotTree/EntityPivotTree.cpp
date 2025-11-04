@@ -332,7 +332,7 @@ namespace ScriptCanvasEditor
     //////////////////////////
 
     EntityPivotTreeWidget::EntityPivotTreeWidget(QWidget* parent)
-        : PivotTreeWidget(aznew EntityPivotTreeRoot(), AZ_CRC("EntityPivotTreeId", 0xd44255d6), parent)
+        : PivotTreeWidget(aznew EntityPivotTreeRoot(), AZ_CRC_CE("EntityPivotTreeId"), parent)
     {
     }
 

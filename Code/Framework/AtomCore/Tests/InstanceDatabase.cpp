@@ -19,21 +19,21 @@ using namespace AZ::Data;
 
 namespace UnitTest
 {
-    static const InstanceId s_instanceId0{ Uuid("{5B29FE2B-6B41-48C9-826A-C723951B0560}") };
-    static const InstanceId s_instanceId1{ Uuid("{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}") };
-    static const InstanceId s_instanceId2{ Uuid("{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}") };
-    static const InstanceId s_instanceId3{ Uuid("{D9CDAB04-D206-431E-BDC0-1DD615D56197}") };
-
     static const AssetId s_assetId0{ Uuid("{5B29FE2B-6B41-48C9-826A-C723951B0560}") };
     static const AssetId s_assetId1{ Uuid("{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}") };
     static const AssetId s_assetId2{ Uuid("{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}") };
     static const AssetId s_assetId3{ Uuid("{D9CDAB04-D206-431E-BDC0-1DD615D56197}") };
 
+    static const InstanceId s_instanceId0{ InstanceId::CreateFromAssetId(s_assetId0) };
+    static const InstanceId s_instanceId1{ InstanceId::CreateFromAssetId(s_assetId1) };
+    static const InstanceId s_instanceId2{ InstanceId::CreateFromAssetId(s_assetId2) };
+    static const InstanceId s_instanceId3{ InstanceId::CreateFromAssetId(s_assetId3) };
+
     // test asset type
     class TestAssetType : public AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestAssetType, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetType, AZ::SystemAllocator);
         AZ_RTTI(TestAssetType, "{73D60606-BDE5-44F9-9420-5649FE7BA5B8}", AssetData);
 
         TestAssetType()
@@ -46,7 +46,7 @@ namespace UnitTest
     {
     public:
         AZ_INSTANCE_DATA(TestInstanceA, "{65CBF1C8-F65F-4A84-8A11-B510BC435DB0}");
-        AZ_CLASS_ALLOCATOR(TestInstanceA, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestInstanceA, AZ::SystemAllocator);
 
         TestInstanceA(TestAssetType* asset)
             : m_asset{ asset, AZ::Data::AssetLoadBehavior::Default }
@@ -60,7 +60,7 @@ namespace UnitTest
     {
     public:
         AZ_INSTANCE_DATA(TestInstanceB, "{4ED0A8BF-7800-44B2-AC73-2CB759C61C37}");
-        AZ_CLASS_ALLOCATOR(TestInstanceB, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestInstanceB, AZ::SystemAllocator);
 
         TestInstanceB(TestAssetType* asset)
             : m_asset{ asset, AZ::Data::AssetLoadBehavior::Default }
@@ -84,7 +84,7 @@ namespace UnitTest
     class MyAssetHandler : public AssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MyAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MyAssetHandler, AZ::SystemAllocator);
 
         AssetPtr CreateAsset(const AssetId& id, const AssetType& type) override
         {
@@ -114,7 +114,7 @@ namespace UnitTest
         }
     };
 
-    class InstanceDatabaseTest : public AllocatorsFixture
+    class InstanceDatabaseTest : public LeakDetectionFixture
     {
     protected:
         MyAssetHandler<TestAssetType>* m_assetHandler;
@@ -122,9 +122,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             // create the asset database
             {
@@ -155,9 +153,7 @@ namespace UnitTest
 
             InstanceDatabase<TestInstanceA>::Destroy();
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -307,8 +303,8 @@ namespace UnitTest
                     {
                         const size_t index = rand() % guids.size();
                         const Uuid uuid = guids[index];
-                        const InstanceId instanceId{ uuid };
                         const AssetId assetId{ uuid };
+                        const InstanceId instanceId{ InstanceId::CreateFromAssetId(assetId) };
 
                         ParralleInstanceCurrentAction currentAction = ParallelInstanceGetCurrentAction(testCase);
 
@@ -355,7 +351,7 @@ namespace UnitTest
             AZStd::unique_lock<AZStd::mutex> lock(mutex);
             timedOut =
                 (AZStd::cv_status::timeout ==
-                 cv.wait_until(lock, AZStd::chrono::system_clock::now() + AZStd::chrono::seconds(1)));
+                 cv.wait_until(lock, AZStd::chrono::steady_clock::now() + AZStd::chrono::seconds(1)));
         }
 
         EXPECT_TRUE(threadCount == 0) << "One or more threads appear to be deadlocked at " << timer.GetDeltaTimeInSeconds() << " seconds";

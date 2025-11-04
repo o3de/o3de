@@ -10,7 +10,7 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 ly_add_target(
-    NAME LmbrCentral.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         lmbrcentral_headers_files.cmake
@@ -26,10 +26,12 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             AZ::AzFramework
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_target(
-    NAME LmbrCentral.API HEADERONLY
+    NAME ${gem_name}.API HEADERONLY
     NAMESPACE Gem
     FILES_CMAKE
         lmbrcentral_headers_files.cmake
@@ -39,7 +41,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME LmbrCentral ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         lmbrcentral_shared_files.cmake
@@ -53,17 +55,27 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             AZ::AzFramework
-            Gem::LmbrCentral.Static
+            Gem::${gem_name}.Static
 )
 
-# by default, load the above "Gem::LmbrCentral" module in Client and Server
-ly_create_alias(NAME LmbrCentral.Clients NAMESPACE Gem TARGETS Gem::LmbrCentral)
-ly_create_alias(NAME LmbrCentral.Servers NAMESPACE Gem TARGETS Gem::LmbrCentral)
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/LmbrCentral.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
+# by default, load the above "Gem::${gem_name}" module in Client and Server
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME LmbrCentral.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             lmbrcentral_editor_files.cmake
@@ -85,10 +97,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
+                Gem::AudioSystem.API
     )
 
     ly_add_target(
-        NAME LmbrCentral.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
         FILES_CMAKE
@@ -103,21 +116,30 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 3rdParty::Qt::Gui
                 AZ::AzCore
-                Gem::LmbrCentral.Static
-                Gem::LmbrCentral.Editor.Static
+                Gem::${gem_name}.Static
+                Gem::${gem_name}.Editor.Static
                 ${additional_dependencies}
     )
+
+    # Inject the gem name into the Module source file
+    ly_add_source_properties(
+        SOURCES
+            Source/LmbrCentralEditor.cpp
+        PROPERTY COMPILE_DEFINITIONS
+            VALUES
+                O3DE_GEM_NAME=${gem_name}
+                O3DE_GEM_VERSION=${gem_version})
 
     include(${pal_dir}/lrelease_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
     ly_add_target_files(
-        TARGETS LmbrCentral.Editor
+        TARGETS ${gem_name}.Editor
         FILES ${lrelease_files}
     )
 
-    # by default, load the above "Gem::LmbrCentral.Editor" module in dev tools
-    ly_create_alias(NAME LmbrCentral.Builders NAMESPACE Gem TARGETS Gem::LmbrCentral.Editor)
-    ly_create_alias(NAME LmbrCentral.Tools NAMESPACE Gem TARGETS Gem::LmbrCentral.Editor)
+    # by default, load the above "Gem::${gem_name}.Editor" module in dev tools
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${gem_name}.Tools NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 

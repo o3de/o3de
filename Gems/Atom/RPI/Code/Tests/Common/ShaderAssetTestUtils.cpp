@@ -26,7 +26,7 @@ namespace UnitTest
         {
             bindingInfo.m_resourcesRegisterMap.insert(
                 { shaderInput.m_name.GetStringView(),
-                  AZ::RHI::ResourceBindingInfo{ AZ::RHI::ShaderStageMask::Vertex, shaderInput.m_registerId } });
+                  AZ::RHI::ResourceBindingInfo{ AZ::RHI::ShaderStageMask::Vertex, shaderInput.m_registerId, shaderInput.m_spaceId } });
         }
     }
 
@@ -62,7 +62,6 @@ namespace UnitTest
         using namespace AZ;
         RPI::ShaderVariantAssetCreator shaderVariantAssetCreator;
         shaderVariantAssetCreator.Begin(Uuid::CreateRandom(), id, stableId, false);
-        shaderVariantAssetCreator.SetBuildTimestamp(AZStd::sys_time_t(1)); // Make non-zero.
 
         for (RHI::ShaderStage rhiStage : stagesToActivate)
         {
@@ -107,7 +106,6 @@ namespace UnitTest
         ShaderAssetCreator creator;
         creator.Begin(shaderAssetId);
         creator.SetName(shaderName);
-        creator.SetDrawListName(drawListName);
         creator.SetDrawListName(drawListName);
         creator.SetShaderOptionGroupLayout(optionalShaderOptions);
 

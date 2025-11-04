@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    class JsonSmartPointerSerializer
+    class AZCORE_API JsonSmartPointerSerializer
         : public BaseJsonSerializer
     {
     public:

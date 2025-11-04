@@ -10,5 +10,5 @@
 // The only purpose of this shader is to have a shader asset that can be used
 // at runtime to find the PassSrg required by most Passes.
 
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/RPI/DummyEntryFunctions.azsli>

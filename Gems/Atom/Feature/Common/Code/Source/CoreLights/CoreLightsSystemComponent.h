@@ -33,7 +33,7 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
 
-            LtcCommon m_ltcCommonInterface;
+           AZStd::unique_ptr<LtcCommon> m_ltcCommonInterface;
         };
     } // namespace Render
 } // namespace AZ

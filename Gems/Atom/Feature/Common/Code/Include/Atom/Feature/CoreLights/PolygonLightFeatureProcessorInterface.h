@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/RPI.Public/Buffer/Buffer.h>
+#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -27,11 +28,16 @@ namespace AZ
 
             // Standard RGB Color, except the red sign bit is used to store if points {0, 1, 2} create concave or
             // convex edges. This is used in the shader to determine directionality.
-            AZStd::array<float, 3> m_rgbIntensityNits = { { 0.0f, 0.0f, 0.0f } };
+            AZStd::array<float, 3> m_rgbIntensityNits = { 0.0f, 0.0f, 0.0f };
 
             // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
             // Negative sign bit used to indicate if the light emits both directions.
             float m_invAttenuationRadiusSquared = 0.0f;
+
+            AZStd::array<float, 3> m_direction = { 0.0f, 0.0f, 1.0f };
+
+            uint32_t m_lightingChannelMask = 1;
+
 
             // Convenience functions for setting start / end index.
 
@@ -85,6 +91,15 @@ namespace AZ
             virtual void SetLightEmitsBothDirections(LightHandle handle, bool lightEmitsBothDirections) = 0;
             //! Sets the radius in meters at which the provided LightHandle will no longer have an effect.
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
+            //! Sets the lighting channel mask
+            virtual void SetLightingChannelMask(LightHandle handle, uint32_t lightingChannelMask) = 0;
+
+            //! Returns the buffer containing the light data for all polygon lights
+            virtual const Data::Instance<RPI::Buffer> GetLightBuffer() const = 0;
+            //! Returns the buffer containing the points of all polygon lights
+            virtual const Data::Instance<RPI::Buffer> GetLightPointBuffer() const = 0;
+            //! Returns the number of directional lights
+            virtual uint32_t GetLightCount() const = 0;
         };
     } // namespace Render
 } // namespace AZ

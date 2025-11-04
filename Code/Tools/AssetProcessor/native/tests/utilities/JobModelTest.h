@@ -10,8 +10,10 @@
 
 #include <native/resourcecompiler/JobsModel.h>
 #include <native/tests/AssetProcessorTest.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <QCoreApplication>
+#include <tests/UnitTestUtilities.h>
 
 namespace AzToolsFramework
 {
@@ -21,7 +23,7 @@ namespace AzToolsFramework
     }
 }
 
-class UnitTestJobModel 
+class UnitTestJobModel
     : public AssetProcessor::JobsModel
 {
 public:
@@ -33,12 +35,6 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(JobModelUnitTests, Test_RemoveAllJobsBySourceFolder);
     friend class GTEST_TEST_CLASS_NAME_(JobModelUnitTests, Test_PopulateJobsFromDatabase);
     friend class JobModelUnitTests;
-};
-
-class JobModelTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-{
-public:
-    MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
 };
 
 class JobModelUnitTests
@@ -55,15 +51,12 @@ public:
 protected:
     struct StaticData
     {
-        QTemporaryDir m_temporaryDir;
-        QDir m_temporaryDatabaseDir;
-        AZStd::string m_temporaryDatabasePath;
-
-        testing::NiceMock<JobModelTestMockDatabaseLocationListener> m_databaseLocationListener;
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
         AssetProcessor::AssetDatabaseConnection m_connection;
 
         const AZStd::string m_sourceName{ "theFile.fbx" };
         AZStd::vector<AzToolsFramework::AssetDatabase::JobDatabaseEntry> m_jobEntries;
+        UnitTests::MockPathConversion mockPathConversion{ "c:/test" };
     };
     AZStd::unique_ptr<StaticData> m_data;
     void CreateDatabaseTestData();

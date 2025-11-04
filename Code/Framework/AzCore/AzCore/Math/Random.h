@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Math/Random_Platform.h>
+#include <AzCore/Math/SimdMath.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/containers/array.h>
 
@@ -63,6 +64,46 @@ namespace AZ
 
     private:
         u64 m_seed;
+    };
+
+    //! This class is a vectorized implementation of LCG, allowing for the generation of 4 random values in parallel
+    class SimpleLcgRandomVec4
+    {
+    public:
+        AZ_TYPE_INFO(SimpleLcgRandomVec4, "{1E24CCC8-A1CC-49FF-AFAB-D87C0104F3B7}")
+
+        SimpleLcgRandomVec4()
+        {
+            SetSeed(Simd::Vec4::LoadImmediate(rand(), rand(), rand(), rand()));
+        }
+
+        void SetSeed(Simd::Vec4::Int32ArgType seed)
+        {
+            const Simd::Vec4::Int32Type mask = Simd::Vec4::Splat(int32_t(0x7FFFFFFF)); // 2^31 - 1
+            m_seed = Simd::Vec4::And(seed, mask);
+        }
+
+        // Gets four random ints in the range [0, 2^31)
+        Simd::Vec4::Int32Type GetRandomInt4()
+        {
+            const Simd::Vec4::Int32Type scalar = Simd::Vec4::Splat(1103515245);
+            const Simd::Vec4::Int32Type constant = Simd::Vec4::Splat(12345);
+            const Simd::Vec4::Int32Type mask = Simd::Vec4::Splat(int32_t(0x7FFFFFFF)); // 2^31 - 1
+            m_seed = Simd::Vec4::And(Simd::Vec4::Madd(m_seed, scalar, constant), mask);
+            return m_seed;
+        }
+
+        // Gets four random floats in the range [0,1)
+        Simd::Vec4::FloatType GetRandomFloat4()
+        {
+            Simd::Vec4::Int32Type randVal = GetRandomInt4();
+            randVal = Simd::Vec4::And(randVal, Simd::Vec4::Splat(0x007fffff)); // Sets mantissa to random bits
+            randVal = Simd::Vec4::Or(randVal, Simd::Vec4::Splat(0x3f800000)); // Result is in [1,2), uniformly distributed
+            return Simd::Vec4::Sub(Simd::Vec4::CastToFloat(randVal), Simd::Vec4::Splat(1.0f));
+        }
+
+    private:
+        Simd::Vec4::Int32Type m_seed;
     };
 
     /**

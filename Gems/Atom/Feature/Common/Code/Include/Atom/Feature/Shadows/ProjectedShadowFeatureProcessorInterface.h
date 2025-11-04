@@ -34,6 +34,7 @@ namespace AZ::Render
             float m_farPlaneDistance = 10000.0f;
             float m_aspectRatio = 1.0f;
             float m_fieldOfViewYRadians = DegToRad(90.0f);
+            bool m_isStatic = false;
             
             bool operator==(const ProjectedShadowDescriptor & rhs) const
             {
@@ -41,7 +42,8 @@ namespace AZ::Render
                     m_nearPlaneDistance == rhs.m_nearPlaneDistance &&
                     m_farPlaneDistance == rhs.m_farPlaneDistance &&
                     m_aspectRatio == rhs.m_aspectRatio &&
-                    m_fieldOfViewYRadians == rhs.m_fieldOfViewYRadians;
+                    m_fieldOfViewYRadians == rhs.m_fieldOfViewYRadians &&
+                    m_isStatic == rhs.m_isStatic;
             }
 
             bool operator!=(const ProjectedShadowDescriptor & rhs) const
@@ -72,7 +74,15 @@ namespace AZ::Render
         virtual void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) = 0;
         //! Sets the sample count for filtering of the shadow boundary, max 64.
         virtual void SetFilteringSampleCount(ShadowId id, uint16_t count) = 0;
-        //! Sets all of the shadow properites in one call
+        //! Sets if this shadow should be rendered every frame or only when it detects a change.
+        //! Changes are detected by the presence of a flag on the view which tracks if any of the draws 
+        //! submitted to it contained that flag. The mesh feature processor sets this flag on any cullable that
+        //! moves, and it is combined with all other flags for draws submitted to each view.
+        //! See MeshCommon::MeshMovedName for the name of the flag used to track movement
+        //! See RPI::Scene::GetViewTagBitRegistry() for where the flag bits are determined
+        //! See RPI::View::GetOrFlags() for how the bits are retrieved
+        virtual void SetUseCachedShadows(ShadowId id, bool useCachedShadows) = 0;
+        //! Sets all of the shadow properties in one call
         virtual void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) = 0;
         //! Gets the current shadow properties. Useful for updating several properties at once in SetShadowProperties() without having to set every property.
         virtual const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) = 0;

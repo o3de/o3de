@@ -22,6 +22,7 @@
 #include <Editor/ColliderHelpers.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/ReselectingTreeView.h>
 #include <Editor/SimulatedObjectHelpers.h>
 #include <Editor/SkeletonModel.h>
@@ -35,6 +36,8 @@
 
 namespace EMotionFX
 {
+    int SimulatedObjectWidget::s_jointLabelSpacing = 17;
+
     SimulatedObjectWidget::SimulatedObjectWidget()
         : EMStudio::DockWidgetPlugin()
     {
@@ -117,7 +120,7 @@ namespace EMotionFX
             m_actionManager->OnAddNewObjectAndAddJoints(m_actor, /*selectedJoints=*/{}, /*addChildJoints=*/false, m_dock);
         });
 
-        AZ::SerializeContext* serializeContext;
+        AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         m_selectionWidget = new QWidget();
@@ -127,6 +130,29 @@ namespace EMotionFX
         m_mainWidget = new QWidget();
         QVBoxLayout* mainLayout = new QVBoxLayout(m_mainWidget);
         mainLayout->addWidget(m_addSimulatedObjectButton);
+
+
+        // Add to simulated object button
+        AddToSimulatedObjectButton* addObjectButtonn = new AddToSimulatedObjectButton("Add to simulated object", m_dock);
+        selectionLayout->addWidget(addObjectButtonn);
+
+        // Add collider button
+        AddColliderButton* addColliderButton = new AddColliderButton("Add simulated object collider", m_dock,
+                                                                     PhysicsSetup::ColliderConfigType::SimulatedObjectCollider,
+                                                                     { azrtti_typeid<Physics::CapsuleShapeConfiguration>(),
+                                                                       azrtti_typeid<Physics::SphereShapeConfiguration>() });
+        addColliderButton->setObjectName("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
+
+        connect(addColliderButton, &AddColliderButton::AddCollider, this, &SimulatedObjectWidget::OnAddColliderByType);
+        selectionLayout->addWidget(addColliderButton);
+
+        m_instruction1 = new QLabel("To simulated the selected joint, add it to a Simulated Object by clicking on the \"Add to Simulated Object\" button above", m_dock);
+        m_instruction1->setWordWrap(true);
+        m_instruction2 = new QLabel("If you want the selected joint to collide against a Simulated Object, add a collider to the selected joint, and then set up the \"Collide with\" settings under the Simulated Object", m_dock);
+        m_instruction2->setWordWrap(true);
+        selectionLayout->addWidget(m_instruction1);
+        selectionLayout->addWidget(m_instruction2);
+
         mainLayout->addWidget(m_noSelectionWidget);
         mainLayout->addWidget(m_selectionWidget, /*stretch=*/1);
         mainLayout->addStretch();
@@ -207,6 +233,19 @@ namespace EMotionFX
         m_addSimulatedObjectButton->setVisible(m_actorInstance != nullptr);
     }
 
+    QModelIndexList SimulatedObjectWidget::GetSelectedModelIndices() const
+    {
+        QModelIndexList selectedModelIndices;
+        SkeletonModel* skeletonModel = nullptr;
+        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
+        if (skeletonModel)
+        {
+            selectedModelIndices = skeletonModel->GetSelectionModel().selectedRows();
+        }
+
+        return selectedModelIndices;
+    }
+
     SimulatedObjectModel* SimulatedObjectWidget::GetSimulatedObjectModel() const
     {
         return m_simulatedObjectModel.get();
@@ -283,7 +322,7 @@ namespace EMotionFX
 
     void SimulatedObjectWidget::OnAddCollider()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -303,9 +342,14 @@ namespace EMotionFX
         ColliderHelpers::AddCollider(selectedRowIndices, PhysicsSetup::SimulatedObjectCollider, colliderType);
     }
 
+    void SimulatedObjectWidget::OnAddColliderByType(const AZ::TypeId& colliderType)
+    {
+        ColliderHelpers::AddCollider(GetSelectedModelIndices(), PhysicsSetup::SimulatedObjectCollider, colliderType);
+    }
+
     void SimulatedObjectWidget::OnClearColliders()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {

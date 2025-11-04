@@ -27,14 +27,14 @@ namespace AzNetworking
                 return false;
             }
 
-            AZLOG_INFO("Network layer initialized");
+            AZLOG_DEBUG("Network layer initialized");
             return true;
         }
 
         bool SocketLayerShutdown()
         {
             WSACleanup();
-            AZLOG_INFO("Network layer shut down");
+            AZLOG_DEBUG("Network layer shut down");
             return true;
         }
 
@@ -88,7 +88,7 @@ namespace AzNetworking
     #if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
             FormatMessageA
             (
-                FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 
+                FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                 nullptr,
                 errorCode,
                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),

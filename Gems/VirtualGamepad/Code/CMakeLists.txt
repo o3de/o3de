@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME VirtualGamepad.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         virtualgamepad_files.cmake
@@ -25,7 +25,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME VirtualGamepad ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         virtualgamepad_shared_files.cmake
@@ -36,10 +36,19 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::VirtualGamepad.Static
+            Gem::${gem_name}.Static
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/VirtualGamepadModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # the virtual gamepad is needed everywhere except servers:
-ly_create_alias(NAME VirtualGamepad.Clients  NAMESPACE Gem TARGETS Gem::VirtualGamepad Gem::LyShine.Clients)
-ly_create_alias(NAME VirtualGamepad.Tools    NAMESPACE Gem TARGETS Gem::VirtualGamepad Gem::LyShine.Tools)
-ly_create_alias(NAME VirtualGamepad.Builders NAMESPACE Gem TARGETS Gem::VirtualGamepad Gem::UiBasics.Builders Gem::LyShine.Builders)
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name} Gem::LyShine.Clients)
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name} Gem::LyShine.Tools)
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name} Gem::UiBasics.Builders Gem::LyShine.Builders)

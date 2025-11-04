@@ -36,7 +36,6 @@ namespace AZ
                 {
                     ec->Class<AtomFontSystemComponent>("Font", "Manages lifetime of the font subsystem")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;
                 }
@@ -45,12 +44,12 @@ namespace AZ
 
         void AtomFontSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AtomFontService"));
+            provided.push_back(AZ_CRC_CE("AtomFontService"));
         }
 
         void AtomFontSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AtomFontService"));
+            incompatible.push_back(AZ_CRC_CE("AtomFontService"));
         }
 
         void AtomFontSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)

@@ -21,7 +21,10 @@
 #define mallocAligned(sze)  _aligned_malloc(sze, 16)
 #define freeAligned(ptr)      _aligned_free(ptr)
 
+AZ_PUSH_DISABLE_WARNING_CLANG("-Wunused-value")
+AZ_PUSH_DISABLE_WARNING_CLANG("-Wtautological-compare")
 AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-value")
+
 
 /* ####################################################################################################################
  */
@@ -1283,3 +1286,5 @@ namespace ImageProcessingAtom
 }
 
 AZ_POP_DISABLE_WARNING_GCC
+AZ_POP_DISABLE_WARNING_CLANG
+AZ_POP_DISABLE_WARNING_CLANG

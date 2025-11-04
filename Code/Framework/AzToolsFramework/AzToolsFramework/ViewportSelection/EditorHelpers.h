@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/functional.h>
@@ -33,7 +35,7 @@ namespace AzToolsFramework
     }
 
     //!< Represents the result of a query to find the id of the entity under the cursor (if any).
-    class CursorEntityIdQuery
+    class AZTF_API CursorEntityIdQuery
     {
     public:
         CursorEntityIdQuery(AZ::EntityId entityId, AZ::EntityId rootEntityId);
@@ -57,7 +59,7 @@ namespace AzToolsFramework
     //! EditorHelpers are the visualizations that appear for entities
     //! when 'Display Helpers' is toggled on inside the editor.
     //! These include but are not limited to entity icons and shape visualizations.
-    class EditorHelpers
+    class AZTF_API EditorHelpers
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -101,6 +103,10 @@ namespace AzToolsFramework
         //! to the current Container Entity setup.
         bool IsSelectableAccordingToContainerEntities(AZ::EntityId entityId) const;
 
+        //! Returns whether the entityCacheIndex can be selected in the viewport according
+        //! to the current Editor Focus Mode and Container Entity setup.
+        bool IsSelectableInViewport(size_t entityCacheIndex) const;
+
         AZStd::unique_ptr<InvalidClicks> m_invalidClicks; //!< Display for invalid click behavior.
 
         const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.
@@ -109,9 +115,9 @@ namespace AzToolsFramework
 
     //! Calculate the icon scale based on how far away it is from a given point.
     //! @note This is mostly likely distance from the camera.
-    float GetIconScale(float distance);
+    AZTF_API float GetIconScale(float distance);
 
     //! Calculate the icon size based on how far away it is from a given point.
     //! @note This is the base icon size multiplied by the icon scale to give a final viewport size.
-    float GetIconSize(float distance);
+    AZTF_API float GetIconSize(float distance);
 } // namespace AzToolsFramework

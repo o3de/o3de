@@ -17,25 +17,25 @@
 namespace GradientSignal
 {
 
-    bool SmoothStepGradientConfig::UpdateVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    static bool SmoothStepGradientConfigUpdateVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
-        // From v0 to v1, The smooth step parameters were moved into a SmoothStep subclass.  This reads the old parameters 
+        // From v0 to v1, The smooth step parameters were moved into a SmoothStep subclass.  This reads the old parameters
         // into the subclass, removes the old parameters, then write out the subclass.
         if (classElement.GetVersion() == 0)
         {
             SmoothStep convertedSmoothStep;
 
-            if (classElement.GetChildData(AZ_CRC("FalloffRange", 0x36c95aea), convertedSmoothStep.m_falloffRange))
+            if (classElement.GetChildData(AZ_CRC_CE("FalloffRange"), convertedSmoothStep.m_falloffRange))
             {
-                classElement.RemoveElementByName(AZ_CRC("FalloffRange", 0x36c95aea));
+                classElement.RemoveElementByName(AZ_CRC_CE("FalloffRange"));
             }
-            if (classElement.GetChildData(AZ_CRC("FalloffStrength", 0x9ce36ed3), convertedSmoothStep.m_falloffStrength))
+            if (classElement.GetChildData(AZ_CRC_CE("FalloffStrength"), convertedSmoothStep.m_falloffStrength))
             {
-                classElement.RemoveElementByName(AZ_CRC("FalloffStrength", 0x9ce36ed3));
+                classElement.RemoveElementByName(AZ_CRC_CE("FalloffStrength"));
             }
-            if (classElement.GetChildData(AZ_CRC("FalloffMidpoint", 0x985aa54b), convertedSmoothStep.m_falloffMidpoint))
+            if (classElement.GetChildData(AZ_CRC_CE("FalloffMidpoint"), convertedSmoothStep.m_falloffMidpoint))
             {
-                classElement.RemoveElementByName(AZ_CRC("FalloffMidpoint", 0x985aa54b));
+                classElement.RemoveElementByName(AZ_CRC_CE("FalloffMidpoint"));
             }
 
             classElement.AddElementWithData(context, "SmoothStep", convertedSmoothStep);
@@ -49,7 +49,7 @@ namespace GradientSignal
         if (serialize)
         {
             serialize->Class<SmoothStepGradientConfig, AZ::ComponentConfig>()
-                ->Version(1, &SmoothStepGradientConfig::UpdateVersion)
+                ->Version(1, &SmoothStepGradientConfigUpdateVersion)
                 ->Field("SmoothStep", &SmoothStepGradientConfig::m_smoothStep)
                 ->Field("Gradient", &SmoothStepGradientConfig::m_gradientSampler)
                 ;
@@ -82,12 +82,12 @@ namespace GradientSignal
 
     void SmoothStepGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void SmoothStepGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void SmoothStepGradientComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)

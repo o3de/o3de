@@ -41,8 +41,8 @@ namespace EMotionFX
         MCORE_MEMORYOBJECTCATEGORY(KeyTrackLinearDynamic, EMFX_DEFAULT_ALIGNMENT, EMFX_MEMCATEGORY_MOTIONS_KEYTRACKS);
 
     public:
-        AZ_TYPE_INFO_LEGACY(EMotionFX::KeyTrackLinear, "{8C6EB52A-9720-467B-9D96-B4B967A113D1}", StorageType)
-            
+        AZ_TYPE_INFO_WITH_NAME(KeyTrackLinearDynamic, "EMotionFX::KeyTrackLinear", "{8C6EB52A-9720-467B-9D96-B4B967A113D1}", StorageType);
+
         KeyTrackLinearDynamic() = default;
 
         /**
@@ -264,5 +264,6 @@ namespace EMotionFX
 
 
     // include keytrack inline code
-#include "KeyTrackLinearDynamic.inl"
 } // namespace EMotionFX
+
+#include "KeyTrackLinearDynamic.inl"

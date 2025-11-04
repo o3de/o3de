@@ -24,7 +24,6 @@ namespace ScriptCanvasEditor
 
     NodePaletteNodeUsageRootItem::NodePaletteNodeUsageRootItem(const NodePaletteModel& nodePaletteModel)
         : GraphCanvas::NodePaletteTreeItem("root", ScriptCanvasEditor::AssetEditorId)
-        , m_nodePaletteModel(nodePaletteModel)
         , m_categorizer(nodePaletteModel)
     {
     }

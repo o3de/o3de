@@ -23,7 +23,7 @@ namespace GraphCanvas
         : public GraphCanvasTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteTreeItem, AZ::SystemAllocator);
         AZ_RTTI(NodePaletteTreeItem, "{D1BAAF63-F823-4D2A-8F55-01AC2A659FF5}", GraphCanvas::GraphCanvasTreeItem);
 
         static constexpr const char* DefaultNodeTitlePalette = "DefaultNodeTitlePalette";

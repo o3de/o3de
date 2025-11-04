@@ -1,0 +1,68 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "MobileSubpass2ParentPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Outputs...
+                {
+                    "Name": "LightingInputOutput",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "DepthStencilInputOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "MobileTransparentPass",
+                    "TemplateName": "MobileTransparentParentTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DeferredFogPass",
+                    "TemplateName": "MobileDeferredFogPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencilInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "MobileTransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ]
+                }    
+            ],
+            "PassData": {
+                "MergeChildrenAsSubpasses": true
+            }
+        }
+    }
+}

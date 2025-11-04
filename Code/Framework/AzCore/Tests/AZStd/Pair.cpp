@@ -17,18 +17,8 @@ namespace UnitTest
     // Fixture for non-typed tests
     template<typename TestConfig>
     class CompressedPairTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     template<typename TestConfig>
@@ -75,7 +65,7 @@ namespace UnitTest
         , CompressedPairTestConfig<int32_t, CompressedPairInternal::EmptyStruct, 4>
         , CompressedPairTestConfig<int32_t, int32_t, 8>
     >;
-    TYPED_TEST_CASE(CompressedPairTest, CompressedPairTestConfigs);
+    TYPED_TEST_SUITE(CompressedPairTest, CompressedPairTestConfigs);
 
     using CompressedPairSizeTestConfigs = ::testing::Types<
         CompressedPairTestConfig<CompressedPairInternal::EmptyStruct, CompressedPairInternal::FinalEmptyStruct, 1>
@@ -90,7 +80,7 @@ namespace UnitTest
         , CompressedPairTestConfig<CompressedPairInternal::DerivedWithDataFromEmptyStruct, CompressedPairInternal::DerivedWithDataFromEmptyStruct, 8>
         , CompressedPairTestConfig<int32_t, int32_t, 8>
     >;
-    TYPED_TEST_CASE(CompressedPairSizeTest, CompressedPairSizeTestConfigs);
+    TYPED_TEST_SUITE(CompressedPairSizeTest, CompressedPairSizeTestConfigs);
 
     TYPED_TEST(CompressedPairTest, CompressedPairDefaultConstructorSucceeds)
     {
@@ -122,7 +112,7 @@ namespace UnitTest
     }
 
     class PairTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(PairTestFixture, StructuredBinding_ToConstAutoVar_CompilesSuccessfully)

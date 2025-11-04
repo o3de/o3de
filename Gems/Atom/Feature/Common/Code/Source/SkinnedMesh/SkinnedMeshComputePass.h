@@ -25,15 +25,13 @@ namespace AZ
             AZ_RPI_PASS(SkinnedMeshComputePass);
         public:
             AZ_RTTI(AZ::Render::SkinnedMeshComputePass, "{CE046FFC-B870-40EE-872A-DB0958B97CC3}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(SkinnedMeshComputePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SkinnedMeshComputePass, SystemAllocator);
 
             SkinnedMeshComputePass(const RPI::PassDescriptor& descriptor);
 
             static RPI::Ptr<SkinnedMeshComputePass> Create(const RPI::PassDescriptor& descriptor);
 
             Data::Instance<RPI::Shader> GetShader() const;
-
-            void SetFeatureProcessor(SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor);
 
         private:
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -43,7 +41,7 @@ namespace AZ
             void OnShaderReinitialized(const RPI::Shader& shader) override;
             void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
-            SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor = nullptr;
+            SkinnedMeshFeatureProcessor* GetSkinnedMeshFeatureProcessor();
         };
     }
 }

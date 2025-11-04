@@ -1,0 +1,27 @@
+{
+    "O3DE": {
+        "Quality": {
+            // Headless server specific quality setting overrides go in this file 
+            // See Registry/quality.setreg for more details
+            "Groups": {
+                // Example of how to override the default quality level for headelss to be low
+                //"q_general": {
+                //    "Default": 0  
+                //}
+                // Additional custom quality groups overrides go here. 
+            },
+            "Devices": {
+                // Device rules for headless servers go here 
+                // Device rule groups can have whatever name makes sense to you
+                //"Example": {
+                //    "Rules": {
+                //        "ExampleRegexRule": { "DeviceModel": "^ModelRegex$" }
+                //    },
+                //    "Settings": {
+                //        "q_general": 0 
+                //    }
+                //}
+            }
+        }
+    }
+}

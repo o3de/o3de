@@ -6,9 +6,8 @@
 #
 #
 
-ly_set(CMAKE_RC_FLAGS /nologo)
-
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    ly_set(CMAKE_RC_FLAGS /nologo)   
     
     include(cmake/Platform/Common/MSVC/Configurations_msvc.cmake)
 
@@ -25,7 +24,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-    include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
+    if(MSVC)
+        include(cmake/Platform/Common/MSVC/Configurations_clang.cmake)
+    else()
+        include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
+    endif()
 
     ly_append_configurations_options(
         DEFINES
@@ -48,7 +51,9 @@ else()
 
 endif()
 
-if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
+get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
+
+if(NOT CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT O3DE_SCRIPT_ONLY)
 
     if(DEFINED ENV{CMAKE_WINDOWS_KITS_10_DIR})
         set(win10_root $ENV{CMAKE_WINDOWS_KITS_10_DIR})
@@ -110,6 +115,6 @@ if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
 
 endif()
 
-if(NOT CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION MATCHES "10.0")
+if(NOT O3DE_SCRIPT_ONLY AND NOT CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION MATCHES "10.0")
     message(FATAL_ERROR "Unsupported version of Windows SDK ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}, specify \"-DCMAKE_SYSTEM_VERSION=10.0\" when invoking cmake")
 endif()

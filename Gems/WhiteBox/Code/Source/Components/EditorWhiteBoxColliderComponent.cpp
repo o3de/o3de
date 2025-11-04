@@ -62,7 +62,6 @@ namespace WhiteBox
     void EditorWhiteBoxColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("WhiteBoxColliderService"));
-        provided.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
     }
 
     void EditorWhiteBoxColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -75,6 +74,9 @@ namespace WhiteBox
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         incompatible.push_back(AZ_CRC_CE("WhiteBoxColliderService"));
+        // Incompatible with other rigid bodies because it handles its own rigid body
+        // internally and it would conflict if another rigid body is added to the entity.
+        incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorWhiteBoxColliderComponent::Activate()
@@ -170,13 +172,13 @@ namespace WhiteBox
     static bool ConvertToTriangles(
         const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
     {
-        const size_t triangleCount = Api::MeshFaceCount(whiteBox);
+        const auto triangleCount = Api::MeshFaceCount(whiteBox);
         if (triangleCount == 0)
         {
             return false;
         }
 
-        const size_t vertexCount = Api::MeshHalfedgeCount(whiteBox);
+        const auto vertexCount = Api::MeshHalfedgeCount(whiteBox);
 
         vertices.resize(vertexCount);
         indices.resize(triangleCount * 3);

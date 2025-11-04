@@ -18,7 +18,7 @@
 namespace O3DE::ProjectManager
 {
     LinkLabel::LinkLabel(const QString& text, const QUrl& url, int fontSize, QWidget* parent)
-        : QLabel(text, parent)
+        : AzQtComponents::ElidingLabel(text, parent)
         , m_url(url)
         , m_fontSize(fontSize)
     {
@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
             if (!skipDialog)
             {
                 // Style does not apply if LinkLabel is parent so use parentWidget as parent instead
-                ExternalLinkDialog* linkDialog = new ExternalLinkDialog(m_url.toString(), parentWidget());
+                ExternalLinkDialog* linkDialog = new ExternalLinkDialog(m_url, parentWidget());
                 if (linkDialog->exec() == QDialog::Accepted)
                 {
                     QDesktopServices::openUrl(m_url);
@@ -59,6 +59,11 @@ namespace O3DE::ProjectManager
     void LinkLabel::leaveEvent([[maybe_unused]] QEvent* event)
     {
         SetDefaultStyle();
+    }
+
+    QUrl LinkLabel::GetUrl() const
+    {
+        return m_url;
     }
 
     void LinkLabel::SetUrl(const QUrl& url)

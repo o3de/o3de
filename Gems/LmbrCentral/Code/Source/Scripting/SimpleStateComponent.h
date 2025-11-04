@@ -107,7 +107,7 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SimpleStateService", 0xbfba531e));
+            provided.push_back(AZ_CRC_CE("SimpleStateService"));
         }
 
         //////////////////////////////////////////////////////////////////////////

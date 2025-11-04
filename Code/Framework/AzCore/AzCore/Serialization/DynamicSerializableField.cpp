@@ -52,7 +52,7 @@ namespace AZ
             // that created our data and use that to query for the proper destructor info.
             if (!useContext)
             {
-                EBUS_EVENT_RESULT(useContext, ComponentApplicationBus, GetSerializeContext);
+                ComponentApplicationBus::BroadcastResult(useContext, &ComponentApplicationBus::Events::GetSerializeContext);
                 AZ_Error("DynamicSerializableField", useContext, "Can't find valid serialize context. Dynamic data cannot be deleted without it!");
             }
             if (useContext)
@@ -86,7 +86,7 @@ namespace AZ
         {
             if (!useContext)
             {
-                EBUS_EVENT_RESULT(useContext, ComponentApplicationBus, GetSerializeContext);
+                ComponentApplicationBus::BroadcastResult(useContext, &ComponentApplicationBus::Events::GetSerializeContext);
                 AZ_Error("DynamicSerializableField", useContext, "Can't find valid serialize context. Dynamic data cannot be deleted without it!");
             }
             if (useContext)
@@ -116,7 +116,7 @@ namespace AZ
 
         if (!useContext)
         {
-            EBUS_EVENT_RESULT(useContext, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(useContext, &ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Error("DynamicSerializableField", useContext, "Can't find valid serialize context. Dynamic data cannot be compared without it!");
         }        
 

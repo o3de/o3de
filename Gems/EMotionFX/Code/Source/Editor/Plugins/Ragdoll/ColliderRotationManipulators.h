@@ -39,7 +39,7 @@ namespace EMotionFX
 
         void OnManipulatorMoved(const AZ::Quaternion& rotation);
         void BeginEditing(const AZ::Quaternion& rotation);
-        void FinishEditing(const AZ::Quaternion& rotation);
+        void EndEditing(const AZ::Quaternion& rotation);
 
         AzToolsFramework::RotationManipulators m_rotationManipulators;
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;

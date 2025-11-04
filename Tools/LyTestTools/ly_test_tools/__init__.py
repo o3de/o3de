@@ -8,12 +8,14 @@ OS and devices are detected and set as constants when ly_test_tools.__init__() c
 """
 import logging
 import sys
+import platform
 
 logger = logging.getLogger(__name__)
 
 # Supported platforms
 ALL_PLATFORM_OPTIONS = ['android', 'ios', 'linux', 'mac', 'windows']
-ALL_LAUNCHER_OPTIONS = ['android', 'base', 'linux', 'mac', 'windows', 'windows_editor', 'windows_dedicated', 'windows_generic', 'windows_material_editor']
+ALL_LAUNCHER_OPTIONS = [
+    'android', 'base', 'linux', 'mac', 'windows', 'windows_editor', 'windows_dedicated', 'windows_atom_tools']
 ANDROID = False
 IOS = False  # Not implemented - see SPEC-2505
 LINUX = sys.platform.startswith('linux')
@@ -24,8 +26,7 @@ WINDOWS = sys.platform.startswith('win')
 HOST_OS_PLATFORM = 'unknown'
 HOST_OS_EDITOR = 'unknown'
 HOST_OS_DEDICATED_SERVER = 'unknown'
-HOST_OS_GENERIC_EXECUTABLE = 'unknown'
-HOST_OS_MATERIAL_EDITOR = 'unknown'
+HOST_OS_ATOM_TOOLS = 'unknown'
 LAUNCHERS = {}
 for launcher_option in ALL_LAUNCHER_OPTIONS:
     LAUNCHERS[launcher_option] = None
@@ -35,36 +36,37 @@ if WINDOWS:
     HOST_OS_PLATFORM = 'windows'
     HOST_OS_EDITOR = 'windows_editor'
     HOST_OS_DEDICATED_SERVER = 'windows_dedicated'
-    HOST_OS_GENERIC_EXECUTABLE = 'windows_generic'
-    HOST_OS_MATERIAL_EDITOR = 'windows_material_editor'
+    HOST_OS_ATOM_TOOLS = 'windows_atom_tools'
     import ly_test_tools.mobile.android
     from ly_test_tools.launchers import (
-        AndroidLauncher, WinLauncher, DedicatedWinLauncher, WinEditor, WinGenericLauncher, WinMaterialEditor)
+        AndroidLauncher, WinLauncher, DedicatedWinLauncher, WinEditor, WinAtomToolsLauncher)
     ANDROID = ly_test_tools.mobile.android.can_run_android()
     LAUNCHERS['windows'] = WinLauncher
     LAUNCHERS['windows_editor'] = WinEditor
     LAUNCHERS['windows_dedicated'] = DedicatedWinLauncher
-    LAUNCHERS['windows_generic'] = WinGenericLauncher
-    LAUNCHERS['windows_material_editor'] = WinMaterialEditor
+    LAUNCHERS['windows_atom_tools'] = WinAtomToolsLauncher
     LAUNCHERS['android'] = AndroidLauncher
 elif MAC:
+    ARM64 = platform.machine() == 'arm64'
     HOST_OS_PLATFORM = 'mac'
     HOST_OS_EDITOR = NotImplementedError('LyTestTools does not yet support Mac editor')
     HOST_OS_DEDICATED_SERVER = NotImplementedError('LyTestTools does not yet support Mac dedicated server')
-    HOST_OS_MATERIAL_EDITOR = NotImplementedError('LyTestTools does not yet support Mac material_editor')
+    HOST_OS_ATOM_TOOLS = NotImplementedError('LyTestTools does not yet support Mac Atom Tools executables')
     from ly_test_tools.launchers import MacLauncher
     LAUNCHERS['mac'] = MacLauncher
 elif LINUX:
+    ARM64 = platform.machine() == 'aarch64'
     HOST_OS_PLATFORM = 'linux'
     HOST_OS_EDITOR = 'linux_editor'
     HOST_OS_DEDICATED_SERVER = 'linux_dedicated'
-    HOST_OS_GENERIC_EXECUTABLE = 'linux_generic'
-    HOST_OS_MATERIAL_EDITOR = 'linux_material_editor'
-    from ly_test_tools.launchers.platforms.linux.launcher import (LinuxLauncher, LinuxEditor, DedicatedLinuxLauncher, LinuxGenericLauncher, LinuxMaterialEditor)
+    HOST_OS_ATOM_TOOLS = 'linux_atom_tools'
+    from ly_test_tools.launchers.platforms.linux.launcher import (
+        LinuxLauncher, LinuxEditor, DedicatedLinuxLauncher, LinuxAtomToolsLauncher)
     LAUNCHERS['linux'] = LinuxLauncher
     LAUNCHERS['linux_editor'] = LinuxEditor
     LAUNCHERS['linux_dedicated'] = DedicatedLinuxLauncher
-    LAUNCHERS['linux_generic'] = LinuxGenericLauncher
-    LAUNCHERS['linux_material_editor'] = LinuxMaterialEditor
+    LAUNCHERS['linux_atom_tools'] = LinuxAtomToolsLauncher
 else:
-    logger.warning(f'WARNING: LyTestTools only supports Windows, Mac, and Linux. Unexpectedly detected HOST_OS_PLATFORM: "{HOST_OS_PLATFORM}".')
+    ARM64 = False
+    logger.warning(f'WARNING: LyTestTools only supports Windows, Mac, and Linux. '
+                   f'Unexpectedly detected HOST_OS_PLATFORM: "{HOST_OS_PLATFORM}".')

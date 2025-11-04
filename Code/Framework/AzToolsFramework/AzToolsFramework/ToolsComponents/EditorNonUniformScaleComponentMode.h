@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 
@@ -15,10 +16,14 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        class NonUniformScaleComponentMode : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
+        class AZTF_API NonUniformScaleComponentMode
+            : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
         {
         public:
-            AZ_CLASS_ALLOCATOR(NonUniformScaleComponentMode, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(NonUniformScaleComponentMode, AZ::SystemAllocator)
+            AZ_RTTI(NonUniformScaleComponentMode, "{E7D16788-DE62-4D13-8899-28A7C5DCA039}", EditorBaseComponentMode)
+
+            static void Reflect(AZ::ReflectContext* context);
 
             NonUniformScaleComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
             NonUniformScaleComponentMode(const NonUniformScaleComponentMode&) = delete;
@@ -30,6 +35,7 @@ namespace AzToolsFramework
             // EditorBaseComponentMode overrides ...
             void Refresh() override;
             AZStd::string GetComponentModeName() const override;
+            AZ::Uuid GetComponentModeType() const override;
 
         private:
             AZ::EntityComponentIdPair m_entityComponentIdPair;

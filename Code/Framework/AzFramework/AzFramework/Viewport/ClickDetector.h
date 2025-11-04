@@ -11,6 +11,7 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AzFramework
 {
@@ -23,7 +24,7 @@ namespace AzFramework
     //! Utility class to help detect different types of mouse click (mouse down and up with
     //! no movement), mouse move (down and initial move after some threshold) and mouse release
     //! (mouse down with movement and then mouse up).
-    class ClickDetector
+    class AZF_API ClickDetector
     {
     public:
         ClickDetector();
@@ -73,7 +74,7 @@ namespace AzFramework
         float m_moveAccumulator = 0.0f; //!< How far the mouse has moved after mouse down.
         float m_deadZone = DefaultMouseMoveDeadZone; //!< How far to move before a click is cancelled (when Move will fire).
         float m_doubleClickInterval = 0.4f; //!< Default double click interval, can be overridden.
-        DetectionState m_detectionState; //!< Internal state of ClickDetector.
+        DetectionState m_detectionState = DetectionState::Nil; //!< Internal state of ClickDetector.
         //! Mouse down time (happens each mouse down, helps with double click handling).
         AZStd::optional<AZStd::chrono::milliseconds> m_tryBeginTime;
         AZStd::function<AZStd::chrono::milliseconds()> m_timeNowFn; //!< Interface to query the current time.

@@ -172,7 +172,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "lowEndForward",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
@@ -324,7 +324,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "auxgeom",
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {

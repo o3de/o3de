@@ -6,7 +6,6 @@
  *
  */
 #include <ui/BuilderInfoPatternsModel.h>
-#include <AssetBuilderSDK/AssetBuilderSDK.h>
 
 namespace AssetProcessor
 {

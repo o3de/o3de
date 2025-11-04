@@ -9,27 +9,65 @@
 #include "CompressionSystemComponent.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
+
+#include <Compression/CompressionLZ4API.h>
+#include <Compression/CompressionTypeIds.h>
+#include <Compression/DecompressionInterfaceAPI.h>
+#include "DecompressorLZ4Impl.h"
+
+#include <Clients/Streamer/DecompressorStackEntry.h>
+
+namespace CompressionLZ4
+{
+    void RegisterDecompressorLZ4Interface()
+    {
+        // Register the lz4 decompressor with the decompression registrar
+        if (auto decompressionRegistrar = Compression::DecompressionRegistrar::Get();
+            decompressionRegistrar != nullptr)
+        {
+            auto compressionAlgorithmId = GetLZ4CompressionAlgorithmId();
+            auto decompressorLz4 = AZStd::make_unique<DecompressorLZ4>();
+            [[maybe_unused]] auto registerOutcome = decompressionRegistrar->RegisterDecompressionInterface(
+                compressionAlgorithmId,
+                AZStd::move(decompressorLz4));
+
+            AZ_Error("Compression LZ4", bool{ registerOutcome }, "Registration of LZ4 Decompressor with the DecompressionRegistrar"
+                " has failed with Id %u", compressionAlgorithmId);
+        }
+    }
+    void UnregisterDecompressorLZ4Interface()
+    {
+        // Unregister the lz4 decompressor using the lz4 compression algorithm Id
+        if (auto decompressionRegistrar = Compression::DecompressionRegistrar::Get();
+            decompressionRegistrar != nullptr)
+        {
+            auto compressionAlgorithmId = GetLZ4CompressionAlgorithmId();
+            [[maybe_unused]] bool unregisterOutcome = decompressionRegistrar->UnregisterDecompressionInterface(
+                compressionAlgorithmId);
+
+            AZ_Error("Compression LZ4", unregisterOutcome, "LZ4 Decompressor with Id %u is not registered with"
+                " with DecompressionRegistrar", static_cast<AZ::u32>(compressionAlgorithmId));
+        }
+    }
+}
 
 namespace Compression
 {
+    AZ_COMPONENT_IMPL(CompressionSystemComponent, "CompressionSystemComponent",
+        CompressionSystemComponentTypeId);
+
     void CompressionSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        // Reflect the Streamer DecompressionStackEntryConfig
+        // to allow a DecompressionStackEntry to be loaded using JSON Serialization
+        // from .setreg settings files
+        DecompressorRegistrarConfig::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<CompressionSystemComponent, AZ::Component>()
+            serializeContext->Class<CompressionSystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
-
-            if (AZ::EditContext* ec = serialize->GetEditContext())
-            {
-                ec->Class<CompressionSystemComponent>("Compression", "[Description of functionality provided by this System Component]")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
-            }
         }
     }
 
@@ -74,10 +112,12 @@ namespace Compression
     void CompressionSystemComponent::Activate()
     {
         CompressionRequestBus::Handler::BusConnect();
+        CompressionLZ4::RegisterDecompressorLZ4Interface();
     }
 
     void CompressionSystemComponent::Deactivate()
     {
+        CompressionLZ4::UnregisterDecompressorLZ4Interface();
         CompressionRequestBus::Handler::BusDisconnect();
     }
 

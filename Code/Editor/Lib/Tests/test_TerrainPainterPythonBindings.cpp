@@ -23,7 +23,7 @@ namespace TerrainFuncsUnitTests
 {
 
     class TerrainPainterPythonBindingsFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;

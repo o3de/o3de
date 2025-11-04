@@ -25,7 +25,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(NodeTreeSelectionWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(NodeTreeSelectionWidget, SystemAllocator);
 
             NodeTreeSelectionWidget::NodeTreeSelectionWidget(QWidget* parent)
                 : QWidget(parent)
@@ -208,54 +208,57 @@ namespace AZ
                 size_t result = 0;
                 AZStd::unique_ptr<DataTypes::ISceneNodeSelectionList> tempList(m_list->Copy());
                 Utilities::SceneGraphSelector::UpdateNodeSelection(graph, *tempList);
-                size_t selectedCount = tempList->GetSelectedNodeCount();
-                for (size_t i = 0; i < selectedCount; ++i)
-                {
-                    Containers::SceneGraph::NodeIndex index = graph.Find(tempList->GetSelectedNode(i));
-                    if (!index.IsValid())
+                tempList->EnumerateSelectedNodes(
+                    [&](const AZStd::string& nodeName)
                     {
-                        continue;
-                    }
+                        Containers::SceneGraph::NodeIndex index = graph.Find(nodeName);
+                        if (!index.IsValid())
+                        {
+                            return true;
+                        }
 
-                    AZStd::shared_ptr<const DataTypes::IGraphObject> object = graph.GetNodeContent(index);
-                    if (!object)
-                    {
-                        continue;
-                    }
+                        AZStd::shared_ptr<const DataTypes::IGraphObject> object = graph.GetNodeContent(index);
+                        if (!object)
+                        {
+                            return true;
+                        }
 
-                    if (m_filterTypes.empty() && m_filterVirtualTypes.empty())
-                    {
-                        result++;
-                        continue;
-                    }
-
-                    bool foundType = false;
-                    for (const Uuid& type : m_filterTypes)
-                    {
-                        if (object->RTTI_IsTypeOf(type))
+                        if (m_filterTypes.empty() && m_filterVirtualTypes.empty())
                         {
                             result++;
-                            foundType = true;
-                            break;
+                            return true;
                         }
-                    }
-                    if (foundType)
-                    {
-                        continue;
-                    }
 
-                    // Check if the object is one of the registered virtual types.
-                    AZStd::set<Crc32> virtualTypes;
-                    Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfo::GetVirtualTypes, virtualTypes, *root->GetScene(), index);
-                    for (Crc32 name : virtualTypes)
-                    {
-                        if (m_filterVirtualTypes.find(name) != m_filterVirtualTypes.end())
+                        bool foundType = false;
+                        for (const Uuid& type : m_filterTypes)
                         {
-                            result++;
-                            break;
+                            if (object->RTTI_IsTypeOf(type))
+                            {
+                                result++;
+                                foundType = true;
+                                break;
+                            }
                         }
-                    }
-                }
+                        if (foundType)
+                        {
+                            return true;
+                        }
+
+                        // Check if the object is one of the registered virtual types.
+                        Events::GraphMetaInfo::VirtualTypesSet virtualTypes;
+                        Events::GraphMetaInfoBus::Broadcast(
+                            &Events::GraphMetaInfo::GetVirtualTypes, virtualTypes, *root->GetScene(), index);
+                        for (Crc32 name : virtualTypes)
+                        {
+                            if (m_filterVirtualTypes.contains(name))
+                            {
+                                result++;
+                                break;
+                            }
+                        }
+
+                        return true;
+                    });
                 return result;
             }
 
@@ -313,7 +316,7 @@ namespace AZ
                         }
                         
                         // Check if the object is one of the registered virtual types.
-                        AZStd::set<Crc32> virtualTypes;
+                        Events::GraphMetaInfo::VirtualTypesSet virtualTypes;
                         Events::GraphMetaInfoBus::Broadcast(&Events::GraphMetaInfo::GetVirtualTypes, virtualTypes, *root->GetScene(), index);
                         for (Crc32 name : virtualTypes)
                         {

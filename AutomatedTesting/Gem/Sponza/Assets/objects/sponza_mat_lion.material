@@ -1,6 +1,6 @@
 {
-    "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.textureMap": "../Textures/lion_1k_basecolor.png",
         "emissive.color": [
@@ -9,13 +9,14 @@
             0.0,
             1.0
         ],
-        "irradiance.color": [
+        "irradiance.manualColor": [
             0.5583428740501404,
             0.496940553188324,
             0.4125429093837738,
             1.0
         ],
         "normal.textureMap": "../Textures/lion_1k_normal.jpg",
+        "normal.flipY": true,
         "opacity.factor": 1.0,
         "roughness.textureMap": "../Textures/lion_1k_roughness.png"
     }

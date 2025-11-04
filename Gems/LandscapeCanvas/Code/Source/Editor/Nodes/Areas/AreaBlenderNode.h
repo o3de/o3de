@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class AreaBlenderNode : public BaseAreaNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(AreaBlenderNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AreaBlenderNode, AZ::SystemAllocator);
         AZ_RTTI(AreaBlenderNode, "{07EFA0EA-F5E1-44A0-8620-D5A75F2D2BED}", BaseAreaNode);
 
         static void Reflect(AZ::ReflectContext* context);

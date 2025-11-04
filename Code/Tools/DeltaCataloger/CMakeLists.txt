@@ -50,10 +50,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFramework
                 AZ::AzTest
                 AZ::AzToolsFramework
+                AZ::AzToolsFrameworkTestCommon
     )
 
     ly_add_googletest(
         NAME AZ::DeltaCataloger.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()

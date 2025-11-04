@@ -1,0 +1,55 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{18CE520D-1DF4-40C4-BE30-4A0045B9ED0E}",
+        "category": "Math Functions",
+        "title": "Ldexp",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns x * 2exp",
+        "slotDataTypeGroups": [
+            "inValue1|inValue2|outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue1",
+                "displayName": "Value1",
+                "description": "Value1",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inValue2",
+                "displayName": "Value2",
+                "description": "Value2",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = ldexp(inValue1, inValue2);"
+                    ]
+                }
+            }
+        ]
+    }
+}

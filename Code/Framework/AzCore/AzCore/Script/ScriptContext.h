@@ -37,7 +37,7 @@ struct lua_Debug;
 //#define AZ_LUA_VALIDATE_STACK
 
 // Uncomment to throw Lua errors on unacceptable number conversions from Lua to C++ numerical targets
-//#AZ_LUA_RESTRICT_NUMBER_CONVERSIONS_TO_CPP 
+//#AZ_LUA_RESTRICT_NUMBER_CONVERSIONS_TO_CPP
 
 // Always validate stacks when running tests
 #if defined(AZ_TESTS_ENABLED)
@@ -137,8 +137,8 @@ namespace AZ
      * from calling the wrong functions in the wrong mode. You are not allowed to create or destroy the ScriptDataContext, this is why
      * the constructor and destructor are private.
      */
-    class ScriptDataContext
-    {       
+    class AZCORE_API ScriptDataContext
+    {
         friend ScriptContext;
         friend ScriptContextDebug;
         friend class LuaGenericCaller;
@@ -152,7 +152,7 @@ namespace AZ
             MD_INSPECT,     // allow to access next element function
             MD_CALLER_EXECUTED, // was in caller mode and executed the call
             MD_READ_STACK   // used to read a value from the stack, and not pop off results.
-        };        
+        };
 
         lua_State* m_nativeContext;
         int m_numArguments;
@@ -168,7 +168,7 @@ namespace AZ
             , m_mode(MD_CALLEE)
         {
         }
-        
+
         void Reset();
 
         /// Assumes that the called function is on the top of the stack. It will be poped when the context is destroyed or Reset
@@ -183,7 +183,7 @@ namespace AZ
         {
             m_nativeContext = c;
             m_mode = MD_INSPECT;
-            m_startVariableIndex = startStackIndex;            
+            m_startVariableIndex = startStackIndex;
         }
 
         void ReadStack(lua_State* c)
@@ -195,11 +195,11 @@ namespace AZ
 
     public:
         // DesignNote: Would probably add a new public method here called
-        // ReadStack(lua_State* c, int startStackIndex)        
+        // ReadStack(lua_State* c, int startStackIndex)
         // or something similar that will basically mimic inspect, but not destructively pop things
 
         /// Assumes that the inspected value is on the top of the stack. It will be poped when the context is destroyed or Reset.
-    
+
         AZ_TYPE_INFO(ScriptDataContext, "{7ec9e09e-6559-49bd-8826-5eef8880d970}");
 
         ScriptDataContext()
@@ -208,7 +208,7 @@ namespace AZ
             , m_numResults(0)
             , m_startVariableIndex(0)
             , m_mode(MD_INVALID)
-        {}        
+        {}
 
         ~ScriptDataContext() { Reset(); }
 
@@ -256,7 +256,7 @@ namespace AZ
         void    PushArg(const T& value);
         template<class Arg, class... Args>
         void    PushArgs(Arg& value, Args&&... args);
-        
+
         void    PushArgs() {}
         /// Push value from the lua registery for the script call.
         void    PushArgFromRegistryIndex(int cachedIndex);
@@ -316,7 +316,7 @@ namespace AZ
         /// Inspect a table and return true if the table is a table and data context is set, otherwise false.
         bool    InspectTable(int tableIndex, ScriptDataContext& dc);
         /// Inspects a metatable to the value on the stack. If the value has no metatable we return false, otherwise true.
-        bool    InspectMetaTable(int index, ScriptDataContext& dc);        
+        bool    InspectMetaTable(int index, ScriptDataContext& dc);
 
         /**
          * Inspect next table element.
@@ -346,67 +346,67 @@ namespace AZ
 
     using ScriptTypeId = Uuid;
     using ScriptShortTypeId = size_t;
-        
+
     namespace Internal
     {
         // Cache the value at the given index using a weak reference. Returns an index that can be used to access the value quicker.
-        int LuaCacheValue(lua_State* lua, int index);
-        int LuaCacheRegisteredClass(lua_State* lua, void* value, const AZ::Uuid& typeId);
+        AZCORE_API int LuaCacheValue(lua_State* lua, int index);
+        AZCORE_API int LuaCacheRegisteredClass(lua_State* lua, void* value, const AZ::Uuid& typeId);
 
         // Loads the value at the given cached index.
-        void LuaLoadCached(lua_State* lua, int cachedIndex);
+        AZCORE_API void LuaLoadCached(lua_State* lua, int cachedIndex);
 
         // Released the value at the given cached index
-        void LuaReleaseCached(lua_State* lua, int cachedIndex);
+        AZCORE_API void LuaReleaseCached(lua_State* lua, int cachedIndex);
 
-        bool LuaIsClass(lua_State* lua, int stackIndex, const AZ::Uuid* typeId = nullptr);
-        bool LuaGetClassInfo(lua_State* lua, int stackIndex, void** valueAddress, const BehaviorClass** behaviorClass);
-        bool LuaReleaseClassOwnership(lua_State* lua, int stackIndex, bool nullThePointer);
-        bool LuaAcquireClassOwnership(lua_State* lua, int stackIndex);
+        AZCORE_API bool LuaIsClass(lua_State* lua, int stackIndex, const AZ::Uuid* typeId = nullptr);
+        AZCORE_API bool LuaGetClassInfo(lua_State* lua, int stackIndex, void** valueAddress, const BehaviorClass** behaviorClass);
+        AZCORE_API bool LuaReleaseClassOwnership(lua_State* lua, int stackIndex, bool nullThePointer);
+        AZCORE_API bool LuaAcquireClassOwnership(lua_State* lua, int stackIndex);
         /// Returns the pointer to class if the typeId matches to the typeId of the object on the stack
-        void* LuaClassFromStack(lua_State* lua, int stackIndex, const AZ::Uuid& typeId);
+        AZCORE_API void* LuaClassFromStack(lua_State* lua, int stackIndex, const AZ::Uuid& typeId);
         /// Returns the pointer to the class and the type (optional) in typeId. It will return null if the element on the class is not a reflected class.
-        void* LuaAnyClassFromStack(lua_State* lua, int stackIndex, AZ::Uuid* typeId);
-        void LuaClassToStack(lua_State* lua, void* valueAddress, const AZ::Uuid& typeId, ObjectToLua toLua = ObjectToLua::ByReference, AcquisitionOnPush acquitionOnPush = AcquisitionOnPush::None);
+        AZCORE_API void* LuaAnyClassFromStack(lua_State* lua, int stackIndex, AZ::Uuid* typeId);
+        AZCORE_API void LuaClassToStack(lua_State* lua, void* valueAddress, const AZ::Uuid& typeId, ObjectToLua toLua = ObjectToLua::ByReference, AcquisitionOnPush acquitionOnPush = AcquisitionOnPush::None);
 
-        void LuaStackTrace(lua_State* l, char* stackOutput = nullptr, size_t stackOutputSize = 0);
-        int LuaPropertyTagHelper(lua_State*);
-        int LuaMethodTagHelper(lua_State*);
+        AZCORE_API void LuaStackTrace(lua_State* l, char* stackOutput = nullptr, size_t stackOutputSize = 0);
+        AZCORE_API int LuaPropertyTagHelper(lua_State*);
+        AZCORE_API int LuaMethodTagHelper(lua_State*);
 
         // A drop-in replacement for lua_pcall that supplies an error handler.
         // Removes numParams + 1 (the function called) from the stack. If the call is successful, places numResults elements on the stack.
-        bool LuaSafeCall(lua_State* lua, int numParams, int numResults);
+        AZCORE_API bool LuaSafeCall(lua_State* lua, int numParams, int numResults);
 
         //////////////////////////////////////////////////////////////////////////
-        // AzLUA wrappers so we don't need to pull lua directly, keep in mind this only 
+        // AzLUA wrappers so we don't need to pull lua directly, keep in mind this only
         // so we don't pull lua into script context (as lots code includes it)
         // If you want to work with LUA directly in specific places feel free to do so!
 
         /// raw setglobal function (no metamethods called)
-        void azlua_setglobal(lua_State* _lua, const char* _name);
+        AZCORE_API void azlua_setglobal(lua_State* _lua, const char* _name);
         ///  raw getglobal function (no metamethods called)
-        void azlua_getglobal(lua_State* _lua, const char* _name);
+        AZCORE_API void azlua_getglobal(lua_State* _lua, const char* _name);
         //
-        void azlua_pushinteger(lua_State* lua, int value);
-        int azlua_tointeger(lua_State* lua, int stackIndex);
+        AZCORE_API void azlua_pushinteger(lua_State* lua, int value);
+        AZCORE_API int azlua_tointeger(lua_State* lua, int stackIndex);
 
         //
-        bool azlua_istable(lua_State* lua, int stackIndex);
-        bool azlua_isfunction(lua_State* lua, int stackIndex);
-        bool azlua_isnil(lua_State* lua, int stackIndex);
-        void azlua_pop(lua_State* lua, int numElements);
-        void azlua_getfield(lua_State* lua, int stackIndex, const char* name);
-        int azlua_gettop(lua_State* lua);
-        void azlua_pushstring(lua_State* lua, const char* string);
-        void azlua_pushvalue(lua_State* lua, int stackIndex);
-        const char* azlua_tostring(lua_State* lua, int stackIndex);
-        void azlua_rawset(lua_State* lua, int stackIndex);
-        void LuaRegistrySet(lua_State* lua, int valueIndex);
-        void LuaRegistryGet(lua_State* lua, int valueIndex);
+        AZCORE_API bool azlua_istable(lua_State* lua, int stackIndex);
+        AZCORE_API bool azlua_isfunction(lua_State* lua, int stackIndex);
+        AZCORE_API bool azlua_isnil(lua_State* lua, int stackIndex);
+        AZCORE_API void azlua_pop(lua_State* lua, int numElements);
+        AZCORE_API void azlua_getfield(lua_State* lua, int stackIndex, const char* name);
+        AZCORE_API int azlua_gettop(lua_State* lua);
+        AZCORE_API void azlua_pushstring(lua_State* lua, const char* string);
+        AZCORE_API void azlua_pushvalue(lua_State* lua, int stackIndex);
+        AZCORE_API const char* azlua_tostring(lua_State* lua, int stackIndex);
+        AZCORE_API void azlua_rawset(lua_State* lua, int stackIndex);
+        AZCORE_API void LuaRegistrySet(lua_State* lua, int valueIndex);
+        AZCORE_API void LuaRegistryGet(lua_State* lua, int valueIndex);
 
         // type ID can be null for unregistered types, that way we will push it as a lighuserdata (pointer only)
-        void LuaScriptValueStackPush(lua_State* lua, void* dataPointer, const AZ::Uuid typeId, AZ::ObjectToLua toLua = AZ::ObjectToLua::ByReference);
-        void* LuaScriptValueStackRead(lua_State* lua, int stackIndex, const AZ::Uuid typeId);
+        AZCORE_API void LuaScriptValueStackPush(lua_State* lua, void* dataPointer, const AZ::Uuid typeId, AZ::ObjectToLua toLua = AZ::ObjectToLua::ByReference);
+        AZCORE_API void* LuaScriptValueStackRead(lua_State* lua, int stackIndex, const AZ::Uuid typeId);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -479,112 +479,112 @@ namespace AZ
     // TODO make sure we handle all integral types and their pointers
     // integral types are support by value only, otherwise we need an object.
     template<>
-    struct ScriptValue<int**>
+    struct AZCORE_API ScriptValue<int**>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void     StackPush(lua_State*, int**)                   { AZ_Assert(false, "We can't use pointer to intergral objects in script!"); }
         static int**    StackRead(lua_State*, int)                     { AZ_Assert(false, "We can't use pointer to intergral objects in script!"); return nullptr; }
     };
     template<>
-    struct ScriptValue<char>
+    struct AZCORE_API ScriptValue<char>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, int value);
         static char StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<short>
+    struct AZCORE_API ScriptValue<short>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void     StackPush(lua_State* l, int value);
         static short    StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<int>
+    struct AZCORE_API ScriptValue<int>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, int value);
         static int  StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<AZ::s64>
+    struct AZCORE_API ScriptValue<AZ::s64>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, AZ::s64 value);
         static AZ::s64 StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<long>
+    struct AZCORE_API ScriptValue<long>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, long value);
         static long StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<unsigned char>
+    struct AZCORE_API ScriptValue<unsigned char>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, unsigned int value);
         static unsigned char StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<unsigned short>
+    struct AZCORE_API ScriptValue<unsigned short>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, unsigned int value);
         static unsigned short StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<unsigned int>
+    struct AZCORE_API ScriptValue<unsigned int>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, unsigned int value);
         static unsigned int StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<AZ::u64>
+    struct AZCORE_API ScriptValue<AZ::u64>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, AZ::u64 value);
         static AZ::u64 StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<unsigned long>
+    struct AZCORE_API ScriptValue<unsigned long>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, unsigned long value);
         static unsigned long StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<float>
+    struct AZCORE_API ScriptValue<float>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, float value);
         static float StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<double>
+    struct AZCORE_API ScriptValue<double>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, double value);
         static double StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<bool>
+    struct AZCORE_API ScriptValue<bool>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, bool value);
         static bool StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<const char*>
+    struct AZCORE_API ScriptValue<const char*>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, const char* value);
         static const char* StackRead(lua_State* l, int stackIndex);
     };
     template<>
-    struct ScriptValue<void*>
+    struct AZCORE_API ScriptValue<void*>
     {
         static const bool isNativeValueType = true;  // We use native type for internal representation
         static void StackPush(lua_State* l, void* value);
@@ -592,7 +592,7 @@ namespace AZ
     };
 
     template<>
-    struct ScriptValue<AZStd::any>
+    struct AZCORE_API ScriptValue<AZStd::any>
     {
         static const bool isNativeValueType = false;  // We use native type for internal representation
         static void StackPush(lua_State* l, const AZStd::any& value);
@@ -600,11 +600,11 @@ namespace AZ
     };
 
     template<>
-    struct ScriptValue<const AZStd::any&>
+    struct AZCORE_API ScriptValue<const AZStd::any&>
         : public ScriptValue<AZStd::any> {};
 
     template<>
-    struct ScriptValue<const AZStd::any>
+    struct AZCORE_API ScriptValue<const AZStd::any>
         : public ScriptValue<AZStd::any> {};
 
     template<class Element, class Traits, class Allocator>
@@ -633,7 +633,7 @@ namespace AZ
     template<class T>
     inline bool ScriptDataContext::IsClass(int index) const
     {
-        constexpr auto uuidValue{ AzTypeInfo<T>::Uuid() };
+        const auto uuidValue{ AzTypeInfo<T>::Uuid() };
         return AZ::Internal::LuaIsClass(m_nativeContext, m_startVariableIndex + index, &uuidValue);
     }
     template<class T>
@@ -784,10 +784,10 @@ namespace AZ
     * Lua VM context.
     * \note move all LUA code to CPP and remove including it by default, most operations happen via ScriptDataContext.
     */
-    class ScriptContext
+    class AZCORE_API ScriptContext
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptContext, AZ::SystemAllocator);
 
         static const int m_maxDbgName = 512; ///< Max debug name length.
 
@@ -803,7 +803,7 @@ namespace AZ
 
         using StackVariableAllocator = AZ::StackVariableAllocator;
         /// Stack temporary memory
-        
+
         /**
          * Class that provides custom reader/write to the Lua VM
          */
@@ -863,9 +863,9 @@ namespace AZ
         size_t GetMemoryUsage() const;
 
         /**
-         *  Step the garbage collector. There is no exact number that works in all cases, tune this number for optimal 
+         *  Step the garbage collector. There is no exact number that works in all cases, tune this number for optimal
          * performance in your app.
-         */ 
+         */
         void GarbageCollectStep(int numberOfSteps = 2);
 
         lua_State* NativeContext();
@@ -908,15 +908,15 @@ namespace AZ
         /**
          * Make sure that the Lua EBus handlers are not called from background threads.
          * By default the thread that creates the script context is the owner.
-         * This method allows to override this default behaviour.                                                                      
-        */        
-        void DebugSetOwnerThread(AZStd::thread::id ownerThreadId); 
-        
+         * This method allows to override this default behaviour.
+        */
+        void DebugSetOwnerThread(AZStd::thread::id ownerThreadId);
+
         /**
          * Make sure that the Lua EBus handlers are not called from background threads.
          * Use this to make sure the calling thread is the thread that owns the script context.
-        */        
-        bool DebugIsCallingThreadTheOwner() const;                 
+        */
+        bool DebugIsCallingThreadTheOwner() const;
 
         void SetErrorHook(ErrorHook cb);
         ErrorHook GetErrorHook() const;
@@ -951,14 +951,14 @@ namespace AZ
     using LuaPushToStack = void(*)(lua_State*, AZ::BehaviorArgument&);
     using LuaPrepareValue = bool(*)(AZ::BehaviorArgument&, AZ::BehaviorClass*, AZ::StackVariableAllocator&, AZStd::allocator* backupAllocator);
 
-    // returns a function that allows the caller to push the parameter into the 
-    LuaLoadFromStack FromLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, AZ::BehaviorClass*& behaviorClass);
-    LuaPushToStack ToLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, LuaPrepareValue* prepareParamOut, AZ::BehaviorClass*& behaviorClass);
+    // returns a function that allows the caller to push the parameter into the
+    AZCORE_API LuaLoadFromStack FromLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, AZ::BehaviorClass*& behaviorClass);
+    AZCORE_API LuaPushToStack ToLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, LuaPrepareValue* prepareParamOut, AZ::BehaviorClass*& behaviorClass);
 
-    void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& param);
-    void StackPush(lua_State* lua, AZ::BehaviorArgument& param);
-    bool StackRead(lua_State* lua, int index, AZ::BehaviorContext* context,  AZ::BehaviorArgument& param, AZ::StackVariableAllocator*);
-    bool StackRead(lua_State* lua, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* = nullptr);
+    AZCORE_API void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& param);
+    AZCORE_API void StackPush(lua_State* lua, AZ::BehaviorArgument& param);
+    AZCORE_API bool StackRead(lua_State* lua, int index, AZ::BehaviorContext* context,  AZ::BehaviorArgument& param, AZ::StackVariableAllocator*);
+    AZCORE_API bool StackRead(lua_State* lua, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* = nullptr);
 
     //////////////////////////////////////////////////////////////////////////
     template<class T>
@@ -1017,7 +1017,7 @@ namespace AZ
      * RAII method of creating and managing Lua threads.
      * Because of implicit cast to lua_State*, this object can be passed to lua[L]_* functions
      */
-    struct LuaNativeThread
+    struct AZCORE_API LuaNativeThread
     {
         LuaNativeThread() = delete;
         LuaNativeThread(lua_State* rootState);
@@ -1032,7 +1032,7 @@ namespace AZ
 
     namespace Internal
     {
-        bool IsAvailableInLua(const AttributeArray& attributes);
+        AZCORE_API bool IsAvailableInLua(const AttributeArray& attributes);
     }
 
 } // namespace AZ

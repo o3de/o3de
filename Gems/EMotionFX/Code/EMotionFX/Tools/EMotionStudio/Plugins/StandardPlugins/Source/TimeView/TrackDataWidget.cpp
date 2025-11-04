@@ -44,7 +44,6 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
-#include "../MotionEvents/MotionEventsPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
 
@@ -91,6 +90,9 @@ namespace EMStudio
         setAutoFillBackground(false);
 
         setFocusPolicy(Qt::StrongFocus);
+
+        connect(this, &TrackDataWidget::MotionEventPresetsDropped,
+                m_plugin, &TimeViewPlugin::OnEventPresetDroppedOnTrackData);
     }
 
 
@@ -539,7 +541,7 @@ namespace EMStudio
             const AZ::Color& colorCode = curItem->m_color;
             QColor color;
             color.setRgbF(colorCode.GetR(), colorCode.GetG(), colorCode.GetB(), colorCode.GetA());
-            
+
             if (m_isScrolling == false && m_plugin->m_isAnimating == false)
             {
                 if (m_plugin->m_nodeHistoryItem && m_plugin->m_nodeHistoryItem->m_nodeId == curItem->m_emitterNodeId)
@@ -1596,6 +1598,11 @@ namespace EMStudio
     // the mouse wheel is adjusted
     void TrackDataWidget::DoWheelEvent(QWheelEvent* event, TimeViewPlugin* plugin)
     {
+        if (m_isScrolling || m_dragging || m_resizing)
+        {
+            return;
+        }
+
         plugin->SetRedrawFlag();
 
         // Vertical
@@ -1606,27 +1613,6 @@ namespace EMStudio
 
             double zoomDelta = delta * 4 * MCore::Clamp(plugin->GetTimeScale() / 2.0, 1.0, 22.0);
             plugin->SetScale(plugin->GetTimeScale() + zoomDelta);
-        }
-
-        // Horizontal
-        {
-            const int numDegrees    = event->angleDelta().x() / 8;
-            const int numSteps      = numDegrees / 15;
-            float delta             = numSteps / 10.0f;
-
-            if (EMotionFX::GetRecorder().GetIsRecording() == false)
-            {
-                if (delta > 0)
-                {
-                    delta = 1;
-                }
-                else
-                {
-                    delta = -1;
-                }
-
-                plugin->DeltaScrollX(-delta * 600);
-            }
         }
     }
 
@@ -1755,15 +1741,10 @@ namespace EMStudio
                 connect(action, &QAction::triggered, this, &TrackDataWidget::OnAddElement);
 
                 // add action to add a motion event which gets its param and type from the selected preset
-                EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionEventsPlugin::CLASS_ID);
-                if (plugin)
+                if (m_plugin->CheckIfMotionEventPresetReadyToDrop())
                 {
-                    MotionEventsPlugin* eventsPlugin = static_cast<MotionEventsPlugin*>(plugin);
-                    if (eventsPlugin->CheckIfIsPresetReadyToDrop())
-                    {
-                        QAction* presetAction = menu.addAction("Add preset event");
-                        connect(presetAction, &QAction::triggered, this, &TrackDataWidget::OnCreatePresetEvent);
-                    }
+                    QAction* presetAction = menu.addAction("Add preset event");
+                    connect(presetAction, &QAction::triggered, this, &TrackDataWidget::OnCreatePresetEvent);
                 }
 
                 if (timeTrack->GetNumElements() > 0)
@@ -2171,16 +2152,8 @@ namespace EMStudio
     void TrackDataWidget::OnCreatePresetEvent()
     {
         m_plugin->SetRedrawFlag();
-        EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionEventsPlugin::CLASS_ID);
-        if (plugin == nullptr)
-        {
-            return;
-        }
-
-        MotionEventsPlugin* eventsPlugin = static_cast<MotionEventsPlugin*>(plugin);
-
         QPoint mousePos(m_contextMenuX, m_contextMenuY);
-        eventsPlugin->OnEventPresetDropped(mousePos);
+        m_plugin->OnEventPresetDroppedOnTrackData(mousePos);
     }
 
     void TrackDataWidget::OnAddTrack()
@@ -2612,7 +2585,7 @@ namespace EMStudio
                 EMotionFX::AnimGraphNode* curNode = node->GetParentNode();
                 while (curNode)
                 {
-                    nodePath.emplace(0, curNode);
+                    nodePath.emplace(nodePath.begin(), curNode);
                     curNode = curNode->GetParentNode();
                 }
 

@@ -17,7 +17,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(ExecutionStateInterpretedPure, "{EF702F22-F727-476A-A66A-A7F44687C194}", ExecutionStateInterpreted);
-        AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPure, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPure, AZ::SystemAllocator);
 
         ExecutionStateInterpretedPure(ExecutionStateConfig& config);
 
@@ -35,7 +35,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(ExecutionStateInterpretedPureOnGraphStart, "{D4CA9731-31CE-4B27-A91F-6E71E1DE8B7D}", ExecutionStateInterpretedPure);
-        AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPureOnGraphStart, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPureOnGraphStart, AZ::SystemAllocator);
 
         ExecutionStateInterpretedPureOnGraphStart(ExecutionStateConfig& config);
 

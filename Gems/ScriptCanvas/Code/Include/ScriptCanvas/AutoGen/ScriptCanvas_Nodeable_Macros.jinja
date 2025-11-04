@@ -11,10 +11,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {# Macros for Nodeables #}
 
 {# CleanName #}
-{# Returns a clean name without quotations, commas, slashes or white space #}
+{# Returns a clean name without quotations, commas, or white space #}
 
 {%- macro CleanName(name) -%}
-{{name|replace(' ','')|replace('"','')|replace('/','')|replace(':','')}}
+{{name|replace(' ','')|replace('"','')|replace(':','')}}
 {%- endmacro -%}
 
 {# ------- #}
@@ -99,6 +99,28 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {%+ endfor -%}
 {%- endmacro -%}
 
+
+{# Copy Constructor #}
+{# Produces the memberwise copy ctor  #}
+{%- macro CopyConstructor(Class) -%}
+{%- if Class.findall('Property')|length() > 0 or Class.findall('Parameter')|length() > 0 -%}
+{{ Class.attrib['Name'] }}([[maybe_unused]] const {{ Class.attrib['Name'] }}& rhs) { \
+{%+ for field in Class.findall('Property') %}
+{%-     set propertyName = CleanName(field.attrib['Name']) -%}
+{{ propertyName }} = rhs.{{ propertyName }}; \
+{%+ endfor -%}
+
+{%+ for field in Class.findall('Parameter') %}
+{%-         set propertyName = CleanName(field.attrib['Name']) -%}
+{{ propertyName }} = rhs.{{ propertyName }}; \
+{%- endfor -%}
+}
+{% endif %}
+{%- endmacro -%}
+{# ---------------- #}
+
+
+
 {%- macro DataSlotDefaultValue(defaultValue) -%}
 {%- if "\\\"" in defaultValue -%}
 {{defaultValue|replace("\\\"", '')}}
@@ -109,9 +131,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 {# ------- #}
 
-{% macro AddDataSlot(isInput, executionName, displayGroup, slotName, slotDescription, slotDefaultValue, valueType, parentName) %}
+{% macro AddDataSlot(isInput, executionName, displayGroup, slotName, slotDescription, slotDefaultValue, valueType, parentName, hideInputField, hideName, preset) %}
 
-        // Data Slot: {{slotName}} ({% if isInput == "true" %}Input{% else %}Output{% endif %})
+        // Data Slot: {{slotName}} ({% if isInput == true %}Input{% else %}Output{% endif %})
         {
 
 {% if valueType is undefined %}
@@ -120,9 +142,27 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
             ScriptCanvas::DataSlotConfiguration dataSlotConfiguration;
             dataSlotConfiguration.m_name = "{{ slotName }}";
             dataSlotConfiguration.m_toolTip = "{{ slotDescription }}";
+{% if hideInputField is defined %}
+{% if hideInputField == "true" %}
+            dataSlotConfiguration.m_canHaveInputField = false;
+            dataSlotConfiguration.m_isUserAdded = true;
+{% endif %}
+{% elif preset == "compact" %}
+            dataSlotConfiguration.m_canHaveInputField = false;
+            dataSlotConfiguration.m_isUserAdded = true;
+{% endif %}
+{% if hideName is defined %}
+{% if hideName == "true" %}
+            dataSlotConfiguration.m_isNameHidden = true;
+{% endif %}
+{% elif preset == "compact" %}
+            dataSlotConfiguration.m_isNameHidden = true;
+{% endif %}
 {% if displayGroup is defined %}
             dataSlotConfiguration.m_displayGroup = "{{ displayGroup }}";
-{% elif parentName is defined%}
+{% elif preset == "compact" %}
+            dataSlotConfiguration.m_displayGroup = "";
+{% elif parentName is defined %}
             dataSlotConfiguration.m_displayGroup = "{{ parentName }}";
 {% endif %}
             dataSlotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::{% if isInput == "true" %}Input{% else %}Output{% endif %});
@@ -183,7 +223,7 @@ false
 
 
 {# slotType is Input or Output #}
-{% macro CreateExecutionSlot(tag, executionDirection, isLatent) %}
+{% macro CreateExecutionSlot(tag, executionDirection, isLatent, preset) %}
 {%- set slotName = tag.attrib['Name'] %}
 {%- set slotNameClean = CleanName(slotName) %}
 {%- set slotDescription = tag.attrib['Description'] %}
@@ -191,11 +231,30 @@ false
         ScriptCanvas::ExecutionSlotConfiguration slotConfiguration{{executionDirection}}; 
         slotConfiguration{{executionDirection}}.m_name = "{{ slotName }}";
         slotConfiguration{{executionDirection}}.m_toolTip = "{{ slotDescription }}";
+{% if tag.attrib['HideName'] %}
+        slotConfiguration{{executionDirection}}.m_isNameHidden = true;
+{% endif %}
         slotConfiguration{{executionDirection}}.SetConnectionType(ScriptCanvas::ConnectionType::{{ executionDirection }});
 {% if tag.attrib['DisplayGroup'] is defined %}
         slotConfiguration{{executionDirection}}.m_displayGroup = "{{ tag.attrib['DisplayGroup'] }}";
+{% elif preset == "compact" %}
+        slotConfiguration{{executionDirection}}.m_displayGroup = "";
 {% else %}
         slotConfiguration{{executionDirection}}.m_displayGroup = "{{ slotName }}";
+{% endif %}
+{% if tag.attrib['Implicit'] is defined %}
+{% if tag.attrib['Implicit'] == "true" %}
+            slotConfiguration{{executionDirection}}.m_createsImplicitConnections = true;
+{% endif %}
+{% elif preset == "compact" %}
+            slotConfiguration{{executionDirection}}.m_createsImplicitConnections = true;
+{% endif %}
+{% if tag.attrib['Hidden'] is defined %}
+{% if tag.attrib['Hidden'] == "true" %}
+            slotConfiguration{{executionDirection}}.m_isVisible = false;
+{% endif %}
+{% elif preset == "compact" %}
+            slotConfiguration{{executionDirection}}.m_isVisible = false;
 {% endif %}
 {% if isLatent is defined or executionDirection == "Output" %}
         slotConfiguration{{executionDirection}}.m_isLatent = true;
@@ -220,7 +279,7 @@ void
 {%-      for return in returns -%}
 {%-         if returnTypes.append(return.attrib['Type']) -%}{%- endif -%}
 {%-      endfor -%}
-AZStd::tuple<{{returns|join(", ")}}>
+AZStd::tuple<{{returnTypes|join(", ")}}>
 {%-  endif -%}
 {%- endmacro -%}
 
@@ -303,7 +362,7 @@ AZStd::tuple<{{returns|join(", ")}}>
 {%      for executionOut in Class.findall('Output') %}
                 {{ ExecutionOutDeclaration(Class, executionOut) }}
 {%-     endfor %}
-size_t GetRequiredOutCount() const override; 
+size_t GetRequiredOutCount() const override; \
 {% endmacro %}
 
 {% macro ExecutionBranchDefinition(Class, qualifiedName, executionOut, outIndexBranch) %}

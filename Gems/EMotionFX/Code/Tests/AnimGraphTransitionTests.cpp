@@ -52,7 +52,7 @@ namespace EMotionFX
         }
     }
 
-    INSTANTIATE_TEST_CASE_P(TestAnimGraphTransitionWeights, AnimGraphTransitionFixtureParams,
+    INSTANTIATE_TEST_SUITE_P(TestAnimGraphTransitionWeights, AnimGraphTransitionFixtureParams,
         ::testing::Values(
             &AnimGraphNodeData::GetLocalWeight,
             &AnimGraphNodeData::GetGlobalWeight

@@ -51,7 +51,8 @@ enum PropertyType
     ePropertyAudioPreloadRequest,
     ePropertyFlowCustomData,
     ePropertyUiElement,
-    ePropertyMotion
+    ePropertyMotion,
+    ePropertyColorA
 };
 
 namespace Prop
@@ -63,9 +64,7 @@ namespace Prop
 
         PropertyType m_type;
         int m_numImages;
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         IVarEnumListPtr m_enumList;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
         float m_rangeMin;
         float m_rangeMax;
         float m_step;

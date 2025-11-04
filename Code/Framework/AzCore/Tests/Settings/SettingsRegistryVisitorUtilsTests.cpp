@@ -29,7 +29,7 @@ namespace SettingsRegistryVisitorUtilsTests
 
     template <typename VisitorParams>
     class SettingsRegistryVisitorUtilsParamFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<VisitorParams>
     {
     public:
@@ -178,7 +178,7 @@ namespace SettingsRegistryVisitorUtilsTests
     }
 
 
-    INSTANTIATE_TEST_CASE_P(
+    INSTANTIATE_TEST_SUITE_P(
         VisitField,
         SettingsRegistryVisitCallbackFixture,
         ::testing::Values(

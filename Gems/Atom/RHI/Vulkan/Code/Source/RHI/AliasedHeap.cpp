@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <RHI/Vulkan.h>
 #include <RHI/AliasedHeap.h>
 #include <RHI/AliasingBarrierTracker.h>
 #include <RHI/Image.h>
@@ -12,7 +13,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Scope.h>
-#include <RHI/Memory.h>
+#include <RHI/VulkanMemoryAllocation.h>
 #include <RHI/PhysicalDevice.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
@@ -27,7 +28,7 @@ namespace AZ
 
         AZStd::unique_ptr<RHI::AliasingBarrierTracker> AliasedHeap::CreateBarrierTrackerInternal()
         {
-            return AZStd::make_unique<AliasingBarrierTracker>(GetVulkanRHIDevice());
+            return AZStd::make_unique<AliasingBarrierTracker>(GetVulkanRHIDevice(), GetDescriptor().m_budgetInBytes);
         }
 
         RHI::ResultCode AliasedHeap::InitInternal(RHI::Device& rhiDevice, const RHI::AliasedHeapDescriptor& descriptor)
@@ -35,9 +36,24 @@ namespace AZ
             DeviceObject::Init(rhiDevice);
             Device& device = static_cast<Device&>(rhiDevice);
             m_descriptor = static_cast<const Descriptor&>(descriptor);
-          
-            m_heapMemory = device.AllocateMemory(m_descriptor.m_budgetInBytes, m_descriptor.m_memoryTypeMask, m_descriptor.m_memoryFlags);
-            return m_heapMemory ? RHI::ResultCode::Success : RHI::ResultCode::Fail;
+
+            VmaAllocationCreateInfo allocInfo = {};
+            allocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_CAN_ALIAS_BIT;
+            allocInfo.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+            VmaAllocation vmaAllocation;
+            VkMemoryRequirements memReq = m_descriptor.m_memoryRequirements;
+            memReq.alignment = AZStd::max(memReq.alignment, descriptor.m_alignment);
+            memReq.size = descriptor.m_budgetInBytes;
+            VkResult vkResult = vmaAllocateMemory(device.GetVmaAllocator(), &memReq, &allocInfo, &vmaAllocation, nullptr);
+            AssertSuccess(vkResult);
+            RHI::ResultCode result = ConvertResult(vkResult);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            m_heapMemory = VulkanMemoryAllocation::Create();
+            m_heapMemory->Init(device, vmaAllocation);
+
+            return RHI::ResultCode::Success;
         }
 
         void AliasedHeap::ShutdownInternal()
@@ -48,7 +64,7 @@ namespace AZ
             Base::ShutdownInternal();
         }
 
-        void AliasedHeap::ShutdownResourceInternal(RHI::Resource& resource)
+        void AliasedHeap::ShutdownResourceInternal(RHI::DeviceResource& resource)
         {
             if (Buffer* buffer = azrtti_cast<Buffer*>(&resource))
             {
@@ -62,7 +78,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::ImageInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitImageInternal(const RHI::DeviceImageInitRequest& request, size_t heapOffset)
         {
             Image* image = static_cast<Image*>(request.m_image);
             RHI::ImageDescriptor imageDescriptor = request.m_descriptor;
@@ -70,19 +86,18 @@ namespace AZ
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
             RHI::ResourceMemoryRequirements memoryRequirements = GetDevice().GetResourceMemoryRequirements(imageDescriptor);
 
-            RHI::ResultCode result = image->Init(GetVulkanRHIDevice(), imageDescriptor);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            RHI::ResultCode result =
+                image->Init(
+                    GetVulkanRHIDevice(),
+                    imageDescriptor,
+                    MemoryView(m_heapMemory, heapOffset, memoryRequirements.m_sizeInBytes));
 
-            MemoryView memoryView = MemoryView(m_heapMemory, heapOffset, memoryRequirements.m_sizeInBytes, memoryRequirements.m_alignmentInBytes, MemoryAllocationType::SubAllocated);
-            result = image->BindMemoryView(memoryView, RHI::HeapMemoryLevel::Device);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            image->SetDescriptor(imageDescriptor);
-            image->SetResidentSizeInBytes(memoryView.GetSize());
+            image->SetResidentSizeInBytes(memoryRequirements.m_sizeInBytes);
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::BufferInitRequest& request, size_t heapOffset)
+        RHI::ResultCode AliasedHeap::InitBufferInternal(const RHI::DeviceBufferInitRequest& request, size_t heapOffset)
         {
             Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
             RHI::BufferDescriptor bufferDescriptor = request.m_descriptor;
@@ -91,15 +106,18 @@ namespace AZ
             RHI::ResourceMemoryRequirements memoryRequirements = GetDevice().GetResourceMemoryRequirements(bufferDescriptor);
 
             RHI::Ptr<BufferMemory> bufferMemory = BufferMemory::Create();
-            RHI::ResultCode result = bufferMemory->Init(GetVulkanRHIDevice(), MemoryView(m_heapMemory, heapOffset, memoryRequirements.m_sizeInBytes, memoryRequirements.m_alignmentInBytes, MemoryAllocationType::SubAllocated), bufferDescriptor);
+            RHI::ResultCode result = bufferMemory->Init(
+                GetVulkanRHIDevice(),
+                MemoryView(m_heapMemory, heapOffset, memoryRequirements.m_sizeInBytes),
+                BufferMemory::Descriptor(bufferDescriptor, RHI::HeapMemoryLevel::Device));
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            BufferMemoryView memoryView = BufferMemoryView(bufferMemory, 0, memoryRequirements.m_sizeInBytes, memoryRequirements.m_alignmentInBytes, MemoryAllocationType::SubAllocated);
+            BufferMemoryView memoryView = BufferMemoryView(bufferMemory);
 
+            buffer->SetDescriptor(bufferDescriptor);
             result = buffer->Init(GetVulkanRHIDevice(), bufferDescriptor, memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            buffer->SetDescriptor(bufferDescriptor);
             return RHI::ResultCode::Success;
         }
 

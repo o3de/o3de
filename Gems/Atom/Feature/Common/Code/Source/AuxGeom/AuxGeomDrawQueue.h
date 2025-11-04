@@ -37,7 +37,7 @@ namespace AZ
         {
         public: // functions
 
-            AZ_CLASS_ALLOCATOR(AuxGeomDrawQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AuxGeomDrawQueue, AZ::SystemAllocator);
 
             AuxGeomDrawQueue() = default;
             ~AuxGeomDrawQueue() override = default;

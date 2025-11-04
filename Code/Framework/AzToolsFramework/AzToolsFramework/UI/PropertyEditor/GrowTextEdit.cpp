@@ -17,15 +17,17 @@ AZ_POP_DISABLE_WARNING
 namespace AzToolsFramework
 {
     const int GrowTextEdit::s_padding = 10;
+    const int GrowTextEdit::s_minHeight = PropertyQTConstant_DefaultHeight * 3;
+    const int GrowTextEdit::s_maxHeight = PropertyQTConstant_DefaultHeight * 10;
 
-    AZ_CLASS_ALLOCATOR_IMPL(GrowTextEdit, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(GrowTextEdit, AZ::SystemAllocator)
 
     GrowTextEdit::GrowTextEdit(QWidget* parent)
         : QTextEdit(parent)
         , m_textChanged(false)
     {
-        setSizePolicy(QSizePolicy::Policy::Ignored, QSizePolicy::Policy::Maximum);
-        setMinimumHeight(PropertyQTConstant_DefaultHeight * 3);
+        setMinimumHeight(s_minHeight);
+        setMaximumHeight(s_maxHeight);
 
         connect(this, &GrowTextEdit::textChanged, this, [this]()
         {
@@ -66,7 +68,7 @@ namespace AzToolsFramework
     {
         QSize sizeHint = QTextEdit::sizeHint();
         QSize documentSize = document()->size().toSize();
-        sizeHint.setHeight(documentSize.height() + s_padding);
+        sizeHint.setHeight(AZStd::min(s_maxHeight, documentSize.height() + s_padding));
         return sizeHint;
     }
 

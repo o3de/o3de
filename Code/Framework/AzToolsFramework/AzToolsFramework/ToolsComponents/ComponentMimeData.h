@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/PlatformDef.h>
 
 #include <QString>
@@ -14,12 +16,12 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QTreeWidgetI
 #include <QTreeWidgetItem>
 AZ_POP_DISABLE_WARNING
 #include <AzCore/base.h>
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 class QMimeData;
 
@@ -30,7 +32,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    class ComponentTypeMimeData
+    class AZTF_API ComponentTypeMimeData
     {
     public:
 
@@ -43,20 +45,20 @@ namespace AzToolsFramework
         static bool Get(const QMimeData* mimeData, ClassDataContainer& container);
     };
 
-    class ComponentMimeData
+    class AZTF_API ComponentMimeData
     {
     public:
         virtual ~ComponentMimeData() = default;
 
         AZ_RTTI(ComponentMimeData, "{55A643D6-DDE9-4D48-9B6B-B14C46B6C08B}");
-        AZ_CLASS_ALLOCATOR(ComponentMimeData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentMimeData, AZ::SystemAllocator);
 
         using ComponentDataContainer = AZStd::vector<AZ::Component*>;
         static void Reflect(AZ::ReflectContext* context);
 
         static QString GetMimeType();
 
-        static AZStd::unique_ptr<QMimeData> Create(const ComponentDataContainer& components);
+        static AZStd::unique_ptr<QMimeData> Create(AZStd::span<AZ::Component* const> components);
         static void GetComponentDataFromMimeData(const QMimeData* mimeData, ComponentDataContainer& componentData);
 
         static const QMimeData* GetComponentMimeDataFromClipboard();

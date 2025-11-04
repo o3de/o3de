@@ -48,7 +48,7 @@ namespace AzQtComponents
         struct Data;
 
     public:
-        enum
+        enum BorderStyle
         {
             CORNER_RECTANGLE = -1
         };
@@ -140,8 +140,10 @@ namespace AzQtComponents
         using QProxyStyle::polish;
         void polish(QApplication* application) override;
         void polish(QWidget* widget) override;
+        void polish(QPalette& palette) override;
         using QProxyStyle::unpolish;
         void unpolish(QWidget* widget) override;
+        void unpolish(QApplication* widget) override;
 
         QPalette standardPalette() const override;
         QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption* option, const QWidget* widget) const override;
@@ -149,9 +151,9 @@ namespace AzQtComponents
         int styleHint(QStyle::StyleHint hint, const QStyleOption* option, const QWidget* widget, QStyleHintReturn* returnData) const override;
 
         // A path to draw a border frame when color != Qt::transparent
-        QPainterPath borderLineEditRect(const QRect& contentsRect, int borderWidth = -1, int borderRadius = CORNER_RECTANGLE) const;
+        QPainterPath borderLineEditRect(const QRect& contentsRect, int borderWidth = -1, int borderRadius = Style::BorderStyle::CORNER_RECTANGLE) const;
         // A path to draw a border frame when color == Qt::Transparent
-        QPainterPath lineEditRect(const QRect& contentsRect, int borderWidth = -1, int borderRadius = CORNER_RECTANGLE) const;
+        QPainterPath lineEditRect(const QRect& contentsRect, int borderWidth = -1, int borderRadius = Style::BorderStyle::CORNER_RECTANGLE) const;
 
         bool eventFilter(QObject* watched, QEvent* ev) override;
 

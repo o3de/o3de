@@ -32,13 +32,13 @@ namespace AzToolsFramework
             AZStd::string_view m_name;
             //! A factory functor that constructs an instance of this handler.
             PropertyHandlerInstanceFactory m_factory;
-            //! A functor that returns true if this handler should be created for a given node.
+            //! A functor that returns true if this handler should be created for a given type.
             //! The first registered handler that returns true for this will be provided when calling
             //! GetPropertyHandlerForNode.
-            AZStd::function<bool(const AZ::Dom::Value&)> m_shouldHandleNode;
+            AZStd::function<bool(const AZ::TypeId&)> m_shouldHandleType;
             //! Determines whether this handler should be in the "default" pool and match against editors
             //! with no "Type" attribute explicitly specified. The first default handler that returns true
-            //! from m_shouldHandleNode will be selected (if any).
+            //! from m_shouldHandleType will be selected (if any).
             //! Care should be taken to not provide overly general handlers as default handlers.
             bool m_isDefaultHandler;
         };
@@ -65,15 +65,15 @@ namespace AzToolsFramework
 
         //! Registers a factory for a given type of PropertyHandlerWidgetInterface.
         //! This type must implement `static const AZStd::string_view GetHandlerName()`
-        //! and may implement `static bool ShouldHandleNode(const AZ::Dom::Value& node)`
+        //! and may implement `static bool ShouldHandleType(const AZ::TypeId& typeId)`
         template<typename HandlerType>
         void RegisterHandler()
         {
             HandlerData handlerData;
             handlerData.m_name = HandlerType::GetHandlerName();
-            handlerData.m_shouldHandleNode = [](const AZ::Dom::Value& node) -> bool
+            handlerData.m_shouldHandleType = [](const AZ::TypeId& typeId) -> bool
             {
-                return HandlerType::ShouldHandleNode(node);
+                return HandlerType::ShouldHandleType(typeId);
             };
             handlerData.m_factory = []
             {

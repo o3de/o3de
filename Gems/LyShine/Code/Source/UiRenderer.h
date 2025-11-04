@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#include <CryCommon/BaseTypes.h>
-
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -115,10 +113,10 @@ public: // member functions
     AZ::RPI::ShaderVariantId GetCurrentShaderVariant();
 
     //! Get the current stencil test reference value
-    uint32 GetStencilRef();
+    uint32_t GetStencilRef();
 
     //! Set the stencil test reference value
-    void SetStencilRef(uint32);
+    void SetStencilRef(uint32_t);
 
     //! Increment the current stencil reference value
     void IncrementStencilRef();
@@ -166,7 +164,7 @@ protected: // attributes
     static constexpr char LogName[] = "UiRenderer";
 
     BaseState m_baseState;
-    uint32 m_stencilRef = 0;
+    uint32_t m_stencilRef = 0;
 
     UiShaderData m_uiShaderData;
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;

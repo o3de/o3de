@@ -26,7 +26,7 @@ namespace TestImpact
     struct SourceCoverage
     {
         RepoPath m_path; //!< Source file path.
-        AZStd::vector<LineCoverage> m_coverage; //!< Source file line coverage (empty if source level coverage only).
+        AZStd::vector<LineCoverage> m_lineCoverage; //!< Source file line coverage (empty if source level coverage only).
     };
 
     //! Coverage information about a particular module (executable, shared library).
@@ -44,3 +44,46 @@ namespace TestImpact
         AZStd::vector<SourceCoverage> m_sources; //!< Sources of this module that are covered.
     };
 } // namespace TestImpact
+
+namespace AZStd
+{
+    //! Less function for SourceCoverage types for use in maps and sets.
+    template<>
+    struct less<TestImpact::SourceCoverage>
+    {
+        bool operator()(const TestImpact::SourceCoverage& lhs, const TestImpact::SourceCoverage& rhs) const
+        {
+            return lhs.m_path < rhs.m_path;
+        }
+    };
+
+    //! Less function for ModuleCoverage types for use in maps and sets.
+    template<>
+    struct less<TestImpact::ModuleCoverage>
+    {
+        bool operator()(const TestImpact::ModuleCoverage& lhs, const TestImpact::ModuleCoverage& rhs) const
+        {
+            return lhs.m_path < rhs.m_path;
+        }
+    };
+
+    //! Hash function for SourceCoverage types for use in unordered maps and sets.
+    template<>
+    struct hash<TestImpact::SourceCoverage>
+    {
+        bool operator()(const TestImpact::SourceCoverage& key) const
+        {
+            return hash<TestImpact::RepoPath>()(key.m_path);
+        }
+    };
+
+    //! Hash function for ModuleCoverage types for use in unordered maps and sets.
+    template<>
+    struct hash<TestImpact::ModuleCoverage>
+    {
+        bool operator()(const TestImpact::ModuleCoverage& key) const
+        {
+            return hash<TestImpact::RepoPath>()(key.m_path);
+        }
+    };
+} // namespace std

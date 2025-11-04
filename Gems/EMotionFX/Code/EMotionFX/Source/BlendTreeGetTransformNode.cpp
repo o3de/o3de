@@ -23,8 +23,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeGetTransformNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeGetTransformNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeGetTransformNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeGetTransformNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeGetTransformNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -196,7 +196,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("ActorGoalNode", 0xaf1e8a3a), &BlendTreeGetTransformNode::m_actorNode, "Node", "The node to get the transform from.")
+            ->DataElement(AZ_CRC_CE("ActorGoalNode"), &BlendTreeGetTransformNode::m_actorNode, "Node", "The node to get the transform from.")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeGetTransformNode::InvalidateUniqueDatas)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)

@@ -81,13 +81,13 @@ namespace GradientSignal
 
     void SurfaceMaskGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void SurfaceMaskGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientService"));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
     }
 
     void SurfaceMaskGradientComponent::Reflect(AZ::ReflectContext* context)
@@ -211,7 +211,7 @@ namespace GradientSignal
                         [this, inPositionIndex, &outValues]([[maybe_unused]] AZ::Crc32 surfaceType, float weight) -> bool
                         {
                             if (AZStd::find(
-                                    m_configuration.m_surfaceTagList.begin(), m_configuration.m_surfaceTagList.end(), surfaceType) !=
+                                    m_configuration.m_surfaceTagList.begin(), m_configuration.m_surfaceTagList.end(), SurfaceData::SurfaceTag(surfaceType)) !=
                                 m_configuration.m_surfaceTagList.end())
                             {
                                 outValues[inPositionIndex] = AZ::GetMax(AZ::GetClamp(weight, 0.0f, 1.0f), outValues[inPositionIndex]);

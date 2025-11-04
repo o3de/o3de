@@ -9,7 +9,6 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <ScriptCanvas/Data/Data.h>
 
@@ -29,6 +28,9 @@ namespace ScriptCanvasEditor
         virtual void CreateEditorComponentsOnEntity(AZ::Entity* entity, const AZ::Data::AssetType& assetType) = 0;
 
         virtual void RequestGarbageCollect() = 0;
+
+        //! Open document in script canvas editor
+        virtual void OpenScriptCanvasEditor(const AZStd::string& sourcePath) = 0;
     };
 
     using SystemRequestBus = AZ::EBus<SystemRequests>;

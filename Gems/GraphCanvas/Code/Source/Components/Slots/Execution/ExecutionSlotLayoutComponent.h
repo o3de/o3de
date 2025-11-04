@@ -30,7 +30,7 @@ namespace GraphCanvas
         , public StyleNotificationBus::Handler        
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExecutionSlotLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionSlotLayout, AZ::SystemAllocator);
 
         ExecutionSlotLayout(ExecutionSlotLayoutComponent& owner);
         ~ExecutionSlotLayout();
@@ -75,6 +75,8 @@ namespace GraphCanvas
         GraphCanvasLabel*           m_slotText;
 
         GraphCanvasLabel*           m_textDecoration;
+
+        bool m_isNameHidden = false;
     };
 
     //! Lays out the parts of a basic Node

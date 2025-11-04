@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_UTILS_H
-#define AZSTD_UTILS_H 1
+#pragma once
 
 #include <AzCore/std/base.h>
 #include <AzCore/std/typetraits/integral_constant.h>
@@ -22,8 +21,8 @@
 #include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_lvalue_reference.h>
 #include <AzCore/std/typetraits/void_t.h>
-#include <AzCore/std/utility/declval.h>
 #include <AzCore/std/utility/move.h>
+#include <AzCore/std/utility/pair.h>
 
 #include <utility>
 
@@ -100,162 +99,6 @@ namespace AZStd
     using std::make_index_sequence;
     using std::make_integer_sequence;
 
-    struct piecewise_construct_t {};
-    static constexpr piecewise_construct_t piecewise_construct{};
-
-    template<class T1, class T2>
-    struct pair
-    {   // store a pair of values
-        typedef pair<T1, T2>    this_type;
-        typedef T1              first_type;
-        typedef T2              second_type;
-
-        /// Construct from defaults
-        constexpr pair()
-            : first(T1())
-            , second(T2()) {}
-        /// Constructs only the first element, default the second.
-        constexpr pair(const T1& value1)
-            : first(value1)
-            , second(T2()) {}
-        /// Construct from specified values.
-        constexpr pair(const T1& value1, const T2& value2)
-            : first(value1)
-            , second(value2) {}
-        /// Copy constructor
-        constexpr pair(const this_type& rhs)
-            : first(rhs.first)
-            , second(rhs.second) {}
-        // construct from compatible pair
-        template<class Other1, class Other2>
-        constexpr pair(const pair<Other1, Other2>& rhs)
-            : first(rhs.first)
-            , second(rhs.second) {}
-
-        using TT1 = AZStd::remove_reference_t<T1>;
-        using TT2 = AZStd::remove_reference_t<T2>;
-
-        constexpr pair(TT1&& value1, TT2&& value2)
-            : first(AZStd::move(value1))
-            , second(AZStd::move(value2)) {}
-        constexpr pair(const TT1& value1, TT2&& value2)
-            : first(value1)
-            , second(AZStd::move(value2)) {}
-        constexpr pair(TT1&& value1, const TT2& value2)
-            : first(AZStd::move(value1))
-            , second(value2) {}
-        template<class Other1, class Other2>
-        constexpr pair(Other1&& value1, Other2&& value2)
-            : first(AZStd::forward<Other1>(value1))
-            , second(AZStd::forward<Other2>(value2)) {}
-        constexpr pair(pair&& rhs)
-            : first(AZStd::move(rhs.first))
-            , second(AZStd::move(rhs.second)) {}
-        template<class Other1, class Other2>
-        constexpr pair(pair<Other1, Other2>&& rhs)
-            : first(AZStd::forward<Other1>(rhs.first))
-            , second(AZStd::forward<Other2>(rhs.second)) {}
-
-        template<template<class...> class TupleType, class... Args1, class... Args2>
-        constexpr pair(piecewise_construct_t,
-            TupleType<Args1...> first_args,
-            TupleType<Args2...> second_args);
-
-        template<template<class...> class TupleType, class... Args1, class... Args2, size_t... I1, size_t... I2>
-        constexpr pair(piecewise_construct_t, TupleType<Args1...>& first_args,
-            TupleType<Args2...>& second_args, AZStd::index_sequence<I1...>,
-            AZStd::index_sequence<I2...>);
-
-        constexpr this_type& operator=(this_type&& rhs)
-        {
-            first = AZStd::move(rhs.first);
-            second = AZStd::move(rhs.second);
-            return *this;
-        }
-
-        template<class Other1, class Other2>
-        constexpr this_type& operator=(const pair<Other1, Other2>&& rhs)
-        {
-            first = AZStd::move(rhs.first);
-            second = AZStd::move(rhs.second);
-            return *this;
-        }
-
-        void swap(this_type& rhs)
-        {
-            // exchange contents with _Right
-            if (this != &rhs)
-            {   // different, worth swapping
-                AZStd::swap(first, rhs.first);
-                AZStd::swap(second, rhs.second);
-            }
-        }
-
-        constexpr this_type& operator=(const this_type& rhs)
-        {
-            first = rhs.first;
-            second = rhs.second;
-            return *this;
-        }
-
-        template<class Other1, class Other2>
-        constexpr this_type& operator=(const pair<Other1, Other2>& rhs)
-        {
-            first = rhs.first;
-            second = rhs.second;
-            return *this;
-        }
-
-        T1 first;   // the first stored value
-        T2 second;  // the second stored value
-    };
-
-    // AZStd::pair deduction guides
-    template <class T1, class T2>
-    pair(T1, T2) -> pair<T1, T2>;
-
-    // pair
-    template<class T1, class T2>
-    constexpr void swap(AZStd::pair<T1, T2>& left, AZStd::pair<T1, T2>& _Right)
-    {   // swap _Left and _Right pairs
-        left.swap(_Right);
-    }
-
-    template<class L1, class L2, class R1, class R2, class = AZStd::void_t<decltype(declval<L1>() == declval<R1>() && declval<L2>() == declval<R2>())>>
-    constexpr bool operator==(const pair<L1, L2>& left, const pair<R1, R2>& right)
-    {   // test for pair equality
-        return left.first == right.first && left.second == right.second;
-    }
-
-    template<class L1, class L2, class R1, class R2, class = AZStd::void_t<decltype(declval<L1>() == declval<R1>() && declval<L2>() == declval<R2>())>>
-    constexpr bool operator!=(const pair<L1, L2>& left, const pair<R1, R2>& right)
-    {   // test for pair inequality
-        return !(left == right);
-    }
-
-    template<class L1, class L2, class R1, class R2, class = AZStd::void_t<decltype(declval<L1>() < declval<R1>() || (!(declval<R1>() < declval<L1>()) && declval<L2>() < declval<R2>()))>>
-    constexpr bool operator<(const pair<L1, L2>& left, const pair<R1, R2>& right)
-    {   // test if left < right for pairs
-        return (left.first < right.first || (!(right.first < left.first) && left.second < right.second));
-    }
-
-    template<class L1, class L2, class R1, class R2, class = AZStd::void_t<decltype(declval<L1>() < declval<R1>() || (!(declval<R1>() < declval<L1>()) && declval<L2>() < declval<R2>()))>>
-    constexpr bool operator>(const pair<L1, L2>& left, const pair<R1, R2>& right)
-    {   // test if left > right for pairs
-        return right < left;
-    }
-
-    template<class L1, class L2, class R1, class R2, class = AZStd::void_t<decltype(declval<L1>() < declval<R1>() || (!(declval<R1>() < declval<L1>()) && declval<L2>() < declval<R2>()))>>
-    constexpr bool operator<=(const pair<L1, L2>& left, const pair<R1, R2>& right)
-    {   // test if left <= right for pairs
-        return !(right < left);
-    }
-
-    template<class L1, class L2, class R1, class R2, class = AZStd::void_t<decltype(declval<L1>() < declval<R1>() || (!(declval<R1>() < declval<L1>()) && declval<L2>() < declval<R2>()))>>
-    constexpr bool operator>=(const pair<L1, L2>& left, const pair<R1, R2>& right)
-    {   // test if left >= right for pairs
-        return !(left < right);
-    }
 
     //////////////////////////////////////////////////////////////////////////
     // Address of
@@ -285,39 +128,6 @@ namespace AZStd
     //}
     //////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // make_pair
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(T1&& value1, T2&& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type(AZStd::forward<T1>(value1), AZStd::forward<T2>(value2));
-    }
-
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(const T1& value1, T2&& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type((typename AZStd::unwrap_reference<T1>::type)value1, AZStd::forward<T2>(value2));
-    }
-
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(T1&& value1, const T2& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type(AZStd::forward<T1>(value1), (typename AZStd::unwrap_reference<T2>::type)value2);
-    }
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(const T1& value1, const T2& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type((typename AZStd::unwrap_reference<T1>::type)value1, (typename AZStd::unwrap_reference<T2>::type)value2);
-    }
-    //////////////////////////////////////////////////////////////////////////
 
     template<class T, bool isEnum = AZStd::is_enum<T>::value>
     struct RemoveEnum
@@ -427,6 +237,3 @@ namespace AZStd
         using is_in_place_index_t = typename is_in_place_index<T>::type;
     }
 }
-
-#endif // AZSTD_UTILS_H
-#pragma once

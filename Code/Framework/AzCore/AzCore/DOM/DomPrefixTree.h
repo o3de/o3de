@@ -122,18 +122,55 @@ namespace AZ::Dom
         void SetValue(const Path& path, Deduced&& value);
         //! Removes the value stored at path. If removeChildren is true, also removes any values stored at subpaths.
         void EraseValue(const Path& path, bool removeChildren = false);
+
+        //! Detaches a sub tree whose root node matches the provided path.
+        //! The detach operation removes the node and its children from the existing tree.
+        //! @param path The path which corresponds to the root node of the subtree to be detached.
+        //! @return The DomPrefixTree that is detached.
+        DomPrefixTree<T> DetachSubTree(const Path& path);
+
+        //! Overwrites the subtree at the path and replaces it with the given subtree.
+        //! Old node and its children at the path would be destroyed. The new subtree will be moved to the path.
+        //! @param path The path which corresponds to the root node to which the subtree would be overwritten.
+        //! @param subtree The subtree to move to the provided path.
+        //! @param shouldCreateNodes Create nodes for the provided path if they are missing. Default to true.
+        //! @return True if the subtree was overwritten successfully, false if shouldCreateNodes is off and no target path exists.
+        bool OverwritePath(const Path& path, DomPrefixTree&& subtree, bool shouldCreateNodes = true);
+
         //! Removes all entries from this tree.
         void Clear();
+
+        //! Returns true if the root node is empty.
+        bool IsEmpty() const;
 
     private:
         struct Node
         {
             AZStd::unordered_map<PathEntry, Node> m_values;
             AZStd::optional<T> m_data;
+
+            bool IsEmpty() const;
         };
+
+        //! Since Node is an internal private struct in this class, this constructor that uses Node is also private.
+        explicit DomPrefixTree(Node&& node);
 
         Node* GetNodeForPath(const Path& path);
         const Node* GetNodeForPath(const Path& path) const;
+
+        //! Detaches the node that matches the provided path.
+        //! The detach operation removes the node and its children from the existing tree.
+        //! @param path The path at which the node should be detached.
+        //! @return The Node that is detached.
+        Node DetachNodeAtPath(const Path& path);
+
+        //! Overwrites the node at the path and replaces it with the given node.
+        //! Old node and its children at the path would be destroyed. New nodes will be moved to the path.
+        //! @param path The path which corresponds to the root node to be overwritten.
+        //! @param newNode The new node to move to the provided path.
+        //! @param shouldCreateNodes Create nodes for the provided path if they are missing. Default to true.
+        //! @return True if the node was overwritten successfully, false if shouldCreateNodes is off and no target path exists.
+        bool OverwritePath(const Path& path, Node&& newNode, bool shouldCreateNodes = true);
 
         Node m_rootNode;
     };

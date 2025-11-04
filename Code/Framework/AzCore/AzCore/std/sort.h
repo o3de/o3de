@@ -51,7 +51,7 @@ namespace AZStd
                 , m_numConstructed(0)
                 , m_size(0)
             {
-                m_data = reinterpret_cast<pointer_type>(m_allocator.allocate(sizeof(T) * m_capacity, alignment_of<T>::value));
+                m_data = reinterpret_cast<pointer_type>(static_cast<void*>(m_allocator.allocate(sizeof(T) * m_capacity, alignof(T))));
             }
 
             AZ_FORCE_INLINE TemporaryBuffer(size_type capacity, const Allocator& allocator)
@@ -60,7 +60,7 @@ namespace AZStd
                 , m_numConstructed(0)
                 , m_size(0)
             {
-                m_data = reinterpret_cast<pointer_type>(m_allocator.allocate(sizeof(T) * m_capacity, alignment_of<T>::value));
+                m_data = reinterpret_cast<pointer_type>(static_cast<void*>(m_allocator.allocate(sizeof(T) * m_capacity, alignof(T))));
             }
 
             AZ_FORCE_INLINE ~TemporaryBuffer()

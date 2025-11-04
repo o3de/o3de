@@ -29,7 +29,6 @@
 #include <AzGameFramework/Application/GameApplication.h>
 
 #include <ISystem.h>
-#include <LegacyAllocator.h>
 
 #include <Launcher_Traits_Platform.h>
 
@@ -58,7 +57,7 @@ namespace
         AzFramework::NativeWindowHandle windowHandle = nullptr;
         AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
         AzFramework::WindowSize newSize = AzFramework::WindowSize(aznumeric_cast<int32_t>(value.GetX()), aznumeric_cast<int32_t>(value.GetY()));
-        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize);
+        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize, AzFramework::WindowPosOptions());
     }
 
     AZ_CVAR(AZ::Vector2, r_viewportPos, AZ::Vector2::CreateZero(), CVar_OnViewportPosition, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -129,6 +128,9 @@ namespace
 
 namespace O3DELauncher
 {
+    inline constexpr AZStd::string_view LauncherTypeTag = "/O3DE/Runtime/LauncherType";
+    inline constexpr AZStd::string_view LauncherFilenameTag = "launcher";
+
     AZ_CVAR(bool, bg_ConnectToAssetProcessor, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "If true, the process will launch and connect to the asset processor");
 
     bool PlatformMainInfo::CopyCommandLine(int argc, char** argv)
@@ -252,6 +254,8 @@ namespace O3DELauncher
             };
             AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
 
+            AZ_TracePrintf("Launcher", "CriticalAssetsCompiled\n");
+
             // Broadcast that critical assets are ready
             AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
         }
@@ -350,28 +354,26 @@ namespace O3DELauncher
         ArgumentContainer argContainer(gameArgV, gameArgV + gameArgC);
 
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-        // Inject the Engine Path, Project Path and Project Name into the CommandLine parameters to the command line
-        // in order to be used in the Settings Registry
 
-        // The command line overrides are stored in the following fixed strings
-        // until the ComponentApplication constructor can parse the command line parameters
-        FixedValueString projectNameOptionOverride;
+        // Initialize the Settings Registry with the Engine Path, Project Path and Project Name settings
+        // Add the initial JSON object for "/O3DE/Runtime/Manifest/Project" and "/Amazon/AzCore/Bootstrap"
+        FixedValueString launcherJsonPatch = R"(
+            [
+                { "op": "add", "path": "/O3DE", "value": { "Runtime": { "Manifest": { "Project": {} } } } },
+                { "op": "add", "path": "/Amazon", "value": { "AzCore": { "Bootstrap": {} } } })";
 
-        // Insert the project_name option to the front
+        // Query the project_name baked into the launcher executable
         const AZStd::string_view launcherProjectName = GetProjectName();
         if (!launcherProjectName.empty())
         {
-            const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
-            projectNameOptionOverride = FixedValueString::format(R"(--regset="%s=%.*s")",
-                projectNameKey.c_str(), aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data());
-            argContainer.emplace_back(projectNameOptionOverride.data());
+            // Append the project name setting to the JSON Patch
+            launcherJsonPatch += FixedValueString::format(R"(,
+                { "op": "add", "path": "/O3DE/Runtime/Manifest/Project/project_name", "value": "%.*s" })", AZ_STRING_ARG(launcherProjectName));
         }
 
         // Non-host platforms cannot use the project path that is #defined within the launcher.
         // In this case the the result of AZ::Utils::GetDefaultAppRoot is used instead
 #if !AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
-        FixedValueString projectPathOptionOverride;
-        FixedValueString enginePathOptionOverride;
         AZStd::string_view projectPath;
         // Make sure the defaultAppRootPath variable is in scope long enough until the projectPath string_view is used below
         AZStd::optional<AZ::IO::FixedMaxPathString> defaultAppRootPath = AZ::Utils::GetDefaultAppRootPath();
@@ -381,24 +383,27 @@ namespace O3DELauncher
         }
         if (!projectPath.empty())
         {
-            const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                + "/project_path";
-            projectPathOptionOverride = FixedValueString::format(R"(--regset="%s=%.*s")",
-                projectPathKey.c_str(), aznumeric_cast<int>(projectPath.size()), projectPath.data());
-            argContainer.emplace_back(projectPathOptionOverride.data());
+            launcherJsonPatch += FixedValueString::format(R"(,
+                { "op": "add", "path": "/Amazon/AzCore/Bootstrap/project_path", "value": "%.*s" })", AZ_STRING_ARG(projectPath));
+
 
             // For non-host platforms set the engine root to be the project root
             // Since the directories available during execution are limited on those platforms
             AZStd::string_view enginePath = projectPath;
-            const auto enginePathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                + "/engine_path";
-            enginePathOptionOverride = FixedValueString ::format(R"(--regset="%s=%.*s")",
-                enginePathKey.c_str(), aznumeric_cast<int>(enginePath.size()), enginePath.data());
-            argContainer.emplace_back(enginePathOptionOverride.data());
+            launcherJsonPatch += FixedValueString::format(R"(,
+                { "op": "add", "path": "/Amazon/AzCore/Bootstrap/engine_path", "value": "%.*s" })", AZ_STRING_ARG(enginePath));
         }
 #endif
 
-        AzGameFramework::GameApplication gameApplication(aznumeric_cast<int>(argContainer.size()), argContainer.data());
+        // Now terminate the JSON Patch array with a trailing ']'
+        launcherJsonPatch += R"(
+            ])";
+
+        AZ::ComponentApplicationSettings componentAppSettings;
+        componentAppSettings.m_setregBootstrapJson = launcherJsonPatch;
+        // Treat the bootstrap JSON as being in JSON Patch format
+        componentAppSettings.m_setregFormat = AZ::SettingsRegistryInterface::Format::JsonPatch;
+        AzGameFramework::GameApplication gameApplication(aznumeric_cast<int>(argContainer.size()), argContainer.data(), AZStd::move(componentAppSettings));
         // The settings registry has been created by the AZ::ComponentApplication constructor at this point
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         if (settingsRegistry == nullptr)
@@ -407,13 +412,52 @@ namespace O3DELauncher
             return ReturnCode::ErrValidation;
         }
 
-        const AZStd::string_view buildTargetName = GetBuildTargetName();
+        // Save the build target name (usually myprojectname_gamelauncher, or myprojectname_serverlauncher, etc)
+        // into the specialization list, so that the regset files for xxxxx.myprojectname_gamelauncher are included in the loaded set.
+        // in generic mode, this needs to be updated to a name based on the project name, so it is not a string view, here.
+        AZ::SettingsRegistryInterface::FixedValueString buildTargetName(GetBuildTargetName());
+
+        // retrieve the project name as specified by the actual project.json (or updated from command line)
+        AZ::SettingsRegistryInterface::FixedValueString updatedProjectName = AZ::Utils::GetProjectName();
+        if (IsGenericLauncher())
+        {
+            constexpr AZStd::string_view O3DEPrefix = "O3DE_";
+            // this will always be the value O3DE_xxxxx where xxxxx is the type of target ("GameLauncher/ServerLauncher/UnifiedLauncher/etc")
+            // and O3DE is a placeholder for the project name.  Replace the "O3DE_" part with "{ProjectName}_" (keeping the underscore).
+            if (buildTargetName.starts_with(O3DEPrefix))
+            {
+                auto replacementName = AZ::SettingsRegistryInterface::FixedValueString::format(
+                    "%.*s_", aznumeric_cast<int>(updatedProjectName.size()), updatedProjectName.data());
+                buildTargetName.replace(0, O3DEPrefix.size(), replacementName);
+            }
+        }
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
+
+        //Store the launcher type to the Settings Registry
+        AZStd::string_view launcherType = GetLauncherTypeSpecialization();
+        settingsRegistry->Set(LauncherTypeTag, launcherType);
+        // Also add the launcher type as a specialization as well
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, launcherType);
+#if O3DE_HEADLESS_SERVER
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, "headless");
+        gameApplication.SetHeadless(true);
+#else
+        gameApplication.SetHeadless(false);
+#endif // O3DE_HEADLESS_SERVER
+
+#if AZ_TRAIT_CONSOLE_MODE_SUPPORT
+        gameApplication.SetConsoleModeSupported(true);
+#else
+        gameApplication.SetConsoleModeSupported(false);
+#endif // AZ_TRAIT_CONSOLE_MODE_SUPPORT
+
+        // Finally add the "launcher" specialization tag into the Settings Registry
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, LauncherFilenameTag);
 
         AZ_TracePrintf("Launcher", R"(Running project "%.*s")" "\n"
             R"(The project name has been successfully set in the Settings Registry at key "%s/project_name")"
             R"( for Launcher target "%.*s")" "\n",
-            aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data(),
+            aznumeric_cast<int>(updatedProjectName.size()), updatedProjectName.data(),
             AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
             aznumeric_cast<int>(buildTargetName.size()), buildTargetName.data());
 
@@ -432,8 +476,6 @@ namespace O3DELauncher
                 pathToAssets.c_str());
         }
 
-        CryAllocatorsRAII cryAllocatorsRAII;
-
         // System Init Params ("Legacy" Open 3D Engine)
         SSystemInitParams systemInitParams;
         memset(&systemInitParams, 0, sizeof(SSystemInitParams));
@@ -441,19 +483,13 @@ namespace O3DELauncher
         {
             AzGameFramework::GameApplication::StartupParameters gameApplicationStartupParams;
 
-            if (mainInfo.m_allocator)
-            {
-                gameApplicationStartupParams.m_allocator = mainInfo.m_allocator;
-            }
-            else if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                gameApplicationStartupParams.m_allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-            }
-
         #if defined(AZ_MONOLITHIC_BUILD)
             gameApplicationStartupParams.m_createStaticModulesCallback = CreateStaticModules;
             gameApplicationStartupParams.m_loadDynamicModules = false;
         #endif // defined(AZ_MONOLITHIC_BUILD)
+
+            const char* isDedicatedServerCommand = IsDedicatedServer() ? "sv_isDedicated true" : "sv_isDedicated false";
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(isDedicatedServerCommand);
 
             gameApplication.Start({}, gameApplicationStartupParams);
 
@@ -472,7 +508,6 @@ namespace O3DELauncher
                 }
             }
 
-            AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "System allocator was not created or creation failed.");
             //Initialize the Debug trace instance to create necessary environment variables
             AZ::Debug::Trace::Instance().Init();
 
@@ -497,16 +532,7 @@ namespace O3DELauncher
         systemInitParams.hInstance = mainInfo.m_instance;
         systemInitParams.hWnd = mainInfo.m_window;
         systemInitParams.pPrintSync = mainInfo.m_printSink;
-
         systemInitParams.bDedicatedServer = IsDedicatedServer();
-        if (IsDedicatedServer())
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated true");
-        }
-        else
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
-        }
 
         AZ::s64 remoteFileSystemEnabled{};
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, remoteFileSystemEnabled,
@@ -543,7 +569,7 @@ namespace O3DELauncher
     #if !defined(AZ_MONOLITHIC_BUILD)
         constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
         AZStd::unique_ptr<AZ::DynamicModuleHandle> crySystemLibrary = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
-        if (crySystemLibrary->Load(true))
+        if (crySystemLibrary->Load(AZ::DynamicModuleHandle::LoadFlags::InitFuncRequired))
         {
             PFNCREATESYSTEMINTERFACE CreateSystemInterface =
                 crySystemLibrary->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");
@@ -576,11 +602,13 @@ namespace O3DELauncher
                 auto autoExecFile = AZ::IO::FixedMaxPath{pathToAssets} / "autoexec.cfg";
                 AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile(autoExecFile.Native());
 
-                // Find out if console command file was passed 
+                // Find out if console command file was passed
                 // via --console-command-file=%filename% and execute it
                 ExecuteConsoleCommandFile(gameApplication);
 
                 gEnv->pSystem->ExecuteCommandLine(false);
+
+                AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacyCommandLineProcessed", R"({})");
 
                 // Run the main loop
                 RunMainLoop(gameApplication);
@@ -607,11 +635,18 @@ namespace O3DELauncher
         }
     #endif // !defined(_RELEASE)
 
-        delete systemInitParams.pSystem;
-        crySystemLibrary.reset(nullptr);
-    #endif // !defined(AZ_MONOLITHIC_BUILD)
-
+        // The order of operations here is to delete CrySystem, stop the game application, then unload the CrySystem dll.
+        // If we unloaded the CrySystem dll before stopping the game application, we can potentially have crashes
+        // if the CrySystem dll created any EBus contexts, since those contexts would get destroyed before subsystems could
+        // disconnect from the buses.
+        SAFE_DELETE(systemInitParams.pSystem);
         gameApplication.Stop();
+        crySystemLibrary.reset(nullptr);
+    #else
+        SAFE_DELETE(systemInitParams.pSystem);
+        gameApplication.Stop();
+#endif // !defined(AZ_MONOLITHIC_BUILD)
+
         AZ::Debug::Trace::Instance().Destroy();
 
         return status;

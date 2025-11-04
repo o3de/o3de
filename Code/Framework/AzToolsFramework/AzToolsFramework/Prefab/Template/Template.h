@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -25,10 +26,10 @@ namespace AzToolsFramework
         using TemplateReference = AZStd::optional<AZStd::reference_wrapper<Template>>;
 
         // A prefab template is the primary product of loading a prefab file from disk. 
-        class Template
+        class AZTF_API Template
         {
         public:
-            AZ_CLASS_ALLOCATOR(Template, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Template, AZ::SystemAllocator);
             AZ_RTTI(Template, "{F6B7DC7B-386A-42DD-BA8B-919A4D024D7C}");
 
             using Links = AZStd::unordered_set<LinkId>;
@@ -40,6 +41,8 @@ namespace AzToolsFramework
 
             Template(Template&& other) noexcept;
             Template& operator=(Template&& other) noexcept;
+
+            void GarbageCollect();
 
             virtual ~Template() noexcept = default;
 

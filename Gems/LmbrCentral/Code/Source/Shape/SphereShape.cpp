@@ -90,47 +90,48 @@ namespace LmbrCentral
             ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
-    float SphereShape::GetRadius()
+    float SphereShape::GetRadius() const
     {
         AZStd::shared_lock lock(m_mutex);
         return m_sphereShapeConfig.m_radius;
     }
 
-    AZ::Aabb SphereShape::GetEncompassingAabb()
+    AZ::Aabb SphereShape::GetEncompassingAabb() const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
-
-        return AZ::Aabb::CreateCenterRadius(m_currentTransform.GetTranslation(), m_intersectionDataCache.m_radius);
+        return AZ::Aabb::CreateCenterRadius(
+            m_currentTransform.TransformPoint(m_sphereShapeConfig.m_translationOffset), m_intersectionDataCache.m_radius);
     }
 
-    void SphereShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds)
+    void SphereShape::GetTransformAndLocalBounds(AZ::Transform& transform, AZ::Aabb& bounds) const
     {
         AZStd::shared_lock lock(m_mutex);
-        bounds = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), m_sphereShapeConfig.m_radius);
+        bounds = AZ::Aabb::CreateCenterRadius(m_sphereShapeConfig.m_translationOffset, m_sphereShapeConfig.m_radius);
         transform = m_currentTransform;
     }
 
-    bool SphereShape::IsPointInside(const AZ::Vector3& point)
+    bool SphereShape::IsPointInside(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
 
         return AZ::Intersect::PointSphere(
-            m_intersectionDataCache.m_position, powf(m_intersectionDataCache.m_radius, 2.0f), point);
+            m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius * m_intersectionDataCache.m_radius, point);
     }
 
-    float SphereShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
+    float SphereShape::DistanceSquaredFromPoint(const AZ::Vector3& point) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
 
         const AZ::Vector3 pointToSphereCenter = m_intersectionDataCache.m_position - point;
         const float distance = pointToSphereCenter.GetLength() - m_intersectionDataCache.m_radius;
-        return powf(AZStd::max(distance, 0.0f), 2.0f);
+        const float clampedDistance = AZStd::max(distance, 0.0f);
+        return clampedDistance * clampedDistance;
     }
 
-    bool SphereShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
+    bool SphereShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) const
     {
         AZStd::shared_lock lock(m_mutex);
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
@@ -139,11 +140,37 @@ namespace LmbrCentral
             src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, distance) > 0;
     }
 
+    AZ::Vector3 SphereShape::GetTranslationOffset() const
+    {
+        return m_sphereShapeConfig.m_translationOffset;
+    }
+
+    void SphereShape::SetTranslationOffset(const AZ::Vector3& translationOffset)
+    {
+        bool shapeChanged = false;
+        {
+            AZStd::unique_lock lock(m_mutex);
+            if (!m_sphereShapeConfig.m_translationOffset.IsClose(translationOffset))
+            {
+                m_sphereShapeConfig.m_translationOffset = translationOffset;
+                m_intersectionDataCache.InvalidateCache(InvalidateShapeCacheReason::ShapeChange);
+                shapeChanged = true;
+            }
+        }
+
+        if (shapeChanged)
+        {
+            ShapeComponentNotificationsBus::Event(
+                m_entityId, &ShapeComponentNotificationsBus::Events::OnShapeChanged,
+                ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
+        }
+    }
+
     void SphereShape::SphereIntersectionDataCache::UpdateIntersectionParamsImpl(
         const AZ::Transform& currentTransform, const SphereShapeConfig& configuration,
         [[maybe_unused]] const AZ::Vector3& currentNonUniformScale)
     {
-        m_position = currentTransform.GetTranslation();
+        m_position = currentTransform.TransformPoint(configuration.m_translationOffset);
         m_radius = configuration.m_radius * currentTransform.GetUniformScale();
     }
 
@@ -154,10 +181,10 @@ namespace LmbrCentral
         if (shapeDrawParams.m_filled)
         {
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
-            debugDisplay.DrawBall(AZ::Vector3::CreateZero(), sphereConfig.m_radius);
+            debugDisplay.DrawBall(sphereConfig.m_translationOffset, sphereConfig.m_radius, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());
-        debugDisplay.DrawWireSphere(AZ::Vector3::CreateZero(), sphereConfig.m_radius);
+        debugDisplay.DrawWireSphere(sphereConfig.m_translationOffset, sphereConfig.m_radius);
     }
 } // namespace LmbrCentral

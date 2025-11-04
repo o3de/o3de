@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 // AZ
@@ -13,11 +14,11 @@
 #include <AzCore/std/string/string.h>
 
 // GraphModel
+#include <GraphModel/Model/Common.h>
 #include <GraphModel/Model/DataType.h>
 
 namespace GraphModel
 {
-
     //!!! Start in Graph.h for high level GraphModel documentation !!!
 
     //! GraphContext provides access to client specific information and systems required by the graphmodel framework.
@@ -26,8 +27,11 @@ namespace GraphModel
     class GraphContext : public AZStd::enable_shared_from_this<GraphContext>
     {
     public:
-        using DataTypeList = AZStd::vector<DataTypePtr>;
+        AZ_CLASS_ALLOCATOR(GraphContext, AZ::SystemAllocator);
+        AZ_RTTI(GraphContext, "{4CD3C171-A7AA-4B62-96BB-F09F398A73E7}");
+        static void Reflect(AZ::ReflectContext* context);
 
+        GraphContext() = default;
         GraphContext(const AZStd::string& systemName, const AZStd::string& moduleExtension, const DataTypeList& dataTypes);
         virtual ~GraphContext() = default;
 
@@ -39,7 +43,7 @@ namespace GraphModel
 
         //! Creates the module graph manager used by all module nodes in this context.
         //! This is done after construction because it is optional and the module graph manager needs a reference to the graph context
-        virtual void CreateModuleGraphManager();
+        void CreateModuleGraphManager();
 
         //! Returns a ModuleGraphManager to support creating ModuleNodes. Subclasses can just return nullptr if this isn't needed.
         ModuleGraphManagerPtr GetModuleGraphManager() const;
@@ -58,23 +62,22 @@ namespace GraphModel
 
         //! Utility function to returns a DataType object representing the given template type T, or Invalid if it doesn't exist.
         template<typename T>
-        DataTypePtr GetDataType() const { return GetDataType(azrtti_typeid<T>()); }
+        DataTypePtr GetDataType() const
+        {
+            return GetDataType(azrtti_typeid<T>());
+        }
 
         //! Returns a DataType object representing the given AZStd::any value, or Invalid if it doesn't exist.
         //! This data type method has a different name because if the GraphContext implementation doesn't override
         //! this, there will be a compile error for a hidden function because of subclasses implementing
         //! the templated version below
-        virtual DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
+        DataTypePtr GetDataTypeForValue(const AZStd::any& value) const;
 
     protected:
         AZStd::string m_systemName;
         AZStd::string m_moduleExtension;
         DataTypeList m_dataTypes;
-        GraphModel::ModuleGraphManagerPtr m_moduleGraphManager;
+        ModuleGraphManagerPtr m_moduleGraphManager;
     };
-    
+
 } // namespace GraphModel
-
-
-
-

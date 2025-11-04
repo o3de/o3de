@@ -7,51 +7,74 @@
  */
 #pragma once
 
-#include <RHI/FrameGraphExecuteGroupBase.h>
+#include <Atom/RHI/FrameGraphExecuteGroup.h>
+#include <RHI/CommandQueue.h>
 
 namespace AZ
 {
     namespace Metal
     {
-    class Scope;
-        class FrameGraphExecuteGroup final
-            : public FrameGraphExecuteGroupBase
+        class Device;
+        class CommandQueueCommandBuffer;
+        class FrameGraphExecuteGroupHandler;
+        
+        class FrameGraphExecuteGroup
+            : public RHI::FrameGraphExecuteGroup
         {
-            using Base = FrameGraphExecuteGroupBase;
+            using Base = RHI::FrameGraphExecuteGroup;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::PoolAllocator, 0);
-
             FrameGraphExecuteGroup() = default;
-            ~FrameGraphExecuteGroup();
-            
-            void Init(
-                Device& device,
-                const Scope& scope,
-                AZ::u32 commandListCount,
-                RHI::JobPolicy globalJobPolicy,
-                uint32_t groupIndex);
 
-        private:
+            using CallbackFunc = AZStd::function<void(const FrameGraphExecuteGroup* groupBase)>;
+            void InitBase(
+                Device& device,
+                const RHI::GraphGroupId& groupId,
+                RHI::HardwareQueueClass hardwareQueueClass);
+
+            Device& GetDevice() const;
+            ExecuteWorkRequest&& AcquireWorkRequest();
+
+            RHI::HardwareQueueClass GetHardwareQueueClass();
+
+            //! Returns the group id of this FrameGraphExecuteGroup (used for subpass grouping)
+            const RHI::GraphGroupId& GetGroupId() const;
             
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::FrameSchedulerExecuteGroup
+            //! Set the command buffer that the group will use.
+            void SetCommandBuffer(CommandQueueCommandBuffer* commandBuffer);
+
+            //! Set the FrameGraphExecuteGroupHandler that this group belongs.
+            void SetHandler(FrameGraphExecuteGroupHandler* handler);
+            
+            virtual AZStd::span<const Scope* const> GetScopes() const = 0;
+            virtual AZStd::span<Scope* const> GetScopes() = 0;
+            
+        protected:
             void BeginInternal() override;
             void EndInternal() override;
-            void BeginContextInternal(RHI::FrameGraphExecuteContext& context, uint32_t contextIndex) override;
-            void EndContextInternal(RHI::FrameGraphExecuteContext& context, uint32_t contextIndex) override;
-            //////////////////////////////////////////////////////////////////////////
+            void BeginContextInternal(
+                RHI::FrameGraphExecuteContext& context,
+                uint32_t contextIndex) override;
+            void EndContextInternal(
+                RHI::FrameGraphExecuteContext& context,
+                uint32_t contextIndex) override;
 
-            struct SubEncoderData
-            {
-                CommandList* m_commandList;
-                id <MTLCommandEncoder> m_subRenderEncoder;
-            };
+            CommandList* AcquireCommandList() const;
             
-            //Container to hold commandlist and render encoder to be used per contextId.
-            AZStd::vector<SubEncoderData > m_subRenderEncoders;
+            //! Go through all the wait fences across all queues and encode them if needed
+            void EncodeWaitEvents() const;
             
-            const Scope* m_scope = nullptr;
-            NSString* m_cbLabel = nullptr;
+            ExecuteWorkRequest m_workRequest;
+            RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
+            CommandQueueCommandBuffer* m_commandBuffer = nullptr;
+            
+        private:
+            Device* m_device = nullptr;
+            RHI::GraphGroupId m_groupId;
+            FrameGraphExecuteGroupHandler* m_handler = nullptr;
+            //! Autorelease pool for the group
+            NSAutoreleasePool* m_groupAutoreleasePool = nullptr;
+            //! Autorelease pool for each context used (may be a different thread from the group)
+            AZStd::vector<NSAutoreleasePool*> m_contextAutoreleasePools;
         };
     }
 }

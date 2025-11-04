@@ -300,9 +300,11 @@ namespace UnitTest::TerrainTest
 
         // Set up the query parameters that we'll use for all our queries
         const static inline AZ::Aabb QueryBounds = TerrainWorldBounds;
-        const static inline AZ::Vector2 QueryStepSize = AZ::Vector2(TerrainQueryResolution / 2.0f);
+        const static inline float QueryStepSizeX = TerrainQueryResolution / 2.0f;
+        const static inline float QueryStepSizeY = TerrainQueryResolution / 2.0f;
         const static inline uint32_t ExpectedResultCount =
-            aznumeric_cast<uint32_t>((TerrainSize / QueryStepSize.GetX()) * (TerrainSize / QueryStepSize.GetY()));
+            aznumeric_cast<uint32_t>((TerrainSize / QueryStepSizeX) * (TerrainSize / QueryStepSizeY));
+        AZ::Vector2 QueryStepSize = AZ::Vector2(QueryStepSizeX, QueryStepSizeY);
 
         // Semaphore for use in async tests.
         AZStd::binary_semaphore m_queryCompletionEvent;

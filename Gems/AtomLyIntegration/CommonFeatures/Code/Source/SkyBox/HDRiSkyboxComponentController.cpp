@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/Utils/Utils.h>
 
 namespace AZ
 {
@@ -35,24 +36,30 @@ namespace AZ
                     ->Event("SetExposure", &HDRiSkyboxRequestBus::Events::SetExposure)
                     ->Event("GetExposure", &HDRiSkyboxRequestBus::Events::GetExposure)
                     ->VirtualProperty("Exposure", "GetExposure", "SetExposure")
+                    ->Event("GetCubemapAssetId", &HDRiSkyboxRequestBus::Events::GetCubemapAssetId)
+                    ->Event("SetCubemapAssetId", &HDRiSkyboxRequestBus::Events::SetCubemapAssetId)
+                        ->Attribute(AZ::Script::Attributes::AssetType, azrtti_typeid<AZ::RPI::StreamingImageAsset>())
+                    ->Event("SetCubemapAssetPath", &HDRiSkyboxRequestBus::Events::SetCubemapAssetPath)
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
+                    ->Event("GetCubemapAssetPath", &HDRiSkyboxRequestBus::Events::GetCubemapAssetPath)
                     ;
             }
         }
 
         void HDRiSkyboxComponentController::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("SkyBoxService", 0x8169a709));
+            provided.push_back(AZ_CRC_CE("SkyBoxService"));
         }
 
         void HDRiSkyboxComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("SkyBoxService", 0x8169a709));
+            incompatible.push_back(AZ_CRC_CE("SkyBoxService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void HDRiSkyboxComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService"));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         HDRiSkyboxComponentController::HDRiSkyboxComponentController(const HDRiSkyboxComponentConfig& config)
@@ -154,6 +161,30 @@ namespace AZ
             Data::AssetBus::MultiHandler::BusDisconnect(m_configuration.m_cubemapAsset.GetId());
             m_configuration.m_cubemapAsset = cubemapAsset;
             LoadImage(m_configuration.m_cubemapAsset);
+        }
+
+        void HDRiSkyboxComponentController::SetCubemapAssetId(AZ::Data::AssetId assetId)
+        {
+            AZStd::string assetPathString;
+            Data::AssetCatalogRequestBus::BroadcastResult(assetPathString, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
+            SetCubemapAssetPath(assetPathString);
+        }
+
+        void HDRiSkyboxComponentController::SetCubemapAssetPath(const AZStd::string& path)
+        {
+            SetCubemapAsset(GetAssetFromPath<RPI::StreamingImageAsset>(path, m_configuration.m_cubemapAsset.GetAutoLoadBehavior()));
+        }
+
+        AZStd::string HDRiSkyboxComponentController::GetCubemapAssetPath() const
+        {
+            AZStd::string assetPathString;
+            Data::AssetCatalogRequestBus::BroadcastResult(assetPathString, &Data::AssetCatalogRequests::GetAssetPathById, m_configuration.m_cubemapAsset.GetId());
+            return assetPathString;
+        }
+
+        AZ::Data::AssetId HDRiSkyboxComponentController::GetCubemapAssetId() const
+        {
+            return m_configuration.m_cubemapAsset.GetId();
         }
 
         void HDRiSkyboxComponentController::SetExposure(float exposure)

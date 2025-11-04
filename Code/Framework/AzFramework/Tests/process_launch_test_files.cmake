@@ -8,4 +8,5 @@
 
 set(FILES
     ProcessLaunchMain.cpp
+    ProcessLaunchTestTokens.h
 )

@@ -50,8 +50,13 @@ namespace
     {
         // Get a list of all descendant elements that support the UiTextBus
         LyShine::EntityArray matchingElements;
-        EBUS_EVENT_ID(entity, UiElementBus, FindDescendantElements,
-            [](const AZ::Entity* descendant) { return UiTextBus::FindFirstHandler(descendant->GetId()) != nullptr; },
+        UiElementBus::Event(
+            entity,
+            &UiElementBus::Events::FindDescendantElements,
+            [](const AZ::Entity* descendant)
+            {
+                return UiTextBus::FindFirstHandler(descendant->GetId()) != nullptr;
+            },
             matchingElements);
 
         // add their names to the StringList and their IDs to the id list
@@ -200,7 +205,7 @@ bool UiTextInputComponent::HandlePressed(AZ::Vector2 point, bool& shouldStayActi
         shouldStayActive = true;
 
         // store the character position where the press corresponds to in the text string
-        EBUS_EVENT_ID_RESULT(m_textCursorPos, m_textEntity, UiTextBus, GetCharIndexFromPoint, point, false);
+        UiTextBus::EventResult(m_textCursorPos, m_textEntity, &UiTextBus::Events::GetCharIndexFromPoint, point, false);
         m_textSelectionStartPos = m_textCursorPos;
     }
 
@@ -223,7 +228,7 @@ bool UiTextInputComponent::HandleReleased(AZ::Vector2 point)
     if (!m_isEditing)
     {
         bool isInRect = false;
-        EBUS_EVENT_ID_RESULT(isInRect, GetEntityId(), UiTransformBus, IsPointInRect, point);
+        UiTransformBus::EventResult(isInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, point);
         if (isInRect)
         {
             BeginEditState();
@@ -231,7 +236,7 @@ bool UiTextInputComponent::HandleReleased(AZ::Vector2 point)
         else
         {
             // cancel the active status
-            EBUS_EVENT_ID(GetEntityId(), UiInteractableActiveNotificationBus, ActiveCancelled);
+            UiInteractableActiveNotificationBus::Event(GetEntityId(), &UiInteractableActiveNotificationBus::Events::ActiveCancelled);
         }
     }
 
@@ -253,7 +258,7 @@ bool UiTextInputComponent::HandleEnterPressed(bool& shouldStayActive)
         shouldStayActive = true;
 
         AZStd::string textString;
-        EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+        UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
         // select all the text
         m_textCursorPos = 0;
@@ -294,7 +299,7 @@ bool UiTextInputComponent::HandleAutoActivation()
     }
 
     AZStd::string textString;
-    EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+    UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
     m_textCursorPos = LyShine::GetUtf8StringLength(textString);
     m_textSelectionStartPos = m_textCursorPos;
 
@@ -323,7 +328,7 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
     }
 
     AZStd::string currentText;
-    EBUS_EVENT_ID_RESULT(currentText, m_textEntity, UiTextBus, GetText);
+    UiTextBus::EventResult(currentText, m_textEntity, &UiTextBus::Events::GetText);
 
     bool changedText = false;
 
@@ -343,7 +348,8 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
                 m_textSelectionStartPos = m_textCursorPos - 1;
                 EraseAndUpdateSelectionRange(currentText, m_textCursorPos, m_textSelectionStartPos);
             }
-            EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+            UiTextBus::Event(
+                m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
 
             changedText = true;
         }
@@ -373,7 +379,8 @@ bool UiTextInputComponent::HandleTextInput(const AZStd::string& inputTextUTF8)
 
                     m_textCursorPos++;
                     m_textSelectionStartPos = m_textCursorPos;
-                    EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+                    UiTextBus::Event(
+                        m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
                     changedText = true;
                 }
             }
@@ -416,7 +423,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
         // enter was pressed
 
         AZStd::string textString;
-        EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+        UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
         // if a C++ callback is registered for OnEnter then call it
         if (m_onEnter)
@@ -431,20 +438,20 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
             // canvas listeners will get the action name (e.g. something like "EmailEntered") plus
             // the ID of this entity.
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-            EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_enterAction);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+            UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_enterAction);
         }
 
-        EBUS_EVENT_ID(GetEntityId(), UiTextInputNotificationBus, OnTextInputEnter, textString);
+        UiTextInputNotificationBus::Event(GetEntityId(), &UiTextInputNotificationBus::Events::OnTextInputEnter, textString);
 
         // cancel the active status
-        EBUS_EVENT_ID(GetEntityId(), UiInteractableActiveNotificationBus, ActiveCancelled);
+        UiInteractableActiveNotificationBus::Event(GetEntityId(), &UiInteractableActiveNotificationBus::Events::ActiveCancelled);
         EndEditState();
     }
     else if (inputSnapshot.m_channelId == AzFramework::InputDeviceKeyboard::Key::NavigationDelete)
     {
         AZStd::string textString;
-        EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+        UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
         // Delete pressed, delete character after cursor or the selected range
         if (m_textCursorPos < LyShine::GetUtf8StringLength(textString) || m_textCursorPos != m_textSelectionStartPos)
@@ -472,7 +479,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
             {
                 // Move cursor to change selected range
                 AZStd::string textString;
-                EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+                UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
                 if (command == UiNavigationHelpers::Command::Left)
                 {
@@ -507,7 +514,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
         {
             // No range selected, move cursor one character
             AZStd::string textString;
-            EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+            UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
             if (command == UiNavigationHelpers::Command::Left)
             {
@@ -533,10 +540,10 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
     else if (command == UiNavigationHelpers::Command::Up || command == UiNavigationHelpers::Command::Down)
     {
         AZ::Vector2 currentPosition;
-        EBUS_EVENT_ID_RESULT(currentPosition, m_textEntity, UiTextBus, GetPointFromCharIndex, m_textCursorPos);
+        UiTextBus::EventResult(currentPosition, m_textEntity, &UiTextBus::Events::GetPointFromCharIndex, m_textCursorPos);
 
         float fontSize;
-        EBUS_EVENT_ID_RESULT(fontSize, m_textEntity, UiTextBus, GetFontSize);
+        UiTextBus::EventResult(fontSize, m_textEntity, &UiTextBus::Events::GetFontSize);
 
         // To get the position of the cursor on the line above or below the
         // current cursor position, we add or subtract the font size,
@@ -550,7 +557,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
         // or below the current cursor position.
         currentPosition.SetY(currentPosition.GetY() + fontSize);
         int adjustedIndex = 0;
-        EBUS_EVENT_ID_RESULT(adjustedIndex, m_textEntity, UiTextBus, GetCharIndexFromCanvasSpacePoint, currentPosition, true);
+        UiTextBus::EventResult(adjustedIndex, m_textEntity, &UiTextBus::Events::GetCharIndexFromCanvasSpacePoint, currentPosition, true);
 
         if (adjustedIndex != -1)
         {
@@ -564,7 +571,8 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
                 m_textCursorPos = m_textSelectionStartPos = adjustedIndex;
             }
 
-            EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+            UiTextBus::Event(
+                m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
         }
         else
         {
@@ -576,7 +584,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
     {
         // Select all
         AZStd::string textString;
-        EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+        UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
         m_textSelectionStartPos = 0;
         m_textCursorPos = LyShine::GetUtf8StringLength(textString);
@@ -594,7 +602,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
     {
         // Move cursor to end of text
         AZStd::string textString;
-        EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+        UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
         m_textCursorPos = LyShine::GetUtf8StringLength(textString);
         if (!isShiftModifierActive)
@@ -605,7 +613,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
     else if (m_enableClipboard && (inputSnapshot.m_channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericC) && isLCTRLModifierActive)
     {
         AZStd::string textString;
-        EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+        UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
         if (textString.length() > 0 && m_textCursorPos != m_textSelectionStartPos)
         {
             int left = min(m_textCursorPos, m_textSelectionStartPos);
@@ -616,7 +624,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
     else if (m_enableClipboard && (inputSnapshot.m_channelId == AzFramework::InputDeviceKeyboard::Key::AlphanumericX) && isLCTRLModifierActive)
     {
         AZStd::string textString;
-        EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+        UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
         if (textString.length() > 0 && m_textCursorPos != m_textSelectionStartPos)
         {
             int left = min(m_textCursorPos, m_textSelectionStartPos);
@@ -635,7 +643,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
         if (clipboardText.length() > 0)
         {
             AZStd::string textString;
-            EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+            UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
             // If a range is selected then erase that first
             if (m_textCursorPos != m_textSelectionStartPos)
@@ -669,13 +677,13 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
     if (m_textCursorPos != oldTextCursorPos || m_textSelectionStartPos != oldTextSelectionStartPos)
     {
         AZ::Color color = (m_textSelectionStartPos == m_textCursorPos) ? m_textCursorColor : m_textSelectionColor;
-        EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, color);
+        UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, color);
         if (m_textSelectionStartPos == m_textCursorPos)
         {
             ResetCursorBlink();
         }
 
-        EBUS_EVENT_ID(m_textEntity, UiTextBus, ResetCursorLineHint);
+        UiTextBus::Event(m_textEntity, &UiTextBus::Events::ResetCursorLineHint);
     }
 
     return result;
@@ -695,9 +703,9 @@ void UiTextInputComponent::InputPositionUpdate(AZ::Vector2 point)
 
         if (m_isDragging)
         {
-            EBUS_EVENT_ID_RESULT(m_textCursorPos, m_textEntity, UiTextBus, GetCharIndexFromPoint, point, false);
+            UiTextBus::EventResult(m_textCursorPos, m_textEntity, &UiTextBus::Events::GetCharIndexFromPoint, point, false);
             AZ::Color color = (m_textSelectionStartPos == m_textCursorPos) ? m_textCursorColor : m_textSelectionColor;
-            EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, color);
+            UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, color);
         }
     }
 }
@@ -728,15 +736,15 @@ void UiTextInputComponent::Update(float deltaTime)
         else
         {
             AZStd::string text;
-            EBUS_EVENT_ID_RESULT(text, m_textEntity, UiTextBus, GetText);
+            UiTextBus::EventResult(text, m_textEntity, &UiTextBus::Events::GetText);
             if (!text.empty())
             {
                 displayPlaceHolder = false;
             }
         }
 
-        EBUS_EVENT_ID(m_placeHolderTextEntity, UiElementBus, SetIsEnabled, displayPlaceHolder);
-        EBUS_EVENT_ID(m_textEntity, UiElementBus, SetIsEnabled, !displayPlaceHolder);
+        UiElementBus::Event(m_placeHolderTextEntity, &UiElementBus::Events::SetIsEnabled, displayPlaceHolder);
+        UiElementBus::Event(m_textEntity, &UiElementBus::Events::SetIsEnabled, !displayPlaceHolder);
 
         m_childTextStateDirtyFlag = false;
     }
@@ -754,7 +762,8 @@ void UiTextInputComponent::Update(float deltaTime)
         {
             m_textCursorColor.SetA(m_textCursorColor.GetA() ? 0.0f : 1.0f);
             m_cursorBlinkStartTime = currentTime;
-            EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+            UiTextBus::Event(
+                m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
         }
     }
 }
@@ -766,7 +775,7 @@ void UiTextInputComponent::InGamePostActivate()
 
     if (m_clipInputText)
     {
-        EBUS_EVENT_ID(m_textEntity, UiTextBus, SetOverflowMode, UiTextInterface::OverflowMode::ClipText);
+        UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetOverflowMode, UiTextInterface::OverflowMode::ClipText);
     }
 }
 
@@ -936,14 +945,14 @@ void UiTextInputComponent::SetTextEntity(AZ::EntityId textEntity)
 AZStd::string UiTextInputComponent::GetText()
 {
     AZStd::string text;
-    EBUS_EVENT_ID_RESULT(text, m_textEntity, UiTextBus, GetText);
+    UiTextBus::EventResult(text, m_textEntity, &UiTextBus::Events::GetText);
     return text;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiTextInputComponent::SetText(const AZStd::string& text)
 {
-    EBUS_EVENT_ID(m_textEntity, UiTextBus, SetText, text);
+    UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetText, text);
     m_childTextStateDirtyFlag = true;
 
     // Make sure cursor position and selection is in range
@@ -959,10 +968,11 @@ void UiTextInputComponent::SetText(const AZStd::string& text)
             m_textSelectionStartPos = newTextSelectionStartPos;
 
             int selStartIndex, selEndIndex;
-            EBUS_EVENT_ID(m_textEntity, UiTextBus, GetSelectionRange, selStartIndex, selEndIndex);
+            UiTextBus::Event(m_textEntity, &UiTextBus::Events::GetSelectionRange, selStartIndex, selEndIndex);
             if (selStartIndex >= 0)
             {
-                EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+                UiTextBus::Event(
+                    m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
             }
         }
     }
@@ -1028,7 +1038,7 @@ void UiTextInputComponent::BeginEditState()
     m_childTextStateDirtyFlag = true;
 
     // position the cursor in the text entity
-    EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+    UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
 
     ResetCursorBlink();
 }
@@ -1037,7 +1047,7 @@ void UiTextInputComponent::BeginEditState()
 void UiTextInputComponent::EndEditState()
 {
     AZStd::string textString;
-    EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+    UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
     // if a C++ callback is registered for OnEndEdit then call it
     if (m_onEndEdit)
@@ -1052,14 +1062,14 @@ void UiTextInputComponent::EndEditState()
         // canvas listeners will get the action name (e.g. something like "EmailEntered") plus
         // the ID of this entity.
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_endEditAction);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_endEditAction);
     }
 
-    EBUS_EVENT_ID(GetEntityId(), UiTextInputNotificationBus, OnTextInputEndEdit, textString);
+    UiTextInputNotificationBus::Event(GetEntityId(), &UiTextInputNotificationBus::Events::OnTextInputEndEdit, textString);
 
     // clear the selection highlight
-    EBUS_EVENT_ID(m_textEntity, UiTextBus, ClearSelectionRange);
+    UiTextBus::Event(m_textEntity, &UiTextBus::Events::ClearSelectionRange);
 
     m_textCursorPos = m_textSelectionStartPos = -1;
 
@@ -1083,7 +1093,7 @@ float UiTextInputComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
 
     // convert the drag vector to local space
     AZ::Matrix4x4 transformFromViewport;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformFromViewport, transformFromViewport);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
     AZ::Vector2 dragVec = endPoint - startPoint;
     AZ::Vector3 dragVec3(dragVec.GetX(), dragVec.GetY(), 0.0f);
     AZ::Vector3 localDragVec = transformFromViewport.Multiply3x3(dragVec3);
@@ -1093,7 +1103,7 @@ float UiTextInputComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
 
     // convert back to viewport space
     AZ::Matrix4x4 transformToViewport;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToViewport, transformToViewport);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transformToViewport);
     AZ::Vector3 validDragVec = transformToViewport.Multiply3x3(localDragVec);
 
     float validDistance = validDragVec.GetLengthSq();
@@ -1113,7 +1123,7 @@ float UiTextInputComponent::GetValidDragDistanceInPixels(AZ::Vector2 startPoint,
 void UiTextInputComponent::CheckForDragOrHandOffToParent(AZ::Vector2 point)
 {
     AZ::EntityId parentDraggable;
-    EBUS_EVENT_ID_RESULT(parentDraggable, GetEntityId(), UiElementBus, FindParentInteractableSupportingDrag, point);
+    UiElementBus::EventResult(parentDraggable, GetEntityId(), &UiElementBus::Events::FindParentInteractableSupportingDrag, point);
 
     // if this interactable is inside another interactable that supports drag then we use
     // a threshold value before starting a drag on this interactable
@@ -1131,7 +1141,7 @@ void UiTextInputComponent::CheckForDragOrHandOffToParent(AZ::Vector2 point)
 
     // only enter drag mode if we dragged above the threshold AND there is something to select
     AZStd::string textString;
-    EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+    UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
 
     if (validDragDistance > dragThreshold && !textString.empty())
     {
@@ -1148,8 +1158,14 @@ void UiTextInputComponent::CheckForDragOrHandOffToParent(AZ::Vector2 point)
     {
         // offer the parent draggable the chance to become the active interactable
         bool handOff = false;
-        EBUS_EVENT_ID_RESULT(handOff, parentDraggable, UiInteractableBus,
-            OfferDragHandOff, GetEntityId(), m_pressedPoint, point, containedDragThreshold);
+        UiInteractableBus::EventResult(
+            handOff,
+            parentDraggable,
+            &UiInteractableBus::Events::OfferDragHandOff,
+            GetEntityId(),
+            m_pressedPoint,
+            point,
+            containedDragThreshold);
 
         if (handOff)
         {
@@ -1178,7 +1194,9 @@ void UiTextInputComponent::UpdateDisplayedTextFunction()
     {
         // Use a lambda here so we can easily access our instance to retrieve the
         // currently configured replacement character
-        EBUS_EVENT_ID(m_textEntity, UiTextBus, SetDisplayedTextFunction,
+        UiTextBus::Event(
+            m_textEntity,
+            &UiTextBus::Events::SetDisplayedTextFunction,
             [this](const AZStd::string& originalText)
             {
                 // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to
@@ -1201,7 +1219,7 @@ void UiTextInputComponent::UpdateDisplayedTextFunction()
     }
     else
     {
-        EBUS_EVENT_ID(m_textEntity, UiTextBus, SetDisplayedTextFunction, nullptr);
+        UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetDisplayedTextFunction, nullptr);
     }
 }
 
@@ -1291,7 +1309,7 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTextInput.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiTextInput.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             // Elements group
@@ -1325,8 +1343,8 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextInputComponent::m_isPasswordField,
                     "Is password field", "A password field hides the entered text.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
-                editInfo->DataElement(AZ_CRC("Char", 0x8cfe579f), &UiTextInputComponent::m_replacementCharacter,
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
+                editInfo->DataElement(AZ_CRC_CE("Char"), &UiTextInputComponent::m_replacementCharacter,
                     "Replacement character", "The replacement character used to hide password text.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextInputComponent::OnReplacementCharacterChange)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiTextInputComponent::GetIsPasswordField);
@@ -1399,7 +1417,7 @@ void UiTextInputComponent::ChangeText(const AZStd::string& textString)
 {
     // For user-inputted text, we assume that users don't want to input
     // text as styling markup (but rather plain-text).
-    EBUS_EVENT_ID(m_textEntity, UiTextBus, SetTextWithFlags, textString, UiTextInterface::SetEscapeMarkup);
+    UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetTextWithFlags, textString, UiTextInterface::SetEscapeMarkup);
 
     // if a C++ callback is registered for OnChange then call it
     if (m_onChange)
@@ -1414,11 +1432,11 @@ void UiTextInputComponent::ChangeText(const AZStd::string& textString)
         // canvas listeners will get the action name (e.g. something like "EmailEdited") plus
         // the ID of this entity.
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_changeAction);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_changeAction);
     }
 
-    EBUS_EVENT_ID(GetEntityId(), UiTextInputNotificationBus, OnTextInputChange, textString);
+    UiTextInputNotificationBus::Event(GetEntityId(), &UiTextInputNotificationBus::Events::OnTextInputChange, textString);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1426,7 +1444,7 @@ void UiTextInputComponent::ResetCursorBlink()
 {
     m_textCursorColor.SetA(1.0f);
     m_cursorBlinkStartTime = 0.0f;
-    EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
+    UiTextBus::Event(m_textEntity, &UiTextBus::Events::SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1442,21 +1460,21 @@ void UiTextInputComponent::CheckStartTextInput()
         AzFramework::InputTextEntryRequests::VirtualKeyboardOptions options;
 
         AZStd::string textString;
-        EBUS_EVENT_ID_RESULT(textString, m_textEntity, UiTextBus, GetText);
+        UiTextBus::EventResult(textString, m_textEntity, &UiTextBus::Events::GetText);
         options.m_initialText = Utf8SubString(textString, m_textCursorPos, m_textSelectionStartPos);
 
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
 
         // Calculate height available for virtual keyboard. In game mode, canvas size is the same as viewport size
         AZ::Vector2 canvasSize;
-        EBUS_EVENT_ID_RESULT(canvasSize, canvasEntityId, UiCanvasBus, GetCanvasSize);
+        UiCanvasBus::EventResult(canvasSize, canvasEntityId, &UiCanvasBus::Events::GetCanvasSize);
         UiTransformInterface::RectPoints rectPoints;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, rectPoints);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, rectPoints);
         const AZ::Vector2 bottomRight = rectPoints.GetAxisAlignedBottomRight();
         options.m_normalizedMinY = (canvasSize.GetY() > 0.0f) ? bottomRight.GetY() / canvasSize.GetY() : 0.0f;
 
-        EBUS_EVENT_ID_RESULT(options.m_localUserId, canvasEntityId, UiCanvasBus, GetLocalUserIdInputFilter);
+        UiCanvasBus::EventResult(options.m_localUserId, canvasEntityId, &UiCanvasBus::Events::GetLocalUserIdInputFilter);
 
         AzFramework::InputTextEntryRequestBus::Broadcast(&AzFramework::InputTextEntryRequests::TextEntryStart, options);
 
@@ -1499,7 +1517,7 @@ bool UiTextInputComponent::VersionConverter(AZ::SerializeContext& context,
     {
         // find the base class (AZ::Component)
         // NOTE: in very old versions there may not be a base class because the base class was not serialized
-        int componentBaseClassIndex = classElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
+        int componentBaseClassIndex = classElement.FindElement(AZ_CRC_CE("BaseClass1"));
 
         // If there was a base class, make a copy and remove it
         AZ::SerializeContext::DataElementNode componentBaseClassNode;

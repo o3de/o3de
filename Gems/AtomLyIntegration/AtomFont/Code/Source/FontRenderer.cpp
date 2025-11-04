@@ -230,7 +230,7 @@ int AZ::FontRenderer::GetGlyph(GlyphBitmap* glyphBitmap, int* horizontalAdvance,
 
     if (horizontalAdvance)
     {
-        *horizontalAdvance = m_glyph->metrics.horiAdvance / FractionalPixelUnits;
+        *horizontalAdvance = static_cast<int>(m_glyph->metrics.horiAdvance) / FractionalPixelUnits;
     }
 
     if (glyphWidth)

@@ -41,7 +41,7 @@ namespace ScriptCanvas
 
     public:
         AZ_TYPE_INFO(Executor, "{0D1E4B9D-1A2C-4B9D-8364-052255BC691F}");
-        AZ_CLASS_ALLOCATOR(Executor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Executor, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

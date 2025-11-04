@@ -24,7 +24,7 @@ namespace AZ
             public:
                 using ComponentDescriptorList = AZStd::vector<AZ::ComponentDescriptor*>;
 
-                AZ_CLASS_ALLOCATOR(Registry, SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(Registry, SystemAllocator);
 
                 static void RegisterComponents(ComponentDescriptorList& components);
             };

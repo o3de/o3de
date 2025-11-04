@@ -12,7 +12,12 @@
                     "Name": "InputDepth",
                     "SlotType": "Input",
                     "ShaderInputName": "m_depth",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
                 },
                 {
                     "Name": "InputEntityMask",
@@ -71,7 +76,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/EditorModeOutline.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

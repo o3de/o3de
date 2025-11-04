@@ -20,7 +20,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(MeshletsModuleInterface, "{78d5f887-59e1-4ffd-b3d5-b1b2b3e94039}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(MeshletsModuleInterface, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshletsModuleInterface, AZ::SystemAllocator);
 
             MeshletsModuleInterface()
             {

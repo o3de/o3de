@@ -1,125 +1,121 @@
-<ObjectStream version="3">
-	<Class name="AZStd::vector" type="{82FC5264-88D0-57CD-9307-FC52E4DAD550}">
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{EFA11E15-FC2F-533B-9E73-6351C0E82EF2}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/basic/button_sliced_normal.sprite" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{E993215C-FF5F-5891-8475-D4EDBD560807}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="textures/basic/button_sliced_normal.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{07F2757B-C0D1-5907-866E-80A3E3A9BFC1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/button_normal.sprite" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{D1276CDC-6211-5A7E-930F-8F0977FB41A6}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/button_normal.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{2A54BF45-39B8-545D-B467-6142A8341AC3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/button_disabled.sprite" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{05D7E013-3691-57AE-A712-53476BDD1EE2}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/button_disabled.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{818F129B-2D91-5CD3-9D39-5C706BFF8256}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/textinput_normal.sprite" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{5FF31E55-4AE2-5A4B-BA86-CB7177F01F72}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/textinput_normal.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{A9D247E6-58C1-51F8-ABAB-1DC3F22EE902}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/textinput_hover.sprite" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{561D1ED0-13FC-5CAD-AB7E-ADE4E424028C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/textinput_hover.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{EE5C3511-5A06-522B-AE63-D67279613A9E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/textinput_disabled.sprite" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{28AC420F-5A90-5FC5-93AC-5CBDA82131E3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/textinput_disabled.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{8B33DC4A-9DCD-5934-9B1B-161236FC4FBF}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/checkbox_check.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{07D54B0D-4DAF-54B0-A7D6-790C4D14A490}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="1000" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="127" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="ui/textures/prefab/checkbox_box_normal.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-		<Class name="SeedInfo" field="element" version="2" type="{FACC3682-2ACA-4AA4-B85A-07AD276D18A0}">
-			<Class name="AssetId" field="assetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
-				<Class name="AZ::Uuid" field="guid" value="{553B3F5A-EF01-5636-B03C-38BF3C5BE082}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			</Class>
-			<Class name="unsigned int" field="platformFlags" value="255" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-			<Class name="AZStd::string" field="pathHint" value="lyshineexamples_dependencies.xml" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-		</Class>
-	</Class>
-</ObjectStream>
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZStd::vector<SeedInfo, allocator>",
+    "ClassData": [
+        {
+            "assetId": {
+                "guid": "{EFA11E15-FC2F-533B-9E73-6351C0E82EF2}"
+            },
+            "platformFlags": 127,
+            "pathHint": "textures/basic/button_sliced_normal.sprite"
+        },
+        {
+            "assetId": {
+                "guid": "{E993215C-FF5F-5891-8475-D4EDBD560807}",
+                "subId": 1000
+            },
+            "platformFlags": 127,
+            "pathHint": "textures/basic/button_sliced_normal.tif.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{07F2757B-C0D1-5907-866E-80A3E3A9BFC1}"
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/button_normal.sprite"
+        },
+        {
+            "assetId": {
+                "guid": "{D1276CDC-6211-5A7E-930F-8F0977FB41A6}",
+                "subId": 1000
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/button_normal.tif.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{2A54BF45-39B8-545D-B467-6142A8341AC3}"
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/button_disabled.sprite"
+        },
+        {
+            "assetId": {
+                "guid": "{05D7E013-3691-57AE-A712-53476BDD1EE2}",
+                "subId": 1000
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/button_disabled.tif.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{818F129B-2D91-5CD3-9D39-5C706BFF8256}"
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/textinput_normal.sprite"
+        },
+        {
+            "assetId": {
+                "guid": "{5FF31E55-4AE2-5A4B-BA86-CB7177F01F72}",
+                "subId": 1000
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/textinput_normal.tif.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{A9D247E6-58C1-51F8-ABAB-1DC3F22EE902}"
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/textinput_hover.sprite"
+        },
+        {
+            "assetId": {
+                "guid": "{561D1ED0-13FC-5CAD-AB7E-ADE4E424028C}",
+                "subId": 1000
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/textinput_hover.tif.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{EE5C3511-5A06-522B-AE63-D67279613A9E}"
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/textinput_disabled.sprite"
+        },
+        {
+            "assetId": {
+                "guid": "{28AC420F-5A90-5FC5-93AC-5CBDA82131E3}",
+                "subId": 1000
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/textinput_disabled.tif.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{8B33DC4A-9DCD-5934-9B1B-161236FC4FBF}",
+                "subId": 1000
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/checkbox_check.tif.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{07D54B0D-4DAF-54B0-A7D6-790C4D14A490}",
+                "subId": 1000
+            },
+            "platformFlags": 127,
+            "pathHint": "ui/textures/prefab/checkbox_box_normal.tif.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{553B3F5A-EF01-5636-B03C-38BF3C5BE082}"
+            },
+            "platformFlags": 255,
+            "pathHint": "lyshineexamples_dependencies.xml"
+        }
+    ]
+}
 

@@ -24,7 +24,7 @@ namespace AZ
         class CommandQueueContext final
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator);
 
             CommandQueueContext(const CommandQueueContext&) = delete;
             CommandQueueContext& operator=(const CommandQueueContext&) = delete;

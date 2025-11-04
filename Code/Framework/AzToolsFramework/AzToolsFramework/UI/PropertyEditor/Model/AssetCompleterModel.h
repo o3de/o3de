@@ -8,6 +8,9 @@
 
 #pragma once
 
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -18,13 +21,13 @@ namespace AzToolsFramework
     using namespace AzToolsFramework::AssetBrowser;
 
     //! Model storing all the files that can be suggested in the Asset Autocompleter for PropertyAssetCtrl
-    class AssetCompleterModel
+    class AZTF_API AssetCompleterModel
         : public QAbstractTableModel
     {
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetCompleterModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetCompleterModel, AZ::SystemAllocator);
         explicit AssetCompleterModel(QObject* parent = nullptr);
         ~AssetCompleterModel();
 
@@ -36,7 +39,7 @@ namespace AzToolsFramework
         void SetFilter(const AZStd::vector<AZ::Data::AssetType>& assetTypes);
         void SetFilter(FilterConstType filter);
         void RefreshAssetList();
-        void SearchStringHighlight(QString searchString);
+        void SearchStringHighlight(const QString& searchString);
 
         Qt::ItemFlags flags(const QModelIndex &index) const override;
 

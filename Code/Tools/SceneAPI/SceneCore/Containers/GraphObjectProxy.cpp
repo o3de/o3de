@@ -9,6 +9,7 @@
 #include <SceneAPI/SceneCore/Containers/GraphObjectProxy.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
@@ -19,28 +20,6 @@ namespace AZ
     {
         static const char* const None = "None";
 
-        class PythonBehaviorInfo final
-        {
-        public:
-            AZ_RTTI(PythonBehaviorInfo, "{8055BD03-5B3B-490D-AEC5-1B1E2616D529}");
-            AZ_CLASS_ALLOCATOR(PythonBehaviorInfo, AZ::SystemAllocator, 0);
-
-            static void Reflect(AZ::ReflectContext* context);
-
-            PythonBehaviorInfo(const AZ::BehaviorClass* behaviorClass);
-            PythonBehaviorInfo() = delete;
-
-        protected:
-            bool IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId) const;
-            AZStd::string FetchPythonType(const AZ::BehaviorParameter& param) const;
-            void PrepareMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod);
-            void PrepareProperty(AZStd::string_view propertyName, const AZ::BehaviorProperty& behaviorProperty);
-
-        private:
-            const AZ::BehaviorClass* m_behaviorClass = nullptr;
-            AZStd::vector<AZStd::string> m_methodList;
-            AZStd::vector<AZStd::string> m_propertyList;
-        };
 
         PythonBehaviorInfo::PythonBehaviorInfo(const AZ::BehaviorClass* behaviorClass)
             : m_behaviorClass(behaviorClass)
@@ -62,7 +41,8 @@ namespace AZ
             if (behaviorContext)
             {
                 behaviorContext->Class<PythonBehaviorInfo>()
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
                     ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                     ->Property("className", [](const PythonBehaviorInfo& self)
                         { return self.m_behaviorClass->m_name; }, nullptr)
@@ -121,7 +101,7 @@ namespace AZ
                     bufferArg = *name;
                 }
 
-                AZStd::string_view type = FetchPythonType(*behaviorMethod.GetArgument(argIndex));
+                AZStd::string type = FetchPythonType(*behaviorMethod.GetArgument(argIndex));
                 if (!type.empty())
                 {
                     AzFramework::StringFunc::Append(bufferArg, ": ");
@@ -155,14 +135,14 @@ namespace AZ
             AzFramework::StringFunc::Append(buffer, "(");
             if (behaviorProperty.m_setter)
             {
-                AZStd::string_view type = FetchPythonType(*behaviorProperty.m_setter->GetArgument(1));
+                AZStd::string type = FetchPythonType(*behaviorProperty.m_setter->GetArgument(1));
                 AzFramework::StringFunc::Append(buffer, type.data());
             }
             AzFramework::StringFunc::Append(buffer, ")");
 
             if (behaviorProperty.m_getter)
             {
-                AZStd::string_view type = FetchPythonType(*behaviorProperty.m_getter->GetResult());
+                AZStd::string type = FetchPythonType(*behaviorProperty.m_getter->GetResult());
                 AzFramework::StringFunc::Append(buffer, "->");
                 AzFramework::StringFunc::Append(buffer, type.data());
             }
@@ -185,7 +165,8 @@ namespace AZ
                     behaviorContext->Class<DataTypes::IGraphObject>();
 
                     behaviorContext->Class<GraphObjectProxy>()
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                        ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                         ->Attribute(AZ::Script::Attributes::Module, "scene.graph")
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Method("CastWithTypeName", &GraphObjectProxy::CastWithTypeName)
@@ -197,7 +178,7 @@ namespace AZ
                                 {
                                     return self.m_pythonBehaviorInfo.get();
                                 }
-                                if (self.m_behaviorClass)
+                                else if (self.m_behaviorClass)
                                 {
                                     self.m_pythonBehaviorInfo = AZStd::make_shared<Python::PythonBehaviorInfo>(self.m_behaviorClass);
                                     return self.m_pythonBehaviorInfo.get();
@@ -213,8 +194,16 @@ namespace AZ
                 m_graphObject = graphObject;
             }
 
+            GraphObjectProxy::GraphObjectProxy(const GraphObjectProxy& other)
+            {
+                m_graphObject = other.m_graphObject;
+                m_behaviorClass = other.m_behaviorClass;
+                m_pythonBehaviorInfo = other.m_pythonBehaviorInfo;
+            }
+
             GraphObjectProxy::~GraphObjectProxy()
             {
+                m_pythonBehaviorInfo.reset();
                 m_graphObject.reset();
                 m_behaviorClass = nullptr;
             }
@@ -289,12 +278,41 @@ namespace AZ
 
                 // record the "this" pointer's meta data like its RTTI so that it can be
                 // down casted to a parent class type if needed to invoke a parent method
+
+                // When storing a parameter, if the behavior parameter indicates that it is a pointer, (TR_POINTER flag is set)
+                // it is expected that what is stored in that parameter is a pointer to the value, more specifically
+                // it will decode it on the other end by dereferencing it twice, like this:
+                //    if (m_traits & BehaviorParameter::TR_POINTER)
+                //    {
+                //       valueAddress = *reinterpret_cast<void**>(valueAddress); // pointer to a pointer
+                //    }
+                // Notice the it expects it to be a void** (double reference) and dereferences it to get the address of the object.
+                // 
+                // That means that when TR_POINTER is set, not only does the object pointed to have to survive until used
+                // but the memory storing that pointer also has to survive until used.
+                // for example, this would be a scope use-after-free bug:
+                // {
+                //    AZ::Entity entity;
+                //    AZ::BehaviorArgument arg;
+                //    arg.m_traits = BehaviorParameter::TR_POINTER;
+                // 
+                //    {
+                //       const void* objectPtr = &entity;   // this is a 64-bit object living in the stack, holding the addr of entity.
+                //       arg.m_value = const_cast<void*>(&objectPtr); // notice, we are referencing objectPtr again with & since its TR_POINTER
+                //    }
+                //
+                //    arg.GetValueAddress(); // double dereference causes memory error.
+                //
+                //  The above is a memory error because the objectPtr is a stack variable, and the ADDRESS of it is what's stored in m_value.
+
+                // to avoid this, we cache the self pointer to the graph object ahead of time.
+                const void* self = reinterpret_cast<const void*>(m_graphObject.get());
+
                 if (const AZ::BehaviorParameter* thisInfo = behaviorMethod->GetArgument(0); hasSelfPointer)
                 {
                     // avoiding the "Special handling for the generic object holder." since it assumes
                     // the BehaviorObject.m_value is a pointer; the reference version is already dereferenced
                     AZ::BehaviorArgument theThisPointer;
-                    const void* self = reinterpret_cast<const void*>(m_graphObject.get());
                     if ((thisInfo->m_traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
                     {
                         theThisPointer.m_value = &self;

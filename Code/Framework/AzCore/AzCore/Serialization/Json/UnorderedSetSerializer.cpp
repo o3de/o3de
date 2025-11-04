@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedSetContainerSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedSetContainerSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonUnorderedSetContainerSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)

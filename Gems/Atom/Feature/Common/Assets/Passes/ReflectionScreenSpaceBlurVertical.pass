@@ -8,41 +8,46 @@
             "PassClass": "ReflectionScreenSpaceBlurChildPass",
             "Slots": [
                 {
-                    "Name": "DepthInput",
+                    "Name": "Input",
+                    "ShaderInputName": "m_input",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "Input",
-                    "SlotType": "InputOutput",
+                    "Name": "DownsampledDepthLinear",
+                    "ShaderInputName": "m_downsampledDepthLinear",
+                    "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "Output",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget"
-                },
-                {
-                    "Name": "DownsampledDepthOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
                 }
             ],
             "Connections": [
                 {
-                    "LocalSlot": "DepthInput",
+                    "LocalSlot": "Input",
                     "AttachmentRef": {
                         "Pass": "Parent",
-                        "Attachment": "DepthInput"
+                        "Attachment": "ScreenSpaceReflectionInputOutput"
+                    }
+                },
+                {
+                    "LocalSlot": "DownsampledDepthLinear",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "DownsampledDepthLinear"
                     }
                 }
             ],
-            "PassData": {
+            "PassData":
+            {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionScreenSpaceBlurVertical.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

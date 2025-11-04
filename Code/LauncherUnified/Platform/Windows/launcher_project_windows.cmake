@@ -17,7 +17,21 @@ if(NOT EXISTS ${ICON_FILE})
     set(ICON_FILE Resources/GameSDK.ico)
 endif()
 
-if(EXISTS ${ICON_FILE})
+set(SPLASH_FILE ${project_real_path}/Resources/Splash.bmp)
+if(NOT EXISTS ${SPLASH_FILE})
+    # Try in project Gem
+    set(SPLASH_FILE ${project_real_path}/Gem/Resources/Splash.bmp)
+endif()
+if(NOT EXISTS ${SPLASH_FILE})
+    # Try legacy splash
+    set(SPLASH_FILE ${project_real_path}/Resources/LegacyLogoLauncher.bmp)
+endif()
+if(NOT EXISTS ${SPLASH_FILE})
+    # Try in Gem
+    set(SPLASH_FILE ${project_real_path}/Gem/Resources/LegacyLogoLauncher.bmp)
+endif()
+
+if(EXISTS ${ICON_FILE} OR EXISTS ${SPLASH_FILE})
     set(target_file ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.GameLauncher.rc)
     configure_file(${CMAKE_CURRENT_LIST_DIR}/Launcher.rc.in
         ${target_file}

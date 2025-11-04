@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Outcome/Outcome.h>
 
 #include <AzFramework/Physics/Shape.h>
 
@@ -17,12 +18,18 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/AzFrameworkAPI.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace Physics
 {
     class Character;
 
-    class CharacterColliderNodeConfiguration
+    class AZF_API CharacterColliderNodeConfiguration
     {
     public:
         AZ_RTTI(Physics::CharacterColliderNodeConfiguration, "{C16F3301-0979-400C-B734-692D83755C39}");
@@ -36,7 +43,7 @@ namespace Physics
         AzPhysics::ShapeColliderPairList m_shapes;
     };
 
-    class CharacterColliderConfiguration
+    class AZF_API CharacterColliderConfiguration
     {
     public:
         AZ_RTTI(Physics::CharacterColliderConfiguration, "{4DFF1434-DF5B-4ED5-BE0F-D3E66F9B331A}");
@@ -55,11 +62,11 @@ namespace Physics
     };
 
     /// Information required to create the basic physics representation of a character.
-    class CharacterConfiguration
+    class AZF_API CharacterConfiguration
         : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterConfiguration, AZ::SystemAllocator);
         AZ_RTTI(Physics::CharacterConfiguration, "{58D5A6CA-113B-4AC3-8D53-239DB0C4E240}", AzPhysics::SimulatedBodyConfiguration);
 
         virtual ~CharacterConfiguration() = default;
@@ -69,7 +76,6 @@ namespace Physics
         AzPhysics::CollisionGroups::Id m_collisionGroupId; //!< Which layers does this character collide with.
         AzPhysics::CollisionLayer m_collisionLayer; //!< Which collision layer is this character on.
         MaterialSlots m_materialSlots; //!< Material slots for the character.
-        PhysicsLegacy::MaterialSelection m_legacyMaterialSelection; //!< Kept to convert old physics material assets.
         AZ::Vector3 m_upDirection = AZ::Vector3::CreateAxisZ(); //!< Up direction for character orientation and step behavior.
         float m_maximumSlopeAngle = 30.0f; //!< The maximum slope on which the character can move, in degrees.
         float m_stepHeight = 0.5f; //!< Affects what size steps the character can climb.
@@ -84,11 +90,11 @@ namespace Physics
     /// Basic implementation of common character-style needs as a WorldBody. Is not a full-functional ship-ready
     /// all-purpose character controller implementation. This class just abstracts some common functionality amongst
     /// typical characters, and is take-it-or-leave it style; useful as a starting point or reference.
-    class Character
+    class AZF_API Character
         : public AzPhysics::SimulatedBody
     {
     public:
-        AZ_CLASS_ALLOCATOR(Character, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Character, AZ::SystemAllocator);
         AZ_RTTI(Physics::Character, "{962E37A1-3401-4672-B896-0A6157CFAC97}", AzPhysics::SimulatedBody);
 
         ~Character() override = default;

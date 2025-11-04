@@ -8,8 +8,13 @@
 # Ly Remote Console tests.
 #
 
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
+
 # Unit tests.
 ly_add_pytest(
     NAME RemoteConsole_UnitTests_main_no_gpu
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit/
+    LABELS REQUIRES_tiaf
 )

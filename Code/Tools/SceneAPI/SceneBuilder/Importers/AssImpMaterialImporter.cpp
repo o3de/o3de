@@ -31,6 +31,8 @@ namespace AZ
     {
         namespace SceneBuilder
         {
+            static AZStd::string ResolveTexturePath([[maybe_unused]] const AZStd::string& materialName, const AssImpSDKWrapper::AssImpSceneWrapper& scene, const AZStd::string& textureFilePath);
+
             AssImpMaterialImporter::AssImpMaterialImporter()
             {
                 BindToCall(&AssImpMaterialImporter::ImportMaterials);
@@ -41,7 +43,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpMaterialImporter, SceneCore::LoadingComponent>()->Version(2);
+                    serializeContext->Class<AssImpMaterialImporter, SceneCore::LoadingComponent>()->Version(3);
                 }
             }
 
@@ -71,8 +73,8 @@ namespace AZ
 
                     if (matFound == materialMap.end())
                     {
-                        std::shared_ptr<AssImpSDKWrapper::AssImpMaterialWrapper> assImpMaterial =
-                            std::shared_ptr<AssImpSDKWrapper::AssImpMaterialWrapper>(new AssImpSDKWrapper::AssImpMaterialWrapper(context.m_sourceScene.GetAssImpScene()->mMaterials[materialIndex]));
+                        AZStd::shared_ptr<AssImpSDKWrapper::AssImpMaterialWrapper> assImpMaterial =
+                            AZStd::shared_ptr<AssImpSDKWrapper::AssImpMaterialWrapper>(new AssImpSDKWrapper::AssImpMaterialWrapper(context.m_sourceScene.GetAssImpScene()->mMaterials[materialIndex]));
 
                         materialName = assImpMaterial->GetName().c_str();
                         RenamedNodesMap::SanitizeNodeName(materialName, context.m_scene.GetGraph(), context.m_currentGraphPosition, "Material");
@@ -82,22 +84,23 @@ namespace AZ
 
                         material->SetMaterialName(assImpMaterial->GetName());
                         material->SetTexture(DataTypes::IMaterialData::TextureMapType::Diffuse,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::Diffuse)).c_str());
                         material->SetTexture(DataTypes::IMaterialData::TextureMapType::Specular,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::Specular)).c_str());
                         material->SetTexture(DataTypes::IMaterialData::TextureMapType::Bump,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::Bump)).c_str());
                         material->SetTexture(DataTypes::IMaterialData::TextureMapType::Normal,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::Normal)).c_str());
                         material->SetUniqueId(assImpMaterial->GetUniqueId());
                         material->SetDiffuseColor(assImpMaterial->GetDiffuseColor());
                         material->SetSpecularColor(assImpMaterial->GetSpecularColor());
                         material->SetEmissiveColor(assImpMaterial->GetEmissiveColor());
                         material->SetShininess(assImpMaterial->GetShininess());
+                        material->SetOpacity(assImpMaterial->GetOpacity());
 
                         material->SetUseColorMap(assImpMaterial->GetUseColorMap());
                         material->SetBaseColor(assImpMaterial->GetBaseColor());
@@ -106,14 +109,14 @@ namespace AZ
                         material->SetMetallicFactor(assImpMaterial->GetMetallicFactor());
                         material->SetTexture(
                             DataTypes::IMaterialData::TextureMapType::Metallic,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::Metallic).c_str()));
 
                         material->SetUseRoughnessMap(assImpMaterial->GetUseRoughnessMap());
                         material->SetRoughnessFactor(assImpMaterial->GetRoughnessFactor());
                         material->SetTexture(
                             DataTypes::IMaterialData::TextureMapType::Roughness,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::Roughness).c_str()));
 
                         material->SetUseEmissiveMap(assImpMaterial->GetUseEmissiveMap());
@@ -122,17 +125,17 @@ namespace AZ
                         material->SetUseAOMap(assImpMaterial->GetUseAOMap());
                         material->SetTexture(
                             DataTypes::IMaterialData::TextureMapType::AmbientOcclusion,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::AmbientOcclusion).c_str()));
 
                         material->SetTexture(
                             DataTypes::IMaterialData::TextureMapType::Emissive,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::Emissive).c_str()));
 
                         material->SetTexture(
                             DataTypes::IMaterialData::TextureMapType::BaseColor,
-                            ResolveTexturePath(materialName, context.m_sourceScene.GetSceneFileName(),
+                            ResolveTexturePath(materialName, context.m_sourceScene,
                                 assImpMaterial->GetTextureFileName(SDKMaterial::MaterialWrapper::MaterialMapType::BaseColor).c_str()));
 
                         AZ_Assert(material, "Failed to allocate scene material data.");
@@ -143,43 +146,121 @@ namespace AZ
                         }
 
                         materialMap[materialIndex] = material;
+
+                        Events::ProcessingResult materialResult;
+                        Containers::SceneGraph::NodeIndex newIndex =
+                            context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, materialName.c_str());
+
+                        AZ_Assert(newIndex.IsValid(), "Failed to create SceneGraph node for attribute.");
+                        if (!newIndex.IsValid())
+                        {
+                            combinedMaterialImportResults += Events::ProcessingResult::Failure;
+                            continue;
+                        }
+
+                        auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(context, material, newIndex, materialName);
+                        materialResult = Events::Process(*dataPopulated);
+
+                        if (materialResult != Events::ProcessingResult::Failure)
+                        {
+                            materialResult = SceneAPI::SceneBuilder::AddAttributeDataNodeWithContexts(*dataPopulated);
+                        }
+
+                        combinedMaterialImportResults += materialResult;
                     }
                     else
                     {
                         material = matFound->second;
-                        materialName = material.get()->GetMaterialName();
+                        materialName = material->GetMaterialName();
+                        AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Duplicate material references to %s from node %s",
+                            materialName.c_str(), context.m_sourceNode.GetName());
                     }
-
-                    Events::ProcessingResult materialResult;
-                    Containers::SceneGraph::NodeIndex newIndex =
-                        context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, materialName.c_str());
-
-                    AZ_Assert(newIndex.IsValid(), "Failed to create SceneGraph node for attribute.");
-                    if (!newIndex.IsValid())
-                    {
-                        combinedMaterialImportResults += Events::ProcessingResult::Failure;
-                        continue;
-                    }
-
-                    AssImpSceneAttributeDataPopulatedContext dataPopulated(context, material, newIndex, materialName);
-                    materialResult = Events::Process(dataPopulated);
-
-                    if (materialResult != Events::ProcessingResult::Failure)
-                    {
-                        materialResult = SceneAPI::SceneBuilder::AddAttributeDataNodeWithContexts(dataPopulated);
-                    }
-
-                    combinedMaterialImportResults += materialResult;
                 }
 
                 return combinedMaterialImportResults.GetResult();
             }
 
-            AZStd::string AssImpMaterialImporter::ResolveTexturePath([[maybe_unused]] const AZStd::string& materialName, const AZStd::string& sceneFilePath, const AZStd::string& textureFilePath) const
+            AZStd::string ResolveTexturePath([[maybe_unused]] const AZStd::string& materialName, const AssImpSDKWrapper::AssImpSceneWrapper& scene, const AZStd::string& textureFilePath)
             {
                 if (textureFilePath.empty())
                 {
-                    AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Material %.*s has no associated texture.", AZ_STRING_ARG(materialName));
+                    AZ_Info(AZ::SceneAPI::Utilities::LogWindow, "Material %.*s has no associated texture.", AZ_STRING_ARG(materialName));
+                    return textureFilePath;
+                }
+                const AZStd::string& sceneFilePath = scene.GetSceneFileName();
+                const aiTexture* embeddedTexture = scene.GetAssImpScene()->GetEmbeddedTexture(textureFilePath.c_str());
+                if (scene.GetExtractEmbeddedTextures() && embeddedTexture != nullptr)
+                {
+                    if (embeddedTexture->mHeight == 0)
+                    {
+                        AZ_Info(
+                            AZ::SceneAPI::Utilities::LogWindow,
+                            "Material %.*s has an embedded texture compressed as %s format",
+                            AZ_STRING_ARG(materialName), embeddedTexture->achFormatHint);
+                        AZStd::string relativeTexturePath, rootPath;
+                        bool generatedRelativeSourcePath = false;
+                        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                            generatedRelativeSourcePath, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                            sceneFilePath.c_str(), relativeTexturePath, rootPath);
+
+                        AZStd::string textureFileName;
+                        if (embeddedTexture->mFilename.length == 0)
+                        {
+                            // Set texture path as ${relative scene folder}/${scene filename}_${embedded texture index}
+                            // for embedded texture, path starts with asterisk (like *1, *2, ...).
+                            const char* embeddedTextureIndex = &(textureFilePath.c_str()[1]);
+                            AZ::StringFunc::Path::GetFileName(sceneFilePath.c_str(), textureFileName);
+                            textureFileName = AZStd::string::format("%s_%s_%s", textureFileName.c_str(), materialName.c_str(), embeddedTextureIndex);
+                        }
+                        else
+                        {
+                            AZ::StringFunc::Path::GetFileName(embeddedTexture->mFilename.C_Str(), textureFileName);
+                        }
+                        AZ::StringFunc::Path::ReplaceFullName(relativeTexturePath, textureFileName.c_str(), embeddedTexture->achFormatHint);
+                        // Save the texture
+                        IO::FileIOBase* fileIO = IO::FileIOBase::GetInstance();
+                        AZStd::string fullTexturePath;
+                        AZ::StringFunc::Path::Join(fileIO->GetAlias("@projectroot@"), relativeTexturePath.c_str(), fullTexturePath);
+
+                        if (fileIO->Exists(fullTexturePath.c_str()))
+                        {
+                            // don't overwrite if the file already exists.
+                            return relativeTexturePath;
+                        }
+
+                        IO::HandleType handle;
+                        if (fileIO->Open(fullTexturePath.c_str(), IO::OpenMode::ModeWrite | IO::OpenMode::ModeBinary | IO::OpenMode::ModeCreatePath, handle))
+                        {
+                            u64 bytesWritten = 0;
+                            fileIO->Write(handle, embeddedTexture->pcData, embeddedTexture->mWidth, &bytesWritten);
+                            if (bytesWritten < embeddedTexture->mWidth)
+                            {
+                                AZ_Warning(
+                                    "AtomFeatureCommon",
+                                    false,
+                                    "Failed to write all bytes to file '%s'",
+                                    fullTexturePath.c_str());
+                            }
+                            fileIO->Close(handle);
+                        }
+                        else
+                        {
+                            AZ_Warning(
+                                "AtomFeatureCommon",
+                                false,
+                                "Can not open path %s", fullTexturePath.c_str());
+                        }
+                        return relativeTexturePath;
+                    }
+                    else
+                    {
+                        AZ_Warning(
+                            "AtomFeatureCommon",
+                            false,
+                            "Material %.*s has a uncompressed texture with absolute path '%.*s', which is not supported",
+                            AZ_STRING_ARG(materialName),
+                            AZ_STRING_ARG(textureFilePath));
+                    }
                     return textureFilePath;
                 }
 

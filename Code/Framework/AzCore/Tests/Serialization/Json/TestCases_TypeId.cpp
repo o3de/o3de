@@ -40,7 +40,7 @@ namespace AZ
 
             AZ::TypeId GetSpecializedTypeId() const override
             {
-                return m_classData.m_typeId;
+                return azrtti_typeid<T>();
             }
 
             AZ::TypeId GetGenericTypeId() const override
@@ -72,7 +72,7 @@ namespace AZ
         using ClassInfoType = GenericTemplatedClassInfo;
         static ClassInfoType* GetGenericInfo()
         {
-            return GetCurrentSerializeContextModule().CreateGenericClassInfo<ThisType>();
+            return GetGlobalSerializeContextModule().CreateGenericClassInfo<ThisType>();
         }
 
         static AZ::TypeId GetClassTypeId()

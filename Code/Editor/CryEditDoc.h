@@ -14,7 +14,6 @@
 #if !defined(Q_MOC_RUN)
 #include "DocMultiArchive.h"
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
-#include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -34,20 +33,13 @@ struct ICVar;
 
 class CCryEditDoc
     : public QObject
-    , protected AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
 {
     Q_OBJECT
     Q_PROPERTY(bool modified READ IsModified WRITE SetModifiedFlag);
     Q_PROPERTY(QString pathName READ GetLevelPathName WRITE SetPathName);
     Q_PROPERTY(QString title READ GetTitle WRITE SetTitle);
 
-public: // Create from serialization only
-    enum DocumentEditingMode
-    {
-        LevelEdit,
-        SliceEdit
-    };
-
+public:
     Q_INVOKABLE CCryEditDoc();
 
     virtual ~CCryEditDoc();
@@ -60,21 +52,11 @@ public: // Create from serialization only
     int GetModifiedModule();
 
     // Return level path.
-    // If a slice is being edited then the path to a placeholder level is returned.
     QString GetLevelPathName() const;
 
-    // Set path of slice or level being edited.
+    // Set path of level being edited.
     void SetPathName(const QString& pathName);
 
-    // Return slice path, if slice is open, an empty string otherwise. Use GetEditMode() to determine if a slice is open.
-    QString GetSlicePathName() const;
-
-    // Return The current type of document being edited, a level or a slice
-    // While editing a slice, a placeholder level is opened since the editor requires an open level to function.
-    // While editing a slice, saving will only affect the slice and not the placeholder level.
-    DocumentEditingMode GetEditMode() const;
-
-    // Return slice path if editing slice, level path if editing level.
     SANDBOX_API QString GetActivePathName() const;
 
     QString GetTitle() const;
@@ -123,9 +105,6 @@ public: // Create from serialization only
     const char* GetTemporaryLevelName() const;
     void DeleteTemporaryLevel();
 
-    void SetWaterColor(const QColor& col) { m_waterColor = col; }
-    QColor GetWaterColor() const { return m_waterColor; }
-    XmlNodeRef& GetFogTemplate() { return m_fogTemplate; }
     XmlNodeRef& GetEnvironmentTemplate() { return m_environmentTemplate; }
     void OnEnvironmentPropertyChanged(IVariable* pVar);
 
@@ -142,7 +121,6 @@ protected:
     {
         CTimeValue loading_start_time;
         QString absoluteLevelPath;
-        QString absoluteSlicePath;
     };
     bool BeforeOpenDocument(const QString& lpszPathName, TOpenDocContext& context);
     bool DoOpenDocument(TOpenDocContext& context);
@@ -152,14 +130,10 @@ protected:
     virtual void Load(TDocMultiArchive& arrXmlAr, const QString& szFilename);
     virtual void StartStreamingLoad(){}
 
-    void Save(CXmlArchive& xmlAr);
     void Load(CXmlArchive& xmlAr, const QString& szFilename);
-    void Save(TDocMultiArchive& arrXmlAr);
     bool SaveLevel(const QString& filename);
-    bool SaveSlice(const QString& filename);
     bool LoadLevel(TDocMultiArchive& arrXmlAr, const QString& absoluteCryFilePath);
     bool LoadEntitiesFromLevel(const QString& levelPakFile);
-    bool LoadEntitiesFromSlice(const QString& sliceFile);
     void SerializeFogSettings(CXmlArchive& xmlAr);
     virtual void SerializeViewSettings(CXmlArchive& xmlAr);
     void LogLoadTime(int time) const;
@@ -169,7 +143,6 @@ protected:
         bool bSaved;
     };
     bool BeforeSaveDocument(const QString& lpszPathName, TSaveDocContext& context);
-    bool HasLayerNameConflicts() const;
     bool DoSaveDocument(const QString& lpszPathName, TSaveDocContext& context);
     bool AfterSaveDocument(const QString& lpszPathName, TSaveDocContext& context, bool bShowPrompt = true);
 
@@ -179,12 +152,6 @@ protected:
     void OnStartLevelResourceList();
 
     QString GetCryIndexPath(const char* levelFilePath) const;
-
-    //////////////////////////////////////////////////////////////////////////
-    // SliceEditorEntityOwnershipServiceNotificationBus::Handler
-    void OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& /*ticket*/) override;
-    void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& /*ticket*/) override;
-    //////////////////////////////////////////////////////////////////////////
 
     bool m_bLoadFailed = false;
     QColor m_waterColor = QColor(0, 0, 255);
@@ -198,10 +165,7 @@ protected:
     bool m_boLevelExported = true;
     bool m_modified = false;
     QString m_pathName;
-    QString m_slicePathName;
     QString m_title;
-    float m_terrainSize;
-    const char* m_envProbeSliceRelativePath = "EngineAssets/Slices/DefaultLevelSetup.slice";
     const float m_envProbeHeight = 200.0f;
     bool m_hasErrors = false; ///< This is used to warn the user that they may lose work when they go to save.
     AzToolsFramework::Prefab::PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;

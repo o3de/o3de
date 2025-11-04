@@ -12,6 +12,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Configuration.h>
 
 #include <AzCore/Name/Name.h>
 #include <AzFramework/Windowing/WindowBus.h>
@@ -22,7 +23,7 @@ namespace AZ
     namespace RPI
     {
         //! Interface of RPISystem, which is the main entry point for the Atom renderer.
-        class RPISystemInterface
+        class ATOM_RPI_PUBLIC_API RPISystemInterface
         {
         public:
             AZ_RTTI(RPISystemInterface, "{62E72C4F-A985-4001-9004-DE53029DBF11}");
@@ -59,6 +60,9 @@ namespace AZ
 
             //! Get scene by using scene name.
             virtual Scene* GetSceneByName(const AZ::Name& name) const = 0;
+
+            //! Return the number of registered scenes
+            virtual uint32_t GetNumScenes() const = 0;
 
             //! Get the render pipeline created for a window
             virtual RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) = 0;

@@ -37,9 +37,10 @@ set(FILES
     Source/Cinematics/SelectTrack.cpp
     Source/Cinematics/SequenceTrack.cpp
     Source/Cinematics/SoundTrack.cpp
+    Source/Cinematics/StringTrack.cpp
     Source/Cinematics/TrackEventTrack.cpp
     Source/Cinematics/AnimSplineTrack.h
-    Source/Cinematics/AnimSplineTrack_Vec2Specialization.h
+    Source/Cinematics/AnimSplineTrack_Vec2Specialization.cpp
     Source/Cinematics/AnimTrack.h
     Source/Cinematics/AssetBlendTrack.h
     Source/Cinematics/BoolTrack.h
@@ -55,6 +56,7 @@ set(FILES
     Source/Cinematics/SelectTrack.h
     Source/Cinematics/SequenceTrack.h
     Source/Cinematics/SoundTrack.h
+    Source/Cinematics/StringTrack.h
     Source/Cinematics/TrackEventTrack.h
     Source/Cinematics/AnimAZEntityNode.cpp
     Source/Cinematics/AnimNode.cpp
@@ -66,7 +68,6 @@ set(FILES
     Source/Cinematics/CVarNode.cpp
     Source/Cinematics/EventNode.cpp
     Source/Cinematics/LayerNode.cpp
-    Source/Cinematics/MaterialNode.cpp
     Source/Cinematics/SceneNode.cpp
     Source/Cinematics/ScriptVarNode.cpp
     Source/Cinematics/AnimAZEntityNode.h
@@ -78,7 +79,6 @@ set(FILES
     Source/Cinematics/CVarNode.h
     Source/Cinematics/EventNode.h
     Source/Cinematics/LayerNode.h
-    Source/Cinematics/MaterialNode.h
     Source/Cinematics/SceneNode.h
     Source/Components/SequenceComponent.h
     Source/Components/SequenceComponent.cpp

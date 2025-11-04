@@ -22,8 +22,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSetTransformNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSetTransformNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSetTransformNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSetTransformNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeSetTransformNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -226,7 +226,7 @@ namespace EMotionFX
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-            ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &BlendTreeSetTransformNode::m_nodeName, "Node", "The node to apply the transform to.")
+            ->DataElement(AZ_CRC_CE("ActorNode"), &BlendTreeSetTransformNode::m_nodeName, "Node", "The node to apply the transform to.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeSetTransformNode::Reinit)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeSetTransformNode::m_transformSpace)

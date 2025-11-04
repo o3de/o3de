@@ -4,5 +4,8 @@
         "major": 3,
         "minor": 23,
         "patch": 0
-    }
+    },
+    "include": [
+        "user/cmake/engine/CMakePresets.json"
+    ]
 }

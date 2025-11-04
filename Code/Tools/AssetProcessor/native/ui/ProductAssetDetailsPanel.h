@@ -76,6 +76,14 @@ namespace AssetProcessor
             QDateTime m_scanTimeStart;
         };
 
+        enum class MissingDependencyTableColumns
+        {
+            GoToButton,
+            ScanTime,
+            Dependency,
+            Max
+        };
+
         void ResetText();
         void SetDetailsVisible(bool visible);
         void OnSupportClicked(bool checked);

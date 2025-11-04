@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Source/PythonCommon.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
-#include "PythonTraceMessageSink.h"
 #include "PythonTestingUtility.h"
+#include "PythonTraceMessageSink.h"
+#include <EditorPythonBindings/PythonCommon.h>
+#include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -162,7 +162,7 @@ namespace UnitTest
         {
             AZ_TEST_START_TRACE_SUPPRESSION;
 
-            // prepare handler on this thread, but will throw a Python exception 
+            // prepare handler on this thread, but will throw a Python exception
             pybind11::exec(R"(
                 import azlmbr.test
 
@@ -261,7 +261,7 @@ namespace UnitTest
             const float timeOneFrameSeconds = 0.016f; //approx 60 fps
             AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
                 timeOneFrameSeconds,
-                AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+                AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
 
             // After one tick all the queued calls should have been processed
             EXPECT_EQ(numWarnings, m_testSink.m_evaluationMap[aznumeric_cast<int>(LogTypes::OnPrewarning)]);

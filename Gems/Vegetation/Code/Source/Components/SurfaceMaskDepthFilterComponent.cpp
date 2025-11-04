@@ -107,18 +107,18 @@ namespace Vegetation
 
     void SurfaceMaskDepthFilterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationFilterService", 0x9f97cc97));
-        services.push_back(AZ_CRC("VegetationSurfaceMaskDepthFilterService", 0xece0905b));
+        services.push_back(AZ_CRC_CE("VegetationFilterService"));
+        services.push_back(AZ_CRC_CE("VegetationSurfaceMaskDepthFilterService"));
     }
 
     void SurfaceMaskDepthFilterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSurfaceMaskDepthFilterService", 0xece0905b));
+        services.push_back(AZ_CRC_CE("VegetationSurfaceMaskDepthFilterService"));
     }
 
     void SurfaceMaskDepthFilterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaService", 0x6a859504));
+        services.push_back(AZ_CRC_CE("VegetationAreaService"));
     }
 
     void SurfaceMaskDepthFilterComponent::Reflect(AZ::ReflectContext* context)
@@ -203,7 +203,7 @@ namespace Vegetation
 
     bool SurfaceMaskDepthFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && !instanceData.m_descriptorPtr->m_surfaceTagDistance.m_tags.empty();
         const SurfaceData::SurfaceTagVector& surfaceTagsToCompare = useOverrides ? instanceData.m_descriptorPtr->m_surfaceTagDistance.m_tags : m_configuration.m_depthComparisonTags;

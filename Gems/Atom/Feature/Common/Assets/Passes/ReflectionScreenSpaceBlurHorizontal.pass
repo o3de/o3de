@@ -9,13 +9,36 @@
             "Slots": [
                 {
                     "Name": "Input",
-                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_input",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DownsampledDepthLinear",
+                    "ShaderInputName": "m_downsampledDepthLinear",
+                    "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "Output",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DownsampledDepthLinear",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "DownsampledDepthLinear"
+                    }
+                },
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "ScreenSpaceReflectionInputOutput"
+                    }
                 }
             ],
             "PassData": {
@@ -23,7 +46,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionScreenSpaceBlurHorizontal.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

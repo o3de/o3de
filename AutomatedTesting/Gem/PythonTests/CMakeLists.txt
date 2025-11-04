@@ -41,9 +41,6 @@ add_subdirectory(EditorPythonBindings)
 ## Python Asset Builder ##
 add_subdirectory(PythonAssetBuilder)
 
-## Blast ##
-add_subdirectory(Blast)
-
 ## Large Worlds ##
 add_subdirectory(largeworlds)
 
@@ -58,9 +55,6 @@ add_subdirectory(smoke)
 
 ## Terrain ##
 add_subdirectory(Terrain)
-
-## AWS ##
-add_subdirectory(AWS)
 
 ## Multiplayer ##
 add_subdirectory(Multiplayer)

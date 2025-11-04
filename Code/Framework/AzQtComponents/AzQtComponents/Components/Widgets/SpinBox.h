@@ -47,6 +47,7 @@ namespace AzQtComponents
         //! Whether a redo value is available.
         Q_PROPERTY(bool redoAvailable READ isRedoAvailable)
     public:
+        static unsigned int s_watcherReferenceCount;
 
         //! Style configuration for the SpinBox class.
         struct Config
@@ -121,7 +122,7 @@ namespace AzQtComponents
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::SpinBox::s_spinBoxWatcher': class 'QPointer<AzQtComponents::SpinBoxWatcher>' needs to have dll-interface to be used by clients of class 'AzQtComponents::SpinBox'
         static QPointer<SpinBoxWatcher> s_spinBoxWatcher;
         AZ_POP_DISABLE_WARNING
-        static unsigned int s_watcherReferenceCount;
+        
         static void initializeWatcher();
         static void uninitializeWatcher();
 

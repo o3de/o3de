@@ -15,12 +15,16 @@
                 "$type": "EditorPendingCompositionComponent",
                 "Id": 12265484671603697631
             },
+            "Component_[14042256852687214661]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 14042256852687214661,
+                "LocalBookmarkFileName": "SC_Spawnables_EntityClearedOnGameModeExit_16663026490027951.setreg"
+            },
             "Component_[14126657869720434043]": {
                 "$type": "EditorEntitySortComponent",
                 "Id": 14126657869720434043,
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
-                    "Entity_[708361373352]",
                     "Entity_[708361373352]"
                 ]
             },
@@ -36,10 +40,6 @@
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
-            },
-            "Component_[6545738857812235305]": {
-                "$type": "SelectionComponent",
-                "Id": 6545738857812235305
             },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",
@@ -60,10 +60,6 @@
             "Id": "Entity_[1155164325235]",
             "Name": "Sun",
             "Components": {
-                "Component_[10440557478882592717]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10440557478882592717
-                },
                 "Component_[13620450453324765907]": {
                     "$type": "EditorLockComponent",
                     "Id": 13620450453324765907
@@ -140,7 +136,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 167061896071393381
+                            "EditorEntityId": 3504517753808730702
                         }
                     }
                 },
@@ -168,10 +164,6 @@
                             -43.623355865478516
                         ]
                     }
-                },
-                "Component_[18387556550380114975]": {
-                    "$type": "SelectionComponent",
-                    "Id": 18387556550380114975
                 },
                 "Component_[2654521436129313160]": {
                     "$type": "EditorVisibilityComponent",
@@ -224,10 +216,6 @@
                     "$type": "EditorLockComponent",
                     "Id": 14988041764659020032
                 },
-                "Component_[15808690248755038124]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15808690248755038124
-                },
                 "Component_[15900837685796817138]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 15900837685796817138
@@ -277,10 +265,6 @@
                             }
                         }
                     }
-                },
-                "Component_[11980494120202836095]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11980494120202836095
                 },
                 "Component_[1428633914413949476]": {
                     "$type": "EditorLockComponent",
@@ -374,20 +358,16 @@
                     "configuration": {
                         "sourceHandle": {
                             "id": "{7DF3E283-7682-523F-A292-06890A816B12}",
-                            "path": "GitHub/o3de/AutomatedTesting/ScriptCanvas/Spawnables/SimpleSpawnNoDespawn.scriptcanvas"
+                            "path": "ScriptCanvas/Spawnables/SimpleSpawnNoDespawn.scriptcanvas"
                         },
                         "sourceName": "SimpleSpawnNoDespawn.scriptcanvas",
                         "propertyOverrides": {
                             "source": {
                                 "id": "{7DF3E283-7682-523F-A292-06890A816B12}",
-                                "path": "GitHub/o3de/AutomatedTesting/ScriptCanvas/Spawnables/SimpleSpawnNoDespawn.scriptcanvas"
+                                "path": "ScriptCanvas/Spawnables/SimpleSpawnNoDespawn.scriptcanvas"
                             }
                         }
                     }
-                },
-                "Component_[2862370726845694127]": {
-                    "$type": "SelectionComponent",
-                    "Id": 2862370726845694127
                 },
                 "Component_[3158248351102244256]": {
                     "$type": "EditorLockComponent",

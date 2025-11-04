@@ -1,5 +1,6 @@
 {
     "gem_name": "RecastNavigation",
+    "version": "0.0.0",
     "display_name": "RecastNavigation",
     "license": "Apache-2.0 Or MIT and zlib license for Recast library",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -14,7 +15,7 @@
         "Navigation"
     ],
     "icon_path": "preview.png",
-    "requirements": "This gem uses https://github.com/recastnavigation/recastnavigation which is acquired using FetchContent CMake feature.",
+    "requirements": "This gem uses https://www.github.com/recastnavigation/recastnavigation which is acquired using FetchContent CMake feature.",
     "documentation_url": "",
     "dependencies": [],
     "restricted": "RecastNavigation"

@@ -689,6 +689,12 @@ namespace EMotionFX
 
     void MotionData::ExtractRootMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, const RootMotionExtractionData& data)
     {
+        if (m_rootMotionExtracted)
+        {
+            AZ_Assert(false, "Root motion extraction already processed on this motion. Abort because running the extraction algorithm again could cause unexpected behavior.");
+            return;
+        }
+
         if (sampleJointDataIndex == rootJointDataIndex)
         {
             return;
@@ -712,6 +718,8 @@ namespace EMotionFX
         {
             m_staticFloatData[rootJointDataIndex].m_staticValue = m_staticFloatData[sampleJointDataIndex].m_staticValue;
         }
+
+        m_rootMotionExtracted = true;
     }
 
 } // namespace EMotionFX

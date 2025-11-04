@@ -291,6 +291,9 @@ namespace UnitTest
         EXPECT_THAT(normals, ::testing::Each(IsFinite()));
     }
 
+      
+    // use of infinity and NaN with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     TEST(NvClothSystem, TangentSpaceHelper_CalculateNormalsWithNANVertices_ReturnsFiniteNormals)
     {
         const AZStd::vector<NvCloth::SimParticleFormat> vertices = {{
@@ -372,6 +375,7 @@ namespace UnitTest
         EXPECT_THAT(bitangents, ::testing::Each(IsFinite()));
         EXPECT_THAT(normals, ::testing::Each(IsFinite()));
     }
+#endif // O3DE_USING_FAST_MATH
     
     TEST(NvClothSystem, TangentSpaceHelper_CalculateTangentSpaceWithTriangle_ReturnsCorrectTangentSpace)
     {

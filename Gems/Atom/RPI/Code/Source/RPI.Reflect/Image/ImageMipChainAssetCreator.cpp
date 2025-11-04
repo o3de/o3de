@@ -52,7 +52,7 @@ namespace AZ
             }
         }
 
-        void ImageMipChainAssetCreator::BeginMip(const RHI::ImageSubresourceLayout& layout)
+        void ImageMipChainAssetCreator::BeginMip(const RHI::DeviceImageSubresourceLayout& layout)
         {
             if (!ValidateIsReady())
             {

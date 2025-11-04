@@ -126,13 +126,21 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestVector4Functions, Reciprocal_Call_GetExpectedResult)
     {
         auto actualResult = Vector4Functions::Reciprocal(AZ::Vector4::CreateOne());
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector4::CreateOne()));
+#else
         EXPECT_EQ(actualResult, AZ::Vector4::CreateOne());
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestVector4Functions, DirectionTo_Call_GetExpectedResult)
     {
         auto actualResult = Vector4Functions::DirectionTo(AZ::Vector4::CreateZero(), AZ::Vector4(1, 0, 0, 0), 1);
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(AZStd::get<0>(actualResult), IsClose(AZ::Vector4(1, 0, 0, 0)));
+#else
         EXPECT_EQ(AZStd::get<0>(actualResult), AZ::Vector4(1, 0, 0, 0));
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         EXPECT_EQ(AZStd::get<1>(actualResult), 1);
     }
 } // namespace ScriptCanvasUnitTest

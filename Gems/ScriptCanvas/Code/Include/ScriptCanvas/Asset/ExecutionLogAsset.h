@@ -14,26 +14,22 @@
 
 namespace ScriptCanvas
 {
-    struct LoggableEvent;
-
     struct ExecutionLogData
     {
         AZ_TYPE_INFO(ExecutionLogData, "{8813C6D6-7FC6-4A41-B77B-5B8BFC9C4C01}");
-        AZ_CLASS_ALLOCATOR(ExecutionLogData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionLogData, AZ::SystemAllocator);
                 
         static void Reflect(AZ::ReflectContext* reflectContext);
         
-        AZStd::vector<LoggableEvent*> m_events;
-        
-        
+        AZStd::vector<LoggableEvent> m_events;
+
         ExecutionLogData() = default;
         ExecutionLogData(const ExecutionLogData& source);
-        ExecutionLogData(ExecutionLogData&&);
+        ExecutionLogData(ExecutionLogData&&) = delete;
         ~ExecutionLogData();
-                
+
         void Clear();
         ExecutionLogData& operator=(const ExecutionLogData& source);
-        ExecutionLogData& operator=(ExecutionLogData&&);
     };
 
     class ExecutionLogAsset
@@ -41,7 +37,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(ExecutionLogAsset, "{2D49C2E2-2CAF-4F3F-8BED-D613DC16D3F5}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(ExecutionLogAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionLogAsset, AZ::SystemAllocator);
                 
         static void Reflect(AZ::ReflectContext* reflectContext);
 

@@ -10,27 +10,24 @@
 
 #include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void ScopeAttachmentDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void ScopeAttachmentDescriptor::Reflect(AZ::ReflectContext* context)
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ScopeAttachmentDescriptor>()
-                    ->Version(0)
-                    ->Field("AttachmentId", &ScopeAttachmentDescriptor::m_attachmentId)
-                    ->Field("LoadStoreAction", &ScopeAttachmentDescriptor::m_loadStoreAction)
-                    ;
-            }
+            serializeContext->Class<ScopeAttachmentDescriptor>()
+                ->Version(0)
+                ->Field("AttachmentId", &ScopeAttachmentDescriptor::m_attachmentId)
+                ->Field("LoadStoreAction", &ScopeAttachmentDescriptor::m_loadStoreAction)
+                ;
         }
-
-        ScopeAttachmentDescriptor::ScopeAttachmentDescriptor(
-            const AttachmentId& attachmentId,
-            const AttachmentLoadStoreAction& loadStoreAction)
-            : m_attachmentId(attachmentId)
-            , m_loadStoreAction(loadStoreAction)
-        { }
     }
+
+    ScopeAttachmentDescriptor::ScopeAttachmentDescriptor(
+        const AttachmentId& attachmentId,
+        const AttachmentLoadStoreAction& loadStoreAction)
+        : m_attachmentId(attachmentId)
+        , m_loadStoreAction(loadStoreAction)
+    {}
 }

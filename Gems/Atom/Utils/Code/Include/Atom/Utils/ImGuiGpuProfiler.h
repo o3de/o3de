@@ -44,6 +44,9 @@ namespace AZ
             //! entry from the root entry.
             void LinkChild(PassEntry* childEntry);
 
+            //! Propagate deviceIndex to parents
+            void PropagateDeviceIndex(int deviceIndex);
+
             //! Checks if timestamp queries are enabled for this PassEntry.
             bool IsTimestampEnabled() const;
             //! Checks if PipelineStatistics queries are enabled for this PassEntry.
@@ -70,6 +73,8 @@ namespace AZ
 
             //! Mirrors the enabled/disabled state of the pass.
             bool m_enabled = false;
+            int m_deviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
+            AZStd::unordered_set<int> m_childrenDeviceIndices;
 
             //! Dirty flag to determine if this entry is linked to an parent entry.
             bool m_linked = false;
@@ -205,9 +210,9 @@ namespace AZ
         private:
             // Draw option for the hierarchical view of the passes.
             // Recursively iterates through the timestamp entries, and creates an hierarchical structure.
-            void DrawHierarchicalView(const PassEntry* entry) const;
+            void DrawHierarchicalView(const PassEntry* entry, int deviceIndex) const;
             // Draw option for the flat view of the passes.
-            void DrawFlatView() const;
+            void DrawFlatView(int deviceIndex) const;
 
             // Sorts the entries array depending on the sorting type.
             void SortFlatView();
@@ -250,11 +255,15 @@ namespace AZ
 
             // Show pass execution timeline
             bool m_showTimeline = false;
+            float m_timelineOffset{ 0.f };
+            float m_timelineWindowWidth{ 1.f };
 
             // Controls how often the timestamp data is refreshed
             RefreshType m_refreshType = RefreshType::Realtime;
             AZStd::sys_time_t m_lastUpdateTimeMicroSecond = 0;
 
+            AZStd::unordered_map<int, AZStd::pair<uint64_t, uint64_t>> m_lastCalibratedTimestamps;
+            AZStd::unordered_map<int, AZStd::pair<uint64_t, uint64_t>> m_calibratedTimestamps;
         };
 
         class ImGuiGpuMemoryView
@@ -284,8 +293,9 @@ namespace AZ
             void SortPoolTable(ImGuiTableSortSpecs* sortSpecs);
             void SortResourceTable(ImGuiTableSortSpecs* sortSpecs);
 
-            // Save and load data to and from CSV files
-            void SaveToCSV();
+            // Save and load data to and from CSV/JSON files
+            void SaveToJSON();
+            void LoadFromJSON(const AZStd::string& fileName);
             void LoadFromCSV(const AZStd::string& fileName);
 
             struct PoolTableRow
@@ -294,9 +304,10 @@ namespace AZ
 
                 bool m_deviceHeap = false;
                 size_t m_budgetBytes = 0;
-                size_t m_reservedBytes = 0;
-                size_t m_residentBytes = 0;
+                size_t m_allocatedBytes = 0;
+                size_t m_usedBytes = 0;
                 float m_fragmentation = 0.f;
+                size_t m_uniqueBytes = 0;
             };
 
             struct ResourceTableRow
@@ -312,6 +323,7 @@ namespace AZ
             bool m_includeBuffers = true;
             bool m_includeImages = true;
             bool m_includeTransientAttachments = true;
+            bool m_hideEmptyBufferPools = true;
 
             ImGuiTextFilter m_nameFilter;
 

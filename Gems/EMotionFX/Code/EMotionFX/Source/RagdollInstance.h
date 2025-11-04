@@ -98,7 +98,6 @@ namespace EMotionFX
         ActorInstance*                              m_actorInstance;
         Node*                                       m_ragdollRootJoint;
         Physics::Ragdoll*                           m_ragdoll;
-        Physics::RagdollConfiguration*              m_ragdollConfig;
         AZStd::unique_ptr<RagdollVelocityEvaluator> m_velocityEvaluator;
 
         Physics::RagdollState                       m_lastState;

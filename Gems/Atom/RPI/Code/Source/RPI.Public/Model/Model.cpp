@@ -26,30 +26,29 @@ namespace AZ
         Data::Instance<Model> Model::FindOrCreate(const Data::Asset<ModelAsset>& modelAsset)
         {
             return Data::InstanceDatabase<Model>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(modelAsset.GetId()),
+                Data::InstanceId::CreateFromAsset(modelAsset),
                 modelAsset);
         }
 
-        
+
         void Model::TEMPOrphanFromDatabase(const Data::Asset<ModelAsset>& modelAsset)
         {
             for (auto& modelLodAsset : modelAsset->GetLodAssets())
             {
-                for(auto& mesh : modelLodAsset->GetMeshes())
+                for (auto& mesh : modelLodAsset->GetMeshes())
                 {
                     for (auto& streamBufferInfo : mesh.GetStreamBufferInfoList())
                     {
                         Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
-                            Data::InstanceId::CreateFromAssetId(streamBufferInfo.m_bufferAssetView.GetBufferAsset().GetId()));
+                            Data::InstanceId::CreateFromAsset(streamBufferInfo.m_bufferAssetView.GetBufferAsset()));
                     }
                     Data::InstanceDatabase<Buffer>::Instance().TEMPOrphan(
-                        Data::InstanceId::CreateFromAssetId(mesh.GetIndexBufferAssetView().GetBufferAsset().GetId()));
+                        Data::InstanceId::CreateFromAsset(mesh.GetIndexBufferAssetView().GetBufferAsset()));
                 }
-                Data::InstanceDatabase<ModelLod>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAssetId(modelLodAsset.GetId()));
+                Data::InstanceDatabase<ModelLod>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAsset(modelLodAsset));
             }
 
-            Data::InstanceDatabase<Model>::Instance().TEMPOrphan(
-                Data::InstanceId::CreateFromAssetId(modelAsset.GetId()));
+            Data::InstanceDatabase<Model>::Instance().TEMPOrphan(Data::InstanceId::CreateFromAsset(modelAsset));
         }
 
         size_t Model::GetLodCount() const
@@ -84,7 +83,8 @@ namespace AZ
 
             for (size_t lodIndex = 0; lodIndex < m_lods.size(); ++lodIndex)
             {
-                const Data::Asset<ModelLodAsset>& lodAsset = modelAsset->GetLodAssets()[lodIndex];
+                const auto lodAssets = modelAsset->GetLodAssets();
+                const Data::Asset<ModelLodAsset> lodAsset = lodAssets[lodIndex];
 
                 if (!lodAsset)
                 {
@@ -151,19 +151,20 @@ namespace AZ
         bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_SCOPE(RPI, "Model: LocalRayIntersection");
-            
+
             if (!GetModelAsset())
             {
                 AZ_Assert(false, "Invalid Model - not created from a ModelAsset?");
                 return false;
             }
-            
+
             float start;
             float end;
             const int result = Intersect::IntersectRayAABB2(rayStart, rayDir.GetReciprocal(), GetModelAsset()->GetAabb(), start, end);
             if (Intersect::ISECT_RAY_AABB_NONE != result)
             {
-                if (ModelAsset* modelAssetPtr = m_modelAsset.Get())
+                ModelAsset* modelAssetPtr = m_modelAsset.Get();
+                if (modelAssetPtr && modelAssetPtr->SupportLocalRayIntersection())
                 {
 #if defined(AZ_RPI_PROFILE_RAYCASTING_AGAINST_MODELS)
                     AZ::Debug::Timer timer;

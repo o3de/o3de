@@ -16,7 +16,7 @@ namespace WhiteBox
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(EditorWhiteBoxModule, "{DAB2F46E-29A1-4898-9D4B-EB0EA41BDA32}", WhiteBoxModule);
+        AZ_RTTI(WhiteBoxEditorModule, "{DAB2F46E-29A1-4898-9D4B-EB0EA41BDA32}", WhiteBoxModule);
 
         WhiteBoxEditorModule();
         ~WhiteBoxEditorModule();

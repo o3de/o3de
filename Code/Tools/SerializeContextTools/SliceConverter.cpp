@@ -18,7 +18,9 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Archive/IArchive.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -57,6 +59,11 @@ namespace AZ
                 return false;
             }
 
+            if (commandLine->HasSwitch("project-path"))
+            {
+                m_projectPath = commandLine->GetSwitchValue("project-path");
+            }
+
             JsonSerializerSettings convertSettings;
             convertSettings.m_keepDefaults = commandLine->HasSwitch("keepdefaults");
             convertSettings.m_registrationContext = application.GetJsonRegistrationContext();
@@ -66,14 +73,34 @@ namespace AZ
                 AZ_Error("Convert-Slice", false, "No serialize context found.");
                 return false;
             }
+
             if (!convertSettings.m_registrationContext)
             {
                 AZ_Error("Convert-Slice", false, "No json registration context found.");
                 return false;
             }
 
+            if (commandLine->HasSwitch("slices"))
+            {
+                AZStd::vector<AZStd::string> sliceAbsPaths = Utilities::ReadFileListFromCommandLine(application, "slices");
+                AZStd::remove_if(
+                    sliceAbsPaths.begin(),
+                    sliceAbsPaths.end(),
+                    [](const AZStd::string& item)
+                    {
+                        return !item.ends_with(".slice");
+                    });
+
+                for (const AZStd::string& absolutePath : sliceAbsPaths)
+                {
+                    const AZStd::string relativePath = Utilities::GenerateRelativePosixPath(m_projectPath, AZ::IO::PathView(absolutePath));
+                    m_relativeToAbsoluteSlicePaths[relativePath] = absolutePath;
+                }
+            }
+
+            const bool useAssetProcessor = NeedAssetProcessor();
             // Connect to the Asset Processor so that we can get the correct source path to any nested slice references.
-            if (!ConnectToAssetProcessor())
+            if (useAssetProcessor && !ConnectToAssetProcessor())
             {
                 AZ_Error("Convert-Slice", false, "  Failed to connect to the Asset Processor.\n");
                 return false;
@@ -82,7 +109,7 @@ namespace AZ
             AZStd::string logggingScratchBuffer;
             SetupLogging(logggingScratchBuffer, convertSettings.m_reporting, *commandLine);
 
-            bool isDryRun = commandLine->HasSwitch("dryrun");
+            const bool isDryRun = commandLine->HasSwitch("dryrun");
 
             JsonDeserializerSettings verifySettings;
             verifySettings.m_registrationContext = application.GetJsonRegistrationContext();
@@ -100,6 +127,11 @@ namespace AZ
             AZStd::vector<AZStd::string> fileList = Utilities::ReadFileListFromCommandLine(application, "files");
             for (AZStd::string& filePath : fileList)
             {
+                if (filePath.contains("_savebackup"))
+                {
+                    continue;
+                }
+
                 bool convertResult = ConvertSliceFile(convertSettings.m_serializeContext, filePath, isDryRun);
                 result = result && convertResult;
 
@@ -114,7 +146,12 @@ namespace AZ
                 m_createdTemplateIds.clear();
             }
 
-            DisconnectFromAssetProcessor();
+            m_relativeToAbsoluteSlicePaths.clear();
+            if (useAssetProcessor)
+            {
+                DisconnectFromAssetProcessor();
+            }
+
             return result;
         }
 
@@ -177,7 +214,7 @@ namespace AZ
             // Read in the slice file and call the callback on completion to convert the read-in slice to a prefab.
             // This will also load dependent slice assets, but no other dependent asset types.
             // Since we're not actually initializing any of the entities, we don't need any of the non-slice assets to be loaded.
-            if (!Utilities::InspectSerializedFile(
+            if (!AZ::Utils::InspectSerializedFile(
                     inputPath.c_str(), serializeContext, callback,
                     [](const AZ::Data::AssetFilterInfo& filterInfo)
                     {
@@ -302,7 +339,7 @@ namespace AZ
             AZ_Printf("Convert-Slice", "  Slice contains %zu nested slices.\n", sliceList.size());
             if (!sliceList.empty())
             {
-                bool nestedSliceResult = ConvertNestedSlices(sliceComponent, sourceInstance.get(), serializeContext, isDryRun);
+                const bool nestedSliceResult = ConvertNestedSlices(sliceComponent, sourceInstance.get(), serializeContext, isDryRun);
                 if (!nestedSliceResult)
                 {
                     return false;
@@ -410,23 +447,33 @@ namespace AZ
             {
                 // Get the nested slice asset.  These should already be preloaded due to loading the root asset.
                 auto sliceAsset = slice.GetSliceAsset();
-                AZ_Assert(sliceAsset.IsReady(), "slice asset hasn't been loaded yet!");
 
-                // The slice list gives us asset IDs, and we need to get to the source path.  So first we get the asset path from the ID,
-                // then we get the source path from the asset path.
+                AZStd::string assetAbsPath;
+                if (!NeedAssetProcessor())
+                {
+                    assetAbsPath = m_relativeToAbsoluteSlicePaths[sliceAsset.GetHint()];
+                }
+                else
+                {
+                    AZ_Assert(sliceAsset.IsReady(), "slice asset hasn't been loaded yet!");
 
-                AZStd::string processedAssetPath;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    processedAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, sliceAsset.GetId());
+                    // The slice list gives us asset IDs, and we need to get to the source path. So first we get the asset path from the
+                    // ID, then we get the source path from the asset path.
+                    AZStd::string processedAssetPath;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        processedAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, sliceAsset.GetId());
 
-                AZStd::string assetPath;
-                AzToolsFramework::AssetSystemRequestBus::Broadcast(
-                    &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
-                    processedAssetPath, assetPath);
-                if (assetPath.empty())
+                    AzToolsFramework::AssetSystemRequestBus::Broadcast(
+                        &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                        processedAssetPath,
+                        assetAbsPath);
+                }
+
+                if (assetAbsPath.empty())
                 {
                     AZ_Warning("Convert-Slice", false,
-                        "  Source path for nested slice '%s' could not be found, slice not converted.", processedAssetPath.c_str());
+                        "  Source path for nested slice '%s' could not be found, slice not converted.",
+                        sliceAsset.GetHint().c_str());
                     return false;
                 }
 
@@ -434,11 +481,16 @@ namespace AZ
                 // occurrence and we need to convert it now.
 
                 // First, take our absolute slice path and turn it into a project-relative prefab path.
-                AZ::IO::Path nestedPrefabPath = assetPath;
+                AZ::IO::Path nestedPrefabPath = assetAbsPath;
                 nestedPrefabPath.ReplaceExtension("prefab");
 
                 auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-                nestedPrefabPath = prefabLoaderInterface->GenerateRelativePath(nestedPrefabPath);
+                const auto nestedPrefabCreationPath = prefabLoaderInterface->GenerateRelativePath(nestedPrefabPath);
+
+                // Get relative path from highest priority folder (Assets for Gems and project folders for project assets).
+                // Without asset processor, it is incorrect so we create it ourself and update it on the database later
+                nestedPrefabPath = NeedAssetProcessor() ? nestedPrefabCreationPath
+                                                        : Utilities::GenerateRelativePosixPath(m_projectPath, nestedPrefabPath);
 
                 // Now, see if we already have a template ID in memory for it.
                 AzToolsFramework::Prefab::TemplateId nestedTemplateId =
@@ -447,16 +499,22 @@ namespace AZ
                 // If we don't have a template ID yet, convert the nested slice to a prefab and get the template ID.
                 if (nestedTemplateId == AzToolsFramework::Prefab::InvalidTemplateId)
                 {
-                    bool nestedSliceResult = ConvertSliceFile(serializeContext, assetPath, isDryRun);
+                    const bool nestedSliceResult = ConvertSliceFile(serializeContext, assetAbsPath, isDryRun);
                     if (!nestedSliceResult)
                     {
-                        AZ_Warning("Convert-Slice", nestedSliceResult, "  Nested slice '%s' could not be converted.", assetPath.c_str());
+                        AZ_Warning("Convert-Slice", nestedSliceResult, "  Nested slice '%s' could not be converted.", assetAbsPath.c_str());
                         return false;
                     }
 
-                    nestedTemplateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(nestedPrefabPath);
+                    nestedTemplateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(nestedPrefabCreationPath);
                     AZ_Assert(nestedTemplateId != AzToolsFramework::Prefab::InvalidTemplateId,
                         "Template ID for %s is invalid", nestedPrefabPath.c_str());
+
+                    if (!NeedAssetProcessor())
+                    {
+                        // Patch the prefab path in the database to have a valid relative value
+                        prefabSystemComponentInterface->UpdateTemplateFilePath(nestedTemplateId, nestedPrefabPath);
+                    }
                 }
 
                 // Get the nested prefab template.
@@ -489,7 +547,7 @@ namespace AZ
                 for (auto& instance : instances)
                 {
                     AZ_Printf("Convert-Slice", "  Converting instance %zu.\n", curInstance++);
-                    bool instanceConvertResult = ConvertSliceInstance(instance, sliceAsset, nestedTemplate, sourceInstance);
+                    const bool instanceConvertResult = ConvertSliceInstance(instance, sliceAsset, nestedTemplate, sourceInstance, serializeContext);
                     if (!instanceConvertResult)
                     {
                         return false;
@@ -530,7 +588,8 @@ namespace AZ
             AZ::SliceComponent::SliceInstance& instance,
             AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
             AzToolsFramework::Prefab::TemplateReference nestedTemplate,
-            AzToolsFramework::Prefab::Instance* topLevelInstance)
+            AzToolsFramework::Prefab::Instance* topLevelInstance,
+            AZ::SerializeContext* serializeContext)
         {
             /* To convert a slice instance, it's important to understand the similarities and differences between slices and prefabs.
             * Both slices and prefabs have the concept of instances of a nested slice/prefab, where each instance can have its own
@@ -570,12 +629,38 @@ namespace AZ
             // Get the DOM for the unmodified nested instance.  This will be used later below for generating the correct patch
             // to the top-level template DOM.
             AzToolsFramework::Prefab::PrefabDom unmodifiedNestedInstanceDom;
-            instanceToTemplateInterface->GenerateDomForInstance(unmodifiedNestedInstanceDom, *(nestedInstance.get()));
+            instanceToTemplateInterface->GenerateInstanceDomBySerializing(unmodifiedNestedInstanceDom, *(nestedInstance.get()));
+
+            SliceComponent* dependentSlice = sliceAsset.Get()->GetComponent();
+
+            // Fallback if component is not loaded, open the file directly and read the slice from it
+            if (!dependentSlice)
+            {
+                const AZStd::string& path = m_relativeToAbsoluteSlicePaths[sliceAsset.GetHint()];
+                if (path.empty())
+                {
+                    AZ_Error("Convert-Slice", false, "Failed to find Slice relative path from %s", sliceAsset.GetHint().c_str());
+                    return false;
+                }
+
+                AZ::Entity* sliceRootEntity = AZ::EntityUtils::LoadRootEntityFromSlicePath(path.c_str(), serializeContext);
+                dependentSlice = AZ::EntityUtils::FindFirstDerivedComponent<SliceComponent>(sliceRootEntity);
+            }
+
+            if (!dependentSlice)
+            {
+                AZ_Error("Convert-Slice", false, "Failed to get SliceComponent from %s", sliceAsset.GetHint().c_str());
+                return false;
+            }
 
             // Instantiate a new instance of the nested slice
-            SliceComponent* dependentSlice = sliceAsset.Get()->GetComponent();
-            [[maybe_unused]] AZ::SliceComponent::InstantiateResult instantiationResult = dependentSlice->Instantiate();
-            AZ_Assert(instantiationResult == AZ::SliceComponent::InstantiateResult::Success, "Failed to instantiate instance");
+            const AZ::SliceComponent::InstantiateResult instantiationResult =
+                dependentSlice->Instantiate(serializeContext, NeedAssetProcessor() ? nullptr : &m_relativeToAbsoluteSlicePaths);
+            if (instantiationResult != AZ::SliceComponent::InstantiateResult::Success)
+            {
+                AZ_Error("Convert-Slice", false, "Failed to instantiate instance of %s", sliceAsset.GetHint().c_str());
+                return false;
+            }
 
             // Apply the data patch for this instance of the nested slice.  This will provide us with a version of the slice's entities
             // with all data overrides applied to them.
@@ -595,7 +680,7 @@ namespace AZ
             // throughout the entire nested hierarchy, then add the new patched entities back in at the appropriate place in the hierarchy.
             // (This is easier than trying to figure out what the patched data changes are - we can let the JSON patch handle it for us)
 
-            nestedInstance->RemoveNestedEntities(
+            nestedInstance->RemoveEntitiesInHierarchy(
                 [](const AZStd::unique_ptr<AZ::Entity>&)
                 {
                     return true;
@@ -733,13 +818,13 @@ namespace AZ
             // create a patch out of it, and patch the top-level prefab template.
 
             AzToolsFramework::Prefab::PrefabDom topLevelInstanceDomBefore;
-            instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomBefore, *topLevelInstance);
+            instanceToTemplateInterface->GenerateInstanceDomBySerializing(topLevelInstanceDomBefore, *topLevelInstance);
 
             // Use the deterministic instance alias for this new instance
             AzToolsFramework::Prefab::Instance& addedInstance = topLevelInstance->AddInstance(AZStd::move(nestedInstance));
 
             AzToolsFramework::Prefab::PrefabDom topLevelInstanceDomAfter;
-            instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomAfter, *topLevelInstance);
+            instanceToTemplateInterface->GenerateInstanceDomBySerializing(topLevelInstanceDomAfter, *topLevelInstance);
 
             AzToolsFramework::Prefab::PrefabDom addedInstancePatch;
             instanceToTemplateInterface->GeneratePatch(addedInstancePatch, topLevelInstanceDomBefore, topLevelInstanceDomAfter);
@@ -749,7 +834,7 @@ namespace AZ
             // to the top-level instance, we've got all the changes we need to generate the correct patch.
 
             AzToolsFramework::Prefab::PrefabDom modifiedNestedInstanceDom;
-            instanceToTemplateInterface->GenerateDomForInstance(modifiedNestedInstanceDom, addedInstance);
+            instanceToTemplateInterface->GenerateInstanceDomBySerializing(modifiedNestedInstanceDom, addedInstance);
 
             AzToolsFramework::Prefab::PrefabDom linkPatch;
             instanceToTemplateInterface->GeneratePatch(linkPatch, unmodifiedNestedInstanceDom, modifiedNestedInstanceDom);
@@ -868,6 +953,11 @@ namespace AZ
                 &AzFramework::AssetSystem::AssetSystemRequests::WaitUntilAssetProcessorDisconnected, AZStd::chrono::seconds(30));
 
             AZ_Error("Convert-Slice", disconnected, "Asset Processor failed to disconnect successfully.");
+        }
+
+        bool SliceConverter::NeedAssetProcessor() const
+        {
+            return m_relativeToAbsoluteSlicePaths.empty();
         }
 
         void SliceConverter::UpdateSliceEntityInstanceMappings(

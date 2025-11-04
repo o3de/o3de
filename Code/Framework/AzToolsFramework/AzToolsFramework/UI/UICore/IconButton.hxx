@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <QPushButton>
 
 namespace AzToolsFramework
 {
 
-    class IconButton
+    class AZTF_API IconButton
         : public QPushButton
     {
         Q_OBJECT // AUTOMOC

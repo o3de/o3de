@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzFramework/DocumentPropertyEditor/DocumentSchema.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -19,9 +20,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
 {
     //! Reflection method, registers all nodes in this header to the runtime context.
     //! Be sure to update this if you change this file.
-    void Reflect(PropertyEditorSystemInterface* system);
+    AZF_API void Reflect(PropertyEditorSystemInterface* system);
 
-    //! PropertyVisibility: Provided for compatability with the RPE, determines whether an entry
+    //! PropertyVisibility: Provided for compatibility with the RPE, determines whether an entry
     //! and/or its children should be visible.
     enum class PropertyVisibility : AZ::u32
     {
@@ -32,26 +33,44 @@ namespace AZ::DocumentPropertyEditor::Nodes
     };
 
     //! Base class for nodes that have a Visibility attribute.
-    struct NodeWithVisiblityControl : NodeDefinition
+    struct AZF_API NodeWithVisiblityControl : NodeDefinition
     {
         static constexpr AZStd::string_view Name = "NodeWithVisiblityControl";
         static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
+        static constexpr auto ReadOnly = AttributeDefinition<bool>("ReadOnly");
+        static constexpr auto NameLabelOverride = AttributeDefinition<AZStd::string_view>("NameLabelOverride");
+        static constexpr auto SetTrueLabel = AttributeDefinition<AZStd::string_view>("SetTrueLabel");
+        static constexpr auto SetFalseLabel = AttributeDefinition<AZStd::string_view>("SetFalseLabel");
+
+        static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
+        //! In some cases, a node may need to know that it is descended from a disabled ancestor. For example, disabled
+        //! elements of a disabled container might require different treatment than disabled elements of an enabled container.
+        static constexpr auto AncestorDisabled = AttributeDefinition<bool>("AncestorDisabled");
     };
 
     //! Adapter: The top-level tag for a DocumentAdapter that may contain any number of Rows.
-    struct Adapter : NodeWithVisiblityControl
+    struct AZF_API Adapter : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "Adapter";
         static constexpr auto QueryKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("QueryKey");
         static constexpr auto AddContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("AddContainerKey");
-        static constexpr auto RejectContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("RejectContainerKey");
+        static constexpr auto RejectContainerKey = CallbackAttributeDefinition<void(AZ::Dom::Path)>("RejectContainerKey");
+        static constexpr auto QuerySubclass =
+            CallbackAttributeDefinition<void(AZStd::shared_ptr<AZStd::vector<const AZ::SerializeContext::ClassData*>>*, AZ::Dom::Path)>(
+                "QuerySubclass");
+        static constexpr auto AddContainerSubclass =
+            CallbackAttributeDefinition<void(const AZ::SerializeContext::ClassData*, AZ::Dom::Path)>("AddContainerSubclass");
+
+        //! Use this callback attribute if there is need to enable/disable an adapter's nodes at runtime.
+        static constexpr auto SetNodeDisabled =
+            CallbackAttributeDefinition<void(bool shouldDisable, Dom::Path targetNode)>("SetDisabled");
 
         static bool CanAddToParentNode(const Dom::Value& parentNode);
         static bool CanBeParentToValue(const Dom::Value& value);
     };
 
     //! Row: An adapter entry that may contain any number of child nodes or other Rows
-    struct Row : NodeWithVisiblityControl
+    struct AZF_API Row : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "Row";
         static bool CanAddToParentNode(const Dom::Value& parentNode);
@@ -75,10 +94,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
     };
 
     //! Label: A textual label that shall render its contents as part of a Row.
-    struct Label : NodeWithVisiblityControl
+    struct AZF_API Label : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "Label";
         static constexpr auto Value = AttributeDefinition<AZStd::string_view>("Value");
+        static constexpr auto ValueText = AttributeDefinition<AZStd::string_view>("ValueText");
     };
 
     //! Specifies types describing a value change's state.
@@ -93,9 +113,21 @@ namespace AZ::DocumentPropertyEditor::Nodes
         FinishedEdit,
     };
 
+    //! Container: A node representing a container instance.
+    struct AZF_API Container : NodeWithVisiblityControl
+    {
+        // These notify callback attributes may be invoked when a container is modified and handled
+        // alongside other messages in the adapter's message handler.
+        static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
+        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t index)>("RemoveNotify");
+        static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
+        static constexpr auto ContainerCanBeModified = AttributeDefinition<bool>("ContainerCanBeModified");
+        static constexpr auto IndexedChildNameLabelOverride = CallbackAttributeDefinition<AZStd::string(size_t index)>("IndexedChildNameLabelOverride");
+    };
+
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
     //! that can edit an associated value.
-    struct PropertyEditor : NodeWithVisiblityControl
+    struct AZF_API PropertyEditor : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "PropertyEditor";
         static constexpr auto Description = AttributeDefinition<AZStd::string_view>("Description");
@@ -103,7 +135,12 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
-        static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
+        static constexpr auto ValueHashed = AttributeDefinition<AZ::u64>("ValueHashed");
+        static constexpr auto ParentValue = AttributeDefinition<AZ::Dom::Value>("ParentValue");
+        //! IF the associated value is mapped value of an associative container such as a map or unordered_map
+        //! `pair<const key_type, mapped_type>` element, then the KeyValue attribute stores
+        //! a pointer to the key type and the type id of the key type
+        static constexpr auto KeyValue = AttributeDefinition<AZ::Dom::Value>("KeyValue");
 
         //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
         //! to the previous column in the layout, creating a SharedColumn that can hold many PropertyEditors.
@@ -113,14 +150,15 @@ namespace AZ::DocumentPropertyEditor::Nodes
         //! DEPENDENT attribute - must be used inside a SharedColumn.
         //! If set to true, specifies that this PropertyEditor should only take up as much space as its minimum width.
         //! Useful for placing things like "add container entry" and "remove all elements" next to each other
-        static constexpr auto UseMinimumWidth = AttributeDefinition<bool>("SharePriorColumn");
+        static constexpr auto UseMinimumWidth = AttributeDefinition<bool>("UseMinimumWidth");
 
         //! Specifies the alignment options for a PropertyEditor that has the Alignment attribute.
         enum class Align : AZ::u8
         {
+            UseDefaultAlignment = 0,
             AlignLeft,
             AlignRight,
-            AlignCenter
+            AlignCenter,
         };
         //! Specifies that this PropertyEditor should have a specific alignment within its own column. The alignment of ALL
         //! PropertyEditors inside of a SharedColumn will be the alignment of the last PropertyEditor with a valid alignment attribute.
@@ -128,23 +166,30 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
-        static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
-        static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
-        static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
 
-        // Container attributes
-        static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
-        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t)>("RemoveNotify");
-        static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
+        static constexpr auto InternalEnumValueKey = GenericValueAttributeDefinition<AZ::u64>("EnumValueKey");
+        template<typename GenericValueType>
+        static constexpr auto GenericValue = GenericValueAttributeDefinition<GenericValueType>("GenericValue");
+        template<typename GenericValueType>
+        static constexpr auto GenericValueList = GenericValueListAttributeDefinition<GenericValueType>("GenericValueList");
+
+        static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
+        static constexpr auto ChangeValidate = CallbackAttributeDefinition<AZ::Outcome<void, AZStd::string>(void*, AZ::Uuid)>("ChangeValidate");
+        static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
     };
 
-    struct UIElement : PropertyEditor
+    struct AZF_API UIElement : PropertyEditor
     {
         static constexpr AZStd::string_view Name = "UIElement";
         static constexpr auto Handler = NamedCrcAttributeDefinition("Handler");
     };
 
     template<typename T = Dom::Value>
+    struct NumericEditor;
+
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME(NumericEditor, "NumericEditor", "{C891BF19-B60C-45E2-BFD0-027D15DDC939}", AZ_TYPE_INFO_CLASS);
+
+    template<typename T>
     struct NumericEditor : PropertyEditorDefinition
     {
         static_assert(
@@ -153,9 +198,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
         using StorageType = AZStd::conditional_t<
             AZStd::is_same_v<T, Dom::Value>,
             Dom::Value,
-            AZStd::conditional_t<AZStd::is_floating_point_v<T>, double, AZStd::conditional_t<AZStd::is_signed_v<T>, int64_t, uint64_t>>>;
+            AZStd::conditional_t<AZStd::is_floating_point_v<T>, double, AZStd::conditional_t<AZStd::is_signed_v<T>, AZ::s64, AZ::u64>>>;
 
-        static constexpr AZStd::string_view Name = "NumericEditor";
+        inline static const AZStd::string_view Name = AzTypeInfo<NumericEditor>::Name();
         static constexpr auto Min = AttributeDefinition<StorageType>("Min");
         static constexpr auto Max = AttributeDefinition<StorageType>("Max");
         static constexpr auto Step = AttributeDefinition<StorageType>("Step");
@@ -169,68 +214,80 @@ namespace AZ::DocumentPropertyEditor::Nodes
     using UintNumericEditor = NumericEditor<uint64_t>;
     using DoubleNumericEditor = NumericEditor<double>;
 
-    struct Button : PropertyEditorDefinition
+    struct AZF_API Button : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Button";
         static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
     };
 
+    struct AZF_API GenericButton : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "GenericButton";
+        static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
+        static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
+    };
+
     enum class ContainerAction
     {
+        None = 0,
         AddElement,
         RemoveElement,
         Clear,
+        MoveUp,
+        MoveDown
     };
 
-    struct ContainerActionButton : PropertyEditorDefinition
+    struct AZF_API ContainerActionButton : GenericButton
     {
         static constexpr AZStd::string_view Name = "ContainerActionButton";
         static constexpr auto Action = AttributeDefinition<ContainerAction>("Action");
-        static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
+        static constexpr auto ContainerIndex = AttributeDefinition<AZ::s64>("ContainerIndex");
     };
 
-    struct CheckBox : PropertyEditorDefinition
+    struct AZF_API CheckBox : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "CheckBox";
     };
 
-    struct Color : PropertyEditorDefinition
+    struct AZF_API Color : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Color";
     };
 
-    struct ComboBox : PropertyEditorDefinition
+    struct AZF_API ComboBox : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "ComboBox";
         static constexpr auto StringList = AttributeDefinition<AZStd::vector<AZStd::string>>("StringList");
     };
 
-    struct RadioButton : PropertyEditorDefinition
+    struct AZF_API RadioButton : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "RadioButton";
     };
 
-    struct EntityId : PropertyEditorDefinition
+    struct AZF_API EntityId : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "EntityId";
     };
 
-    struct LayoutPadding : PropertyEditorDefinition
+    struct AZF_API LayoutPadding : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "LayoutPadding";
     };
 
-    struct LineEdit : PropertyEditorDefinition
+    struct AZF_API LineEdit : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "LineEdit";
+        static constexpr auto PlaceholderText = AttributeDefinition<AZStd::string_view>("PlaceholderText");
     };
 
-    struct MultiLineEdit : PropertyEditorDefinition
+    struct AZF_API MultiLineEdit : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "MultiLineEdit";
+        static constexpr auto PlaceholderText = AttributeDefinition<AZStd::string_view>("PlaceholderText");
     };
 
-    struct Quaternion : PropertyEditorDefinition
+    struct AZF_API Quaternion : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Quaternion";
     };
@@ -253,37 +310,37 @@ namespace AZ::DocumentPropertyEditor::Nodes
     using UintSpinBox = SpinBox<uint64_t>;
     using DoubleSpinBox = SpinBox<double>;
 
-    struct Crc : PropertyEditorDefinition
+    struct AZF_API Crc : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Crc";
     };
 
-    struct Vector2 : PropertyEditorDefinition
+    struct AZF_API Vector2 : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Vector2";
     };
 
-    struct Vector3 : PropertyEditorDefinition
+    struct AZF_API Vector3 : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Vector3";
     };
 
-    struct Vector4 : PropertyEditorDefinition
+    struct AZF_API Vector4 : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Vector4";
     };
 
-    struct FilePath : PropertyEditorDefinition
+    struct AZF_API FilePath : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "FilePath";
     };
 
-    struct Asset : PropertyEditorDefinition
+    struct AZF_API Asset : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "Asset";
     };
 
-    struct AudioControl : PropertyEditorDefinition
+    struct AZF_API AudioControl : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "AudioControl";
     };

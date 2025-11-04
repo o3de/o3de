@@ -18,17 +18,17 @@ namespace LmbrCentral
 {
     void EditorBaseShapeComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        provided.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void EditorBaseShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        incompatible.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void EditorBaseShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void EditorBaseShapeComponent::Reflect(AZ::SerializeContext& context)
@@ -90,11 +90,15 @@ namespace LmbrCentral
         m_visibleInEditor = visible;
     }
 
+    void EditorBaseShapeComponent::SetVisibleInGame(bool visible)
+    {
+        m_visibleInGameView = visible;
+    }
+
     void EditorBaseShapeComponent::SetShapeColor(const AZ::Color& shapeColor)
     {
         m_shapeColor = shapeColor;
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+        InvalidatePropertyDisplay(AzToolsFramework::Refresh_Values);
     }
 
     void EditorBaseShapeComponent::SetShapeWireframeColor(const AZ::Color& wireColor)
@@ -120,8 +124,7 @@ namespace LmbrCentral
             }
 
             // This changes the visibility of a property so a request to refresh the entire tree must be sent.
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+            InvalidatePropertyDisplay(AzToolsFramework::Refresh_EntireTree);
         }
     }
 
@@ -195,11 +198,12 @@ namespace LmbrCentral
 
     void EditorBaseShapeComponent::OnShapeColorChanged()
     {
-        m_shapeColor.SetA(AzFramework::ViewportColors::DeselectedColor.GetA());
+        AZ::Color drawColor(m_shapeColor);
+        drawColor.SetA(AzFramework::ViewportColors::DeselectedColor.GetA());
 
         if (m_shapeConfig)
         {
-            m_shapeConfig->SetDrawColor(m_shapeColor);
+            m_shapeConfig->SetDrawColor(drawColor);
         }
     }
 
@@ -211,14 +215,14 @@ namespace LmbrCentral
         }
     }
 
-    AZ::Aabb EditorBaseShapeComponent::GetWorldBounds()
+    AZ::Aabb EditorBaseShapeComponent::GetWorldBounds() const
     {
         AZ::Aabb aabb = AZ::Aabb::CreateNull();
         ShapeComponentRequestsBus::EventResult(aabb, GetEntityId(), &ShapeComponentRequests::GetEncompassingAabb);
         return aabb;
     }
 
-    AZ::Aabb EditorBaseShapeComponent::GetLocalBounds()
+    AZ::Aabb EditorBaseShapeComponent::GetLocalBounds() const
     {
         AZ::Transform unused;
         AZ::Aabb resultBounds = AZ::Aabb::CreateNull();

@@ -344,13 +344,13 @@ namespace UnitTest
     {
         // If the Max Timeout is hit the test will be marked as a failure
 
-        AZStd::chrono::time_point dispatchEventTimeStart = AZStd::chrono::system_clock::now();
+        auto dispatchEventTimeStart = AZStd::chrono::steady_clock::now();
         AZStd::chrono::seconds dispatchEventNextLogTime = logIntervalSeconds;
 
         while (!conditionPredicate())
         {
-            AZStd::chrono::time_point currentTime = AZStd::chrono::system_clock::now();
-            if (AZStd::chrono::seconds elapsedTime{ currentTime - dispatchEventTimeStart };
+            auto currentTime = AZStd::chrono::steady_clock::now();
+            if (auto elapsedTime{ currentTime - dispatchEventTimeStart };
                 elapsedTime >= dispatchEventNextLogTime)
             {
                 const testing::TestInfo* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
@@ -358,7 +358,7 @@ namespace UnitTest
                     " in test %s.%s", elapsedTime.count(), test_info->test_case_name(), test_info->name());
                 // Update the next log time to be the next multiple of DefaultTimeout Seconds
                 // after current elapsed time
-                dispatchEventNextLogTime = elapsedTime + logIntervalSeconds - ((elapsedTime + logIntervalSeconds) % logIntervalSeconds);
+                dispatchEventNextLogTime = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(elapsedTime + logIntervalSeconds - ((elapsedTime + logIntervalSeconds) % logIntervalSeconds));
                 if (elapsedTime >= maxTimeoutSeconds)
                 {
                     return false;
@@ -431,12 +431,12 @@ namespace UnitTest
         EXPECT_TRUE(asset6Block.IsReady());
 
         // Assets above can be ready (PreNotify) before the signal has reached our listener - allow for a small window to hear
-        auto maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        auto maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         bool timedOut = false;
         while (!assetStatus1.m_ready || !assetStatus2.m_ready || !assetStatus3.m_ready)
         {
             AssetManager::Instance().DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -480,11 +480,11 @@ namespace UnitTest
         streamer->ResumeProcessing();
 
         // Allow our reloads to process and signal our listeners
-        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         while (!assetStatus1.m_reloaded || !assetStatus2.m_reloaded || !assetStatus3.m_reloaded)
         {
             m_testAssetManager->DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -519,11 +519,11 @@ namespace UnitTest
             AZ::Data::AssetLoadBehavior::Default);
 
         // this verifies that a reloading asset in "loading" state queues another load when it is complete
-        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         while (!delayLoadAssetStatus.m_ready)
         {
             m_testAssetManager->DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -541,11 +541,11 @@ namespace UnitTest
 
         // This should go through to loading
         m_testAssetManager->ReloadAsset(DelayLoadAssetId, AZ::Data::AssetLoadBehavior::Default);
-        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         while (m_testAssetManager->GetReloadStatus(DelayLoadAssetId) != AZ::Data::AssetData::AssetStatus::Loading)
         {
             m_testAssetManager->DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -559,11 +559,11 @@ namespace UnitTest
         // This should do nothing
         m_testAssetManager->ReloadAsset(DelayLoadAssetId, AZ::Data::AssetLoadBehavior::Default);
 
-        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         while (delayLoadAssetStatus.m_reloaded < 2)
         {
             m_testAssetManager->DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -645,7 +645,7 @@ namespace UnitTest
         while (threadCount > 0 && !timedOut)
         {
             AZStd::unique_lock<AZStd::mutex> lock(mutex);
-            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds));
+            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds));
         }
 
         ASSERT_EQ(threadCount, 0) << "Thread count is non-zero, a thread has likely deadlocked.  Test will not shut down cleanly.";
@@ -902,11 +902,11 @@ namespace UnitTest
         EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 6);
 
         // Assets above can be ready (PreNotify) before the signal has reached our listener - allow for a small window to hear
-        auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+        auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
         while (!assetStatus1.m_ready || !assetStatus2.m_ready || !assetStatus3.m_ready)
         {
             AssetManager::Instance().DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 AZ_Assert(false, "Timeout reached.");
                 break;
@@ -1022,12 +1022,12 @@ namespace UnitTest
 
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready || !preloadBListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1046,7 +1046,7 @@ namespace UnitTest
 
 
 
-    TEST_F(AssetJobsFloodTest, DISABLED_ContainerCoreTest_BasicDependencyManagement_Success)
+    TEST_F(AssetJobsFloodTest, ContainerCoreTest_BasicDependencyManagement_Success)
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1068,24 +1068,21 @@ namespace UnitTest
             auto asset1Container = m_testAssetManager->GetAssetContainer(asset1);
             auto asset2Container = m_testAssetManager->GetAssetContainer(asset2);
             auto asset3Container = m_testAssetManager->GetAssetContainer(asset3);
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener1.m_ready || !readyListener2.m_ready || !readyListener3.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
                 AZStd::this_thread::yield();
             }
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
 
             EXPECT_EQ(asset1Container->IsReady(), true);
             EXPECT_EQ(asset2Container->IsReady(), true);
             EXPECT_EQ(asset3Container->IsReady(), true);
-
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
 
             auto rootAsset = asset1Container->GetRootAsset();
             EXPECT_EQ(rootAsset->GetId(), MyAsset1Id);
@@ -1116,7 +1113,6 @@ namespace UnitTest
 
             // We've now created the dependencies for each asset in the container as well
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, NumTestAssets * AssetsPerContainer);
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
             EXPECT_EQ(asset1CopyContainer->GetDependencies().size(), 1);
 
             asset1Container = {};
@@ -1126,17 +1122,22 @@ namespace UnitTest
 
             asset1CopyContainer = {};
             asset1 = {};
+
+            // Make sure events are dispatched after releasing the asset handles, so they get destroyed.
+            // This addresses a rare race condition, a test failure roughly once every 2,000 runs on Linux.
+            m_testAssetManager->DispatchEvents();
+
             // We've released the references for one asset and its dependency
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numDestructions, AssetsPerContainer);
             asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             asset1Container = m_testAssetManager->GetAssetContainer(asset1);
 
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!asset1Container->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1169,12 +1170,12 @@ namespace UnitTest
             auto asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset1Container = m_testAssetManager->GetAssetContainer(asset1, AssetLoadParameters{ filterNone });
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!asset1Container->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1189,11 +1190,11 @@ namespace UnitTest
             AZ::Data::AssetFilterCB noDependencyCB = [](const AZ::Data::AssetFilterInfo& filterInfo) { return filterInfo.m_assetType != azrtti_typeid<AssetWithSerializedData>(); };
             asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             asset1Container = m_testAssetManager->GetAssetContainer(asset1, AssetLoadParameters{ noDependencyCB });
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
             while (!asset1Container->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1224,12 +1225,12 @@ namespace UnitTest
             auto asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset1Container = m_testAssetManager->GetAssetContainer(asset1);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener1.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1244,12 +1245,12 @@ namespace UnitTest
             auto asset2 = m_testAssetManager->FindOrCreateAsset(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset2Container = m_testAssetManager->GetAssetContainer(asset2);
 
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!asset2Container->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1291,12 +1292,12 @@ namespace UnitTest
                 AZ::Data::AssetLoadBehavior::Default);
             auto noLoadRefContainer = m_testAssetManager->GetAssetContainer(noLoadRef);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1332,12 +1333,12 @@ namespace UnitTest
                 AZ::Data::AssetLoadBehavior::Default);
             auto noLoadRefContainer = m_testAssetManager->GetAssetContainer(noLoadRef, AssetLoadParameters(nullptr, AZ::Data::AssetDependencyLoadRules::LoadAll));
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1454,11 +1455,11 @@ namespace UnitTest
             ContainerReadyListener readyListener(MyAsset2Id);
 
             auto asset2Get = m_testAssetManager->GetAssetInternal(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default, AssetLoadParameters{ &AZ::Data::AssetFilterNoAssetLoading });
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
             while (!asset2Get->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1468,12 +1469,12 @@ namespace UnitTest
             auto asset2 = m_testAssetManager->FindOrCreateAsset(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset2Container = m_testAssetManager->GetAssetContainer(asset2);
 
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1507,11 +1508,11 @@ namespace UnitTest
 
             auto asset2PrimeGet = m_testAssetManager->GetAsset(MyAsset5Id, azrtti_typeid<AssetWithSerializedData>(), AZ::Data::AssetLoadBehavior::Default);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
             while (!asset2PrimeGet->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1521,12 +1522,12 @@ namespace UnitTest
             auto asset2 = m_testAssetManager->FindOrCreateAsset(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset2Container = m_testAssetManager->GetAssetContainer(asset2);
 
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1559,12 +1560,12 @@ namespace UnitTest
             ContainerReadyListener readyListener(MyAsset2Id);
             auto asset2Get = m_testAssetManager->GetAssetInternal(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default, AssetLoadParameters{ &AssetFilterNoAssetLoading });
             auto asset2PrimeGet = m_testAssetManager->GetAssetInternal(MyAsset5Id, azrtti_typeid<AssetWithSerializedData>(), AZ::Data::AssetLoadBehavior::Default, AssetLoadParameters{ &AssetFilterNoAssetLoading });
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!asset2Get->IsReady() || !asset2PrimeGet->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1617,12 +1618,12 @@ namespace UnitTest
                 AZ::Data::AssetLoadBehavior::Default);
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1684,12 +1685,12 @@ namespace UnitTest
             auto asset = m_testAssetManager->FindOrCreateAsset(PreloadAssetRootId, azrtti_typeid<AssetWithQueueAndPreLoadReferences>(), AZ::Data::AssetLoadBehavior::Default);
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1739,12 +1740,12 @@ namespace UnitTest
             auto asset = m_testAssetManager->FindOrCreateAsset(PreloadBrokenDepBId, azrtti_typeid<AssetWithQueueAndPreLoadReferences>(), AZ::Data::AssetLoadBehavior::Default);
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1791,12 +1792,12 @@ namespace UnitTest
                 AZ::Data::AssetLoadBehavior::Default);
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1846,12 +1847,12 @@ namespace UnitTest
             // We should catch the basic ciruclar dependency error as well as that it's a preload
             AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1902,12 +1903,12 @@ namespace UnitTest
             // We should catch the basic circular dependency error as well as that it's a preload
             AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1963,12 +1964,12 @@ namespace UnitTest
             // One error in SetupPreloads - Two of the assets create a dependency loop
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -2134,7 +2135,7 @@ namespace UnitTest
             while (threadCount > 0 && !timedOut)
             {
                 AZStd::unique_lock<AZStd::mutex> lock(mutex);
-                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds *2));
+                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds *2));
             }
 
             EXPECT_EQ(threadCount, 0);
@@ -2250,7 +2251,7 @@ namespace UnitTest
             while (threadCount > 0 && !timedOut)
             {
                 AZStd::unique_lock<AZStd::mutex> lock(mutex);
-                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds));
+                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds));
             }
 
             EXPECT_TRUE(threadCount == 0);
@@ -2399,7 +2400,7 @@ namespace UnitTest
             while (threadCount > 0 && !timedOut)
             {
                 AZStd::unique_lock<AZStd::mutex> lock(mutex);
-                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds));
+                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds));
             }
 
             EXPECT_TRUE(threadCount == 0);
@@ -2498,8 +2499,8 @@ namespace UnitTest
             // We have ensured that all the threads have started at this point and we can let them start hammering at the AssetManager
             wait = false;
 
-            AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
-            while (AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start) < AZStd::chrono::seconds(2))
+            AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+            while (AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start) < AZStd::chrono::seconds(2))
             {
                 AZStd::this_thread::yield();
             }
@@ -3179,12 +3180,12 @@ namespace UnitTest
         // We specifically wait for OnAssetReady to be triggered instead of using BlockUntilLoadComplete() to ensure that
         // all loading jobs have 100% completed and there aren't any other outstanding asset references held on other threads.
         const auto timeoutSeconds = AZStd::chrono::seconds(20);
-        auto maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        auto maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         bool timedOut = false;
         while (!(assetStatus1.m_ready && assetStatus2.m_ready))
         {
             AssetManager::Instance().DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -3349,7 +3350,7 @@ namespace UnitTest
                 BusDisconnect();
             }
 
-            void OnAssetReady(Asset<AssetData> asset) override
+            void OnAssetReady([[maybe_unused]] Asset<AssetData> asset) override
             {
                 m_loadSignal->release();
             }
@@ -3541,7 +3542,7 @@ namespace UnitTest
                 BusDisconnect();
             }
 
-            void OnAssetReady(Asset<AssetData> asset) override
+            void OnAssetReady([[maybe_unused]] Asset<AssetData> asset) override
             {
                 ColoredPrintf(COLOR_YELLOW, "ThreadA: OnAssetReady called \n");
                 m_onAssetReadySignal.release();

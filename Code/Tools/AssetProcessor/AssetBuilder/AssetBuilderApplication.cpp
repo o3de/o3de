@@ -30,6 +30,8 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AssetBuilderApplication.h>
@@ -83,13 +85,20 @@ AZ::ComponentTypeList AssetBuilderApplication::GetRequiredSystemComponents() con
         azrtti_typeid<AzToolsFramework::EditorEntityContextComponent>(),
         azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>(),
         azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
+        azrtti_typeid<AzToolsFramework::MetadataManager>(),
+        azrtti_typeid<AzToolsFramework::UuidUtilComponent>(),
         });
 
     return components;
 }
 
 AssetBuilderApplication::AssetBuilderApplication(int* argc, char*** argv)
-    : AzToolsFramework::ToolsApplication(argc, argv)
+    : AssetBuilderApplication(argc, argv, {})
+{
+}
+
+AssetBuilderApplication::AssetBuilderApplication(int* argc, char*** argv, AZ::ComponentApplicationSettings componentAppSettings)
+    : AzToolsFramework::ToolsApplication(argc, argv, AZStd::move(componentAppSettings))
     , m_qtApplication(*argc, *argv)
 {
     // The settings registry has been created at this point

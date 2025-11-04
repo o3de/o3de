@@ -7,6 +7,9 @@
  */
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #if !defined(Q_MOC_RUN)
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/EntityId.h>
@@ -42,7 +45,7 @@ namespace AzToolsFramework
     /**
     * An EBus used to hide or show toast notifications.  Generally, these request are handled by a
     * ToastNotificationsView that has been created with a specific ToastRequestBusId
-    * e.g. AZ_CRC("ExampleToastNotificationView")
+    * e.g. AZ_CRC_CE("ExampleToastNotificationView")
     */
     class ToastRequests
         : public AZ::EBusTraits
@@ -89,3 +92,6 @@ namespace AzToolsFramework
 
     using ToastRequestBus = AZ::EBus<ToastRequests>;
 }
+
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ToastNotifications);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::ToastRequests);

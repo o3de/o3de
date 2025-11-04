@@ -11,7 +11,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
+#include <Atom/RHI/DeviceDrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
@@ -36,7 +36,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(LookModificationPass, "{68C3A664-FB97-40ED-9638-21938D6692B3}", RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(LookModificationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LookModificationPass, SystemAllocator);
             virtual ~LookModificationPass() = default;
 
             //! Creates a LookModificationPass

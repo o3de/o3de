@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -18,7 +19,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class PrefabPublicNotificationHandler final
+        class AZTF_API PrefabPublicNotificationHandler final
             : public PrefabPublicNotificationBus::Handler
             , public AZ::BehaviorEBusHandler
         {

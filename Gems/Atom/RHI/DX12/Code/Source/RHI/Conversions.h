@@ -19,9 +19,10 @@
 #include <Atom/RHI.Reflect/MemoryEnums.h>
 #include <Atom/RHI.Reflect/MultisampleState.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
+#include <Atom/RHI.Reflect/VariableRateShadingEnums.h>
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/DeviceQuery.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/DX12.h>
 
@@ -152,6 +153,7 @@ namespace AZ
             D3D12_UNORDERED_ACCESS_VIEW_DESC& unorderedAccessView);
 
         uint16_t ConvertImageAspectToPlaneSlice(RHI::ImageAspect aspect);
+        RHI::ImageAspectFlags ConvertPlaneSliceToImageAspectFlags(uint16_t planeSlice);
 
         void ConvertSamplerState(const RHI::SamplerState& state, D3D12_SAMPLER_DESC& samplerDesc);
 
@@ -163,5 +165,13 @@ namespace AZ
             D3D12_STATIC_SAMPLER_DESC& staticSamplerDesc);
     
         uint8_t ConvertColorWriteMask(uint8_t writeMask);
+
+        D3D12_SHADING_RATE ConvertShadingRateEnum(RHI::ShadingRate rate);
+
+        D3D12_SHADING_RATE_COMBINER ConvertShadingRateCombiner(RHI::ShadingRateCombinerOp op);
+
+        RHI::ResultCode ConvertResult(HRESULT result);
+
+        DXGI_SCALING ConvertScaling(RHI::Scaling scaling);
     }
 }

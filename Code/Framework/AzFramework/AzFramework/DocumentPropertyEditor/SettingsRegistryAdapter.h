@@ -13,10 +13,11 @@
 #include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryOriginTracker.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 namespace AZ::DocumentPropertyEditor
 {
-    class SettingsRegistryAdapter : public DocumentAdapter
+    class AZF_API SettingsRegistryAdapter : public DocumentAdapter
     {
     public:
         //! Default constructs a Settings Registry adapter that uses the globally registered

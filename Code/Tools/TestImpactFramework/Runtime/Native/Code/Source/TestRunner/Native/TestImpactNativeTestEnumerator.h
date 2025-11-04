@@ -18,6 +18,8 @@
 
 namespace TestImpact
 {
+    class NativeTestEnumerationJobInfoGenerator;
+
     struct NativeTestEnumerationJobData
         : public TestEnumerationJobData
     {
@@ -28,6 +30,7 @@ namespace TestImpact
         : public TestEnumerator<NativeTestEnumerationJobData>
     {
     public:
+        using JobInfoGenerator = NativeTestEnumerationJobInfoGenerator;
         using TestEnumerator<NativeTestEnumerationJobData>::TestEnumerator;
 
     protected:

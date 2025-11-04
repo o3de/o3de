@@ -65,7 +65,7 @@ namespace EMotionFX
         : public EntityComponentFixture
     {
     public:
-        void SetUp()
+        void SetUp() override
         {
             EntityComponentFixture::SetUp();
 
@@ -85,6 +85,13 @@ namespace EMotionFX
 
             m_actorComponent->SetActorAsset(actorAsset);
         }
+
+        void TearDown() override
+        {
+            m_entity.reset();
+            EntityComponentFixture::TearDown();
+        }
+
         AZStd::unique_ptr<AZ::Entity> m_entity;
         Integration::ActorComponent* m_actorComponent;
         AzFramework::TransformComponent* m_transformComponent;

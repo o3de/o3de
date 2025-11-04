@@ -50,6 +50,10 @@ namespace AZ
             // DecalRequestBus::Handler overrides ...
             float GetAttenuationAngle() const override;
             void SetAttenuationAngle(float intensity) override;
+            const AZ::Vector3& GetDecalColor() const override;
+            void SetDecalColor(const AZ::Vector3& color) override;
+            float GetDecalColorFactor() const override;
+            void SetDecalColorFactor(float colorFactor) override;
             float GetOpacity() const override;
             void SetOpacity(float opacity) override;
             float GetNormalMapOpacity() const override;
@@ -61,6 +65,8 @@ namespace AZ
 
             void ConfigurationChanged();
             void AttenuationAngleChanged();
+            void DecalColorChanged();
+            void DecalColorFactorChanged();
             void OpacityChanged();
             void NormalMapOpacityChanged();
             void SortKeyChanged();

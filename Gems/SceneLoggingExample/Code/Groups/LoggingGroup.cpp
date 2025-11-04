@@ -56,15 +56,15 @@ namespace SceneLoggingExample
                 // one such editor and it is SceneGraph-aware. It allows the selection of a specific node from the
                 // graph and the selectable items can be filtered. You can find other available editors in the 
                 // "RowWidgets"-folder of the SceneUI.
-                ->DataElement(AZ_CRC("NodeListSelection", 0x45c54909), &LoggingGroup::m_graphLogRoot,
+                ->DataElement(AZ_CRC_CE("NodeListSelection"), &LoggingGroup::m_graphLogRoot,
                     "Graph log root", "Select the node in the graph to list children of to the log, or disable logging.")
-                    ->Attribute(AZ_CRC("DisabledOption", 0x6cd17278), s_disabledOption)
+                    ->Attribute(AZ_CRC_CE("DisabledOption"), s_disabledOption)
                     // Nodes in the SceneGraph can be marked as endpoints. To the graph, this means that these nodes 
                     // are not allowed to have children. While not a true one-to-one mapping, endpoints often act as 
                     // attributes to a node. For example, a transform can be marked as an endpoint. This means that 
                     // it applies its transform to the parent object like an attribute. If the transform is not marked 
                     // as an endpoint, then it is the root transform for the group(s) that are its children.
-                    ->Attribute(AZ_CRC("ExcludeEndPoints", 0x53bd29cc), true)
+                    ->Attribute(AZ_CRC_CE("ExcludeEndPoints"), true)
                 ->DataElement(AZ::Edit::UIHandlers::Default, &LoggingGroup::m_logProcessingEvents,
                     "Log processing events", "Log processing events as they happen.");
         }

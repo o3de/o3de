@@ -11,6 +11,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ::Data
 {
@@ -39,7 +40,7 @@ namespace AzToolsFramework
         // these settings will be used to preemptively register all windows and then open them.
         struct AssetEditorWindowSettings : AZ::UserSettings
         {
-            AZ_CLASS_ALLOCATOR(AssetEditorWindowSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetEditorWindowSettings, AZ::SystemAllocator);
             AZ_RTTI(AssetEditorWindowSettings, "{981FE4FF-0B56-4115-9F75-79609E3D6337}", AZ::UserSettings);
 
             //! The list of opened assets is used to restore their window state
@@ -57,8 +58,8 @@ namespace AzToolsFramework
         public:
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-            //! Open Asset Editor (if it is not already open) and create a new asset of type specified, if possible
-            virtual void CreateNewAsset(const AZ::Data::AssetType& assetType) = 0;
+            //! Open Asset Editor (if it is not already open) and create a new asset of type specified, if possible.
+            virtual void CreateNewAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& observerId) = 0;
 
             virtual AZ::Outcome<bool, AZStd::string> IsAssetDataValid() { return AZ::Success(true); }
 
@@ -93,8 +94,8 @@ namespace AzToolsFramework
         public:
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-            //! Creates a new asset of type provided (if possible) in the currently open Asset Editor window
-            virtual void CreateAsset(const AZ::Data::AssetType& assetType) = 0;
+            //! Creates a new asset of type provided (if possible) in the currently open Asset Editor window.
+            virtual void CreateAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& observerId) = 0;
             //! Saves the asset being edited in the currently open Asset Editor window to the path provided
             virtual void SaveAssetAs(const AZStd::string_view assetPath) = 0;
             //! Opens the asset provided (by reference) in the currently open Asset Editor window
@@ -103,5 +104,25 @@ namespace AzToolsFramework
             virtual void OpenAssetById(const AZ::Data::AssetId assetId) = 0;
         };
         using AssetEditorWidgetRequestsBus = AZ::EBus<AssetEditorWidgetRequests>;
+
+        class AssetEditorNotifications : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+
+            using BusIdType = AZ::Uuid;
+
+            virtual void OnAssetCreated([[maybe_unused]] const AZ::Data::AssetId& assetId)
+            {
+            }
+        };
+
+        using AssetEditorNotificationsBus = AZ::EBus<AssetEditorNotifications>;
     } // namespace AssetEditor
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorValidationRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorWidgetRequests);
+AZ_DECLARE_EBUS_MULTI_ADDRESS(AZTF_API, AzToolsFramework::AssetEditor::AssetEditorNotifications);

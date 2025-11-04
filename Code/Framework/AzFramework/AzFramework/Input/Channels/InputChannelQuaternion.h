@@ -11,6 +11,7 @@
 #include <AzFramework/Input/Channels/InputChannel.h>
 
 #include <AzCore/Math/Quaternion.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -18,14 +19,14 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! Class for input channels that emit quaternion input values.
     //! Example: motion sensor data (orientation)
-    class InputChannelQuaternion : public InputChannel
+    class AZF_API InputChannelQuaternion : public InputChannel
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Custom data struct for three dimensional axis data
         struct QuaternionData : public InputChannel::CustomData
         {
-            AZ_CLASS_ALLOCATOR(QuaternionData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QuaternionData, AZ::SystemAllocator);
             AZ_RTTI(QuaternionData, "{D1B11964-0ABB-4539-ACB2-7156B6CDEB90}", CustomData);
             ~QuaternionData() override = default;
 
@@ -35,7 +36,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannelQuaternion, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannelQuaternion, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

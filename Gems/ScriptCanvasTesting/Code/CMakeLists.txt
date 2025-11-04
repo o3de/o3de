@@ -11,7 +11,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 ly_add_target(
-    NAME ScriptCanvasTesting.Editor.Static STATIC
+    NAME ${gem_name}.Editor.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         scriptcanvastestingeditor_files.cmake
@@ -38,13 +38,11 @@ ly_add_target(
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
-        AUTOGEN_RULES
-            *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,TestAutoGenFunctionRegistry.generated.h
-            *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,TestAutoGenFunctionRegistry.generated.cpp
-            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
-            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
-            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,TestAutoGenNodeableRegistry.generated.h
-            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,TestAutoGenNodeableRegistry.generated.cpp
+    AUTOGEN_RULES
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Source.jinja,$path/$fileprefix.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvas.Editor
         Gem::GraphCanvasWidgets
@@ -52,7 +50,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ScriptCanvasTesting.Editor GEM_MODULE
+    NAME ${gem_name}.Editor GEM_MODULE
 
     NAMESPACE Gem
     FILES_CMAKE
@@ -69,7 +67,7 @@ ly_add_target(
             ENABLE_EXTENDED_MATH_SUPPORT=0
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::ScriptCanvasTesting.Editor.Static
+            Gem::${gem_name}.Editor.Static
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
@@ -77,16 +75,25 @@ ly_add_target(
         Gem::ScriptCanvas.Editor
 )
 
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/ScriptCanvasTestingEditorModule.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})
+
 # By default, the above module is used only in tools:
-ly_create_alias(NAME ScriptCanvasTesting.Tools  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
-ly_create_alias(NAME ScriptCanvasTesting.Builders  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
+ly_create_alias(NAME ${gem_name}.Tools  NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+ly_create_alias(NAME ${gem_name}.Builders  NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
-        NAME ScriptCanvasTesting.Editor.Tests MODULE
+        NAME ${gem_name}.Editor.Tests MODULE
         NAMESPACE Gem
         FILES_CMAKE
             scriptcanvastestingeditor_tests_files.cmake
@@ -106,14 +113,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AzToolsFramework
-                Gem::ScriptCanvasTesting.Editor.Static
+                Gem::${gem_name}.Editor.Static
                 Gem::ScriptCanvas.Editor
         RUNTIME_DEPENDENCIES
             Gem::GraphCanvas.Editor
             Gem::ScriptCanvas.Editor
     )
     ly_add_googletest(
-        NAME Gem::ScriptCanvasTesting.Editor.Tests
+        NAME Gem::${gem_name}.Editor.Tests
     )
 endif()
 

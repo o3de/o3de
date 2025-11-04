@@ -8,7 +8,7 @@
 
 #include "TextureAssetTypeInfo.h"
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 namespace LmbrCentral
 {

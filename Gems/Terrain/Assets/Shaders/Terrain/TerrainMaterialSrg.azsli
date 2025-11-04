@@ -9,14 +9,23 @@
 #pragma once
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <../Materials/Types/MaterialInputs/BaseColorInput.azsli>
 
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
-    Sampler m_sampler
+    Sampler m_detailSampler
     {
         AddressU = Wrap;
         AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+
+    Sampler m_macroSampler
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
         MinFilter = Linear;
         MagFilter = Linear;
         MipFilter = Linear;

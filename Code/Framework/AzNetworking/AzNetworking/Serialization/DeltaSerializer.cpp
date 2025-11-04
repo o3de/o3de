@@ -73,7 +73,13 @@ namespace AzNetworking
         // Delete any left over records that might be hanging around
         for (auto iter : m_records)
         {
-            delete iter;
+            if (iter)
+            {
+                // this will probably trigger ASAN, since we don't know what the type is.
+                // But it should also only happen in scenarios where we are crashing or have already asserted/warned
+                // about mismatched serialize/deserialize.
+                delete iter;  
+            }
         }
         m_records.clear();
     }
@@ -84,12 +90,6 @@ namespace AzNetworking
     }
 
     bool DeltaSerializerCreate::Serialize(bool& value, const char* name)
-    {
-        uint32_t unused = 0;
-        return SerializeHelper(value, 0, false, unused, name);
-    }
-
-    bool DeltaSerializerCreate::Serialize(char& value, const char* name, [[maybe_unused]] char minValue, [[maybe_unused]] char maxValue)
     {
         uint32_t unused = 0;
         return SerializeHelper(value, 0, false, unused, name);
@@ -113,7 +113,13 @@ namespace AzNetworking
         return SerializeHelper(value, 0, false, unused, name);
     }
 
-    bool DeltaSerializerCreate::Serialize(int64_t& value, const char* name, [[maybe_unused]] int64_t minValue, [[maybe_unused]] int64_t maxValue)
+    bool DeltaSerializerCreate::Serialize(long& value, const char* name, [[maybe_unused]] long minValue, [[maybe_unused]] long maxValue)
+    {
+        uint32_t unused = 0;
+        return SerializeHelper(value, 0, false, unused, name);
+    }
+
+    bool DeltaSerializerCreate::Serialize(AZ::s64& value, const char* name, [[maybe_unused]] AZ::s64 minValue, [[maybe_unused]] AZ::s64 maxValue)
     {
         uint32_t unused = 0;
         return SerializeHelper(value, 0, false, unused, name);
@@ -137,7 +143,13 @@ namespace AzNetworking
         return SerializeHelper(value, 0, false, unused, name);
     }
 
-    bool DeltaSerializerCreate::Serialize(uint64_t& value, const char* name, [[maybe_unused]] uint64_t minValue, [[maybe_unused]] uint64_t maxValue)
+    bool DeltaSerializerCreate::Serialize(unsigned long& value, const char* name, [[maybe_unused]] unsigned long minValue, [[maybe_unused]] unsigned long maxValue)
+    {
+        uint32_t unused = 0;
+        return SerializeHelper(value, 0, false, unused, name);
+    }
+
+    bool DeltaSerializerCreate::Serialize(AZ::u64& value, const char* name, [[maybe_unused]] AZ::u64 minValue, [[maybe_unused]] AZ::u64 maxValue)
     {
         uint32_t unused = 0;
         return SerializeHelper(value, 0, false, unused, name);
@@ -188,8 +200,19 @@ namespace AzNetworking
     template <typename T>
     bool DeltaSerializerCreate::SerializeHelper(T& value, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name)
     {
+        // The way this functions is that it expects its operation to be done in two phases:
+        // First, it gathers records into the m_records vector for each object being serialized, representing the prior state
+        // Then it expects to be called again, on objects in exactly the same order but with the new state.
+        // It will then compare the two states and generate a delta in m_delta for the differences.
+        // Once it has done this, the value stored in m_records is no longer required, and can be deleted while we still
+        // are in a templated function that knows the type of T and can thus invoke the correct delete operator.
+
+        // if this starts be a bottleneck or memory hotspot, consider using a static frame buffer for m_records, the kind of datastructure
+        // that runs on pre-allocated memory and resets it every frame instead of frees it, to avoid needing to delete.
+
         typedef AbstractValue::ValueT<T> ValueType;
 
+        uint32_t objectPos = m_objectCounter;
         AbstractValue::BaseValue* baseValue = m_records.size() > m_objectCounter ? m_records[m_objectCounter] : nullptr;
         ++m_objectCounter;
 
@@ -232,6 +255,10 @@ namespace AzNetworking
                     return false;
                 }
             }
+
+            // once we get here, we don't need the record anymore, so discard it while we know what the type is.
+            delete static_cast<ValueType*>(baseValue);
+            m_records[objectPos] = nullptr;
         }
 
         return true;
@@ -273,12 +300,6 @@ namespace AzNetworking
         return SerializeHelper(value, 0, false, unused, name);
     }
 
-    bool DeltaSerializerApply::Serialize(char& value, const char* name, [[maybe_unused]] char minValue, [[maybe_unused]] char maxValue)
-    {
-        uint32_t unused = 0;
-        return SerializeHelper(value, 0, false, unused, name);
-    }
-
     bool DeltaSerializerApply::Serialize(int8_t& value, const char* name, [[maybe_unused]] int8_t minValue, [[maybe_unused]] int8_t maxValue)
     {
         uint32_t unused = 0;
@@ -297,7 +318,13 @@ namespace AzNetworking
         return SerializeHelper(value, 0, false, unused, name);
     }
 
-    bool DeltaSerializerApply::Serialize(int64_t& value, const char* name, [[maybe_unused]] int64_t minValue, [[maybe_unused]] int64_t maxValue)
+    bool DeltaSerializerApply::Serialize(long& value, const char* name, [[maybe_unused]] long minValue, [[maybe_unused]] long maxValue)
+    {
+        uint32_t unused = 0;
+        return SerializeHelper(value, 0, false, unused, name);
+    }
+
+    bool DeltaSerializerApply::Serialize(AZ::s64& value, const char* name, [[maybe_unused]] AZ::s64 minValue, [[maybe_unused]] AZ::s64 maxValue)
     {
         uint32_t unused = 0;
         return SerializeHelper(value, 0, false, unused, name);
@@ -321,7 +348,13 @@ namespace AzNetworking
         return SerializeHelper(value, 0, false, unused, name);
     }
 
-    bool DeltaSerializerApply::Serialize(uint64_t& value, const char* name, [[maybe_unused]] uint64_t minValue, [[maybe_unused]] uint64_t maxValue)
+    bool DeltaSerializerApply::Serialize(unsigned long& value, const char* name, [[maybe_unused]] unsigned long minValue, [[maybe_unused]] unsigned long maxValue)
+    {
+        uint32_t unused = 0;
+        return SerializeHelper(value, 0, false, unused, name);
+    }
+
+    bool DeltaSerializerApply::Serialize(AZ::u64& value, const char* name, [[maybe_unused]] AZ::u64 minValue, [[maybe_unused]] AZ::u64 maxValue)
     {
         uint32_t unused = 0;
         return SerializeHelper(value, 0, false, unused, name);

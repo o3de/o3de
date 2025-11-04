@@ -35,9 +35,17 @@
 
 #define LOG_BACKUP_PATH "@log@/LogBackups"
 
-#if defined(IOS)
-#include <AzFramework/Utils/SystemUtilsApple.h>
-#endif
+AZ_CVAR(int32_t, log_IncludeTime, 1, nullptr, AZ::ConsoleFunctorFlags::Null,
+                "Toggles time stamping of log entries.\n"
+                "Usage: log_IncludeTime [0/1/2/3/4/5]\n"
+                "  0=off (default)\n"
+                "  1=current time\n"
+                "  2=relative time\n"
+                "  3=current+relative time\n"
+                "  4=absolute time in seconds since this mode was started\n"
+                "  5=current time+server time"
+                "  6=current date+current time");
+
 
 //////////////////////////////////////////////////////////////////////
 namespace LogCVars
@@ -142,7 +150,6 @@ CLog::CLog(ISystem* pSystem)
     m_pLogWriteToFile = 0;
     m_pLogWriteToFileVerbosity = 0;
     m_pLogVerbosityOverridesWriteToFile = 0;
-    m_pLogIncludeTime = 0;
     m_pLogSpamDelay = 0;
     m_pLogModule = 0;
     m_fLastLoadingUpdateTime = -1.f;    // for streaming engine update
@@ -201,18 +208,6 @@ void CLog::RegisterConsoleVariables()
                 "4=additional comments");
         m_pLogVerbosityOverridesWriteToFile = REGISTER_INT("log_VerbosityOverridesWriteToFile", 1, VF_DUMPTODISK, "when enabled, setting log_verbosity to 0 will stop all logging including writing to file");
 
-        // put time into begin of the string if requested by cvar
-        m_pLogIncludeTime = REGISTER_INT("log_IncludeTime", 0, 0,
-                "Toggles time stamping of log entries.\n"
-                "Usage: log_IncludeTime [0/1/2/3/4/5]\n"
-                "  0=off (default)\n"
-                "  1=current time\n"
-                "  2=relative time\n"
-                "  3=current+relative time\n"
-                "  4=absolute time in seconds since this mode was started\n"
-                "  5=current time+server time"
-                "  6=current date+current time");
-
         m_pLogSpamDelay = REGISTER_FLOAT("log_SpamDelay", 0.0f, 0, "Sets the minimum time interval between messages classified as spam");
 
         m_pLogModule = REGISTER_STRING("log_Module", "", VF_NULL, "Only show warnings from specified module");
@@ -253,7 +248,6 @@ void CLog::UnregisterConsoleVariables()
     m_pLogWriteToFile = 0;
     m_pLogWriteToFileVerbosity = 0;
     m_pLogVerbosityOverridesWriteToFile = 0;
-    m_pLogIncludeTime = 0;
     m_pLogSpamDelay = 0;
 }
 
@@ -273,7 +267,7 @@ bool CLog::OpenLogFile(const char* filename, AZ::IO::OpenMode mode)
         AZ_Assert(false, "Attempt to open log file when one is already open.  This would lead to a handle leak.");
         return false;
     }
-    
+
     if (filename == nullptr || filename[0] == '\0')
     {
         return false;
@@ -379,7 +373,7 @@ void CLog::LogAlways(const char* szFormat, ...)
     {
         return;
     }
-   
+
     va_list arg;
     va_start(arg, szFormat);
     LogV (eAlways, szFormat, arg);
@@ -754,11 +748,13 @@ void CLog::LogWithCallback(ELogType type, const LogWriteCallback& messageCallbac
 
             // this is a temp timeStr, it is reused in many branches(moved here to reduce stack usage)
             LogStringType timeStr;
-            if (m_pLogIncludeTime)
+            auto console = AZ::Interface<AZ::IConsole>::Get();
+            if (uint32_t dwCVarState;
+                console != nullptr
+                && console->GetCvarValue("log_IncludeTime", dwCVarState) == AZ::GetValueResult::Success)
             {
                 // See the log_IncludeTime CVar description as to what
                 // values correspond to what time strings
-                const uint32 dwCVarState = m_pLogIncludeTime->GetIVal();
                 switch (dwCVarState)
                 {
                 case 1:
@@ -1254,11 +1250,13 @@ void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool ap
     }
 #endif
 
-    if (m_pLogIncludeTime)
+    auto console = AZ::Interface<AZ::IConsole>::Get();
+    if (uint32_t dwCVarState;
+        console != nullptr
+        && console->GetCvarValue("log_IncludeTime", dwCVarState) == AZ::GetValueResult::Success)
     {
         // See the log_IncludeTime CVar description as to what
         // values correspond to what time strings
-        const uint32 dwCVarState = m_pLogIncludeTime->GetIVal();
         switch (dwCVarState)
         {
         case 1:
@@ -1283,18 +1281,18 @@ void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool ap
         }
     }
 
-    // do not OutputDebugString in release.
+    // do not output in release.
 #if !defined(_RELEASE)
     if (queueState == MessageQueueState::NotQueued)
     {
         if (!timeStr.empty())
         {
-            AZ::Debug::Platform::OutputToDebugger({}, timeStr);
+            AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, timeStr.data());
         }
-        AZ::Debug::Platform::OutputToDebugger({}, message);
+        AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, message.data());
         if (!message.ends_with('\n'))
         {
-            AZ::Debug::Platform::OutputToDebugger({}, "\n");
+           AZ::Debug::Trace::Instance().OutputToRawAndDebugger(nullptr, "\n");
         }
     }
 

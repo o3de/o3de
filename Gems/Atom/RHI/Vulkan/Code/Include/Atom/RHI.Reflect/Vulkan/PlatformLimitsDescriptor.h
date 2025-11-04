@@ -46,7 +46,7 @@ namespace AZ
             using Base = RHI::PlatformLimitsDescriptor;
         public:
             AZ_RTTI(AZ::Vulkan::PlatformLimitsDescriptor, "{23673F3F-1562-4D1B-B130-553B35B48C64}", Base);
-            AZ_CLASS_ALLOCATOR(AZ::Vulkan::PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZ::Vulkan::PlatformLimitsDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             FrameGraphExecuterData m_frameGraphExecuterData;

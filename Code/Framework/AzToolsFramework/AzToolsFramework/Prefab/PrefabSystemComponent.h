@@ -8,14 +8,14 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
@@ -31,9 +31,12 @@
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
 
+AZ_DECLARE_BUDGET_SHARED(PrefabSystem);
+
 namespace AZ
 {
     class Entity;
+    class SerializeContext;
 } // namespace AZ
 
 namespace AzToolsFramework
@@ -48,11 +51,11 @@ namespace AzToolsFramework
         /**
         * The prefab system component provides a central point for owning manipulating prefabs.
         */
-        class PrefabSystemComponent
+        class AZTF_API PrefabSystemComponent
             : public AZ::Component
             , private PrefabSystemComponentInterface
             , private AZ::SystemTickBus::Handler
-            , private AzToolsFramework::AssetSystemBus::Handler
+            , private AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler
         {
         public:
 
@@ -78,6 +81,10 @@ namespace AzToolsFramework
 
             // SystemTickBus...
             void OnSystemTick() override;
+
+            // AssetBrowserSourceActionNotificationBus...
+            void OnSourceFilePathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
+            void OnSourceFolderPathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
 
             //////////////////////////////////////////////////////////////////////////
             // PrefabSystemComponentInterface interface implementation
@@ -215,7 +222,7 @@ namespace AzToolsFramework
             * Builds a new Prefab Template out of entities and instances and returns the first instance comprised of
             * these entities and instances.
             * @param entities A vector of entities that will be used in the new instance. May be empty.
-            * @param instances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
+            * @param nestedInstances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
             *                  May be empty.
             * @param filePath The path to associate the template of the new instance to.
             * @param containerEntity The container entity for the prefab to be created. It will be created if a nullptr is provided.
@@ -225,9 +232,17 @@ namespace AzToolsFramework
             * @return A pointer to the newly created instance. nullptr on failure.
             */
             AZStd::unique_ptr<Instance> CreatePrefab(
-                const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+                const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
                 InstanceOptionalReference parent = AZStd::nullopt, bool shouldCreateLinks = true) override;
+
+            AZStd::unique_ptr<Instance> CreatePrefabWithCustomEntityAliases(
+                const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
+                AZ::IO::PathView filePath,
+                AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
+                InstanceOptionalReference parent = AZStd::nullopt,
+                bool shouldCreateLinks = true) override;
 
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
@@ -257,15 +272,16 @@ namespace AzToolsFramework
             * Builds a new Prefab Template out of entities and instances and returns the first instance comprised of
             * these entities and instances.
             * @param entities A vector of entities that will be used in the new instance. May be empty.
-            * @param instances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
+            * @param nestedInstances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
             *                  May be empty.
             * @param filePath The path to associate the template of the new instance to.
             * @param instance Reference of a pointer to the newly created instance which needs initiation.
             * @param shouldCreateLinks The flag indicating if links should be created between the templates of the instance
             *        and its nested instances.
             */
-            void CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
-                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
+            void CreatePrefab(
+                const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<Instance>& instance, bool shouldCreateLinks);
 
             /**
@@ -382,11 +398,12 @@ namespace AzToolsFramework
             // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
             void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
 
-            //! Called by the AssetProcessor when the source file has been changed.
-            void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
-
-            //! Called by the AssetProcessor when the source file has been removed.
-            void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
+            //! Free memory if memory is available to free.  This is only necessary if the underlying system
+            //! retains memory (ie, rapidjson, not AZ::DOM).  Doing so will invalidate all existing PrefabDom&
+            //! and PrefabDomValue& references that might be pointing at the garbage collected memory.
+            //! @param doAll if doAll is true, it will garbage collect all templates in the set of those needing
+            //! to be garbage collected - otherwise, it will only garbage collect one (meant for continuous calling).
+            void GarbageCollectTemplates(bool doAll);
 
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;
@@ -433,8 +450,11 @@ namespace AzToolsFramework
 
             PrefabSystemScriptingHandler m_prefabSystemScriptingHandler;
 
-            // If true, individual template-remove messages will be suppressed
+            // If true, individual template-remove messages will be suppressed.
+            // It also prevents unnecessary link instance updates during template removal.
             bool m_removingAllTemplates = false;
+
+            AZStd::unordered_set<TemplateId> m_templatesWhichNeedGarbageCollection;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

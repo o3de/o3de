@@ -100,6 +100,7 @@ namespace Multiplayer
         AZ::TimeMs GetFrameTimeMs();
 
         void AddReplicatorToPendingSend(const EntityReplicator& entityReplicator);
+        void RemoveReplicatorFromPendingSend(const EntityReplicator& entityReplicator);
         
         bool IsUpdateModeToServerClient();
 
@@ -136,6 +137,8 @@ namespace Multiplayer
         EntityReplicator* GetEntityReplicator(const ConstNetworkEntityHandle& entityHandle);
 
         void UpdateWindow();
+        void OnEntityActivated(AZ::Entity* entity);
+        void OnEntityDeactivated(AZ::Entity* entity);
 
         bool HandlePropertyChangeMessage
         (
@@ -145,7 +148,8 @@ namespace Multiplayer
             NetEntityId netEntityId,
             NetEntityRole netEntityRole,
             AzNetworking::ISerializer& serializer,
-            const PrefabEntityId& prefabEntityId
+            const PrefabEntityId& prefabEntityId,
+            bool isDeleted
         );
 
         void AddReplicatorToPendingRemoval(const EntityReplicator& replicator);
@@ -195,6 +199,8 @@ namespace Multiplayer
         EntityExitDomainEvent::Handler m_entityExitDomainEventHandler;
         SendMigrateEntityEvent m_sendMigrateEntityEvent;
         NotifyEntityMigrationEvent::Handler m_notifyEntityMigrationHandler;
+        AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
+        AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
         AZ::ScheduledEvent m_clearRemovedReplicators;
         AZ::ScheduledEvent m_updateWindow;

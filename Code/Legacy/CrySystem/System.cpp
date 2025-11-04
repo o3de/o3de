@@ -24,9 +24,9 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Time/ITime.h>
@@ -131,7 +131,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include "RemoteConsole/RemoteConsole.h"
 
-#include <PNoise3.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
@@ -211,7 +210,6 @@ CSystem::CSystem()
     m_pUserCallback = NULL;
     m_sys_firstlaunch = NULL;
 
-    //  m_sys_filecache = NULL;
     m_gpu_particle_physics = NULL;
 
     m_bInitializedSuccessfully = false;
@@ -231,20 +229,7 @@ CSystem::CSystem()
     m_bNoUpdate = false;
     m_iApplicationInstance = -1;
 
-
     m_pXMLUtils = new CXmlUtils(this);
-
-    if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        m_initedOSAllocator = true;
-        AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    }
-    if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        m_initedSysAllocator = true;
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        AZ::Debug::Trace::Instance().Init();
-    }
 
     m_eRuntimeState = ESYSTEM_EVENT_LEVEL_UNLOAD;
 
@@ -255,6 +240,8 @@ CSystem::CSystem()
 #endif
 
     m_ConfigPlatform = CONFIG_INVALID_PLATFORM;
+
+    m_movieSystem = AZ::Interface<IMovieSystem>::Get();
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -273,15 +260,6 @@ CSystem::~CSystem()
     SAFE_DELETE(m_pSystemEventDispatcher);
 
     AZCoreLogSink::Disconnect();
-    if (m_initedSysAllocator)
-    {
-        AZ::Debug::Trace::Instance().Destroy();
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (m_initedOSAllocator)
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    }
 
     m_env.pSystem = 0;
     gEnv = 0;
@@ -310,6 +288,30 @@ void CSystem::SetDevMode(bool bEnable)
 void CSystem::ShutDown()
 {
     CryLogAlways("System Shutdown");
+
+    // Disconnect any networking connections at the beginning of shutting down.
+    // This needs to happen before unloading the level because the network connection might queue
+    // references to entities and assets that could prevent cleanup from happening during the level unload.
+    if (const auto console = AZ::Interface<AZ::IConsole>::Get())
+    {
+        console->PerformCommand("disconnect");
+    }
+
+    // On shutdown, we need to start by unloading the level spawnable and processing the spawnable queue
+    // to clean up any remaining references. Otherwise, we'll get lots of errors on shutdown due to assets still
+    // being in use as various subsystems get shut down. By the time the spawnable system shuts down, it will try
+    // to clean up the assets, but the asset handlers for those assets will also be deregistered and destroyed by then,
+    // causing even more errors.
+    // By unloading the level before shutting down any subsystems, we can avoid the cascade of errors.
+    ILevelSystem* levelSystem = GetILevelSystem();
+    if (levelSystem)
+    {
+        levelSystem->UnloadLevel();
+        if (auto spawnableInterface = AzFramework::RootSpawnableInterface::Get(); spawnableInterface)
+        {
+            spawnableInterface->ProcessSpawnableQueueUntilEmpty();
+        }
+    }
 
     // don't broadcast OnCrySystemShutdown unless
     // we'd previously broadcast OnCrySystemInitialized
@@ -361,7 +363,6 @@ void CSystem::ShutDown()
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
 
-    SAFE_RELEASE(m_env.pMovieSystem);
     SAFE_RELEASE(m_env.pCryFont);
     if (m_env.pConsole)
     {
@@ -429,12 +430,6 @@ void CSystem::Quit()
     }
 
     gEnv->pLog->Flush();
-
-    // Latest possible place to flush any pending messages to disk before the forceful termination.
-    if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
-    {
-        logger->Flush();
-    }
 
 #ifdef WIN32
     //Post a WM_QUIT message to the Win32 api which causes the message loop to END
@@ -621,7 +616,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         }
         if (pVSync == NULL && gEnv && gEnv->pConsole)
         {
-            pVSync = gEnv->pConsole->GetCVar("r_Vsync");
+            pVSync = gEnv->pConsole->GetCVar("vsync_interval");
         }
 
         if (pSysMaxFPS && pVSync)
@@ -774,7 +769,11 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
 //////////////////////////////////////////////////////////////////////////
 void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate)
 {
-    if (m_env.pMovieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
+    if (!m_movieSystem)
+    {
+        m_movieSystem = AZ::Interface<IMovieSystem>::Get();
+    }
+    if (m_movieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
     {
         float fMovieFrameTime = fFrameTime;
 
@@ -785,11 +784,11 @@ void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, c
 
         if (bPreUpdate)
         {
-            m_env.pMovieSystem->PreUpdate(fMovieFrameTime);
+            m_movieSystem->PreUpdate(fMovieFrameTime);
         }
         else
         {
-            m_env.pMovieSystem->PostUpdate(fMovieFrameTime);
+            m_movieSystem->PostUpdate(fMovieFrameTime);
         }
     }
 }
@@ -1074,13 +1073,6 @@ ESystemConfigPlatform CSystem::GetConfigPlatform() const
     return m_ConfigPlatform;
 }
 
-//////////////////////////////////////////////////////////////////////////
-CPNoise3* CSystem::GetNoiseGen()
-{
-    static CPNoise3 m_pNoiseGen;
-    return &m_pNoiseGen;
-}
-
 //////////////////////////////////////////////////////////////////////
 void CSystem::OnLanguageCVarChanged(ICVar* language)
 {
@@ -1103,11 +1095,6 @@ void CSystem::OnLanguageCVarChanged(ICVar* language)
 
             LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::SetLanguage, lang);
             LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::ReloadData);
-
-            if (gEnv->pCryFont)
-            {
-                gEnv->pCryFont->OnLanguageChanged();
-            }
         }
     }
 }

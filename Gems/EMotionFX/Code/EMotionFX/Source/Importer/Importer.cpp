@@ -40,12 +40,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Importer, ImporterAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Importer, ImporterAllocator)
 
 
     // constructor
     Importer::Importer()
-        : BaseObject()
+        : MCore::RefCounted()
     {
         // register all standard chunks
         RegisterStandardChunks();
@@ -191,7 +191,7 @@ namespace EMotionFX
     // try to load an actor from disk
     AZStd::unique_ptr<Actor> Importer::LoadActor(AZStd::string filename, ActorSettings* settings)
     {
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
         // Resolve the filename if it starts with a path alias
         if (filename.starts_with('@'))
         {
@@ -361,7 +361,7 @@ namespace EMotionFX
     // try to load a motion from disk
     Motion* Importer::LoadMotion(AZStd::string filename, MotionSettings* settings)
     {
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         // check if we want to load the motion even if a motion with the given filename is already inside the motion manager
         if (settings == nullptr || (settings && settings->m_forceLoading == false))
@@ -511,7 +511,7 @@ namespace EMotionFX
 
     MotionSet* Importer::LoadMotionSet(AZStd::string filename, MotionSetSettings* settings, const AZ::ObjectStream::FilterDescriptor& loadFilter)
     {
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -544,9 +544,12 @@ namespace EMotionFX
         }
 
         EMotionFX::MotionSet* motionSet = EMotionFX::MotionSet::LoadFromBuffer(memoryStart, lengthInBytes, context);
-        if (settings)
+        if (motionSet)
         {
-            motionSet->SetIsOwnedByRuntime(settings->m_isOwnedByRuntime);
+            if (settings)
+            {
+                motionSet->SetIsOwnedByRuntime(settings->m_isOwnedByRuntime);
+            }
         }
         return motionSet;
     }
@@ -556,7 +559,7 @@ namespace EMotionFX
     // load a node map by filename
     NodeMap* Importer::LoadNodeMap(AZStd::string filename, NodeMapSettings* settings)
     {
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         if (GetLogging())
         {
@@ -828,6 +831,7 @@ namespace EMotionFX
         RegisterChunkProcessor(aznew ChunkProcessorMotionSubMotions());
         RegisterChunkProcessor(aznew ChunkProcessorMotionMorphSubMotions());
         RegisterChunkProcessor(aznew ChunkProcessorMotionData());
+        RegisterChunkProcessor(aznew ChunkProcessorRootMotionExtraction());
 
         // node map
         RegisterChunkProcessor(aznew ChunkProcessorNodeMap());
@@ -1009,7 +1013,7 @@ namespace EMotionFX
 
     AnimGraph* Importer::LoadAnimGraph(AZStd::string filename, const AZ::ObjectStream::FilterDescriptor& loadFilter)
     {
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);

@@ -89,16 +89,16 @@ namespace AZ
                         {
                             return self.Find(root, path);
                         })
-                        ->Method("GetNodeContent", [](const SceneGraph& self, NodeIndex node) -> GraphObjectProxy*
-                        {
+
+                        ->Method("GetNodeContent", [](const SceneGraph& self, NodeIndex node) -> GraphObjectProxy
+                         {
                             auto graphObject = self.GetNodeContent(node);
                             if (graphObject)
                             {
-                                GraphObjectProxy* proxy = aznew GraphObjectProxy(graphObject);
-                                return proxy;
+                                return GraphObjectProxy(graphObject);
                             }
-                            return aznew GraphObjectProxy(nullptr);
-                        });
+                            return GraphObjectProxy(nullptr);
+                         });
                 }
             }
 
@@ -289,12 +289,21 @@ namespace AZ
 
             SceneGraph::NodeIndex::IndexType SceneGraph::AppendNode(NodeIndex::IndexType parentIndex, const char* name, AZStd::shared_ptr<DataTypes::IGraphObject>&& content)
             {
+                const bool isValidName = IsValidName(name);
+                AZ_Assert(isValidName,
+                    "Name '%s' for SceneGraph sibling contains invalid characters. "
+                    "This is likely due to the name containing the node separation character '%c' ",
+                    name, s_nodeSeperationCharacter);
+
+                if (!isValidName)
+                {
+                    return NodeIndex::INVALID_INDEX;
+                }
+
                 NodeIndex::IndexType nodeIndex = aznumeric_caster(m_hierarchy.size());
                 NodeHeader node;
                 node.m_parentIndex = parentIndex;
                 m_hierarchy.push_back(node);
-
-                AZ_Assert(IsValidName(name), "Name '%s' for SceneGraph sibling contains invalid characters", name);
 
                 AZStd::string fullName;
                 size_t nameOffset;

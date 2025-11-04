@@ -7,7 +7,7 @@
 #
 
 ly_add_target(
-    NAME Atom_Component_DebugCamera.Static STATIC
+    NAME ${gem_name}.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         atom_component_debugcamera_files.cmake
@@ -25,7 +25,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME Atom_Component_DebugCamera ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_component_debugcamera_shared_files.cmake
@@ -36,5 +36,14 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::Atom_Component_DebugCamera.Static
+            Gem::${gem_name}.Static
 )
+
+# Inject the gem name into the Module source file
+ly_add_source_properties(
+    SOURCES
+        Source/Module.cpp
+    PROPERTY COMPILE_DEFINITIONS
+        VALUES
+            O3DE_GEM_NAME=${gem_name}
+            O3DE_GEM_VERSION=${gem_version})

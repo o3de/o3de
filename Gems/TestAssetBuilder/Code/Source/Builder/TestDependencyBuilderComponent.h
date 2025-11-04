@@ -11,10 +11,13 @@
 #include <AzCore/Component/Component.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace TestAssetBuilder
 {
@@ -22,7 +25,7 @@ namespace TestAssetBuilder
     {
     public:
         AZ_RTTI(TestAsset, "{3BDE90FA-B163-4FB9-BC67-22AC2ABD8C28}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(TestAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAsset, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

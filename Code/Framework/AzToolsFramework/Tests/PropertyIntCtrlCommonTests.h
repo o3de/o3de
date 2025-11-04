@@ -55,7 +55,7 @@ namespace UnitTest
 
     template<typename ValueType, typename WidgetType, template <typename> class HandlerType>
     struct PropertyCtrlFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
         using HandlerAPI = IntrCtrlHandlerAPI<ValueType, HandlerType>;
 

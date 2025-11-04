@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(VertexAttributeLayerAbstractData, MeshAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(VertexAttributeLayerAbstractData, MeshAllocator)
 
 
     // constructor

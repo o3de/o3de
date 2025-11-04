@@ -11,5 +11,21 @@
 float3 LinearSrgb_To_Srgb(float3 color)
 {
     // Copied from CryFx's ToAccurateSRGB()
+#ifdef PRE_HLSL_2021
+    // See /o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/PRE_HLSL_2021.md for details.
     return (color.xyz < 0.0031308) ? 12.92 * color.xyz : 1.055 * pow(color.xyz, 1.0 / 2.4) - float3(0.055, 0.055, 0.055);
+#else
+    return select((color.xyz < 0.0031308), 12.92 * color.xyz, 1.055 * pow(color.xyz, 1.0 / 2.4) - float3(0.055, 0.055, 0.055));
+#endif
+}
+
+half3 LinearSrgb_To_Srgb(half3 color)
+{
+    // Copied from CryFx's ToAccurateSRGB()
+#ifdef PRE_HLSL_2021
+    // See /o3de/Gems/Atom/Feature/Common/Assets/ShaderLib/PRE_HLSL_2021.md for details.
+    return (color.xyz < 0.0031308h) ? 12.92h * color.xyz : 1.055h * pow(color.xyz, 1.0h / 2.4h) - half3(0.055, 0.055, 0.055);
+#else
+    return select((color.xyz < 0.0031308h), 12.92h * color.xyz, 1.055h * pow(color.xyz, 1.0h / 2.4h) - half3(0.055, 0.055, 0.055));
+#endif
 }

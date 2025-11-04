@@ -21,7 +21,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <Atom/Feature/RenderCommon.h>
-#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <MeshletsRenderObject.h>
 #include <MeshletsFeatureProcessor.h>
@@ -95,7 +94,7 @@ namespace AZ
 
         void MeshletsFeatureProcessor::Activate()
         {
-            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<Render::TransformServiceFeatureProcessor>();
+            m_transformServiceFeatureProcessor = GetParentScene()->GetFeatureProcessor<Render::TransformServiceFeatureProcessorInterface>();
             AZ_Assert(m_transformServiceFeatureProcessor, "MeshFeatureProcessor requires a TransformServiceFeatureProcessor on its parent scene.");
 
             EnableSceneNotification();
@@ -209,7 +208,7 @@ namespace AZ
 
         // This method will be called by the scene to establish all required injections
         // to the pass pipeline
-        void MeshletsFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
+        void MeshletsFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
         {
             AddMeshletsPassesToPipeline(renderPipeline);
         }
@@ -263,16 +262,17 @@ namespace AZ
 // Leave the following empty if using buffers rather than vertex streams.
 //                drawRequest.m_streamBufferViews = lodRenderData->m_renderStreamBuffersViews; 
 
-                RHI::DrawPacketBuilder drawPacketBuilder;
+                RHI::DrawPacketBuilder drawPacketBuilder(RHI::MultiDevice::AllDevices);
                 RHI::DrawIndexed drawIndexed;
 
                 drawIndexed.m_indexCount = lodRenderData->IndexCount;
                 drawIndexed.m_indexOffset = 0;
                 drawIndexed.m_vertexOffset = 0;
+                m_geometryView.SetDrawArguments(drawIndexed);
+                m_geometryView.SetIndexBufferView(lodRenderData->IndexBufferView);
 
                 drawPacketBuilder.Begin(nullptr);
-                drawPacketBuilder.SetDrawArguments(drawIndexed);
-                drawPacketBuilder.SetIndexBufferView(lodRenderData->IndexBufferView);
+                drawPacketBuilder.SetGeometryView(&m_geometryView);
 
                 // Add the object Id to the Srg - once instancing is supported, the ObjectId and the
                 // render Srg should be per instance / draw and not per object.
@@ -290,7 +290,7 @@ namespace AZ
 
                 // Change the following line in order to support instancing.
                 // For instancing the data cannot be associated 1:1 with the object
-                lodRenderData->MeshDrawPacket = drawPacketBuilder.End();
+                lodRenderData->MeshDrawPacket = drawPacketBuilder.End().get();
 
                 if (!lodRenderData->MeshDrawPacket)
                 {
@@ -408,39 +408,24 @@ namespace AZ
             m_renderPass->AddDrawPackets(drawPackets);
         }
 
-        void MeshletsFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+        void MeshletsFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             if (!HasMeshletPasses(renderPipeline))
             {   // This pipeline is not relevant - exist without changing anything.
                 return;
             }
 
-            m_renderPipeline = renderPipeline;
-            CreateResources();
-            Init(m_renderPipeline);
-        }
-
-        void MeshletsFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr renderPipeline)
-        {
-            if (!HasMeshletPasses(renderPipeline.get()))
-            {   // This pipeline is not relevant - exist without changing anything.
-                return;
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            {
+                m_renderPipeline = renderPipeline;
+                CreateResources();
+                Init(m_renderPipeline);
             }
-
-            m_renderPipeline = renderPipeline.get();
-            CreateResources();
-            Init(m_renderPipeline);
-        }
-
-        void MeshletsFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
-        {
-            if (!HasMeshletPasses(renderPipeline))
-            {   // This pipeline is not relevant - exist without changing anything.
-                return;
+            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
+            {
+                m_renderPipeline = nullptr;
             }
-
-            m_renderPipeline = nullptr;
         }
-
     } // namespace AtomSceneStream
 } // namespace AZ

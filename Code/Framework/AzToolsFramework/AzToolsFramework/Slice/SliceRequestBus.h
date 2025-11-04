@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Slice/SliceInstantiationTicket.h>
-
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 namespace AzToolsFramework
 {
     //! Bus for making slice requests.
@@ -31,15 +31,9 @@ namespace AzToolsFramework
 
         //! Set if a slice asset is dynamic and re-saves the slice
         virtual void SetSliceDynamic(const AZ::Data::AssetId& assetId, bool isDynamic) = 0;
-
-        //! Instantiate a slice by AssetId at the given transform
-        virtual AzFramework::SliceInstantiationTicket InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId, const AZ::Transform& transform) = 0;
-
-        //! Create a new slice asset from the given Entity
-        virtual bool CreateNewSlice(const AZ::EntityId& entityId, const char* assetPath) = 0;
-
-        virtual void ShowPushDialog(const EntityIdList& entityIds) = 0;
     };
 
     using SliceRequestBus = AZ::EBus<SliceRequests>;
 } // namespace AzToolsFramework
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::SliceRequests);

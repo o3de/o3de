@@ -234,7 +234,7 @@ namespace AssetBundler
     class FilePath
     {
     public:
-        AZ_CLASS_ALLOCATOR(FilePath, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FilePath, AZ::SystemAllocator);
         explicit FilePath(
             const AZStd::string& filePath,
             AZStd::string platformIdentifier = AZStd::string(),

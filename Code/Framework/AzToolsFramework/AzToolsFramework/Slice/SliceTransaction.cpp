@@ -48,7 +48,7 @@ namespace AzToolsFramework
                 using ByteBuffer = AZStd::vector<AZ::u8>;
             public:
                 AZ_RTTI(SaveSliceToDiskCommand, "{F036A88D-7487-4BE9-BD2C-41B80B86ACC5}", UndoSystem::URSequencePoint);
-                AZ_CLASS_ALLOCATOR(SaveSliceToDiskCommand, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(SaveSliceToDiskCommand, AZ::SystemAllocator);
 
                 SaveSliceToDiskCommand(const char* friendlyName = nullptr)
                     : UndoSystem::URSequencePoint(friendlyName)
@@ -1023,9 +1023,10 @@ namespace AzToolsFramework
                 AZStd::string devAssetPath = fileIO->GetAlias("@projectroot@");
                 AZStd::string userPath = fileIO->GetAlias("@user@");
                 AZStd::string tempPath = fullPath;
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, devAssetPath);
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, userPath);
-                EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, tempPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(
+                    &AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, devAssetPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, userPath);
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, tempPath);
                 AzFramework::StringFunc::Replace(tempPath, "@projectroot@", devAssetPath.c_str());
                 AzFramework::StringFunc::Replace(tempPath, devAssetPath.c_str(), userPath.c_str());
                 tempPath.append(".slicetemp");
@@ -1094,7 +1095,8 @@ namespace AzToolsFramework
                         // Bump the slice asset up in the asset processor's queue.
                         {
                             AZ_PROFILE_SCOPE(AzToolsFramework, "SliceUtilities::Internal::SaveSliceToDisk:TempToTargetFileReplacement:GetAssetStatus");
-                            EBUS_EVENT(AzFramework::AssetSystemRequestBus, EscalateAssetBySearchTerm, targetPath);
+                            AzFramework::AssetSystemRequestBus::Broadcast(
+                                &AzFramework::AssetSystemRequestBus::Events::EscalateAssetBySearchTerm, targetPath);
                         }
                         return AZ::Success();
                     }

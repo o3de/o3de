@@ -67,7 +67,7 @@ namespace
 namespace UnitTest
 {
     class DiskShapeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformShapeComponentDescriptor;
@@ -76,7 +76,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_transformShapeComponentDescriptor.reset(AzFramework::TransformComponent::CreateDescriptor());
             m_transformShapeComponentDescriptor->Reflect(&(*m_serializeContext));
@@ -89,7 +89,7 @@ namespace UnitTest
             m_transformShapeComponentDescriptor.reset();
             m_diskShapeComponentDescriptor.reset();
             m_serializeContext.reset();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     };

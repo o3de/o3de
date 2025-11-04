@@ -58,7 +58,7 @@ namespace EMotionFX
         m_rotationManipulators.InstallLeftMouseUpCallback(
             [this](const AzToolsFramework::AngularManipulator::Action& action)
             {
-                FinishEditing(action.LocalOrientation());
+                EndEditing(action.LocalOrientation());
             });
 
         AZ::TickBus::Handler::BusConnect();
@@ -97,7 +97,7 @@ namespace EMotionFX
         if (m_physicsSetupManipulatorData.HasColliders())
         {
             BeginEditing(m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_rotation);
-            FinishEditing(AZ::Quaternion::CreateIdentity());
+            EndEditing(AZ::Quaternion::CreateIdentity());
             Refresh();
         }
     }
@@ -129,7 +129,7 @@ namespace EMotionFX
         command->SetOldRotation(rotation);
     }
 
-    void ColliderRotationManipulators::FinishEditing(const AZ::Quaternion& rotation)
+    void ColliderRotationManipulators::EndEditing(const AZ::Quaternion& rotation)
     {
         if (m_commandGroup.IsEmpty())
         {

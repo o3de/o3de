@@ -52,9 +52,11 @@ namespace ScriptCanvas
                     Data::Type::Transform(),
                     Data::Type::Matrix3x3(),
                     Data::Type::Matrix4x4(),
+                    Data::Type::MatrixMxN(),
                     Data::Type::Vector2(),
                     Data::Type::Vector3(),
                     Data::Type::Vector4(),
+                    Data::Type::VectorN(),
                     Data::Type::Color()
                 };
             }
@@ -80,6 +82,9 @@ namespace ScriptCanvas
                 case Data::eType::Matrix4x4:
                     OperatorEvaluator::Evaluate<Data::Matrix4x4Type>(OperatorMulImpl<Data::Matrix4x4Type>(), operands, result);
                     break;
+                case Data::eType::MatrixMxN:
+                    OperatorEvaluator::Evaluate<Data::MatrixMxNType>(OperatorMulImpl<Data::MatrixMxNType>(), operands, result);
+                    break;
                 case Data::eType::Vector2:
                     OperatorEvaluator::Evaluate<Data::Vector2Type>(OperatorMulImpl<Data::Vector2Type>(), operands, result);
                     break;
@@ -88,6 +93,9 @@ namespace ScriptCanvas
                     break;
                 case Data::eType::Vector4:
                     OperatorEvaluator::Evaluate<Data::Vector4Type>(OperatorMulImpl<Data::Vector4Type>(), operands, result);
+                    break;
+                case Data::eType::VectorN:
+                    OperatorEvaluator::Evaluate<Data::VectorNType>(OperatorMulImpl<Data::VectorNType>(), operands, result);
                     break;
                 case Data::eType::Color:
                     OperatorEvaluator::Evaluate<Data::ColorType>(OperatorMulImpl<Data::ColorType>(), operands, result);
@@ -114,6 +122,8 @@ namespace ScriptCanvas
                         return !datum->GetAs<Data::Matrix3x3Type>()->IsClose(Data::Matrix3x3Type::CreateIdentity());
                     case Data::eType::Matrix4x4:
                         return !datum->GetAs<Data::Matrix4x4Type>()->IsClose(Data::Matrix4x4Type::CreateIdentity());
+                    case Data::eType::MatrixMxN:
+                        return true;
                     default:
                         break;
                     }

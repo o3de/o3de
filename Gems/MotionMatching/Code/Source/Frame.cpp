@@ -13,7 +13,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Frame, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Frame, MotionMatchAllocator)
 
     Frame::Frame()
         : m_frameIndex(InvalidIndex)

@@ -27,7 +27,7 @@ namespace Camera
     public:
         ~FaceTarget() override = default;
         AZ_RTTI(FaceTarget, "{1A2CBCD0-1841-493C-8DB7-1BCA0D293019}", ICameraTransformBehavior)
-        AZ_CLASS_ALLOCATOR(FaceTarget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FaceTarget, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

@@ -33,7 +33,7 @@ namespace UnitTest
 
     TEST_F(VegetationComponentModifierTests, PositionModifierComponent)
     {
-        const auto crcMask = AZ_CRC("mock-mask", 0xfdf99e32);
+        const auto crcMask = AZ_CRC_CE("mock-mask");
 
         Vegetation::InstanceData vegInstance;
         vegInstance.m_position = AZ::Vector3(2.0f, 4.0f, 0.0f);

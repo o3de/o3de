@@ -17,9 +17,9 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonMapSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedMapSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedMultiMapSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonMapSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedMapSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnorderedMultiMapSerializer, SystemAllocator);
     
     // JsonMapSerializer
 

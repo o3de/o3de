@@ -10,8 +10,9 @@
 
 #include <Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli>
 
-float CalculateLuminance_LinearSrgb(in float3 color)
+real CalculateLuminance_LinearSrgb(in real3 color)
 {
     // Calculate the Y value of XYZ color space.
     return dot(color, SRGBToXYZMat[1]);
 }
+

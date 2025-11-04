@@ -71,10 +71,10 @@ namespace AZ { class ReflectContext; }
 namespace AZ::MeshBuilder
 {
     using MeshBuilderVertexAttributeLayerColor = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::Color>;
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerColor, AZ::SystemAllocator, 0)
-        
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerColor, AZ::SystemAllocator)
+
     using MeshBuilderVertexAttributeLayerSkinInfluence = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::ISkinWeightData::Link>;
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerSkinInfluence, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerSkinInfluence, AZ::SystemAllocator)
 
 } // namespace AZ::MeshBuilder
 
@@ -131,7 +131,7 @@ namespace AZ::SceneGenerationComponents
                 // Welding the vertices here based on position could cause the vertices of a base shape to be welded,
                 // and the vertices of the blendshape to not be welded, resulting in a vertex count mismatch between
                 // the two
-                return m_meshData->GetUsedPointIndexForControlPoint(m_meshData->GetControlPointIndex(vertexIndex));
+                return vertexIndex;
             }
 
             const auto& [iter, didInsert] = m_map.try_emplace(GetPositionForIndex(vertexIndex), m_currentOriginalVertexIndex);
@@ -150,7 +150,7 @@ namespace AZ::SceneGenerationComponents
                 // Welding the vertices here based on position could cause the vertices of a base shape to be welded,
                 // and the vertices of the blendshape to not be welded, resulting in a vertex count mismatch between
                 // the two
-                return m_meshData->GetUsedPointIndexForControlPoint(m_meshData->GetControlPointIndex(vertexIndex));
+                return vertexIndex;
             }
 
             auto iter = m_map.find(GetPositionForIndex(vertexIndex));
@@ -164,7 +164,7 @@ namespace AZ::SceneGenerationComponents
             {
                 // Since blend shapes are present, the vertex welding is disabled, and the map will always be empty.
                 // Use the underlying mesh's vertex count instead.
-                return m_meshData->GetUsedControlPointCount();
+                return m_meshData->GetVertexCount();
             }
             return m_map.size();
         }
@@ -307,47 +307,41 @@ namespace AZ::SceneGenerationComponents
         SceneGraph& graph = context.GetScene().GetGraph();
 
         // Build a list of mesh data nodes.
-        const AZStd::vector<AZStd::pair<const IMeshData*, NodeIndex>> meshes = [](const SceneGraph& graph)
+        AZStd::vector<AZStd::pair<const IMeshData*, NodeIndex>> meshes;
+        const auto meshNodes = Containers::MakeDerivedFilterView<IMeshData>(graph.GetContentStorage());
+        for (auto it = meshNodes.cbegin(); it != meshNodes.cend(); ++it)
         {
-            AZStd::vector<AZStd::pair<const IMeshData*, NodeIndex>> meshes;
-            const auto meshNodes = Containers::MakeDerivedFilterView<IMeshData>(graph.GetContentStorage());
-            for (auto it = meshNodes.cbegin(); it != meshNodes.cend(); ++it)
-            {
-                // Get the mesh data and node index and store them in the vector as a pair, so we can iterate over them later.
-                // The sequential calls to GetBaseIterator unwrap the layers of FilterIterators from the MakeDerivedFilterView
-                meshes.emplace_back(&(*it), graph.ConvertToNodeIndex(it.GetBaseIterator().GetBaseIterator().GetBaseIterator()));
-            }
-            return meshes;
-        }(graph);
+            // Get the mesh data and node index and store them in the vector as a pair, so we can iterate over them later.
+            // The sequential calls to GetBaseIterator unwrap the layers of FilterIterators from the MakeDerivedFilterView
+            meshes.emplace_back(&(*it), graph.ConvertToNodeIndex(it.GetBaseIterator().GetBaseIterator()));
+        }
 
         const auto meshGroups = Containers::MakeDerivedFilterView<IMeshGroup>(context.GetScene().GetManifest().GetValueStorage());
 
-        const AZStd::unordered_map<const IMeshGroup*, AZStd::vector<AZStd::string_view>> selectedNodes = [&meshGroups]
+        AZStd::unordered_map<const IMeshGroup*, AZStd::vector<AZStd::string_view>> selectedNodes;
+
+        const auto addSelectionListToMap = [&selectedNodes](const IMeshGroup& meshGroup, const SceneAPI::DataTypes::ISceneNodeSelectionList& selectionList)
         {
-            AZStd::unordered_map<const IMeshGroup*, AZStd::vector<AZStd::string_view>> selectedNodes;
-
-            const auto addSelectionListToMap = [&selectedNodes](const IMeshGroup& meshGroup, const SceneAPI::DataTypes::ISceneNodeSelectionList& selectionList)
-            {
-                for (size_t selectedNodeIndex = 0; selectedNodeIndex < selectionList.GetSelectedNodeCount(); ++selectedNodeIndex)
+            selectionList.EnumerateSelectedNodes(
+                [&selectedNodes, &meshGroup](const AZStd::string& name)
                 {
-                    selectedNodes[&meshGroup].emplace_back(selectionList.GetSelectedNode(selectedNodeIndex));
-                }
-            };
+                    selectedNodes[&meshGroup].emplace_back(name);
+                    return true;
+                });
+        };
 
-            for (const IMeshGroup& meshGroup : meshGroups)
+        for (const IMeshGroup& meshGroup : meshGroups)
+        {
+            addSelectionListToMap(meshGroup, meshGroup.GetSceneNodeSelectionList());
+            const ILodRule* lodRule = meshGroup.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ILodRule>().get();
+            if (lodRule)
             {
-                addSelectionListToMap(meshGroup, meshGroup.GetSceneNodeSelectionList());
-                const ILodRule* lodRule = meshGroup.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ILodRule>().get();
-                if (lodRule)
+                for (size_t lod = 0; lod < lodRule->GetLodCount(); ++lod)
                 {
-                    for (size_t lod = 0; lod < lodRule->GetLodCount(); ++lod)
-                    {
-                        addSelectionListToMap(meshGroup, lodRule->GetSceneNodeSelectionList(lod));
-                    }
+                    addSelectionListToMap(meshGroup, lodRule->GetSceneNodeSelectionList(lod));
                 }
             }
-            return selectedNodes;
-        }();
+        }
 
         const auto childNodes = [&graph](NodeIndex nodeIndex) { return Views::MakeSceneGraphChildView(graph, nodeIndex, graph.GetContentStorage().cbegin(), true); };
         const auto nodeIndexes = [&graph](const auto& view)
@@ -382,6 +376,16 @@ namespace AZ::SceneGenerationComponents
 
             for (const IMeshGroup& meshGroup : meshGroups)
             {
+                if (!selectedNodes.contains(&meshGroup))
+                {
+                    AZ_Warning(
+                        AZ::SceneAPI::Utilities::LogWindow,
+                        false,
+                        "MeshGroup %s wasn't found in the list of selected nodes.",
+                        meshGroup.GetName().c_str());
+                    continue;
+                }
+
                 // Skip meshes that are not used by this mesh group
                 if (AZStd::find(selectedNodes.at(&meshGroup).cbegin(), selectedNodes.at(&meshGroup).cend(), nodePath) == selectedNodes.at(&meshGroup).cend())
                 {
@@ -402,9 +406,9 @@ namespace AZ::SceneGenerationComponents
 
                 AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Optimized mesh '%s': Original: %zu vertices -> optimized: %zu vertices, %0.02f%% of the original (hasBlendShapes=%s)",
                     graph.GetNodeName(nodeIndex).GetName(),
-                    mesh->GetUsedControlPointCount(),
-                    optimizedMesh->GetUsedControlPointCount(),
-                    ((float)optimizedMesh->GetUsedControlPointCount() / (float)mesh->GetUsedControlPointCount()) * 100.0f,
+                    mesh->GetVertexCount(),
+                    optimizedMesh->GetVertexCount(),
+                    ((float)optimizedMesh->GetVertexCount() / (float)mesh->GetVertexCount()) * 100.0f,
                     hasBlendShapes ? "Yes" : "No"
                 );
 
@@ -412,7 +416,14 @@ namespace AZ::SceneGenerationComponents
                 const AZStd::string name =
                     SceneAPI::Utilities::SceneGraphSelector::GenerateOptimizedMeshNodeName(graph, nodeIndex, meshGroup);
                 const NodeIndex optimizedMeshNodeIndex =
-                    graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));            
+                    graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));
+
+                if (!optimizedMeshNodeIndex.IsValid())
+                {
+                    // An invalid node index usually happens when the name is invalid.
+                    // An error will already be printed so no need for one here.
+                    return ProcessingResult::Failure;
+                }
 
                 // Copy any custom properties from the original mesh to the optimized mesh
                 ICustomPropertyData::PropertyMap& optimizedPropertyMap = FindOrCreateCustomPropertyData(graph, optimizedMeshNodeIndex);
@@ -424,7 +435,7 @@ namespace AZ::SceneGenerationComponents
 
                 // Add the optimized node index to the original mesh's custom property map so it can be looked up later
                 unoptimizedPropertyMap[SceneAPI::Utilities::OptimizedMeshPropertyMapKey] =
-                    AZStd::make_any<NodeIndex>(optimizedMeshNodeIndex);    
+                    AZStd::make_any<NodeIndex>(optimizedMeshNodeIndex);
 
                 auto addOptimizedNodes = [&graph, &optimizedMeshNodeIndex](const auto& originalNodeIndexes, auto& optimizedNodes)
                 {
@@ -570,7 +581,7 @@ namespace AZ::SceneGenerationComponents
         const AZ::SceneAPI::DataTypes::IMeshGroup& meshGroup,
         bool hasBlendShapes)
     {
-        const size_t vertexCount = meshData->GetUsedControlPointCount();
+        const size_t vertexCount = meshData->GetVertexCount();
 
         AZ::MeshBuilder::MeshBuilder meshBuilder(vertexCount, AZStd::numeric_limits<size_t>::max(), AZStd::numeric_limits<size_t>::max(), /*optimizeDuplicates=*/ !hasBlendShapes);
 
@@ -746,12 +757,8 @@ namespace AZ::SceneGenerationComponents
                 const AZ::MeshBuilder::MeshBuilderVertexLookup& vertexLookup = subMesh->GetVertex(subMeshVertexIndex);
                 optimizedMesh->AddPosition(posLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
                 optimizedMesh->AddNormal(normalsLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
-                
+
                 int modelVertexIndex = optimizedMesh->GetVertexCount() - 1;
-                optimizedMesh->SetVertexIndexToControlPointIndexMap(
-                    modelVertexIndex,
-                    controlPointLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr)
-                );
 
                 for (auto [uvLayer, optimizedUVNode] : Containers::Views::MakePairView(uvLayers, optimizedUVs))
                 {

@@ -45,7 +45,7 @@ namespace ScriptCanvas
                 : public OverloadContractInterface
             {
             public:
-                AZ_CLASS_ALLOCATOR(NodeableMethodOverloadContractInterface, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(NodeableMethodOverloadContractInterface, AZ::SystemAllocator);
 
                 NodeableMethodOverloadContractInterface(NodeableNodeOverloaded& nodeableOverloaded, size_t methodIndex);
                 ~NodeableMethodOverloadContractInterface() override = default;

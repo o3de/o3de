@@ -13,8 +13,8 @@ import ly_test_tools
 import ly_test_tools.launchers.exceptions
 import ly_test_tools.o3de.multi_test_framework as multi_test_framework
 from ly_test_tools.o3de.editor_test_utils import prepare_asset_processor
-from ly_test_tools.launchers.platforms.linux.launcher import LinuxLauncher
-from ly_test_tools.launchers.platforms.win.launcher import WinLauncher
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxAtomToolsLauncher, LinuxEditor
+from ly_test_tools.launchers.platforms.win.launcher import WinAtomToolsLauncher, WinEditor
 
 
 pytestmark = pytest.mark.SUITE_smoke
@@ -560,7 +560,7 @@ class TestUtils(unittest.TestCase):
             "------------\n"
             f"{mock_output}\n"
             "----------------------------------------------------\n"
-            f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+            f"| Application log  |\n"
             "----------------------------------------------------\n"
             f"{mock_log_output}\n")
 
@@ -741,7 +741,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.split_batched_editor_log_file', mock.MagicMock())
     def test_ExecMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                            mock_retrieve_log, mock_retrieve_editor_log,
                                                            mock_get_results, mock_retrieve_crash):
@@ -768,7 +767,7 @@ class TestRunningTests(unittest.TestCase):
         assert mock_get_results.called
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Crash)
         # Save executable log output, crash log, and crash dmp
-        assert mock_workspace.artifact_manager.save_artifact.call_count == 2
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 3
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._get_results_using_output')
@@ -781,7 +780,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.split_batched_editor_log_file', mock.MagicMock())
     def test_ExecMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                              mock_retrieve_log, mock_retrieve_editor_log,
                                                              mock_get_results, mock_retrieve_crash):
@@ -866,9 +864,11 @@ class TestRunningTests(unittest.TestCase):
         assert mock_collected_test_data.results.update.called
         mock_report_result.assert_called_with(mock_test_name, mock_result)
 
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._test_reporting')
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._exec_multitest')
-    def test_RunBatchedTests_ValidTests_CallsCorrectly(self, mock_exec_multitest):
+    def test_RunBatchedTests_ValidTests_CallsCorrectly(self, mock_exec_multitest, mock_reporting):
         mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_test_suite.atom_tools_executable_name = "dummy_executable"
         mock_request = mock.MagicMock()
         mock_workspace = mock.MagicMock()
         mock_collected_test_data = mock.MagicMock()
@@ -879,8 +879,8 @@ class TestRunningTests(unittest.TestCase):
             mock_request, mock_workspace, mock_collected_test_data, mock_test_spec_list, mock_extra_cmdline_args)
 
         assert mock_exec_multitest.called
-        assert mock_collected_test_data.results.update.called
-        assert type(mock_test_suite.executable) in [WinLauncher, LinuxLauncher]
+        assert mock_reporting.called
+        assert type(mock_test_suite.executable) in [WinAtomToolsLauncher, LinuxAtomToolsLauncher]
         assert mock_test_suite.executable.workspace == mock_workspace
 
     @mock.patch('threading.Thread')
@@ -1016,6 +1016,121 @@ class TestRunningTests(unittest.TestCase):
         number_of_executables = mock_test_suite._get_number_parallel_executables(mock_request)
         assert number_of_executables == mock_test_suite.get_number_parallel_executables()
 
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.prepare_asset_processor')
+    @mock.patch('ly_test_tools.launchers.launcher_helper.create_editor')
+    @mock.patch('ly_test_tools.launchers.launcher_helper.create_atom_tools_launcher')
+    def test_SetupTest_AtomExe_SetsExecutable(self, mock_create_atom, mock_create_editor, mock_prepare_ap, 
+                                              mock_kill_processes):
+        mock_workspace = mock.MagicMock()
+        mock_exe = 'mock_atom_exe'
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_test_suite.atom_tools_executable_name = mock_exe
+        mock_test_suite.executable = mock.MagicMock()
+
+        mock_test_suite._setup_test(mock_workspace, mock.MagicMock())
+        mock_create_atom.assert_called_once_with(mock_workspace, mock_exe)
+        assert not mock_create_editor.called
+        assert mock_prepare_ap.called
+        assert mock_kill_processes.called
+        assert mock_test_suite.executable.configure_settings.called
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.prepare_asset_processor')
+    @mock.patch('ly_test_tools.launchers.launcher_helper.create_editor')
+    @mock.patch('ly_test_tools.launchers.launcher_helper.create_atom_tools_launcher')
+    def test_SetupTest_EditorExe_SetsExecutable(self, mock_create_atom, mock_create_editor, mock_prepare_ap, 
+                                                mock_kill_processes):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_test_suite.atom_tools_executable_name = None
+        mock_test_suite.executable = mock.MagicMock()
+
+        mock_test_suite._setup_test(mock.MagicMock(), mock.MagicMock())
+        assert not mock_create_atom.called
+        assert mock_create_editor.called
+        assert mock_prepare_ap.called
+        assert mock_kill_processes.called
+        assert mock_test_suite.executable.configure_settings.called
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs')
+    def test_TestReporting_AllPassResults_NoSaveLogs(self, mock_save_logs):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_collected_test_data = mock.MagicMock()
+        mock_pass = multi_test_framework.Result.Pass(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        mock_results = [mock_pass]
+
+        mock_test_suite._test_reporting(mock_collected_test_data, mock_results, mock.MagicMock(), mock.MagicMock())
+        assert not mock_save_logs.called
+        assert mock_collected_test_data.results.update.called
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs')
+    def test_TestReporting_UnknownResults_SaveLogs(self, mock_save_logs):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_collected_test_data = mock.MagicMock()
+        mock_results = [None]
+
+        mock_test_suite._test_reporting(mock_collected_test_data, mock_results, mock.MagicMock(), mock.MagicMock())
+        assert mock_save_logs.called
+        assert mock_collected_test_data.results.update.called
+
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs')
+    def test_TestReporting_BothResults_SaveLogs(self, mock_save_logs):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_collected_test_data = mock.MagicMock()
+        mock_pass = multi_test_framework.Result.Pass(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        mock_results = [mock_pass, None]
+
+        mock_test_suite._test_reporting(mock_collected_test_data, mock_results, mock.MagicMock(), mock.MagicMock())
+        assert mock_save_logs.called
+        assert mock_collected_test_data.results.update.called
+        
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs')
+    def test_TestReporting_ManyResults_SaveLogs(self, mock_save_logs):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_collected_test_data = mock.MagicMock()
+        mock_pass = multi_test_framework.Result.Pass(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        mock_fail = multi_test_framework.Result.Fail(mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+        mock_results = [mock_pass, mock_fail, None]
+
+        mock_test_suite._test_reporting(mock_collected_test_data, mock_results, mock.MagicMock(), mock.MagicMock())
+        assert mock_save_logs.called
+        assert mock_collected_test_data.results.update.called
+ 
+    def test_SetupCmdlineArgs_EditorExe_EnablesPrefab(self):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_executable = WinEditor(mock.MagicMock(), [])
+        mock_test_spec_list = mock.MagicMock()
+
+        under_test = mock_test_suite._setup_cmdline_args(None, mock_executable, mock_test_spec_list, mock.MagicMock())
+        assert "--regset=/Amazon/Preferences/EnablePrefabSystem=true" in under_test
+        assert "-rhi=null" in under_test
+        assert "--attach-debugger" not in under_test
+        assert "--wait-for-debugger" not in under_test
+
+    def test_SetupCmdlineArgs_AtomExe_NotEnablesPrefab(self):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_executable = WinAtomToolsLauncher(mock.MagicMock(), [])
+        mock_test_spec_list = mock.MagicMock()
+
+        under_test = mock_test_suite._setup_cmdline_args(None, mock_executable, mock_test_spec_list, mock.MagicMock())
+        assert "--regset=/Amazon/Preferences/EnablePrefabSystem=true" not in under_test
+        assert "-rhi=null" in under_test
+        assert "--attach-debugger" not in under_test
+        assert "--wait-for-debugger" not in under_test
+
+    def test_SetupCmdlineArgs_Debugger_EnablesDebugger(self):
+        mock_test_suite = ly_test_tools.o3de.multi_test_framework.MultiTestSuite()
+        mock_executable = WinAtomToolsLauncher(mock.MagicMock(), [])
+        mock_test_spec = mock.MagicMock()
+        mock_test_spec.attach_debugger = True
+        mock_test_spec.wait_for_debugger = True
+        mock_test_spec_list = [mock_test_spec]
+
+        under_test = mock_test_suite._setup_cmdline_args(None, mock_executable, mock_test_spec_list, mock.MagicMock())
+        assert "--regset=/Amazon/Preferences/EnablePrefabSystem=true" not in under_test
+        assert "-rhi=null" in under_test
+        assert "--attach-debugger" in under_test
+        assert "--wait-for-debugger" in under_test
 
 @mock.patch('_pytest.python.Class.collect')
 class TestMultiTestCollector(unittest.TestCase):
@@ -1080,9 +1195,7 @@ class TestMultiTestCollector(unittest.TestCase):
         mock_run.obj.marks = {"run_type": 'run_shared'}
         mock_run_2 = mock.MagicMock()
         mock_run_2.obj.marks = {"run_type": 'result'}
-        mock_instance = mock.MagicMock()
-        mock_instance.collect.return_value = [mock_run, mock_run_2]
-        mock_collect.return_value = [mock_instance]
+        mock_collect.return_value = [mock_run_2]
 
         collection = self.mock_test_class.collect()
         assert collection == [mock_run_2]
@@ -1105,11 +1218,95 @@ class TestMultiTestCollector(unittest.TestCase):
         mock_run_2 = mock.MagicMock()
         mock_run_2.obj.marks = {"run_type": 'result'}
         mock_run_2.function.marks = {"runner": mock_runner_2}
-        mock_instance = mock.MagicMock()
-        mock_instance.collect.return_value = [mock_run, mock_run_2]
-        mock_collect.return_value = [mock_instance]
+        mock_collect.return_value = [mock_run_2]
 
         self.mock_test_class.collect()
 
-        assert mock_runner.run_pytestfunc == mock_run
         assert mock_run_2 in mock_runner_2.result_pytestfuncs
+
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.isinstance', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.issubclass', mock.MagicMock())
+    def test_MakeSingleRun_SingleRun_SetupTeardown(self, mock_collect):
+        mock_inner_test_spec = mock.MagicMock()
+        mock_self = mock.MagicMock()
+
+        mock_single_run_func = multi_test_framework.MultiTestSuite.MultiTestCollector._make_single_run(
+            mock_inner_test_spec)
+        mock_single_run_func(mock_self, mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+        mock_inner_test_spec.setup.assert_called_once()
+        mock_inner_test_spec.teardown.assert_called_once()
+        mock_self._run_single_test.assert_called_once()
+
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.isinstance', mock.MagicMock(return_value=False))
+    @mock.patch('ly_test_tools.o3de.multi_test_framework.issubclass', mock.MagicMock(return_value=False))
+    def test_MakeSingleRun_NoSingleRun_NoSetupTeardown(self, mock_collect):
+        mock_inner_test_spec = mock.MagicMock()
+        mock_self = mock.MagicMock()
+
+        mock_single_run_func = multi_test_framework.MultiTestSuite.MultiTestCollector._make_single_run(
+            mock_inner_test_spec)
+        mock_single_run_func(mock_self, mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
+
+        assert not mock_inner_test_spec.setup.called
+        assert not mock_inner_test_spec.teardown.called
+        mock_self._run_single_test.assert_called_once()
+
+    def test_CreateRunner_HappyPath_SetsRunnersProperly(self, mock_collect):
+        mock_runner_name = 'mock_runner_name'
+        mock_function = mock.MagicMock()
+        mock_shared_test_spec_1 = mock.MagicMock()
+        mock_shared_test_spec_1.__name__ = 'mock_shared_test_spec_1'
+        mock_shared_test_spec_2 = mock.MagicMock()
+        mock_shared_test_spec_2.__name__ = 'mock_shared_test_spec_2'
+        mock_tests = [mock_shared_test_spec_1, mock_shared_test_spec_2]
+        mock_obj = mock.MagicMock()
+
+        multi_test_framework.MultiTestSuite.MultiTestCollector._create_runner(mock_runner_name, mock_function,
+                                                                              mock_tests, mock_obj)
+
+        assert hasattr(mock_obj, mock_runner_name)
+        assert hasattr(mock_obj, mock_shared_test_spec_1.__name__)
+        assert hasattr(mock_obj, mock_shared_test_spec_2.__name__)
+
+    def test_CreateRunner_MakeSharedRun_CallsAttributeFunc(self, mock_collect):
+        mock_runner_name = 'mock_runner_name'
+        mock_obj = mock.MagicMock()
+        mock_function = mock.MagicMock()
+        mock_function.__name__ = 'mock_func_name'
+        mock_tests = []
+        mock_request = mock.MagicMock()
+        mock_workspace = mock.MagicMock()
+        mock_collected_test_data = mock.MagicMock()
+
+        multi_test_framework.MultiTestSuite.MultiTestCollector._create_runner(mock_runner_name, mock_function,
+                                                                              mock_tests, mock_obj)
+        getattr(mock_obj, mock_runner_name)(mock_obj, mock_request, mock_workspace, mock_collected_test_data,
+                                            mock.MagicMock())
+
+        mock_obj.mock_func_name.assert_called_once_with(mock_request, mock_workspace, mock_collected_test_data,
+                                                        mock_tests)
+
+    def test_CreateRunner_MakeResultsRun_CallsAttributeFunc(self, mock_collect):
+        mock_runner_name = 'mock_runner_name'
+        mock_obj = mock.MagicMock()
+        mock_function = mock.MagicMock()
+        mock_shared_test_spec_1 = mock.MagicMock()
+        mock_shared_test_spec_1.__name__ = 'mock_shared_test_spec_name_1'
+        mock_shared_test_spec_2 = mock.MagicMock()
+        mock_shared_test_spec_2.__name__ = 'mock_shared_test_spec_name_2'
+        mock_tests = [mock_shared_test_spec_1, mock_shared_test_spec_2]
+        mock_collected_test_data = mock.MagicMock()
+        mock_result_1 = mock.MagicMock()
+        mock_result_2 = mock.MagicMock()
+        mock_collected_test_data.results = {mock_shared_test_spec_1.__name__: mock_result_1,
+                                            mock_shared_test_spec_2.__name__: mock_result_2}
+
+        multi_test_framework.MultiTestSuite.MultiTestCollector._create_runner(mock_runner_name, mock_function,
+                                                                              mock_tests, mock_obj)
+        getattr(mock_obj, mock_shared_test_spec_1.__name__)(mock_obj, mock.MagicMock(), mock.MagicMock(),
+                                                            mock_collected_test_data, mock.MagicMock())
+        mock_obj._report_result.assert_called_with(mock_shared_test_spec_1.__name__, mock_result_1)
+        getattr(mock_obj, mock_shared_test_spec_2.__name__)(mock_obj, mock.MagicMock(), mock.MagicMock(),
+                                                            mock_collected_test_data, mock.MagicMock())
+        mock_obj._report_result.assert_called_with(mock_shared_test_spec_2.__name__, mock_result_2)

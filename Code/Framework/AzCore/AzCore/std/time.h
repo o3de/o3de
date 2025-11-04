@@ -9,13 +9,19 @@
 #pragma once
 
 #include <AzCore/std/base.h>
+#include <AzCore/std/chrono/chrono.h>
+#include <AzCore/std/string/fixed_string.h>
 
 namespace AZStd
 {
-    AZStd::sys_time_t GetTimeTicksPerSecond();
-    AZStd::sys_time_t GetTimeNowTicks();
-    AZStd::sys_time_t GetTimeNowMicroSecond();
-    AZStd::sys_time_t GetTimeNowSecond();
+    AZCORE_API AZStd::sys_time_t GetTimeTicksPerSecond();
+    AZCORE_API AZStd::sys_time_t GetTimeNowTicks();
+    AZCORE_API AZStd::sys_time_t GetTimeNowMicroSecond();
+    AZCORE_API AZStd::sys_time_t GetTimeNowSecond();
     // return time in millisecond since 1970/01/01 00:00:00 UTC.
-    AZ::u64           GetTimeUTCMilliSecond();
+    AZCORE_API AZ::u64 GetTimeUTCMilliSecond();
+    AZCORE_API AZ::u64 GetTimeUTCMicroSecond();
+    //! Returns the cpu time spent on the current thread when invoked
+    //! This time is relative to the running process and has no relation to real time
+    AZCORE_API AZStd::chrono::microseconds GetCpuThreadTimeNowMicrosecond();
 }

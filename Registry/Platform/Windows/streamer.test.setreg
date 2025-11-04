@@ -16,7 +16,7 @@
                             {
                                 "$type": "AZ::IO::WindowsStorageDriveConfig",
                                 "$stack_after": "Drive",
-                                "MaxFileHandles": 1024,
+                                "MaxFileHandles": 128,
                                 "MaxMetaDataCache": 1024,
                                 "Overcommit": 8,
                                 "EnableFileSharing": true,

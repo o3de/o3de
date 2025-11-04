@@ -46,6 +46,7 @@ namespace AssetBundler
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(GUIApplicationManager, AZ::SystemAllocator)
 
         struct Config
         {

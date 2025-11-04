@@ -8,8 +8,8 @@
 
 #pragma once
 
-#ifndef PROPERTY_COLORCTRL_CTRL
-#define PROPERTY_COLORCTRL_CTRL
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
@@ -23,7 +23,7 @@
 // 4251: class needs to have dll-interface to be used by clients of class 
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
-#include <QtWidgets/QWidget>
+#include <QWidget>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -32,7 +32,7 @@ class QLineEdit;
 class QPushButton;
 class QToolButton;
 class QLabel;
-class QRegExpValidator;
+class QRegularExpressionValidator;
 
 namespace AzToolsFramework
 {
@@ -51,12 +51,12 @@ namespace AzToolsFramework
         AzQtComponents::ColorPicker::Configuration m_colorPickerDialogConfiguration = AzQtComponents::ColorPicker::Configuration::RGB;
     };
 
-    class PropertyColorCtrl
+    class AZTF_API PropertyColorCtrl
         : public QWidget
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyColorCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyColorCtrl, AZ::SystemAllocator);
 
         PropertyColorCtrl(QWidget* pParent = NULL);
         virtual ~PropertyColorCtrl();
@@ -97,7 +97,7 @@ namespace AzToolsFramework
         AZ::Color TransformColor(const AZ::Color& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const;
         QColor TransformColor(const QColor& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const;
 
-        QRegExpValidator* CreateTextEditValidator();
+        QRegularExpressionValidator* CreateTextEditValidator();
 
         QToolButton* m_pDefaultButton;
         AzQtComponents::ColorPicker* m_pColorDialog;
@@ -122,12 +122,12 @@ namespace AzToolsFramework
     };
 
 
-    class Vector3ColorPropertyHandler : QObject, public ColorHandlerCommon<AZ::Vector3>
+    class AZTF_API Vector3ColorPropertyHandler : QObject, public ColorHandlerCommon<AZ::Vector3>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(Vector3ColorPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Vector3ColorPropertyHandler, AZ::SystemAllocator);
 
         virtual QWidget* CreateGUI(QWidget* pParent) override;
         virtual void ConsumeAttribute(PropertyColorCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
@@ -135,12 +135,12 @@ namespace AzToolsFramework
         virtual bool ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    class AZColorPropertyHandler : QObject, public ColorHandlerCommon<AZ::Color>
+    class AZTF_API AZColorPropertyHandler : QObject, public ColorHandlerCommon<AZ::Color>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AZColorPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AZColorPropertyHandler, AZ::SystemAllocator);
         bool IsDefaultHandler() const override { return true;  }
         QWidget* CreateGUI(QWidget* pParent) override;
         void ConsumeAttribute(PropertyColorCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
@@ -148,7 +148,5 @@ namespace AzToolsFramework
         bool ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    void RegisterColorPropertyHandlers();
+    AZTF_API void RegisterColorPropertyHandlers();
 };
-
-#endif

@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Utils.h>
 
-#include <MCore/Source/Color.h>
 #include <MCore/Source/LogManager.h>
 
 #include <EMotionFX/Source/EventManager.h>
@@ -27,10 +26,11 @@
 
 namespace EMStudio
 {
-    MotionEventPreset::MotionEventPreset(const AZStd::string& name, EMotionFX::EventDataSet&& eventDatas, AZ::Color color)
+    MotionEventPreset::MotionEventPreset(const AZStd::string& name, EMotionFX::EventDataSet&& eventDatas, AZ::Color color, const AZStd::string& comment)
         : m_eventDatas(AZStd::move(eventDatas))
         , m_name(name)
         , m_color(color)
+        , m_comment(comment)
         , m_isDefault(false)
     {
     }
@@ -45,10 +45,11 @@ namespace EMStudio
         }
 
         serializeContext->Class<MotionEventPreset>()
-            ->Version(1)
+            ->Version(2)
             ->Field("name", &MotionEventPreset::m_name)
             ->Field("color", &MotionEventPreset::m_color)
             ->Field("eventDatas", &MotionEventPreset::m_eventDatas)
+            ->Field("comment", &MotionEventPreset::m_comment)
             ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -65,12 +66,15 @@ namespace EMStudio
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ->DataElement(AZ::Edit::UIHandlers::Default, &MotionEventPreset::m_color, "Color", "Color to use for events that use this preset")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+            ->DataElement(
+                AZ::Edit::UIHandlers::MultiLineEdit, &MotionEventPreset::m_comment, "Comment", "Leave a comment to describe this event data preset.")
+            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ;
     }
 
     //-----------------------------------
 
-    const AZ::u32 MotionEventPresetManager::s_unknownEventColor = MCore::RGBA(193, 195, 196, 255);
+    const AZ::Color MotionEventPresetManager::s_unknownEventColor = AZ::Color::CreateFromRgba(193, 195, 196, 255);
 
     MotionEventPresetManager::MotionEventPresetManager()
         : m_dirtyFlag(false)
@@ -148,8 +152,10 @@ namespace EMStudio
     {
         EMotionFX::EventDataPtr leftFootData = EMotionFX::GetEventManager().FindOrCreateEventData<EMotionFX::TwoStringEventData>("LeftFoot", "", "RightFoot");
         EMotionFX::EventDataPtr rightFootData = EMotionFX::GetEventManager().FindOrCreateEventData<EMotionFX::TwoStringEventData>("RightFoot", "", "LeftFoot");
-        MotionEventPreset* leftFootPreset = aznew MotionEventPreset("LeftFoot", {AZStd::move(leftFootData)}, AZ::Color(AZ::u8(255), 0, 0, 255));
-        MotionEventPreset* rightFootPreset = aznew MotionEventPreset("RightFoot", {AZStd::move(rightFootData)}, AZ::Color(AZ::u8(0), 255, 0, 255));
+        MotionEventPreset* leftFootPreset =
+            aznew MotionEventPreset("LeftFoot", { AZStd::move(leftFootData) }, AZ::Color(AZ::u8(255), 0, 0, 255), "");
+        MotionEventPreset* rightFootPreset =
+            aznew MotionEventPreset("RightFoot", { AZStd::move(rightFootData) }, AZ::Color(AZ::u8(0), 255, 0, 255), "");
         leftFootPreset->SetIsDefault(true);
         rightFootPreset->SetIsDefault(true);
         m_eventPresets.emplace(m_eventPresets.begin(), leftFootPreset);
@@ -212,7 +218,7 @@ namespace EMStudio
             settings.endGroup();
                 
             EMotionFX::EventDataPtr eventData = EMotionFX::GetEventManager().FindOrCreateEventData<EMotionFX::TwoStringEventData>(eventType, eventParameter, mirrorType);
-            MotionEventPreset* preset = new MotionEventPreset(eventType, {AZStd::move(eventData)}, color);
+            MotionEventPreset* preset = new MotionEventPreset(eventType, { AZStd::move(eventData) }, color, "");
             AddPreset(preset);
         }
         return true;
@@ -303,7 +309,7 @@ namespace EMStudio
     }
 
     // Check if motion event with this configuration exists and return color.
-    AZ::u32 MotionEventPresetManager::GetEventColor(const EMotionFX::EventDataSet& eventDatas) const
+    AZ::Color MotionEventPresetManager::GetEventColor(const EMotionFX::EventDataSet& eventDatas) const
     {
         for (const MotionEventPreset* preset : m_eventPresets)
         {

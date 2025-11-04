@@ -590,9 +590,8 @@ namespace AZStd
             -> enable_if_t<input_iterator<Iterator> && !is_convertible_v<Iterator, size_type>>
         {
             // insert [first, last) one at a time
-            for (; first != last; ++first)
+            auto inserter = [this](Iterator it, auto&& valueKey)
             {
-                const key_type& valueKey = Traits::key_from_value(*first);
                 size_type bucketIndex = bucket_from_hash(m_hasher(valueKey));
                 vector_value_type& bucket = m_data.buckets()[bucketIndex];
                 size_type& numElements = bucket.first;
@@ -600,18 +599,22 @@ namespace AZStd
                 iterator iter = bucket.second;
                 if (numElements == 0)
                 {
-                    m_data.m_list.push_front(*first);
+                    m_data.m_list.push_front(*it);
                     bucket.second = m_data.m_list.begin();
                 }
                 else
                 {
-                    if (!find_insert_position(valueKey, m_keyEqual, iter, numElements, AZStd::integral_constant<bool, Traits::has_multi_elements>()))
+                    if (!find_insert_position(AZStd::forward<decltype(valueKey)>(valueKey), m_keyEqual, iter, numElements, AZStd::integral_constant<bool, Traits::has_multi_elements>()))
                     {
-                        continue;
+                        return;
                     }
-                    m_data.m_list.insert(iter, *first);
+                    m_data.m_list.insert(iter, *it);
                 }
                 ++numElements;
+            };
+            for (; first != last; ++first)
+            {
+                inserter(first, Traits::key_from_value(*first));
             }
 
             m_data.rehash_if_needed(this);
@@ -638,7 +641,7 @@ namespace AZStd
         template <class InsertReturnType, class NodeHandle>
         InsertReturnType node_handle_insert(NodeHandle&& nodeHandle);
         template <class NodeHandle>
-        auto node_handle_insert(const iterator hint, NodeHandle&& nodeHandle) -> iterator;
+        auto node_handle_insert(const_iterator hint, NodeHandle&& nodeHandle) -> iterator;
 
         //! Searches for an element which matches the value of key and extracts it from the hash_table
         //! @return A NodeHandle which can be used to insert the an element between unique and non-unique containers of the same type
@@ -1196,7 +1199,7 @@ namespace AZStd
 
     template <class Traits>
     template <class NodeHandle>
-    inline auto hash_table<Traits>::node_handle_insert(const iterator, NodeHandle&& nodeHandle) -> iterator
+    inline auto hash_table<Traits>::node_handle_insert(const_iterator, NodeHandle&& nodeHandle) -> iterator
     {
         return node_handle_insert<insert_return_type<iterator, NodeHandle>>(AZStd::move(nodeHandle)).position;
     }

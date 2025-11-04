@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzFramework/Application/Application.h>
+#include <AzToolsFramework/API/PythonLoader.h>
 #include <QCoreApplication>
 #include <PythonBindings.h>
 #include <Settings.h>
@@ -24,8 +25,10 @@ namespace O3DE::ProjectManager
 {
     class Application
         : public AzFramework::Application
+        , public AzToolsFramework::EmbeddedPython::PythonLoader
     {
     public:
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator)
         using AzFramework::Application::Application;
         virtual ~Application();
 

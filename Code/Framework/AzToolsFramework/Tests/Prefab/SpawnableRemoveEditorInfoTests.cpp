@@ -34,7 +34,7 @@ namespace UnitTest
 
         // Expected result: processed entity contains the component.
         AZ::Entity* entity = GetRuntimeEntity("EntityWithRuntimeComponent");
-        EXPECT_TRUE(entity);
+        ASSERT_TRUE(entity);
         EXPECT_TRUE(entity->FindComponent<TestExportRuntimeComponentWithCallback>());
     }
 
@@ -47,7 +47,7 @@ namespace UnitTest
 
         // Expected result: processed entity does NOT contain the component.
         AZ::Entity* entity = GetRuntimeEntity("EntityWithRuntimeComponent");
-        EXPECT_TRUE(entity);
+        ASSERT_TRUE(entity);
         EXPECT_FALSE(entity->FindComponent<TestExportRuntimeComponentWithCallback>());
     }
 
@@ -61,7 +61,7 @@ namespace UnitTest
         // Expected result:  processed entity contains the component, because the default behavior is "clone/add" for
         // runtime components.
         AZ::Entity* entity = GetRuntimeEntity("EntityWithRuntimeComponent");
-        EXPECT_TRUE(entity);
+        ASSERT_TRUE(entity);
         EXPECT_TRUE(entity->FindComponent<TestExportRuntimeComponentWithCallback>());
     }
 
@@ -75,7 +75,7 @@ namespace UnitTest
         // Expected result:  processed entity contains the component, because by saying it wasn't handled, it
         // should fall back on the default behavior of "clone/add" for runtime components.
         AZ::Entity* entity = GetRuntimeEntity("EntityWithRuntimeComponent");
-        EXPECT_TRUE(entity);
+        ASSERT_TRUE(entity);
         EXPECT_TRUE(entity->FindComponent<TestExportRuntimeComponentWithCallback>());
     }
 
@@ -91,7 +91,7 @@ namespace UnitTest
 
         // Expected result:  processed entity contains the runtime component, exported from RuntimeExportCallback.
         AZ::Entity* entity = GetRuntimeEntity("EntityWithEditorComponent");
-        EXPECT_TRUE(entity);
+        ASSERT_TRUE(entity);
         EXPECT_FALSE(entity->FindComponent<TestExportEditorComponent>());
         EXPECT_FALSE(entity->FindComponent<TestExportRuntimeComponentWithCallback>());
         EXPECT_TRUE(entity->FindComponent<TestExportRuntimeComponentWithoutCallback>());
@@ -109,7 +109,7 @@ namespace UnitTest
 
         // Expected result: processed entity does NOT contain either component.
         AZ::Entity* entity = GetRuntimeEntity("EntityWithEditorComponent");
-        EXPECT_TRUE(entity);
+        ASSERT_TRUE(entity);
         EXPECT_FALSE(entity->FindComponent<TestExportEditorComponent>());
         EXPECT_FALSE(entity->FindComponent<TestExportRuntimeComponentWithCallback>());
         EXPECT_FALSE(entity->FindComponent<TestExportRuntimeComponentWithoutCallback>());
@@ -128,7 +128,7 @@ namespace UnitTest
         // Expected result:  processed entity contains the runtime component, because the fallback to BuildGameEntity()
         // produced a runtime component.
         AZ::Entity* entity = GetRuntimeEntity("EntityWithEditorComponent");
-        EXPECT_TRUE(entity);
+        ASSERT_TRUE(entity);
         EXPECT_FALSE(entity->FindComponent<TestExportEditorComponent>());
         EXPECT_TRUE(entity->FindComponent<TestExportRuntimeComponentWithCallback>());
         EXPECT_FALSE(entity->FindComponent<TestExportRuntimeComponentWithoutCallback>());
@@ -147,7 +147,7 @@ namespace UnitTest
         // Expected result:  processed entity contains the runtime component, because the fallback to BuildGameEntity()
         // produced a runtime component.
         AZ::Entity* entity = GetRuntimeEntity("EntityWithEditorComponent");
-        EXPECT_TRUE(entity);
+        ASSERT_TRUE(entity);
         EXPECT_FALSE(entity->FindComponent<TestExportEditorComponent>());
         EXPECT_TRUE(entity->FindComponent<TestExportRuntimeComponentWithCallback>());
         EXPECT_FALSE(entity->FindComponent<TestExportRuntimeComponentWithoutCallback>());

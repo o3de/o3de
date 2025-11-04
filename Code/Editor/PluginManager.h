@@ -42,7 +42,7 @@ public:
     CPluginManager();
     virtual ~CPluginManager();
 
-    bool LoadPlugins(const char* pPathWithMask);
+    bool LoadPlugins(const char* pluginsPath);
 
     // release all plugins (ie, call Release() on them) - but don't drop their DLL
     void ReleaseAllPlugins();
@@ -64,12 +64,9 @@ public:
     }
 
 protected:
-
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     TPluginList m_plugins;
     TPluginEventMap m_pluginEventMap;
     TUIIDPluginMap m_uuidPluginMap;
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     int m_currentUUID;
 };
 #endif // CRYINCLUDE_EDITOR_PLUGINMANAGER_H

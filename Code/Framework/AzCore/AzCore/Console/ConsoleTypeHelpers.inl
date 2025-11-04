@@ -13,6 +13,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -55,26 +56,31 @@ namespace AZ
 
         inline CVarFixedString ValueToString(const AZ::Vector2& value)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // interpret %0.2f as using the "C" locale
             return CVarFixedString::format("%0.2f %0.2f", static_cast<float>(value.GetX()), static_cast<float>(value.GetY()));
         }
 
         inline CVarFixedString ValueToString(const AZ::Vector3& value)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // interpret %0.2f as using the "C" locale
             return CVarFixedString::format("%0.2f %0.2f %0.2f", static_cast<float>(value.GetX()), static_cast<float>(value.GetY()), static_cast<float>(value.GetZ()));
         }
 
         inline CVarFixedString ValueToString(const AZ::Vector4& value)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // interpret %0.2f as using the "C" locale
             return CVarFixedString::format("%0.2f %0.2f %0.2f %0.2f", static_cast<float>(value.GetX()), static_cast<float>(value.GetY()), static_cast<float>(value.GetZ()), static_cast<float>(value.GetW()));
         }
 
         inline CVarFixedString ValueToString(const AZ::Quaternion& value)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // interpret %0.2f as using the "C" locale
             return CVarFixedString::format("%0.2f %0.2f %0.2f %0.2f", static_cast<float>(value.GetX()), static_cast<float>(value.GetY()), static_cast<float>(value.GetZ()), static_cast<float>(value.GetW()));
         }
 
         inline CVarFixedString ValueToString(const AZ::Color& value)
         {
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // interpret %0.2f as using the "C" locale
             return CVarFixedString::format("%0.2f %0.2f %0.2f %0.2f", static_cast<float>(value.GetR()), static_cast<float>(value.GetG()), static_cast<float>(value.GetB()), static_cast<float>(value.GetA()));
         }
 
@@ -186,6 +192,8 @@ namespace AZ
         {
             if (!arguments.empty())
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale; // interpret floats using the "C" locale for strod
+
                 AZ::CVarFixedString convertCandidate{ arguments.front() };
                 char* endPtr = nullptr;
                 const float converted = static_cast<float>(strtod(convertCandidate.c_str(), &endPtr));
@@ -205,6 +213,8 @@ namespace AZ
         {
             if (!arguments.empty())
             {
+                AZ::Locale::ScopedSerializationLocale scopedLocale; // interpret floats using the "C" locale for strod
+
                 AZ::CVarFixedString convertCandidate{ arguments.front() };
                 char* endPtr = nullptr;
                 const double converted = strtod(convertCandidate.c_str(), &endPtr);

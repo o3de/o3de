@@ -10,7 +10,7 @@
     {
         "Depth" :
         {
-            "Enable" : true,	// required to bind the depth buffer SRV
+            "Enable" : false,
             "CompareFunc" : "Always"
         }
     },
@@ -30,5 +30,15 @@
                 "type": "Fragment"
             }
         ]
-    }
+    },
+	
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
+        }
+    ]  
 }

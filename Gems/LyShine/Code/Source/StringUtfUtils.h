@@ -31,7 +31,7 @@ namespace LyShine
         // work for cases tested but may not in general.
         // In the long run it would be better to eliminate
         // this function and use some sequence_lenght function that is not internal.
-        return static_cast<int>(Utf8::Internal::sequence_length(&multiByteChar));
+        return static_cast<int>(Utf8::Unchecked::utf8_codepoint_length(multiByteChar));
     }
 
     inline int GetByteLengthOfUtf8Chars(const char* utf8String, int numUtf8Chars)

@@ -6,6 +6,7 @@
  *
  */
 #include "TextMarkup.h"
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
@@ -206,6 +207,7 @@ namespace
             float leftPadding = 0.0f;
             float rightPadding = 0.0f;
 
+            AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for stof()
             for (int i = 0, count = node->getNumAttributes(); i < count; ++i)
             {
                 const char* key = "";

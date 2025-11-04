@@ -9,10 +9,11 @@
 #pragma once
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
+    class SerializeContext;
+
     //! AssetBuilder that takes precompiled azshader product file and produces an output
     //! products with the correct dependent asset GUIDs.
     class PrecompiledShaderBuilder final
@@ -32,9 +33,6 @@ namespace AZ
 
         // AssetBuilderSDK::AssetBuilderCommandBus interface
         void ShutDown() override;
-
-        /// Register to builder and listen to builder command
-        void RegisterBuilder();
 
     private:
         template<typename T>

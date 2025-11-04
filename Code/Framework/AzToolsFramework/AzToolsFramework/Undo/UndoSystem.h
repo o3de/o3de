@@ -5,8 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef UNDO_SYSTEM_H
-#define UNDO_SYSTEM_H
+ #pragma once
+
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -15,7 +16,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
-#pragma once
 
 namespace AzToolsFramework
 {
@@ -33,11 +33,11 @@ namespace AzToolsFramework
             virtual void OnUndoStackChanged() = 0;
         };
 
-        class URSequencePoint
+        class AZTF_API URSequencePoint
         {
         public:
             AZ_RTTI(URSequencePoint, "{D6A52DA5-DF44-43BE-B42C-B6E88BDF476A}")
-            AZ_CLASS_ALLOCATOR(URSequencePoint, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(URSequencePoint, AZ::SystemAllocator)
 
             typedef AZStd::vector<URSequencePoint*> ChildVec;
 
@@ -122,12 +122,12 @@ namespace AzToolsFramework
          * Used by batch undo commands for dummy/batch/parent nodes where we 
          * know nothing will have changed.
          */
-        class BatchCommand
+        class AZTF_API BatchCommand
             : public URSequencePoint
         {
         public:
             AZ_RTTI(BatchCommand, "{3CA8855C-C6A5-4395-9B47-D3F5A13EFB2D}", URSequencePoint)
-            AZ_CLASS_ALLOCATOR(BatchCommand, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(BatchCommand, AZ::SystemAllocator)
 
             explicit BatchCommand(const AZStd::string& friendlyName, URCommandID id = 0)
                 : URSequencePoint(friendlyName, id) {}
@@ -140,11 +140,11 @@ namespace AzToolsFramework
 
         //--------------------------------------------------------------------
 
-        class UndoStack
+        class AZTF_API UndoStack
         {
         public:
 
-            AZ_CLASS_ALLOCATOR(UndoStack, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(UndoStack, AZ::SystemAllocator);
 
             UndoStack(IUndoNotify* notify);
             UndoStack(int /*no longer used*/, IUndoNotify* notify);
@@ -204,5 +204,3 @@ namespace AzToolsFramework
         };
     }
 } // namespace AzToolsFramework
-
-#endif

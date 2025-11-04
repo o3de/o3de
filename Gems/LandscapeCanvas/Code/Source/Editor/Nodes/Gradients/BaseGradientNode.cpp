@@ -12,6 +12,7 @@
 // AZ
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Integration/Helpers.h>
@@ -54,17 +55,21 @@ namespace LandscapeCanvas
         GraphModel::DataTypePtr boundsDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
         GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             PREVIEW_BOUNDS_SLOT_ID,
             PREVIEW_BOUNDS_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType },
-            AZStd::any(AZ::EntityId()),
-            PREVIEW_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            PREVIEW_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ boundsDataType },
+            AZStd::any(AZ::EntityId())));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Data,
             OUTBOUND_GRADIENT_SLOT_ID,
             OUTBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            gradientDataType,
-            OUTBOUND_GRADIENT_OUTPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            OUTBOUND_GRADIENT_OUTPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ gradientDataType }));
     }
 } // namespace LandscapeCanvas

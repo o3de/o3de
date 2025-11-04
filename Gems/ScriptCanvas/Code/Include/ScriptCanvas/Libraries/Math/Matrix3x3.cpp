@@ -8,6 +8,8 @@
 
 #include "Matrix3x3.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/Matrix3x3.generated.h>
+
 namespace ScriptCanvas
 {
     namespace Matrix3x3Functions

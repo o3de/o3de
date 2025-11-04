@@ -8,7 +8,7 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 // If true pixels with an alpha value of less than 0.5 are clipped
 option bool o_alphaTest;
@@ -87,11 +87,11 @@ float4 SampleTriangleTexture(uint texIndex, float2 uv)
 {
     if ((InstanceSrg::m_isClamp & (1U << texIndex)) != 0)
     {
-        return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_clampSampler, uv);
+        return InstanceSrg::m_texture[NonUniformResourceIndex(texIndex)].Sample(InstanceSrg::m_clampSampler, uv);
     }
     else
     {
-        return InstanceSrg::m_texture[texIndex].Sample(InstanceSrg::m_wrapSampler, uv);
+        return InstanceSrg::m_texture[NonUniformResourceIndex(texIndex)].Sample(InstanceSrg::m_wrapSampler, uv);
     }
 }
 
@@ -114,7 +114,7 @@ PSOutput MainPS(VSOutput IN)
     // Should use srgb anytime after tonemapping
     if (o_srgbWrite)
     {
-        resColor.xyz = LinearToSRGB(resColor.xyz);
+        resColor.xyz = LinearSrgb_To_Srgb(resColor.xyz);
     }
 
     // If the o_modulate option is not None it means that the verts have two texture indicies. The second texture is used to
@@ -145,5 +145,4 @@ PSOutput MainPS(VSOutput IN)
     OUT.m_color = resColor;
 
     return OUT;
-}; 
-
+};

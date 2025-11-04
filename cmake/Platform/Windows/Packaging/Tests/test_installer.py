@@ -21,7 +21,7 @@ Alternately, the installer-uri can be an s3 or web URL. For example:
 
 """
 import pytest
-import json
+import shutil
 from pathlib import Path
 from subprocess import TimeoutExpired
 from o3de import manifest
@@ -82,6 +82,7 @@ def test_o3de_registers_engine_fixture(test_installer_fixture, context):
 def test_create_project_fixture(test_o3de_registers_engine_fixture, context):
     """ o3de.bat CLI creates a project. """
     o3de_path = context.install_root / 'scripts/o3de.bat'
+
     result = context.run([str(o3de_path),'create-project','--project-path', str(context.project_path)])
     assert result.returncode == 0, f"o3de.bat failed to create a project with exit code {result.returncode}"
 
@@ -96,15 +97,25 @@ def test_compile_project_fixture(test_create_project_fixture, context):
     cmake_path = next(context.cmake_runtime_path.glob('**/cmake.exe'))
     launcher_target = f"{project_name}.GameLauncher"
 
-    # configure
-    result = context.run([str(cmake_path),'-B', str(context.project_build_path), '-S', '.', '-G', 'Visual Studio 16 2019'], cwd=context.project_path)
-    assert result.returncode == 0
-    assert (context.project_build_path / f'{project_name}.sln').is_file()
+    # configure non-monolithic 
+    result = context.run([str(cmake_path),'-B', str(context.project_build_path_profile), '-S', '.'], cwd=context.project_path)
+    assert result.returncode == 0, 'Failed to configure the test project non-monolithic build'
+    assert (context.project_build_path_profile / f'{project_name}.sln').is_file(), 'No project solution file was created'
 
-    # build profile, release is not yet supported in the current installer
-    result = context.run([str(cmake_path),'--build', str(context.project_build_path), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
-    assert result.returncode == 0
-    assert (context.project_bin_path / f'{launcher_target}.exe').is_file()
+    # build profile (non-monolithic)
+    result = context.run([str(cmake_path),'--build', str(context.project_build_path_profile), '--target', launcher_target, 'Editor', '--config', 'profile','--','-m'], cwd=context.project_path)
+    assert result.returncode == 0, 'Failed to build the test project profile non-monolithic  Launcher and Editor targets'
+    assert (context.project_bin_path_profile / f'{launcher_target}.exe').is_file(), 'No test project binary was created'
+
+    # configure monolithic 
+    result = context.run([str(cmake_path),'-B', str(context.project_build_path_release), '-S', '.','-DLY_MONOLITHIC_GAME=1'], cwd=context.project_path)
+    assert result.returncode == 0, 'Failed to configure the test project monolithic build'
+    assert (context.project_build_path_release / f'{project_name}.sln').is_file(), 'No project solution file was created'
+
+    # build release (monolithic)
+    result = context.run([str(cmake_path),'--build', str(context.project_build_path_release), '--target', launcher_target, '--config', 'release','--','-m'], cwd=context.project_path)
+    assert result.returncode == 0, 'Failed to build the test project monolithic release Launcher target'
+    assert (context.project_bin_path_release / f'{launcher_target}.exe').is_file(), 'No test project binary was created'
 
 
 @pytest.fixture(scope="session")
@@ -155,8 +166,8 @@ def test_run_launcher_fixture(test_run_asset_processor_batch_fixture, context):
     project_name = Path(context.project_path).name
     launcher_filename = f"{project_name}.GameLauncher.exe"
     try:
-        # run launcher for 2 mins 
-        result = context.run([str(context.project_bin_path / launcher_filename),'--rhi=null'], cwd=context.project_bin_path, timeout=2*60)
+        # run profile launcher for 2 mins 
+        result = context.run([str(context.project_bin_path_profile / launcher_filename),'--rhi=null'], cwd=context.project_bin_path_profile, timeout=2*60)
         assert result.returncode == 0, f"{launcher_filename} failed with exit code {result.returncode}"
     except TimeoutExpired as e:
         # we expect to close the app on timeout ourselves

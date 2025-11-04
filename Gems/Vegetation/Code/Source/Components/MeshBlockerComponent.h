@@ -34,7 +34,7 @@ namespace Vegetation
         : public AreaConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(MeshBlockerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MeshBlockerConfig, AZ::SystemAllocator);
         AZ_RTTI(MeshBlockerConfig, "{1D00F234-8134-4A42-A357-ADAC865CF63A}", AreaConfig);
         static void Reflect(AZ::ReflectContext* context);
 

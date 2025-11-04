@@ -20,8 +20,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Vector3.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 #include "UiNavigationHelpers.h"
+
+#include <AzCore/Component/TickBus.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiScrollBoxComponent
@@ -31,6 +33,7 @@ class UiScrollBoxComponent
     , public UiInitializationBus::Handler
     , public UiScrollerToScrollableNotificationBus::MultiHandler
     , public UiTransformChangeNotificationBus::MultiHandler
+    , public AZ::TickBus::Handler
 {
 public: // member functions
 
@@ -64,6 +67,12 @@ public: // member functions
     virtual void SetHorizontalScrollBarVisibility(ScrollBarVisibility visibility) override;
     virtual ScrollBarVisibility GetVerticalScrollBarVisibility() override;
     virtual void SetVerticalScrollBarVisibility(ScrollBarVisibility visibility) override;
+    virtual AZ::Vector2 GetScrollSensitivity() override;
+    virtual void SetScrollSensitivity(AZ::Vector2 scrollSensitivity) override;
+    virtual float GetMomentumDuration() override;
+    virtual void SetMomentumDuration(float scrollMomentumDuration) override;
+    virtual void SetMomentumActive(bool active) override;
+    virtual void StopMomentum() override;
 
     ScrollOffsetChangeCallback GetScrollOffsetChangingCallback() override;
     void SetScrollOffsetChangingCallback(ScrollOffsetChangeCallback onChange) override;
@@ -115,6 +124,10 @@ public: // member functions
     void OnCanvasSpaceRectChanged(AZ::EntityId entityId, const UiTransformInterface::Rect& oldRect, const UiTransformInterface::Rect& newRect) override;
     // ~UiTransformChangeNotification
 
+    // TickBus
+    void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+    // ~TickBus
+
 protected: // member functions
 
     // AZ::Component
@@ -130,23 +143,23 @@ protected: // member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("UiInteractableService", 0x1d474c98));
-        provided.push_back(AZ_CRC("UiNavigationService"));
-        provided.push_back(AZ_CRC("UiStateActionsService"));
-        provided.push_back(AZ_CRC("UiScrollBoxService", 0xfdafc904));
+        provided.push_back(AZ_CRC_CE("UiInteractableService"));
+        provided.push_back(AZ_CRC_CE("UiNavigationService"));
+        provided.push_back(AZ_CRC_CE("UiStateActionsService"));
+        provided.push_back(AZ_CRC_CE("UiScrollBoxService"));
     }
 
     static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("UiInteractableService", 0x1d474c98));
-        incompatible.push_back(AZ_CRC("UiNavigationService"));
-        incompatible.push_back(AZ_CRC("UiStateActionsService"));
+        incompatible.push_back(AZ_CRC_CE("UiInteractableService"));
+        incompatible.push_back(AZ_CRC_CE("UiNavigationService"));
+        incompatible.push_back(AZ_CRC_CE("UiStateActionsService"));
     }
 
     static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("UiElementService", 0x3dca7ad4));
-        required.push_back(AZ_CRC("UiTransformService", 0x3a838e34));
+        required.push_back(AZ_CRC_CE("UiElementService"));
+        required.push_back(AZ_CRC_CE("UiTransformService"));
     }
 
     static void Reflect(AZ::ReflectContext* context);
@@ -278,4 +291,15 @@ private: // data
     AZ::Vector2 m_pressedScrollOffset; // the original value of scrollOffset when the press occurred
 
     AZ::Vector2 m_lastDragPoint; // the point of the last drag
+
+    AZ::Vector2 m_scrollSensitivity = AZ::Vector2::CreateZero(); // Vector2(horizontal, vertical) factor applied to the dragging vector to adjust scroll speed
+    AZ::Vector2 m_lastOffsetChange = AZ::Vector2::CreateZero(); // Last instant offset change
+    AZ::Vector2 m_offsetChangeAccumulator = AZ::Vector2::CreateZero();
+    float m_stoppingTimeAccumulator = 0.f;
+    float m_draggingTimeAccumulator = 0.f;
+    bool m_momentumIsActive = false;
+    float m_momentumDuration = 0.f; // Time in seconds for which we keep scrolling after release
+    float m_momentumTimeAccumulator = 0.f;
+    const float MIN_OFFSET_THRESHOLD = 10.0f;
+    const float MAX_STOPPING_DELAY = 0.12f;
 };

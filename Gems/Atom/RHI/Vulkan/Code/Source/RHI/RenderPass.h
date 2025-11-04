@@ -32,24 +32,12 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(RenderPass, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RenderPass, AZ::SystemAllocator);
             AZ_RTTI(RenderPass, "6F23B984-E6CF-40E2-9A8B-9605D82DFE27", Base);
 
             ~RenderPass() = default;
             static RHI::Ptr<RenderPass> Create();
-
-            enum class AttachmentType : uint32_t
-            {
-                Color,              // Color render target attachment
-                DepthStencil,       // Depth stencil attachment
-                Resolve,            // Resolve attachment
-                InputAttachment,    // An input attachment that is the output of a previous subpass.
-                Preserve,           // An attachment that is not being used by the subpass but that it will be preserved.
-                Count
-            };
-
-            static const uint32_t AttachmentTypeCount = static_cast<uint32_t>(AttachmentType::Count);
-
+             
             //! Describes the load and store actions of an attachment. It's almost the same as the RHI version but without
             //! the clear color. We need to remove it so it doesn't affect the hash calculation.
             struct AttachmentLoadStoreAction
@@ -79,6 +67,7 @@ namespace AZ
             {
                 uint32_t m_attachmentIndex = RHI::InvalidRenderAttachmentIndex;
                 VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+                VkImageAspectFlags m_imageAspectFlags = VK_IMAGE_ASPECT_NONE;
 
                 bool IsValid() const { return m_attachmentIndex < RHI::Limits::Pipeline::AttachmentColorCountMax; }
             };
@@ -94,6 +83,7 @@ namespace AZ
                 AZStd::array<SubpassAttachment, RHI::Limits::Pipeline::AttachmentColorCountMax> m_subpassInputAttachments;
                 AZStd::array<uint32_t, RHI::Limits::Pipeline::AttachmentColorCountMax> m_preserveAttachments;
                 SubpassAttachment m_depthStencilAttachment;
+                SubpassAttachment m_fragmentShadingRateAttachment;
             };
 
             struct Descriptor
@@ -101,7 +91,7 @@ namespace AZ
                 size_t GetHash() const;
 
                 Device* m_device = nullptr;
-                //! Number of attachments (rendertarget, resolve and depth/stencil)
+                //! Number of attachments (rendertarget, resolve, depth/stencil and shading rate)
                 uint32_t m_attachmentCount = 0;
                 //! Number of subpasses in the renderpass.
                 uint32_t m_subpassCount = 0;
@@ -111,6 +101,11 @@ namespace AZ
                 AZStd::array<SubpassDescriptor, RHI::Limits::Pipeline::SubpassCountMax> m_subpassDescriptors;
                 //! Dependencies of the resources between the subpasses.
                 AZStd::vector<VkSubpassDependency> m_subpassDependencies;
+                //! Necessary to avoid validation errors when Vulkan compares
+                //! the VkRenderPass of the PipelineStateObject vs the VkRenderPass of the VkCmdBeginRenderPass.
+                //! Even if the subpass dependencies are identical but they differ in order, it'd trigger validation errors.
+                //! To make the order irrelevant, the solution is to merge the bitflags. 
+                void MergeSubpassDependencies();
             };
 
             RHI::ResultCode Init(const Descriptor& descriptor);
@@ -119,7 +114,25 @@ namespace AZ
             const Descriptor& GetDescriptor() const;
             uint32_t GetAttachmentCount() const;
 
-            static Descriptor ConvertRenderAttachmentLayout(const RHI::RenderAttachmentLayout& layout, const RHI::MultisampleState& multisampleState);
+            //! Typically the returned descriptor is only used to create a dummy VkRenderPass (cached and reusable)
+            //! that will be associated with one or more PSOs. The PSO will use such VkRenderPass as a data source
+            //! to better optimize the layout of the PSO. In the end the real VkRenderPass is built (cached and reusable)
+            //! at runtime by the FrameGraph and used with VkCmdBeginRenderPass.
+            //! This is possible because, per the Vulkan spec, it is only required that the PSO VkRenderPass and the VkCmdBeginRenderPass
+            //! VkRenderPass to be "compatible", but they don't have to be the same object.
+            static Descriptor ConvertRenderAttachmentLayout(
+                Device& device,
+                const RHI::RenderAttachmentLayout& layout,
+                const RHI::MultisampleState& multisampleState);
+
+            //! Contains the layout that the RenderAttachment will used on a subpass.
+            //! This information is used when converting a RenderAttachmentLayout to a Renderpass::Descriptor (ConvertRenderAttachmentLayout)
+            struct RenderAttachmentLayout : RHI::RenderAttachmentExtras
+            {
+                AZ_RTTI(RenderAttachmentLayout, "{EDFE4C66-9780-4752-96CD-CCCE81C029DC}");
+                //! Layout of the attachment in a subpass.
+                VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+            };
 
         private:
             RenderPass() = default;
@@ -134,51 +147,23 @@ namespace AZ
             void Shutdown() override;
             //////////////////////////////////////////////////////////////////////////
 
+            template<typename T>
             RHI::ResultCode BuildNativeRenderPass();
-
-            struct SubpassReferences
-            {
-                AZStd::array<AZStd::vector<VkAttachmentReference>, AttachmentTypeCount> m_attachmentReferences;
-                AZStd::vector<uint32_t> m_preserveAttachments;
-            };
-
-            template<AttachmentType type>
-            void BuildAttachmentReferences(uint32_t subpassIndex, SubpassReferences& subpasReferences) const;
-            void BuildAttachmentDescriptions(AZStd::vector<VkAttachmentDescription>& attachmentDescriptions) const;
-            void BuildSubpassAttachmentReferences(AZStd::vector<SubpassReferences>& subpassReferences) const;
-            void BuildSubpassDescriptions(const AZStd::vector<SubpassReferences>& subpassReferences, AZStd::vector<VkSubpassDescription>& subpassDescriptions) const;
-            void BuildSubpassDependencies(AZStd::vector<VkSubpassDependency>& subpassDependencies) const;
-
-            AZStd::span<const SubpassAttachment> GetSubpassAttachments(const uint32_t subpassIndex, const AttachmentType type) const;
 
             Descriptor m_descriptor;
             VkRenderPass m_nativeRenderPass = VK_NULL_HANDLE;
-
         };
 
-        template<RenderPass::AttachmentType type>
-        void RenderPass::BuildAttachmentReferences(uint32_t subpassIndex, SubpassReferences& subpasReferences) const
+        template<typename T>
+        RHI::ResultCode RenderPass::BuildNativeRenderPass()
         {
-            AZStd::span<const SubpassAttachment> subpassAttachmentList = GetSubpassAttachments(subpassIndex, type);
-            AZStd::vector<VkAttachmentReference>& attachmentReferenceList = subpasReferences.m_attachmentReferences[static_cast<uint32_t>(type)];
-            attachmentReferenceList.resize(subpassAttachmentList.size());
-            for (uint32_t index = 0; index < subpassAttachmentList.size(); ++index)
-            {
-                if (subpassAttachmentList[index].IsValid())
-                {
-                    attachmentReferenceList[index].attachment = subpassAttachmentList[index].m_attachmentIndex;
-                    attachmentReferenceList[index].layout = subpassAttachmentList[index].m_layout;
-                }
-                else
-                {
-                    attachmentReferenceList[index].attachment = VK_ATTACHMENT_UNUSED;
-                }
-            }
+            T builder(*m_descriptor.m_device);
+            auto [vkResult, vkRenderPass] = builder.Build(m_descriptor);
+            AssertSuccess(vkResult);
+            m_nativeRenderPass = vkRenderPass;
+            return ConvertResult(vkResult);
         }
-
-        template<>
-        void RenderPass::BuildAttachmentReferences<RenderPass::AttachmentType::Preserve>(uint32_t subpassIndex, SubpassReferences& subpasReferences) const;
-    }
+    } // namespace Vulkan
 }
 
 namespace AZStd

@@ -58,18 +58,30 @@ namespace AssetProcessor
         {
             return;
         }
-        
+
         AssetDatabaseConnection assetDatabaseConnection;
         assetDatabaseConnection.OpenDatabase();
-        
+
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceDetails;
-        assetDatabaseConnection.QuerySourceBySourceName(
-            source.c_str(),
-            [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
-            {
-                sourceDetails = sourceEntry;
-                return false;
-            });
+        SourceAssetReference sourceAsset;
+
+        if (AZ::IO::PathView(source).IsRelative())
+        {
+            assetDatabaseConnection.QuerySourceBySourceName(
+                source.c_str(),
+                [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                {
+                    sourceDetails = sourceEntry;
+                    sourceAsset = SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str());
+                    return false;
+                });
+        }
+        else
+        {
+            sourceAsset = SourceAssetReference{ source.c_str() };
+            assetDatabaseConnection.GetSourceBySourceNameScanFolderId(
+                sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), sourceDetails);
+        }
 
         bool isIntermediate = false;
         if(m_intermediateAssetFolderId.has_value())
@@ -85,7 +97,7 @@ namespace AssetProcessor
         SourceAssetTreeModel* treeModel = isIntermediate ? m_intermediateTreeModel : m_sourceTreeModel;
         AssetTreeFilterModel* filterModel = isIntermediate ? m_intermediateFilterModel : m_sourceFilterModel;
 
-        QModelIndex goToIndex = treeModel->GetIndexForSource(source);
+        QModelIndex goToIndex = treeModel->GetIndexForSource(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId());
         // Make sure this index is visible, even if a search is active.
         filterModel->ForceModelIndexVisible(goToIndex);
         QModelIndex filterIndex = filterModel->mapFromSource(goToIndex);

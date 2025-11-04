@@ -22,20 +22,16 @@
 
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
-#include <ImGui/ImGuiPass.h>
 #include <imgui/imgui.h>
 
 using namespace AzFramework;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AZ
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    constexpr const char* DebugConsoleInputContext = "DebugConsoleInputContext";
-    const InputChannelId ToggleDebugConsoleInputChannelId("ToggleDebugConsole");
-    const InputChannelId ThumbstickL3AndR3InputChannelId("ThumbstickL3AndR3");
+    AZ_CVAR(bool, bg_showDebugConsole, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Enables or disables the debug console within imGui");
+    AZ_CVAR(float, bg_defaultDebugConsoleWidth, 960.f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default width for the imGui debug console");
+    AZ_CVAR(float, bg_defaultDebugConsoleHeight, 480.f, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default height for the imGui debug console");
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     AZ::Color GetColorForLogLevel(const AZ::LogLevel& logLevel)
     {
         switch (logLevel)
@@ -63,11 +59,38 @@ namespace AZ
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void ResetTextInputField(ImGuiInputTextCallbackData* data, const AZStd::string& newText)
+    {
+        data->DeleteChars(0, data->BufTextLen);
+        data->InsertChars(0, newText.c_str());
+    }
+
+    int InputTextCallback(ImGuiInputTextCallbackData* data)
+    {
+        DebugConsole* debugConsole = static_cast<DebugConsole*>(data->UserData);
+        if (!debugConsole)
+        {
+            return 0;
+        }
+
+        switch (data->EventFlag)
+        {
+        case ImGuiInputTextFlags_CallbackCompletion:
+        {
+            debugConsole->AutoCompleteCommand(data);
+        }
+        break;
+        case ImGuiInputTextFlags_CallbackHistory:
+        {
+            debugConsole->BrowseInputHistory(data);
+        }
+        break;
+        }
+        return 0;
+    }
+
     DebugConsole::DebugConsole(int maxEntriesToDisplay, int maxInputHistorySize)
-        : InputChannelEventListener(InputChannelEventListener::GetPriorityFirst(), true)
-        , m_inputContext(DebugConsoleInputContext, {nullptr, InputChannelEventListener::GetPriorityFirst(), true, true})
-        , m_maxEntriesToDisplay(maxEntriesToDisplay)
+        : m_maxEntriesToDisplay(maxEntriesToDisplay)
         , m_maxInputHistorySize(maxInputHistorySize)
     {
         // The debug console is currently only supported when running the standalone launcher.
@@ -80,276 +103,36 @@ namespace AZ
             return;
         }
 
-        // Create an input mapping so that the debug console can be toggled by 'L3+R3' on a gamepad.
-        AZStd::shared_ptr<InputMappingAnd> inputMappingL3AndR3 = AZStd::make_shared<InputMappingAnd>(ThumbstickL3AndR3InputChannelId, m_inputContext);
-        inputMappingL3AndR3->AddSourceInput(InputDeviceGamepad::Button::L3);
-        inputMappingL3AndR3->AddSourceInput(InputDeviceGamepad::Button::R3);
-        m_inputContext.AddInputMapping(inputMappingL3AndR3);
-
-        // Create an input mapping so that the debug console can be toggled by any of:
-        // - The '~' key on a keyboard.
-        // - Both the 'L3+R3' buttons on a gamepad.
-        // - The fourth finger press on a touch screen.
-        AZStd::shared_ptr<InputMappingOr> inputMappingToggleConsole = AZStd::make_shared<InputMappingOr>(ToggleDebugConsoleInputChannelId, m_inputContext);
-        inputMappingToggleConsole->AddSourceInput(InputDeviceKeyboard::Key::PunctuationTilde);
-        inputMappingToggleConsole->AddSourceInput(inputMappingL3AndR3->GetInputChannelId());
-        inputMappingToggleConsole->AddSourceInput(InputDeviceTouch::Touch::Index4);
-        m_inputContext.AddInputMapping(inputMappingToggleConsole);
-
-        // Filter so the input context only listens for input events that can map to
-        // 'ToggleDebugConsoleInputChannelId', and so the debug console only listens
-        // for the custom 'ToggleDebugConsoleInputChannelId' id (optimization only).
-        AZStd::shared_ptr<InputChannelEventFilterInclusionList> inputFilter = AZStd::make_shared<InputChannelEventFilterInclusionList>();
-        inputFilter->IncludeChannelName(InputDeviceGamepad::Button::L3.GetNameCrc32());
-        inputFilter->IncludeChannelName(InputDeviceGamepad::Button::R3.GetNameCrc32());
-        inputFilter->IncludeChannelName(inputMappingL3AndR3->GetInputChannelId().GetNameCrc32());
-        inputFilter->IncludeChannelName(InputDeviceKeyboard::Key::PunctuationTilde.GetNameCrc32());
-        inputFilter->IncludeChannelName(InputDeviceTouch::Touch::Index4.GetNameCrc32());
-        m_inputContext.SetFilter(inputFilter);
-        inputFilter = AZStd::make_shared<InputChannelEventFilterInclusionList>();
-        inputFilter->IncludeChannelName(inputMappingToggleConsole->GetInputChannelId().GetNameCrc32());
-        SetFilter(inputFilter);
-
-        // Connect to receive render tick events.
-        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
-
+        ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     DebugConsole::~DebugConsole()
     {
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-
-        // Disconnect to stop receiving render tick events.
-        AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+        ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::OnRenderTick()
+    void DebugConsole::OnImGuiMainMenuUpdate()
     {
-        if (!m_isShowing)
+    }
+
+    void DebugConsole::OnImGuiUpdate()
+    {
+        if (!bg_showDebugConsole)
         {
             return;
         }
-
-        const bool continueShowing = DrawDebugConsole();
-        if (!continueShowing)
-        {
-            ToggleIsShowing();
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool DebugConsole::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
-    {
-        if (inputChannel.GetInputChannelId() == ToggleDebugConsoleInputChannelId &&
-            inputChannel.IsStateBegan())
-        {
-            ToggleIsShowing();
-            return true;
-        }
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::AddDebugLog(const AZStd::string& debugLogString, const AZ::Color& color)
-    {
-        // Add the debug to our display, removing the oldest entry if we exceed the maximum.
-        m_debugLogEntires.push_back(AZStd::make_pair<AZStd::string, AZ::Color>(debugLogString, color));
-        if (m_debugLogEntires.size() > m_maxEntriesToDisplay)
-        {
-            m_debugLogEntires.pop_front();
-        }
-    }
-
-    void DebugConsole::AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel)
-    {
-        AZ::ILogger* logger = AZ::Interface<AZ::ILogger>::Get();
-        if (logger == nullptr || logLevel < logger->GetLogLevel())
-        {
-            return;
-        }
-
-        AZ::Color color = GetColorForLogLevel(logLevel);
-        if (strcmp(window, AZ::Debug::Trace::GetDefaultSystemWindow()) == 0)
-        {
-            AddDebugLog(debugLogString, color);
-        }
-        else
-        {
-            AddDebugLog(AZStd::string::format("(%s) - %s", window, debugLogString), color);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::ClearDebugLog()
-    {
-        m_debugLogEntires.clear();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void ResetTextInputField(ImGuiInputTextCallbackData* data, const AZStd::string& newText)
-    {
-        data->DeleteChars(0, data->BufTextLen);
-        data->InsertChars(0, newText.c_str());
-    }
-
-    bool DebugConsole::OnPreError(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)
-    {
-        AddDebugLog(window, message, AZ::LogLevel::Error);
-        return false;
-    }
-
-    bool DebugConsole::OnPreWarning(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)
-    {
-        AddDebugLog(window, message, AZ::LogLevel::Warn);
-        return false;
-    }
-
-    bool DebugConsole::OnPrintf(const char* window, const char* message)
-    {
-        AddDebugLog(window, message, AZ::LogLevel::Notice); // Notice is one level below warning
-        return false;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::AutoCompleteCommand(ImGuiInputTextCallbackData* data)
-    {
-        AZStd::vector<AZStd::string> matchingCommands;
-        const AZStd::string longestMatchingSubstring = AZ::Interface<AZ::IConsole>::Get()->AutoCompleteCommand(data->Buf, &matchingCommands);
-        ResetTextInputField(data, longestMatchingSubstring);
-
-        // Auto complete options are logged in AutoCompleteCommand using AZLOG_INFO,
-        // so if the log level is set higher we display auto complete options here.
-        if (AZ::Interface<AZ::ILogger>::Get()->GetLogLevel() > AZ::LogLevel::Info)
-        {
-            if (matchingCommands.empty())
-            {
-                AZStd::string noAutoCompletionResults("No auto completion options: ");
-                noAutoCompletionResults += data->Buf;
-                AddDebugLog(noAutoCompletionResults, AZ::Colors::Gray);
-            }
-            else if (matchingCommands.size() > 1)
-            {
-                AZStd::string autoCompletionResults("Auto completion options: ");
-                autoCompletionResults += data->Buf;
-                AddDebugLog(autoCompletionResults, AZ::Colors::Green);
-                for (const AZStd::string& matchingCommand : matchingCommands)
-                {
-                    AddDebugLog(matchingCommand, AZ::Colors::Green);
-                }
-            }
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::BrowseInputHistory(ImGuiInputTextCallbackData* data)
-    {
-        const int previousHistoryIndex = m_currentHistoryIndex;
-        const int maxHistoryIndex = static_cast<int>(m_textInputHistory.size() - 1);
-        switch (data->EventKey)
-        {
-            // Browse backwards through the history.
-            case ImGuiKey_UpArrow:
-            {
-                if (m_currentHistoryIndex < 0)
-                {
-                    // Go to the last history entry.
-                    m_currentHistoryIndex = maxHistoryIndex;
-                }
-                else if (m_currentHistoryIndex > 0)
-                {
-                    // Go to the previous history entry.
-                    --m_currentHistoryIndex;
-                }
-            }
-            break;
-
-            // Browse forwards through the history.
-            case ImGuiKey_DownArrow:
-            {
-                if (m_currentHistoryIndex >= 0 && m_currentHistoryIndex < maxHistoryIndex)
-                {
-                    ++m_currentHistoryIndex;
-                }
-            }
-            break;
-        }
-
-        if (previousHistoryIndex != m_currentHistoryIndex)
-        {
-            ResetTextInputField(data, m_textInputHistory[m_currentHistoryIndex]);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::OnTextInputEntered(const char* inputText)
-    {
-        // Add the input text to our history, removing the oldest entry if we exceed the maximum.
-        const AZStd::string inputTextString(inputText);
-        m_textInputHistory.push_back(inputTextString);
-        if (m_textInputHistory.size() > m_maxInputHistorySize)
-        {
-            m_textInputHistory.pop_front();
-        }
-
-        // Clear the current history index;
-        m_currentHistoryIndex = -1;
-
-        // Attempt to perform a console command.
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(inputTextString.c_str());
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    int InputTextCallback(ImGuiInputTextCallbackData* data)
-    {
-        DebugConsole* debugConsole = static_cast<DebugConsole*>(data->UserData);
-        if (!debugConsole)
-        {
-            return 0;
-        }
-
-        switch (data->EventFlag)
-        {
-            case ImGuiInputTextFlags_CallbackCompletion:
-            {
-                debugConsole->AutoCompleteCommand(data);
-            }
-            break;
-            case ImGuiInputTextFlags_CallbackHistory:
-            {
-                debugConsole->BrowseInputHistory(data);
-            }
-            break;
-        }
-        return 0;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool DebugConsole::DrawDebugConsole()
-    {
-        // Get the default ImGui pass.
-        AZ::Render::ImGuiPass* defaultImGuiPass = nullptr;
-        AZ::Render::ImGuiSystemRequestBus::BroadcastResult(defaultImGuiPass, &AZ::Render::ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
-        if (!defaultImGuiPass)
-        {
-            return false;
-        }
-
-        // Create an ImGui context scope using the default ImGui pass context.
-        ImGui::ImGuiContextScope contextScope(defaultImGuiPass->GetContext());
 
         // Draw the debug console in a closeable, moveable, and resizeable IMGUI window.
-        bool continueShowing = true;
-        ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_Once);
-        if (!ImGui::Begin("Debug Console", &continueShowing, ImGuiWindowFlags_NoCollapse))
+        bool continueShowing = bg_showDebugConsole;
+        ImGui::SetNextWindowSize(ImVec2(bg_defaultDebugConsoleWidth, bg_defaultDebugConsoleHeight), ImGuiCond_Once);
+        if (!ImGui::Begin("Debug Console", &continueShowing))
         {
             ImGui::End();
-            return false;
+            return;
         }
+        bg_showDebugConsole = continueShowing;
 
         // Show a scrolling child region in which to display all debug log entires.
         const float footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().FramePadding.y + ImGui::GetFrameHeightWithSpacing();
@@ -359,9 +142,9 @@ namespace AZ
             for (const auto& debugLogEntry : m_debugLogEntires)
             {
                 const ImVec4 color(debugLogEntry.second.GetR(),
-                                   debugLogEntry.second.GetG(),
-                                   debugLogEntry.second.GetB(),
-                                   debugLogEntry.second.GetA());
+                    debugLogEntry.second.GetG(),
+                    debugLogEntry.second.GetB(),
+                    debugLogEntry.second.GetA());
                 ImGui::PushStyleColor(ImGuiCol_Text, color);
                 ImGui::TextUnformatted(debugLogEntry.first.c_str());
                 ImGui::PopStyleColor();
@@ -428,39 +211,143 @@ namespace AZ
         }
 
         ImGui::End();
-
-        return continueShowing;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    AzFramework::SystemCursorState GetDesiredSystemCursorState()
+    void DebugConsole::AddDebugLog(const AZStd::string& debugLogString, const AZ::Color& color)
     {
-        AZ::ApplicationTypeQuery applicationType;
-        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::QueryApplicationType, applicationType);
-        return applicationType.IsEditor() ?
-               AzFramework::SystemCursorState::ConstrainedAndVisible :
-               AzFramework::SystemCursorState::UnconstrainedAndVisible;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    void DebugConsole::ToggleIsShowing()
-    {
-        m_isShowing = !m_isShowing;
-        if (m_isShowing)
+        // Add the debug to our display, removing the oldest entry if we exceed the maximum.
+        m_debugLogEntires.push_back(AZStd::make_pair(debugLogString, color));
+        if (m_debugLogEntires.size() > m_maxEntriesToDisplay)
         {
-            AzFramework::InputSystemCursorRequestBus::EventResult(m_previousSystemCursorState,
-                                                                  AzFramework::InputDeviceMouse::Id,
-                                                                  &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
-            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
-                                                            &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                                                            GetDesiredSystemCursorState());
+            m_debugLogEntires.pop_front();
+        }
+    }
+
+    void DebugConsole::AddDebugLog(const char* window, const char* debugLogString, AZ::LogLevel logLevel)
+    {
+        AZ::ILogger* logger = AZ::Interface<AZ::ILogger>::Get();
+        if (logger == nullptr || logLevel < logger->GetLogLevel())
+        {
+            return;
+        }
+
+        AZ::Color color = GetColorForLogLevel(logLevel);
+        if (strcmp(window, AZ::Debug::Trace::GetDefaultSystemWindow()) == 0)
+        {
+            AddDebugLog(debugLogString, color);
         }
         else
         {
-            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
-                                                            &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                                                            m_previousSystemCursorState);
+            AddDebugLog(AZStd::string::format("(%s) - %s", window, debugLogString), color);
         }
+    }
+
+    void DebugConsole::ClearDebugLog()
+    {
+        m_debugLogEntires.clear();
+    }
+
+    bool DebugConsole::OnPreError(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)
+    {
+        AddDebugLog(window, message, AZ::LogLevel::Error);
+        return false;
+    }
+
+    bool DebugConsole::OnPreWarning(const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, const char* message)
+    {
+        AddDebugLog(window, message, AZ::LogLevel::Warn);
+        return false;
+    }
+
+    bool DebugConsole::OnPrintf(const char* window, const char* message)
+    {
+        AddDebugLog(window, message, AZ::LogLevel::Notice); // Notice is one level below warning
+        return false;
+    }
+
+    void DebugConsole::AutoCompleteCommand(ImGuiInputTextCallbackData* data)
+    {
+        AZStd::vector<AZStd::string> matchingCommands;
+        const AZStd::string longestMatchingSubstring = AZ::Interface<AZ::IConsole>::Get()->AutoCompleteCommand(data->Buf, &matchingCommands);
+        ResetTextInputField(data, longestMatchingSubstring);
+
+        // Auto complete options are logged in AutoCompleteCommand using AZLOG_INFO,
+        // so if the log level is set higher we display auto complete options here.
+        if (AZ::Interface<AZ::ILogger>::Get()->GetLogLevel() > AZ::LogLevel::Info)
+        {
+            if (matchingCommands.empty())
+            {
+                AZStd::string noAutoCompletionResults("No auto completion options: ");
+                noAutoCompletionResults += data->Buf;
+                AddDebugLog(noAutoCompletionResults, AZ::Colors::Gray);
+            }
+            else if (matchingCommands.size() > 1)
+            {
+                AZStd::string autoCompletionResults("Auto completion options: ");
+                autoCompletionResults += data->Buf;
+                AddDebugLog(autoCompletionResults, AZ::Colors::Green);
+                for (const AZStd::string& matchingCommand : matchingCommands)
+                {
+                    AddDebugLog(matchingCommand, AZ::Colors::Green);
+                }
+            }
+        }
+    }
+
+    void DebugConsole::BrowseInputHistory(ImGuiInputTextCallbackData* data)
+    {
+        const int previousHistoryIndex = m_currentHistoryIndex;
+        const int maxHistoryIndex = static_cast<int>(m_textInputHistory.size() - 1);
+        switch (data->EventKey)
+        {
+            // Browse backwards through the history.
+            case ImGuiKey_UpArrow:
+            {
+                if (m_currentHistoryIndex < 0)
+                {
+                    // Go to the last history entry.
+                    m_currentHistoryIndex = maxHistoryIndex;
+                }
+                else if (m_currentHistoryIndex > 0)
+                {
+                    // Go to the previous history entry.
+                    --m_currentHistoryIndex;
+                }
+            }
+            break;
+
+            // Browse forwards through the history.
+            case ImGuiKey_DownArrow:
+            {
+                if (m_currentHistoryIndex >= 0 && m_currentHistoryIndex < maxHistoryIndex)
+                {
+                    ++m_currentHistoryIndex;
+                }
+            }
+            break;
+        }
+
+        if (previousHistoryIndex != m_currentHistoryIndex)
+        {
+            ResetTextInputField(data, m_textInputHistory[m_currentHistoryIndex]);
+        }
+    }
+
+    void DebugConsole::OnTextInputEntered(const char* inputText)
+    {
+        // Add the input text to our history, removing the oldest entry if we exceed the maximum.
+        const AZStd::string inputTextString(inputText);
+        m_textInputHistory.push_back(inputTextString);
+        if (m_textInputHistory.size() > m_maxInputHistorySize)
+        {
+            m_textInputHistory.pop_front();
+        }
+
+        // Clear the current history index;
+        m_currentHistoryIndex = -1;
+
+        // Attempt to perform a console command.
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand(inputTextString.c_str());
     }
 }
 

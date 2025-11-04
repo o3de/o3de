@@ -57,7 +57,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceTouch::InputDeviceTouch(const InputDeviceId& inputDeviceId,
-                                       ImplementationFactory implementationFactory)
+                                       ImplementationFactory* implementationFactory)
         : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_touchChannelsById()
@@ -74,7 +74,7 @@ namespace AzFramework
         }
 
         // Create the platform specific or custom implementation
-        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

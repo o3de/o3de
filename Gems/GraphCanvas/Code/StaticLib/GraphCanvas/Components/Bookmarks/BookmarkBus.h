@@ -172,7 +172,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(BookmarkAnchorComponentSaveData, "{E285D2EF-ABD4-438D-8797-DA1F099DAE51}", ComponentSaveData);
-        AZ_CLASS_ALLOCATOR(BookmarkAnchorComponentSaveData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BookmarkAnchorComponentSaveData, AZ::SystemAllocator);
 
         BookmarkAnchorComponentSaveData()
             : m_shortcut(k_findShortcut)

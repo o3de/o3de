@@ -18,15 +18,16 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagSelector, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagSelector, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagHandler, EditorAllocator)
 
     AnimGraphTagSelector::AnimGraphTagSelector(QWidget* parent)
         : TagSelector(parent)
     {
         connect(this, &AnimGraphTagSelector::TagsChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
             });
     }
@@ -62,7 +63,7 @@ namespace EMotionFX
 
     AZ::u32 AnimGraphTagHandler::GetHandlerName() const
     {
-        return AZ_CRC("AnimGraphTags", 0x05dc9a94);
+        return AZ_CRC_CE("AnimGraphTags");
     }
 
 
@@ -83,7 +84,7 @@ namespace EMotionFX
             }
         }
 
-        if (attrib == AZ_CRC("AnimGraph", 0x0d53d4b3))
+        if (attrib == AZ_CRC_CE("AnimGraph"))
         {
             attrValue->Read<AnimGraph*>(m_animGraph);
             GUI->SetAnimGraph(m_animGraph);

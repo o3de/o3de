@@ -1,0 +1,42 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic lets you use the PixelGeometryData class in this file without making it the final PixelGeometryData
+// used in your shader. Simply #define PixelGeometryData to your custom definition before including this file
+//
+#ifndef PixelGeometryData
+#define PixelGeometryData       PixelGeometryData_StandardPBR
+#endif
+
+#include "../BasePBR/BasePBR_PixelGeometryData.azsli"
+
+// Class inheritance doesn't seem to be working
+#define DOES_CLASS_INHERITANCE_WORK_IN_ASZL 0
+#if DOES_CLASS_INHERITANCE_WORK_IN_ASZL
+
+    class PixelGeometryData_StandardPBR : PixelGeometryData_BasePBR 
+    {
+        bool isDisplacementClipped;
+    };
+
+#else
+
+    class PixelGeometryData_StandardPBR 
+    {
+        float3 positionWS;
+        real3 vertexNormal;
+        float2 uvs[UvSetCount];
+        float3 tangents[UvSetCount];
+        float3 bitangents[UvSetCount];
+        bool isFrontFace;
+        bool isDisplacementClipped;
+    };
+
+#endif

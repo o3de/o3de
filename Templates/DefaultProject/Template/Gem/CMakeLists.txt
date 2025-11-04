@@ -6,17 +6,10 @@
 #
 # {END_LICENSE}
 
-set(gem_path ${CMAKE_CURRENT_LIST_DIR})
-set(gem_json ${gem_path}/gem.json)
-o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
-
-# Currently we are in the ${Name}/Code folder: ${CMAKE_CURRENT_LIST_DIR}
-# Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
-# Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
-#       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here : ${Name}/Code/Platform/<platform_name>  or
-#            <restricted_folder>/<platform_name>/${Name}/Code
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+# Setup the gem meta variables that includes the "gem_path", "gem_name" and "gem_version"
+# The "pal_dir" variable is also set which refers to the Platform/<platform-name> directory
+# based on the directory of this CMakeLists.txt
+o3de_gem_setup("${Name}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this project
@@ -29,11 +22,14 @@ if(NOT PAL_TRAIT_${NameUpper}_SUPPORTED)
     return()
 endif()
 
-# We are on a supported platform, so add the ${Name} target
+# We are on a supported platform, so add the ${gem_name} target
 # Note: We include the common files and the platform specific files which are set in ${NameLower}_files.cmake and
 # in ${pal_dir}/${NameLower}_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+
+# The ${gem_name}.Private.Object target is an internal target
+# It should not be used outside of this CMakeLists.txt
 ly_add_target(
-    NAME ${Name}.Static STATIC
+    NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
         ${NameLower}_files.cmake
@@ -48,7 +44,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ${Name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         ${NameLower}_shared_files.cmake
@@ -58,19 +54,45 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::${Name}.Static
+            Gem::${gem_name}.Private.Object
             AZ::AzCore
 )
 
-# if enabled, ${Name} is used by all kinds of applications
-ly_create_alias(NAME ${Name}.Builders NAMESPACE Gem TARGETS Gem::${Name})
-ly_create_alias(NAME ${Name}.Tools    NAMESPACE Gem TARGETS Gem::${Name})
-ly_create_alias(NAME ${Name}.Clients  NAMESPACE Gem TARGETS Gem::${Name})
-ly_create_alias(NAME ${Name}.Servers  NAMESPACE Gem TARGETS Gem::${Name})
+# Include the gem name into the Client Module source file
+# for use with the AZ_DECLARE_MODULE_CLASS macro
+# This is to allow renaming of the gem to also cause
+# the CreateModuleClass_Gem_<gem-name> function which
+# is used to bootstrap the gem in monolithic builds to link to the new gem name
+ly_add_source_properties(
+SOURCES
+    Source/${Name}Module.cpp
+PROPERTY COMPILE_DEFINITIONS
+    VALUES
+        O3DE_GEM_NAME=${gem_name}
+        O3DE_GEM_VERSION=${gem_version})
+
+# if enabled, ${gem_name} is used by all kinds of applications
+ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
+
+# Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+# for the primary gem variants used in most o3de applications
+o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Builders Tools Clients Servers Unified)
 
 ################################################################################
 # Gem dependencies
 ################################################################################
 
-# Enable the specified list of gems from GEM_FILE or GEMS list for this specific project:
-ly_enable_gems(PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake)
+# Query the project name from the nearest project.json file in a directory at or above
+# the current one.
+# This gem is the project gem and therefore should be part of the project that is using it
+o3de_find_ancestor_project_root(project_path project_name "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# If the project name could not be queried from a project.json file, then fallback
+# to using the name of the project provided when the project template was instantiated
+if (NOT project_name)
+    set(project_name ${Name})
+endif()

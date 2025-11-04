@@ -55,7 +55,7 @@ namespace ScriptCanvasBuilder
     {
     public:
         AZ_TYPE_INFO(DataSystem, "{27B74209-319D-4A8C-B37D-F85EFA6D2FFA}");
-        AZ_CLASS_ALLOCATOR(DataSystem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSystem, AZ::SystemAllocator);
 
         DataSystem();
         virtual ~DataSystem();

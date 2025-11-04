@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/Picking/ContextBoundAPI.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -19,10 +20,10 @@ namespace AzToolsFramework
 
         //! Handle creating, destroying and storing all active manipulator
         //! bounds for performing raycasts/picking against.
-        class ManipulatorBoundManager
+        class AZTF_API ManipulatorBoundManager
         {
         public:
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundManager, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundManager, AZ::SystemAllocator);
 
             ManipulatorBoundManager() = default;
             ManipulatorBoundManager(const ManipulatorBoundManager&) = delete;

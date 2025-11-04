@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <Atom/RPI.Reflect/Allocators.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -14,16 +15,66 @@ namespace AZ
 {
     namespace RPI
     {
-        const char* ImageMipChainAsset::DisplayName = "ImageMipChain";
-        const char* ImageMipChainAsset::Group = "Image";
-        const char* ImageMipChainAsset::Extension = "imagemipchain";
+
+        AZ_CLASS_ALLOCATOR_IMPL(ImageMipChainAsset, ImageMipChainAssetAllocator)
+
+        static bool ConvertOldVersions(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() < 1)
+            {
+                // We need to convert the vectors because we added a custom allocator
+                // and the serialization system doens't automatically convert between two different classes
+                {
+                    auto crc32 = AZ::Crc32("m_imageData");
+                    auto* vectorElement = classElement.FindSubElement(crc32);
+                    if (vectorElement)
+                    {
+                        // Get the old data
+                        AZStd::vector<uint8_t> oldData;
+                        if (vectorElement->GetData(oldData))
+                        {
+                            // Convert the vector with the new allocator
+                            vectorElement->Convert(context, AZ::AzTypeInfo<AZStd::vector<uint8_t, ImageMipChainAsset::Allocator>>::Uuid());
+                            // Copy old data to new data
+                            AZStd::vector<uint8_t, ImageMipChainAsset::Allocator> newData(oldData.size());
+                            ::memcpy(newData.data(), oldData.data(), newData.size());
+                            // Set the new data
+                            vectorElement->SetData(context, newData);
+                        }
+                    }
+                }
+                {
+                    auto crc32 = AZ::Crc32("m_subImageDataOffsets");
+                    auto* vectorElement = classElement.FindSubElement(crc32);
+                    if (vectorElement)
+                    {
+                        AZStd::vector<AZ::u64> oldData;
+                        if (classElement.GetChildData(crc32, oldData))
+                        {
+                            // Convert the vector with the new allocator
+                            vectorElement->Convert(context, AZ::AzTypeInfo<AZStd::vector<AZ::u64, ImageMipChainAsset::Allocator>>::Uuid());
+                            for (const auto& element : oldData)
+                            {
+                                // Convert each vector and re add it. During convertion all sub elements were removed.
+                                vectorElement->AddElementWithData<AZ::u64>(context, "element", element);
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+        }
 
         void ImageMipChainAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
+                // Need to register the old type with the Serializer so we can read it in order to convert it
+                serializeContext->RegisterGenericType<AZStd::vector<uint8_t>>();
+                serializeContext->RegisterGenericType<AZStd::vector<u64>>();
+
                 serializeContext->Class<ImageMipChainAsset, Data::AssetData>()
-                    ->Version(0)
+                    ->Version(1, &ConvertOldVersions)
                     ->Field("m_mipLevels", &ImageMipChainAsset::m_mipLevels)
                     ->Field("m_arraySize", &ImageMipChainAsset::m_arraySize)
                     ->Field("m_mipToSubImageOffset", &ImageMipChainAsset::m_mipToSubImageOffset)
@@ -64,7 +115,7 @@ namespace AZ
             return AZStd::span<const uint8_t>(reinterpret_cast<const uint8_t*>(m_subImageDatas[subImageIndex].m_data), dataSize);
         }
 
-        const RHI::ImageSubresourceLayout& ImageMipChainAsset::GetSubImageLayout(uint32_t mipSlice) const
+        const RHI::DeviceImageSubresourceLayout& ImageMipChainAsset::GetSubImageLayout(uint32_t mipSlice) const
         {
             return m_subImageLayouts[mipSlice];
         }

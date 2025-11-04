@@ -51,7 +51,7 @@ namespace JsonSerializationTests
     };
 
     using UnsupportedTypesTestTypes = ::testing::Types<VariantInfo, OptionalInfo>;
-    TYPED_TEST_CASE(JsonUnsupportedTypesSerializerTests, UnsupportedTypesTestTypes);
+    TYPED_TEST_SUITE(JsonUnsupportedTypesSerializerTests, UnsupportedTypesTestTypes);
 
     TYPED_TEST(JsonUnsupportedTypesSerializerTests, Load_CallDirectly_ReportsIssueAndHalts)
     {

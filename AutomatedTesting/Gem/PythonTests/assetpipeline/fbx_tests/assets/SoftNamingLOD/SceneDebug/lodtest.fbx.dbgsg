@@ -1,0 +1,604 @@
+ProductName: lodtest.fbx.dbgsg
+debugSceneGraphVersion: 1
+lodtest
+Node Name: RootNode
+Node Path: RootNode
+Node Type: RootBoneData
+	WorldTransform:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: lodtest
+Node Path: RootNode.lodtest
+Node Type: MeshData
+	Positions: Count 24. Hash: 8661923109306356285
+	Normals: Count 24. Hash: 5807525742165000561
+	FaceList: Count 12. Hash: 9888799799190757436
+	FaceMaterialIds: Count 12. Hash: 7110546404675862471
+
+Node Name: lodtest_LOD_3
+Node Path: RootNode.lodtest_LOD_3
+Node Type: MeshData
+	Positions: Count 1984. Hash: 6600975913707260286
+	Normals: Count 1984. Hash: 2708036977889843831
+	FaceList: Count 960. Hash: 10390417165025722786
+	FaceMaterialIds: Count 960. Hash: 12510609185544665964
+
+Node Name: lodtest_Lod2
+Node Path: RootNode.lodtest_Lod2
+Node Type: MeshData
+	Positions: Count 240. Hash: 219362421205407416
+	Normals: Count 240. Hash: 11195242321181199939
+	FaceList: Count 80. Hash: 11130917988116538993
+	FaceMaterialIds: Count 80. Hash: 4190892684086530065
+
+Node Name: lodtest_lod_1
+Node Path: RootNode.lodtest_lod_1
+Node Type: MeshData
+	Positions: Count 192. Hash: 1283526254311745349
+	Normals: Count 192. Hash: 1873340970602844856
+	FaceList: Count 124. Hash: 8546457964849634958
+	FaceMaterialIds: Count 124. Hash: 2372486708814455910
+
+Node Name: lodtest_lodtest_optimized
+Node Path: RootNode.lodtest_lodtest_optimized
+Node Type: MeshData
+	Positions: Count 24. Hash: 8661923109306356285
+	Normals: Count 24. Hash: 5807525742165000561
+	FaceList: Count 12. Hash: 9888799799190757436
+	FaceMaterialIds: Count 12. Hash: 7110546404675862471
+
+Node Name: lodtest_LOD_3_lodtest_optimized
+Node Path: RootNode.lodtest_LOD_3_lodtest_optimized
+Node Type: MeshData
+	Positions: Count 1984. Hash: 6600975913707260286
+	Normals: Count 1984. Hash: 2708036977889843831
+	FaceList: Count 960. Hash: 10390417165025722786
+	FaceMaterialIds: Count 960. Hash: 12510609185544665964
+
+Node Name: lodtest_Lod2_lodtest_optimized
+Node Path: RootNode.lodtest_Lod2_lodtest_optimized
+Node Type: MeshData
+	Positions: Count 240. Hash: 219362421205407416
+	Normals: Count 240. Hash: 11195242321181199939
+	FaceList: Count 80. Hash: 11130917988116538993
+	FaceMaterialIds: Count 80. Hash: 4190892684086530065
+
+Node Name: lodtest_lod_1_lodtest_optimized
+Node Path: RootNode.lodtest_lod_1_lodtest_optimized
+Node Type: MeshData
+	Positions: Count 192. Hash: 7921557352486854444
+	Normals: Count 192. Hash: 1873340970602844856
+	FaceList: Count 124. Hash: 7602933716150163115
+	FaceMaterialIds: Count 124. Hash: 2372486708814455910
+
+Node Name: transform
+Node Path: RootNode.lodtest.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.lodtest.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.lodtest.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 1622169145591646736
+	UVCustomName: UVMap
+
+Node Name: Material_002
+Node Path: RootNode.lodtest.Material_002
+Node Type: MaterialData
+	MaterialName: Material.002
+	UniqueId: 618298070506015545
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.800000,  0.800000,  0.800000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 36.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.400000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: TangentSet_0
+Node Path: RootNode.lodtest.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 13438447437797057049
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.lodtest.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 11372562338897179017
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.lodtest_LOD_3.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  2.298166,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.lodtest_LOD_3.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.lodtest_LOD_3.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 1984. Hash: 14119273880200542497
+	UVCustomName: UVMap
+
+Node Name: DefaultMaterial
+Node Path: RootNode.lodtest_LOD_3.DefaultMaterial
+Node Type: MaterialData
+	MaterialName: DefaultMaterial
+	UniqueId: 3809502407269006983
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: Not set
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: TangentSet_0
+Node Path: RootNode.lodtest_LOD_3.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 1984. Hash: 5664494957869921957
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.lodtest_LOD_3.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 1984. Hash: 5048878728906162461
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.lodtest_Lod2.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000, -0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000, -2.211498,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.lodtest_Lod2.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.lodtest_Lod2.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 240. Hash: 13702273589593616598
+	UVCustomName: UVMap
+
+Node Name: DefaultMaterial
+Node Path: RootNode.lodtest_Lod2.DefaultMaterial
+Node Type: MaterialData
+	MaterialName: DefaultMaterial
+	UniqueId: 3809502407269006983
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: Not set
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: TangentSet_0
+Node Path: RootNode.lodtest_Lod2.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 240. Hash: 1390901212717410749
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.lodtest_Lod2.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 240. Hash: 1379238632949267281
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.lodtest_lod_1.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 2.410331,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.lodtest_lod_1.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.lodtest_lod_1.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 192. Hash: 27253578623892681
+	UVCustomName: UVMap
+
+Node Name: DefaultMaterial
+Node Path: RootNode.lodtest_lod_1.DefaultMaterial
+Node Type: MaterialData
+	MaterialName: DefaultMaterial
+	UniqueId: 3809502407269006983
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: Not set
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: TangentSet_0
+Node Path: RootNode.lodtest_lod_1.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 192. Hash: 13347865366302598201
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.lodtest_lod_1.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 192. Hash: 11177881960262055002
+	GenerationMethod: 1
+
+Node Name: custom_properties
+Node Path: RootNode.lodtest_lodtest_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.lodtest_lodtest_optimized.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 1622169145591646736
+	UVCustomName: UVMap
+
+Node Name: TangentSet_0
+Node Path: RootNode.lodtest_lodtest_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 13438447437797057049
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.lodtest_lodtest_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 11372562338897179017
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.lodtest_lodtest_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: Material_002
+Node Path: RootNode.lodtest_lodtest_optimized.Material_002
+Node Type: MaterialData
+	MaterialName: Material.002
+	UniqueId: 618298070506015545
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.800000,  0.800000,  0.800000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 36.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: 0.400000
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: custom_properties
+Node Path: RootNode.lodtest_LOD_3_lodtest_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.lodtest_LOD_3_lodtest_optimized.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 1984. Hash: 14119273880200542497
+	UVCustomName: UVMap
+
+Node Name: TangentSet_0
+Node Path: RootNode.lodtest_LOD_3_lodtest_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 1984. Hash: 5664494957869921957
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.lodtest_LOD_3_lodtest_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 1984. Hash: 5048878728906162461
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.lodtest_LOD_3_lodtest_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  2.298166,  0.000000>
+
+Node Name: DefaultMaterial
+Node Path: RootNode.lodtest_LOD_3_lodtest_optimized.DefaultMaterial
+Node Type: MaterialData
+	MaterialName: DefaultMaterial
+	UniqueId: 3809502407269006983
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: Not set
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: custom_properties
+Node Path: RootNode.lodtest_Lod2_lodtest_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.lodtest_Lod2_lodtest_optimized.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 240. Hash: 13702273589593616598
+	UVCustomName: UVMap
+
+Node Name: TangentSet_0
+Node Path: RootNode.lodtest_Lod2_lodtest_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 240. Hash: 1390901212717410749
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.lodtest_Lod2_lodtest_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 240. Hash: 1379238632949267281
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.lodtest_Lod2_lodtest_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000, -0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000, -2.211498,  0.000000>
+
+Node Name: DefaultMaterial
+Node Path: RootNode.lodtest_Lod2_lodtest_optimized.DefaultMaterial
+Node Type: MaterialData
+	MaterialName: DefaultMaterial
+	UniqueId: 3809502407269006983
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: Not set
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+
+Node Name: custom_properties
+Node Path: RootNode.lodtest_lod_1_lodtest_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
+Node Name: UVMap
+Node Path: RootNode.lodtest_lod_1_lodtest_optimized.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 192. Hash: 13790301632763350589
+	UVCustomName: UVMap
+
+Node Name: TangentSet_0
+Node Path: RootNode.lodtest_lod_1_lodtest_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 192. Hash: 13256424469303674766
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.lodtest_lod_1_lodtest_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 192. Hash: 12542581737782433115
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.lodtest_lod_1_lodtest_optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 2.410331,  0.000000,  0.000000>
+
+Node Name: DefaultMaterial
+Node Path: RootNode.lodtest_lod_1_lodtest_optimized.DefaultMaterial
+Node Type: MaterialData
+	MaterialName: DefaultMaterial
+	UniqueId: 3809502407269006983
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: Not set
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+

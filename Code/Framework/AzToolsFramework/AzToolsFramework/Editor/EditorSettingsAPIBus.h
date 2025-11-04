@@ -7,10 +7,11 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework
 {
@@ -58,3 +59,6 @@ namespace AzToolsFramework
 
     using EditorPreferencesNotificationBus = AZ::EBus<EditorPreferencesNotifications>;
 }
+
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorSettingsAPIRequests);
+AZ_DECLARE_EBUS_SINGLE_ADDRESS(AZTF_API, AzToolsFramework::EditorPreferencesNotifications);

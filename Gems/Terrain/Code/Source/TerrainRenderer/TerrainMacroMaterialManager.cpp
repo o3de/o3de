@@ -7,6 +7,7 @@
  */
 
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/View.h>
 
 namespace Terrain
@@ -28,22 +29,28 @@ namespace Terrain
             AZ::Vector2::CreateFromFloat2(m_boundsMax.data()).IsGreaterThan(min);
     }
 
-    void TerrainMacroMaterialManager::Initialize(
-        const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
-        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
+    void TerrainMacroMaterialManager::Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        AZ_Error(TerrainMacroMaterialManagerName, bindlessImageHandler, "bindlessImageHandler must not be null.");
         AZ_Error(TerrainMacroMaterialManagerName, terrainSrg, "terrainSrg must not be null.");
         AZ_Error(TerrainMacroMaterialManagerName, !m_isInitialized, "Already initialized.");
 
-        if (!bindlessImageHandler || !terrainSrg || m_isInitialized)
+        if (!terrainSrg || m_isInitialized)
         {
             return;
         }
         
+        auto deviceCount = AZ::RHI::RHISystemInterface::Get()->GetDeviceCount();
+
+        for (auto deviceIndex{0}; deviceIndex < deviceCount; ++deviceIndex)
+        {
+            if (terrainSrg->GetRHIShaderResourceGroup()->IsDeviceSet(deviceIndex))
+            {
+                m_materialShaderData[deviceIndex] = {};
+            }
+        }
+
         if (UpdateSrgIndices(terrainSrg))
         {
-            m_bindlessImageHandler = bindlessImageHandler;
             TerrainMacroMaterialNotificationBus::Handler::BusConnect();
             
             m_terrainSizeChanged = true;
@@ -60,12 +67,15 @@ namespace Terrain
         m_materialDataBuffer = {};
         m_materialRefGridDataBuffer = {};
 
-        m_materialData.Clear();
+        for (auto& [deviceIndex, data] : m_materialShaderData)
+        {
+            data.clear();
+        }
+
+        m_materialPriorityData.Clear();
         m_materialRefGridShaderData.clear();
         m_entityToMaterialHandle.clear();
         
-        m_bindlessImageHandler = {};
-
         TerrainMacroMaterialNotificationBus::Handler::BusDisconnect();
     }
     
@@ -110,9 +120,15 @@ namespace Terrain
             "OnTerrainMacroMaterialCreated called for a macro material that already exists. This indicates that either the bus is incorrectly sending out "
             "OnCreated announcements for existing materials, or the terrain feature processor isn't properly cleaning up macro materials.");
 
-        AZ_Assert(m_materialData.GetSize() < AZStd::numeric_limits<uint16_t>::max(), "No more room for terrain macro materials.");
+        AZ_Assert(m_materialPriorityData.GetSize() < AZStd::numeric_limits<uint16_t>::max(), "No more room for terrain macro materials.");
 
-        MaterialHandle materialHandle = MaterialHandle(m_materialData.Reserve());
+        MaterialHandle materialHandle = MaterialHandle(m_materialPriorityData.Reserve());
+
+        for (auto& [deviceIndex, data] : m_materialShaderData)
+        {
+            data.resize(m_materialPriorityData.GetSize());
+        }
+
         m_entityToMaterialHandle[entityId] = materialHandle;
 
         UpdateMacroMaterialShaderEntry(materialHandle, newMaterialData);
@@ -157,12 +173,15 @@ namespace Terrain
             "Changed announcements for materials that haven't had a OnCreated event sent, or the terrain feature processor isn't properly tracking macro materials.");
 
         MaterialHandle materialHandle = m_entityToMaterialHandle[entityId];
-        MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
         const AZ::Vector2 boundsMin = AZ::Vector2(newRegion.GetMin());
         const AZ::Vector2 boundsMax = AZ::Vector2(newRegion.GetMax());
 
-        boundsMin.StoreToFloat2(shaderData.m_boundsMin.data());
-        boundsMax.StoreToFloat2(shaderData.m_boundsMax.data());
+        for (auto& [deviceIndex, data] : m_materialShaderData)
+        {
+            MacroMaterialShaderData& shaderData = data.at(materialHandle.GetIndex());
+            boundsMin.StoreToFloat2(shaderData.m_boundsMin.data());
+            boundsMax.StoreToFloat2(shaderData.m_boundsMax.data());
+        }
 
         AZ::Aabb changedRegion = oldRegion;
         changedRegion.AddAabb(newRegion);
@@ -203,7 +222,7 @@ namespace Terrain
             "Changed announcements for materials that haven't had a OnCreated event sent, or the terrain feature processor isn't properly tracking macro materials.");
 
         MaterialHandle materialHandle = m_entityToMaterialHandle[entityId];
-        MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
+        MacroMaterialShaderData& shaderData = m_materialShaderData.begin()->second.at(materialHandle.GetIndex());
         
         ForMacroMaterialsInBounds(shaderData.m_boundsMin, shaderData.m_boundsMax,
             [&](TileHandle tileHandle, [[maybe_unused]] const AZ::Vector2& corner)
@@ -212,51 +231,36 @@ namespace Terrain
             }
         );
         
-        m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(shaderData.m_colorMapId));
-        m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(shaderData.m_normalMapId));
-
-        m_materialData.Release(materialHandle.GetIndex());
+        m_materialPriorityData.Release(materialHandle.GetIndex());
         m_entityToMaterialHandle.erase(entityId);
         m_bufferNeedsUpdate = true;
     }
     
     void TerrainMacroMaterialManager::UpdateMacroMaterialShaderEntry(MaterialHandle materialHandle, const MacroMaterialData& macroMaterialData)
     {
-        MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
-
-        shaderData.m_flags = (MacroMaterialShaderFlags)(
-            (macroMaterialData.m_normalFlipX ? MacroMaterialShaderFlags::FlipMacroNormalX : 0) |
-            (macroMaterialData.m_normalFlipY ? MacroMaterialShaderFlags::FlipMacroNormalY : 0)
-        );
-
-        shaderData.m_normalFactor = macroMaterialData.m_normalFactor;
-        AZ::Vector2(macroMaterialData.m_bounds.GetMin()).StoreToFloat2(shaderData.m_boundsMin.data());
-        AZ::Vector2(macroMaterialData.m_bounds.GetMax()).StoreToFloat2(shaderData.m_boundsMax.data());
-
-        auto UpdateImageIndex = [&](uint32_t& indexRef, const AZ::Data::Instance<AZ::RPI::Image>& imageView)
+        auto UpdateImageIndex = [&](uint32_t& indexRef, const AZ::Data::Instance<AZ::RPI::Image>& imageView, int deviceIndex)
         {
-            if (indexRef != InvalidImageIndex)
-            {
-                if (imageView)
-                {
-                    m_bindlessImageHandler->UpdateBindlessImage(aznumeric_cast<uint16_t>(indexRef), imageView->GetImageView());
-                }
-                else
-                {
-                    m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(indexRef));
-                    indexRef = InvalidImageIndex;
-                }
-            }
-            else if (imageView)
-            {
-                indexRef = m_bindlessImageHandler->AppendBindlessImage(imageView->GetImageView());
-            }
+            indexRef = imageView ? imageView->GetImageView()->GetDeviceImageView(deviceIndex)->GetBindlessReadIndex() : InvalidImageIndex;
         };
 
-        UpdateImageIndex(shaderData.m_colorMapId, macroMaterialData.m_colorImage);
-        UpdateImageIndex(shaderData.m_normalMapId, macroMaterialData.m_normalImage);
+        for (auto& [deviceIndex, data] : m_materialShaderData)
+        {
+            MacroMaterialShaderData& shaderData = data.at(materialHandle.GetIndex());
 
-        MacroMaterialPriority& priority = m_materialData.GetElement<1>(materialHandle.GetIndex());
+            shaderData.m_flags = (MacroMaterialShaderFlags)(
+                (macroMaterialData.m_normalFlipX ? MacroMaterialShaderFlags::FlipMacroNormalX : 0) |
+                (macroMaterialData.m_normalFlipY ? MacroMaterialShaderFlags::FlipMacroNormalY : 0)
+            );
+
+            shaderData.m_normalFactor = macroMaterialData.m_normalFactor;
+            AZ::Vector2(macroMaterialData.m_bounds.GetMin()).StoreToFloat2(shaderData.m_boundsMin.data());
+            AZ::Vector2(macroMaterialData.m_bounds.GetMax()).StoreToFloat2(shaderData.m_boundsMax.data());
+
+            UpdateImageIndex(shaderData.m_colorMapId, macroMaterialData.m_colorImage, deviceIndex);
+            UpdateImageIndex(shaderData.m_normalMapId, macroMaterialData.m_normalImage, deviceIndex);
+        }
+
+        MacroMaterialPriority& priority = m_materialPriorityData.GetElement(materialHandle.GetIndex());
         priority.m_priority = macroMaterialData.m_priority;
         priority.m_hash = uint32_t(AZ::u64(macroMaterialData.m_entityId) >> 32) ^ uint32_t(AZ::u64(macroMaterialData.m_entityId) & 0xFFFFFFFF);
 
@@ -267,7 +271,7 @@ namespace Terrain
     {
         TileMaterials& tileMaterials = m_materialRefGridShaderData.at(tileHandle.GetIndex());
 
-        MacroMaterialPriority& newPriority = m_materialData.GetElement<1>(newMaterialHandle.GetIndex());
+        MacroMaterialPriority& newPriority = m_materialPriorityData.GetElement(newMaterialHandle.GetIndex());
 
         for (uint16_t materialIndex = 0; materialIndex < MacroMaterialsPerTile; ++materialIndex)
         {
@@ -285,7 +289,7 @@ namespace Terrain
             else
             {
                 // Check the priority. If the new material's priority is greater, insert.
-                MacroMaterialPriority& priority = m_materialData.GetElement<1>(materialHandle.GetIndex());
+                MacroMaterialPriority& priority = m_materialPriorityData.GetElement(materialHandle.GetIndex());
                 if (newPriority > priority)
                 {
                     MaterialHandle temphandle = newMaterialHandle;
@@ -341,8 +345,8 @@ namespace Terrain
                     continue;
                 }
 
-                MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
-                MacroMaterialPriority priority = m_materialData.GetElement<1>(materialHandle.GetIndex());
+                MacroMaterialShaderData& shaderData = m_materialShaderData.begin()->second.at(materialHandle.GetIndex());
+                MacroMaterialPriority priority = m_materialPriorityData.GetElement(materialHandle.GetIndex());
 
                 if (shaderData.Overlaps(tileMin, tileMax) && (lastEntry == MaterialHandle::Null || priority > lastPriority))
                 {
@@ -427,8 +431,13 @@ namespace Terrain
 
             RemoveAllImages();
             m_entityToMaterialHandle.clear();
-            m_materialData.Clear();
+            m_materialPriorityData.Clear();
             m_materialRefGridShaderData.clear();
+
+            for (auto& [deviceIndex, data] : m_materialShaderData)
+            {
+                data.clear();
+            }
 
             const uint32_t macroMaterialTileCount = m_tiles1D * m_tiles1D;
             
@@ -461,7 +470,7 @@ namespace Terrain
 
                 for (auto& [entityId, materialHandle] : m_entityToMaterialHandle)
                 {
-                    MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
+                    MacroMaterialShaderData& shaderData = m_materialShaderData.begin()->second.at(materialHandle.GetIndex());
 
                     if (shaderData.Overlaps(regionMin, regionMax))
                     {
@@ -479,7 +488,7 @@ namespace Terrain
 
                         for (MaterialHandle materialHandle : affectedMaterials)
                         {
-                            MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
+                            MacroMaterialShaderData& shaderData = m_materialShaderData.begin()->second.at(materialHandle.GetIndex());
                             if (shaderData.Overlaps(tileMin, tileMax))
                             {
                                 AddMacroMaterialToTile(materialHandle, tileHandle);
@@ -495,7 +504,14 @@ namespace Terrain
         if (m_bufferNeedsUpdate && terrainSrg)
         {
             m_bufferNeedsUpdate = false;
-            m_materialDataBuffer.UpdateBuffer(m_materialData.GetRawData<0>(), aznumeric_cast<uint32_t>(m_materialData.GetSize()));
+            AZStd::unordered_map<int, const void*> rawData;
+
+            for (auto& [deviceIndex, data] : m_materialShaderData)
+            {
+                rawData[deviceIndex] = data.data();
+            }
+
+            m_materialDataBuffer.UpdateBuffer(rawData, aznumeric_cast<uint32_t>(m_materialPriorityData.GetSize()));
             m_materialRefGridDataBuffer.UpdateBuffer(m_materialRefGridShaderData.data(), aznumeric_cast<uint32_t>(m_materialRefGridShaderData.size()));
 
             MacroMaterialGridShaderData macroMaterialGridShaderData;
@@ -518,9 +534,12 @@ namespace Terrain
 
     void TerrainMacroMaterialManager::RemoveImagesForMaterial(MaterialHandle materialHandle)
     {
-        MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
-        m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(shaderData.m_colorMapId));
-        m_bindlessImageHandler->RemoveBindlessImage(aznumeric_cast<uint16_t>(shaderData.m_normalMapId));
+        for (auto& [deviceIndex, data] : m_materialShaderData)
+        {
+            MacroMaterialShaderData& shaderData = data.at(materialHandle.GetIndex());
+            shaderData.m_colorMapId = InvalidImageIndex;
+            shaderData.m_normalMapId = InvalidImageIndex;
+        }
     }
 
 }

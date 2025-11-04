@@ -13,3 +13,5 @@
 
 static const float4 s_AzslDebugColor = float4(16.0 / 255.0, 124.0 / 255.0, 16.0 / 255.0, 1);
 
+#include <Atom/RPI/Platform/Windows/AzslcPlatformHeader.azsli>
+

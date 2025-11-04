@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
@@ -22,7 +24,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     class ButtonGroup;
 
     //! Helper class to make switchers (toolbars) for display in Viewport UI.
-    class ViewportUiSwitcher : public QToolBar
+    class AZTF_API ViewportUiSwitcher : public QToolBar
     {
         Q_OBJECT
 

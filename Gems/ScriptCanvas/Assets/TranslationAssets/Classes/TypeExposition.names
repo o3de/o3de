@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "Reflect_AZStd__array_AZ__Vector3_2",
-                    "context": "TypeExposition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reflect_AZStd__array_AZ__Vector3_2"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "Reflect_AZ__Outcome_AZ__Vector3_void",
-                    "context": "TypeExposition",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Reflect_AZ__Outcome_AZ__Vector3_void"

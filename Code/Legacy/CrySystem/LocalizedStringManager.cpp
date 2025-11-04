@@ -27,6 +27,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Serialization/Locale.h>
 #include <AzCore/Math/Crc.h>
 
 #define MAX_CELL_COUNT 32
@@ -38,7 +39,12 @@ const char c_sys_localization_encode[] = "sys_localization_encode";
 #endif // !defined(_RELEASE)
 
 #define LOC_WINDOW "Localization"
-const char c_sys_localization_format[] = "sys_localization_format";
+const char* c_sys_localization_format = "sys_localization_format";
+AZ_CVAR(int32_t, sys_localization_format, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Usage: sys_localization_format [0..1]\n"
+        "    0: O3DE Legacy Localization (Excel 2003)\n"
+        "    1: AGS XML\n"
+        "Default is 1 (AGS Xml)");
 
 enum ELocalizedXmlColumns
 {
@@ -239,11 +245,6 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         "Default is 1.");
 #endif //#if !defined(_RELEASE)
 
-    REGISTER_CVAR2(c_sys_localization_format, &m_cvarLocalizationFormat, 1, VF_NULL,
-        "Usage: sys_localization_format [0..1]\n"
-        "    0: O3DE Legacy Localization (Excel 2003)\n"
-        "    1: AGS XML\n"
-        "Default is 1 (AGS Xml)");
     //Check that someone hasn't added a language ID without a language name
     assert(PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::ePILID_MAX_OR_INVALID - 1 ] != 0);
 
@@ -270,7 +271,13 @@ CLocalizedStringsManager::CLocalizedStringsManager(ISystem* pSystem)
         }
     }
 
-    AZ_Warning("Localization", !(m_cvarLocalizationFormat == 0 && availableLanguages == 0 && ProjectUsesLocalization()), "No localization files found!");
+    int32_t localizationFormat{};
+    if (auto console = AZ::Interface<AZ::IConsole>::Get();
+        console !=nullptr)
+    {
+        console->GetCvarValue(c_sys_localization_format, localizationFormat);
+    }
+    AZ_Warning("Localization", !(localizationFormat == 0 && availableLanguages == 0 && ProjectUsesLocalization()), "No localization files found!");
 
     SetAvailableLocalizationsBitfield(availableLanguages);
     LocalizationManagerRequestBus::Handler::BusConnect();
@@ -448,7 +455,13 @@ bool CLocalizedStringsManager::SetLanguage(const char* sLanguage)
 //////////////////////////////////////////////////////////////////////////
 int CLocalizedStringsManager::GetLocalizationFormat() const
 {
-    return m_cvarLocalizationFormat;
+    int32_t localizationFormat{};
+    if (auto console = AZ::Interface<AZ::IConsole>::Get();
+        console !=nullptr)
+    {
+        console->GetCvarValue(c_sys_localization_format, localizationFormat);
+    }
+    return localizationFormat;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -716,12 +729,19 @@ bool CLocalizedStringsManager::LoadLocalizationDataByTag(
 
     stack_string const sLocalizationFolder(PathUtil::GetLocalizationFolder());
 
+    int32_t localizationFormat{};
+    if (auto console = AZ::Interface<AZ::IConsole>::Get();
+        console !=nullptr)
+    {
+        console->GetCvarValue(c_sys_localization_format, localizationFormat);
+    }
+
     LoadFunc loadFunction = GetLoadFunction();
     TStringVec& vEntries = it->second.filenames;
     for (TStringVec::iterator it2 = vEntries.begin(); it2 != vEntries.end(); ++it2)
     {
         //Only load files of the correct type for the configured format
-        if ((m_cvarLocalizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (m_cvarLocalizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
+        if ((localizationFormat == 0 && strstr(it2->c_str(), ".xml")) || (localizationFormat == 1 && strstr(it2->c_str(), ".agsxml")))
         {
             bResult &= (this->*loadFunction)(it2->c_str(), it->second.id, bReload);
         }
@@ -918,6 +938,9 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
             return (true);
         }
     }
+
+    // Use the invariant culture while loading files from disk
+    AZ::Locale::ScopedSerializationLocale scopedLocale;
 
     ListAndClearProblemLabels();
 
@@ -1715,7 +1738,13 @@ CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() c
     CRY_ASSERT_MESSAGE(gEnv && gEnv->pConsole, "System environment or console missing!");
     if (gEnv && gEnv->pConsole)
     {
-        if(m_cvarLocalizationFormat == 1)
+        int32_t localizationFormat{};
+        if (auto console = AZ::Interface<AZ::IConsole>::Get();
+            console !=nullptr)
+        {
+            console->GetCvarValue(c_sys_localization_format, localizationFormat);
+        }
+        if(localizationFormat == 1)
         {
             return &CLocalizedStringsManager::DoLoadAGSXmlDocument;
         }
@@ -2609,7 +2638,7 @@ namespace
 {
     void UnixTimeToFileTime(time_t unixtime, FILETIME* filetime)
     {
-        LONGLONG longlong = Int32x32To64(unixtime, 10000000) + 116444736000000000;
+        LONGLONG longlong = (unixtime * 10000000LL) + 116444736000000000LL;
         filetime->dwLowDateTime = (DWORD) longlong;
         filetime->dwHighDateTime = (DWORD)(longlong >> 32);
     }

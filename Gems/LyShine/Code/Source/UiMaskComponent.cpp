@@ -261,7 +261,7 @@ bool UiMaskComponent::IsPointMasked(AZ::Vector2 point)
         if (UiVisualBus::FindFirstHandler(GetEntityId()))
         {
             bool isInRect = false;
-            EBUS_EVENT_ID_RESULT(isInRect, GetEntityId(), UiTransformBus, IsPointInRect, point);
+            UiTransformBus::EventResult(isInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, point);
             if (isInRect)
             {
                 return false;
@@ -275,7 +275,7 @@ bool UiMaskComponent::IsPointMasked(AZ::Vector2 point)
             if (UiVisualBus::FindFirstHandler(m_childMaskElement))
             {
                 bool isInRect = false;
-                EBUS_EVENT_ID_RESULT(isInRect, m_childMaskElement, UiTransformBus, IsPointInRect, point);
+                UiTransformBus::EventResult(isInRect, m_childMaskElement, &UiTransformBus::Events::IsPointInRect, point);
                 if (isInRect)
                 {
                     return false;
@@ -284,15 +284,20 @@ bool UiMaskComponent::IsPointMasked(AZ::Vector2 point)
 
             // get any descendants of the child mask element that have visual components
             LyShine::EntityArray childMaskElements;
-            EBUS_EVENT_ID(m_childMaskElement, UiElementBus, FindDescendantElements, 
-                [](const AZ::Entity* descendant) { return UiVisualBus::FindFirstHandler(descendant->GetId()) != nullptr; },
+            UiElementBus::Event(
+                m_childMaskElement,
+                &UiElementBus::Events::FindDescendantElements,
+                [](const AZ::Entity* descendant)
+                {
+                    return UiVisualBus::FindFirstHandler(descendant->GetId()) != nullptr;
+                },
                 childMaskElements);
 
             // if the point is in any of their rects then it is not masked out
             for (auto child : childMaskElements)
             {
                 bool isInRect = false;
-                EBUS_EVENT_ID_RESULT(isInRect, child->GetId(), UiTransformBus, IsPointInRect, point);
+                UiTransformBus::EventResult(isInRect, child->GetId(), &UiTransformBus::Events::IsPointInRect, point);
                 if (isInRect)
                 {
                     return false;
@@ -348,7 +353,7 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiMask.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiMask.png")
-                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI", 0x27ff46b0))
+                ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_enableMasking, "Enable masking",
@@ -367,7 +372,7 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
                 "If true, this element's content and the mask are rendered to separate render targets\n"
                 "and then rendered to the screen using the mask render target as an alpha gradient mask.\n"
                 "This allows soft-edged masking. The effect is limited to the rect of this element.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c))
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnRenderTargetChange);
 
              editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualBehindChildren, "Draw behind",
@@ -461,8 +466,13 @@ UiMaskComponent::EntityComboBoxVec UiMaskComponent::PopulateChildEntityList()
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -486,7 +496,7 @@ UiMaskComponent::EntityComboBoxVec UiMaskComponent::PopulateChildEntityList()
         // it is set - making it confusing (and hard to change if there are no children).
         // So we add the current value to the list even though it is not a descendant.
         AZ::Entity* childMaskEntity = nullptr;
-        EBUS_EVENT_RESULT(childMaskEntity, AZ::ComponentApplicationBus, FindEntity, m_childMaskElement);
+        AZ::ComponentApplicationBus::BroadcastResult(childMaskEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childMaskElement);
         if (childMaskEntity)
         {
             result.push_back(AZStd::make_pair(AZ::EntityId(m_childMaskElement), childMaskEntity->GetName()));
@@ -501,8 +511,8 @@ void UiMaskComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -562,16 +572,26 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
 
     // Create a render target that this element and its children will be rendered to
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
-    EBUS_EVENT_ID_RESULT(m_contentAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        m_contentAttachmentImageId,
+        canvasEntityId,
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget,
+        AZ::Name(m_renderTargetName.c_str()),
+        imageSize);
     if (m_contentAttachmentImageId.IsEmpty())
     {
         AZ_Warning("UI", false, "Failed to create content render target for UiMaskComponent");
     }
 
     // Create separate render target for the mask texture
-    EBUS_EVENT_ID_RESULT(m_maskAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_maskRenderTargetName.c_str()), imageSize);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        m_maskAttachmentImageId,
+        canvasEntityId,
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget,
+        AZ::Name(m_maskRenderTargetName.c_str()),
+        imageSize);
     if (m_maskAttachmentImageId.IsEmpty())
     {
         AZ_Warning("UI", false, "Failed to create mask render target for UiMaskComponent");
@@ -595,8 +615,9 @@ void UiMaskComponent::DestroyRenderTarget()
     if (!m_contentAttachmentImageId.IsEmpty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_contentAttachmentImageId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        LyShine::RenderToTextureRequestBus::Event(
+            canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_contentAttachmentImageId);
 
         m_contentAttachmentImageId = AZ::RHI::AttachmentId{};
     }
@@ -604,8 +625,9 @@ void UiMaskComponent::DestroyRenderTarget()
     if (!m_maskAttachmentImageId.IsEmpty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_maskAttachmentImageId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        LyShine::RenderToTextureRequestBus::Event(
+            canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_maskAttachmentImageId);
 
         m_maskAttachmentImageId = AZ::RHI::AttachmentId{};
     }
@@ -658,7 +680,7 @@ void UiMaskComponent::ComputePixelAlignedBounds(AZ::Vector2& pixelAlignedTopLeft
     // in main viewport space. We then snap them to the nearest pixel since the render target has to be an exact number
     // of pixels.
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
     pixelAlignedTopLeft = Draw2dHelper::RoundXY(points.GetAxisAlignedTopLeft(), IDraw2d::Rounding::Nearest);
     pixelAlignedBottomRight = Draw2dHelper::RoundXY(points.GetAxisAlignedBottomRight(), IDraw2d::Rounding::Nearest);
 }
@@ -708,9 +730,11 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage;
     AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage;
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID_RESULT(contentAttachmentImage, canvasEntityId, LyShine::RenderToTextureRequestBus, GetRenderTarget, m_contentAttachmentImageId);
-    EBUS_EVENT_ID_RESULT(maskAttachmentImage, canvasEntityId, LyShine::RenderToTextureRequestBus, GetRenderTarget, m_maskAttachmentImageId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        contentAttachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_contentAttachmentImageId);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        maskAttachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_maskAttachmentImageId);
 
     // We don't want parent faders to affect what is rendered to the render target since we will
     // apply those fades when we render from the render target.
@@ -978,7 +1002,8 @@ UiElementInterface* UiMaskComponent::GetValidatedChildMaskElement()
                         const char* elementName = GetEntity()->GetName().c_str();
                         const char* childMaskElementName = "";
                         AZ::Entity* childMaskEntity = nullptr;
-                        EBUS_EVENT_RESULT(childMaskEntity, AZ::ComponentApplicationBus, FindEntity, m_childMaskElement);
+                        AZ::ComponentApplicationBus::BroadcastResult(
+                            childMaskEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childMaskElement);
                         if (childMaskEntity)
                         {
                             childMaskElementName = childMaskEntity->GetName().c_str();

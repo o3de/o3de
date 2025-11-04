@@ -36,37 +36,23 @@ namespace AZ
             : ComputePass(descriptor)
         { }
 
-        void SubsurfaceScatteringPass::FrameBeginInternal(FramePrepareParams params)
+        void SubsurfaceScatteringPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
             RHI::Size targetImageSize;
-            if (m_isFullscreenPass)
+            if (m_fullscreenDispatch)
             {
-                PassAttachment* outputAttachment = nullptr;
-
-                if (GetOutputCount() > 0)
+                auto attachment = m_fullscreenSizeSourceBinding->GetAttachment();
+                if (attachment)
                 {
-                    outputAttachment = GetOutputBinding(0).GetAttachment().get();
+                    auto imageDescriptor = context.GetImageDescriptor(attachment->GetAttachmentId());
+                    targetImageSize = imageDescriptor.m_size;
                 }
-                else if (GetInputOutputCount() > 0)
-                {
-                    outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
-                }
-
-                AZ_Assert(outputAttachment != nullptr, "[ComputePass '%s']: A fullscreen compute pass must have a valid output or input/output.",
-                    GetPathName().GetCStr());
-
-                AZ_Assert(outputAttachment->GetAttachmentType() == RHI::AttachmentType::Image,
-                    "[ComputePass '%s']: The output of a fullscreen compute pass must be an image.",
-                    GetPathName().GetCStr());
-
-                targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
-                SetTargetThreadCounts(targetImageSize.m_width, targetImageSize.m_height, targetImageSize.m_depth);
             }
 
             // Update shader constant
             m_shaderResourceGroup->SetConstant(m_screenSizeInputIndex, AZ::Vector2(static_cast<float>(targetImageSize.m_width), static_cast<float>(targetImageSize.m_height)));
 
-            RenderPass::FrameBeginInternal(params);
+            ComputePass::CompileResources(context);
         }
     }   // namespace RPI
 }   // namespace AZ

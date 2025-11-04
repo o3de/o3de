@@ -9,6 +9,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <AzCore/base.h>
 #include <AzCore/std/limits.h>
 
 namespace AzNetworking
@@ -66,7 +67,7 @@ namespace AzNetworking
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
-        virtual bool Serialize(char& value, const char* name, char minValue = AZStd::numeric_limits<char>::min(), char maxValue = AZStd::numeric_limits<char>::max()) = 0;
+        bool Serialize(char& value, const char* name, uint8_t minValue = AZStd::numeric_limits<uint8_t>::min(), uint8_t maxValue = AZStd::numeric_limits<uint8_t>::max());
 
         //! Serialize a signed byte.
         //! @param value    signed byte input value to serialize
@@ -92,13 +93,21 @@ namespace AzNetworking
         //! @return boolean true for success, false for failure
         virtual bool Serialize(int32_t& value, const char* name, int32_t minValue = AZStd::numeric_limits<int32_t>::min(), int32_t maxValue = AZStd::numeric_limits<int32_t>::max()) = 0;
 
-        //! Serialize a signed 64-bit integer.
+        //! Serialize a signed long integer.
+        //! @param value    signed long integer input value to serialize
+        //! @param name     string name of the value being serialized
+        //! @param minValue the minimum value expected during serialization
+        //! @param maxValue the maximum value expected during serialization
+        //! @return boolean true for success, false for failure
+        virtual bool Serialize(long& value, const char* name, long minValue = AZStd::numeric_limits<long>::min(), long maxValue = AZStd::numeric_limits<long>::max()) = 0;
+
+        //! Serialize a signed 64-bit integer (long long).
         //! @param value    signed 64-bit integer input value to serialize
         //! @param name     string name of the value being serialized
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
-        virtual bool Serialize(int64_t& value, const char* name, int64_t minValue = AZStd::numeric_limits<int64_t>::min(), int64_t maxValue = AZStd::numeric_limits<int64_t>::max()) = 0;
+        virtual bool Serialize(AZ::s64& value, const char* name, AZ::s64 minValue = AZStd::numeric_limits<AZ::s64>::min(), AZ::s64 maxValue = AZStd::numeric_limits<AZ::s64>::max()) = 0;
 
         //! Serialize an unsigned byte.
         //! @param value    unsigned byte input value to serialize
@@ -109,7 +118,7 @@ namespace AzNetworking
         virtual bool Serialize(uint8_t& value, const char* name, uint8_t minValue = AZStd::numeric_limits<uint8_t>::min(), uint8_t maxValue = AZStd::numeric_limits<uint8_t>::max()) = 0;
 
         //! Serialize an unsigned short.
-        //! @param value    signed integer short value to serialize
+        //! @param value    unsigned integer short value to serialize
         //! @param name     string name of the value being serialized
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
@@ -117,20 +126,28 @@ namespace AzNetworking
         virtual bool Serialize(uint16_t& value, const char* name, uint16_t minValue = AZStd::numeric_limits<uint16_t>::min(), uint16_t maxValue = AZStd::numeric_limits<uint16_t>::max()) = 0;
 
         //! Serialize an unsigned integer.
-        //! @param value    signed integer input value to serialize
+        //! @param value    unsigned integer input value to serialize
         //! @param name     string name of the value being serialized
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
         virtual bool Serialize(uint32_t& value, const char* name, uint32_t minValue = AZStd::numeric_limits<uint32_t>::min(), uint32_t maxValue = AZStd::numeric_limits<uint32_t>::max()) = 0;
 
-        //! Serialize an unsigned 64-bit integer.
-        //! @param value    signed 64-bit integer input value to serialize
+        //! Serialize an unsigned long integer.
+        //! @param value    unsigned long integer input value to serialize
         //! @param name     string name of the value being serialized
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
-        virtual bool Serialize(uint64_t& value, const char* name, uint64_t minValue = AZStd::numeric_limits<uint64_t>::min(), uint64_t maxValue = AZStd::numeric_limits<uint64_t>::max()) = 0;
+        virtual bool Serialize(unsigned long& value, const char* name, unsigned long minValue = AZStd::numeric_limits<unsigned long>::min(), unsigned long maxValue = AZStd::numeric_limits<unsigned long>::max()) = 0;
+
+        //! Serialize an unsigned 64-bit integer (unsigned long long).
+        //! @param value    unsigned 64-bit integer input value to serialize
+        //! @param name     string name of the value being serialized
+        //! @param minValue the minimum value expected during serialization
+        //! @param maxValue the maximum value expected during serialization
+        //! @return boolean true for success, false for failure
+        virtual bool Serialize(AZ::u64& value, const char* name, AZ::u64 minValue = AZStd::numeric_limits<AZ::u64>::min(), AZ::u64 maxValue = AZStd::numeric_limits<AZ::u64>::max()) = 0;
 
         //! Serialize a 32-bit floating point number.
         //! @param value    32-bit floating point input value to serialize

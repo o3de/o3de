@@ -5,109 +5,112 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+#include <RHI/Device.h>
 #include <RHI/FrameGraphExecuteGroup.h>
-#include <RHI/Scope.h>
+#include <RHI/FrameGraphExecuteGroupHandler.h>
 
 namespace AZ
 {
     namespace Metal
     {
-        void FrameGraphExecuteGroup::Init(
+        void FrameGraphExecuteGroup::InitBase(
             Device& device,
-            const Scope& scope,
-            AZ::u32 commandListCount,
-            RHI::JobPolicy globalJobPolicy,
-            uint32_t groupIndex)
+            const RHI::GraphGroupId& groupId,
+            RHI::HardwareQueueClass hardwareQueueClass)
         {
-            SetDevice(device);
-            m_scope = &scope;
-            
-            AZStd::string labelNameStr = AZStd::string::format("GroupCB_%i", groupIndex);
-            m_cbLabel = [NSString stringWithCString:labelNameStr.c_str() encoding:NSUTF8StringEncoding];
+            m_device = &device;
+            m_groupId = groupId;
+            m_hardwareQueueClass = hardwareQueueClass;
+        }
 
-            m_hardwareQueueClass = scope.GetHardwareQueueClass();
-            m_workRequest.m_waitFenceValues = scope.GetWaitFences();
-            m_workRequest.m_signalFenceValue = scope.GetSignalFenceValue();            
-            m_workRequest.m_commandLists.resize(commandListCount);
-            m_workRequest.m_swapChainsToPresent.reserve(scope.GetSwapChainsToPresent().size());
-            for (RHI::SwapChain* swapChain : scope.GetSwapChainsToPresent())
-            {
-                m_workRequest.m_swapChainsToPresent.push_back(static_cast<SwapChain*>(swapChain));
-            }
-            
-            auto& fencesToSignal = m_workRequest.m_scopeFencesToSignal;
-            fencesToSignal.reserve(scope.GetFencesToSignal().size());
-            for (const RHI::Ptr<RHI::Fence>& fence : scope.GetFencesToSignal())
-            {
-                fencesToSignal.push_back(&static_cast<FenceImpl&>(*fence).Get());
-            }
-            
-            InitRequest request;
-            request.m_scopeId = scope.GetId();
-            request.m_submitCount = scope.GetEstimatedItemCount();
-            request.m_commandLists = reinterpret_cast<RHI::CommandList* const*>(m_workRequest.m_commandLists.data());
-            request.m_commandListCount = commandListCount;
-            request.m_jobPolicy = globalJobPolicy;
-            
-            m_commandBuffer.Init(device.GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).GetPlatformQueue());
-            
-            Base::Init(request);
-        }
-        
-        FrameGraphExecuteGroup::~FrameGraphExecuteGroup()
+        Device& FrameGraphExecuteGroup::GetDevice() const
         {
-            m_subRenderEncoders.clear();
+            return *m_device;
         }
-        
+
+        ExecuteWorkRequest&& FrameGraphExecuteGroup::AcquireWorkRequest()
+        {
+            return AZStd::move(m_workRequest);
+        }
+    
+        CommandList* FrameGraphExecuteGroup::AcquireCommandList() const
+        {
+            return m_device->AcquireCommandList(m_hardwareQueueClass);
+        }
+
+        RHI::HardwareQueueClass FrameGraphExecuteGroup::GetHardwareQueueClass()
+        {
+            return m_hardwareQueueClass;
+        }
+    
+        const RHI::GraphGroupId& FrameGraphExecuteGroup::GetGroupId() const
+        {
+            return m_groupId;
+        }
+
+        void FrameGraphExecuteGroup::EncodeWaitEvents() const
+        {
+            AZ_Assert(m_commandBuffer->GetMtlCommandBuffer(), "Must have a valid metal command buffer");
+            FenceSet compiledFences = m_device->GetCommandQueueContext().GetCompiledFences();
+            for (size_t producerQueueIdx = 0; producerQueueIdx < m_workRequest.m_waitFenceValues.size(); ++producerQueueIdx)
+            {
+                if (const uint64_t fenceValue = m_workRequest.m_waitFenceValues[producerQueueIdx])
+                {
+                    const RHI::HardwareQueueClass producerQueueClass = static_cast<RHI::HardwareQueueClass>(producerQueueIdx);
+                    compiledFences.GetFence(producerQueueClass).WaitOnGpu(m_commandBuffer->GetMtlCommandBuffer(), fenceValue);
+                }
+            }
+        }
+    
+        void FrameGraphExecuteGroup::SetCommandBuffer(CommandQueueCommandBuffer* commandBuffer)
+        {
+            m_commandBuffer = commandBuffer;
+        }
+    
         void FrameGraphExecuteGroup::BeginInternal()
         {
-            //Create the autorelease pool to ensure command buffer is not leaked
-            CreateAutoreleasePool();
-            
-            id <MTLCommandBuffer> mtlCommandBuffer = m_commandBuffer.AcquireMTLCommandBuffer();
-            AZ_Assert(mtlCommandBuffer, "Metal command Buffer was not created");
-            mtlCommandBuffer.label = m_cbLabel;
-            m_workRequest.m_commandBuffer = &m_commandBuffer;
-            
-            //Encode any wait events from the attached scope at the start of the group.
-            EncodeWaitEvents();
-                        
-            //Create all the render encoders before in order to establish order.This is because MTLCommandBuffer
-            //always match the execution order of the sub render encoders to the order in which they were created
-            for(int i = 0 ; i < m_workRequest.m_commandLists.size(); i++)
+            m_groupAutoreleasePool = [[NSAutoreleasePool alloc] init];
+            if (m_handler)
             {
-                CommandList* commandList = AcquireCommandList();
-                id <MTLCommandEncoder> subRenderEncoder = m_commandBuffer.AcquireSubRenderEncoder(m_scope->GetRenderPassDescriptor(), m_scope->GetId().GetCStr());
-                m_subRenderEncoders.push_back(SubEncoderData {commandList, subRenderEncoder});
+                m_handler->BeginGroup(this);
             }
+            
+            m_contextAutoreleasePools.resize(GetContextCount(), nil);
         }
-        
+
         void FrameGraphExecuteGroup::EndInternal()
         {
-            //End the encoding for ParallelRendercommandEncoder
-            m_commandBuffer.FlushParallelEncoder();
-            FlushAutoreleasePool();
+            if (m_handler)
+            {
+                m_handler->EndGroup(this);
+            }
+            
+            [m_groupAutoreleasePool release];
+            m_groupAutoreleasePool = nil;
+
+            AZ_Assert(!AZStd::any_of(m_contextAutoreleasePools.begin(), m_contextAutoreleasePools.end(), [](const NSAutoreleasePool* pool) { return pool != nil; }),
+                      "Not all context auto release pools have been released");
+            m_contextAutoreleasePools.clear();
         }
-        
+    
         void FrameGraphExecuteGroup::BeginContextInternal(
-            RHI::FrameGraphExecuteContext& context,
-            AZ::u32 contextIndex)
+            [[maybe_unused]] RHI::FrameGraphExecuteContext& context,
+            uint32_t contextIndex)
         {
-            CommandList* commandList = m_subRenderEncoders[contextIndex].m_commandList;
-            commandList->Open(m_subRenderEncoders[contextIndex].m_subRenderEncoder);
-            m_workRequest.m_commandLists[contextIndex] = commandList;
-            context.SetCommandList(*commandList);
-
-            m_scope->Begin(*static_cast<CommandList*>(context.GetCommandList()), context.GetCommandListIndex(), context.GetCommandListCount());
+            m_contextAutoreleasePools[contextIndex] = [[NSAutoreleasePool alloc] init];
         }
-
+    
         void FrameGraphExecuteGroup::EndContextInternal(
-            RHI::FrameGraphExecuteContext& context,
-            AZ::u32 contextIndex)
+            [[maybe_unused]] RHI::FrameGraphExecuteContext& context,
+            uint32_t contextIndex)
         {
-            m_scope->End(*static_cast<CommandList*>(context.GetCommandList()), context.GetCommandListIndex(), context.GetCommandListCount());
-            static_cast<CommandList*>(context.GetCommandList())->Close();
+            [m_contextAutoreleasePools[contextIndex] release];
+            m_contextAutoreleasePools[contextIndex] = nil;
+        }
+    
+        void FrameGraphExecuteGroup::SetHandler(FrameGraphExecuteGroupHandler* handler)
+        {
+            m_handler = handler;
         }
     }
 }

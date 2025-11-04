@@ -35,3 +35,5 @@ namespace ScriptCanvasTesting
         int NegateBranchNonBooleanWithResult(int input);
     } // namespace TestAutoGenFunctions
 } // namespace ScriptCanvasTesting
+
+#include "Source/Nodes/TestAutoGenFunctions.generated.h"

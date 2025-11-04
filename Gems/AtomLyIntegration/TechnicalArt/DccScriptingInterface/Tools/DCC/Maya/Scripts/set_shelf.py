@@ -17,7 +17,7 @@ Reference: https://gist.github.com/vshotarov/1c3176fe9e38dcaadd1e56c2f15c95d9
 """
 # -------------------------------------------------------------------------
 # -- Standard Python modules
-# none
+import logging as _logging
 
 # -- External Python modules
 # none
@@ -29,13 +29,24 @@ Reference: https://gist.github.com/vshotarov/1c3176fe9e38dcaadd1e56c2f15c95d9
 import maya.cmds as mc
 # -------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------
+#  global scope
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.set_shelf'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Initializing: {_MODULENAME}')
+
+from DccScriptingInterface.globals import *
+# -------------------------------------------------------------------------
+
 def _null(*args):
     pass
 
 # -------------------------------------------------------------------------
 class customShelf(_Custom_Shelf):
     '''This is an example shelf.'''
-    
+
     def build(self):
         self.add_button(label="button1")
         self.add_button("button2")
@@ -68,13 +79,13 @@ class _Custom_Shelf():
         self._label_colour = (.9, .9, .9)
 
         self._clean_old_shlef()
-        
+
         mc.setParent(self._name)
-        
+
         self.build()
 
     def build(self):
-        '''Override this method in custom class. 
+        '''Override this method in custom class.
         Otherwise, nothing is added to the shelf.'''
         pass
 

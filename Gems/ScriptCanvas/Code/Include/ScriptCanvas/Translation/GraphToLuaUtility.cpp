@@ -7,10 +7,9 @@
  */
 
 
-#include <clocale>
-
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/BehaviorContextUtilities.h>
+#include <AzCore/Serialization/Locale.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/ScopedDataConnectionEvent.h>
@@ -24,33 +23,13 @@
 
 #include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
-namespace GraphToLuaUtilityCpp
-{
-    class ScopedLocale
-    {
-    public:
-        ScopedLocale()
-        {
-            m_previousLocale = std::setlocale(LC_NUMERIC, "en_US.UTF-8");
-        }
-
-        ~ScopedLocale()
-        {
-            std::setlocale(LC_NUMERIC, m_previousLocale);
-        }
-
-    private:
-        char* m_previousLocale = nullptr;
-    };
-
-}
 
 namespace ScriptCanvas
 {
     namespace Translation
     {
 
-        void CheckConversionStringPost(Writer& writer, Grammar::VariableConstPtr source, const Grammar::ConversionByIndex& conversions, size_t index)
+        void CheckConversionStringPost(Writer& writer, [[maybe_unused]] Grammar::VariableConstPtr source, const Grammar::ConversionByIndex& conversions, size_t index)
         {
             auto iter = conversions.find(index);
             if (iter == conversions.end())
@@ -72,6 +51,7 @@ namespace ScriptCanvas
             case Data::eType::BehaviorContextObject:
             case Data::eType::Color:
             case Data::eType::CRC:
+            case Data::eType::AssetId:
             case Data::eType::EntityID:
             case Data::eType::NamedEntityID:
             case Data::eType::Matrix3x3:
@@ -93,7 +73,7 @@ namespace ScriptCanvas
             }
         }
 
-        void CheckConversionStringPre(Writer& writer, Grammar::VariableConstPtr source, const Grammar::ConversionByIndex& conversions, size_t index)
+        void CheckConversionStringPre(Writer& writer, [[maybe_unused]] Grammar::VariableConstPtr source, const Grammar::ConversionByIndex& conversions, size_t index)
         {
             auto iter = conversions.find(index);
             if (iter == conversions.end())
@@ -115,6 +95,7 @@ namespace ScriptCanvas
             case Data::eType::BehaviorContextObject:
             case Data::eType::Color:
             case Data::eType::CRC:
+            case Data::eType::AssetId:
             case Data::eType::EntityID:
             case Data::eType::NamedEntityID:
             case Data::eType::Matrix3x3:
@@ -146,6 +127,7 @@ namespace ScriptCanvas
             case Data::eType::Boolean:
             case Data::eType::Number:
             case Data::eType::String:
+            case Data::eType::AssetId:
             case Data::eType::EntityID:
             case Data::eType::NamedEntityID:
             case Data::eType::BehaviorContextObject:
@@ -175,7 +157,7 @@ namespace ScriptCanvas
 
         AZStd::string ToValueString(const Datum& datum, const Configuration& config)
         {
-            GraphToLuaUtilityCpp::ScopedLocale scopedLocal;
+            AZ::Locale::ScopedSerializationLocale scopedLocale;
 
             switch (datum.GetType().GetType())
             {
@@ -383,8 +365,18 @@ namespace ScriptCanvas
             case Data::eType::String:
             {
                 const AZStd::string& formattedString = *datum.GetAs<Data::StringType>();
-                const AZStd::string bracketString = MakeLongBracketString(formattedString);
-                return AZStd::string::format("[%s[%s]%s]", bracketString.c_str(), formattedString.c_str(), bracketString.c_str());
+                return MakeRuntimeSafeStringLiteral(formattedString);
+            }
+
+            case Data::eType::AssetId:
+            {
+                const AZ::Data::AssetId& value = *datum.GetAs<Data::AssetIdType>();
+                if (value.IsValid())
+                {
+                    const AZStd::string valueString = MakeRuntimeSafeStringLiteral(value.ToString<AZStd::string>());
+                    return AZStd::string::format("AssetId.CreateString(%s)", valueString.c_str());
+                }
+                return "AssetId()";
             }
 
             case Data::eType::EntityID:

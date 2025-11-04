@@ -16,7 +16,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 #include <limits>
 
@@ -30,7 +30,8 @@ namespace AZ
             SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphInstanceMetaData,
             float morphDeltaIntegerEncoding)
-            : m_inputBuffers(inputBuffers)
+            : m_dispatchItem(RHI::MultiDevice::AllDevices)
+            , m_inputBuffers(inputBuffers)
             , m_morphTargetComputeMetaData(morphTargetComputeMetaData)
             , m_morphInstanceMetaData(morphInstanceMetaData)
             , m_accumulatedDeltaIntegerEncoding(morphDeltaIntegerEncoding)
@@ -65,21 +66,21 @@ namespace AZ
                 return false;
             }
 
-            if (!shaderVariant.IsFullyBaked() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
+            if (shaderVariant.UseKeyFallback() && m_instanceSrg->HasShaderVariantKeyFallbackEntry())
             {
                 m_instanceSrg->SetShaderVariantKeyFallbackValue(shaderOptionGroup.GetShaderVariantKeyFallbackValue());
             }
 
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor, shaderOptionGroup);
 
 
             InitRootConstants(pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout());
 
-            m_dispatchItem.m_pipelineState = m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor);
+            m_dispatchItem.SetPipelineState(m_morphTargetShader->AcquirePipelineState(pipelineStateDescriptor));
 
             // Get the threads-per-group values from the compute shader [numthreads(x,y,z)]
-            auto& arguments = m_dispatchItem.m_arguments.m_direct;
+            RHI::DispatchDirect arguments;
             const auto outcome = RPI::GetComputeShaderNumThreads(m_morphTargetShader->GetAsset(), arguments);
             if (!outcome.IsSuccess())
             {
@@ -89,6 +90,8 @@ namespace AZ
             arguments.m_totalNumberOfThreadsX = m_morphTargetComputeMetaData.m_vertexCount;
             arguments.m_totalNumberOfThreadsY = 1;
             arguments.m_totalNumberOfThreadsZ = 1;
+
+            m_dispatchItem.SetArguments(arguments);
 
             return true;
         }
@@ -113,7 +116,7 @@ namespace AZ
 
             m_instanceSrg->Compile();
 
-            m_dispatchItem.m_uniqueShaderResourceGroup = m_instanceSrg->GetRHIShaderResourceGroup();
+            m_dispatchItem.SetUniqueShaderResourceGroup(m_instanceSrg->GetRHIShaderResourceGroup());
             return true;
         }
 
@@ -151,14 +154,14 @@ namespace AZ
             m_rootConstantData.SetConstant(tangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedTangentDeltaOffsetInBytes / 4);
             m_rootConstantData.SetConstant(bitangentOffsetIndex, m_morphInstanceMetaData.m_accumulatedBitangentDeltaOffsetInBytes / 4);
 
-            m_dispatchItem.m_rootConstantSize = static_cast<uint8_t>(m_rootConstantData.GetConstantData().size());
-            m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
+            m_dispatchItem.SetRootConstantSize(static_cast<uint8_t>(m_rootConstantData.GetConstantData().size()));
+            m_dispatchItem.SetRootConstants(m_rootConstantData.GetConstantData().data());
         }
 
         void MorphTargetDispatchItem::SetWeight(float weight)
         {
             m_rootConstantData.SetConstant(m_weightIndex, weight);
-            m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
+            m_dispatchItem.SetRootConstants(m_rootConstantData.GetConstantData().data());
         }
 
         float MorphTargetDispatchItem::GetWeight() const

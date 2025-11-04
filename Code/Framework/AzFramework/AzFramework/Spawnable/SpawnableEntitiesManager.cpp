@@ -27,7 +27,8 @@ namespace AzFramework
         Queue& queue = priority <= m_highPriorityThreshold ? m_highPriorityQueue : m_regularPriorityQueue;
         {
             AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
-            request.m_requestId = GetTicketPayload<Ticket>(ticket).m_nextRequestId++;
+            auto& payload = GetTicketPayload<Ticket>(ticket);
+            request.m_requestId = payload.m_nextRequestId++;
             queue.m_pendingRequest.push(AZStd::move(request));
         }
     }
@@ -982,14 +983,32 @@ namespace AzFramework
             }
             else
             {
-                AZ_Assert(false, "The EntitySpawnTicket corresponding to id '%lu' cannot be found", request.m_ticketId);
+                // Attempting to retrieve a ticket that no longer exists will call the callback with an invalid ticket.
+                request.m_callback(InternalToExternalTicket(nullptr, this));
                 return CommandResult::Executed;
             }
         }
 
-        // About to make a copy so increase the reference count.
-        entitySpawnTicketIterator->second->m_referenceCount++;
-        request.m_callback(InternalToExternalTicket(entitySpawnTicketIterator->second, this));
+        if (entitySpawnTicketIterator->second->m_referenceCount > 0)
+        {
+            // About to make a copy so increase the reference count.
+            entitySpawnTicketIterator->second->m_referenceCount++;
+            request.m_callback(InternalToExternalTicket(entitySpawnTicketIterator->second, this));
+        }
+        else
+        {
+            // Attempting to retrieve a ticket that no longer has any references but hasn't technically
+            // been deleted yet will call the callback with an invalid ticket.
+            // For example, this can occur in the following situation:
+            // - An entity with a ticket deactivates and destroys its reference, causing DestroyTicket to get queued,
+            //   with the ticket currently having a reference count of 0.
+            // - One of the entities from that ticket then deactivates and tries to queue a RetrieveTicket so that it
+            //   can queue a DespawnEntity command for itself.
+            // If we "reanimated" the ticket here, bumped its reference count, and called the callback, the callback could end up
+            // holding onto an invalid pointer once the DestroyTicket got processed.
+            request.m_callback(InternalToExternalTicket(nullptr, this));
+        }
+
         return CommandResult::Executed;
     }
 

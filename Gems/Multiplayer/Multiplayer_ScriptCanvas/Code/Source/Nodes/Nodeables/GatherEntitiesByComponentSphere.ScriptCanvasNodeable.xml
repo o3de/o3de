@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Source/Nodes/Nodeables/GatherEntitiesByComponentSphere.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="GatherEntitiesByComponentSphere"
+           QualifiedName="ScriptCanvasMultiplayer::GatherEntitiesByComponentSphere"
+           PreferredClassName="Gather Entities by Component Sphere"
+           Category="Multiplayer"
+           Description="Gathers entites that have the provided component type using an sphere shape. Use a For-Each node to iterate the results.">
+
+        <Input Name="In" DisplayGroup="In" Description="Parameters controlling the entity gather">
+            <Parameter Name="ComponentId" Type="AZ::Uuid" Description="The typeId of the components to look for."/>
+            <Parameter Name="Position" Type="AZ::Vector3" Description="The position of the sphere used to gather."/>
+            <Parameter Name="Radius" Type="float" Description="The radius of the sphere used to gather."/>
+            <Return Name="Entities" Type="AZStd::vector&lt;AZ::EntityId&gt;" Shared="true"/>
+        </Input>
+    </Class>
+</ScriptCanvas>
