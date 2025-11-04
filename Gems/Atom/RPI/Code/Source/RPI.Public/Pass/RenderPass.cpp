@@ -273,9 +273,14 @@ namespace AZ
             }
 
             // the pass may potentially migrate between devices dynamically at runtime so the deviceIndex is updated every frame.
-            if (GetScopeId().IsEmpty() || (ScopeProducer::GetDeviceIndex() != Pass::GetDeviceIndex()))
+            auto passDeviceIndex = Pass::GetDeviceIndex();
+            if (passDeviceIndex == RHI::MultiDevice::InvalidDeviceIndex)
             {
-                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, Pass::GetDeviceIndex());
+                passDeviceIndex = RHI::MultiDevice::DefaultDeviceIndex;
+            }
+            if (GetScopeId().IsEmpty() || (ScopeProducer::GetDeviceIndex() != passDeviceIndex))
+            {
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass, passDeviceIndex);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
