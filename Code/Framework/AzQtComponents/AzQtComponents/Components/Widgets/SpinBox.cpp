@@ -18,6 +18,7 @@
 #include <QDoubleSpinBox>
 #include <QEvent>
 #include <QGuiApplication>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMouseEvent>
 #include <QObject>
@@ -80,7 +81,7 @@ private:
     QAbstractSpinBox* m_mouseFocusedSpinBox = nullptr;
     QAbstractSpinBox* m_mouseFocusedSpinBoxSingleClicked = nullptr;
 
-    bool filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event);
+    bool filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event, QLabel* label = nullptr);
     bool filterLineEditEvents(QLineEdit* lineEdit, QEvent* event);
     void setInitializeSpinboxValue(QAbstractSpinBox* spinBox, bool clearText = false);
 
@@ -92,7 +93,7 @@ private:
     void emitValueChangeBegan(QAbstractSpinBox* spinBox);
     void emitValueChangeEnded(QAbstractSpinBox* spinBox);
 
-    void resetCursor(QAbstractSpinBox* spinBox);
+    void resetCursor(QAbstractSpinBox* spinBox, QLabel* label = nullptr);
 };
 
 SpinBoxWatcher::SpinBoxWatcher(QObject* parent)
@@ -113,15 +114,28 @@ bool SpinBoxWatcher::eventFilter(QObject* watched, QEvent* event)
     {
         filterEvent = filterLineEditEvents(lineEdit, event);
     }
+    else if (auto label = qobject_cast<QLabel*>(watched))
+    {
+        QWidget* parent = label->parentWidget();
+        QAbstractSpinBox* spin = parent ? parent->findChild<QAbstractSpinBox*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+        if (spin)
+            filterEvent = filterSpinBoxEvents(spin, event, label);
+    }
 
     return filterEvent ? filterEvent : QObject::eventFilter(watched, event);
 }
 
-bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event)
+bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event, QLabel* label)
 {
     if (!spinBox || !spinBox->isEnabled())
     {
         return false;
+    }
+
+    if (!label)
+    {
+        QWidget* parent = spinBox->parentWidget();
+        label = parent ? parent->findChild<QLabel*>(SpinBox::s_draggableLabelName, Qt::FindDirectChildrenOnly) : nullptr;
     }
 
     bool filterEvent = false;
@@ -209,7 +223,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             // on an arrow button
             if (!buttonUpPressed && !buttonDownPressed)
             {
-                resetCursor(spinBox);
+                resetCursor(spinBox, label);
             }
             break;
         }
@@ -257,7 +271,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
                 const QPoint pos = spinBox->mapFromGlobal(QCursor::pos());
                 if (spinBox->rect().contains(pos))
                 {
-                    resetCursor(spinBox);
+                    resetCursor(spinBox, label);
                 }
             }
             break;
@@ -432,7 +446,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             spinBox->setProperty(g_spinBoxDownPressedPropertyName, false);
             spinBox->setProperty(g_spinBoxValueDecreasingName, false);
             spinBox->setProperty(g_spinBoxValueIncreasingName, false);
-            resetCursor(spinBox);
+            resetCursor(spinBox, label);
             spinBox->releaseMouse();
             spinBox->update();
             break;
@@ -805,7 +819,7 @@ void SpinBoxWatcher::emitValueChangeEnded(QAbstractSpinBox* spinBox)
 
 }
 
-void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox)
+void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox, QLabel* label)
 {
     QStyleOptionSpinBox styleOption;
     initStyleOption(spinBox, &styleOption);
@@ -828,10 +842,14 @@ void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox)
             if (enabledSteps & QSpinBox::StepUpEnabled)
             {
                 spinBox->setCursor(m_config.scrollCursorRight);
+                if (label)
+                    label->setCursor(m_config.scrollCursorRight);
             }
             else
             {
                 spinBox->setCursor(m_config.scrollCursorRightMax);
+                if (label)
+                    label->setCursor(m_config.scrollCursorRightMax);
             }
         }
         else if (spinBox->property(g_spinBoxScrollDecreasingName).toBool())
@@ -839,15 +857,21 @@ void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox)
             if (enabledSteps & QSpinBox::StepDownEnabled)
             {
                 spinBox->setCursor(m_config.scrollCursorLeft);
+                if (label)
+                    label->setCursor(m_config.scrollCursorLeft);
             }
             else
             {
                 spinBox->setCursor(m_config.scrollCursorLeftMax);
+                if (label)
+                    label->setCursor(m_config.scrollCursorLeftMax);
             }
         }
         else
         {
             spinBox->setCursor(m_config.scrollCursor);
+            if (label)
+                label->setCursor(m_config.scrollCursor);
         }
 
         // Need to update lineEdit cursor in case we started dragging using the
@@ -932,6 +956,21 @@ void SpinBox::uninitializeWatcher()
         delete s_spinBoxWatcher;
         s_spinBoxWatcher = nullptr;
     }
+}
+
+void SpinBox::registerLabelToWatcher(QLabel* label, bool shouldRegister)
+{
+    if (!s_spinBoxWatcher)
+    {
+        Q_ASSERT(s_spinBoxWatcher);
+        return;
+    }
+
+    Q_ASSERT(label->objectName().compare(SpinBox::s_draggableLabelName) == 0);
+    if (shouldRegister)
+        label->installEventFilter(s_spinBoxWatcher);
+    else
+        label->removeEventFilter(s_spinBoxWatcher);
 }
 
 bool SpinBox::drawSpinBox(const QProxyStyle* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const SpinBox::Config& config)
