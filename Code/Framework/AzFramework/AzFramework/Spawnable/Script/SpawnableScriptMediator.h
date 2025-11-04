@@ -36,7 +36,7 @@ namespace AzFramework::Scripts
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         //! Creates EntitySpawnTicket using provided prefab asset
-        AZ::Outcome<EntitySpawnTicket> CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset);
+        AZ::Outcome<EntitySpawnTicket, AZStd::string> CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset);
 
         //! Spawns a prefab and places it under level entity
         bool Spawn(EntitySpawnTicket spawnTicket);

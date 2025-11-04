@@ -35,7 +35,7 @@ namespace ScriptCanvas::Nodeables::Spawning
         else
         {
             AZLOG_ERROR("Unable to Create Spawn Ticket - A valid prefab was not provided");
-            CallFailed();
+            CallFailed(ticket.GetError());
         }
     }
 }

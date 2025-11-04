@@ -64,15 +64,15 @@ namespace AzFramework::Scripts
         AZ::TickBus::Handler::BusDisconnect();
     }
 
-    AZ::Outcome<EntitySpawnTicket> SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
+    AZ::Outcome<EntitySpawnTicket, AZStd::string> SpawnableScriptMediator::CreateSpawnTicket(const SpawnableScriptAssetRef& spawnableAsset)
     {
         if (spawnableAsset.GetAsset())
         {
-            AZ::Outcome<EntitySpawnTicket> result(EntitySpawnTicket(spawnableAsset.GetAsset()));
+            AZ::Outcome<EntitySpawnTicket, AZStd::string> result(EntitySpawnTicket(spawnableAsset.GetAsset()));
             m_activeSpawnTickets.insert(result.GetValue());
             return result;
         }
-        return AZ::Failure("CreateSpawnTicket failed to spawn"); // TODO-LS: add name of spawnableAsset.GetAsset()
+        return AZ::Failure(AZStd::string::format("CreateSpawnTicket failed to spawn: %s", spawnableAsset.GetAssetId().ToFixedString().c_str()));
     }
 
     bool SpawnableScriptMediator::Spawn(EntitySpawnTicket spawnTicket)
