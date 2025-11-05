@@ -84,6 +84,7 @@ namespace AzFramework
     protected:
 
         // Component
+        void Init() override;
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
@@ -153,15 +154,15 @@ namespace AzFramework
 
         // EntityBus
         //! Called when the parent entity activates.
-        void OnEntityActivated(const AZ::EntityId& parentEntityId) override;
-        //! Called when the parent entity deactivates.
-        void OnEntityDeactivated(const AZ::EntityId& parentEntityId) override;
+        //! Called when the parent entity is going to be destroyed.
+        void OnEntityDestruction(const AZ::EntityId& parentEntityId) override;
         //! @}
 
         //////////////////////////////////////////////////////////////////////////
         // Actual Implementation Functions
         // They are protected so we can gate them when network-controlled
         void SetParentImpl(AZ::EntityId parentId, bool isKeepWorldTM);
+        void ProcessParentEntity(const AZ::EntityId& parentEntityId);
         void SetInactiveParentImpl(AZ::EntityId parentId, bool isKeepWorldTM);
         void SetLocalTMImpl(const AZ::Transform& tm);
         void SetWorldTMImpl(const AZ::Transform& tm);

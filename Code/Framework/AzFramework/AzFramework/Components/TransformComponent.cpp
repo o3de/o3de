@@ -107,8 +107,6 @@ namespace AzFramework
 
     TransformComponent::TransformComponent() = default;
 
-    TransformComponent ::~TransformComponent() = default;
-
     TransformComponent::TransformComponent(const TransformComponent& copy)
         : m_localTM(copy.m_localTM)
         , m_worldTM(copy.m_worldTM)
@@ -151,16 +149,21 @@ namespace AzFramework
         return false;
     }
 
-    void TransformComponent::Activate()
+    void TransformComponent::Init()
     {
         AZ::TransformBus::Handler::BusConnect(m_entity->GetId());
         AZ::TransformNotificationBus::Bind(m_notificationBus, m_entity->GetId());
-
+        
         const bool keepWorldTm = (m_parentActivationTransformMode == ParentActivationTransformMode::MaintainCurrentWorldTransform || !m_parentId.IsValid());
         SetParentImpl(m_parentId, keepWorldTm);
     }
 
-    void TransformComponent::Deactivate()
+    void TransformComponent::Activate() {}
+
+    void TransformComponent::Deactivate() {}
+
+    
+    TransformComponent ::~TransformComponent()
     {
         AZ::TransformNotificationBus::Event(m_parentId, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
         auto parentTransform = AZ::TransformBus::FindFirstHandler(m_parentId);
@@ -490,11 +493,9 @@ namespace AzFramework
         children.push_back(GetEntityId());
     }
 
-    void TransformComponent::OnEntityActivated(const AZ::EntityId& parentEntityId)
+    void TransformComponent::ProcessParentEntity(const AZ::EntityId& parentEntityId)
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
-
-        m_parentActive = true;
 
 #ifndef _RELEASE
         AZ::EntityId parentId = m_parentId;
@@ -540,7 +541,7 @@ namespace AzFramework
         }
     }
 
-    void TransformComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& parentEntityId)
+    void TransformComponent::OnEntityDestruction([[maybe_unused]] const AZ::EntityId& parentEntityId)
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
         m_parentTM = nullptr;
@@ -557,7 +558,7 @@ namespace AzFramework
         }
 
         AZ::EntityId oldParent = m_parentId;
-        if (m_parentId.IsValid())
+        if (oldParent.IsValid())
         {
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
@@ -576,7 +577,11 @@ namespace AzFramework
 
             AZ::TransformNotificationBus::Handler::BusConnect(m_parentId);
             AZ::TransformHierarchyInformationBus::Handler::BusConnect(m_parentId);
+            // We don't expect an "Entity Activated" call from EntityBus anymore.
+            // Every entity transform will be treated as active. (Gather TM data and other needs.)
             AZ::EntityBus::Handler::BusConnect(m_parentId);
+
+            ProcessParentEntity(m_parentId);
         }
         else
         {
