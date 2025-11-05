@@ -60,7 +60,6 @@ namespace AzFramework
                 ->Event("DeactivateGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DeactivateGameEntityAndDescendants)
                     ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
                 ->Event("GetEntityName", &GameEntityContextRequestBus::Events::GetEntityName)
-                ->Event("SetGameEntityParent", &GameEntityContextRequestBus::Events::SetGameEntityParent)
                 ;
 
             behaviorContext->EBus<GameEntityContextEventBus>("GameEntityContextEventBus")
@@ -595,111 +594,6 @@ namespace AzFramework
     }
 
     //=========================================================================
-    // EntityContextEventBus::SetGameEntityParent
-    //=========================================================================
-    //Incomplete, needs TransformComponent updates.
-    void GameEntityContextComponent::SetGameEntityParent(const AZ::EntityId& targetEntityId, const AZ::EntityId& parentEntityId)
-    {
-        if(!targetEntityId.IsValid()) { return; }
-
-        AZ::Entity* e = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationBus::Events::FindEntity, targetEntityId);
-        AZ::Entity* parentE;
-
-        if(!e) { return; }
-
-        //Determine which arrangement of active states is going on.
-        AZ::u32 fromTo = 0; //0 active > Active, 1 Inactive -> Active, 2 Active -> Inactive, 3 Inactive -> Inactive
-
-        if(parentEntityId.IsValid())
-        {
-            parentE = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(parentE, &AZ::ComponentApplicationBus::Events::FindEntity, parentEntityId);
-
-            if(!parentE) { return; }
-
-            bool childActive = e->IsEffectivelyActive();
-            bool parentActive = parentE->IsEffectivelyActive();
-
-            if(childActive && parentActive)
-            {
-                fromTo = 0;
-            }
-            else if(!childActive && parentActive)
-            {
-                fromTo = 1;
-            }
-            else if(childActive && !parentActive)
-            {
-                fromTo = 2;
-            }
-            else
-            {
-                fromTo = 3;
-            }
-
-            // Orchestrate reparenting manually between parent and child.
-            if (auto* tc = e->FindComponent<AzFramework::TransformComponent>())
-            {
-                auto* ptc = parentE->FindComponent<AzFramework::TransformComponent>();
-
-                if(!ptc) { return; }
-
-                switch (fromTo)
-                {
-                    case 0:
-                        tc->SetParent(parentEntityId);
-                        break;
-                    
-                    case 1:
-                        ActivateGameEntityAndDescendants(targetEntityId, false);
-                        tc->SetParent(parentEntityId);
-                        break;
-                    
-                    case 2:
-                        tc->SetInactiveParent(parentEntityId);
-                        DeactivateGameEntityAndDescendants(targetEntityId, false);
-                        break;
-                    
-                    case 3:
-                        tc->SetInactiveParent(parentEntityId);
-                        break;
-                }
-            }
-        }
-        else
-        {
-            bool childActive = e->IsEffectivelyActive();
-
-            if(childActive)
-            {
-                fromTo = 0;
-            }
-            else
-            {
-                fromTo = 1;
-            }
-
-            
-            // Orchestrate reparenting manually between child and none.
-            if (auto* tc = e->FindComponent<AzFramework::TransformComponent>())
-            {
-                switch (fromTo)
-                {
-                    case 0:
-                        tc->SetParent(parentEntityId);
-                        break;
-                    
-                    case 1:
-                        ActivateGameEntityAndDescendants(targetEntityId, false);
-                        tc->SetParent(parentEntityId);
-                        break;
-                }
-            }
-        }
-    }
-
-    //=========================================================================
     // EntityContextEventBus::LoadFromStream
     //=========================================================================
     bool GameEntityContextComponent::LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds)
@@ -752,12 +646,6 @@ namespace AzFramework
         {
             siblings.push_back(id);
         }
-
-        // Connect to TransformNotificationBus for this entity.
-        if (!AZ::TransformNotificationBus::MultiHandler::BusIsConnectedId(id))
-        {
-            AZ::TransformNotificationBus::MultiHandler::BusConnect(id);
-        }
     }
 
     //=========================================================================
@@ -765,12 +653,6 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::RemoveEntityFromParentChildTree(const AZ::EntityId& entityId)
     {
-        // Disconnect from TransformNotificationBus for this entity.
-        if (AZ::TransformNotificationBus::MultiHandler::BusIsConnectedId(entityId))
-        {
-            AZ::TransformNotificationBus::MultiHandler::BusDisconnect(entityId);
-        }
-
         // Find parent quickly from reverse map. If unknown, we're done.
         auto pIt = m_parentOf.find(entityId);
         if (pIt != m_parentOf.end())
@@ -922,29 +804,9 @@ namespace AzFramework
     }
 
     //=========================================================================
-    // TransformNotificationBus::OnParentChanged
+    // UpdateParentChildHierarchy
     //=========================================================================
-    void GameEntityContextComponent::OnParentChanged(AZ::EntityId oldParentId, AZ::EntityId newParentId)
-    {
-        const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
-
-        UpdateParentChildMaps(entityId, oldParentId, newParentId);
-
-        AZ::Entity* e = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
-
-        //Filter for startup parenting. No need to recompute.
-        AZ::Entity::State state = e->GetState();
-        if( state == AZ::Entity::State::Init || state == AZ::Entity::State::Active )
-        {
-            RecomputeEffectiveActivationForEntity(e);
-        }
-    }
-
-    //=========================================================================
-    // UpdateParentChildMaps
-    //=========================================================================
-    void GameEntityContextComponent::UpdateParentChildMaps(AZ::EntityId childId, AZ::EntityId oldParentId, AZ::EntityId newParentId)
+    void GameEntityContextComponent::UpdateParentChildHierarchy(const AZ::EntityId& childId, const AZ::EntityId& oldParentId, const AZ::EntityId& newParentId)
     {
         // remove from old parent's list
         if (auto it = m_childrenByParentTree.find(oldParentId); it != m_childrenByParentTree.end())
@@ -959,5 +821,16 @@ namespace AzFramework
 
         // reverse index
         m_parentOf[childId] = newParentId;
+
+        // Evaluate if the entity should have it's active state updated.
+        AZ::Entity* e = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationBus::Events::FindEntity, childId);
+
+        //Filter for startup parenting. No need to recompute.
+        AZ::Entity::State state = e->GetState();
+        if( state == AZ::Entity::State::Init || state == AZ::Entity::State::Active )
+        {
+            RecomputeEffectiveActivationForEntity(e);
+        }
     }
 } // namespace AzFramework

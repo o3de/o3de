@@ -8,6 +8,7 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
+#include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Entity.h>
@@ -153,7 +154,7 @@ namespace AzFramework
     {
         AZ::TransformBus::Handler::BusConnect(m_entity->GetId());
         AZ::TransformNotificationBus::Bind(m_notificationBus, m_entity->GetId());
-        
+
         const bool keepWorldTm = (m_parentActivationTransformMode == ParentActivationTransformMode::MaintainCurrentWorldTransform || !m_parentId.IsValid());
         SetParentImpl(m_parentId, keepWorldTm);
     }
@@ -546,7 +547,7 @@ namespace AzFramework
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
         m_parentTM = nullptr;
         m_parentActive = false;
-        ComputeLocalTM();
+        SetParentImpl(AZ::EntityId(), true);
     }
 
     void TransformComponent::SetParentImpl(AZ::EntityId parentId, bool isKeepWorldTM)
@@ -604,6 +605,9 @@ namespace AzFramework
             }
         }
 
+        //Notify the GameEntityContext of this change to update the parent child hierarchy and evaluate new active state.
+        GameEntityContextRequestBus::Broadcast(&GameEntityContextRequests::UpdateParentChildHierarchy, GetEntityId(), oldParent, m_parentId);
+
         AZ::TransformNotificationBus::Event(m_notificationBus, &AZ::TransformNotificationBus::Events::OnParentChanged, oldParent, parentId);
         m_parentChangedEvent.Signal(oldParent, parentId);
 
@@ -623,90 +627,6 @@ namespace AzFramework
         {
             newParentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Added, GetEntityId());
         }
-    }
-
-    void TransformComponent::SetInactiveParent(AZ::EntityId parentId)
-    {
-        SetInactiveParentImpl(parentId, true);
-    }
-    void TransformComponent::SetInactiveParentRelative(AZ::EntityId parentId)
-    {
-        SetInactiveParentImpl(parentId, m_isStatic);
-    }
-
-    void TransformComponent::SetInactiveParentImpl(AZ::EntityId parentId, bool isKeepWorldTM)
-    {
-        if (GetEntity() && parentId == GetEntityId())
-        {
-            AZ_Warning("TransformComponent", false, "An entity can not be set as its own parent.");
-            return;
-        }
-
-        if(!parentId.IsValid())
-        {
-            AZ_Warning("TransformComponent", false, "SetInactiveParent not meant for no-parent logic.");
-            return;
-        }
-
-        AZ::EntityId oldParent = m_parentId;
-        if (m_parentId.IsValid())
-        {
-            AZ::TransformNotificationBus::Handler::BusDisconnect();
-            AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
-            AZ::EntityBus::Handler::BusDisconnect();
-            m_parentActive = false;
-        }
-
-        m_parentId = parentId;
-        
-        AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
-        AZ::Entity* parentEntity = (componentApplication != nullptr) ? componentApplication->FindEntity(m_parentId) : nullptr;
-        
-        if(!parentEntity) 
-        {
-            AZ_Printf("TransformComp", "No Parent Entity.");
-        }
-
-        m_parentActive = true;
-        m_onNewParentKeepWorldTM = isKeepWorldTM;
-
-        auto* ptc = parentEntity->FindComponent<AzFramework::TransformComponent>();
-        m_parentTM = ptc;
-
-        AZ::Transform pTM = m_parentTM->GetWorldTM();
-
-        ComputeLocalTM();
-
-        m_parentTM = nullptr;
-        m_parentActive = false;
-
-        
-        AZ::TransformNotificationBus::Event(GetEntityId(), &AZ::TransformNotificationBus::Events::OnParentChanged, oldParent, parentId);
-        m_parentChangedEvent.Signal(oldParent, parentId);
-
-        if (oldParent.IsValid() && oldParent != parentId) // Don't send removal notification while activating.
-        {
-            AZ::Entity* oldParentEntity = (componentApplication != nullptr) ? componentApplication->FindEntity(oldParent) : nullptr;
-
-            if(oldParentEntity)
-            {
-                auto* optc = parentEntity->FindComponent<AzFramework::TransformComponent>();
-                if(!optc) 
-                {
-                    AZ_Printf("TransformComp", "No Old Parent TM.");
-                }
-
-                AZ::TransformNotificationBus::Event(oldParent, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
-                optc->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
-            }
-            else
-            {
-                AZ_Printf("TransformComp", "No Old Parent Entity.");
-            }
-        }
-
-        AZ::TransformNotificationBus::Event(parentId, &AZ::TransformNotificationBus::Events::OnChildAdded, GetEntityId());
-        ptc->NotifyChildChangedEvent(AZ::ChildChangeType::Added, GetEntityId());
     }
 
     void TransformComponent::SetLocalTMImpl(const AZ::Transform& tm)

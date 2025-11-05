@@ -127,11 +127,12 @@ namespace AzFramework
         virtual void DeactivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot) = 0;
         
         /**
-         * Reparents the game entity without TransformBus. (For Deactivated SetParent.)
-         * @param targetEntityId The target Entity to reparent.
-         * @param parentEntityId The new parent.
+         * Utility method that updates the 'm_childrenByParentTree' and 'm_parentOf' trees with the new arrangement of children and parents.
+         * \param childId The child entity ID that's being reparented.
+         * \param oldParentId The old parent's entity ID the child is currently registered to in the tree.
+         * \param newParentId The new parent's entity ID to move the registration of the child to in the tree.
          */
-        virtual void SetGameEntityParent(const AZ::EntityId& /*targetEntityId*/, const AZ::EntityId& /*parentEntityId*/) = 0;
+        virtual void UpdateParentChildHierarchy(const AZ::EntityId& /*childId*/, const AZ::EntityId& /*oldParentId*/, const AZ::EntityId& /*newParentId*/) = 0;
 
         /**
          * Loads game entities from a stream.

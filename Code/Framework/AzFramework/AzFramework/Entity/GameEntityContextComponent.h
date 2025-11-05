@@ -31,7 +31,6 @@ namespace AzFramework
         : public AZ::Component
         , public EntityContext
         , private GameEntityContextRequestBus::Handler
-        , public AZ::TransformNotificationBus::MultiHandler
     {
     public:
 
@@ -61,9 +60,6 @@ namespace AzFramework
         void ActivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot = true) override; //Expanded Entity State Handling
         void DeactivateGameEntity(const AZ::EntityId&) override;
         void DeactivateGameEntityAndDescendants(AZ::EntityId rootEntityId, bool updateRoot = true) override; //Expanded Entity State Handling
-        //! For Testing:
-        //! Temporary brute force method to assure Transform Reparenting regardless of effective active state.
-        void SetGameEntityParent(const AZ::EntityId& /*targetEntityId*/, const AZ::EntityId& /*parentEntityId*/) override;
         bool LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds) override;
         AZStd::string GetEntityName(const AZ::EntityId& id) override;
         //////////////////////////////////////////////////////////////////////////
@@ -82,11 +78,6 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // TransformNotificationBus
-        void OnParentChanged(AZ::EntityId oldParentId, AZ::EntityId newParentId) override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
         // Expanded Entity State Handling to Introduce Hierarchichal Entity Activation Handling
 
         //! Utility method that processes adding the input entity by pointer to the 'm_childrenByParentTree' and 'm_parentOf' trees.
@@ -99,7 +90,7 @@ namespace AzFramework
         //! \param childId The child entity ID that's being reparented.
         //! \param oldParentId The old parent's entity ID the child is currently registered to in the tree.
         //! \param newParentId The new parent's entity ID to move the registration of the child to in the tree.
-        void UpdateParentChildMaps(AZ::EntityId childId, AZ::EntityId oldParentId, AZ::EntityId newParentId);
+        void UpdateParentChildHierarchy(const AZ::EntityId& childId, const AZ::EntityId& oldParentId, const AZ::EntityId& newParentId) override;
         //! Utility method that handles evaluating the state the entity should be in relative to it's parent. (Used after a parent change update.)
         //! \param movedChildEntity The entity that needs to be evaluated for parent relative active state.
         void RecomputeEffectiveActivationForEntity(AZ::Entity* movedChildEntity);
@@ -117,7 +108,7 @@ namespace AzFramework
 
         //! Local stored hierarchy tree to enable hierarchy handling without the TransformBus (which is only functional while active.)
         //! The tree is populated at AddGameEntity, and DestroyGameEntity.
-        //! The tree is updated by UpdateParentChildMaps.
+        //! The tree is updated by UpdateParentChildHierarchy.
         AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::EntityId>, AZStd::hash<AZ::EntityId>> m_childrenByParentTree; // Parent -> [Children..]
         AZStd::unordered_map<AZ::EntityId, AZ::EntityId, AZStd::hash<AZ::EntityId>> m_parentOf; // Child -> Parent
 
