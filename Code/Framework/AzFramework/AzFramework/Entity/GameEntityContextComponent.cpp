@@ -8,6 +8,8 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -21,52 +23,6 @@
 
 namespace AzFramework
 {
-    //=========================================================================
-    // Hierarchy Handling Utilities
-    //  - EraseValue
-    //  - EnsureChildList
-    //  - FindEntity
-    //=========================================================================
-    template<class T>
-    static bool EraseValue(AZStd::vector<T>& vec, const T& value)
-    {
-        // 1) "Remove": move all elements != value to the front.
-        auto it = AZStd::remove(vec.begin(), vec.end(), value);
-
-        // After this:
-        // - [vec.begin(), it)   contains the elements you KEEP, compacted
-        // - [it, vec.end())     contains now-meaningless "garbage" (old values)
-
-        // 2) If anything was actually "removed", trim the vector's size.
-        if (it != vec.end())
-        {
-            vec.erase(it, vec.end()); // physically shorten the vector
-            return true;              // we did remove at least one element
-        }
-        return false;                 // nothing matched 'value'
-    }
-
-    static AZStd::vector<AZ::EntityId>& EnsureChildList(AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::EntityId>, AZStd::hash<AZ::EntityId>>& map, const AZ::EntityId& key)
-    {
-        // Finding Parent ID in parentChildTree.
-        auto it = map.find(key);
-        if (it == map.end())
-        {
-            //If it doesn't exist, add it with a blank vector as its value pair.
-            it = map.emplace(key, AZStd::vector<AZ::EntityId>{}).first;
-        }
-        //One way or another, return the children vector.
-        return it->second;
-    }
-
-    AZ::Entity* FindEntity(AZ::EntityId id)
-    {
-        AZ::Entity* e = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(
-            e, &AZ::ComponentApplicationBus::Events::FindEntity, id);
-        return e;
-    }
-
     //=========================================================================
     // Reflect
     //=========================================================================
@@ -302,7 +258,7 @@ namespace AzFramework
 
             //Get parent if valid.
             AZ::EntityId parent = AZ::EntityId();
-            if (auto it = parentOf.find(id); it != parentOf.end())
+            if (auto it = m_parentOf.find(id); it != m_parentOf.end())
             { 
                 parent = it->second; 
             }
@@ -310,11 +266,12 @@ namespace AzFramework
             bool pEff = true;
             if(parent.IsValid())
             {
-                AZ::Entity* pEnt = FindEntity(parent);
+                AZ::Entity* pEnt = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(pEnt, &AZ::ComponentApplicationBus::Events::FindEntity, parent);
                 if (pEnt) { pEff = pEnt->IsEffectivelyActive(); }
             }
 
-            entity->SetActiveByTypeIndex(parentActiveTypeIndex, pEff, false);
+            entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, pEff);
         }
 
         for (AZ::Entity* entity : entities)
@@ -324,7 +281,7 @@ namespace AzFramework
                 // Check for active state. if so, process Activation.
                 if (entity->IsEffectivelyActive())
                 {
-                    entity->EvaluateEffectiveActiveState();
+                    entity->ApplyEffectiveActiveState();
                 #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
                     PumpSystemEventsIfNeeded();
                 #endif // (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
@@ -376,7 +333,7 @@ namespace AzFramework
             AZ::ComponentApplicationBus::BroadcastResult(currentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, *entityIdIter);
             if (currentEntity)
             {
-                RemoveEntityFromParentChildTree(entity);
+                RemoveEntityFromParentChildTree(entity->GetId());
 
                 if (currentEntity->GetEntitySpawnTicketId() > 0)
                 {
@@ -446,7 +403,8 @@ namespace AzFramework
 
                 if (entity->GetState() == AZ::Entity::State::Init)
                 {
-                    entity->SetActive(true);
+                    entity->SetEntityActive(true);
+                    entity->ApplyEffectiveActiveState();
                 }
             }
         }
@@ -464,7 +422,8 @@ namespace AzFramework
             return;
         }
 
-        AZ::Entity* rootEntity = FindEntity(rootEntityId);
+        AZ::Entity* rootEntity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(rootEntity, &AZ::ComponentApplicationBus::Events::FindEntity, rootEntityId);
         if (!rootEntity)
         {
             AZ_Warning("EntityContext", false, "Root entity %llu not found.", rootEntityId);
@@ -477,7 +436,7 @@ namespace AzFramework
 
         if(tree.empty()) 
         {
-            AZ_Printf("EntityContext", "Activate and descendants: tree is empty, cancelling out.");
+            AZ_Warning("EntityContext", false, "Activate and descendants: tree is empty, cancelling out.");
             return; 
         }
 
@@ -485,7 +444,8 @@ namespace AzFramework
         for (size_t i = 0; i < tree.size(); ++i)
         {
             const AZ::EntityId id = tree[i];
-            AZ::Entity* e = FindEntity(tree[i]);
+            AZ::Entity* e = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationBus::Events::FindEntity, tree[i]);
             if (!e) { continue; }
 
             bool changed = false;
@@ -495,29 +455,38 @@ namespace AzFramework
                 // This enables reparenting + activation ordering that's out of order.
                 if(updateRoot)
                 {
-                    changed = e->SetActive(true);
+                    changed = e->SetEntityActive(true);
                 }
                 else
                 {
-                    changed = e->SetActiveByTypeIndex(parentActiveTypeIndex, true);
+                    changed = e->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, true);
                 }
                 
-                // One way or another, if the root doesn't change there's no reason to change the children.
-                if(!changed)
+                // If the root doesn't change there's no reason to change the children.
+                // Otherwise propagate the EffectiveState into the Entity.
+                if(changed)
                 {
-                    AZ_Printf("EntityContext", "Activate and descendants: Root didn't change. Cancelling out.");
+                    e->ApplyEffectiveActiveState();
+                }
+                else
+                {
+                    //Root didn't change. Exiting out.
                     return; 
                 }
             }
             else
             {
                 // Now that we evaluated the root, and it changed, we can start stepping through children to say the root did infact change to true.
-                changed = e->SetActiveByTypeIndex(parentActiveTypeIndex, true);
+                changed = e->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, true);
             }
 
-            if(!changed)
-            {   
-                AZ_Printf("EntityContext", "Activate and descendants: %s didn't change state, adding to ignore.", e->GetName().c_str());
+            if(changed)
+            {
+                // Propagate the EffectiveState into the Entity.
+                e->ApplyEffectiveActiveState();
+            }
+            else
+            {  
                 // If, despite changing the parent state to true, this did not change the child. That means it's local state is inactive.
                 // If that's the case, it's already processed it's children.
                 PruneDescendantsFromTreeInPlace(id, tree, i);
@@ -545,12 +514,17 @@ namespace AzFramework
                 {
                 case AZ::Entity::State::Activating:
                     // Queue deactivate to trigger next frame
-                    AZ::TickBus::QueueFunction(&AZ::Entity::SetActive, entity, false, true);
+                    AZ::TickBus::QueueFunction([entity]()
+                    {
+                        entity->SetEntityActive(false);
+                        entity->ApplyEffectiveActiveState();
+                    });
                     break;
 
                 case AZ::Entity::State::Active:
                     // Deactivate immediately
-                    entity->SetActive(false);
+                    entity->SetEntityActive(false);
+                    entity->ApplyEffectiveActiveState();
                     break;
 
                 default:
@@ -573,7 +547,8 @@ namespace AzFramework
             return;
         }
         
-        AZ::Entity* rootEntity = FindEntity(rootEntityId);
+        AZ::Entity* rootEntity = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(rootEntity, &AZ::ComponentApplicationBus::Events::FindEntity, rootEntityId);
         if (!rootEntity)
         {
             AZ_Warning("EntityContext", false, "Root entity %llu not found.", rootEntityId);
@@ -592,17 +567,29 @@ namespace AzFramework
             AZ::EntityId entityId = tree[i];
             if(entityId == rootEntityId) 
             {
-                if(updateRoot) { rootEntity -> SetActive(false); }
-                else { rootEntity->SetActiveByTypeIndex(parentActiveTypeIndex, false); }  
+                if (updateRoot)
+                {
+                    rootEntity->SetEntityActive(false);
+                }
+                else
+                {
+                    rootEntity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, false);
+                }
+
+                // Propagate state if changed, otherwise just returns out.
+                rootEntity->ApplyEffectiveActiveState();
             }
             else
             {
-                AZ::Entity* e = FindEntity(entityId);
+                AZ::Entity* e = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
                 
                 if(!e) { continue; }
 
                 // Because we're going bottom to top, there's no need to check if the state has changed.
-                e->SetActiveByTypeIndex(parentActiveTypeIndex, false);
+                e->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, false);
+                // Propagate state if changed, otherwise just returns out.
+                e->ApplyEffectiveActiveState();
             }
         }
     }
@@ -615,7 +602,8 @@ namespace AzFramework
     {
         if(!targetEntityId.IsValid()) { return; }
 
-        AZ::Entity* e = FindEntity(targetEntityId);
+        AZ::Entity* e = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationBus::Events::FindEntity, targetEntityId);
         AZ::Entity* parentE;
 
         if(!e) { return; }
@@ -625,7 +613,8 @@ namespace AzFramework
 
         if(parentEntityId.IsValid())
         {
-            parentE = FindEntity(parentEntityId);
+            parentE = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(parentE, &AZ::ComponentApplicationBus::Events::FindEntity, parentEntityId);
 
             if(!parentE) { return; }
 
@@ -752,11 +741,11 @@ namespace AzFramework
         
         //Add parent to Child -> Parent tree.
         const AZ::EntityId id = entity->GetId();
-        parentOf[id] = parentId;
+        m_parentOf[id] = parentId;
 
         //Add child to Parent -> [Children..] tree
         //Returns a ref to the parent->vector<AZ::EntityId>
-        auto& siblings = EnsureChildList(childrenByParentTree, parentId);
+        auto& siblings = m_childrenByParentTree[parentId];
 
         // Check for duplicates. Then adds child to vector.
         if (AZStd::find(siblings.begin(), siblings.end(), id) == siblings.end())
@@ -774,17 +763,7 @@ namespace AzFramework
     //=========================================================================
     // RemoveEntityFromParentChildTree
     //=========================================================================
-    void GameEntityContextComponent::RemoveEntityFromParentChildTree(AZ::Entity* entity)
-    {
-        if(!entity) { return; }
-        
-        RemoveEntityFromParentChildTreeById(entity->GetId());
-    }
-
-    //=========================================================================
-    // RemoveEntityFromParentChildTreeById
-    //=========================================================================
-    void GameEntityContextComponent::RemoveEntityFromParentChildTreeById(const AZ::EntityId& entityId)
+    void GameEntityContextComponent::RemoveEntityFromParentChildTree(const AZ::EntityId& entityId)
     {
         // Disconnect from TransformNotificationBus for this entity.
         if (AZ::TransformNotificationBus::MultiHandler::BusIsConnectedId(entityId))
@@ -793,31 +772,31 @@ namespace AzFramework
         }
 
         // Find parent quickly from reverse map. If unknown, we're done.
-        auto pIt = parentOf.find(entityId);
-        if (pIt != parentOf.end())
+        auto pIt = m_parentOf.find(entityId);
+        if (pIt != m_parentOf.end())
         {
             const AZ::EntityId parentId = pIt->second;
 
             // Get child vector by parentId.
-            auto cIt = childrenByParentTree.find(parentId);
-            if (cIt != childrenByParentTree.end())
+            auto cIt = m_childrenByParentTree.find(parentId);
+            if (cIt != m_childrenByParentTree.end())
             {
                 // If we found child vector, remove this ID from it.
-                EraseValue(cIt->second, entityId);
+                AZStd::erase(cIt->second, entityId) > 0;
                 if (cIt->second.empty())
                 {
                     // If vector is empty, parent has no children, remove the entire entry.
-                    childrenByParentTree.erase(cIt);
+                    m_childrenByParentTree.erase(cIt);
                 }
             }
 
             // Remove Child -> Parent entry, child no longer in tree.
-            parentOf.erase(pIt);
+            m_parentOf.erase(pIt);
         }
 
         // Reparent this entities children to null in the tree. Ideally transform parent change event will update the tree from there.
-        auto asParent = childrenByParentTree.find(entityId);
-        if (asParent != childrenByParentTree.end())
+        auto asParent = m_childrenByParentTree.find(entityId);
+        if (asParent != m_childrenByParentTree.end())
         {
             // If parent exists in tree. Get Children vector.
             auto& kids = asParent->second;
@@ -827,17 +806,17 @@ namespace AzFramework
                 // Reparent in our index (Transform system will do its own when active)
                 for (const AZ::EntityId& kid : kids)
                 {
-                    parentOf[kid] = AZ::EntityId{}; // null
+                    m_parentOf[kid] = AZ::EntityId(); // null
                 }
 
                 // Get children vector bound to 'null' parent.
-                auto& rootKids = EnsureChildList(childrenByParentTree, AZ::EntityId{});
+                auto& rootKids = m_childrenByParentTree[AZ::EntityId()];
                 // Add all of this entities children to 'null' parent.
                 rootKids.insert(rootKids.end(), kids.begin(), kids.end());
             }
 
             // Remove this entity from parent tree, it is no longer part of the tree.
-            childrenByParentTree.erase(asParent);
+            m_childrenByParentTree.erase(asParent);
         }
     }
     
@@ -852,7 +831,7 @@ namespace AzFramework
         for (size_t i = start; i < out.size(); ++i)
         {
             const AZ::EntityId cur = out[i];
-            if (auto it = childrenByParentTree.find(cur); it != childrenByParentTree.end())
+            if (auto it = m_childrenByParentTree.find(cur); it != m_childrenByParentTree.end())
             {
                 const auto& kids = it->second;
                 out.insert(out.end(), kids.begin(), kids.end());
@@ -876,7 +855,7 @@ namespace AzFramework
 
         AZStd::vector<AZ::EntityId> stack;
         // seed with root's children
-        if (auto it = childrenByParentTree.find(root); it != childrenByParentTree.end())
+        if (auto it = m_childrenByParentTree.find(root); it != m_childrenByParentTree.end())
         {
             const auto& kids = it->second;
             stack.insert(stack.end(), kids.begin(), kids.end());
@@ -889,7 +868,7 @@ namespace AzFramework
 
             if (toRemove.insert(cur).second) // newly inserted
             {
-                if (auto it = childrenByParentTree.find(cur); it != childrenByParentTree.end())
+                if (auto it = m_childrenByParentTree.find(cur); it != m_childrenByParentTree.end())
                 {
                     const auto& kids = it->second;
                     stack.insert(stack.end(), kids.begin(), kids.end());
@@ -918,9 +897,11 @@ namespace AzFramework
         bool childEffective = movedChildEntity->IsEffectivelyActive();
 
         bool incomingParentEffective = true;
-        if (auto it = parentOf.find(movedChild); it != parentOf.end() && it->second.IsValid())
+        if (auto it = m_parentOf.find(movedChild); it != m_parentOf.end() && it->second.IsValid())
         {
-            if (AZ::Entity* p = FindEntity(it->second))
+            AZ::Entity* p = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(p, &AZ::ComponentApplicationBus::Events::FindEntity, it->second);
+            if (p)
             {
                 incomingParentEffective = p->IsEffectivelyActive();
             }
@@ -949,7 +930,8 @@ namespace AzFramework
 
         UpdateParentChildMaps(entityId, oldParentId, newParentId);
 
-        AZ::Entity* e = FindEntity(entityId);
+        AZ::Entity* e = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(e, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
         //Filter for startup parenting. No need to recompute.
         AZ::Entity::State state = e->GetState();
@@ -962,26 +944,20 @@ namespace AzFramework
     //=========================================================================
     // UpdateParentChildMaps
     //=========================================================================
-    void GameEntityContextComponent::UpdateParentChildMaps(AZ::EntityId child, AZ::EntityId oldParent, AZ::EntityId newParent)
+    void GameEntityContextComponent::UpdateParentChildMaps(AZ::EntityId childId, AZ::EntityId oldParentId, AZ::EntityId newParentId)
     {
         // remove from old parent's list
-        if (auto it = childrenByParentTree.find(oldParent); it != childrenByParentTree.end())
+        if (auto it = m_childrenByParentTree.find(oldParentId); it != m_childrenByParentTree.end())
         {
-            EraseValue(it->second, child);
-            if (it->second.empty()) { childrenByParentTree.erase(it); }
+            AZStd::erase(it->second, childId);
+            if (it->second.empty()) { m_childrenByParentTree.erase(it); }
         }
 
         // add to new parent's list
-        auto& newSiblings = EnsureChildList(childrenByParentTree, newParent);
-        if (AZStd::find(newSiblings.begin(), newSiblings.end(), child) == newSiblings.end())
-        {
-            newSiblings.push_back(child);
-        }
+        auto& newSiblings = m_childrenByParentTree[newParentId];
+        newSiblings.push_back(childId);
 
         // reverse index
-        parentOf[child] = newParent;
-
-        // (optional) recompute effective activation for the moved subtree
-        // RecomputeEffectiveActivation(child);
+        m_parentOf[childId] = newParentId;
     }
 } // namespace AzFramework

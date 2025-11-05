@@ -133,42 +133,37 @@ namespace AZ
         //! @return The state of the entity. For example, the entity has been initialized, the entity is active, and so on.
         State GetState() const { return m_state; }
 
-        //! Gets the "Start Active" boolean which determines if this entity should start Activated or not.
-        //! @return Whether a state change happened.
+        //! Gets the "Start Active" boolean which determines if this entity should start Activated or not. Set by the Entity Inspector interface in editor.
+        //! @return Returns the m_startActive state determined by the Entity Inspector, and preserved by entity loading/saving.
         bool GetStartActive() const { return m_startActive; }
-        //! Sets the "Start Active" boolean to enable activation/deactivation on first instantiation, this modifies "entity" state type.
-        //! @param active the ticket id used to spawn the entity.
+        //! Sets the "Start Active" boolean to enable activation/deactivation on first instantiation. This is set by the "Start Activated" toggle on the Entity Inspector interface in editor.
+        //! @param active Sets the starting active state this entity will be in at first instantiation. Active state gets set on "Entity" index (0) and determines if this entity will start activated or not.
         void SetStartActive(bool active) { m_startActive = active; }
         
-        //! Gets the "entity" active state which determines if the entity itself is set to be inactive. Without any other active types factored.
-        //! @return Whether a state change happened.
-        bool GetActive() const { return GetActiveByTypeIndex(0); }
-        //! Sets the "entity" active state type to determine whether the local state of the entity drives ore preserves a state change.
-        //! @param active the ticket id used to spawn the entity.
-        //! @param evaluate the ticket id used to spawn the entity.
-        //! @return Whether a state change happened.
-        bool SetActive(bool active, bool evaluate = true);
+        //! Sets the "Entity" active state type to determine whether the local state of the entity should be active or inactive. This only alters the local active state factor.
+        //! @param active Whether the state should be set to activated or deactivated.
+        //! @return Whether, by changing this state, an effective state change happened. (Entity changing from Active -> Inactive or Inactive -> Active)
+        bool SetEntityActive(bool active);
 
         //! Gets the active state by type index. This returns a specific active state based on input index without any other active types factored.
-        //! @param entitySpawnTicketId the ticket id used to spawn the entity.
-        //! @return Whether a state change happened.
-        bool GetActiveByTypeIndex(size_t index) const noexcept;
-        //! Sets the active state of a type to record the desired active state held by this entity.
-        //! After set, Entity evaluates its new effective active state and changes accordingly.
-        //! @param index the ticket id used to spawn the entity.
-        //! @param active the ticket id used to spawn the entity.
-        //! @param evaluate the ticket id used to spawn the entity.
-        //! @return Whether a state change happened.
-        bool SetActiveByTypeIndex(size_t index, bool active, bool evaluate = true);
+        //! @param index The index that will be checked for active state. Can be 0-31 (32 possible flags.) 
+        //! @return The state of this one index flag. Without any other active types factored in.
+        bool GetEffectiveActiveLayerByTypeIndex(size_t index) const noexcept;
+        //! Sets the active state by type index. This sets the active state of one single flag, identified by index. 
+        //! @param index  The index that will be targeted to change its active state. Can be 0-31 (32 possible flags.) 
+        //! @param active Whether the state should be set to activated or deactivated.
+        //! @return Whether, by changing this state, an effective state change happened. (Entity changing from Active -> Inactive or Inactive -> Active)
+        bool SetEffectiveActiveLayerByTypeIndex(size_t index, bool active);
 
-        //! The method that evaluates the current Entity Effective State and changes it's activation if changed.
-        //! @return Whether a state change happened.
-        bool EvaluateEffectiveActiveState();
+        //! This method actually drives the Entity to check its effective state and then change itself to that desired state if appropriate.
+        //! Will only drive a change if it's actually changing from Active -> Inactive or Inactive -> Active. Otherwise stays dormant.
+        //! @return Whether the effective state and therefore the entity itself has had its functional Activation state changed. Activate() and Deactivate().
+        bool ApplyEffectiveActiveState();
 
-        //! Returns the current functional active state of the Entity. This is the combination of parent state and local state.
+        //! Returns the current functional active state of the Entity. This is the evaluated combination of all the Active Type flags on this entity.
         //! If all active, then active, otherwise inactive (deactivate).
-        //! @return Whether a state change happened.
-        bool IsEffectivelyActive() { return m_activeStateByType == kAllStatesOn; }
+        //! @return The current "Effectively Active" state of the Entity.
+        bool IsEffectivelyActive() { return m_activeStateByType == s_allStatesOn; }
 
 
         //! Gets the ticket id used to spawn the entity.
@@ -470,16 +465,16 @@ namespace AZ
         //! what the absolute desired state (Effective State) of this entity is.
 
         bool m_startActive = true;
-        static constexpr size_t kMaxStateFlags = 32;
-        static constexpr uint32_t kAllOn32 = 0xFFFFFFFFu;
-        static constexpr uint32_t kAllStatesOn =
-                                    (kMaxStateFlags == 0)  ? 0u :
-                                    (kMaxStateFlags >= 32) ? kAllOn32 :
-                                    (kAllOn32 >> (32 - kMaxStateFlags));
+        static constexpr size_t s_maxStateFlags = 32;
+        static constexpr uint32_t s_allOn32 = 0xFFFFFFFFu;
+        static constexpr uint32_t s_allStatesOn =
+                                    (s_maxStateFlags == 0)  ? 0u :
+                                    (s_maxStateFlags >= 32) ? s_allOn32 :
+                                    (s_allOn32 >> (32 - s_maxStateFlags));
 
         //! The current int carrying the masked state of all Active States by Type, each held on a defined index.
         //! Starts all active to assure unused type indexes start active.
-        uint32_t m_activeStateByType = kAllStatesOn;
+        uint32_t m_activeStateByType = s_allStatesOn;
 
         //! Foundational entity properties/flags.
         //! To keep AZ::Entity lightweight, one should resist the urge the add flags here unless they're extremely

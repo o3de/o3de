@@ -161,8 +161,8 @@ namespace AZ
         AZ_Assert(m_state == State::Constructed, "Component should be in Constructed state to be Initialized!");
         SetState(State::Initializing);
 
-        //Update Active state mask.
-        SetActive(m_startActive, false);
+        //Update "Entity" Active state index. Does not change state yet. Left for the Entity handling to apply.
+        SetEntityActive(m_startActive);
 
         if (AZ::Interface<ComponentApplicationRequests>::Get() != nullptr)
         {
@@ -667,37 +667,38 @@ namespace AZ
 
 #pragma region Entity Activation State Handling
 
-    bool Entity::SetActive(bool active, bool evaluate)
+    bool Entity::SetEntityActive(bool active)
     {
-        return SetActiveByTypeIndex(0, active, evaluate);
+        return SetEffectiveActiveLayerByTypeIndex(0, active);
     }
 
-    bool Entity::SetActiveByTypeIndex(size_t index, bool active, bool evaluate)
+    bool Entity::SetEffectiveActiveLayerByTypeIndex(size_t index, bool active)
     {
-        if (index >= kMaxStateFlags)
+        if (index >= s_maxStateFlags)
         {
-            AZ_Warning("Entity", false, "SetActiveByTypeIndex index of %u exceeding state flag limit.", index);
+            AZ_Warning("Entity", false, "SetEffectiveActiveLayerByTypeIndex index of %u exceeding state flag limit.", index);
             return false;
         }
+
+        bool pastActive = IsEffectivelyActive();
 
         const uint32_t bit = (1u << static_cast<uint32_t>(index));
 
         if (active)
-            m_activeStateByType |= bit;
-        else
-            m_activeStateByType &= ~bit;
-
-        if (evaluate)
         {
-            return EvaluateEffectiveActiveState();
+            m_activeStateByType |= bit;
+        }
+        else
+        {
+            m_activeStateByType &= ~bit;
         }
 
-        return true; // Might be better as false, no eval usually means force state.
+        return (pastActive != IsEffectivelyActive());
     }
 
-    bool Entity::GetActiveByTypeIndex(size_t index) const noexcept
+    bool Entity::GetEffectiveActiveLayerByTypeIndex(size_t index) const noexcept
     {
-        if (index >= kMaxStateFlags)
+        if (index >= s_maxStateFlags)
         {
             return true;
         }
@@ -706,14 +707,14 @@ namespace AZ
         return (m_activeStateByType & bit) != 0;
     }
 
-    bool Entity::EvaluateEffectiveActiveState()
+    bool Entity::ApplyEffectiveActiveState()
     {
         bool isEffective = IsEffectivelyActive();
 
         // Avoid evaluation during irregular states.
         if (m_state != State::Init && m_state != State::Active)
         {
-            AZ_Warning("Entity", false, "%s evaluating active state, between valid states. Exiting out.", GetName().c_str());
+            AZ_Warning("Entity", false, "%s evaluating active state, between valid states. Exiting out.", m_name.c_str());
             return false;
         }
 

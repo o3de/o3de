@@ -36,7 +36,7 @@ namespace AZ
     void EntityActiveSystemComponent::Deactivate()
     {
         EntityActiveSystemRequestBus::Handler::BusDisconnect();
-        activeTypeNameToIndex.clear();
+        m_activeTypeNameToIndex.clear();
     }
 
     size_t EntityActiveSystemComponent::GetActiveTypeIndexByName(AZStd::string typeName) const noexcept
@@ -46,9 +46,9 @@ namespace AZ
 
     size_t EntityActiveSystemComponent::GetActiveTypeIndexById(AZ::Crc32 typeNameId) const noexcept
     {
-        for (size_t i = 0; i < activeTypeNameToIndex.size(); i++)
+        for (size_t i = 0; i < m_activeTypeNameToIndex.size(); i++)
         {
-            if (activeTypeNameToIndex[i] == typeNameId)
+            if (m_activeTypeNameToIndex[i] == typeNameId)
             {
                 return i;
             }
@@ -64,12 +64,12 @@ namespace AZ
 
     size_t EntityActiveSystemComponent::RegisterEntityActiveType(AZ::Crc32 typeNameId)
     {
-        if (activeTypeNameToIndex.size() >= kMaxStateFlags)
+        if (m_activeTypeNameToIndex.size() >= s_maxStateFlags)
         {
             return kInvalidIndex;
         }
 
-        activeTypeNameToIndex.push_back(typeNameId);
+        m_activeTypeNameToIndex.push_back(typeNameId);
 
         return GetActiveTypeIndexById(typeNameId);
     }
