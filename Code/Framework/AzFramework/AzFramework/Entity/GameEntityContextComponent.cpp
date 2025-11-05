@@ -782,7 +782,7 @@ namespace AzFramework
             if (cIt != m_childrenByParentTree.end())
             {
                 // If we found child vector, remove this ID from it.
-                AZStd::erase(cIt->second, entityId) > 0;
+                AZStd::erase(cIt->second, entityId);
                 if (cIt->second.empty())
                 {
                     // If vector is empty, parent has no children, remove the entire entry.
