@@ -6,7 +6,7 @@
  *
  */
 
-#include <qevent.h>
+#include <QEvent>
 
 #include <AzCore/Component/Entity.h>
 

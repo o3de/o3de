@@ -10,7 +10,7 @@
 
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 
-#include <QtCore/QCoreApplication>
+#include <QCoreApplication>
 
 #if defined(EXTERNAL_CRASH_REPORTING)
 #include <ToolsCrashHandler.h>

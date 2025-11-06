@@ -51,14 +51,14 @@ namespace EMotionFX
     void SkeletonModelJointWidget::CreateGUI()
     {
         QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setSizeConstraint(QLayout::SetMinimumSize);
         auto* separatorLayout = new HLineLayout;
         auto* separatorLayoutWidget = new QWidget;
         separatorLayoutWidget->setLayout(separatorLayout);
         mainLayout->addWidget(separatorLayoutWidget);
 
-        connect(this, &SkeletonModelJointWidget::WidgetCountChanged, this, [=, this]() {
+        connect(this, &SkeletonModelJointWidget::WidgetCountChanged, this, [this, separatorLayoutWidget]() {
             separatorLayoutWidget->setVisible(WidgetCount() > 0);
         });
 

@@ -23,6 +23,8 @@
 #include <ScriptCanvas/Bus/GraphBus.h>
 #endif
 
+#include <QScopedPointer>
+
 namespace AzQtComponents
 {
     class TabWidget;
@@ -67,7 +69,9 @@ namespace ScriptCanvasEditor
         public:
 
             LogPanelWidget(QWidget* parent = nullptr);
-            AZStd::unique_ptr<Ui::LogPanel> ui;
+            ~LogPanelWidget() override;
+
+            QScopedPointer<Ui::LogPanel> ui;
 
         };
 

@@ -9,7 +9,7 @@
 // include required files
 #include "MysticQtManager.h"
 #include <MCore/Source/StringConversions.h>
-#include <QtGui/QIcon>
+#include <QIcon>
 #include <QDir>
 
 namespace MysticQt

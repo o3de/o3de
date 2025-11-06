@@ -12,14 +12,21 @@
 #include <QStringList>
 #include <QStringListModel>
 #include "native/utilities/LogPanel.h"
-#include <QPointer>
-#include "native/assetprocessor.h"
+
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
-#include <QElapsedTimer>
-#include <ui/BuilderListModel.h>
+#include <native/ui/CacheServerData.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <native/ui/CacheServerData.h>
+
+#include <QElapsedTimer>
+#include <QMainWindow>
+#include <QPointer>
+#include <QStringList>
+#include <QStringListModel>
+#include <ui/BuilderListModel.h>
 #endif
 
 namespace AzToolsFramework

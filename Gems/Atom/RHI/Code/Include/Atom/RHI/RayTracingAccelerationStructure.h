@@ -86,6 +86,55 @@ namespace AZ::RHI
         RayTracingBlasDescriptor m_descriptor;
     };
 
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Cluster Bottom Level Acceleration Structure (Cluster BLAS)
+
+    //! RayTracingClusterBlasDescriptor
+    //!
+    //! Describes a ray tracing cluster bottom-level acceleration structure.
+    struct RayTracingClusterBlasDescriptor final
+    {
+        //! Returns the device-specific DeviceRayTracingBlasDescriptor for the given index
+        DeviceRayTracingClusterBlasDescriptor GetDeviceRayTracingClusterBlasDescriptor(int deviceIndex) const;
+
+        RHI::VertexFormat m_vertexFormat;
+        uint32_t m_maxGeometryIndexValue;
+        uint32_t m_maxClusterUniqueGeometryCount;
+        uint32_t m_maxClusterTriangleCount;
+        uint32_t m_maxClusterVertexCount;
+        uint32_t m_maxTotalTriangleCount;
+        uint32_t m_maxTotalVertexCount;
+        uint32_t m_minPositionTruncateBitCount;
+        uint32_t m_maxClusterCount;
+        RayTracingAccelerationStructureBuildFlags m_buildFlags = AZ::RHI::RayTracingAccelerationStructureBuildFlags::FAST_TRACE;
+        RHI::Ptr<RHI::BufferView> m_srcInfosArrayBufferView;
+        RHI::Ptr<RHI::BufferView> m_srcInfosCountBufferView;
+    };
+
+    //! RayTracingClusterBlas
+    //!
+    //! A RayTracingClusterBlas is created from the information in the RayTracingClusterBlasDescriptor.
+    class ATOM_RHI_PUBLIC_API RayTracingClusterBlas
+        : public MultiDeviceObject
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(RayTracingClusterBlas, AZ::SystemAllocator, 0);
+        AZ_RTTI(RayTracingClusterBlas, "{1FFD3320-3EFF-4655-B648-BF268843BF1C}", MultiDeviceObject);
+        AZ_RHI_MULTI_DEVICE_OBJECT_GETTER(RayTracingClusterBlas);
+        RayTracingClusterBlas() = default;
+        virtual ~RayTracingClusterBlas() = default;
+
+        //! Creates the internal Cluster BLAS buffers from the descriptor
+        ResultCode CreateBuffers(MultiDevice::DeviceMask deviceMask, const RHI::RayTracingClusterBlasDescriptor* descriptor, const RayTracingBufferPools& rayTracingBufferPools);
+
+        ResultCode AddDevice(int deviceIndex, const RayTracingBufferPools& rayTracingBufferPools);
+
+    private:
+        RayTracingClusterBlasDescriptor m_descriptor;
+    };
+
+
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Top Level Acceleration Structure (TLAS)
 

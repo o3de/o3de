@@ -8,7 +8,7 @@
 #pragma once
 
 #include <QGraphicsLinearLayout>
-#include <qgraphicswidget.h>
+#include <QGraphicsWidget>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>

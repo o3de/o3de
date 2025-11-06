@@ -168,7 +168,7 @@ namespace AZ
 
         bool MeshletsRenderObject::ProcessBuffersData(float* position, uint32_t vtxNum)
         {
-            uint32_t badVertices = 0;
+            [[maybe_unused]] uint32_t badVertices = 0;
             const float maxVertexSizeSqr = 99.9f * 99.9f;  // under 100 meters
             for (uint32_t vtx = 0; vtx < vtxNum; ++vtx, position += 3)
             {
@@ -397,7 +397,7 @@ namespace AZ
 
                         RHI::ShaderInputBufferIndex indexHandle = meshRenderData.RenderObjectSrg->FindShaderInputBufferIndex(bufferDesc.m_paramNameInSrg);
                         bufferDesc.m_resourceShaderIndex = indexHandle.GetIndex();
-                        if (!meshRenderData.RenderObjectSrg->SetBufferView(indexHandle, meshRenderData.RenderBuffersViews[stream]))
+                        if (!meshRenderData.RenderObjectSrg->SetBufferView(indexHandle, meshRenderData.RenderBuffersViews[stream].get()))
                         {
                             AZ_Error("Meshlets", false, "Failed to bind render buffer view for %s", bufferDesc.m_bufferName.GetCStr());
                             return false;

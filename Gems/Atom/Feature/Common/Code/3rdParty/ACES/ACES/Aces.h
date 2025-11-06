@@ -1,3 +1,4 @@
+
 // ACES code derived from the nVidia HDR Display Demo Project
 // (https://developer.nvidia.com/high-dynamic-range-display-development)
 // -----------------------------------------------------------------------------
@@ -147,9 +148,15 @@ namespace AZ
             Passthrough,
             GammaSRGB,
             Reinhard,
+            ReinhardExtended,
             AcesFitted,
             AcesFilmic,
-            Filmic
+            Filmic,
+            Agx,
+            AgxGolden,
+            AgxPunchy,
+            AgxWarm,
+            PbrNeutral
         );
 
         enum class ShaperPresetType
@@ -169,9 +176,15 @@ namespace AZ
         {
             None = 0,
             Reinhard,
+            ReinhardExtended,
             AcesFitted,
             AcesFilmic,
-            Filmic
+            Filmic,
+            Agx,
+            AgxGolden,
+            AgxPunchy,
+            AgxWarm,
+            PbrNeutral
         };
 
         enum class TransferFunctionType

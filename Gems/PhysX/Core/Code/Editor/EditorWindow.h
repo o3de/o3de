@@ -9,7 +9,9 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
+
 #include <QWidget>
+#include <QScopedPointer>
 #endif
 
 namespace AzPhysics
@@ -44,6 +46,7 @@ namespace PhysX
             static void RegisterViewClass();
 
             explicit EditorWindow(QWidget* parent = nullptr);
+            ~EditorWindow() override;
 
         private:
             static void SaveConfiguration(

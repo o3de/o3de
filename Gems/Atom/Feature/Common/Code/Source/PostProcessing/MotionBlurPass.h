@@ -33,8 +33,6 @@ namespace AZ
 
         private:
             MotionBlurPass(const RPI::PassDescriptor& descriptor);
-            void InitializeShaderVariant();
-            void UpdateCurrentShaderVariant();
 
             AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_constants";
         };

@@ -211,11 +211,38 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_N
 include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}${LY_ARCHITECTURE_NAME_EXTENSION}.cmake)
 
 # Perform a self-check here - we expect certain values to be defined even if they are blank for a given platform.
-set(O3DE_REQUIRED_DEFINITIONS O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS O3DE_COMPILE_OPTION_EXPORT_SYMBOLS O3DE_COMPILE_OPTION_DISABLE_WARNINGS)
+set(O3DE_REQUIRED_DEFINITIONS 
+    O3DE_COMPILE_OPTION_ENABLE_EXCEPTIONS 
+    O3DE_COMPILE_OPTION_EXPORT_SYMBOLS 
+    O3DE_COMPILE_OPTION_DISABLE_WARNINGS
+    O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION
+    O3DE_COMPILE_OPTION_ENABLE_FAST_MATH
+    O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH
+    O3DE_COMPILE_OPTION_DISABLE_FAST_MATH
+    O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH
+    )
 foreach(def ${O3DE_REQUIRED_DEFINITIONS})
     message(VERBOSE "Current compiler/arch sets ${def}=${${def}}")
     if (NOT DEFINED ${def})
         message(FATAL_ERROR, "${def} must be defined for every platform and compiler.  Set it to blank if it does not apply when you are defining a new toolchain")
     endif()
 endforeach()
+
+# This is a good place to set global options based on the above:
+
+if (USE_FAST_MATH)
+    ly_append_configurations_options(
+        DEFINES
+            # append our definition, even though __FAST_MATH__ is already defined
+            # it gets undefined if any other flag that affects the fast math is used
+            O3DE_USING_FAST_MATH 
+        COMPILATION
+            ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH}
+    )
+else()
+    ly_append_configurations_options(
+        COMPILATION
+            ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH}
+    )
+endif()
 

@@ -432,12 +432,17 @@ namespace UnitTest
         EXPECT_THAT(cos, IsCloseTolerance(AZ::Vector2(0.5f, -0.259f), 0.005f));
     }
 
+    
+    // use of infinity with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     TEST(MATH_Vector2, TestIsFinite)
     {
         EXPECT_TRUE(AZ::Vector2(1.0f, 1.0f).IsFinite());
         const float infinity = std::numeric_limits<float>::infinity();
         EXPECT_FALSE(AZ::Vector2(infinity, infinity).IsFinite());
     }
+#endif
+
     struct Vector2AngleTestArgs
     {
         AZ::Vector2 current;

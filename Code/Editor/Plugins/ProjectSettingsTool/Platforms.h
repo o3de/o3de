@@ -15,6 +15,7 @@ namespace ProjectSettingsTool
         Base,
         Android,
         Ios,
+        Windows,
 
         NumPlatformIds
     };
@@ -37,7 +38,8 @@ namespace ProjectSettingsTool
     {
         Platform{ PlatformId::Base, PlatformDataType::ProjectJson },
         Platform{ PlatformId::Android, PlatformDataType::PlatformResource },
-        Platform{ PlatformId::Ios, PlatformDataType::PlatformResource }
+        Platform{ PlatformId::Ios, PlatformDataType::PlatformResource },
+        Platform{ PlatformId::Windows, PlatformDataType::PlatformResource }
     };
     
 } // namespace ProjectSettingsTool

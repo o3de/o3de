@@ -47,6 +47,8 @@
 class QAction;
 class QLineEdit;
 class QPushButton;
+class QLabel;
+class QCheckBox;
 
 namespace Ui
 {

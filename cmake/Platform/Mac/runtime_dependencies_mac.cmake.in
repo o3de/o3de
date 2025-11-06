@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.24)
 
 function(gp_resolve_item_override context item exepath dirs resolved_item_var resolved_var)
     # Qt frameworks could resolve the binary to eg qt/lib/QtCore.framework/Headers/QtCore instead of qt/lib/QtCore.framework/Versions/5/QtCore

@@ -7,4 +7,6 @@
 #
 
 set(FILES
+    ScriptCanvasApplication_Traits_Platform.h
+    ScriptCanvasApplication_Traits_Mac.h
 )

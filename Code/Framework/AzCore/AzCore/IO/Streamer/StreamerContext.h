@@ -15,6 +15,13 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/parallel/atomic.h>
+#include <AzCore/Task/TaskDescriptor.h>
+
+namespace AZ
+{
+    class TaskExecutor;
+}
 
 namespace AZ::IO
 {
@@ -23,7 +30,7 @@ namespace AZ::IO
 
     using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
 
-    class AZCORE_API StreamerContext
+    class AZCORE_API StreamerContext final
     {
     public:
         using PreparedQueue = AZStd::deque<FileRequest*>;
@@ -77,6 +84,9 @@ namespace AZ::IO
         //! Adds an old external request to the recycle bin so it can be reused later.
         void RecycleRequest(ExternalFileRequest* request);
 
+        //! Returns the number of tasks that are haven't completed processing yet. These are commonly tasks that have a callback
+        //! that's still being processed.
+        size_t GetOutstandingTaskCount() const;
         //! Does the FinalizeRequest callback where appropriate and does some bookkeeping to finalize requests.
         //! @return True if any requests were finalized, otherwise false.
         bool FinalizeCompletedRequests();
@@ -127,12 +137,14 @@ namespace AZ::IO
 
         //! The average amount of time spend on completing internal completion callbacks.
         TimedAverageWindow<s_statisticsWindowSize> m_internalCompletionTimeAverage;
-        //! The average amount of time spend on completing external completion callbacks.
-        TimedAverageWindow<s_statisticsWindowSize> m_externalCompletionTimeAverage;
 #endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
         //! Platform-specific synchronization object used to suspend the Streamer thread and wake it up to resume procesing.
         AZ::Platform::StreamerContextThreadSync m_threadSync;
+
+        AZStd::atomic<size_t> m_outstandingTaskCount{ 0 };
+        AZ::TaskExecutor& m_taskExecutor;
+        AZ::TaskDescriptor m_taskDescriptor;    
 
         size_t m_pendingIdCounter{ 0 };
     };

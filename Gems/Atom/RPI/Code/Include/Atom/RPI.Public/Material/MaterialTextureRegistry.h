@@ -18,10 +18,11 @@ namespace AZ::RPI
     {
     public:
         // The first sampler will be the default sampler state, and will not be released
-        void Init(const uint32_t maxTextures);
+        void Init(const uint32_t maxTextures, const Data::Instance<Image>& nullTexture);
         int32_t RegisterMaterialTexture(const Data::Instance<Image>& image);
         void ReleaseMaterialTexture(int32_t textureIndex);
         AZStd::vector<const RHI::ImageView*> CollectTextureViews();
+        int32_t GetNullTextureIndex();
 
     private:
         uint32_t m_maxTextures{ 0 };
@@ -29,6 +30,7 @@ namespace AZ::RPI
         AZStd::vector<int32_t> m_materialTexturesReferenceCount;
         AZStd::unordered_map<Data::AssetId, int32_t> m_materialTexturesMap;
         PersistentIndexAllocator<int32_t> m_textureIndices;
+        int32_t m_nullTextureIndex{ -1 };
     };
 
 } // namespace AZ::RPI

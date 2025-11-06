@@ -1568,12 +1568,12 @@ namespace AZ
                 const float radius = windowWidth / 2 - 10;
 
                 // Draw the pie chart
-                drawList->AddCircleFilled(center, radius, ImGui::GetColorU32({.3, .3, .3, 1}));
+                drawList->AddCircleFilled(center, radius, ImGui::GetColorU32({.3f, .3f, .3f, 1.0f}));
                 const float usagePercent = 1.0f * heap.m_memoryUsage.m_totalResidentInBytes / heap.m_memoryUsage.m_budgetInBytes;
                 drawList->PathArcTo(center, radius, 0, AZ::Constants::TwoPi * usagePercent); // Clockwise starting from rightmost point
                 drawList->PathArcTo(center, 0, 0, 0); // To center
                 drawList->PathArcTo(center, radius, 0, 0); // Back to starting position
-                drawList->PathFillConvex(ImGui::GetColorU32({ .039, .8, 0.556, 1 }));
+                drawList->PathFillConvex(ImGui::GetColorU32({ .039f, .8f, 0.556f, 1.0f }));
                 ImGui::Text("%.2f%%", usagePercent * 100);
             }
             ImGui::EndChild();

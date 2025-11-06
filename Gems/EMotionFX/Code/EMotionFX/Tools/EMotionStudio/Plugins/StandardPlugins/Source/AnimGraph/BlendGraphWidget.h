@@ -10,7 +10,9 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphActionManager.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraph.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraphWidget.h>

@@ -19,10 +19,10 @@
 #include <QSet>
 #include <QStack>
 #include <QMap>
+#include <QRegularExpression>
 #endif
 
 class QFileSystemWatcher;
-class QRegExp;
 
 namespace AzQtComponents
 {
@@ -71,7 +71,7 @@ namespace AzQtComponents
 
         QFileSystemWatcher* m_fileWatcher;
 
-        QScopedPointer<QRegExp> m_importExpression;
+        QScopedPointer<QRegularExpression> m_importExpression;
 
         QSet<QString> m_prefixes;
         QMap<QString, QString> m_diskToQrcMap;

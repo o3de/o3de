@@ -1,0 +1,29 @@
+{
+    "O3DE": {
+        "Editor": {
+            "Viewport": {
+                "OpenParticle": {
+                    "Scene": {
+                        "FeatureProcessors": [
+                            "OpenParticle::ParticleFeatureProcessor",
+                            "AZ::Render::TransformServiceFeatureProcessor",
+                            "AZ::Render::PostProcessFeatureProcessor",
+                            "AZ::Render::ImageBasedLightFeatureProcessor",
+                            "AZ::Render::AcesDisplayMapperFeatureProcessor",
+                            "AZ::Render::DirectionalLightFeatureProcessor",
+                            "AZ::Render::SkyBoxFeatureProcessor",
+                            "AZ::Render::AuxGeomFeatureProcessor",
+                            "AZ::Render::SimplePointLightFeatureProcessor",
+                            "AZ::Render::SimpleSpotLightFeatureProcessor",
+                            "AZ::Render::PointLightFeatureProcessor",
+                            "AZ::Render::DiskLightFeatureProcessor",
+                            "AZ::Render::CapsuleLightFeatureProcessor",
+                            "AZ::Render::QuadLightFeatureProcessor",
+                            "AZ::Render::DecalTextureArrayFeatureProcessor"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

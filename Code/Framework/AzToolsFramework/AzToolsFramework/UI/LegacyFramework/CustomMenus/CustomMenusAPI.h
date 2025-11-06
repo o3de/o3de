@@ -12,7 +12,7 @@
 #include <AzCore/base.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Crc.h>
-#include <QtCore/QString>
+#include <QString>
 #include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusCommon.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #pragma once

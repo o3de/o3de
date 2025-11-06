@@ -139,14 +139,14 @@ namespace UnitTest
     {
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(0.0f), Vector3(1.0f));
 
-        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774,  0.5774,  0.5774)), IsClose(Vector3(0.0f, 0.0f, 0.0f)));
-        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774,  0.5774, -0.5774)), IsClose(Vector3(0.0f, 0.0f, 1.0f)));
-        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774, -0.5774,  0.5774)), IsClose(Vector3(0.0f, 1.0f, 0.0f)));
-        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774, -0.5774, -0.5774)), IsClose(Vector3(0.0f, 1.0f, 1.0f)));
-        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774,  0.5774,  0.5774)), IsClose(Vector3(1.0f, 0.0f, 0.0f)));
-        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774,  0.5774, -0.5774)), IsClose(Vector3(1.0f, 0.0f, 1.0f)));
-        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774, -0.5774,  0.5774)), IsClose(Vector3(1.0f, 1.0f, 0.0f)));
-        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774, -0.5774, -0.5774)), IsClose(Vector3(1.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774f,  0.5774f,  0.5774f)), IsClose(Vector3(0.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774f,  0.5774f, -0.5774f)), IsClose(Vector3(0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774f, -0.5774f,  0.5774f)), IsClose(Vector3(0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774f, -0.5774f, -0.5774f)), IsClose(Vector3(0.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774f,  0.5774f,  0.5774f)), IsClose(Vector3(1.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774f,  0.5774f, -0.5774f)), IsClose(Vector3(1.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774f, -0.5774f,  0.5774f)), IsClose(Vector3(1.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774f, -0.5774f, -0.5774f)), IsClose(Vector3(1.0f, 1.0f, 1.0f)));
     }
 
     TEST(MATH_Aabb, TestGetAsSphere)
@@ -372,6 +372,8 @@ namespace UnitTest
         EXPECT_TRUE(aabb2.IsClose(aabb3, 0.3f));
     }
 
+    // use of infinity with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     TEST(MATH_Aabb, TestIsFinite)
     {
         Aabb aabb = Aabb::CreateNull();
@@ -384,6 +386,7 @@ namespace UnitTest
         EXPECT_TRUE(aabb.IsValid());
         EXPECT_FALSE(aabb.IsFinite());
     }
+#endif
 
     // Check if both aabb transform functions give the same result
     TEST(MATH_AabbTransform, CompareTest)

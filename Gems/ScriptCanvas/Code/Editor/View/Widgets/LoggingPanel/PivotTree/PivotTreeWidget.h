@@ -15,6 +15,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QTimer>
 #include <QTreeView>
 #include <QSortFilterProxyModel>
+#include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -163,7 +164,7 @@ namespace ScriptCanvasEditor
     private:
 
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 
     class PivotTreeWidget

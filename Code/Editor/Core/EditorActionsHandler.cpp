@@ -264,6 +264,28 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_hotKeyManagerInterface->SetActionHotKey("o3de.action.file.new", "Ctrl+N");
     }
 
+    // New Component
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.file.newComponent";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "New Component";
+        actionProperties.m_description = "Create a new C++ component";
+        actionProperties.m_category = "Tools";
+        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [cryEdit = m_cryEditApp]
+            {
+                cryEdit->OnNewComponent();
+            });
+
+        // This action is only accessible outside of Component Modes
+        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
+    }
+
     // Open Level
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.open";
@@ -756,7 +778,7 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.editorSettingsManager";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Editor Settings Manager";
+        actionProperties.m_name = "Editor Settings Manager...";
         actionProperties.m_category = "Editor";
 
         m_actionManagerInterface->RegisterAction(
@@ -1794,6 +1816,7 @@ void EditorActionsHandler::OnMenuBindingHook()
     // File
     {
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.new", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.newComponent", 110);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.open", 200);
         m_menuManagerInterface->AddSubMenuToMenu(EditorIdentifiers::FileMenuIdentifier, EditorIdentifiers::RecentFilesMenuIdentifier, 300);
         {
@@ -1810,15 +1833,12 @@ void EditorActionsHandler::OnMenuBindingHook()
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.saveAs", 600);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.saveLevelStatistics", 700);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 800);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.project.editSettings", 900);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.platform.editSettings", 1000);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.project.new", 900);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.project.open", 1000);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 1100);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.project.new", 1200);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.project.open", 1300);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 1400);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.showLog", 1500);
-        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 1600);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.editor.exit", 1700);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.file.showLog", 1200);
+        m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::FileMenuIdentifier, 1300);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.action.editor.exit", 1400);
     }
 
     // Edit
@@ -1840,6 +1860,9 @@ void EditorActionsHandler::OnMenuBindingHook()
         {
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditSettingsMenuIdentifier, "o3de.action.edit.globalPreferences", 100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditSettingsMenuIdentifier, "o3de.action.edit.editorSettingsManager", 200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditSettingsMenuIdentifier, "o3de.action.project.editSettings", 300);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditSettingsMenuIdentifier, "o3de.action.platform.editSettings", 400);
+
         }
     }
 

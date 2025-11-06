@@ -107,7 +107,7 @@ namespace MysticQt
         dialogLayout->setAlignment(Qt::AlignTop);
         dialogWidget->setLayout(dialogLayout);
         dialogLayout->setSpacing(0);
-        dialogLayout->setMargin(0);
+        dialogLayout->setContentsMargins(0, 0, 0, 0);
 
         // add the dialog widget
         // the splitter is hierarchical : {a, {b, c}}
@@ -233,7 +233,7 @@ namespace MysticQt
         QVBoxLayout* layout = new QVBoxLayout();
         layout->addWidget(widget, Qt::AlignTop | Qt::AlignLeft);
         layout->setSpacing(0);
-        layout->setMargin(3);
+        layout->setContentsMargins(3, 3, 3, 3);
 
         // set the frame layout
         frame->setLayout(layout);

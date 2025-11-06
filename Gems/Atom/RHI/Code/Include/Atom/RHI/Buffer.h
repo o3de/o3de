@@ -47,6 +47,9 @@ namespace AZ::RHI
         //! Get the hash associated with the Buffer
         const HashValue64 GetHash() const;
 
+        //! Returns the GPU address of this Buffer for each device
+        AZStd::unordered_map<int, uint64_t> GetDeviceAddress() const;
+
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;
 

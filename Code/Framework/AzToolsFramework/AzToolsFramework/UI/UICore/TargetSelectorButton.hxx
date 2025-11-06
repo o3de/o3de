@@ -14,8 +14,8 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/Network/IRemoteTools.h>
-#include <QtWidgets/QPushButton>
-#include <qwidgetaction.h>
+#include <QPushButton>
+#include <QWidgetAction>
 #endif
 
 

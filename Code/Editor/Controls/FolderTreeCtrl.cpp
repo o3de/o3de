@@ -14,8 +14,10 @@
 #include <QMenu>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
+#include <QRegularExpression>
 
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/string/wildcard.h>
 #include <AzCore/IO/SystemFile.h>
 
 #include <AzQtComponents/Utilities/DesktopUtilities.h> // for AzQtComponents::ShowFileOnDesktop
@@ -242,8 +244,7 @@ void CFolderTreeCtrl::AddItem(const QString& path)
     AZ::IO::FixedMaxPath fileNameWithoutExtension = folder.Stem();
     folder = folder.ParentPath();
 
-    auto regex = QRegExp(m_fileNameSpec, Qt::CaseInsensitive, QRegExp::Wildcard);
-    if (regex.exactMatch(path))
+    if (AZStd::wildcard_match(qPrintable(m_fileNameSpec), qPrintable(path)))
     {
         CTreeItem* folderTreeItem = CreateFolderItems(QString::fromUtf8(folder.c_str(), static_cast<int>(folder.Native().size())));
         if(folderTreeItem)

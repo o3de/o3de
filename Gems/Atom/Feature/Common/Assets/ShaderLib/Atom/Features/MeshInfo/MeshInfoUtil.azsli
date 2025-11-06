@@ -1,0 +1,105 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <Atom/Features/MeshInfo/MeshInfoBufferUtil.azsli>
+
+void LoadInterpolatedVertexData(const MeshInfo meshInfo, const uint triangleId, const float3 barycentrics, inout VsInput vertex)
+{
+    uint3 triangleIndices = LoadIndex(meshInfo, triangleId);
+    // Note: this variables and loads should be optimized away if the result isn't used
+    float3 position = float3(0, 0, 0);
+    float3 normal = float3(0, 0, 0);
+    float4 tangent = float4(0, 0, 0, 0);
+    float3 bitangent = float3(0, 0, 0);
+    float2 uv0 = float2(0, 0);
+    float2 uv1 = float2(0, 0);
+    // TODO: add color and blend-mask
+    [unroll]
+    for (int index = 0; index < 3; ++index)
+    {
+        position += LoadPosition(meshInfo, triangleIndices[index]) * barycentrics[index];
+        normal += LoadNormal(meshInfo, triangleIndices[index]) * barycentrics[index];
+        tangent += LoadTangent(meshInfo, triangleIndices[index]) * barycentrics[index];
+        uv0 += LoadUv0(meshInfo, triangleIndices[index]) * barycentrics[index];
+        uv1 += LoadUv1(meshInfo, triangleIndices[index]) * barycentrics[index];
+        bitangent += LoadBitangent(meshInfo, triangleIndices[index]) * barycentrics[index];
+    }
+    tangent.xyz = normalize(tangent.xyz);
+    tangent.w = sign(tangent.w);
+    normal = normalize(normal);
+    bitangent = normalize(bitangent);
+
+#if MATERIAL_USES_VERTEX_POSITION
+    vertex.position = position;
+#endif
+#if MATERIAL_USES_VERTEX_NORMAL
+    vertex.normal = normal;
+#endif
+#if MATERIAL_USES_VERTEX_TANGENT
+    vertex.tangent = tangent;
+#endif
+
+#if MATERIAL_USES_VERTEX_BITANGENT
+    vertex.bitangent = bitangent;
+#endif
+#if MATERIAL_USES_VERTEX_UV
+    vertex.uv0 = uv0;
+    vertex.uv1 = uv1;
+#endif
+#if MATERIAL_USES_VERTEX_COLOR
+    vertex.m_optional_color0 = float4(0, 0, 0, 0);
+#endif
+#if MATERIAL_USES_VERTEX_BLENDMASK
+    vertex.m_optional_blendMask = float4(0, 0, 0, 0);
+#endif
+}
+
+float4 CalculateUvDxDy(const MeshInfo meshInfo, const uint triangleId, const float3 barycentrics, const float3 barycentricsDx, const float3 barycentricsDy, const int uvChannel)
+{
+    float4 result = float4(0, 0, 0, 0);
+#if MATERIAL_USES_VERTEX_UV
+    uint3 triangleIndices = LoadIndex(meshInfo, triangleId);
+    float2 vertexUv[3];
+
+    if (uvChannel == 0) {
+        [unroll]
+        for (int index = 0; index < 3; ++index)
+        {
+            vertexUv[index] = LoadUv0(meshInfo, triangleIndices[index]);
+        }
+    }
+    else if (uvChannel == 1)
+    {
+        [unroll]
+        for (int index = 0; index < 3; ++index)
+        {
+            vertexUv[index] = LoadUv1(meshInfo, triangleIndices[index]);
+        }
+    }
+
+    // Calculate the UV screenspace derivatives. We have to do this manually in a deferred pipeline because 
+    // - ddx(uv) is only available in pixel shaders, and
+    // - it uses the values of the neighboring thread / pixel, and we cannot assume that these values are from the same mesh
+    // Get the uv coords of the pixel center:
+    // uv = sum(vertexUv_i * barycentrics_i)
+    // Get the uv coords of the neighbor screenspace pixel center
+    // uvDx = sum(vertexUv_i * (barycentrics_i + barycentricsDx_i))
+    // screenspace derivatives of the uv coords:
+    // dx = uv - uvDx
+    // Note this collapses to dx = -(sum(vertexUv_i * barycentricsDx_i))
+    float2 uvDx = vertexUv[0] * barycentricsDx[0] + vertexUv[1] * barycentricsDx[1] + vertexUv[2] * barycentricsDx[2];
+    result.xy = -uvDx;
+
+    float2 uvDy = vertexUv[0] * barycentricsDy[0] + vertexUv[1] * barycentricsDy[1] + vertexUv[2] * barycentricsDy[2];
+    result.zw = -uvDy;
+#endif /* MATERIAL_USES_VERTEX_UV */
+    return result;
+}
+
+

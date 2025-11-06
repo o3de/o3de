@@ -22,6 +22,8 @@
 
 namespace AssetProcessor
 {
+    bool ConvertDatabaseProductPathToProductFilename(AZStd::string_view dbPath, QString& productFileName);
+
     AssetCatalog::AssetCatalog(QObject* parent, AssetProcessor::PlatformConfiguration* platformConfiguration)
         : QObject(parent)
         , m_platformConfig(platformConfiguration)
@@ -1217,6 +1219,11 @@ namespace AssetProcessor
                     AZ::Data::AssetInfo assetInfo;
                     assetInfo.m_assetId = AZ::Data::AssetId(sourceUuid, product.m_subID);
                     assetInfo.m_assetType = product.m_assetType;
+                    QString productFileName;
+                    if (ConvertDatabaseProductPathToProductFilename(product.m_productName, productFileName))
+                    {
+                        assetInfo.m_relativePath = productFileName.toUtf8().constData();
+                    }
                     productsAssetInfo.emplace_back(assetInfo);
                 }
             }

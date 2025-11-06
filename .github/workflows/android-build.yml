@@ -32,6 +32,21 @@ on:
       last_artifact:
         required: false
         type: boolean
+      ndk_version:
+        required: false
+        type: string
+      cmake_version:
+        required: false
+        type: string
+      gradle_version:
+        required: false
+        type: string
+      msvc_toolset_version:
+        required: false
+        type: string
+      msvc_platform_toolset:
+        required: false
+        type: string
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
@@ -39,7 +54,7 @@ run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 env: 
   O3DE_ENABLE_COMPILER_CACHE: true
   O3DE_COMPILER_CACHE_PATH: 'C:\ProgramData\Chocolatey\bin\ccache.exe'
-  NDK_VERSION: 25.1.8937393
+  NDK_VERSION: ${{ inputs.ndk_version }}
 
 # Note: All 3P Github Actions use the commit hash for security reasons 
 # Avoid using the tag version, which is vulnerable to supply chain attacks
@@ -170,14 +185,52 @@ jobs:
       
       - name: Setup cmake
         # Pin the version of cmake  
+        if: ${{ inputs.cmake_version }}
         uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
         with:
-          cmakeVersion: "~3.30.0"
+          cmakeVersion: "${{ inputs.cmake_version }}"
+          
+      - name: Configure generator/toolset env for CMake
+        # Set the environment variables for the CMake generator and toolset depending on CMake version
+        run: |
+          $cap = cmake -E capabilities | ConvertFrom-Json
+          $maj = [int]$cap.version.major
+          $min = [int]$cap.version.minor
+
+          echo "CMAKE_GENERATOR=Visual Studio 17 2022" >> $env:GITHUB_ENV 
+
+          if ($maj -gt 3 -or ($maj -eq 3 -and $min -ge 25)) {
+            # CMake >= 3.25: support 'version='
+            echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }},version=${{ inputs.msvc_toolset_version }}" >> $env:GITHUB_ENV
+          } else {
+            # CMake 3.24: omit 'version='; MSBuild toolset is selected by msvc-dev-cmd
+            echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }}" >> $env:GITHUB_ENV
+          }
+
+      - name: Install specific MSVC toolset
+        # Install a specific MSVC toolset into VS2022 (for MSVC-based Android asset builds)
+        if: ${{ inputs.msvc_toolset_version && inputs.msvc_platform_toolset }}
+        run: |
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe" modify `
+          --installPath "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise" `
+          --add "Microsoft.VisualStudio.Component.VC.${{ inputs.msvc_toolset_version }}.x86.x64" --quiet --wait
+
+      - name: Set MSBuild options
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+        with:
+          toolset: ${{ inputs.msvc_toolset_version }}
 
       - name: Set MSBuild options
         # Configuire VS environment variables through the developer command prompt for MSVC
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
-                
+        with:
+          toolset: ${{ inputs.msvc_toolset_version }}
+
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 #v4.4.2
+        if: ${{ inputs.gradle_version }}
+        with:
+          gradle-version: '${{ inputs.gradle_version }}'
       - name: Configure environment
         # Install dependencies for gradle and clang builds from the NDK
         continue-on-error: true
@@ -187,16 +240,20 @@ jobs:
           echo "Getting python..."
           python\get_python.bat
 
-          echo "Installing NDK ${{ env.NDK_VERSION }}..."
-          & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --install 'ndk;${{ env.NDK_VERSION }}' --sdk_root=$env:ANDROID_HOME
+          if ("${{ inputs.ndk_version }}") {
+            echo "Installing NDK ${{ env.NDK_VERSION }}..."
+            & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --install 'ndk;${{ env.NDK_VERSION }}' --sdk_root=$env:ANDROID_HOME
+          } else {
+            echo "Using preinstalled NDK" 
+          }
 
           echo "Accepting Android SDK licenses..."
           "y`ny" | & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" --licenses --sdk_root=$env:ANDROID_HOME
 
-          echo "LY_NDK_DIR=$env:ANDROID_HOME\ndk\${{ env.NDK_VERSION }}" >> $env:GITHUB_ENV
+          if ("${{ inputs.ndk_version }}") { echo "LY_NDK_DIR=$env:ANDROID_HOME\ndk\${{ env.NDK_VERSION }}" >> $env:GITHUB_ENV }
           echo "JDK_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
           echo "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
-          echo "GRADLE_BUILD_HOME=$env:GRADLE_HOME" >> $env:GITHUB_ENV
+          echo "USE_GRADLE_FROM_PATH=1" >> $env:GITHUB_ENV
           
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Android/build_config.json

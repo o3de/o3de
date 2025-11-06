@@ -93,11 +93,17 @@ namespace AzToolsFramework
                     return;
                 }
 
-                AZ::IO::Path relativePath = AZ::Interface<PrefabLoaderInterface>::Get()->GenerateRelativePath(assetPath.c_str());
-                PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
-                sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().c_str());
+                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                if (prefabLoaderInterface == nullptr)
+                {
+                    AZ_Error(
+                        "Prefab", false, "ProceduralPrefabSystemComponent::OnCatalogAssetChanged - Failed to get PrefabLoaderInterface");
+                    return;
+                }
 
-                prefabSystemComponentInterface->UpdatePrefabTemplate(templateId, readPrefabFileResult.TakeValue());
+                AZ::IO::Path relativePath = prefabLoaderInterface->GenerateRelativePath(assetPath.c_str());
+                prefabLoaderInterface->ReloadTemplateFromFile(relativePath);
+                prefabSystemComponentInterface->PropagateTemplateChanges(templateId);
             }
         }
 

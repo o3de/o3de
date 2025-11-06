@@ -9,6 +9,7 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexColorData.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include "MeshVertexColorData.h"
 
 namespace AZ
 {
@@ -92,6 +93,16 @@ namespace AZ
             {
                 output.Write("Colors", m_colors);
                 output.Write("ColorsCustomName", m_customName.GetCStr());
+            }
+
+            AZStd::vector<AZ::SceneAPI::DataTypes::Color>& MeshVertexColorData::GetColors()
+            {
+                return m_colors;
+            }
+
+            const AZStd::vector<AZ::SceneAPI::DataTypes::Color>& MeshVertexColorData::GetColors() const
+            {
+                return m_colors;
             }
         } // GraphData
     } // SceneData

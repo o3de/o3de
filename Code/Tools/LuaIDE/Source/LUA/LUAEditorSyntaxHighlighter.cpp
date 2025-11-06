@@ -682,13 +682,16 @@ namespace LUAEditor
         QTextCharFormat spaceFormat = QTextCharFormat();
         spaceFormat.setForeground(colors->GetTextWhitespaceColor());
 
-        QRegExp tabsAndSpaces("( |\t)+");
-        int index = tabsAndSpaces.indexIn(text);
-        while (index >= 0)
+        QRegularExpression tabsAndSpaces("( |\t)+");
+        QRegularExpressionMatch match = tabsAndSpaces.match(text);
+        int index = match.capturedStart();
+        while (match.hasMatch())
         {
-            int length = tabsAndSpaces.matchedLength();
+            const int length = match.capturedLength();
             setFormat(index, length, spaceFormat);
-            index = tabsAndSpaces.indexIn(text, index + length);
+
+            match = tabsAndSpaces.match(text, index + length);
+            index = match.capturedStart();
         }
 
         QTBlockState prevState;

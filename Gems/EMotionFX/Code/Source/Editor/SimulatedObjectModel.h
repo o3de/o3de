@@ -13,8 +13,8 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/Node.h>
-#include <QtCore/QAbstractItemModel>
-#include <QtCore/QItemSelectionModel>
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
 #include <Editor/ActorEditorBus.h>
 #include <MCore/Source/Command.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>

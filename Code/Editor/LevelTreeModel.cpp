@@ -127,7 +127,7 @@ void LevelTreeModel::ReloadTree(QStandardItem* root, bool recurseIfNoLevels)
         QDir currentDir(parentFullPath);
         currentDir.setFilter(QDir::NoDot | QDir::NoDotDot | QDir::Dirs);
         const QStringList subFolders = currentDir.entryList();
-        foreach (const QString &subFolder, subFolders)
+        for (const QString& subFolder : subFolders)
         {
             auto child = new QStandardItem(subFolder);
             child->setData(parentFullPath + "/" + subFolder, FullPathRole);
@@ -142,7 +142,7 @@ void LevelTreeModel::ReloadTree(QStandardItem* root, bool recurseIfNoLevels)
         // Support for legacy folder structure: Multiple cry files in level folder
         if (recurseIfNoLevels && levelFiles.size() > 1)
         {
-            foreach (const QString &levelFile, levelFiles)
+            for (const QString& levelFile : levelFiles)
             {
                 auto child = new QStandardItem(levelFile);
                 child->setData(root->data(FullPathRole).toString() + "/" + levelFile, FullPathRole);

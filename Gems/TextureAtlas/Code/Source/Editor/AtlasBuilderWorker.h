@@ -12,8 +12,9 @@
 #include <AzCore/Math/Color.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
-#include <qimage.h>
 #include <TextureAtlas/TextureAtlasBus.h>
+
+#include <QImage>
 
 namespace TextureAtlasBuilder
 {

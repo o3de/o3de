@@ -120,7 +120,9 @@ QString CFFMPEGPlugin::GetFFMPEGExectablePath()
 bool CFFMPEGPlugin::RuntimeTest()
 {
     QString ffmpegExectablePath = CFFMPEGPlugin::GetFFMPEGExectablePath();
-    return QProcess::startDetached(QStringLiteral("\"%1\" -version").arg(ffmpegExectablePath), {});
+    QStringList arguments;
+    arguments << "-version";
+    return QProcess::startDetached(ffmpegExectablePath, arguments);
 }
 
 void CFFMPEGPlugin::RegisterTheCommand()

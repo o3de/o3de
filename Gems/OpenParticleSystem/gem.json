@@ -1,0 +1,21 @@
+{
+    "gem_name": "OpenParticleSystem",
+    "version": "0.0.0",
+    "display_name": "(Preview) OpenParticleSystem",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Code",
+    "summary": "WARNING: This gem is in preview, file formats and data may change before official release. The OpenParticleSystem Gem provides a particle system framework alongside a dedicated toolset for creating natural phenomena (such as flames, smoke, rainfall, and snowfall) and specialized effects (including explosions), leveraging vast numbers of micro-particle elements and dynamic motion simulations to achieve realistic visual representations.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Particle",
+        "Rendering"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": ""
+}

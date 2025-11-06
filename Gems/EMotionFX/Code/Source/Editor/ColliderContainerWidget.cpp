@@ -527,7 +527,7 @@ namespace EMotionFX
         , m_colliderIcon(colliderIcon)
     {
         m_layout = new QVBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(s_layoutSpacing);
         setLayout(m_layout);
 

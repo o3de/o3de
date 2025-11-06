@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qabstractitemmodel.h>
+#include <QAbstractItemModel>
 
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 

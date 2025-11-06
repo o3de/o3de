@@ -6,7 +6,7 @@
  *
  */
 
-#include <qstring.h>
+#include <QString>
 
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 

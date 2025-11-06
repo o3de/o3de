@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qpoint.h>
+#include <QPoint>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>

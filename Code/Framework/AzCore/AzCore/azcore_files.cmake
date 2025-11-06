@@ -206,6 +206,8 @@ set(FILES
     IO/Streamer/FullFileDecompressor.cpp
     IO/Streamer/ReadSplitter.h
     IO/Streamer/ReadSplitter.cpp
+    IO/Streamer/RecentlyUsedIndex.h
+    IO/Streamer/RecentlyUsedIndex.inl
     IO/Streamer/RequestPath.h
     IO/Streamer/RequestPath.cpp
     IO/Streamer/Scheduler.h

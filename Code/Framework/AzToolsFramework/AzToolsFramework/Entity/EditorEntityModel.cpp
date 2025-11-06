@@ -29,7 +29,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 
 namespace
 {

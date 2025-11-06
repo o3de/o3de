@@ -9,7 +9,7 @@
 #include <QCoreApplication>
 #include <QFont>
 #include <QGraphicsItem>
-#include <qgraphicssceneevent.h>
+#include <QGraphicsSceneEvent>
 #include <QPainter>
 
 #include <AzCore/Serialization/EditContext.h>

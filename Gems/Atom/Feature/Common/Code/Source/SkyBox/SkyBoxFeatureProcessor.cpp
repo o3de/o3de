@@ -446,7 +446,7 @@ namespace AZ
             AZ::Vector3 S = EvaluateHosek(static_cast<float>(cos(inverseAltitude)), 0.0f, 1.0f, result) * z;
 
             // dividing z by the luminance of S
-            z /= S.Dot(AZ::Vector3(0.2126, 0.7152, 0.0722));
+            z /= S.Dot(AZ::Vector3(0.2126f, 0.7152f, 0.0722f));
             z *= normalizedSunY;
 
             result.z = z;

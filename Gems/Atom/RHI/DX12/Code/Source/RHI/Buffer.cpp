@@ -44,5 +44,10 @@ namespace AZ
             bufferStats->m_bindFlags = descriptor.m_bindFlags;
             bufferStats->m_sizeInBytes = m_memoryView.GetSize();
         }
+
+        uint64_t Buffer::GetDeviceAddress() const
+        {
+            return m_memoryView.GetGpuAddress();
+        }
     }
 }

@@ -11,8 +11,8 @@
 #include <AzCore/base.h>
 #include <AzCore/std/functional.h>
 
-#include <QtWidgets/QCompleter>
-#include <QtWidgets/QPlainTextEdit>
+#include <QCompleter>
+#include <QPlainTextEdit>
 #endif
 
 #pragma once

@@ -133,6 +133,16 @@ namespace AZ
             return m_accelerationStructureFeatures;
         }
 
+        const VkPhysicalDeviceClusterAccelerationStructurePropertiesNV& PhysicalDevice::GetPhysicalDeviceClusterAccelerationStructureProperties() const
+        {
+            return m_clusterAccelerationStructureProperties;
+        }
+
+        const VkPhysicalDeviceClusterAccelerationStructureFeaturesNV& PhysicalDevice::GetPhysicalDeviceClusterAccelerationStructureFeatures() const
+        {
+            return m_clusterAccelerationStructureFeatures;
+        }
+
         const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& PhysicalDevice::GetPhysicalDeviceRayTracingPipelineProperties() const
         {
             return m_rayTracingPipelineProperties;
@@ -353,6 +363,7 @@ namespace AZ
             VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
             VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
             VK_KHR_RAY_QUERY_EXTENSION_NAME,
+            VK_NV_CLUSTER_ACCELERATION_STRUCTURE_EXTENSION_NAME,
             VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
             VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
             VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
@@ -461,6 +472,7 @@ namespace AZ
                 m_separateDepthStencilLayoutsFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES;
                 m_vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
                 m_accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                m_clusterAccelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV;
                 m_rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
                 m_fragmentShadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
                 m_fragmentDensityMapFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_FEATURES_EXT;
@@ -476,6 +488,7 @@ namespace AZ
                 m_conservativeRasterProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONSERVATIVE_RASTERIZATION_PROPERTIES_EXT;
                 m_rayTracingPipelineProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
                 m_accelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_PROPERTIES_KHR;
+                m_clusterAccelerationStructureProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_PROPERTIES_NV;
                 m_fragmentDensityMapProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_PROPERTIES_EXT;
                 m_fragmentShadingRateProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
                 m_externalMemoryHostProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_MEMORY_HOST_PROPERTIES_EXT;
@@ -584,6 +597,11 @@ namespace AZ
                     if (IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::RayQuery))
                     {
                         deviceFeaturesAppender.append(m_rayQueryFeatures);
+                    }
+
+                    if (IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ClusterAccelerationStructure))
+                    {
+                        deviceFeaturesAppender.append(m_clusterAccelerationStructureFeatures);
                     }
                 }
 

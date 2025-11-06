@@ -25,6 +25,7 @@ AZ_POP_DISABLE_WARNING
 #include <StlUtils.h>
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>

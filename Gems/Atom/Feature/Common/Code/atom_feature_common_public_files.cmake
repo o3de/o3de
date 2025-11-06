@@ -36,6 +36,7 @@ set(FILES
     Include/Atom/Feature/Debug/RenderDebugParams.inl
     Include/Atom/Feature/Debug/RenderDebugSettingsInterface.h
     Include/Atom/Feature/Decals/DecalFeatureProcessorInterface.h
+    Include/Atom/Feature/DeferredMaterial/DeferredMaterialFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h
     Include/Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h
     Include/Atom/Feature/ImGui/ImGuiUtils.h
@@ -44,8 +45,11 @@ set(FILES
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/Material/ConvertEmissiveUnitFunctor.h
+    Include/Atom/Feature/Material/FallbackPBRMaterial.h
     Include/Atom/Feature/Mesh/MeshCommon.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessorInterface.h
+    Include/Atom/Feature/Mesh/MeshInfo.h
+    Include/Atom/Feature/Mesh/MeshInfoBus.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
     Include/Atom/Feature/Mesh/StreamBufferViewsBuilderInterface.h
     Include/Atom/Feature/MorphTargets/MorphTargetInputBuffers.h

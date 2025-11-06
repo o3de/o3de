@@ -56,14 +56,14 @@ namespace O3DE::ProjectManager
             vLayout->addWidget(m_mainWidget);
 
             QVBoxLayout* mainLayout = new QVBoxLayout();
-            mainLayout->setMargin(0);
+            mainLayout->setContentsMargins(0, 0, 0, 0);
             mainLayout->setAlignment(Qt::AlignTop);
             m_mainWidget->setLayout(mainLayout);
 
             // Elements
             QVBoxLayout* elementsLayout = new QVBoxLayout();
             m_elementsWidget = new QWidget();
-            elementsLayout->setMargin(0);
+            elementsLayout->setContentsMargins(0, 0, 0, 0);
             m_elementsWidget->setLayout(elementsLayout);
             mainLayout->addWidget(m_elementsWidget);
 
@@ -106,7 +106,7 @@ namespace O3DE::ProjectManager
         {
             QWidget* elementWidget = new QWidget();
             QHBoxLayout* elementLayout = new QHBoxLayout();
-            elementLayout->setMargin(0);
+            elementLayout->setContentsMargins(0, 0, 0, 0);
             elementWidget->setLayout(elementLayout);
 
             QCheckBox* checkbox = new QCheckBox(name);

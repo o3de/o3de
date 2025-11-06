@@ -17,7 +17,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <QIcon>
 #include "PropertyEditorAPI.h"
 #endif

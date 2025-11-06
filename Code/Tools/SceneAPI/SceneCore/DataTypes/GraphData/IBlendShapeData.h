@@ -44,9 +44,7 @@ namespace AZ
 
                 void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
 
-                virtual size_t GetUsedControlPointCount() const = 0;
-                virtual int GetControlPointIndex(int vertexIndex) const = 0;
-                virtual int GetUsedPointIndexForControlPoint(int controlPointIndex) const = 0;
+                virtual size_t GetVertexIndexCount() const = 0;
 
                 virtual unsigned int GetVertexCount() const = 0;
                 virtual unsigned int GetFaceCount() const = 0;

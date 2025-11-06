@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qrect.h>
+#include <QRect>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityId.h>

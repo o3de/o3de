@@ -12,6 +12,8 @@
 #include "Undo/IUndoManagerListener.h"
 #endif
 
+#include <QObject>
+
 /// Turns IUndoManagerListener callbacks into signals
 class UndoStackStateAdapter
     : public QObject

@@ -11,7 +11,7 @@
 
 #include "EditorFrameworkAPI.h"
 
-#include <QtCore/QString>
+#include <QString>
 
 AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, LegacyFramework::CoreMessages);
 AZ_INSTANTIATE_EBUS_SINGLE_ADDRESS(AZTF_API, LegacyFramework::FrameworkApplicationMessages);

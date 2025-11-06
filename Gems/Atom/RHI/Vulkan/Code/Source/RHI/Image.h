@@ -232,8 +232,6 @@ namespace AZ
             void SetNameInternal(const AZStd::string_view& name) override;
             //////////////////////////////////////////////////////////////////////////
 
-            void GenerateSubresourceLayouts();
-
             void SetInitalQueueOwner();
 
             VkImage m_vkImage = VK_NULL_HANDLE;

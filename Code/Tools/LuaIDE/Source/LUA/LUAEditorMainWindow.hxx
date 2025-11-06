@@ -57,7 +57,7 @@ namespace LUA
 }
 class ClassReferenceFilterModel;
 
-#include <QtWidgets/QMainWindow>
+#include <QMainWindow>
 #endif
 
 namespace LUAEditor

@@ -684,7 +684,7 @@ namespace GraphCanvas
                 return;
             }
 
-            QScopedPointer<Style> style(aznew Style(selectors));
+            AZStd::unique_ptr<Style> style = AZStd::make_unique<Style>(selectors);
 
             for (auto member = value.MemberBegin(); member != value.MemberEnd(); ++member)
             {
@@ -986,7 +986,7 @@ namespace GraphCanvas
             }
             else
             {
-                styleManager.m_styles.push_back(style.take());
+                styleManager.m_styles.push_back(AZStd::move(style));
             }
         }
 

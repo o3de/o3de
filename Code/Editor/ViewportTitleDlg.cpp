@@ -51,34 +51,6 @@
 #include "ui_ViewportTitleDlg.h"
 #endif //! defined(Q_MOC_RUN)
 
-// CViewportTitleDlg dialog
-
-namespace
-{
-    class CViewportTitleDlgDisplayInfoHelper
-        : public QObject
-        , public AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler
-    {
-        Q_OBJECT
-
-    public:
-        CViewportTitleDlgDisplayInfoHelper(CViewportTitleDlg* parent)
-            : QObject(parent)
-        {
-            AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler::BusConnect();
-        }
-
-    signals:
-        void ViewportInfoStatusUpdated(int newIndex);
-
-    private:
-        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
-        {
-            emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
-        }
-    };
-} // end anonymous namespace
-
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
     , m_ui(new Ui::ViewportTitleDlg)

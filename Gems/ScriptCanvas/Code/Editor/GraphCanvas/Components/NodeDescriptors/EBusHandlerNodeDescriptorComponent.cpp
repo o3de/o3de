@@ -9,7 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <qstring.h>
+#include <QString>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>

@@ -16,7 +16,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #endif
 
 class QRadioButton;

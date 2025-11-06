@@ -42,7 +42,7 @@ int CAutoDirectoryRestoreFileDialog::exec()
     while ((result = QFileDialog::exec()) == QDialog::Accepted)
     {
         bool problem = false;
-        foreach(const QString&fileName, selectedFiles())
+        for (const QString& fileName : selectedFiles())
         {
             QFileInfo info(fileName);
             if (!AZ::StringFunc::Path::IsValid(info.fileName().toStdString().c_str()))

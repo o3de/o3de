@@ -13,7 +13,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 #include "PropertyEditorAPI.h"
 #endif

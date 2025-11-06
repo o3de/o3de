@@ -8,7 +8,7 @@
 
 #include <AssetBrowserContextProvider.h>
 #include <AssetImporterPlugin.h>
-#include <QtCore/QMimeData>
+#include <QMimeData>
 #include <QMenu>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>

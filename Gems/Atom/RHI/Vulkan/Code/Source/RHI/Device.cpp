@@ -326,6 +326,7 @@ namespace AZ
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR separateDepthStencil = {};
             VkPhysicalDeviceShaderAtomicInt64Features shaderAtomicInt64 = {};
             VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
+            VkPhysicalDeviceClusterAccelerationStructureFeaturesNV clusterAccelerationStructureFeatures = {};
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
 
             VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphore;
@@ -509,12 +510,21 @@ namespace AZ
 
                     deviceInfoAppender.append(rayQueryFeatures);
                 }
+
+                if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::ClusterAccelerationStructure))
+                {
+                    clusterAccelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CLUSTER_ACCELERATION_STRUCTURE_FEATURES_NV;
+                    clusterAccelerationStructureFeatures.clusterAccelerationStructure = physicalDevice.GetPhysicalDeviceClusterAccelerationStructureFeatures().clusterAccelerationStructure;
+
+                    deviceInfoAppender.append(clusterAccelerationStructureFeatures);
+                }
             }
             else
             {
                 // make sure all ray tracing extensions are disabled
                 physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::RayTracingPipeline);
                 physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::RayQuery);
+                physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::ClusterAccelerationStructure);
             }
 
             deviceInfoAppender.finish();
@@ -1237,7 +1247,7 @@ namespace AZ
             // if there is no device time domain we reset the host one as this is pointless then
             if (!deviceTimeDomainFound)
             {
-                m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_EXT;
+                m_hostTimeDomain = VK_TIME_DOMAIN_MAX_ENUM_KHR;
             }
         }
 
@@ -1446,6 +1456,7 @@ namespace AZ
             // to determine if ray tracing is supported on this device
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
             StringList::iterator itRayTracingExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+            StringList::iterator itRayTracingClasExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_NV_CLUSTER_ACCELERATION_STRUCTURE_EXTENSION_NAME);
             m_features.m_unboundedArrays = vulkan12
                 ? physicalDevice.GetPhysicalDeviceVulkan12Features().shaderStorageTexelBufferArrayNonUniformIndexing
                 : physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures().shaderStorageTexelBufferArrayNonUniformIndexing;
@@ -1453,6 +1464,7 @@ namespace AZ
             {
                 // Ray tracing needs raytracing extensions and unbounded arrays to work
                 m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
+                m_features.m_rayTracingClas = (itRayTracingClasExtension != deviceExtensions.end());
             }
 
             m_features.m_float16 = vulkan12 ? physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16

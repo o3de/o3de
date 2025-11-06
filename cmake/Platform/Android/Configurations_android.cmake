@@ -41,7 +41,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
         COMPILATION
             -femulated-tls           # All accesses to TLS variables are converted to calls to __emutls_get_address in the runtime library
-            -ffast-math              # Allow aggressive, lossy floating-point optimizations,
             -fno-aligned-allocation  # Disable use of C++17 aligned_alloc for operator new/delete
 
         COMPILATION_DEBUG

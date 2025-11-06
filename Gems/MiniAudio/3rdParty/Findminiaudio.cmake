@@ -116,7 +116,7 @@ foreach(decoder_plugin libopus libvorbis)
 
 # if you use opus, you will have to add it here, if opus has the same issue about installing without being
 # able to disable installation, and thus requiring EXCLUDE_FROM_ALL
-add_dependencies(miniaudio_libvorbis vorbisfile)
+add_dependencies(miniaudio_libvorbis vorbisfile vorbisenc)
 
 # signal that find_package(MiniAudio) has succeeded.
 # we have to set it on the PARENT_SCOPE since we're in a function

@@ -14,7 +14,7 @@
 #include <AzQtComponents/Components/StyledDialog.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <Editor/Framework/Interpreter.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #endif
 
 namespace AzToolsFramework

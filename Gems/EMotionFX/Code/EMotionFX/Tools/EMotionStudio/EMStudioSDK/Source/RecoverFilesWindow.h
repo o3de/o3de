@@ -10,6 +10,10 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+#include <MCore/Source/MemoryCategoriesCore.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
+
 #include "EMStudioConfig.h"
 #include <QDialog>
 #include <QTableWidget>

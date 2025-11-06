@@ -10,7 +10,7 @@
 
 #include <QAction>
 #include <QtTest>
-#include <qtoolbar.h>
+#include <QToolBar>
 #include <QWidget>
 #include <QComboBox>
 

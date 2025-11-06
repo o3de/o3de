@@ -25,7 +25,7 @@
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 #include <QFileInfo>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <QHBoxLayout>
 #include <QMimeData>
 #include <QTimer>

@@ -9,7 +9,7 @@
 #include "PropertyDoubleSliderCtrl.hxx"
 #include "PropertyQTConstants.h"
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
-#include <QtWidgets/QHBoxLayout>
+#include <QHBoxLayout>
 AZ_POP_DISABLE_WARNING
 #include <AzCore/Math/MathUtils.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>

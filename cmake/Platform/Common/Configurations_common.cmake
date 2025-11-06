@@ -16,6 +16,10 @@ set(O3DE_EXTRA_C_FLAGS ""       CACHE STRING "Additional C Compiler flags to app
 set(O3DE_EXTRA_CXX_FLAGS ""     CACHE STRING "Additional Cxx Compiler flags to apply globally")
 set(O3DE_EXTRA_LINK_OPTIONS ""  CACHE STRING "Additional link options to apply globally")
 
+# If you turn fast math on, beware, as all floating point operations that result or involve NaN or Inf
+# will be undefined behavior and cannot be detected or dealt with.
+set(USE_FAST_MATH OFF CACHE BOOL "Use fp:precise (MSVC) or -ffast-math (Clang/GCC) to allow aggressive, lossy floating-point optimizations")
+
 ly_set(CMAKE_C_FLAGS "${O3DE_EXTRA_C_FLAGS}")
 ly_set(CMAKE_CXX_FLAGS "${O3DE_EXTRA_CXX_FLAGS}")
 ly_set(LINK_OPTIONS "${O3DE_EXTRA_LINK_OPTIONS}")
@@ -78,3 +82,9 @@ check_pie_supported()
 
 # Determine if lld is installed to use as a default linker by supported platforms/configurations
 find_program(LLD_LINKER_INSTALLED lld)
+
+if (NOT TARGET ciso646-include)
+    # Temporarily gets around the inclusion of <ciso646> in some 3rd party libraries.
+    add_library(ciso646-include INTERFACE)
+    target_include_directories(ciso646-include INTERFACE ${CMAKE_CURRENT_LIST_DIR}/ciso646-include)
+endif()

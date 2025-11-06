@@ -10,7 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 
-#include <QtCore/QString>
+#include <QString>
 
 namespace ProjectSettingsTool
 {

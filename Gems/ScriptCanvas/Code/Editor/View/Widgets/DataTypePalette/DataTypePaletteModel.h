@@ -11,6 +11,7 @@
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
 #include <QTableView>
+#include <QRegularExpression>
 
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -96,6 +97,6 @@ namespace ScriptCanvasEditor
 
     private:
         QString m_filter;
-        QRegExp m_testRegex;
+        QRegularExpression m_testRegex;
     };
 }

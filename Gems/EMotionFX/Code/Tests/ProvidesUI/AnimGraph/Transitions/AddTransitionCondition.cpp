@@ -11,7 +11,7 @@
 #include <QAction>
 #include <QtTest>
 #include <QWidget>
-#include <qrect.h>
+#include <QRect>
 
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
 #include <EMotionFX/Source/AnimGraphEntryNode.h>

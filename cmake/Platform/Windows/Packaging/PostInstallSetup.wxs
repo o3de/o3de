@@ -48,18 +48,21 @@
             ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C %SystemRoot%\System32\tar.exe -x -f &quot;[root.tools.redist.cmake]$(var.CPACK_CMAKE_PACKAGE_NAME).zip&quot; -C &quot;[root.tools.redist]CMake&quot;"
             Directory="INSTALL_ROOT"
             Execute="deferred"
+             Return="ignore"
             Impersonate="no"/>
 
         <CustomAction Id="MoveCMake"
             ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C move &quot;[root.tools.redist.cmake]$(var.CPACK_CMAKE_PACKAGE_NAME)&quot; &quot;[root.cmake]runtime&quot;"
             Directory="INSTALL_ROOT"
             Execute="deferred"
+            Return="ignore"
             Impersonate="no"/>
 
         <CustomAction Id="ConfigurePython"
             ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C set &quot;LY_CMAKE_PATH=[root.cmake.runtime]bin&quot; &amp;&amp; &quot;[root.python]get_python.bat&quot;"
             Directory="INSTALL_ROOT"
             Execute="deferred"
+             Return="ignore"
             Impersonate="no"/>
 
         <CustomAction Id="UnRegisterEngine"

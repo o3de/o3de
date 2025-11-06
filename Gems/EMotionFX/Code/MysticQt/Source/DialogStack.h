@@ -10,8 +10,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include "MysticQtConfig.h"
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QScrollArea>
+#include <QWidget>
+#include <QScrollArea>
 #include <AzCore/std/containers/vector.h>
 #endif
 

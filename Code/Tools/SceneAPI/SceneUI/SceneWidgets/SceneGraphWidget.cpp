@@ -394,7 +394,7 @@ namespace AZ
                 QStandardItem* item = m_treeModel->itemFromIndex(current);
                 
                 QVariant itemData = item->data();
-                if (!itemData.isValid() || itemData.type() != QVariant::Type::String)
+                if (!itemData.isValid() || !itemData.canConvert<QString>())
                 {
                     return;
                 }
@@ -461,7 +461,7 @@ namespace AZ
                 }
 
                 QVariant itemData = item->data();
-                if (!itemData.isValid() || itemData.type() != QVariant::Type::String)
+                if (!itemData.isValid() || !itemData.canConvert<QString>())
                 {
                     return false;
                 }
@@ -489,7 +489,7 @@ namespace AZ
                 }
 
                 QVariant itemData = item->data();
-                if (!itemData.isValid() || itemData.type() != QVariant::Type::String)
+                if (!itemData.isValid() || itemData.canConvert<QString>())
                 {
                     return false;
                 }

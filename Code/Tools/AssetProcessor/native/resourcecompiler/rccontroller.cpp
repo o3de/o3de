@@ -226,7 +226,8 @@ namespace AssetProcessor
 
     bool RCController::IsIdle()
     {
-        return ((!m_RCQueueSortModel.GetNextPendingJob()) && (m_RCJobListModel.jobsInFlight() == 0));
+        bool queueIsEmpty = m_RCQueueSortModel.rowCount() == 0;
+        return (queueIsEmpty && (m_RCJobListModel.jobsInFlight() == 0));
     }
 
     void RCController::JobSubmitted(JobDetails details)

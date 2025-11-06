@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Utilities/SelectionProxyModel.h>
-#include <QtCore/QSortFilterProxyModel>
+#include <QSortFilterProxyModel>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)

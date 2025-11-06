@@ -10,6 +10,7 @@
 
 #include <QElapsedTimer>
 #include <QCoreApplication>
+#include <QRegularExpression>
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -687,8 +688,9 @@ namespace AssetProcessor
 
         for (const QString& patternsToSkip : s_filePatternsToSkip)
         {
-            QRegExp skipRegex(patternsToSkip, Qt::CaseInsensitive, QRegExp::RegExp);
-            if (skipRegex.exactMatch(outputFilename))
+            QRegularExpression skipRegex(patternsToSkip, QRegularExpression::CaseInsensitiveOption);
+            QRegularExpressionMatch match = skipRegex.match(outputFilename);
+            if (match.hasMatch() && match.capturedLength() == outputFilename.length())
             {
                 return true;
             }

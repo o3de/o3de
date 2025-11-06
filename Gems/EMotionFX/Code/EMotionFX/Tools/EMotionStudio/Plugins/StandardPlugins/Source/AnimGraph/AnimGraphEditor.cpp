@@ -42,7 +42,7 @@ namespace EMotionFX
         
         QVBoxLayout* vLayout = new QVBoxLayout();
         QHBoxLayout* filenameLayout = new QHBoxLayout();
-        filenameLayout->setMargin(2);
+        filenameLayout->setContentsMargins(2, 2, 2, 2);
         vLayout->addLayout(filenameLayout);
         m_filenameLabel = new QLabel();
         m_filenameLabel->setStyleSheet("font-weight: bold;");
@@ -75,7 +75,7 @@ namespace EMotionFX
 
         // Motion set combo box
         QHBoxLayout* motionSetLayout = new QHBoxLayout();
-        motionSetLayout->setMargin(2);
+        motionSetLayout->setContentsMargins(2, 2, 2, 2);
         motionSetLayout->setSpacing(0);
         vLayout->addLayout(motionSetLayout);
 

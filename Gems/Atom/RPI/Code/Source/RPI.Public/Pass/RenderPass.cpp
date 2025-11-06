@@ -164,10 +164,6 @@ namespace AZ
             RHI::RenderAttachmentLayoutBuilder builder;
             auto* layoutBuilder = builder.AddSubpass();
             BuildSubpassLayout(*layoutBuilder);
-            if (!layoutBuilder->HasAttachments())
-            {
-                return;
-            }
 
             RHI::RenderAttachmentLayout subpassLayout;
             [[maybe_unused]] RHI::ResultCode result = builder.End(subpassLayout);
@@ -616,7 +612,7 @@ namespace AZ
 
             // This scope query implementation should be replaced by
             // [ATOM-5407] [RHI][Core] - Add GPU timestamp and pipeline statistic support for scopes
-            
+
             // For timestamp query, it's okay to execute across different command lists
             if (context.GetCommandListIndex() == context.GetCommandListCount() - 1)
             {

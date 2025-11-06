@@ -49,4 +49,19 @@ namespace AZ::RHI
         }
         return true;
     }
+
+    AZStd::unordered_map<int, uint64_t> BufferView::GetDeviceAddress() const
+    {
+        AZStd::unordered_map<int, uint64_t> result;
+
+        MultiDeviceObject::IterateDevices(
+            GetResource()->GetDeviceMask(),
+            [this, &result](int deviceIndex)
+            {
+                result[deviceIndex] = GetDeviceBufferView(deviceIndex)->GetDeviceAddress();
+                return true;
+            });
+
+        return result;
+    }
 }

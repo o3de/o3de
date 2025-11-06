@@ -62,7 +62,6 @@ namespace AZ::RPI
         bool UpdateSharedSamplerStates();
         void PrepareMaterialParameterBuffers();
         void UpdateChangedMaterialParameters();
-        void CreateTextureSamplers(const AZStd::vector<RHI::SamplerState>& samplers, Data::Instance<ShaderResourceGroup> srg);
 
         //  Data::AssetBus Interface
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
@@ -119,12 +118,16 @@ namespace AZ::RPI
         Data::Asset<ShaderAsset> m_sceneMaterialSrgShaderAsset;
         Data::Instance<ShaderResourceGroup> m_sceneMaterialSrg;
 
+        RHI::ShaderInputNameIndex m_nullTextureIndexInputIndex = { "m_nullTextureIndex" };
+        Data::Instance<RPI::Image> m_nullTexture;
+
         // Texture samplers shared between all materials that use the SceneMaterialSrg
         TextureSamplerRegistry m_sceneTextureSamplers;
 
         Data::Instance<Buffer> m_materialTypeBufferIndicesBuffer;
         bool m_bufferReadIndicesDirty = false;
         bool m_sharedSamplerStatesDirty = false;
+        bool m_initialized = false;
     };
 
 } // namespace AZ::RPI

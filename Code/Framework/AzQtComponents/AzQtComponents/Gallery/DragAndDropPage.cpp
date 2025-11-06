@@ -45,4 +45,8 @@ view->viewport()->setAcceptDrops(true);
     ui->exampleText->setHtml(exampleText);
 }
 
+DragAndDropPage::~DragAndDropPage()
+{
+}
+
 #include <Gallery/moc_DragAndDropPage.cpp>

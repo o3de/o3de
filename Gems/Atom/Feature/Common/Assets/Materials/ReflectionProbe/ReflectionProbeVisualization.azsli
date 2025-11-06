@@ -86,6 +86,11 @@
         return surface;
     }
 
+    Surface EvaluateSurface(VsOutput IN, VsSystemValues SV, PixelGeometryData geoData, const MaterialParameters params, float4 dxdy, bool useCustomDerivatives)
+    {
+        return EvaluateSurface(IN, SV, geoData, params);
+    }
+
     // use the lighting model (lightingData, BRDF - function and ApplyLights) from the BasePBR
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli>

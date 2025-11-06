@@ -90,9 +90,6 @@ namespace AZ
             void ShutdownInternal() override;
             void* GetNativeQueue() override;
             //////////////////////////////////////////////////////////////////////////
-
-            void ProcessQueue();
-
             
             void UpdateTileMappings(CommandList& commandList);
 

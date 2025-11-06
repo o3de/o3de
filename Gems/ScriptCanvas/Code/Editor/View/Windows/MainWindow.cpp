@@ -81,6 +81,7 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -693,6 +694,7 @@ namespace ScriptCanvasEditor
         m_autoSaveTimer.setSingleShot(true);
         connect(&m_autoSaveTimer, &QTimer::timeout, this, &MainWindow::OnAutoSave);
         UpdateMenuState(false);
+
     }
 
     MainWindow::~MainWindow()
@@ -965,6 +967,10 @@ namespace ScriptCanvasEditor
 
         m_workspace->Save();
         event->accept();
+
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+
+
     }
 
     UnsavedChangesOptions MainWindow::ShowSaveDialog(const QString& filename)
@@ -4187,6 +4193,7 @@ namespace ScriptCanvasEditor
 
             if (m_hasQueuedClose)
             {
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
                 qobject_cast<QWidget*>(parent())->close();
             }
         }

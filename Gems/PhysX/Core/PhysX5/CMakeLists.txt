@@ -18,7 +18,8 @@ o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLAT
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
-    set(physx_dependency 3rdParty::PhysX5)
+    ly_add_target(NAME physx_5_dependency NAMESPACE Gem INTERFACE BUILD_DEPENDENCIES INTERFACE ciso646-include 3rdParty::PhysX5)
+    set(physx_dependency physx_5_dependency)
     set(physx_files ../Code/physx_files.cmake)
     set(physx_module_files physx_module_files.cmake)
     set(physx_shared_files ../Code/physx_shared_files.cmake)

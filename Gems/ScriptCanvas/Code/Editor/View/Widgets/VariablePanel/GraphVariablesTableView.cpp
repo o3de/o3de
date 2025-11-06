@@ -6,10 +6,10 @@
  *
  */
 
-#include <qaction.h>
-#include <qapplication.h>
-#include <qclipboard.h>
-#include <qheaderview.h>
+#include <QAction>
+#include <QApplication>
+#include <QClipboard>
+#include <QHeaderView>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/Data/DataSlotBus.h>
@@ -1005,8 +1005,8 @@ namespace ScriptCanvasEditor
 
     void GraphVariablesModelSortFilterProxyModel::SetFilter(const QString& filter)
     {
-        m_filter = QRegExp::escape(filter);
-        m_filterRegex = QRegExp(m_filter, Qt::CaseInsensitive);
+        m_filter = QRegularExpression::escape(filter);
+        m_filterRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
 
         invalidateFilter();
     }

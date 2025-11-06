@@ -11,7 +11,7 @@
 #include <QGraphicsItem>
 #include <QGraphicsSceneEvent>
 #include <QPainter>
-#include <qwidget.h>
+#include <QWidget>
 
 #include <AzCore/Serialization/EditContext.h>
 

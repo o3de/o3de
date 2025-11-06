@@ -12,6 +12,7 @@
 #pragma once
 
 #include <QString>
+#include <IXml.h>
 
 class QByteArray;
 

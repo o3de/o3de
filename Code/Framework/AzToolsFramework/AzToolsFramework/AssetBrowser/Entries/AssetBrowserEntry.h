@@ -196,7 +196,7 @@ namespace AzToolsFramework
             AZ::u64 m_modificationTime;
 
             size_t m_diskSize;
-            AZ::Vector3 m_dimension{ NAN, NAN, NAN };
+            AZ::Vector3 m_dimension{ AZ::GetFloatQNaN(), AZ::GetFloatQNaN(), AZ::GetFloatQNaN() };
             uint32_t m_vertices{ 0 };
             AZStd::vector<AssetBrowserEntry*> m_children;
             AssetBrowserEntry* m_parentAssetEntry = nullptr;

@@ -150,12 +150,12 @@ namespace AtomToolsFramework
         QWidget* itemWidget = new QWidget(m_ui->m_assetList);
         itemWidget->setLayout(new QVBoxLayout(itemWidget));
         itemWidget->layout()->setSpacing(0);
-        itemWidget->layout()->setMargin(0);
+        itemWidget->layout()->setContentsMargins(0, 0, 0, 0);
 
         AzQtComponents::ElidingLabel* header = new AzQtComponents::ElidingLabel(itemWidget);
         header->setText(uniqueTitle);
         header->setFixedSize(QSize(m_tileSize.width(), headerHeight));
-        header->setMargin(0);
+        header->setContentsMargins(0, 0, 0, 0);
         header->setStyleSheet("background-color: rgb(35, 35, 35)");
         AzQtComponents::Text::addPrimaryStyle(header);
         AzQtComponents::Text::addLabelStyle(header);

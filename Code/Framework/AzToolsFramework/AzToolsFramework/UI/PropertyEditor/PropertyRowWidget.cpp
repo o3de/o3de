@@ -17,13 +17,14 @@
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: class '...' needs to have dll-interface to be used by clients of class 'QInputEvent'
                                                                     // 4800: QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QWidget>
-#include <QtGui/QFontMetrics>
-#include <QtGui/QTextLayout>
-#include <QtGui/QPainter>
+#include <QHBoxLayout>
+#include <QWidget>
+#include <QFontMetrics>
+#include <QTextLayout>
+#include <QPainter>
 #include <QMessageBox>
 #include <QStylePainter>
+#include <QFile>
 AZ_POP_DISABLE_WARNING
 
 static const int LabelColumnStretch = 2;

@@ -7,9 +7,9 @@
  */
 #include <AzCore/Debug/Trace.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
-#include <QtCore/QObject>
-#include <QtCore/QJsonDocument>
-#include <QtCore/QJsonObject>
+#include <QObject>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QRegularExpression>
 
 namespace

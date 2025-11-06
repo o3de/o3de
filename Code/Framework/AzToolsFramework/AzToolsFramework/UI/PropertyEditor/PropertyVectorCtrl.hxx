@@ -14,7 +14,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>

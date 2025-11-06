@@ -55,9 +55,6 @@ namespace ImageProcessingAtomEditor
         AZStd::unordered_set<ImageProcessingAtom::PresetName> m_presetList;
         EditorTextureSetting* m_textureSetting;
         QScopedPointer<PresetInfoPopup> m_presetPopup;
-        void SetPresetConvention(const ImageProcessingAtom::PresetSettings* presetSettings);
         void SetCheckBoxReadOnly(QCheckBox* checkBox, bool readOnly);
-
-        bool m_listAllPresets = true;
     };
 } //namespace ImageProcessingAtomEditor

@@ -28,6 +28,16 @@ set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
 # This is problematic if 3rd-party libraries use such operations in header files.
 set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18)
 
+# If (USE_FAST_MATH) is set, then enable fast math optimizations.
+# Some targets might need to disable fast math individually (likely 3rd Party libraries)
+# so this flag is provided to use them in a platform independent manner
+set(O3DE_COMPILE_OPTION_ENABLE_FAST_MATH /fp:fast)
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH /fp:precise)
+
+# Same as above, but to use inside set_target_properties for specific targets
+set(O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH})
+set(O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH})
+
 if (NOT O3DE_SCRIPT_ONLY)
     set(minimum_supported_toolset 142)
     if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
@@ -53,7 +63,6 @@ ly_append_configurations_options(
         _ENABLE_EXTENDED_ALIGNED_STORAGE # Enables support for extended alignment for the MSVC std::aligned_storage class
         _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING # Prevents triggering of STL4043 when checked iterators are used in 3rdParty libraries(QT and AWSNativeSDK)
     COMPILATION
-        /fp:fast        # allows the compiler to reorder, combine, or simplify floating-point operations to optimize floating-point code for speed and space
         /Gd             # Use _cdecl calling convention for all functions
         /MP             # Multicore compilation in Visual Studio
         /nologo         # Suppress Copyright and version number message
@@ -137,7 +146,6 @@ if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "t
     o3de_compiler_cache_activation(cache_exe_path) # Activates the compiler cache
 
     # Configure debug info format and compiler launcher for cache compatibility
-    cmake_policy(SET CMP0141 NEW)
     set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
     set(CMAKE_C_COMPILER_LAUNCHER ${cache_exe_path})
     set(CMAKE_CXX_COMPILER_LAUNCHER ${cache_exe_path})

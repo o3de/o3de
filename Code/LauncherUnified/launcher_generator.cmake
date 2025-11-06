@@ -43,7 +43,10 @@ set(launcher_generator_LY_PROJECTS ${LY_PROJECTS})
 # and the prebuilt installer always operates on a project, so will generally only happen
 # when building an installer from the o3de source code, or just compiling O3DE itself with no
 # project specified.
-if (NOT launcher_generator_LY_PROJECTS)
+if (NOT launcher_generator_LY_PROJECTS AND NOT LY_MONOLITHIC_GAME)
+    # do not generate a stub O3DE Launcher in monolithic mode.
+    # This stub O3DE Generic Launcher is only for script-only mode, which cannot function in monolithic
+    # linkage mode, since it does not have a linker.
     set(launcher_generator_LY_PROJECTS ":PROJECT_PATH_ONLY_FOR_GENERIC_LAUNCHER")
     set(O3DE_PROJECTS_NAME "O3DE")
     set(launcher_generator_BUILD_GENERIC TRUE) # used to skip the asset processing step

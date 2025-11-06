@@ -88,16 +88,17 @@ else()
     unset(CMAKE_VISIBILITY_INLINES_HIDDEN)
 endif()
 
-# Let's not clutter the root of any IDE folder structure with 3rd party dependencies
-# Setting the FOLDER makes it show up there in the solution build in VS and similarly
-# any other IDEs that organize in folders.
-set_target_properties(
-        gtest 
-        gmock 
-        gtest_main 
-        gmock_main 
-    PROPERTIES 
-        FOLDER "3rdParty Dependencies")
+foreach(targetname gtest gmock gtest_main gmock_main)
+    if (NOT TARGET ${targetname})
+        continue()
+    endif()
+    # Let's not clutter the root of any IDE folder structure with 3rd party dependencies
+    # Setting the FOLDER makes it show up there in the solution build in VS and similarly
+    # any other IDEs that organize in folders.
+    set_target_properties(${targetname} PROPERTIES FOLDER "3rdParty Dependencies")
+    # fast math is incompatible with google test / google mock / etc.
+    target_compile_options(${targetname} ${O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH})
+endforeach()
 
 unset(CMAKE_POLICY_DEFAULT_CMP0148)
 set(CMAKE_WARN_DEPRECATED ${OLD_CMAKE_WARN_DEPRECATED} CACHE BOOL "" FORCE)

@@ -92,7 +92,7 @@ namespace AZStd
             /* constraint checks */ ((is_void_v<T> && is_void_v<U>) || is_constructible_v<T, add_lvalue_reference_t<const U>>)
             && is_constructible_v<E, const G&>
             && Internal::not_convertible_or_constructible_from_other_std_expected_v<T, E, U, G>>>
-#if __cpp_conditional_explicit >= 201806L
+#if !defined(O3DE_DISABLE_CONDITIONAL_EXPLICIT) && __cpp_conditional_explicit >= 201806L
         explicit(!is_convertible_v<add_lvalue_reference_t<const U>, T> || !is_convertible_v<const G&, E>)
 #endif
         constexpr expected(const expected<U, G>& rhs);
@@ -104,7 +104,7 @@ namespace AZStd
             /* constraint checks */ ((is_void_v<T> && is_void_v<U>) || is_constructible_v<T, U>)
             && is_constructible_v<E, G>
             && Internal::not_convertible_or_constructible_from_other_std_expected_v<T, E, U, G>>>
-#if __cpp_conditional_explicit >= 201806L
+#if !defined(O3DE_DISABLE_CONDITIONAL_EXPLICIT) && __cpp_conditional_explicit >= 201806L
         explicit(!is_convertible_v<U, T> || !is_convertible_v<G, E>)
 #endif
         constexpr expected(expected<U, G>&& rhs);
@@ -115,21 +115,21 @@ namespace AZStd
             && !is_same_v<expected, remove_cvref_t<U>>
             && !Internal::is_std_unexpected_specialization_v<remove_cvref_t<U>>
             && is_constructible_v<T, U> >>
-#if __cpp_conditional_explicit >= 201806L
+#if !defined(O3DE_DISABLE_CONDITIONAL_EXPLICIT) && __cpp_conditional_explicit >= 201806L
         explicit(!is_convertible_v<U, T>)
 #endif
         constexpr expected(U&& v);
 
         // Direct non-list initialization for error type
         template<class G, class = enable_if_t<is_constructible_v<E, const G&> >>
-#if __cpp_conditional_explicit >= 201806L
+#if !defined(O3DE_DISABLE_CONDITIONAL_EXPLICIT) && __cpp_conditional_explicit >= 201806L
         explicit(!is_convertible_v<const G&, E>)
 #endif
         constexpr expected(const unexpected<G>& err);
 
 
         template<class G, class = enable_if_t<is_constructible_v<E, G> >>
-#if __cpp_conditional_explicit >= 201806L
+#if !defined(O3DE_DISABLE_CONDITIONAL_EXPLICIT) && __cpp_conditional_explicit >= 201806L
         explicit(!is_convertible_v<G, E>)
 #endif
         constexpr expected(unexpected<G>&& err);

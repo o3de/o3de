@@ -35,6 +35,12 @@ on:
       desktop:
         required: false
         type: boolean
+      clang_version:
+        required: false
+        type: string
+      cmake_version:
+        required: false
+        type: string
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
@@ -74,7 +80,6 @@ jobs:
       - name: Setup 3p, user, and build folders
         run: |
           mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
-
       - name: Setup ccache
         uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
         continue-on-error: true
@@ -149,9 +154,18 @@ jobs:
 
       - name: Setup cmake
         # Pin the version of cmake
+        if: ${{ inputs.cmake_version }}
         uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
         with:
-          cmakeVersion: "~3.30.0"
+          cmakeVersion: "${{ inputs.cmake_version }}"
+
+      - name: Install specific clang version
+        if: ${{ inputs.compiler == 'clang' && inputs.clang_version }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-${{ inputs.clang_version }} lld-${{ inputs.clang_version }}
+          echo "CC=$(which clang-${{ inputs.clang_version }})" >> $GITHUB_ENV
+          echo "CXX=$(which clang++-${{ inputs.clang_version }})" >> $GITHUB_ENV
 
       - name: Configure environment
         # Install dependencies. The desktop packages are for tests and assetprocessor
@@ -181,8 +195,7 @@ jobs:
         run: |
           export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
           export LY_PACKAGE_SERVER_URLS="https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
-          export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
-          export CXX=${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
+          export EXTRA_CMAKE_OPTIONS="-DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX"
           export CMAKE_C_COMPILER_LAUNCHER=ccache
           export CMAKE_CXX_COMPILER_LAUNCHER=ccache
           export DISPLAY=:0

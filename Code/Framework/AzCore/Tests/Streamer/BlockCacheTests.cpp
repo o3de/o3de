@@ -16,6 +16,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <Tests/FileIOBaseTestTypes.h>
 #include <Tests/Streamer/StreamStackEntryConformityTests.h>
 #include <Tests/Streamer/StreamStackEntryMock.h>
@@ -40,6 +41,9 @@ namespace AZ::IO
     public:
         void SetUp() override
         {
+            m_taskExecutor = AZStd::make_unique<TaskExecutor>();
+            TaskExecutor::SetInstance(m_taskExecutor.get());
+
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -59,6 +63,9 @@ namespace AZ::IO
             m_context = nullptr;
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
+
+            TaskExecutor::SetInstance(nullptr);
+            m_taskExecutor.reset();
         }
 
         void CreateTestEnvironmentImplementation(bool onlyEpilogWrites)
@@ -226,6 +233,7 @@ namespace AZ::IO
         StreamerContext* m_context;
         AZStd::shared_ptr<BlockCache> m_cache;
         AZStd::shared_ptr<StreamStackEntryMock> m_mock;
+        AZStd::unique_ptr<TaskExecutor> m_taskExecutor;
         RequestPath m_path;
 
         u32* m_buffer{ nullptr };
@@ -624,7 +632,7 @@ namespace AZ::IO
         using ::testing::Invoke;
         using ::testing::Return;
 
-        static const constexpr size_t count = 3;
+        static const constexpr size_t count = 4;
 
         m_cacheSize = (count - 1) * m_blockSize;
         CreateTestEnvironment();

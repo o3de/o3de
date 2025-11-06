@@ -15,7 +15,7 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
 
-#include <QtCore/QString>
+#include <QString>
 
 namespace AZ
 {

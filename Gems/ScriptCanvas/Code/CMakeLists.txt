@@ -252,6 +252,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Application
                 Editor
+                ${pal_source_dir}
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore

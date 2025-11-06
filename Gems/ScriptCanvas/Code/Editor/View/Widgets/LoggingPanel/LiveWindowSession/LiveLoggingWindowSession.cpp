@@ -11,7 +11,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
 #include <IEditor.h>
-#include <QtWidgets/QLabel>
+#include <QLabel>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>

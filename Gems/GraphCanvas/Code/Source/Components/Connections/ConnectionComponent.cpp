@@ -6,9 +6,9 @@
  *
  */
 
-#include <qcursor.h>
-#include <qgraphicsscene.h>
-#include <qgraphicsview.h>
+#include <QCursor>
+#include <QGraphicsScene>
+#include <QGraphicsView>
 #include <QToolTip>
 
 #include <AzCore/Serialization/EditContext.h>

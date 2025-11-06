@@ -28,8 +28,8 @@ namespace AZ
 
             AZ::Color m_color = AZ::Color::CreateOne();
             bool m_enable = false;
-            float m_topHeight = 0.01;
-            float m_bottomHeight = 0.0;
+            float m_topHeight = 0.01f;
+            float m_bottomHeight = 0.0f;
         };
     }
 }

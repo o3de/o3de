@@ -19,7 +19,7 @@ AZ_POP_DISABLE_WARNING
 #include <QScrollBar>
 #include <QTableView>
 #include <QHeaderView>
-#include <QtWidgets/QApplication>
+#include <QApplication>
 
 #include "LogPanel_Panel.h"
 
