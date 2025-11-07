@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/EntityActiveSystemBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
@@ -152,6 +153,13 @@ namespace AzFramework
 
     void TransformComponent::Init()
     {
+        if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
+        {
+            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::RegisterEntityActiveType, PARENT_ACTIVE_TYPE_NAME);
+        }
+        
+        m_isInitSetParent = true;
+
         AZ::TransformBus::Handler::BusConnect(m_entity->GetId());
         AZ::TransformNotificationBus::Bind(m_notificationBus, m_entity->GetId());
 
@@ -531,6 +539,12 @@ namespace AzFramework
                 "Entity '%s' %s has static transform, but parent has non-static transform. This may lead to unexpected movement.",
                 GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
 
+            m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, parentEntity->IsEffectivelyActive());
+            if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+            {
+                m_entity->ApplyEffectiveActiveState();
+            }
+
             if (m_onNewParentKeepWorldTM)
             {
                 ComputeLocalTM();
@@ -539,6 +553,28 @@ namespace AzFramework
             {
                 ComputeWorldTM();
             }
+        }
+    }
+
+    void TransformComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& parentEntityId)
+    {
+        AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
+
+        m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, true);
+        if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+        {
+            m_entity->ApplyEffectiveActiveState();
+        }
+    }
+
+    void TransformComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& parentEntityId)
+    {
+        AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
+
+        m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, false);
+        if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+        {
+            m_entity->ApplyEffectiveActiveState();
         }
     }
 
@@ -578,10 +614,11 @@ namespace AzFramework
 
             AZ::TransformNotificationBus::Handler::BusConnect(m_parentId);
             AZ::TransformHierarchyInformationBus::Handler::BusConnect(m_parentId);
-            // We don't expect an "Entity Activated" call from EntityBus anymore.
-            // Every entity transform will be treated as active. (Gather TM data and other needs.)
+            // Parent (De)Activate handles local entity parent state flag changes.
             AZ::EntityBus::Handler::BusConnect(m_parentId);
 
+            // Every parent entity will be processed.
+            // Parent active state is applied at parent due to no events firing on connect.
             ProcessParentEntity(m_parentId);
         }
         else
@@ -606,7 +643,7 @@ namespace AzFramework
         }
 
         //Notify the GameEntityContext of this change to update the parent child hierarchy and evaluate new active state.
-        GameEntityContextRequestBus::Broadcast(&GameEntityContextRequests::UpdateParentChildHierarchy, GetEntityId(), oldParent, m_parentId);
+        //GameEntityContextRequestBus::Broadcast(&GameEntityContextRequests::UpdateParentChildHierarchy, GetEntityId(), oldParent, m_parentId);
 
         AZ::TransformNotificationBus::Event(m_notificationBus, &AZ::TransformNotificationBus::Events::OnParentChanged, oldParent, parentId);
         m_parentChangedEvent.Signal(oldParent, parentId);

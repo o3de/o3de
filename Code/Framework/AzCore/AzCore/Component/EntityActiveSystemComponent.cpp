@@ -69,8 +69,15 @@ namespace AZ
             return kInvalidIndex;
         }
 
-        m_activeTypeNameToIndex.push_back(typeNameId);
+        for (size_t i = 0; i < m_activeTypeNameToIndex.size(); i++)
+        {
+            if (m_activeTypeNameToIndex[i] == typeNameId)
+            {
+                return i;
+            }
+        }
 
+        m_activeTypeNameToIndex.push_back(typeNameId);
         return GetActiveTypeIndexById(typeNameId);
     }
 

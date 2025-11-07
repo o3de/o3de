@@ -150,6 +150,8 @@ namespace AzFramework
         // EntityBus
         //! Called when the parent entity activates.
         //! Called when the parent entity is going to be destroyed.
+        void OnEntityActivated(const AZ::EntityId& parentEntityId) override;
+        void OnEntityDeactivated(const AZ::EntityId& parentEntityId) override;
         void OnEntityDestruction(const AZ::EntityId& parentEntityId) override;
         //! @}
 
@@ -191,6 +193,10 @@ namespace AzFramework
         bool m_parentActive = false; ///< Keeps track of the state of the parent entity.
         bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
+        
+        bool m_isInitSetParent = true;
+        //! Local reference to what active type index position the "Parent" type is for Entity Activation Handling.
+        size_t parentActiveTypeIndex = std::numeric_limits<size_t>::max();
         /// Behavior for this entity's transform when its parent's transform changes.
         AZ::OnParentChangedBehavior m_onParentChangedBehavior = AZ::OnParentChangedBehavior::Update;
     };
