@@ -194,7 +194,6 @@ namespace AzFramework
         bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
         
-        bool m_isInitSetParent = true;
         //! Local reference to what active type index position the "Parent" type is for Entity Activation Handling.
         size_t parentActiveTypeIndex = std::numeric_limits<size_t>::max();
         /// Behavior for this entity's transform when its parent's transform changes.

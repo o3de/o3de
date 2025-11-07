@@ -157,8 +157,6 @@ namespace AzFramework
         {
             AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::RegisterEntityActiveType, PARENT_ACTIVE_TYPE_NAME);
         }
-        
-        m_isInitSetParent = true;
 
         AZ::TransformBus::Handler::BusConnect(m_entity->GetId());
         AZ::TransformNotificationBus::Bind(m_notificationBus, m_entity->GetId());
