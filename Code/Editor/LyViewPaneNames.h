@@ -32,6 +32,7 @@ namespace LyViewPane
     static const char* const ConsoleMenuName = "&Console";
     static const char* const ConsoleVariables = "Console Variables";
     static const char* const TrackView = "Track View";
+    static const char* const ScriptCanvas = "Script Canvas";
     static const char* const UiEditor = "UI Editor";
 
     static const char* const EditorSettingsManager = "Editor Settings Manager";

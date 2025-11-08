@@ -262,6 +262,7 @@ namespace ScriptCanvasEditor
 
     public:
 
+        MainWindow(QWidget* parent = nullptr);
         MainWindow(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~MainWindow() override;
 
