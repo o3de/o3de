@@ -53,7 +53,9 @@
 
 namespace ScriptCanvasEditor
 {
+#if SCRIPTCANVAS_STANDALONE_APPLICATION
     constexpr AZStd::string_view ScriptCanvasApplicationActionIdentifier = "o3de.action.tools.script_canvas";
+#endif
 
     static const size_t cs_jobThreads = 1;
 
