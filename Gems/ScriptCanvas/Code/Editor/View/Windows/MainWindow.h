@@ -262,7 +262,7 @@ namespace ScriptCanvasEditor
 
     public:
 
-if !SCRIPTCANVAS_STANDALONE_APPLICATION
+#if !SCRIPTCANVAS_STANDALONE_APPLICATION
         MainWindow(QWidget* parent = nullptr);
 #endif
 

@@ -361,7 +361,7 @@ namespace ScriptCanvasEditor
     // MainWindow
     ////////////////
 
-if !SCRIPTCANVAS_STANDALONE_APPLICATION
+#if !SCRIPTCANVAS_STANDALONE_APPLICATION
 
     MainWindow::MainWindow(QWidget* parent)
         : MainWindow(AZ::Crc32("ScriptCanvas"), parent)
