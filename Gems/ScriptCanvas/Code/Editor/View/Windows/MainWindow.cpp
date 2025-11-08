@@ -361,10 +361,14 @@ namespace ScriptCanvasEditor
     // MainWindow
     ////////////////
 
+if !SCRIPTCANVAS_STANDALONE_APPLICATION
+
     MainWindow::MainWindow(QWidget* parent)
         : MainWindow(AZ::Crc32("ScriptCanvas"), parent)
     {
     }
+
+#endif
 
     MainWindow::MainWindow(const AZ::Crc32& toolId, QWidget* parent)
         : QMainWindow(parent, Qt::Widget | Qt::WindowMinMaxButtonsHint)
