@@ -74,6 +74,9 @@ function(GetOpenMesh)
     set(OLD_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL}) # save the old CMAKE_MESSAGE_LOG_LEVEL
     set(CMAKE_MESSAGE_LOG_LEVEL ${O3DE_FETCHCONTENT_MESSAGE_LEVEL})
     set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
+
+    # Backup and set the developer warning suppression for OpenMesh to suppress a expected warning
+    set(ORIGINAL_CMAKE_SUPPRESS_DEVELOPER_WARNINGS ${CMAKE_SUPPRESS_DEVELOPER_WARNINGS})
     set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE)
 
     # The rest of these are all specific settings that come from OpenMesh's CMakeLists.txt files.
@@ -142,6 +145,9 @@ function(GetOpenMesh)
     # signal that find_package(OpenMesh) has succeeded.
     # we have to set it on the PARENT_SCOPE since we're in a function 
     set(OpenMesh_FOUND TRUE PARENT_SCOPE)
+
+    # Restore the original suppression flags that were forced as part of OpenMesh
+    set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ${ORIGINAL_CMAKE_SUPPRESS_DEVELOPER_WARNINGS} CACHE BOOL "" FORCE)
 
 endfunction()
 
