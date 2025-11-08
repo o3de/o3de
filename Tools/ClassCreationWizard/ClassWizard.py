@@ -39,7 +39,7 @@ Windows:
         --component-name Image `
         --component-type Default `
         --namespace myproject `
-        --add-to-project `
+        --automatic-register `
         --default-license
 Linux:
     $ ~/o3de$ ./python/python.sh Tools/ClassCreationWizard/ClassWizard.py \
@@ -48,7 +48,7 @@ Linux:
         --component-name Image \
         --component-type Default \
         --namespace myproject \
-        --add-to-project \
+        --automatic-register \
         --default-license
 
 Required Arguments:
@@ -59,18 +59,157 @@ Optional Arguments:
     --component-name NAME Component name (required for non-GUI)
     --component-type TYPE Component type: Default or Editor (required for non-GUI)
     --namespace      NAME Component namespace (required for non-GUI)
-    --add-to-project      Automatically add to project's Gem folder
+    --automatic-register      Automatically add to project's Gem folder
     --default-license     Include default license
 '''
 import argparse
 import os
 import subprocess
-import sys
+from pathlib import Path
+import sys, json
 import traceback
 from pathlib import Path
+import tempfile
+import shutil
+import fnmatch
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import filedialog, ttk
+
+# --- ClassWizard staging helpers ---
+def _import_engine_template(engine_path: Path):
+    """Load O3DE's engine_template module from <engine>/scripts/o3de without spawning a process."""
+    pkg_root = Path(engine_path) / "scripts" / "o3de"
+    sys.path.insert(0, str(pkg_root))
+    try:
+        from o3de import engine_template  # type: ignore
+        return engine_template
+    finally:
+        if sys.path and sys.path[0] == str(pkg_root):
+            sys.path.pop(0)
+
+def _create_to_stage(*, engine_path: Path, template_name: str, destination_name: str,
+                     replacements: list[str] | None, keep_license_text: bool) -> Path:
+    """
+    Call O3DE's create_from_template into a temporary staging folder.
+    Returns the staging folder path.
+    """
+    stage = Path(tempfile.mkdtemp(prefix="cw_stage_"))
+    et = _import_engine_template(engine_path)
+    rc = et.create_from_template(
+        destination_path=stage,
+        template_name=template_name,
+        destination_name=destination_name,
+        replace=replacements or [],
+        keep_restricted_in_instance=True,
+        keep_license_text=keep_license_text,
+        no_register=True,
+        force=True,
+    )
+    if rc != 0:
+        shutil.rmtree(stage, ignore_errors=True)
+        raise RuntimeError(f"create_from_template failed with rc={rc}")
+    return stage
+
+COMMENT_FILE_GLOBS = ("**/*.h", "**/*.hpp", "**/*.c", "**/*.cpp", "**/*.inl")
+
+def _strip_c_like_comments(text: str, *, preserve_license: bool = True) -> str:
+    """Preserve {BEGIN_LICENSE}...{END_LICENSE}, then strip /*...*/ and //... comments."""
+    if not text:
+        return text
+    protected = []
+    if preserve_license:
+        def _protect(m):
+            idx = len(protected)
+            protected.append(m.group(0))
+            return f"__CW_LIC_{idx}__"
+        text = re.sub(r"\{BEGIN_LICENSE\}.*?\{END_LICENSE\}", _protect, text, flags=re.S)
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    text = re.sub(r"//.*", "", text)
+    text = re.sub(r"[ \t]+\r?\n", "\n", text)
+    if preserve_license:
+        for i, block in enumerate(protected):
+            text = text.replace(f"__CW_LIC_{i}__", block)
+    return text
+
+def _merge_stage_into_dest(stage: Path, dest: Path, *,
+                           skip_existing: bool = True,
+                           strip_comments: bool = True,
+                           comment_globs: tuple[str, ...] = COMMENT_FILE_GLOBS,
+                           log=None) -> tuple[int, int]:
+    """Copy files from stage into dest. Returns (created, skipped)."""
+    created = skipped = 0
+    stage = Path(stage); dest = Path(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+
+    def _matches(rel: Path) -> bool:
+        s = str(rel).replace("\\", "/")
+        return any(fnmatch.fnmatch(s, pat) for pat in comment_globs)
+
+    for s in stage.rglob("*"):
+        if s.is_dir():
+            continue
+        rel = s.relative_to(stage)
+        d = dest / rel
+        d.parent.mkdir(parents=True, exist_ok=True)
+        if skip_existing and d.exists():
+            skipped += 1
+            if log: log(f"skip existing: {rel}")
+            continue
+        if strip_comments and _matches(rel):
+            try:
+                data = s.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                shutil.copy2(s, d)
+            else:
+                data = _strip_c_like_comments(data, preserve_license=True)
+                d.write_text(data, encoding="utf-8", newline="\\n")
+        else:
+            shutil.copy2(s, d)
+        created += 1
+        if log: log(f"wrote: {rel}")
+    return created, skipped
+
+def create_default_component_staged(*,
+    engine_path: Path,
+    dest_dir: Path,
+    namespace: str,
+    component_name: str,
+    template_name: str = "DefaultComponent",
+    strip_comments: bool = True,
+    keep_license_text: bool = False,
+    automatic_register: bool = False,
+    log=None
+) -> bool:
+    """Stage -> merge pipeline for Default/Editor component templates."""
+    def _log(msg): log(msg) if log else print(msg)
+    replacements = ["${GemName}", namespace]
+    stage = None
+    try:
+        _log(f"Staging template '{template_name}' for {component_name}…")
+        stage = _create_to_stage(
+            engine_path=Path(engine_path),
+            template_name=template_name,
+            destination_name=component_name,
+            replacements=replacements,
+            keep_license_text=keep_license_text,
+        )
+        _log("Merging into destination… (skipping existing files)")
+        created, skipped = _merge_stage_into_dest(
+            stage=stage, dest=Path(dest_dir),
+            skip_existing=True, strip_comments=strip_comments, log=_log
+        )
+        _log(f"Created {created} file(s), skipped {skipped} existing file(s).")
+        # Hook for future auto-registration if desired
+        return True
+    except Exception as e:
+        _log(f"Error: {e}")
+        return False
+    finally:
+        if stage:
+            try: shutil.rmtree(stage, ignore_errors=True)
+            except Exception: pass
+
 
 LOCK_FILE = Path(__file__).parent / ".lock"
 
@@ -252,7 +391,7 @@ def add_component_to_project(component_path: Path, component_name: str, namespac
         return False
 
 def create_default_component(engine_path, project_dir, namespace, component_name,
-                            add_to_project=False, default_license=False, log=None) -> bool:
+                            automatic_register=False, default_license=False, log=None) -> bool:
     """Creates a new default component with the specified parameters."""
     def log_message(message):
         if log:
@@ -298,7 +437,7 @@ def create_default_component(engine_path, project_dir, namespace, component_name
 
         log_message(f"Successfully created component: {component_name}")
 
-        if add_to_project:
+        if automatic_register:
             success = add_component_to_project(Path(project_dir), component_name, namespace, log)
             if not success:
                 log_message("Warning: Failed to automatically add the component to the project.")
@@ -317,14 +456,14 @@ def create_default_component(engine_path, project_dir, namespace, component_name
         return False
 
 def create_editor_component(engine_path, project_dir, namespace, component_name,
-                            add_to_project=False, default_license=False, log=None) -> bool:
+                            automatic_register=False, default_license=False, log=None) -> bool:
     """Creates an editor component with the specified parameters."""
     if log:
         log("Error: Editor component is not yet implemented. Please use 'Default' component type.")
     return False
 
 def create_component(engine_path, project_dir, namespace, component_name,
-                    component_type="Default", add_to_project=False, default_license=False, log=None)-> bool:
+                    component_type="Default", automatic_register=False, default_license=False, log=None)-> bool:
     """Creates a new O3DE component of the specified type."""
     if component_type == "Default":
         status = create_default_component(
@@ -332,7 +471,7 @@ def create_component(engine_path, project_dir, namespace, component_name,
                     project_dir=project_dir,
                     namespace=namespace,
                     component_name=component_name,
-                    add_to_project=add_to_project,
+                    automatic_register=automatic_register,
                     default_license=default_license,
                     log=print
                 )
@@ -342,7 +481,7 @@ def create_component(engine_path, project_dir, namespace, component_name,
                     project_dir=project_path,
                     namespace=namespace,
                     component_name=component_name,
-                    add_to_project=add_to_project,
+                    automatic_register=automatic_register,
                     default_license=default_license,
                     log=print
                 )
@@ -394,6 +533,46 @@ class Tooltip:
             self.tooltip.destroy()
             self.tooltip = None
 
+def get_enabled_gems(engine_path: Path, project_path: Path, include_dependencies: bool = True):
+        """
+        Returns list[(gem_name, gem_path: Path)] for the project.
+        Filters out engine-internal gems by comparing paths to engine_path.
+        """
+        pkg_root = Path(engine_path) / "scripts" / "o3de"   # contains the 'o3de' package
+        sys.path.insert(0, str(pkg_root))
+        try:
+            from o3de import manifest  # provided by <engine>/scripts/o3de/o3de/manifest.py
+            mapping = manifest.get_project_enabled_gems(
+                Path(project_path),
+                include_dependencies=include_dependencies
+            ) or {}
+        finally:
+            sys.path.pop(0)
+
+        # Normalize & filter
+        engine_root = Path(engine_path).resolve()
+        out = []
+        for namespec, p in mapping.items():
+            gp = Path(p).resolve()
+            # exclude gems that live inside the engine folder (engine-default gems)
+            try:
+                gp.relative_to(engine_root)
+                continue
+            except ValueError:
+                pass
+            # derive a display name (prefer gem.json -> gem_name/display_name)
+            name = namespec
+            gj = gp / "gem.json"
+            if gj.is_file():
+                try:
+                    data = json.loads(gj.read_text(encoding="utf-8"))
+                    name = data.get("gem_name") or data.get("display_name") or namespec
+                except Exception:
+                    pass
+            out.append((name, gp))
+        out.sort(key=lambda x: x[0].lower())
+        return out
+
 class NewComponentWindow:
     """GUI window for creating a new component in an O3DE project.
 
@@ -404,7 +583,7 @@ class NewComponentWindow:
         self.root = root
         self.engine_path = engine_path
         self.project_path = project_path
-        self.namespace = tk.StringVar(value=project_path.parent.stem if project_path else "")
+        self.namespace = tk.StringVar(value=project_path.stem if project_path else "")
 
         self.root.title("Add C++ Component")
         self.root.minsize(300, 480) if sys.platform == "win32" else self.root.minsize(300, 500)
@@ -429,6 +608,118 @@ class NewComponentWindow:
         main_frame = ttk.Frame(root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
+        # --- Targeting ---
+        target_frame = ttk.LabelFrame(main_frame, text=" Destination ", padding="10", style="C.TLabelframe")
+        target_frame.pack(fill=tk.X, pady=5)
+
+        # small debug helper that prints and also uses the wizard's log area if available
+        def _dbg(msg):
+            try:
+                self.log_message(str(msg))
+            except Exception:
+                pass
+            print(f"[ClassWizard] {msg}")
+
+        choices = ["Project"]
+        lookup  = {"Project": project_path}
+
+        _dbg(f"engine_path={engine_path}")
+        _dbg(f"project_path={project_path}")
+        _dbg(f"project.json exists? {(Path(project_path)/'project.json').exists()}")
+
+        # 1) ALWAYS create the StringVar first, and attach it to the correct master
+        self.target_choice = tk.StringVar(master=self.root, value="Project")
+
+        # 2) Seed choices + lookup
+        choices = ["Project"]
+        self._target_lookup = {"Project": (project_path / "Gem")}
+
+        # 3) (Optional) debug helper
+        def _dbg(msg):
+            try:
+                self.log_message(str(msg))
+            except Exception:
+                pass
+            print(f"[ClassWizard] {msg}")
+
+        # 4) Try to import and query the o3de manifest directly
+        try:
+            pkg_root = Path(engine_path) / "scripts" / "o3de"
+            sys.path.insert(0, str(pkg_root))
+            from o3de import manifest
+            _dbg(f"manifest from: {manifest.__file__}")
+
+            mapping = manifest.get_project_enabled_gems(Path(project_path), include_dependencies=True) or {}
+            _dbg(f"enabled gems returned: {len(mapping)}")
+        finally:
+            if sys.path and sys.path[0] == str(pkg_root):
+                sys.path.pop(0)
+
+        # 5) Build choices from mapping (filter engine gems if you want)
+        engine_root = Path(engine_path).resolve()
+        for namespec, p in (mapping.items() if 'mapping' in locals() else []):
+            gp = Path(p).resolve()
+            try:
+                gp.relative_to(engine_root)   # inside engine? skip
+                _dbg(f"filtered engine gem: {namespec}")
+                continue
+            except ValueError:
+                pass
+
+            name = namespec
+            gj = gp / "gem.json"
+            if gj.is_file():
+                try:
+                    data = json.loads(gj.read_text(encoding="utf-8"))
+                    name = data.get("gem_name") or data.get("display_name") or name
+                except Exception as ge:
+                    _dbg(f"warn gem.json read: {ge!r}")
+
+            choices.append(name)
+            self._target_lookup[name] = gp
+
+        if len(choices) > 1:
+            choices = ["Project"] + sorted(choices[1:], key=str.casefold)
+
+        ttk.Label(target_frame, text="Target:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
+
+        # 6) Create the combobox using the StringVar you just made
+        self.target_combo = ttk.Combobox(
+            target_frame,
+            values=choices,
+            textvariable=self.target_choice,   # <-- THIS MUST BE self.target_choice
+            state="readonly",
+            width=28
+        )
+        self.target_combo.grid(row=0, column=1, sticky="ew", padx=5, pady=5)
+        target_frame.columnconfigure(1, weight=1)
+
+        # 7) Initialize selection explicitly
+        self.target_combo.current(0)          # selects "Project"
+        # OR: self.target_choice.set("Project")
+
+        # Destination path display (Project -> project_root/Gem)
+        ttk.Label(target_frame, text="Target Path:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
+        _initial_sel = self.target_combo.get()
+        _base_path = self._target_lookup.get(_initial_sel, project_path)
+        _dest_path = _base_path
+        self.target_path_var = tk.StringVar(value=str(_dest_path))
+        self.target_path_entry = ttk.Entry(target_frame, textvariable=self.target_path_var, state="normal")
+        self.target_path_entry.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
+
+
+        def _on_target_changed(event=None):
+            sel = self.target_choice.get()
+            base_path = self._target_lookup.get(sel, project_path)
+            self.target_path_var.set(str(base_path))
+            # feed the destination to Project Directory field used by create-from-template
+            try:
+                self.project_dir_var.set(str(base_path))
+            except Exception:
+                pass
+
+        self.target_combo.bind("<<ComboboxSelected>>", _on_target_changed)
+
         # Component Details
         details_frame = ttk.LabelFrame(main_frame, text=" Component Details ", padding="10", style="C.TLabelframe")
         details_frame.pack(fill=tk.X, pady=5)
@@ -451,20 +742,32 @@ class NewComponentWindow:
 
         def on_component_select(event):
             """Component type selection"""
-            if self.component_type.get() == "Editor":
-                self.component_type.set("Default")
+            if self.component_type.get() == "System":
+                self.component_type.set("Simple")
                 self.clear_log()
-                self.log_message("Info: Editor type is not yet implemented.")
+                self.log_message("Info: System Component needs a Template.")
+            if self.component_type.get() == "Level":
+                self.component_type.set("Simple")
+                self.clear_log()
+                self.log_message("Info: Level Component needs a Template.")
+            if self.component_type.get() == "Lyshine UI":
+                self.component_type.set("Simple")
+                self.clear_log()
+                self.log_message("Info: Ui component needs Template.")
+            if self.component_type.get() == "Data Asset":
+                self.component_type.set("Simple")
+                self.clear_log()
+                self.log_message("Info: Data Asset needs features and template.")
 
         self.component_type = ttk.Combobox(
             details_frame,
-            values=["Default", ("Editor")],
+            values=["Simple", "System", "Level", "Lyshine UI", "Data Asset"],
             state="readonly",
             width=18)
         self.component_type.current(0)
         self.component_type.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
         self.component_type.bind("<<ComboboxSelected>>", on_component_select)
-        Tooltip(self.component_type, "Select component type: 'Default' for runtime, 'Editor' for editor-specific functionality.")
+        Tooltip(self.component_type, "Select component type: 'Simple' for runtime")
 
         # Row 2: Namespace
         ttk.Label(details_frame, text="Namespace:").grid(
@@ -509,15 +812,35 @@ class NewComponentWindow:
         settings_frame.pack(fill=tk.X, pady=5)
 
         # Checkboxes
-        self.add_to_project = tk.BooleanVar(value=False)
+        self.automatic_register = tk.BooleanVar(value=True)
         cmake_cb = ttk.Checkbutton(
             settings_frame,
-            text="Add to project",
-            variable=self.add_to_project,
+            text="Register Automatically",
+            variable=self.automatic_register,
             onvalue=True,
             offvalue=False)
         cmake_cb.pack(anchor="w", pady=2)
         Tooltip(cmake_cb, "Automatically add this component to the Gem's private CMake source files.")
+        
+        self.remove_comments = tk.BooleanVar(value=True)
+        comment_cb = ttk.Checkbutton(
+            settings_frame,
+            text="Remove Comments",
+            variable=self.remove_comments,
+            onvalue=True,
+            offvalue=False)
+        comment_cb.pack(anchor="w", pady=2)
+        Tooltip(comment_cb, "Strip comments from generated files.")
+        
+        self.editor_adapter = tk.BooleanVar(value=False)
+        editor_cb = ttk.Checkbutton(
+            settings_frame,
+            text="Add Editor Adapter",
+            variable=self.editor_adapter,
+            onvalue=True,
+            offvalue=False)
+        editor_cb.pack(anchor="w", pady=2)
+        Tooltip(editor_cb, "Add Editor equivalent to your component!")
 
         self.default_license = tk.BooleanVar(value=False)
         license_cb = ttk.Checkbutton(
@@ -541,6 +864,14 @@ class NewComponentWindow:
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill=tk.X, pady=5)
 
+        cancel_btn = ttk.Button(
+            button_frame,
+            text="Cancel",
+            command=self.on_cancel,
+            style="C.TButton")
+        cancel_btn.pack(side="right")
+        Tooltip(cancel_btn, "Close this window without creating a component.")
+
         ok_btn = ttk.Button(
             button_frame,
             text="Create",
@@ -549,13 +880,15 @@ class NewComponentWindow:
         ok_btn.pack(side="right", padx=5)
         Tooltip(ok_btn, "Create the component using the specified settings.")
 
-        cancel_btn = ttk.Button(
-            button_frame,
-            text="Cancel",
-            command=self.on_cancel,
-            style="C.TButton")
-        cancel_btn.pack(side="right")
-        Tooltip(cancel_btn, "Close this window without creating a component.")
+        def _autosize_and_center():
+            self.root.update_idletasks()
+            w, h = self.root.winfo_reqwidth(), self.root.winfo_reqheight()
+            x = (self.root.winfo_screenwidth()  - w) // 2
+            y = (self.root.winfo_screenheight() - h) // 2
+            self.root.minsize(w, h)
+            self.root.geometry(f"{w}x{h}+{x}+{y}")
+
+        self.root.after_idle(_autosize_and_center)
 
     def close_window(self):
         """Centralized for all close operations"""
@@ -605,21 +938,52 @@ class NewComponentWindow:
         if not validate_component_name(namespace, log=self.log_message):
             return
         component_type = self.component_type.get()
-        project_dir = self.project_dir_var.get().strip()
-        if not os.path.isdir(project_dir):
-            self.log_message(f"Error: Project directory {project_dir} does not exist.")
+
+        # Destination path: prefer Target Path if available, else fallback
+        try:
+            dest_dir = self.target_path_var.get().strip()
+        except Exception:
+            dest_dir = ""
+
+        if not dest_dir:
+            try:
+                dest_dir = self.project_dir_var.get().strip()
+            except Exception:
+                dest_dir = ""
+
+        if not dest_dir or not os.path.isdir(dest_dir):
+            self.log_message(f"Error: Target path {dest_dir or '<empty>'} does not exist.")
             return
-        add_to_project=self.add_to_project.get()
+
+        automatic_register = self.automatic_register.get() if hasattr(self, 'automatic_register') else False
+        strip_comments = True
+        keep_license = self.default_license.get() if hasattr(self, 'default_license') else False
 
         self.log_message("Please wait...")
         self.root.update_idletasks()
 
-        if component_type == "Default":
-            create_default_component(engine_path=self.engine_path, project_dir=project_dir, component_name=component_name,
-                                     namespace=namespace, add_to_project=add_to_project, default_license=self.default_license.get(), log=self.log_message)
-        elif component_type == "Editor":
-            create_editor_component(engine_path=self.engine_path, project_dir=project_dir, component_name=component_name,
-                                     namespace=namespace, add_to_project=add_to_project, default_license=self.default_license.get(), log=self.log_message)
+        # Map component type to template name
+        template_map = {
+            "Default": "DefaultComponent",
+            "Editor": "DefaultEditorComponent"
+        }
+        template_name = template_map.get(component_type, "DefaultComponent")
+
+        ok = create_default_component_staged(
+            engine_path=self.engine_path,
+            dest_dir=Path(dest_dir),
+            namespace=namespace,
+            component_name=component_name,
+            template_name=template_name,
+            strip_comments=strip_comments,
+            keep_license_text=keep_license,
+            automatic_register=automatic_register,
+            log=self.log_message
+        )
+        if ok:
+            self.log_message("Done.")
+        else:
+            self.log_message("Failed.")
 
 def main():
     """
@@ -645,7 +1009,7 @@ def main():
         parser.add_argument("--component-type", choices=["Default", "Editor"], help="Default or Editor")
         parser.add_argument("--namespace", help="Namespace")
         parser.add_argument("--default-license", action="store_true", help="Include default license")
-        parser.add_argument("--add-to-project", action="store_true", help="Add to project's Gem folder")
+        parser.add_argument("--automatic-register", action="store_true", help="Add to project's Gem folder")
 
         args, unknown = parser.parse_known_args()
         if unknown:
@@ -653,7 +1017,7 @@ def main():
             sys.exit(1)
 
         engine_path  = args.engine_path
-        project_path = (args.project_path / "Gem") if (args.project_path and "Gem" not in args.project_path.parts) else args.project_path
+        project_path = args.project_path
 
         if args.component_name:
             if not args.project_path:
@@ -674,7 +1038,7 @@ def main():
                     namespace=args.namespace,
                     component_name=args.component_name,
                     component_type=args.component_type,
-                    add_to_project=args.add_to_project,
+                    automatic_register=args.automatic_register,
                     default_license=args.default_license,
                     log=print
                 )
