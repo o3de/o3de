@@ -16,6 +16,7 @@
 #include <AzCore/std/hash.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <AzFramework/Physics/RigidBodyBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace UnitTest
@@ -36,6 +37,9 @@ namespace UnitTest
 
             entity->Activate();
             EXPECT_EQ(AZ::Entity::State::Active, entity->GetState());
+
+            // Sends out the message that will cause the entity to initialize its data
+            Physics::RigidBodyNotificationBus::Event(entity->GetId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, entity->GetId());
         }
 
         template <typename Component, typename Configuration>

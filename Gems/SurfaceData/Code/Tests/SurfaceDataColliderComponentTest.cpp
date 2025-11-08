@@ -47,10 +47,7 @@ namespace UnitTest
                 m_rayCastHit.m_normal = hitResult.m_normal;
                 // Just need to set this to a non-null value, it gets checked vs InvalidSimulatedBodyHandle but not otherwise used.
                 m_rayCastHit.m_bodyHandle = AzPhysics::SimulatedBodyHandle(AZ::Crc32(12345), 0);
-            }
-
-            // Sends out the message that will cause the entity to initialize its data
-            Physics::RigidBodyNotificationBus::Event(id, &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, id);
+            }            
         }
 
         virtual ~MockPhysicsWorldBusProvider()
