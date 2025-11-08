@@ -309,7 +309,7 @@ namespace ScriptCanvasEditor
     }
 
     void SystemComponent::AddSourceFileOpeners
-    ([[maybe_unused]] const char* fullSourceFileName
+        ( [[maybe_unused]] const char* fullSourceFileName
         , [[maybe_unused]] const AZ::Uuid& sourceUUID
         , [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
     {
@@ -358,12 +358,7 @@ namespace ScriptCanvasEditor
                 , "Open In Script Canvas Editor..."
                 , QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath())
                 , scriptCanvasOpenInEditorCallback });
-
         }
-
-
-
-
     }
 
     void SystemComponent::OnStartPlayInEditor()
