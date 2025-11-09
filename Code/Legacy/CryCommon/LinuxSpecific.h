@@ -339,7 +339,7 @@ extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
 
 static pthread_mutex_t mutex_t;
 template<typename T>
-const volatile T InterlockedIncrement(volatile T* pT)
+volatile T InterlockedIncrement(volatile T* pT)
 {
     pthread_mutex_lock(&mutex_t);
     ++(*pT);
@@ -348,7 +348,7 @@ const volatile T InterlockedIncrement(volatile T* pT)
 }
 
 template<typename T>
-const volatile T InterlockedDecrement(volatile T* pT)
+volatile T InterlockedDecrement(volatile T* pT)
 {
     pthread_mutex_lock(&mutex_t);
     --(*pT);
