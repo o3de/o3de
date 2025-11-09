@@ -76,7 +76,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import filedialog, ttk
 
-# --- ClassWizard staging helpers ---
+#region --- Staging Functionality
 def _import_engine_template(engine_path: Path):
     """Load O3DE's engine_template module from <engine>/scripts/o3de without spawning a process."""
     pkg_root = Path(engine_path) / "scripts" / "o3de"
@@ -112,25 +112,6 @@ def _create_to_stage(*, engine_path: Path, template_name: str, destination_name:
     return stage
 
 COMMENT_FILE_GLOBS = ("**/*.h", "**/*.hpp", "**/*.c", "**/*.cpp", "**/*.inl")
-
-def _strip_c_like_comments(text: str, *, preserve_license: bool = True) -> str:
-    """Preserve {BEGIN_LICENSE}...{END_LICENSE}, then strip /*...*/ and //... comments."""
-    if not text:
-        return text
-    protected = []
-    if preserve_license:
-        def _protect(m):
-            idx = len(protected)
-            protected.append(m.group(0))
-            return f"__CW_LIC_{idx}__"
-        text = re.sub(r"\{BEGIN_LICENSE\}.*?\{END_LICENSE\}", _protect, text, flags=re.S)
-    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-    text = re.sub(r"//.*", "", text)
-    text = re.sub(r"[ \t]+\r?\n", "\n", text)
-    if preserve_license:
-        for i, block in enumerate(protected):
-            text = text.replace(f"__CW_LIC_{i}__", block)
-    return text
 
 def _merge_stage_into_dest(stage: Path, dest: Path, *,
                            skip_existing: bool = True,
@@ -209,9 +190,30 @@ def create_default_component_staged(*,
         if stage:
             try: shutil.rmtree(stage, ignore_errors=True)
             except Exception: pass
-# ---- END STAGING
+#endregion
 
-# --- CMake target scanning helpers ---
+#region --- Strip Comments Functionality
+def _strip_c_like_comments(text: str, *, preserve_license: bool = True) -> str:
+    """Preserve {BEGIN_LICENSE}...{END_LICENSE}, then strip /*...*/ and //... comments."""
+    if not text:
+        return text
+    protected = []
+    if preserve_license:
+        def _protect(m):
+            idx = len(protected)
+            protected.append(m.group(0))
+            return f"__CW_LIC_{idx}__"
+        text = re.sub(r"\{BEGIN_LICENSE\}.*?\{END_LICENSE\}", _protect, text, flags=re.S)
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    text = re.sub(r"//.*", "", text)
+    text = re.sub(r"[ \t]+\r?\n", "\n", text)
+    if preserve_license:
+        for i, block in enumerate(protected):
+            text = text.replace(f"__CW_LIC_{i}__", block)
+    return text
+#endregion
+
+#region --- CMake target scanning functionality
 
 _CMAKE_FN_PATTERNS = (
     r'(?P<all>^\s*(?:o3de_add_target|ly_add_target)\s*\((?P<body>.*?)\)\s*)',  # O3DE macros
@@ -296,9 +298,9 @@ def _scan_cmake_targets(gem_path: Path, gem_name: str):
     # sort: prefer Editor targets last or group? (alphabetic is fine)
     results.sort(key=lambda r: (r["name"] or "").lower())
     return results
-#--------- END TARGET SCANNING
+#endregion
 
-#------- Getting Gems
+#region --- Getting Gems Functionality
 def get_enabled_gems(engine_path: Path, project_path: Path, include_dependencies: bool = True):
         """
         Returns list[(gem_name, gem_path: Path)] for the project.
@@ -338,7 +340,7 @@ def get_enabled_gems(engine_path: Path, project_path: Path, include_dependencies
             out.append((name, gp))
         out.sort(key=lambda x: x[0].lower())
         return out
-#------------ END GET GEMS
+#endregion
 
 LOCK_FILE = Path(__file__).parent / ".lock"
 
@@ -697,24 +699,12 @@ class NewComponentWindow:
         main_frame = ttk.Frame(root, padding="10")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # --- Targeting ---
+#region MainWindow --- Destination Section (Targeting) ---
         target_frame = ttk.LabelFrame(main_frame, text=" Destination ", padding="10", style="C.TLabelframe")
         target_frame.pack(fill=tk.X, pady=5)
 
-        # small debug helper that prints and also uses the wizard's log area if available
-        def _dbg(msg):
-            try:
-                self.log_message(str(msg))
-            except Exception:
-                pass
-            print(f"[ClassWizard] {msg}")
-
         choices = ["Project"]
         lookup  = {"Project": project_path}
-
-        _dbg(f"engine_path={engine_path}")
-        _dbg(f"project_path={project_path}")
-        _dbg(f"project.json exists? {(Path(project_path)/'project.json').exists()}")
 
         # 1) ALWAYS create the StringVar first, and attach it to the correct master
         self.target_choice = tk.StringVar(master=self.root, value="Project")
@@ -723,23 +713,13 @@ class NewComponentWindow:
         choices = ["Project"]
         self._target_lookup = {"Project": (project_path / "Gem")}
 
-        # 3) (Optional) debug helper
-        def _dbg(msg):
-            try:
-                self.log_message(str(msg))
-            except Exception:
-                pass
-            print(f"[ClassWizard] {msg}")
-
         # 4) Try to import and query the o3de manifest directly
         try:
             pkg_root = Path(engine_path) / "scripts" / "o3de"
             sys.path.insert(0, str(pkg_root))
             from o3de import manifest
-            _dbg(f"manifest from: {manifest.__file__}")
 
             mapping = manifest.get_project_enabled_gems(Path(project_path), include_dependencies=True) or {}
-            _dbg(f"enabled gems returned: {len(mapping)}")
         finally:
             if sys.path and sys.path[0] == str(pkg_root):
                 sys.path.pop(0)
@@ -750,19 +730,14 @@ class NewComponentWindow:
             gp = Path(p).resolve()
             try:
                 gp.relative_to(engine_root)   # inside engine? skip
-                _dbg(f"filtered engine gem: {namespec}")
                 continue
             except ValueError:
                 pass
 
             name = namespec
             gj = gp / "gem.json"
-            if gj.is_file():
-                try:
-                    data = json.loads(gj.read_text(encoding="utf-8"))
-                    name = data.get("gem_name") or data.get("display_name") or name
-                except Exception as ge:
-                    _dbg(f"warn gem.json read: {ge!r}")
+            data = json.loads(gj.read_text(encoding="utf-8"))
+            name = data.get("gem_name") or data.get("display_name") or name
 
             choices.append(name)
             self._target_lookup[name] = gp
@@ -899,9 +874,9 @@ class NewComponentWindow:
         self.namespace_entry.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
         Tooltip(self.namespace_entry, "Enter the C++ namespace for your component.\nThis is usually your project name.")
 
-        self.target_combo.event_generate("<<ComboboxSelected>>")
-        
-        # Component Details
+#endregion
+
+#region MainWindow --- Component Details Section ---
         details_frame = ttk.LabelFrame(main_frame, text=" Component Details ", padding="10", style="C.TLabelframe")
         details_frame.pack(fill=tk.X, pady=5)
 
@@ -923,22 +898,10 @@ class NewComponentWindow:
 
         def on_component_select(event):
             """Component type selection"""
-            if self.component_type.get() == "System":
-                self.component_type.set("Basic")
-                self.clear_log()
-                self.log_message("Info: System Component needs a Template.")
-            if self.component_type.get() == "Level":
-                self.component_type.set("Basic")
-                self.clear_log()
-                self.log_message("Info: Level Component needs a Template.")
-            if self.component_type.get() == "Lyshine UI":
-                self.component_type.set("Basic")
-                self.clear_log()
-                self.log_message("Info: Ui component needs Template.")
-            if self.component_type.get() == "Data Asset":
-                self.component_type.set("Basic")
-                self.clear_log()
-                self.log_message("Info: Data Asset needs features and template.")
+            ctype = self.component_type.get()
+
+            # Rebuild the dynamic section
+            self._render_dynamic_details(ctype)
 
         self.component_type = ttk.Combobox(
             details_frame,
@@ -950,12 +913,21 @@ class NewComponentWindow:
         self.component_type.bind("<<ComboboxSelected>>", on_component_select)
         Tooltip(self.component_type, "Select component type: 'Basic' for runtime")
 
+        # Dynamic sub-area that we will rebuild per component type
+        self.details_dynamic_frame = ttk.Frame(details_frame)
+        self.details_dynamic_frame.grid_columnconfigure(1, minsize=0, weight=1)  # allow entry to expand
+        self.details_dynamic_frame.grid(row=2, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+
+        # storage for dynamic tkinter variables & widgets
+        self.dynamic_vars: dict[str, tk.Variable] = {}
+        self.dynamic_widgets: dict[str, tk.Widget] = {}
+
         # Empty cell for alignment
         ttk.Frame(details_frame, width=10).grid(row=2, column=2)
-
+#endregion
         
 
-        # Settings Section
+#region MainWindow --- Settings Section ---
         settings_frame = ttk.LabelFrame(main_frame, text=" Settings ", padding="10", style="C.TLabelframe")
         settings_frame.pack(fill=tk.X, pady=5)
 
@@ -999,16 +971,18 @@ class NewComponentWindow:
             offvalue=False)
         license_cb.pack(anchor="w", pady=2)
         Tooltip(license_cb, "Include the default license header in the source files.")
+#endregion
 
-        # Log Section
+#region MainWindow --- Log Section ---
         log_frame = ttk.LabelFrame(main_frame, text=" Log ", padding="10", style="C.TLabelframe")
         log_frame.pack(fill=tk.BOTH, expand=True, pady=5)
 
         self.log_text = tk.Text(log_frame, height=3, state="disabled", bg="#444444", fg="#c4c4c4", relief="flat", bd=0,
             highlightthickness=0, highlightbackground="#444444", highlightcolor="#444444")
         self.log_text.pack(fill=tk.BOTH, expand=True)
+#endregion
 
-        # Button Frame
+#region MainWindow --- Button Section ---
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill=tk.X, pady=5)
 
@@ -1027,17 +1001,178 @@ class NewComponentWindow:
             style="C.TButton")
         ok_btn.pack(side="right", padx=5)
         Tooltip(ok_btn, "Create the component using the specified settings.")
+#endregion
 
-        def _autosize_and_center():
-            self.root.update_idletasks()
+        # Call events once to set things at start
+        # Target project change
+        self.target_combo.event_generate("<<ComboboxSelected>>")
+
+        # Component type change
+        self.component_type.event_generate("<<ComboboxSelected>>")
+
+
+        #self.root.after_idle(_autosize_and_center)
+        
+        self._resize_to_fit_content()
+        self._center_main_window()
+        # Window Init Complete
+
+#region --- Custom Template Input Handling
+    def _field_specs_for_type(self, comp_type: str) -> list[dict]:
+        """
+        Return a list of field specs to render for comp_type.
+        Each spec: {"key","label","kind","default","values","tooltip"}
+        kind: "entry" | "checkbox" | "combo"
+        """
+        base = []  # e.g. nothing for "Basic", "Level", "System", "LyShine"
+
+        if comp_type == "Data Asset":
+            return base + [
+                {"key": "AssetExtension", "label": "File Extension", "kind": "entry",
+                "default": "mydata", "tooltip": "Extension for assets (without dot)."}
+            ]
+
+        # Default / Basic
+        return base
+    
+    def _autosize_window(self):
+        # Let Tk compute required size, then adopt it
+        self.root.update_idletasks()
+        req_w = self.root.winfo_reqwidth()
+        req_h = self.root.winfo_reqheight()
+
+        # Option A: fully adopt requested size
+        self.root.geometry(f"{req_w}x{req_h}")
+        self.root.minsize(req_w, req_h)  # avoid clipping after theme/scale changes
+
+        # Option B: keep current width, only grow/shrink height:
+        # cur_w = self.root.winfo_width()
+        # self.root.geometry(f"{cur_w}x{req_h}")
+
+    def _render_dynamic_details(self, comp_type: str):
+        # 1) destroy previous widgets
+        for child in self.details_dynamic_frame.winfo_children():
+            child.destroy()
+        self.dynamic_vars.clear()
+        self.dynamic_widgets.clear()
+
+        # 2) render new fields
+        specs = self._field_specs_for_type(comp_type)
+
+        if not specs:
+            # hide the frame completely and let the parent reclaim space
+            self.details_dynamic_frame.grid_remove()
+            self._autosize_window()
+            return
+
+        # ensure the frame is visible (restores previous grid placement)
+        self.details_dynamic_frame.grid()
+
+        row = 0
+        for spec in specs:
+            key = spec["key"]; label = spec["label"]; kind = spec.get("kind", "entry")
+            default = spec.get("default")
+            tooltip = spec.get("tooltip", "")
+
+            ttk.Label(self.details_dynamic_frame, text=label).grid(row=row, column=0, sticky="w", padx=5, pady=5)
+
+            if kind == "entry":
+                var = tk.StringVar(master=self.root, value=str(default) if default is not None else "")
+                ent = ttk.Entry(self.details_dynamic_frame, textvariable=var)
+                ent.grid(row=row, column=1, sticky="w", padx=5, pady=3)
+                self.dynamic_vars[key] = var
+                self.dynamic_widgets[key] = ent
+                try: Tooltip(ent, tooltip)
+                except Exception: pass
+
+            elif kind == "checkbox":
+                var = tk.BooleanVar(master=self.root, value=bool(default))
+                cb = ttk.Checkbutton(self.details_dynamic_frame, text="", variable=var)
+                # put checkbox on the right, label already on the left
+                cb.grid(row=row, column=1, sticky="w", padx=5, pady=3)
+                self.dynamic_vars[key] = var
+                self.dynamic_widgets[key] = cb
+                try: Tooltip(cb, tooltip)
+                except Exception: pass
+
+            elif kind == "combo":
+                var = tk.StringVar(master=self.root, value=str(default) if default else "")
+                values = spec.get("values", [])
+                cmb = ttk.Combobox(self.details_dynamic_frame, state="readonly",
+                                values=values, textvariable=var, width=28)
+                cmb.grid(row=row, column=1, sticky="ew", padx=5, pady=3)
+                self.dynamic_vars[key] = var
+                self.dynamic_widgets[key] = cmb
+                try: Tooltip(cmb, tooltip)
+                except Exception: pass
+
+            row += 1
+
+        # 3) let the window resize to fit
+        self._resize_to_fit_content()
+        # also autosize the dynamic box.
+
+    #endregion
+
+    # Resize to fit content, but DO NOT move the window
+    def _resize_to_fit_content(self, *, grow_only=False, set_minsize=True, pad=(0, 0)):
+        """
+        Resize the toplevel to its requested size (or only grow to it),
+        without changing the current position.
+
+        grow_only=True -> never shrink, only expand to fit new content.
+        set_minsize=True -> lock current size as the minimum to avoid clipping.
+        pad=(extra_w, extra_h) -> add a few pixels if you want breathing room.
+        """
+        self.root.update_idletasks()
+
+        req_w = self.root.winfo_reqwidth()  + int(pad[0])
+        req_h = self.root.winfo_reqheight() + int(pad[1])
+
+        cur_w = self.root.winfo_width()
+        cur_h = self.root.winfo_height()
+        # If the window isn't mapped yet, width/height can be 1 — fall back to requested
+        if cur_w <= 1 or cur_h <= 1:
+            cur_w, cur_h = req_w, req_h
+
+        new_w = max(cur_w, req_w) if grow_only else req_w
+        new_h = max(cur_h, req_h) if grow_only else req_h
+
+        if set_minsize:
+            self.root.minsize(new_w, new_h)
+
+        # IMPORTANT: no "+x+y" -> keeps current position
+        self.root.geometry(f"{new_w}x{new_h}")
+
+    # Center on screen, but DO NOT change the size
+    def _center_main_window(self, *, clamp_to_screen=True):
+        """
+        Center the window using its current size.
+        Does not resize — only changes position.
+        """
+        self.root.update_idletasks()
+
+        w = self.root.winfo_width()
+        h = self.root.winfo_height()
+        if w <= 1 or h <= 1:
             w, h = self.root.winfo_reqwidth(), self.root.winfo_reqheight()
-            x = (self.root.winfo_screenwidth()  - w) // 2
-            y = (self.root.winfo_screenheight() - h) // 2
-            self.root.minsize(w, h)
-            self.root.geometry(f"{w}x{h}+{x}+{y}")
 
-        self.root.after_idle(_autosize_and_center)
+        sw = self.root.winfo_screenwidth()
+        sh = self.root.winfo_screenheight()
 
+        x = (sw - w) // 2
+        y = (sh - h) // 2
+
+        if clamp_to_screen:
+            x = max(0, min(x, sw - w))
+            y = max(0, min(y, sh - h))
+
+        # IMPORTANT: "+x+y" with no "WxH" -> moves only
+        self.root.geometry(f"+{x}+{y}")
+
+
+
+#region Original Functionality Methods
     def close_window(self):
         """Centralized for all close operations"""
         remove_lock()
@@ -1132,6 +1267,7 @@ class NewComponentWindow:
             self.log_message("Done.")
         else:
             self.log_message("Failed.")
+#endregion
 
 def main():
     """
