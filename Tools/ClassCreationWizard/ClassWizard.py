@@ -67,8 +67,8 @@ import os
 import subprocess
 from pathlib import Path
 import sys, json
+import re
 import traceback
-from pathlib import Path
 import tempfile
 import shutil
 import fnmatch
@@ -209,7 +209,136 @@ def create_default_component_staged(*,
         if stage:
             try: shutil.rmtree(stage, ignore_errors=True)
             except Exception: pass
+# ---- END STAGING
 
+# --- CMake target scanning helpers ---
+
+_CMAKE_FN_PATTERNS = (
+    r'(?P<all>^\s*(?:o3de_add_target|ly_add_target)\s*\((?P<body>.*?)\)\s*)',  # O3DE macros
+    r'(?P<all>^\s*add_library\s*\(\s*(?P<name>[A-Za-z0-9_.+\-]+)\b.*?\)\s*)',   # add_library(<name> ...)
+    r'(?P<all>^\s*add_executable\s*\(\s*(?P<name>[A-Za-z0-9_.+\-]+)\b.*?\)\s*)' # add_executable(<name> ...)
+)
+
+def _resolve_target_name(raw: str, gem_name: str) -> str:
+    """Best-effort: resolve ${GemName}, ${gem_name}, ${Name} expansions to the gem name."""
+    if not raw:
+        return raw
+    # strip surrounding quotes
+    if (raw.startswith('"') and raw.endswith('"')) or (raw.startswith("'") and raw.endswith("'")):
+        raw = raw[1:-1]
+    # Basic variable substitution
+    mapping = {
+        '${GemName}': gem_name,
+        '${gem_name}': gem_name,
+        '${Name}': gem_name,
+    }
+    out = raw
+    for k, v in mapping.items():
+        out = out.replace(k, v)
+    return out
+
+def _scan_cmake_targets(gem_path: Path, gem_name: str):
+    """
+    Returns list of dicts: { name, raw_name, kind, file }
+    - Scans gem_path/Code/**/CMakeLists.txt
+    - Understands o3de_add_target(NAME ...), add_library(<name>), add_executable(<name>)
+    """
+    results = []
+    code_dir = Path(gem_path)
+
+    if not code_dir.is_dir():
+        return results
+
+    cmake_files = list(code_dir.rglob("CMakeLists.txt"))
+    for cmake in cmake_files:
+        try:
+            text = cmake.read_text(encoding="utf-8")
+        except Exception:
+            continue
+
+        for pat in _CMAKE_FN_PATTERNS:
+            for m in re.finditer(pat, text, flags=re.MULTILINE | re.DOTALL):
+                kind = "o3de_add_target" if "o3de_add_target" in m.group(0) or "ly_add_target" in m.group(0) else \
+                       ("add_library" if "add_library" in m.group(0) else "add_executable")
+                raw_name = None
+
+                if kind == "o3de_add_target":
+                    body = m.groupdict().get("body") or ""
+                    # find NAME token: NAME <token>
+                    nm = re.search(r'\bNAME\s+(".*?"|[^\s\)]+)', body)
+                    if nm:
+                        raw_name = nm.group(1)
+                else:
+                    raw_name = m.groupdict().get("name")
+
+                if not raw_name:
+                    continue
+
+                resolved = _resolve_target_name(raw_name, gem_name)
+                # skip obvious alias/interface targets (best effort)
+                if "ALIAS" in m.group(0):
+                    continue
+
+                results.append({
+                    "name": resolved,
+                    "raw_name": raw_name,
+                    "kind": kind,
+                    "file": cmake
+                })
+
+    # dedupe by name + file path
+    uniq = {}
+    for r in results:
+        key = (r["name"], str(r["file"]))
+        uniq[key] = r
+    results = list(uniq.values())
+
+    # sort: prefer Editor targets last or group? (alphabetic is fine)
+    results.sort(key=lambda r: (r["name"] or "").lower())
+    return results
+#--------- END TARGET SCANNING
+
+#------- Getting Gems
+def get_enabled_gems(engine_path: Path, project_path: Path, include_dependencies: bool = True):
+        """
+        Returns list[(gem_name, gem_path: Path)] for the project.
+        Filters out engine-internal gems by comparing paths to engine_path.
+        """
+        pkg_root = Path(engine_path) / "scripts" / "o3de"   # contains the 'o3de' package
+        sys.path.insert(0, str(pkg_root))
+        try:
+            from o3de import manifest  # provided by <engine>/scripts/o3de/o3de/manifest.py
+            mapping = manifest.get_project_enabled_gems(
+                Path(project_path),
+                include_dependencies=include_dependencies
+            ) or {}
+        finally:
+            sys.path.pop(0)
+
+        # Normalize & filter
+        engine_root = Path(engine_path).resolve()
+        out = []
+        for namespec, p in mapping.items():
+            gp = Path(p).resolve()
+            # exclude gems that live inside the engine folder (engine-default gems)
+            try:
+                gp.relative_to(engine_root)
+                continue
+            except ValueError:
+                pass
+            # derive a display name (prefer gem.json -> gem_name/display_name)
+            name = namespec
+            gj = gp / "gem.json"
+            if gj.is_file():
+                try:
+                    data = json.loads(gj.read_text(encoding="utf-8"))
+                    name = data.get("gem_name") or data.get("display_name") or namespec
+                except Exception:
+                    pass
+            out.append((name, gp))
+        out.sort(key=lambda x: x[0].lower())
+        return out
+#------------ END GET GEMS
 
 LOCK_FILE = Path(__file__).parent / ".lock"
 
@@ -533,46 +662,6 @@ class Tooltip:
             self.tooltip.destroy()
             self.tooltip = None
 
-def get_enabled_gems(engine_path: Path, project_path: Path, include_dependencies: bool = True):
-        """
-        Returns list[(gem_name, gem_path: Path)] for the project.
-        Filters out engine-internal gems by comparing paths to engine_path.
-        """
-        pkg_root = Path(engine_path) / "scripts" / "o3de"   # contains the 'o3de' package
-        sys.path.insert(0, str(pkg_root))
-        try:
-            from o3de import manifest  # provided by <engine>/scripts/o3de/o3de/manifest.py
-            mapping = manifest.get_project_enabled_gems(
-                Path(project_path),
-                include_dependencies=include_dependencies
-            ) or {}
-        finally:
-            sys.path.pop(0)
-
-        # Normalize & filter
-        engine_root = Path(engine_path).resolve()
-        out = []
-        for namespec, p in mapping.items():
-            gp = Path(p).resolve()
-            # exclude gems that live inside the engine folder (engine-default gems)
-            try:
-                gp.relative_to(engine_root)
-                continue
-            except ValueError:
-                pass
-            # derive a display name (prefer gem.json -> gem_name/display_name)
-            name = namespec
-            gj = gp / "gem.json"
-            if gj.is_file():
-                try:
-                    data = json.loads(gj.read_text(encoding="utf-8"))
-                    name = data.get("gem_name") or data.get("display_name") or namespec
-                except Exception:
-                    pass
-            out.append((name, gp))
-        out.sort(key=lambda x: x[0].lower())
-        return out
-
 class NewComponentWindow:
     """GUI window for creating a new component in an O3DE project.
 
@@ -707,19 +796,111 @@ class NewComponentWindow:
         self.target_path_entry = ttk.Entry(target_frame, textvariable=self.target_path_var, state="normal")
         self.target_path_entry.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
 
+        # Browse Button
+        self.browse_btn = ttk.Button(
+            target_frame,
+            text="...",
+            width=3,
+            command=self.browse_project_dir,
+            style="C.TButton")
+        self.browse_btn.grid(row=1, column=2, sticky="e", padx=5, pady=5)
+        Tooltip(self.browse_btn, "Browse for a different project's Gem folder or destination directory.")
 
         def _on_target_changed(event=None):
             sel = self.target_choice.get()
             base_path = self._target_lookup.get(sel, project_path)
             self.target_path_var.set(str(base_path))
-            # feed the destination to Project Directory field used by create-from-template
+                
+            
+            # Determine gem_path and gem_name
+            if sel == "Project":
+                # For "Project", we expect you're targeting <project>/Gem; read gem.json there
+                gem_path = Path(project_path) / "Gem"
+                cmake_path = gem_path
+            else:
+                gem_path = Path(self._target_lookup.get(sel, project_path))
+                cmake_path = gem_path / "Code"
+
+            gem_name = sel
+            gj = gem_path / "gem.json"
+            if gj.is_file():
+                try:
+                    import json
+                    data = json.loads(gj.read_text(encoding="utf-8"))
+                    gem_name = data.get("gem_name") or data.get("display_name") or sel
+                except Exception:
+                    pass
+
+            # Scan targets
+            targets = _scan_cmake_targets(cmake_path, gem_name)
+            self._build_targets_meta = targets
+
+            # Build a display list (just names), dedupe names for the combobox
+            names = []
+            seen = set()
+            for t in targets:
+                nm = t["name"] or t["raw_name"]
+                if nm and nm not in seen:
+                    seen.add(nm)
+                    names.append(nm)
+
+            # If nothing found, give a helpful placeholder
+            if not names:
+                names = ["<no CMake targets found>"]
+                self.build_target_choice.set(names[0])
+            else:
+                # Choose a sensible default (prefer something with 'Static' or the plain gem name)
+                preferred = None
+                for cand in (f"{gem_name}.Private.Object", gem_name, "{gem_name}.API", f"{gem_name}.Editor", f"{gem_name}.Tools"):
+                    if cand in names:
+                        preferred = cand
+                        break
+                self.build_target_choice.set(preferred or names[0])
+
+            self.build_target_combo["values"] = names
+
+            # Set namespace
+            self.namespace.set(str(gem_name))
+
+            # Debug logging (optional)
             try:
-                self.project_dir_var.set(str(base_path))
+                self.log_message(f"Found {len(targets)} targets under {gem_path}/Code")
+                for t in targets:
+                    self.log_message(f" - {t['name']}  [{t['kind']}]  ({t['file']})")
             except Exception:
                 pass
 
+
         self.target_combo.bind("<<ComboboxSelected>>", _on_target_changed)
 
+        # --- Build Target dropdown ---
+        ttk.Label(target_frame, text="Package:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
+        self.build_target_choice = tk.StringVar(master=self.root, value="")
+        self.build_target_combo = ttk.Combobox(
+            target_frame,
+            values=[],
+            textvariable=self.build_target_choice,
+            state="readonly",
+            width=28
+        )
+        self.build_target_combo.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+        target_frame.columnconfigure(1, weight=1)
+
+        # Store meta for later (which CMakeLists this target came from)
+        self._build_targets_meta = []   # list of dicts from _scan_cmake_targets
+        
+        # Row 2: Namespace
+        ttk.Label(target_frame, text="Namespace:").grid(
+            row=3, column=0, sticky="e", padx=5, pady=5)
+
+        self.namespace_entry = ttk.Entry(
+            target_frame,
+            textvariable=self.namespace)
+        self.namespace_entry.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
+        Tooltip(self.namespace_entry, "Enter the C++ namespace for your component.\nThis is usually your project name.")
+
+        self.target_combo.event_generate("<<ComboboxSelected>>")
+        
         # Component Details
         details_frame = ttk.LabelFrame(main_frame, text=" Component Details ", padding="10", style="C.TLabelframe")
         details_frame.pack(fill=tk.X, pady=5)
@@ -743,69 +924,36 @@ class NewComponentWindow:
         def on_component_select(event):
             """Component type selection"""
             if self.component_type.get() == "System":
-                self.component_type.set("Simple")
+                self.component_type.set("Basic")
                 self.clear_log()
                 self.log_message("Info: System Component needs a Template.")
             if self.component_type.get() == "Level":
-                self.component_type.set("Simple")
+                self.component_type.set("Basic")
                 self.clear_log()
                 self.log_message("Info: Level Component needs a Template.")
             if self.component_type.get() == "Lyshine UI":
-                self.component_type.set("Simple")
+                self.component_type.set("Basic")
                 self.clear_log()
                 self.log_message("Info: Ui component needs Template.")
             if self.component_type.get() == "Data Asset":
-                self.component_type.set("Simple")
+                self.component_type.set("Basic")
                 self.clear_log()
                 self.log_message("Info: Data Asset needs features and template.")
 
         self.component_type = ttk.Combobox(
             details_frame,
-            values=["Simple", "System", "Level", "Lyshine UI", "Data Asset"],
+            values=["Basic", "System", "Level", "Lyshine UI", "Data Asset"],
             state="readonly",
             width=18)
         self.component_type.current(0)
         self.component_type.grid(row=1, column=1, sticky="ew", padx=5, pady=5)
         self.component_type.bind("<<ComboboxSelected>>", on_component_select)
-        Tooltip(self.component_type, "Select component type: 'Simple' for runtime")
-
-        # Row 2: Namespace
-        ttk.Label(details_frame, text="Namespace:").grid(
-            row=2, column=0, sticky="e", padx=5, pady=5)
-
-        self.namespace_entry = ttk.Entry(
-            details_frame,
-            textvariable=self.namespace)
-        self.namespace_entry.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
-        Tooltip(self.namespace_entry, "Enter the C++ namespace for your component.\nThis is usually your project name.")
+        Tooltip(self.component_type, "Select component type: 'Basic' for runtime")
 
         # Empty cell for alignment
         ttk.Frame(details_frame, width=10).grid(row=2, column=2)
 
-        # Row 3: Project Directory
-        ttk.Label(details_frame, text="Project Directory:").grid(
-            row=3, column=0, sticky="e", padx=5, pady=5)
-
-        self.project_dir_var = tk.StringVar(value=str(project_path))
-        self.project_dir_entry = ttk.Entry(
-            details_frame,
-            textvariable=self.project_dir_var)
-        self.project_dir_entry.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
-        Tooltip(
-            self.project_dir_entry,
-            "Specifies the destination directory where the component will be created. "
-            "To automatically add the component to the project, this must point to a valid Gem folder within the project. "
-            "In that case, 'Add to project' must be checked.")
-
-        # Browse Button
-        self.browse_btn = ttk.Button(
-            details_frame,
-            text="...",
-            width=3,
-            command=self.browse_project_dir,
-            style="C.TButton")
-        self.browse_btn.grid(row=3, column=2, sticky="e", padx=5, pady=5)
-        Tooltip(self.browse_btn, "Browse for a different project's Gem folder or destination directory.")
+        
 
         # Settings Section
         settings_frame = ttk.LabelFrame(main_frame, text=" Settings ", padding="10", style="C.TLabelframe")
@@ -912,9 +1060,9 @@ class NewComponentWindow:
         """Open directory dialog to select project path"""
         selected_path = filedialog.askdirectory(
             title="Select Project Directory",
-            initialdir=self.project_dir_var.get())
+            initialdir=self.target_path_var.get())
         if selected_path:
-            self.project_dir_var.set(selected_path)
+            self.target_path_var.set(selected_path)
             self.clear_log()
             self.log_message(f"Project directory: {selected_path}")
 
@@ -947,7 +1095,7 @@ class NewComponentWindow:
 
         if not dest_dir:
             try:
-                dest_dir = self.project_dir_var.get().strip()
+                dest_dir = self.target_path_var.get().strip()
             except Exception:
                 dest_dir = ""
 
