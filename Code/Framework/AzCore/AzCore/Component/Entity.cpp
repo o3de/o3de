@@ -89,7 +89,7 @@ namespace AZ
         , m_name{ name.empty() ? AZStd::to_string(static_cast<u64>(m_id)) : AZStd::move(name) }
         , m_state(State::Constructed)
         , m_isDependencyReady(false)
-        , m_isRuntimeActiveByDefault(true) //! @deprecated, will be otherwise unused. (GHI-19319) - 2025/10/24 - Re-enabling Start Inactive functionality.
+        , m_isRuntimeActiveByDefault(true)
     {
     }
 
@@ -162,7 +162,7 @@ namespace AZ
         SetState(State::Initializing);
 
         //Update "Entity" Active state index. Does not change state yet. Left for the Entity handling to apply.
-        SetEntityActive(m_startActive);
+        SetEntityActive(m_isRuntimeActiveByDefault);
 
         if (AZ::Interface<ComponentApplicationRequests>::Get() != nullptr)
         {
@@ -270,15 +270,11 @@ namespace AZ
         m_isDependencyReady = false;
     }
 
-    //! O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-    //! @deprecated use SetStartActive instead.
     void Entity::SetRuntimeActiveByDefault(bool activeByDefault)
     {
         m_isRuntimeActiveByDefault = activeByDefault;
     }
 
-    //! O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-    //! @deprecated use GetStartActive instead.
     bool Entity::IsRuntimeActiveByDefault() const
     {
         return m_isRuntimeActiveByDefault;
@@ -864,10 +860,7 @@ namespace AZ
                 ->Field("Name", &Entity::m_name)
                 ->Field("Components", &Entity::m_components) // Component serialization can result in IsDependencyReady getting modified, so serialize Components first.
                 ->Field("IsDependencyReady", &Entity::m_isDependencyReady)
-                //! O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-                //! @deprecated use m_startActive
                 ->Field("IsRuntimeActive", &Entity::m_isRuntimeActiveByDefault)
-                ->Field("StartRuntimeActive", &Entity::m_startActive)
                 ;
 
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AZ::Component*>>();
@@ -894,10 +887,7 @@ namespace AZ
                     DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isDependencyReady, "IsDependencyReady", "")->
                         Attribute(Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
                         Attribute(Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
-                    //! O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-                    //! @deprecated use m_startActive
-                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isRuntimeActiveByDefault, "DeprecatedStartActive", "")->
-                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_startActive, "StartActive", "")->
+                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isRuntimeActiveByDefault, "StartActive", "")->
                     DataElement("String", &Entity::m_name, "Name", "Unique name of the entity")->
                         Attribute(Edit::Attributes::ChangeNotify, &Entity::OnNameChanged)->
                     DataElement("Components", &Entity::m_components, "Components", "");

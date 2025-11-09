@@ -318,7 +318,7 @@ namespace AzToolsFramework
         for (AZ::Entity* sourceEntity : sourceEntities)
         {
             auto exportEntity = AZStd::make_unique<AZ::Entity>(sourceEntity->GetId(), sourceEntity->GetName().c_str());
-            exportEntity->SetStartActive(sourceEntity->GetStartActive());
+            exportEntity->SetRuntimeActiveByDefault(sourceEntity->IsRuntimeActiveByDefault());
 
             bool isEditorOnly = false;
             EditorOnlyEntityComponentRequestBus::EventResult(isEditorOnly, sourceEntity->GetId(), &EditorOnlyEntityComponentRequests::IsEditorOnlyEntity);

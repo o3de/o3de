@@ -147,7 +147,7 @@ namespace LmbrCentral
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         if (entity && entity->GetState() <= AZ::Entity::State::Init)
         {
-            entity->SetStartActive(false);
+            entity->SetRuntimeActiveByDefault(false);
         }
     }
 

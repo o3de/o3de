@@ -132,13 +132,6 @@ namespace AZ
         //! Gets the state of the entity.
         //! @return The state of the entity. For example, the entity has been initialized, the entity is active, and so on.
         State GetState() const { return m_state; }
-
-        //! Gets the "Start Active" boolean which determines if this entity should start Activated or not. Set by the Entity Inspector interface in editor.
-        //! @return Returns the m_startActive state determined by the Entity Inspector, and preserved by entity loading/saving.
-        bool GetStartActive() const { return m_startActive; }
-        //! Sets the "Start Active" boolean to enable activation/deactivation on first instantiation. This is set by the "Start Activated" toggle on the Entity Inspector interface in editor.
-        //! @param active Sets the starting active state this entity will be in at first instantiation. Active state gets set on "Entity" index (0) and determines if this entity will start activated or not.
-        void SetStartActive(bool active) { m_startActive = active; }
         
         //! Sets the "Entity" active state type to determine whether the local state of the entity should be active or inactive. This only alters the local active state factor.
         //! @param active Whether the state should be set to activated or deactivated.
@@ -375,16 +368,12 @@ namespace AZ
         //! only a code is returned, there is no detailed error message.
         DependencySortResult EvaluateDependencies();
 
-        /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
         //! Mark the entity to be activated by default. This is observed automatically by EntityContext,
         //! and should be observed by any other custom systems that create and manage entities.
         //! @param activeByDefault whether the entity should be active by default after creation.
-        //! @deprecated 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
         void SetRuntimeActiveByDefault(bool activeByDefault);
 
-        /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
         //! @return true if the entity is marked to activate by default upon creation.
-        //! @deprecated 2025/10/24, replaced by m_startActive and Expanded Entity State Handling.
         bool IsRuntimeActiveByDefault() const;
 
         //! Reflects the entity into a variety of contexts (script, serialize, edit, and so on).
@@ -464,7 +453,6 @@ namespace AZ
         //! system on startup. Based on state of "entity" type is default at 0 and any other type is an index of the int mask, we determine
         //! what the absolute desired state (Effective State) of this entity is.
 
-        bool m_startActive = true;
         static constexpr size_t s_maxStateFlags = 32;
         static constexpr uint32_t s_allOn32 = 0xFFFFFFFFu;
         static constexpr uint32_t s_allStatesOn =
@@ -482,9 +470,6 @@ namespace AZ
         //! Furthermore, if more than 4 flags are needed, please consider using a more space-efficient container,
         //! such as AZStd::bit_set<>. With just a couple flags, AZStd::bit_set's word-size of 32-bits will actually waste space.
         bool m_isDependencyReady;           ///< Indicates the component dependencies have been evaluated and sorting was completed successfully.
-
-        /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-        //! @deprecated, replaced by m_startActive and m_localActive and methods.
         bool m_isRuntimeActiveByDefault;    ///< Indicates the entity should be activated on initial creation. 
     };
 

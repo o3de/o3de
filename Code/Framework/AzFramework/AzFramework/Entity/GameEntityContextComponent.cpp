@@ -168,7 +168,7 @@ namespace AzFramework
         auto entity = aznew AZ::Entity(name);
 
         // Caller will want to configure entity before it's activated.
-        entity->SetStartActive(false);
+        entity->SetRuntimeActiveByDefault(false);
 
         AddGameEntity(entity);
 
@@ -331,7 +331,7 @@ namespace AzFramework
                 else
                 {
                     // Don't activate the entity, it will be destroyed.
-                    currentEntity->SetStartActive(false);
+                    currentEntity->SetRuntimeActiveByDefault(false);
                 }
             }
         }

@@ -497,7 +497,7 @@ namespace Multiplayer
 
             if (autoActivate == AutoActivate::DoNotActivate)
             {
-                clone->SetStartActive(false);
+                clone->SetRuntimeActiveByDefault(false);
             }
 
             AzFramework::GameEntityContextRequestBus::Broadcast(
@@ -585,7 +585,7 @@ namespace Multiplayer
 
             if (autoActivate == AutoActivate::DoNotActivate)
             {
-                clone->SetStartActive(false);
+                clone->SetRuntimeActiveByDefault(false);
             }
 
             AzFramework::GameEntityContextRequestBus::Broadcast(&AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);

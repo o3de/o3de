@@ -1105,7 +1105,7 @@ namespace AzToolsFramework
 
             EditorEntityRuntimeActivationChangeNotificationBus::Broadcast(
                 &EditorEntityRuntimeActivationChangeNotificationBus::Events::OnEntityRuntimeActivationChanged,
-                m_entityId, m_entity->GetStartActive());
+                m_entityId, m_entity->IsRuntimeActiveByDefault());
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
             break;
@@ -1129,7 +1129,7 @@ namespace AzToolsFramework
                     &EditorEntityRuntimeActivationChangeNotificationBus::Events::OnEntityRuntimeActivationChanged,
                     m_entityId, isActive);
 
-                entity->SetStartActive(isActive);
+                entity->SetRuntimeActiveByDefault(isActive);
             }
         }
 
@@ -1348,8 +1348,6 @@ namespace AzToolsFramework
         }
         else
         {
-            /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-            //! @deprecated 2025/10/24, replaced by GetStartActive. This step in ui has been long disabled. Instead using "EditorOnly" and "Universal".
             if (m_entity->IsRuntimeActiveByDefault())
             {
                 return EditorEntityStartStatus::StartActive;
@@ -1507,8 +1505,6 @@ namespace AzToolsFramework
 
     void EditorEntityModel::EditorEntityModelEntry::OnEntityRuntimeActivationChanged(bool activeOnStart)
     {
-        /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-        //! @deprecated 2025/10/24, replaced by GetStartActive. This step in Editor has been long disabled.
         if (CanProcessOverrides())
         {
             AZ::u8 lastFlags = m_sliceFlags;
@@ -1709,9 +1705,6 @@ namespace AzToolsFramework
         // reset the cached entity name so we can leverage OnEntityNameChanged to detect if the name is overridden and avoid duplicate code
         m_name = "";
         OnEntityNameChanged(m_entity->GetName());
-        
-        /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-        //! @deprecated 2025/10/24, replaced by GetStartActive. This step in ui has been long disabled. Instead using "EditorOnly" and "Universal".
         OnEntityRuntimeActivationChanged(m_entity->IsRuntimeActiveByDefault());
 
         // build a map of the source entity components that will be pruned down as the components from the

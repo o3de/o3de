@@ -97,9 +97,9 @@ namespace AZ
             result.Combine(componentLoadResult);
         }
 
-        ContinueLoadingFromJsonObjectField(&entityInstance->m_startActive,
-            azrtti_typeid<decltype(entityInstance->m_startActive)>(),
-            inputValue, "StartRuntimeActive", context);
+        ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
+            azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
+            inputValue, "IsRuntimeActive", context);
  
         AZStd::string_view message = result.GetProcessing() == JSR::Processing::Completed
             ? "Successfully loaded entity information."
@@ -183,14 +183,14 @@ namespace AZ
         }
 
         {
-            AZ::ScopedContextPath subPathRuntimeActive(context, "m_startActive");
-            const bool* runtimeActive = &entityInstance->m_startActive;
+            AZ::ScopedContextPath subPathRuntimeActive(context, "m_isRuntimeActiveByDefault");
+            const bool* runtimeActive = &entityInstance->m_isRuntimeActiveByDefault;
             const bool* runtimeActiveDefault =
-                defaultEntityInstance ? &defaultEntityInstance->m_startActive : nullptr;
+                defaultEntityInstance ? &defaultEntityInstance->m_isRuntimeActiveByDefault : nullptr;
 
             JSR::ResultCode resultRuntimeActive =
-                ContinueStoringToJsonObjectField(outputValue, "StartRuntimeActive",
-                    runtimeActive, runtimeActiveDefault, azrtti_typeid<decltype(entityInstance->m_startActive)>(), context);
+                ContinueStoringToJsonObjectField(outputValue, "IsRuntimeActive",
+                    runtimeActive, runtimeActiveDefault, azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(), context);
 
             result.Combine(resultRuntimeActive);
         }
