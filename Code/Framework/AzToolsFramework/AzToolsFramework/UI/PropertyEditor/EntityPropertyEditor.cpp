@@ -2635,7 +2635,7 @@ namespace AzToolsFramework
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
             if (entity)
             {
-                const bool entityIsInitiallyActive = entity->GetStartActive();
+                const bool entityIsInitiallyActive = entity->IsRuntimeActiveByDefault();
                 allActive = allActive && entityIsInitiallyActive;
                 anyActive = anyActive || entityIsInitiallyActive;
             }
@@ -4008,7 +4008,7 @@ namespace AzToolsFramework
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
             if (entity)
             {
-                entity->SetStartActive(startsActive);
+                entity->SetRuntimeActiveByDefault(startsActive);
                 ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, entityId);
                 AZ::EntitySystemBus::Broadcast(&AZ::EntitySystemBus::Events::OnEntityStartStatusChanged, entityId);
 

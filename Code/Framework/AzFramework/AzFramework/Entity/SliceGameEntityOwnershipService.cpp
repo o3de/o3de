@@ -159,7 +159,7 @@ namespace AzFramework
 
         if (entity)
         {
-            entity->SetStartActive(false);
+            entity->SetRuntimeActiveByDefault(false);
         }
     }
 

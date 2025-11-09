@@ -314,7 +314,7 @@ namespace AzToolsFramework
 
         AZ::Entity* entity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
-        const bool isInitiallyActive = entity ? entity->GetStartActive() : true;
+        const bool isInitiallyActive = entity ? entity->IsRuntimeActiveByDefault() : true;
 
         if (!isInitiallyActive)
         {
@@ -345,8 +345,6 @@ namespace AzToolsFramework
         }
         else
         {
-            /// O3DE_DEPRECATION_NOTICE(GHI-19319) - 2025/10/24
-            //! @deprecated 2025/10/24, replaced by GetStartActive. This step in ui has been long disabled. Instead using "EditorOnly" and "Universal".
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
             if (!entity->IsRuntimeActiveByDefault())
