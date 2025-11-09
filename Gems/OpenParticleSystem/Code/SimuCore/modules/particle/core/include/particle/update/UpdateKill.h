@@ -16,8 +16,8 @@ namespace SimuCore::ParticleCore {
         static void Execute(const KillInBox* data, const UpdateInfo& info, Particle& particle);
         static void UpdateDistPtr(const KillInBox* data, const Distribution& distribution);
 
-        Vector3 positionOffset{ 0.f, 0.f, 0.f };
-        Vector3 boxSize{ 1.f, 1.f, 1.f };
+        AZ::Vector3 positionOffset{ 0.f, 0.f, 0.f };
+        AZ::Vector3 boxSize{ 1.f, 1.f, 1.f };
         bool enableKill = true;
         bool invertBox = false;
         bool useLocalSpace = true;

@@ -41,17 +41,17 @@ namespace
         float z;
     };
 
-    double CalTriArea(const SimuCore::Vector3& v1, const SimuCore::Vector3& v2, const SimuCore::Vector3& v3)
+    double CalTriArea(const AZ::Vector3& v1, const AZ::Vector3& v2, const AZ::Vector3& v3)
     {
-        SimuCore::Vector3 e1;
-        SimuCore::Vector3 e2;
+        AZ::Vector3 e1;
+        AZ::Vector3 e2;
         e1 = v2 - v1;
         e2 = v3 - v2;
         return 0.5 * e1.Cross(e2).GetLength();
     }
 
     void ResetMeshBuffers(const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh>& subMeshes, AZStd::vector<AZ::u32>& allMeshIndices,
-        AZStd::vector<SimuCore::Vector3>& allMeshVertexes, AZStd::vector<double>& allFaceAreas)
+        AZStd::vector<AZ::Vector3>& allMeshVertexes, AZStd::vector<double>& allFaceAreas)
     {
         size_t totalIndiceCnt{0};
         size_t totalVetexCnt{0};
@@ -568,7 +568,7 @@ namespace OpenParticle
                 const AZ::Vector3 position = vertexSkinningTransform *
                     AZ::Vector3(sourcePosition[vertexIndex * VERTEX_DIMENSION], sourcePosition[vertexIndex * VERTEX_DIMENSION + 1],
                                 sourcePosition[vertexIndex * VERTEX_DIMENSION + 2]);
-                allMeshVertexes.at(curMeshVertexOffset + vertexIndex) = SimuCore::Vector3{position.GetX(), position.GetY(), position.GetZ()};
+                allMeshVertexes.at(curMeshVertexOffset + vertexIndex) = AZ::Vector3{position.GetX(), position.GetY(), position.GetZ()};
             }
             curMeshVertexOffset += subMeshes[j].GetVertexCount();
         }
@@ -874,14 +874,14 @@ namespace OpenParticle
             auto vexIter = m_vertexStreams.find(emitterId);
             if (vexIter == m_vertexStreams.end())
             {
-                m_vertexStreams.emplace(emitterId, AZStd::vector<SimuCore::Vector3>{});
+                m_vertexStreams.emplace(emitterId, AZStd::vector<AZ::Vector3>{});
                 m_indiceStreams.emplace(emitterId, AZStd::vector<AZ::u32>{});
                 m_areaStreams.emplace(emitterId, AZStd::vector<double>{});
             }
             auto boneIter = m_boneStreams.find(emitterId);
             if (boneIter == m_boneStreams.end())
             {
-                m_boneStreams.emplace(emitterId, AZStd::vector<SimuCore::Vector3>{});
+                m_boneStreams.emplace(emitterId, AZStd::vector<AZ::Vector3>{});
             }
 
             auto& allBones = m_boneStreams.at(emitterId);
@@ -911,7 +911,7 @@ namespace OpenParticle
                 const auto sourcePosition = subMeshes[j].GetSemanticBufferTyped<SimpleVec3>(AZ::Name("POSITION"));
                 for (size_t vertexIndex = 0; vertexIndex < sourcePosition.size(); ++vertexIndex)
                 {
-                    SimuCore::Vector3 curPosition = {
+                    AZ::Vector3 curPosition = {
                         sourcePosition[vertexIndex].x,
                         sourcePosition[vertexIndex].y,
                         sourcePosition[vertexIndex].z

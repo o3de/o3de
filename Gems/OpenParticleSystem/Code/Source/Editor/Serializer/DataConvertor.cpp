@@ -366,7 +366,7 @@ namespace OpenParticle
     {
         runtimeData.origin = editData.origin;
         runtimeData.vortexAxis = editData.vortexAxis;
-        if (runtimeData.vortexAxis != SimuCore::Vector3::CreateZero())
+        if (runtimeData.vortexAxis != AZ::Vector3::CreateZero())
         {
             runtimeData.vortexAxis.Normalize();
         }

@@ -28,7 +28,7 @@ namespace SimuCore::ParticleCore {
     }
 
     static void UpdateParticle(const ParticlePool& pool, const SpriteConfig& config, const WorldInfo& world, AZStd::vector<ParticleSpriteVertex>& vb,
-            AZStd::vector<Vector3>& positionBuffer, const GpuInstance& buffer, AZ::u8* gDriver)
+            AZStd::vector<AZ::Vector3>& positionBuffer, const GpuInstance& buffer, AZ::u8* gDriver)
     {
         AZ_PROFILE_SCOPE(AzCore, "UpdateParticle");
         pool.RenderAll([&config, &world, &vb, &positionBuffer, &buffer, gDriver](const Particle* particleData, AZ::u32 begin, AZ::u32 end) {
@@ -39,34 +39,34 @@ namespace SimuCore::ParticleCore {
                 if (particle.hasLightEffect) {
                     positionBuffer[index] = particle.globalPosition;
                 }
-                particleVertex.position = Vector4(trans.TransformPoint(particle.globalPosition), 0.f);
+                particleVertex.position = AZ::Vector4(trans.TransformPoint(particle.globalPosition), 0.f);
                 particleVertex.color = particle.color;
-                particleVertex.scale = Vector4(particle.scale, 1.0f);
-                particleVertex.up = Vector4(world.cameraUp, 0.f);
+                particleVertex.scale = AZ::Vector4(particle.scale, 1.0f);
+                particleVertex.up = AZ::Vector4(world.cameraUp, 0.f);
 
-                Vector3 vel = particle.velocity;
-                if (vel.IsClose(Vector3::CreateZero())) {
-                    particleVertex.velocity = Vector4(vel, 0.f);
+                AZ::Vector3 vel = particle.velocity;
+                if (vel.IsClose(AZ::Vector3::CreateZero())) {
+                    particleVertex.velocity = AZ::Vector4(vel, 0.f);
                 } else {
-                    particleVertex.velocity = Vector4(vel.GetNormalized(), 0.f);
+                    particleVertex.velocity = AZ::Vector4(vel.GetNormalized(), 0.f);
                 }
 
                 AZ::u32 width = std::max(static_cast<AZ::u32>(std::floor(config.subImageSize.GetX())), 1u);
-                particleVertex.subuv = Vector4(config.subImageSize.GetX(), config.subImageSize.GetY(),
+                particleVertex.subuv = AZ::Vector4(config.subImageSize.GetX(), config.subImageSize.GetY(),
                         static_cast<float>((particle.subUVFrame % width) / config.subImageSize.GetX()),
                         static_cast<float>((particle.subUVFrame / width) / config.subImageSize.GetY()));
-                Vector3 initAxis(particle.rotation.GetX(), particle.rotation.GetY(), particle.rotation.GetZ());
-                if (config.facing == Facing::CUSTOM && initAxis.IsClose(Vector3::CreateZero()))
+                AZ::Vector3 initAxis(particle.rotation.GetX(), particle.rotation.GetY(), particle.rotation.GetZ());
+                if (config.facing == Facing::CUSTOM && initAxis.IsClose(AZ::Vector3::CreateZero()))
                 {
-                    particleVertex.initRotation = Vector4(initAxis, 0.f);
+                    particleVertex.initRotation = AZ::Vector4(initAxis, 0.f);
                 }
                 else {
                     particleVertex.initRotation = particle.rotation;
                 }
-                Vector3 rotateAxis(particle.rotationVector.GetX(), particle.rotationVector.GetY(), particle.rotationVector.GetZ());
-                particleVertex.rotationVector = rotateAxis.IsClose(Vector3::CreateZero())
-                    ? Vector4(rotateAxis, 0.f)
-                    : Vector4(rotateAxis, AZ::DegToRad(particle.rotationVector.GetW()));
+                AZ::Vector3 rotateAxis(particle.rotationVector.GetX(), particle.rotationVector.GetY(), particle.rotationVector.GetZ());
+                particleVertex.rotationVector = rotateAxis.IsClose(AZ::Vector3::CreateZero())
+                    ? AZ::Vector4(rotateAxis, 0.f)
+                    : AZ::Vector4(rotateAxis, AZ::DegToRad(particle.rotationVector.GetW()));
             }
 
             BufferUpdate info = {};

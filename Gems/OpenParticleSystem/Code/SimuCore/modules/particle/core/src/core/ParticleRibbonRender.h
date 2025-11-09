@@ -31,8 +31,8 @@ namespace SimuCore::ParticleCore {
 
     private:
         struct RibbonSegment {
-            Vector3 tangent0 = { 0.f, 0.f, 0.f };
-            Vector3 tangent1 = { 0.f, 0.f, 0.f };
+            AZ::Vector3 tangent0 = { 0.f, 0.f, 0.f };
+            AZ::Vector3 tangent1 = { 0.f, 0.f, 0.f };
             AZ::u32 head; // particleIndex
             AZ::u32 end;  // particleIndex
             AZ::u32 interpCount;
@@ -42,9 +42,9 @@ namespace SimuCore::ParticleCore {
         };
 
         struct BufferInfo {
-            Vector3 pos;
+            AZ::Vector3 pos;
             AZ::Color color;
-            Vector3 right;
+            AZ::Vector3 right;
             float width;
             AZ::u32& vertexIdx;
             AZ::u32& indexIdx;
@@ -53,7 +53,7 @@ namespace SimuCore::ParticleCore {
             AZStd::vector<AZ::u32>& ib;
         };
 
-        void SortParticles(const ParticlePool& pool, AZStd::vector<Vector3>& positionBuffer, const BaseInfo& emitterInfo, const RibbonConfig& config);
+        void SortParticles(const ParticlePool& pool, AZStd::vector<AZ::Vector3>& positionBuffer, const BaseInfo& emitterInfo, const RibbonConfig& config);
 
         void CalculateParticlesInRibbons(const RibbonConfig& config);
         void CalculateParticlesInRibbon(const AZStd::vector<std::pair<AZ::u32, float>>& sortedIndices,
@@ -74,8 +74,8 @@ namespace SimuCore::ParticleCore {
 
         void UpdateBuffer(const WorldInfo& world, const RibbonConfig& config);
 
-        Vector3 CalRightVector(const WorldInfo& world, const RibbonConfig& config,
-            const Vector3& up, const Vector3& position) const;
+        AZ::Vector3 CalRightVector(const WorldInfo& world, const RibbonConfig& config,
+            const AZ::Vector3& up, const AZ::Vector3& position) const;
 
         const Particle* particle = nullptr;
         AZ::u8* gDriver = nullptr;

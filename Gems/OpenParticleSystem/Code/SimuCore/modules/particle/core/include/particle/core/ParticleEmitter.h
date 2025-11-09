@@ -142,7 +142,7 @@ namespace SimuCore::ParticleCore {
             return nullptr;
         }
 
-        void SetSkeletonMesh(const Vector3* bone, AZ::u32 bCount, const Vector3* vertex, AZ::u32 vCount, const AZ::u32* indice, AZ::u32 iCount,
+        void SetSkeletonMesh(const AZ::Vector3* bone, AZ::u32 bCount, const AZ::Vector3* vertex, AZ::u32 vCount, const AZ::u32* indice, AZ::u32 iCount,
             const double* area)
         {
             boneStream = bone;
@@ -182,13 +182,13 @@ namespace SimuCore::ParticleCore {
 
         void SetMoveDistance(float distance);
 
-        void SetEmitterTransform(const SimuCore::Transform& transform);
+        void SetEmitterTransform(const AZ::Transform& transform);
 
         void GatherSimpleLight(AZStd::vector<LightParticle>& outParticleLights);
 
         const AZ::u32 GetEmitterId() const;
 
-        const Transform& GetEmitterTransform() const;
+        const AZ::Transform& GetEmitterTransform() const;
 
         const AZ::u32 GetRenderSort() const;
 
@@ -200,9 +200,9 @@ namespace SimuCore::ParticleCore {
 
         bool HasLightModule() const;
 
-        void SetAabbExtends(const Vector3& max, const Vector3& min);
+        void SetAabbExtends(const AZ::Vector3& max, const AZ::Vector3& min);
 
-        void SetWorldFront(const Vector3& front);
+        void SetWorldFront(const AZ::Vector3& front);
 
         void UpdateDistPtr(const Distribution& distribution);
 
@@ -240,20 +240,20 @@ namespace SimuCore::ParticleCore {
         float currTime = 0.f;
         bool started = false;
         float moveDistance = 0.f;
-        Transform emitterTransform;
+        AZ::Transform emitterTransform;
         MeshSampleType meshSampleType = MeshSampleType::BONE;
 
         ParticlePool particlePool;
-        const Vector3* boneStream = nullptr;
+        const AZ::Vector3* boneStream = nullptr;
         AZ::u32 boneCount = 0;
-        const Vector3* vertexStream = nullptr;
+        const AZ::Vector3* vertexStream = nullptr;
         AZ::u32 vertexCount = 0;
         const AZ::u32* indiceStream = nullptr;
         const double* areaStream = nullptr;
         AZ::u32 indiceCount = 0;
-        Vector3 maxExtend = Vector3::CreateZero();
-        Vector3 minExtend = Vector3::CreateZero();
-        Vector3 worldFront = Vector3::CreateAxisZ();
+        AZ::Vector3 maxExtend = AZ::Vector3::CreateZero();
+        AZ::Vector3 minExtend = AZ::Vector3::CreateZero();
+        AZ::Vector3 worldFront = AZ::Vector3::CreateAxisZ();
         AZStd::unordered_map<AZ::u32, InheritanceSpawn> emitterInheritances;
 
         std::pair<ParticleRender*, AZ::u32> render;

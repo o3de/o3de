@@ -30,7 +30,7 @@ namespace SimuCore::ParticleCore {
             if (data->keepVelocity) {
                 length = particle.velocity.GetLength();
             }
-            particle.velocity += Vector3(
+            particle.velocity += AZ::Vector3(
                 data->randomness * info.randomStream->SymmetricRandom() * info.tickTime,
                 data->randomness * info.randomStream->SymmetricRandom() * info.tickTime,
                 data->randomness * info.randomStream->SymmetricRandom() * info.tickTime);

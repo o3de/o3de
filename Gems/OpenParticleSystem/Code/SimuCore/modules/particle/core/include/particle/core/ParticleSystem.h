@@ -91,7 +91,7 @@ namespace SimuCore::ParticleCore {
 
         void Simulate(float delta);
 
-        void UpdateWorldInfo(const Transform& cameraTrans, const Transform& systemTrans, const Vector3& worldFront);
+        void UpdateWorldInfo(const AZ::Transform& cameraTrans, const AZ::Transform& systemTrans, const AZ::Vector3& worldFront);
 
         template<typename Func>
         void ForEachEmitter(Func&& f)

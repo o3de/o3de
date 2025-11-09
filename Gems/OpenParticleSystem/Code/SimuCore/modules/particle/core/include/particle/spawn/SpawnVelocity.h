@@ -30,7 +30,7 @@ namespace SimuCore::ParticleCore {
         ValueObjFloat strength { 1.f };
         float centralAngle = 60.f;
         float rotateAngle  = 0.f;
-        Vector3 direction = { 0.f, 0.f, 0.f };
+        AZ::Vector3 direction = { 0.f, 0.f, 0.f };
     };
 
     struct SpawnVelCone {
@@ -41,7 +41,7 @@ namespace SimuCore::ParticleCore {
         ValueObjFloat strength { 1.f };
         float angle = 60.f;
         AZ::u32 padding0 = 0;
-        Vector3 direction = { 0.f, 0.f, 0.f };
+        AZ::Vector3 direction = { 0.f, 0.f, 0.f };
     };
 
     struct SpawnVelSphere {
@@ -59,7 +59,7 @@ namespace SimuCore::ParticleCore {
 
         ValueObjFloat rate { 1.f };
         AZ::u64 padding0 = 0;
-        Vector3 centre = { 0.f, 0.f, 0.f };
+        AZ::Vector3 centre = { 0.f, 0.f, 0.f };
     };
 }
 

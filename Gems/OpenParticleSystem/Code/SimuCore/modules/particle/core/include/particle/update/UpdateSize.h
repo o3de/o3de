@@ -25,9 +25,9 @@ namespace SimuCore::ParticleCore {
         static void UpdateDistPtr(UpdateSizeByVelocity* data, const Distribution& distribution);
 
         ValueObjLinear velScale { {
-            Vector3(1.f),
-            Vector3(0.1f),
-            Vector3(1.f) } };
+            AZ::Vector3(1.f),
+            AZ::Vector3(0.1f),
+            AZ::Vector3(1.f) } };
         float velocityRange = 1.f;
     };
 
