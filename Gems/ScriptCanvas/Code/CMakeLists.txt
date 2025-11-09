@@ -6,11 +6,22 @@
 #
 #
 
+# Script Canvas may be built and executed as a standalone tool, it is disabled
+# by default due to quality and performance issues that need to be fixed
+# before making this change
+option(SCRIPTCANVAS_BUILD_STANDALONE_APPLICATION "Build ScriptCanvas as a standalone tool" OFF)
 
 set(SCRIPT_CANVAS_COMMON_DEFINES 
     SCRIPTCANVAS
     ENABLE_EXTENDED_MATH_SUPPORT=0
 )
+
+if (SCRIPTCANVAS_BUILD_STANDALONE_APPLICATION)
+    message(STATUS "Building ScriptCanvas Standalone...")
+    set(SCRIPTCANVAS_STANDALONE_APPLICATION_DEFINE SCRIPTCANVAS_STANDALONE_APPLICATION=1)
+else()
+    set(SCRIPTCANVAS_STANDALONE_APPLICATION_DEFINE SCRIPTCANVAS_STANDALONE_APPLICATION=0)
+endif()
 
 set(SCRIPT_CANVAS_EXECUTION_NOTIFICATION_DEFINES
     $<$<NOT:$<CONFIG:Release>>:SC_EXECUTION_TRACE_ENABLED> # this is REQUIRED for debugging/execution logging
@@ -175,6 +186,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 SCRIPTCANVAS_ERRORS_ENABLED
             PRIVATE
                 ${SCRIPT_CANVAS_COMMON_DEFINES}
+                ${SCRIPTCANVAS_STANDALONE_APPLICATION_DEFINE}
         INCLUDE_DIRECTORIES
             PUBLIC
                 Editor/Include
@@ -233,6 +245,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::ExpressionEvaluation
     )
 
+if(SCRIPTCANVAS_BUILD_STANDALONE_APPLICATION)
+
     o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Application/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
     ly_add_target(
@@ -277,6 +291,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_target_link_libraries(${gem_name}Application PRIVATE AZ::ToolsCrashHandler)
     endif()
 
+endif()
+
     # Inject the gem name into the Module source file
     ly_add_source_properties(
         SOURCES
@@ -290,6 +306,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
+if(SCRIPTCANVAS_BUILD_STANDALONE_APPLICATION)
+    
     ly_set_gem_variant_to_load(TARGETS ${gem_name}Application VARIANTS Tools)
     
     # Add build dependency to Editor for the ScriptCanvas application since
@@ -301,6 +319,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     if(NOT PROJECT_NAME STREQUAL "O3DE")
         set_property(TARGET ${gem_name}Application APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${CMAKE_SOURCE_DIR}\"")
     endif()
+
+endif()
 
 endif()
 
