@@ -134,7 +134,7 @@ def _process_new_component(self):
     # }
     component_template = self._component_type_lookup[self.component_type.get()]
 
-    self.log_message("Please wait…")
+    self.log_message("Please wait...")
     self.root.update_idletasks()
 
     # ---------------------------
@@ -242,7 +242,7 @@ def _create_staged_component(engine_path, stage_dir, namespace, component_name,
         # Always force in the staging directory
         cmd.append("--force")
 
-        log_message(f"Instantiating template '{component_template}' into stage…")
+        log_message(f"Instantiating template '{component_template}' into stage...")
         result = subprocess.run(
             cmd,
             cwd=str(engine_path),
