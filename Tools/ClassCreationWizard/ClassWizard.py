@@ -281,7 +281,7 @@ def _create_staged_component(engine_path, stage_dir, namespace, component_name,
 def _process_files_by_type(self, *, stage_dir: Path, dest_dir: Path, component_name: str, component_suffix: str, namespace: str):
     """
     Perform type-specific edits. For most cases, we want to update the
-    **destination project's CMake** for the selected target, since that’s
+    **destination project's CMake** for the selected target, since that's
     where sources get registered.
     """
     component_type = self.component_type.get()
@@ -364,7 +364,7 @@ def _add_gem_dependency_to_target(self, dependency: str, dest_dir: Path):
     lines = body.splitlines(keepends=False)
     def indent_of(s: str) -> str: return re.match(r'^[ \t]*', s).group(0)
 
-    # 2) Locate BUILD_DEPENDENCIES [dep_start, dep_end) — include PRIVATE/PUBLIC/INTERFACE inside the block
+    # 2) Locate BUILD_DEPENDENCIES [dep_start, dep_end) - include PRIVATE/PUBLIC/INTERFACE inside the block
     dep_start = dep_end = None
     for i, ln in enumerate(lines):
         if re.match(r'^\s*BUILD_DEPENDENCIES\b', ln):
@@ -794,7 +794,7 @@ def _register_generic_asset(self,
             nl = act_body.find("\n", insert_pos)
             insert_pos = nl + 1 if nl != -1 else len(act_body)
 
-        # Build block with the body’s indent
+        # Build block with the body's indent
         block_lines = [
             f'{a_indent}auto* {asset_name}Handler = aznew AzFramework::GenericAssetHandler<{asset_name}>("{asset_name}", "{asset_group}", "{file_extension}");',
             f'{a_indent}{asset_name}Handler->Register();',
@@ -922,7 +922,7 @@ def _register_system_component(self,
     # We capture the list body between '{' and '};'
     func_pat = (
         r'GetRequiredSystemComponents\s*\(\s*\)\s*'
-        r'(?:\s*(?:const|override|noexcept|final))*\s*'   # <— allow qualifiers in any order/amount
+        r'(?:\s*(?:const|override|noexcept|final))*\s*'   # <- allow qualifiers in any order/amount
         r'\{'
         r'(?:(?!\}).)*?'                                   # lazy up to return
         r'return\s+AZ::ComponentTypeList\s*\{\s*'
@@ -971,7 +971,7 @@ def _register_system_component(self,
 
         # Append our new entry with matching indent and ensure a trailing comma
         insertion_line = f"{first_indent}{to_insert},"
-        # Place just before the closing '};' of the return list => we’re working inside body only
+        # Place just before the closing '};' of the return list => we're working inside body only
         if body and not body.endswith("\n"):
             body += "\n"
         new_body = body + insertion_line + "\n"
@@ -2069,7 +2069,7 @@ class NewComponentWindow:
 
         cur_w = self.root.winfo_width()
         cur_h = self.root.winfo_height()
-        # If the window isn't mapped yet, width/height can be 1 — fall back to requested
+        # If the window isn't mapped yet, width/height can be 1 - fall back to requested
         if cur_w <= 1 or cur_h <= 1:
             cur_w, cur_h = req_w, req_h
 
@@ -2086,7 +2086,7 @@ class NewComponentWindow:
     def _center_main_window(self, *, clamp_to_screen=True):
         """
         Center the window using its current size.
-        Does not resize — only changes position.
+        Does not resize - only changes position.
         """
         self.root.update_idletasks()
 
