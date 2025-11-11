@@ -8,67 +8,26 @@
  */
 // {END_LICENSE}
 
-#include "${SanitizedCppName}Component.h"
+#include "${SanitizedCppName}Asset.h"
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace ${GemName}
 {
-    AZ_COMPONENT_IMPL(${SanitizedCppName}Component, "${SanitizedCppName}Component", "{${Random_Uuid}}");
-
-    void ${SanitizedCppName}Component::Activate()
+    void ${SanitizedCppName}Asset::Reflect(AZ::ReflectContext* context)
     {
-        ${SanitizedCppName}RequestBus::Handler::BusConnect(GetEntityId());
-    }
-
-    void ${SanitizedCppName}Component::Deactivate()
-    {
-        ${SanitizedCppName}RequestBus::Handler::BusDisconnect(GetEntityId());
-    }
-
-    void ${SanitizedCppName}Component::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto sc = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<${SanitizedCppName}Component, AZ::Component>()
+            sc->Class<${SanitizedCppName}Asset>()
                 ->Version(1)
+                ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ;
 
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            if (AZ::EditContext* ec = sc->GetEditContext())
             {
-                editContext->Class<${SanitizedCppName}Component>("${SanitizedCppName}Component", "[Description of functionality provided by this component]")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "ComponentCategory")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ;
+                ec->Class<${SanitizedCppName}Asset>("${SanitizedCppName}Asset", "[Description of functionality provided by this asset]")
             }
         }
 
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<${SanitizedCppName}Component>("${SanitizedCppName} Component Group")
-                ->Attribute(AZ::Script::Attributes::Category, "${GemName} Gem Group")
-                ;
-        }
-    }
-
-    void ${SanitizedCppName}Component::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-    {
-        provided.push_back(AZ_CRC_CE("${SanitizedCppName}ComponentService"));
-    }
-
-    void ${SanitizedCppName}Component::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-    }
-
-    void ${SanitizedCppName}Component::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-    }
-
-    void ${SanitizedCppName}Component::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
     }
 } // namespace ${GemName}

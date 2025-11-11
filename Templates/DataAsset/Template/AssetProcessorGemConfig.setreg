@@ -2,11 +2,6 @@
     "Amazon": {
         "AssetProcessor": {
             "Settings": {
-                "RC UiAnimationMotionAsset": {
-                    "glob": "*.uiam",
-                    "params": "copy",
-                    "productAssetType": "{2451FB6B-142F-4F08-8144-A96DE156DFA5}"
-                }
             }
         }
     }

@@ -1,41 +1,29 @@
 {
-    "template_name": "DataAsset",
+    "template_name": "SystemComponent",
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "Data Asset Template",
-    "summary": "A template to create and register a Custom Data Asset.",
+    "display_name": "Default System Component Template",
+    "summary": "A component template for a typical system component.",
     "canonical_tags": [
         "Template"
     ],
     "user_tags": [
-        "DataAsset"
+        "SystemComponent"
     ],
     "icon_path": "preview.png",
     "copyFiles": [
         {
-            "file": "Source/${GemName}DataAssetSystemComponent.cpp",
+            "file": "Source/${Name}SystemComponent.cpp",
             "isTemplated": true
         },
         {
-            "file": "Source/${GemName}DataAssetSystemComponent.h",
-            "isTemplated": true
-        },
-        {
-            "file": "Source/${Name}Asset.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Source/${Name}Asset.h",
+            "file": "Source/${Name}SystemComponent.h",
             "isTemplated": true
         },
         {
             "file": "Include/${GemName}/${Name}Interface.h",
-            "isTemplated": true
-        },
-        {
-            "file": "AssetProcessorGemConfig.setreg",
             "isTemplated": true
         }
     ],

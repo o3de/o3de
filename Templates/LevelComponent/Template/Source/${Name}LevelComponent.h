@@ -17,15 +17,15 @@ namespace ${GemName}
 {
     /*
     * TODO: Register this component in your Gem's AZ::Module interface by inserting the following into the list of m_descriptors:
-    *       ${SanitizedCppName}Component::CreateDescriptor(),
+    *       ${SanitizedCppName}LevelComponent::CreateDescriptor(),
     */
 
-    class ${SanitizedCppName}Component
+    class ${SanitizedCppName}LevelComponent
         : public AZ::Component
         , public ${SanitizedCppName}RequestBus::Handler
     {
     public:
-        AZ_COMPONENT_DECL(${SanitizedCppName}Component);
+        AZ_COMPONENT_DECL(${SanitizedCppName}LevelComponent);
 
         /*
         * Reflects component data into the reflection contexts, including the serialization, edit, and behavior contexts.
