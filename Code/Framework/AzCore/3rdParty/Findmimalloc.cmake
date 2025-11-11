@@ -50,6 +50,18 @@ ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/Findmimalloc.cmake DESTINAT
 ly_install_directory(DIRECTORIES ${mimalloc_source_dir}/include DESTINATION include/mimalloc COMPONENT CORE)
 ly_install(FILES ${mimalloc_source_dir}/LICENSE DESTINATION include/mimalloc COMPONENT CORE)
 
+# install the libraries making sure to use different directories for debug/release/etc
+set(BASE_LIBRARY_FOLDER "lib/${PAL_PLATFORM_NAME}")
+foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+    string(TOUPPER ${conf} UCONF)
+    ly_install(TARGETS mimalloc-static
+        ARCHIVE
+            DESTINATION "${BASE_LIBRARY_FOLDER}/${conf}"
+            COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+            CONFIGURATIONS ${conf}
+    )
+endforeach()
+
 add_library(3rdParty::mimalloc ALIAS mimalloc-static)
 
 set(mimalloc_FOUND TRUE)
