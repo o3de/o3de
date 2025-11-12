@@ -2092,7 +2092,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::SceneRequestBus::EventResult(copyMimeType, GetActiveGraphCanvasGraphId(), &GraphCanvas::SceneRequests::GetCopyMimeType);
 
         const bool pasteableClipboard = (!copyMimeType.empty() && QApplication::clipboard()->mimeData()->hasFormat(copyMimeType.c_str()))
-                                        || GraphVariablesTableView::HasCopyVariableData();
+                                        || !GraphVariablesTableView::HasCopyVariableData();
 
         ui->action_Paste->setEnabled(pasteableClipboard);
     }
@@ -2960,9 +2960,7 @@ namespace ScriptCanvasEditor
         ui->action_Cut->setEnabled(hasCopiableSelection);
         ui->action_Copy->setEnabled(hasCopiableSelection);
         ui->action_Duplicate->setEnabled(hasCopiableSelection);
-
-        // Delete will work for anything that is selectable
-        ui->action_Delete->setEnabled(hasSelection);
+        ui->action_Delete->setEnabled(m_selectedVariableIds.empty() && hasSelection);
     }
 
     void MainWindow::OnViewNodePalette()
