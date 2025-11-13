@@ -579,7 +579,7 @@ class ComponentCreator:
         return text
     
     def _add_gem_dependency(self, dest_dir: Path, target: Optional[CMakeTarget],
-                           dependency: str):
+                        dependency: str):
         """Add a gem dependency to a CMake target"""
         if not target:
             self.log("Warning: No build target selected")
@@ -590,76 +590,107 @@ class ComponentCreator:
             self.log(f"Warning: CMake file not found: {cmake_path}")
             return
         
+        self.log(f"Adding dependency to target: {target.name}")
+        
         text = cmake_path.read_text(encoding="utf-8")
         
-        # Find the target block
+        # Find ALL target blocks
         macro_pat = r'(?:o3de_add_target|ly_add_target)\s*\((?P<body>.*?)\)\s*'
         
         for match in re.finditer(macro_pat, text, flags=re.S | re.M):
             body = match.group('body')
-            name_match = re.search(r'\bNAME\s+(".*?"|[^\s\)]+)', body)
             
+            # Check if this is the target we want by matching NAME
+            name_match = re.search(r'\bNAME\s+([^\s\)]+)', body)
             if not name_match:
                 continue
             
-            if '${gem_name}' not in name_match.group(1) and '${GemName}' not in name_match.group(1):
+            # Extract name (could be quoted or with variables)
+            name_in_cmake = name_match.group(1).strip('"\'')
+            
+            # Match if it contains the target's raw_name pattern
+            # (handles ${gem_name}.Private.Object matching MyGem.Private.Object)
+            is_match = False
+            if name_in_cmake == target.raw_name:
+                is_match = True
+            elif '${' in name_in_cmake and '.' in target.name:
+                # Check if suffix matches (e.g., .Private.Object)
+                if '.' in name_in_cmake:
+                    cmake_suffix = name_in_cmake.split('.', 1)[1]
+                    target_suffix = target.name.split('.', 1)[1] if '.' in target.name else ''
+                    if cmake_suffix == target_suffix:
+                        is_match = True
+            
+            if not is_match:
                 continue
             
-            # Check if dependency already exists
+            # Found the right target!
+            self.log(f"Found target block with NAME {name_in_cmake}")
+            
+            # Check if dependency already exists in this target
             if dependency in body:
                 self.log(f"Dependency already present: {dependency}")
                 return
             
-            # Add dependency to BUILD_DEPENDENCIES/PRIVATE
+            # Parse lines
             lines = body.splitlines()
             
-            # Find BUILD_DEPENDENCIES section
+            # Find BUILD_DEPENDENCIES
             deps_idx = None
             for i, line in enumerate(lines):
                 if re.match(r'^\s*BUILD_DEPENDENCIES\b', line):
                     deps_idx = i
                     break
             
+            # Get base indent
+            base_indent = '    '
+            for line in lines:
+                if line.strip() and not line.strip().startswith('#'):
+                    base_indent = re.match(r'(\s*)', line).group(1)
+                    break
+            
             if deps_idx is None:
-                # Add BUILD_DEPENDENCIES section
-                indent = ' ' * 4
-                lines.extend([
-                    f'{indent}BUILD_DEPENDENCIES',
-                    f'{indent}    PRIVATE',
-                    f'{indent}        {dependency}'
-                ])
+                # Add BUILD_DEPENDENCIES at end
+                lines.append('')
+                lines.append(f'{base_indent}BUILD_DEPENDENCIES')
+                lines.append(f'{base_indent}    PRIVATE')
+                lines.append(f'{base_indent}        {dependency}')
             else:
-                # Find or create PRIVATE section
+                # Find PRIVATE section within BUILD_DEPENDENCIES
                 private_idx = None
+                deps_end = len(lines)
+                
                 for i in range(deps_idx + 1, len(lines)):
                     if re.match(r'^\s*PRIVATE\b', lines[i]):
                         private_idx = i
-                        break
-                    if re.match(r'^\s*[A-Z_]+\b', lines[i]):
+                    # Stop at next major section
+                    if re.match(r'^\s*[A-Z_]+\b', lines[i]) and not re.match(r'^\s*(PRIVATE|PUBLIC|INTERFACE)\b', lines[i]):
+                        deps_end = i
                         break
                 
                 if private_idx is None:
                     # Add PRIVATE section
-                    indent = re.match(r'\s*', lines[deps_idx]).group(0)
+                    indent = re.match(r'(\s*)', lines[deps_idx]).group(1)
                     lines.insert(deps_idx + 1, f'{indent}    PRIVATE')
                     lines.insert(deps_idx + 2, f'{indent}        {dependency}')
                 else:
-                    # Add to existing PRIVATE
-                    indent = re.match(r'\s*', lines[private_idx]).group(0)
+                    # Add to PRIVATE - insert right after PRIVATE line
+                    indent = re.match(r'(\s*)', lines[private_idx]).group(1)
                     lines.insert(private_idx + 1, f'{indent}    {dependency}')
             
-            # Rebuild and write
+            # Rebuild
             new_body = '\n'.join(lines) + '\n'
-            start, end = match.span()
-            new_text = text[:start] + match.group(0).replace(body, new_body) + text[end:]
+            new_text = text[:match.start()] + match.group(0).replace(body, new_body) + text[match.end():]
             
             cmake_path.write_text(new_text, encoding='utf-8', newline='\n')
-            self.log(f"Added dependency: {dependency}")
+            self.log(f"Added dependency {dependency} to {target.name}")
             return
-    
+        
+        self.log(f"Warning: Could not find target block for {target.name}")
+        
     def _register_component(self, dest_root: Path, component_name: str,
-                           component_type: str, namespace: str,
-                           target: Optional[CMakeTarget]):
+                        component_type: str, namespace: str,
+                        target: Optional[CMakeTarget]):
         """Register the component in the gem"""
         self.log("Registering component...")
         
@@ -828,84 +859,84 @@ class ComponentCreator:
         module_path.write_text(text, encoding="utf-8", newline="\n")
         self.log(f"Updated module: {module_path.name}")
     
-def _register_system_component(self, dest_root: Path, namespace: str,
-                               component_name: str, module_kind: str):
-    """Register a system component in runtime or editor module"""
-    self.log(f"Registering system component in {module_kind} module...")
-    
-    # Find module file
-    suffix = "EditorModule" if module_kind == "editor" else "Module"
-    candidates = [
-        dest_root / "Code" / "Source" / "Tools" / f"{namespace}{suffix}.cpp",
-        dest_root / "Code" / "Source" / f"{namespace}{suffix}.cpp",
-        dest_root / "Source" / f"{namespace}{suffix}.cpp",
-    ]
-    
-    module_path = None
-    for candidate in candidates:
-        if candidate.is_file():
-            module_path = candidate
-            break
-    
-    if not module_path:
-        self.log(f"Warning: Could not find {module_kind} module file")
-        return
-    
-    text = module_path.read_text(encoding="utf-8")
-    include_line = f'#include "{component_name}.h"'
-    
-    # Add include
-    if include_line not in text:
-        lines = text.splitlines()
-        last_include = 0
-        for i, line in enumerate(lines):
-            if line.strip().startswith("#include"):
-                last_include = i
-        lines.insert(last_include + 1, include_line)
-        text = "\n".join(lines) + "\n"
-    
-    # Add to GetRequiredSystemComponents
-    fq_component = f"{namespace}::{component_name}"
-    to_insert = f"azrtti_typeid<{fq_component}>()"
-    
-    # Check if already present
-    if to_insert in text:
-        self.log(f"Component already registered in {module_kind}")
-        return
-    
-    # Find the ComponentTypeList initialization
-    pattern = r'return\s+AZ::ComponentTypeList\s*\{([^}]*)\}'
-    match = re.search(pattern, text, flags=re.S)
-    
-    if match:
-        list_content = match.group(1)
+    def _register_system_component(self, dest_root: Path, namespace: str,
+                                component_name: str, module_kind: str):
+        """Register a system component in runtime or editor module"""
+        self.log(f"Registering system component in {module_kind} module...")
         
-        # Get the indent from existing content or use default
-        indent = "            "
-        lines = list_content.strip().splitlines()
-        if lines:
-            for line in lines:
-                if line.strip():
-                    indent = re.match(r'(\s*)', line).group(1)
-                    break
+        # Find module file
+        suffix = "EditorModule" if module_kind == "editor" else "Module"
+        candidates = [
+            dest_root / "Code" / "Source" / "Tools" / f"{namespace}{suffix}.cpp",
+            dest_root / "Code" / "Source" / f"{namespace}{suffix}.cpp",
+            dest_root / "Source" / f"{namespace}{suffix}.cpp",
+        ]
         
-        # Build new content
-        new_content = list_content.rstrip()
-        if new_content and not new_content.rstrip().endswith(','):
-            new_content += ','
+        module_path = None
+        for candidate in candidates:
+            if candidate.is_file():
+                module_path = candidate
+                break
         
-        if new_content:
-            new_content += '\n'
+        if not module_path:
+            self.log(f"Warning: Could not find {module_kind} module file")
+            return
         
-        new_content += f"{indent}{to_insert},"
+        text = module_path.read_text(encoding="utf-8")
+        include_line = f'#include "{component_name}.h"'
         
-        # Replace
-        new_text = text[:match.start(1)] + new_content + '\n' + text[match.end(1):]
+        # Add include
+        if include_line not in text:
+            lines = text.splitlines()
+            last_include = 0
+            for i, line in enumerate(lines):
+                if line.strip().startswith("#include"):
+                    last_include = i
+            lines.insert(last_include + 1, include_line)
+            text = "\n".join(lines) + "\n"
         
-        module_path.write_text(new_text, encoding="utf-8", newline="\n")
-        self.log(f"Registered in {module_kind} module: {module_path.name}")
-    else:
-        self.log(f"Warning: Could not find GetRequiredSystemComponents in {module_kind} module")
+        # Add to GetRequiredSystemComponents
+        fq_component = f"{namespace}::{component_name}"
+        to_insert = f"azrtti_typeid<{fq_component}>()"
+        
+        # Check if already present
+        if to_insert in text:
+            self.log(f"Component already registered in {module_kind}")
+            return
+        
+        # Find the ComponentTypeList initialization
+        pattern = r'return\s+AZ::ComponentTypeList\s*\{([^}]*)\}'
+        match = re.search(pattern, text, flags=re.S)
+        
+        if match:
+            list_content = match.group(1)
+            
+            # Get the indent from existing content or use default
+            indent = "            "
+            lines = list_content.strip().splitlines()
+            if lines:
+                for line in lines:
+                    if line.strip():
+                        indent = re.match(r'(\s*)', line).group(1)
+                        break
+            
+            # Build new content
+            new_content = list_content.rstrip()
+            if new_content and not new_content.rstrip().endswith(','):
+                new_content += ','
+            
+            if new_content:
+                new_content += '\n'
+            
+            new_content += f"{indent}{to_insert},"
+            
+            # Replace
+            new_text = text[:match.start(1)] + new_content + '\n' + text[match.end(1):]
+            
+            module_path.write_text(new_text, encoding="utf-8", newline="\n")
+            self.log(f"Registered in {module_kind} module: {module_path.name}")
+        else:
+            self.log(f"Warning: Could not find GetRequiredSystemComponents in {module_kind} module")
 
 
 # ============================================================================
