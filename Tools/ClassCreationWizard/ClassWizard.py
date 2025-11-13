@@ -355,28 +355,9 @@ class ComponentCreator:
         self.logger(message)
     
     def create_component(self, config: Dict[str, Any]) -> bool:
-        """
-        Create a component with the given configuration.
-        
-        Args:
-            config: Dictionary with keys:
-                - component_name: str
-                - namespace: str
-                - component_type: str
-                - component_template: str
-                - dest_dir: Path
-                - keep_license: bool
-                - strip_comments: bool
-                - automatic_register: bool
-                - build_target: CMakeTarget (optional)
-                - dynamic_fields: Dict[str, Any]
-        
-        Returns:
-            True if successful, False otherwise
-        """
+        """Create a component with the given configuration."""
         self.log("Starting component creation...")
         
-        # Create staging directory
         stage_dir = Path(tempfile.mkdtemp(prefix="cw_stage_"))
         self.log(f"Staging to: {stage_dir}")
         
@@ -398,6 +379,19 @@ class ComponentCreator:
                 config=config
             )
             
+            setreg_path = None
+            if config['component_type'] == "Data Asset":
+                self.log("=== Processing Data Asset setreg ===")
+                setreg_path = self._handle_setreg_file(
+                    stage_dir, 
+                    config['dest_dir'], 
+                    config['namespace']
+                )
+                if setreg_path:
+                    self.log(f"Setreg will be updated at: {setreg_path}")
+                else:
+                    self.log("WARNING: Setreg handling failed!")
+            
             # Merge into destination
             created, skipped = self._merge_stage_into_dest(
                 stage=stage_dir,
@@ -417,7 +411,9 @@ class ComponentCreator:
                     component_name=config['component_name'] + suffix,
                     component_type=config['component_type'],
                     namespace=config['namespace'],
-                    target=config.get('build_target')
+                    target=config.get('build_target'),
+                    config=config,
+                    setreg_path=setreg_path
                 )
             
             self.log("Component creation complete!")
@@ -428,7 +424,6 @@ class ComponentCreator:
             traceback.print_exc()
             return False
         finally:
-            # Cleanup staging directory
             try:
                 shutil.rmtree(stage_dir, ignore_errors=True)
             except Exception:
@@ -513,14 +508,19 @@ class ComponentCreator:
             pass  # Handled in registration
     
     def _merge_stage_into_dest(self, stage: Path, dest: Path,
-                              skip_existing: bool, strip_comments: bool,
-                              keep_license: bool) -> Tuple[int, int]:
+                            skip_existing: bool, strip_comments: bool,
+                            keep_license: bool) -> Tuple[int, int]:
         """Merge staged files into destination"""
         created = skipped = 0
         dest.mkdir(parents=True, exist_ok=True)
         
         for src_file in stage.rglob("*"):
             if src_file.is_dir():
+                continue
+            
+            # Skip setreg files - they're handled separately
+            if src_file.suffix == '.setreg':
+                self.log(f"Skipping setreg in merge: {src_file.name}")
                 continue
             
             rel = src_file.relative_to(stage)
@@ -547,6 +547,93 @@ class ComponentCreator:
         
         return created, skipped
     
+    def _handle_setreg_file(self, stage_dir: Path, dest_root: Path, namespace: str):
+        """Move setreg file from stage to proper Registry location"""
+        # The template creates: ${GemName}DataAssetRegistry.setreg
+        # After template substitution it becomes: {namespace}DataAssetRegistry.setreg
+        expected_name = f"{namespace}DataAssetRegistry.setreg"
+        
+        self.log(f"Looking for setreg file: {expected_name}")
+        
+        # Search for the file in stage
+        staged_setreg = None
+        for setreg_file in stage_dir.rglob("*.setreg"):
+            if setreg_file.name == expected_name:
+                staged_setreg = setreg_file
+                break
+        
+        if not staged_setreg:
+            self.log(f"Warning: Could not find {expected_name} in stage directory")
+            setreg_candidates = list(stage_dir.rglob("*DataAssetRegistry.setreg"))
+            if setreg_candidates:
+                staged_setreg = setreg_candidates[0]
+                self.log(f"Found alternative setreg: {staged_setreg.name}")
+            else:
+                self.log("No setreg file found in stage")
+                return None
+        
+        self.log(f"Found staged setreg: {staged_setreg}")
+        
+        # Determine target Registry directory
+        dest_root = Path(dest_root).resolve()
+        
+        # Check if project gem (dest_root is <project>/Gem)
+        if dest_root.name == "Gem":
+            project_json = dest_root.parent / "project.json"
+            if project_json.is_file():
+                # Project gem - Registry goes INSIDE Gem folder
+                target_dir = dest_root / "Registry"
+                self.log(f"Detected project gem, Registry at: {target_dir}")
+            else:
+                # Gem folder but not a project gem
+                target_dir = dest_root / "Registry"
+                self.log(f"Gem folder (non-project), Registry at: {target_dir}")
+        # Check if external gem code folder (<gem>/Code)
+        elif dest_root.name == "Code":
+            gem_json = dest_root.parent / "gem.json"
+            if gem_json.is_file():
+                # External gem - Registry at gem root level
+                target_dir = dest_root.parent / "Registry"
+                self.log(f"Detected external gem code folder, Registry at: {target_dir}")
+            else:
+                # Code folder but not a gem
+                target_dir = dest_root / "Registry"
+                self.log(f"Code folder (non-gem), Registry at: {target_dir}")
+        else:
+            # Fallback - assume dest_root is gem root
+            gem_json = dest_root / "gem.json"
+            if gem_json.is_file():
+                target_dir = dest_root / "Registry"
+                self.log(f"Detected gem root, Registry at: {target_dir}")
+            else:
+                target_dir = dest_root / "Registry"
+                self.log(f"Fallback, Registry at: {target_dir}")
+        
+        # Create Registry directory
+        target_dir.mkdir(parents=True, exist_ok=True)
+        self.log(f"Created/verified Registry directory: {target_dir}")
+        
+        # Target path with original filename
+        target_setreg = target_dir / expected_name
+        
+        self.log(f"Target setreg path: {target_setreg}")
+        
+        # Copy the file to target location
+        try:
+            if target_setreg.exists():
+                self.log(f"Setreg already exists, will be updated: {target_setreg}")
+            else:
+                self.log(f"Copying setreg from stage to Registry...")
+                shutil.copy2(staged_setreg, target_setreg)
+                self.log(f"Successfully copied setreg to: {target_setreg}")
+            
+            return target_setreg
+        except Exception as e:
+            self.log(f"Error handling setreg: {e}")
+            import traceback
+            self.log(traceback.format_exc())
+            return None
+    
     @staticmethod
     def _should_strip_comments(rel_path: Path) -> bool:
         """Check if file should have comments stripped"""
@@ -556,25 +643,52 @@ class ComponentCreator:
     
     @staticmethod
     def _strip_c_comments(text: str, preserve_license: bool) -> str:
-        """Strip C/C++ style comments from text"""
+        """Strip C/C++ style comments from text, preserving license blocks"""
         if not text:
             return text
         
+        # Protect license blocks - detect the actual O3DE license format
         protected = []
-        if preserve_license:
-            def protect(m):
-                idx = len(protected)
-                protected.append(m.group(0))
-                return f"__CW_LIC_{idx}__"
-            text = re.sub(r"\{BEGIN_LICENSE\}.*?\{END_LICENSE\}", protect, text, flags=re.S)
+        def protect(m):
+            idx = len(protected)
+            protected.append(m.group(0))
+            return f"__CW_LIC_{idx}__"
         
+        # Protect O3DE license blocks (at start of file, contains "Copyright" and "SPDX-License-Identifier")
+        # This matches the standard O3DE license header format
+        license_pattern = r'/\*\s*\n\s*\*\s*Copyright\s+\(c\).*?SPDX-License-Identifier:.*?\*/'
+        text = re.sub(license_pattern, protect, text, flags=re.S | re.I)
+        
+        # Remove remaining block comments /* ... */
         text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
-        text = re.sub(r"//.*", "", text)
-        text = re.sub(r"[ \t]+\r?\n", "\n", text)
         
-        if preserve_license:
-            for i, block in enumerate(protected):
-                text = text.replace(f"__CW_LIC_{i}__", block)
+        # Remove line comments //...
+        text = re.sub(r"//.*", "", text)
+        
+        # Remove trailing whitespace from each line
+        text = re.sub(r"[ \t]+$", "", text, flags=re.M)
+        
+        # Remove lines that are now empty (only whitespace)
+        lines = text.splitlines()
+        cleaned_lines = []
+        prev_blank = False
+        
+        for line in lines:
+            # Check if line is empty or only whitespace
+            if not line.strip():
+                # Only add one blank line max (don't stack multiple blanks)
+                if not prev_blank:
+                    cleaned_lines.append("")
+                    prev_blank = True
+            else:
+                cleaned_lines.append(line)
+                prev_blank = False
+        
+        text = "\n".join(cleaned_lines)
+        
+        # Restore protected license blocks
+        for i, block in enumerate(protected):
+            text = text.replace(f"__CW_LIC_{i}__", block)
         
         return text
     
@@ -690,7 +804,9 @@ class ComponentCreator:
         
     def _register_component(self, dest_root: Path, component_name: str,
                         component_type: str, namespace: str,
-                        target: Optional[CMakeTarget]):
+                        target: Optional[CMakeTarget],
+                        config: Dict[str, Any],
+                        setreg_path: Optional[Path] = None):
         """Register the component in the gem"""
         self.log("Registering component...")
         
@@ -701,18 +817,49 @@ class ComponentCreator:
             
             # Register in module descriptor (for Basic, Level, LyShine UI)
             if component_type in ["Basic", "Level", "LyShine UI"]:
-                self._register_module_descriptor(dest_root, component_name, namespace)
+                self._register_module_descriptor(dest_root, component_name, namespace, "runtime")
             
             # Register system component (for System type)
             if component_type == "System":
+                self._register_module_descriptor(dest_root, component_name, namespace, "runtime")
                 self._register_system_component(dest_root, namespace, component_name, "runtime")
                 self._register_system_component(dest_root, namespace, component_name, "editor")
+            
+            # For Data Asset: register the DataAssetSystemComponent
+            if component_type == "Data Asset":
+                sys_comp_name = f"{namespace}DataAssetSystemComponent"
+                
+                # Get dynamic fields from config (passed from GUI)
+                dynamic_fields = config.get('dynamic_fields', {})
+                asset_ext = dynamic_fields.get('FileExtension', 'mydata')
+                asset_group = dynamic_fields.get('Group', 'Other')
+                
+                self.log(f"Asset extension: {asset_ext}, Asset group: {asset_group}")
+                
+                # Register system component files
+                if target:
+                    self._register_file_list(dest_root, sys_comp_name, target)
+                
+                # Register in module descriptor
+                self._register_module_descriptor(dest_root, sys_comp_name, namespace, "runtime")
+                
+                # Register as system component in both modules
+                self._register_system_component(dest_root, namespace, sys_comp_name, "runtime")
+                self._register_system_component(dest_root, namespace, sys_comp_name, "editor")
+                
+                # Register the asset itself in the system component
+                self._register_generic_asset(dest_root, namespace, component_name, asset_ext, asset_group)
+                
+                # Update the setreg file (if it exists)
+                if setreg_path:
+                    self._register_asset_setreg(setreg_path, component_name, asset_ext, dest_root)
             
             self.log("Registration complete!")
             
         except Exception as e:
             self.log(f"Warning: Registration failed: {e}")
-            traceback.print_exc()
+            import traceback
+            self.log(traceback.format_exc())
     
     def _register_file_list(self, dest_root: Path, component_name: str, 
                            target: CMakeTarget):
@@ -778,14 +925,19 @@ class ComponentCreator:
         files_cmake_path.write_text(text, encoding="utf-8", newline="\n")
     
     def _register_module_descriptor(self, dest_root: Path, component_name: str, 
-                                    namespace: str):
+                                    namespace: str, module_kind: str):
         """Register component in gem module descriptor"""
         self.log("Registering in module descriptor...")
         
         # Find module file
+        suffix = "EditorModule" if module_kind == "editor" else "Module"
         candidates = [
-            dest_root / "Code" / "Source" / f"{namespace}Module.cpp",
-            dest_root / "Source" / f"{namespace}Module.cpp",
+            dest_root / "Code" / "Source" / "Tools" / f"{namespace}{suffix}.cpp",
+            dest_root / "Code" / "Source" / f"{namespace}{suffix}.cpp",
+            dest_root / "Source" / f"{namespace}{suffix}.cpp",
+            dest_root / "Code" / "Source" / f"{namespace}{suffix}Interface.cpp",
+            dest_root / "Source" / f"{namespace}{suffix}Interface.cpp",
+            dest_root / "Source" / "Tools" / f"{namespace}{suffix}.cpp",
         ]
         
         module_path = None
@@ -819,42 +971,61 @@ class ComponentCreator:
             lines.insert(last_include + 1, include_line)
             text = "\n".join(lines) + "\n"
         
-        # Add descriptor to m_descriptors.insert
+        # Check if descriptor already exists
         descriptor_line = f"{component_name}::CreateDescriptor()"
         
-        pattern = (
-            r'(m_descriptors\.insert\s*\(\s*m_descriptors\.end\s*\(\s*\)\s*,\s*\{\s*)'
-            r'(?P<inner>.*?)'
-            r'(\s*\}\s*\)\s*;)'
-        )
+        if descriptor_line in text:
+            self.log(f"Descriptor already present for {component_name}")
+            module_path.write_text(text, encoding="utf-8", newline="\n")
+            return
+        
+        # Find m_descriptors.insert block
+        pattern = r'(m_descriptors\.insert\s*\(\s*m_descriptors\.end\s*\(\s*\)\s*,\s*\{)\s*([^}]*?)(\s*\}\s*\)\s*;)'
         
         match = re.search(pattern, text, flags=re.S)
         if match:
-            inner = match.group('inner')
-            inner_lines = inner.splitlines()
+            prefix = match.group(1)
+            inner = match.group(2)
+            suffix = match.group(3)
             
-            # Remove trailing empty lines
+            # Split into lines
+            inner_lines = inner.split('\n')
+            
+            # Find existing descriptors to detect indent
+            descriptor_indent = None
+            for line in inner_lines:
+                if '::CreateDescriptor()' in line:
+                    descriptor_indent = re.match(r'(\s*)', line).group(1)
+                    break
+            
+            if not descriptor_indent:
+                # Default indent - 4 spaces more than the opening brace line
+                base_match = re.match(r'(\s*)', prefix)
+                base_indent = base_match.group(1) if base_match else ''
+                descriptor_indent = base_indent + '    '
+            
+            # Remove trailing whitespace/empty lines
             while inner_lines and not inner_lines[-1].strip():
                 inner_lines.pop()
             
-            # Get indent from last line
-            base_indent = " " * 12
-            if inner_lines:
+            # Ensure last descriptor has a comma
+            if inner_lines and inner_lines[-1].strip():
                 last_line = inner_lines[-1]
-                base_indent = re.match(r'\s*', last_line).group(0)
-                
-                # Ensure comma at end
-                if not last_line.strip().endswith(','):
+                if not last_line.rstrip().endswith(','):
                     inner_lines[-1] = last_line.rstrip() + ','
             
-            # Add new descriptor
-            new_indent = base_indent + '\t'
-            inner_lines.append(f"{new_indent}{descriptor_line},")
+            # Add new descriptor with consistent indent
+            inner_lines.append(f'{descriptor_indent}{descriptor_line},')
             
-            adjusted_inner = "\n".join(inner_lines)
-            new_block = match.group(1) + adjusted_inner + "\n" + match.group(3).lstrip()
+            # Rebuild
+            new_inner = '\n'.join(inner_lines)
+            new_block = prefix + '\n' + new_inner + '\n' + suffix
             
             text = text[:match.start()] + new_block + text[match.end():]
+            
+            self.log(f"Added descriptor for {component_name}")
+        else:
+            self.log("Warning: Could not find m_descriptors.insert block")
         
         module_path.write_text(text, encoding="utf-8", newline="\n")
         self.log(f"Updated module: {module_path.name}")
@@ -870,6 +1041,9 @@ class ComponentCreator:
             dest_root / "Code" / "Source" / "Tools" / f"{namespace}{suffix}.cpp",
             dest_root / "Code" / "Source" / f"{namespace}{suffix}.cpp",
             dest_root / "Source" / f"{namespace}{suffix}.cpp",
+            dest_root / "Code" / "Source" / f"{namespace}{suffix}Interface.cpp",
+            dest_root / "Source" / f"{namespace}{suffix}Interface.cpp",
+            dest_root / "Source" / "Tools" / f"{namespace}{suffix}.cpp",
         ]
         
         module_path = None
@@ -911,32 +1085,293 @@ class ComponentCreator:
         if match:
             list_content = match.group(1)
             
-            # Get the indent from existing content or use default
-            indent = "            "
-            lines = list_content.strip().splitlines()
-            if lines:
-                for line in lines:
-                    if line.strip():
-                        indent = re.match(r'(\s*)', line).group(1)
-                        break
+            # Find indent from existing entries
+            indent_match = re.search(r'\n(\s+)azrtti_typeid', list_content)
+            if indent_match:
+                indent = indent_match.group(1)
+            else:
+                # Default: reasonable indent
+                indent = "                "  # 16 spaces
             
-            # Build new content
-            new_content = list_content.rstrip()
-            if new_content and not new_content.rstrip().endswith(','):
-                new_content += ','
+            # Split into lines and clean up
+            lines = list_content.split('\n')
+            cleaned = [line for line in lines if line.strip()]
             
-            if new_content:
-                new_content += '\n'
+            # Ensure last entry has comma
+            if cleaned and not cleaned[-1].rstrip().endswith(','):
+                cleaned[-1] = cleaned[-1].rstrip() + ','
             
-            new_content += f"{indent}{to_insert},"
+            # Add new entry with consistent indent
+            cleaned.append(f'{indent}{to_insert},')
+            
+            # Rebuild with proper formatting
+            new_content = '\n' + '\n'.join(cleaned) + '\n'
             
             # Replace
-            new_text = text[:match.start(1)] + new_content + '\n' + text[match.end(1):]
+            new_text = text[:match.start(1)] + new_content + text[match.end(1):]
             
             module_path.write_text(new_text, encoding="utf-8", newline="\n")
             self.log(f"Registered in {module_kind} module: {module_path.name}")
         else:
             self.log(f"Warning: Could not find GetRequiredSystemComponents in {module_kind} module")
+
+    def _register_generic_asset(self, dest_root: Path, namespace: str, asset_name: str, 
+                            asset_ext: str = "mydata", asset_group: str = "Other"):
+        """Register GenericAssetHandler in DataAssetSystemComponent"""
+        self.log(f"Registering GenericAssetHandler for {asset_name}...")
+        
+        sys_comp_name = f"{namespace}DataAssetSystemComponent"
+        
+        # Find the system component .cpp file
+        candidates = [
+            dest_root / "Code" / "Source" / f"{sys_comp_name}.cpp",
+            dest_root / "Source" / f"{sys_comp_name}.cpp",
+        ]
+        
+        cpp_path = None
+        for candidate in candidates:
+            if candidate.is_file():
+                cpp_path = candidate
+                break
+        
+        if not cpp_path:
+            self.log(f"Warning: Could not find {sys_comp_name}.cpp")
+            return
+        
+        text = cpp_path.read_text(encoding="utf-8")
+        
+        # Add include for the asset if not present
+        include_line = f'#include "{asset_name}.h"'
+        if include_line not in text:
+            lines = text.splitlines()
+            last_include = 0
+            for i, line in enumerate(lines):
+                if line.strip().startswith("#include") and '"' in line:
+                    last_include = i
+            lines.insert(last_include + 1, include_line)
+            text = "\n".join(lines) + "\n"
+        
+        # Find Activate() method
+        activate_pattern = r'void\s+' + re.escape(sys_comp_name) + r'::Activate\s*\([^)]*\)\s*\{([^}]*)\}'
+        match = re.search(activate_pattern, text, flags=re.S)
+        
+        if match:
+            body = match.group(1)
+            
+            # Check if already registered
+            handler_check = f'{asset_name}Handler'
+            if handler_check in body:
+                self.log(f"Handler already registered for {asset_name}")
+            else:
+                # Detect indent - look for existing "auto*" lines or "m_assetHandlers" lines
+                indent_match = re.search(r'\n(\s+)(?:auto\*|m_assetHandlers)', body)
+                if not indent_match:
+                    # Fallback to any line with content
+                    indent_match = re.search(r'\n(\s+)\S', body)
+                
+                if indent_match:
+                    base_indent = indent_match.group(1)
+                else:
+                    base_indent = '        '  # 8 spaces default
+                
+                # Check if there's already handler registration content
+                has_handlers = 'Handler' in body or 'm_assetHandlers' in body
+                
+                # Build registration block with newline prefix if there are existing handlers
+                suffix = '\n\n' if has_handlers else '\n'
+                
+                registration_block = (
+                    f'{base_indent}// Register {asset_name}\n'
+                    f'{base_indent}auto* {asset_name}Handler = aznew AzFramework::GenericAssetHandler<{asset_name}>("{asset_name}", "{asset_group}", "{asset_ext}");\n'
+                    f'{base_indent}{asset_name}Handler->Register();\n'
+                    f'{base_indent}m_assetHandlers.emplace_back({asset_name}Handler);{suffix}'
+                )
+                
+                # Insert at the very beginning (after opening brace and initial whitespace)
+                lines = body.split('\n')
+                insert_line = 0
+                for i, line in enumerate(lines):
+                    if line.strip():  # First non-empty line
+                        insert_line = i
+                        break
+                
+                # Reconstruct body with insertion
+                if insert_line == 0 and not lines[0].strip():
+                    # Empty function, insert after first newline
+                    new_body = lines[0] + '\n' + registration_block + '\n'.join(lines[1:])
+                else:
+                    new_body = '\n'.join(lines[:insert_line]) + '\n' + registration_block + '\n'.join(lines[insert_line:])
+                
+                text = text[:match.start(1)] + new_body + text[match.end(1):]
+                
+                self.log(f"Added GenericAssetHandler registration for {asset_name}")
+        
+        # Find Reflect() method
+        reflect_pattern = r'void\s+' + re.escape(sys_comp_name) + r'::Reflect\s*\([^)]*\)\s*\{([^}]*)\}'
+        match = re.search(reflect_pattern, text, flags=re.S)
+        
+        if match:
+            body = match.group(1)
+            
+            # Check if already reflected
+            reflect_call = f'{asset_name}::Reflect(context);'
+            if reflect_call in body:
+                self.log(f"Reflect already present for {asset_name}")
+            else:
+                # Detect indent - look for existing Reflect calls
+                indent_match = re.search(r'\n(\s+)\w+::Reflect', body)
+                if not indent_match:
+                    indent_match = re.search(r'\n(\s+)\S', body)
+                
+                if indent_match:
+                    base_indent = indent_match.group(1)
+                else:
+                    base_indent = '        '
+                
+                # Build reflect call (no newline prefix - keep tight)
+                reflect_line = f'{base_indent}{reflect_call}\n'
+                
+                # Insert at beginning
+                lines = body.split('\n')
+                insert_line = 0
+                for i, line in enumerate(lines):
+                    if line.strip():
+                        insert_line = i
+                        break
+                
+                if insert_line == 0 and not lines[0].strip():
+                    new_body = lines[0] + '\n' + reflect_line + '\n'.join(lines[1:])
+                else:
+                    new_body = '\n'.join(lines[:insert_line]) + '\n' + reflect_line + '\n'.join(lines[insert_line:])
+                
+                text = text[:match.start(1)] + new_body + text[match.end(1):]
+                
+                self.log(f"Added Reflect call for {asset_name}")
+        
+        cpp_path.write_text(text, encoding="utf-8", newline="\n")
+        self.log(f"Updated {sys_comp_name}.cpp")
+
+    def _register_asset_setreg(self, setreg_path: Optional[Path], asset_name: str, asset_ext: str, dest_root: Path):
+        """Update AssetProcessorGemConfig.setreg with asset info"""
+        
+        if not setreg_path:
+            self.log("Warning: No setreg path provided, skipping setreg update")
+            return
+        
+        if not setreg_path.exists():
+            self.log(f"Warning: Setreg file does not exist: {setreg_path}")
+            return
+        
+        self.log(f"Updating setreg for {asset_name} at {setreg_path}...")
+        
+        # Extract GUID from the asset
+        guid = self._extract_asset_guid(dest_root, asset_name)
+        if not guid:
+            guid = "{00000000-0000-0000-0000-000000000000}"
+            self.log("Warning: Using placeholder GUID")
+        else:
+            self.log(f"Using GUID: {guid}")
+        
+        # Load setreg data
+        try:
+            data = json.loads(setreg_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            self.log(f"Could not load existing setreg, creating new: {e}")
+            data = {"Amazon": {"AssetProcessor": {"Settings": {}}}}
+        
+        # Ensure structure exists
+        if "Amazon" not in data:
+            data["Amazon"] = {}
+        if "AssetProcessor" not in data["Amazon"]:
+            data["Amazon"]["AssetProcessor"] = {}
+        if "Settings" not in data["Amazon"]["AssetProcessor"]:
+            data["Amazon"]["AssetProcessor"]["Settings"] = {}
+        
+        settings = data["Amazon"]["AssetProcessor"]["Settings"]
+        
+        # Update or add RC entry
+        rc_key = f"RC {asset_name}"
+        settings[rc_key] = {
+            "glob": f"*.{asset_ext}",
+            "params": "copy",
+            "productAssetType": guid
+        }
+        
+        # Write back
+        setreg_path.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8", newline="\n")
+        self.log(f"Successfully updated setreg: {setreg_path}")
+
+    def _extract_asset_guid(self, dest_root: Path, asset_name: str) -> Optional[str]:
+        """Extract the asset's type UUID from AZ_RTTI or AZ_TYPE_INFO"""
+        self.log(f"Extracting GUID for {asset_name}...")
+        
+        guid_pattern = r'\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}'
+        
+        # Look in the asset's .h and .cpp files
+        candidates = [
+            dest_root / "Source" / f"{asset_name}.h",
+            dest_root / "Source" / f"{asset_name}.cpp",
+            dest_root / "Code" / "Source" / f"{asset_name}.h",
+            dest_root / "Code" / "Source" / f"{asset_name}.cpp",
+        ]
+        
+        for candidate in candidates:
+            if not candidate.is_file():
+                continue
+            
+            try:
+                text = candidate.read_text(encoding="utf-8", errors="ignore")
+            except:
+                continue
+            
+            # Look for AZ_RTTI(AssetName, "{GUID}", ...)
+            rtti_match = re.search(
+                rf'AZ_RTTI\s*\(\s*{re.escape(asset_name)}\s*,\s*"?({guid_pattern})"?',
+                text
+            )
+            if rtti_match:
+                guid = rtti_match.group(1)
+                self.log(f"Found GUID in AZ_RTTI: {guid}")
+                return guid
+            
+            # Look for AZ_TYPE_INFO(AssetName, "{GUID}")
+            type_info_match = re.search(
+                rf'AZ_TYPE_INFO\s*\(\s*{re.escape(asset_name)}\s*,\s*"?({guid_pattern})"?',
+                text
+            )
+            if type_info_match:
+                guid = type_info_match.group(1)
+                self.log(f"Found GUID in AZ_TYPE_INFO: {guid}")
+                return guid
+        
+        # Fallback: check DataAssetSystemComponent for AZ_COMPONENT_IMPL
+        namespace = asset_name.replace("Asset", "").replace("Data", "")  # Best guess
+        sys_comp_candidates = [
+            dest_root / "Source" / f"{namespace}DataAssetSystemComponent.cpp",
+            dest_root / "Code" / "Source" / f"{namespace}DataAssetSystemComponent.cpp",
+        ]
+        
+        for candidate in sys_comp_candidates:
+            if not candidate.is_file():
+                continue
+            
+            try:
+                text = candidate.read_text(encoding="utf-8", errors="ignore")
+            except:
+                continue
+            
+            # Look for AZ_COMPONENT_IMPL(..., "{GUID}")
+            comp_match = re.search(
+                rf'AZ_COMPONENT_IMPL\s*\([^,]+,\s*"[^"]*",\s*"?({guid_pattern})"?',
+                text
+            )
+            if comp_match:
+                guid = comp_match.group(1)
+                self.log(f"Found GUID in AZ_COMPONENT_IMPL: {guid}")
+                return guid
+        
+        self.log("Warning: Could not extract GUID from asset")
+        return None
 
 
 # ============================================================================
@@ -1641,10 +2076,23 @@ def main():
             return app.exec()
         else:
             # Use existing QApplication (inside O3DE Editor)
+            # Use setAttribute to ensure window is deleted when closed
             window = ClassWizardWindow(engine_path, project_path)
+            window.setAttribute(Qt.WA_DeleteOnClose, True)
             window.show()
             
-            # Don't call app.exec() - let O3DE's event loop handle it
+            # Keep window alive - store reference
+            if not hasattr(app, '_o3de_wizard_windows'):
+                app._o3de_wizard_windows = []
+            app._o3de_wizard_windows.append(window)
+            
+            # Clean up reference when window closes
+            def cleanup():
+                if window in app._o3de_wizard_windows:
+                    app._o3de_wizard_windows.remove(window)
+            
+            window.destroyed.connect(cleanup)
+            
             return 0
 
 if __name__ == "__main__":
