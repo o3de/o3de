@@ -1440,7 +1440,7 @@ class ClassWizardWindow(QMainWindow):
         # Target combo
         self.target_combo = QComboBox()
         self.target_combo.currentTextChanged.connect(self._on_target_changed)
-        layout.addRow("Target:", self.target_combo)
+        self._add_form_row(layout, "Target:", self.target_combo)
         
         # Target path with browse
         path_layout = QHBoxLayout()
@@ -1450,17 +1450,17 @@ class ClassWizardWindow(QMainWindow):
         self.browse_btn.clicked.connect(self._browse_destination)
         path_layout.addWidget(self.target_path_edit)
         path_layout.addWidget(self.browse_btn)
-        layout.addRow("Path:", path_layout)
+        self._add_form_row(layout, "Path:", path_layout)
         
         # Package (build target)
         self.package_combo = QComboBox()
-        layout.addRow("Package:", self.package_combo)
+        self._add_form_row(layout, "Package:", self.package_combo)
         
         # Namespace
         self.namespace_edit = QLineEdit()
         if self.project_path:
             self.namespace_edit.setText(self.project_path.stem)
-        layout.addRow("Namespace:", self.namespace_edit)
+        self._add_form_row(layout, "Namespace:", self.namespace_edit)
         
         group.setLayout(layout)
         return group
@@ -1473,7 +1473,7 @@ class ClassWizardWindow(QMainWindow):
         # Component name
         self.component_name_edit = QLineEdit()
         self.component_name_edit.setPlaceholderText("Enter component name...")
-        layout.addRow("Name:", self.component_name_edit)
+        self._add_form_row(layout, "Name:", self.component_name_edit)
         
         # Component type
         self.component_type_combo = QComboBox()
@@ -1481,7 +1481,7 @@ class ClassWizardWindow(QMainWindow):
             "Basic", "System", "Level", "LyShine UI", "Data Asset"
         ])
         self.component_type_combo.currentTextChanged.connect(self._on_component_type_changed)
-        layout.addRow("Type:", self.component_type_combo)
+        self._add_form_row(layout, "Type:", self.component_type_combo)
         
         # Dynamic fields container
         self.dynamic_layout = QFormLayout()
@@ -1548,6 +1548,12 @@ class ClassWizardWindow(QMainWindow):
         widget.setLayout(layout)
         return widget
     
+    def _add_form_row(self, layout, text, field_widget):
+        label = QLabel(text)
+        # Tag this as a form label so we can style it
+        label.setProperty("formLabel", True)
+        layout.addRow(label, field_widget)
+    
     def _apply_styles(self):
         """Apply stylesheet to the window"""
         self.setStyleSheet("""
@@ -1570,12 +1576,18 @@ class ClassWizardWindow(QMainWindow):
             QLabel {
                 color: #cccccc;
             }
+            QLabel[formLabel="true"] {
+                font-size: 9.5pt;
+                min-width: 90px;
+                max-width: 90px;
+            }
             QLineEdit, QComboBox, QTextEdit {
                 background-color: #3c3c3c;
                 color: #cccccc;
                 border: 1px solid #555555;
                 border-radius: 3px;
                 padding: 5px;
+                font-size: 9.5pt;
             }
             QLineEdit:focus, QComboBox:focus {
                 border: 1px solid #0078d4;
@@ -1612,6 +1624,7 @@ class ClassWizardWindow(QMainWindow):
             QCheckBox {
                 color: #cccccc;
                 spacing: 8px;
+                font-size: 9.5pt;
             }
             QCheckBox::indicator {
                 width: 18px;
@@ -1751,11 +1764,13 @@ class ClassWizardWindow(QMainWindow):
         if comp_type == "Data Asset":
             ext_edit = QLineEdit("mydata")
             ext_edit.setToolTip("File extension for the asset (without dot)")
-            self.dynamic_layout.addRow("File Extension:", ext_edit)
+            # self.dynamic_layout.addRow("File Extension:", ext_edit)
+            self._add_form_row(self.dynamic_layout, "File Extension:", ext_edit)
             
             group_edit = QLineEdit("DataAssets")
             group_edit.setToolTip("Asset group name for organization")
-            self.dynamic_layout.addRow("Group:", group_edit)
+            #self.dynamic_layout.addRow("Group:", group_edit)
+            self._add_form_row(self.dynamic_layout, "Group:", group_edit)
     
     def _browse_destination(self):
         """Browse for destination directory"""
