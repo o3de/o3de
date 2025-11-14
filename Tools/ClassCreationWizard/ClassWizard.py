@@ -408,7 +408,8 @@ class ComponentCreator:
                 suffix = COMPONENT_TYPE_SUFFIXES.get(config['component_type'], 'Component')
                 self._register_component(
                     dest_root=config['dest_dir'],
-                    component_name=config['component_name'] + suffix,
+                    component_name=config['component_name'],
+                    component_suffix=suffix,
                     component_type=config['component_type'],
                     namespace=config['namespace'],
                     target=config.get('build_target'),
@@ -802,7 +803,7 @@ class ComponentCreator:
         
         self.log(f"Warning: Could not find target block for {target.name}")
         
-    def _register_component(self, dest_root: Path, component_name: str,
+    def _register_component(self, dest_root: Path, component_name: str, component_suffix: str,
                         component_type: str, namespace: str,
                         target: Optional[CMakeTarget],
                         config: Dict[str, Any],
@@ -810,20 +811,48 @@ class ComponentCreator:
         """Register the component in the gem"""
         self.log("Registering component...")
         
+        composite_name = component_name+component_suffix
         try:
             # Register in CMake files
             if target:
-                self._register_file_list(dest_root, component_name, target)
+                self._register_file_list(dest_root, composite_name, target)
+                
+                # Check if interface header was created (after merge)
+                # The path structure is: <dest_root>/Include/<namespace>/<component>Interface.h
+                interface_hdr_path = dest_root / "Include" / namespace / f"{component_name}Interface.h"
+                
+                self.log(f"Checking for interface header at: {interface_hdr_path}")
+                
+                if interface_hdr_path.exists():
+                    self.log("Interface header found, registering to INTERFACE target...")
+                    
+                    # Get cmake path from target
+                    cmake_dir = target.file.parent
+                    
+                    # Scan for all targets
+                    all_targets = CMakeAnalyzer.scan_targets(cmake_dir, namespace)
+                    
+                    if all_targets:
+                        # Find best target for interface
+                        interface_target = self._find_interface_target(all_targets, namespace, target)
+                        
+                        # Register the header
+                        self._register_interface_header(dest_root, namespace, component_name, interface_target)
+                    else:
+                        self.log("Warning: Could not find targets for interface header registration")
+                else:
+                    self.log("No interface header found, skipping interface registration")
+            
             
             # Register in module descriptor (for Basic, Level, LyShine UI)
             if component_type in ["Basic", "Level", "LyShine UI"]:
-                self._register_module_descriptor(dest_root, component_name, namespace, "runtime")
+                self._register_module_descriptor(dest_root, composite_name, namespace, "runtime")
             
             # Register system component (for System type)
             if component_type == "System":
-                self._register_module_descriptor(dest_root, component_name, namespace, "runtime")
-                self._register_system_component(dest_root, namespace, component_name, "runtime")
-                self._register_system_component(dest_root, namespace, component_name, "editor")
+                self._register_module_descriptor(dest_root, composite_name, namespace, "runtime")
+                self._register_system_component(dest_root, namespace, composite_name, "runtime")
+                self._register_system_component(dest_root, namespace, composite_name, "editor")
             
             # For Data Asset: register the DataAssetSystemComponent
             if component_type == "Data Asset":
@@ -848,11 +877,11 @@ class ComponentCreator:
                 self._register_system_component(dest_root, namespace, sys_comp_name, "editor")
                 
                 # Register the asset itself in the system component
-                self._register_generic_asset(dest_root, namespace, component_name, asset_ext, asset_group)
+                self._register_generic_asset(dest_root, namespace, composite_name, asset_ext, asset_group)
                 
                 # Update the setreg file (if it exists)
                 if setreg_path:
-                    self._register_asset_setreg(setreg_path, component_name, asset_ext, dest_root)
+                    self._register_asset_setreg(setreg_path, composite_name, asset_ext, dest_root)
             
             self.log("Registration complete!")
             
@@ -923,6 +952,113 @@ class ComponentCreator:
             text = text.rstrip() + f"\nset(FILES\n    {rel_hdr}\n    {rel_cpp}\n)\n"
         
         files_cmake_path.write_text(text, encoding="utf-8", newline="\n")
+
+    def _find_interface_target(self, targets: List[CMakeTarget], gem_name: str, fallback_target: CMakeTarget) -> CMakeTarget:
+        """Find the best target for interface headers (INTERFACE > .API > fallback)"""
+        
+        # Priority 1: INTERFACE target
+        for target in targets:
+            if 'INTERFACE' in target.name.upper():
+                self.log(f"Found INTERFACE target: {target.name}")
+                return target
+        
+        # Priority 2: .API target
+        for target in targets:
+            if target.name.endswith('.API') or '.API.' in target.name:
+                self.log(f"Found API target: {target.name}")
+                return target
+        
+        # Priority 3: Fallback to provided target
+        self.log(f"Using fallback target: {fallback_target.name}")
+        return fallback_target
+    
+    def _register_interface_header(self, dest_root: Path, namespace: str, 
+                                component_name: str, interface_target: CMakeTarget):
+        """Register interface header file to INTERFACE/API target"""
+        self.log(f"Registering interface header in target '{interface_target.name}'...")
+        
+        cmake_path = interface_target.file
+        # Correct relative path from CMakeLists.txt location
+        rel_hdr = f"Include/{namespace}/{component_name}Interface.h"
+        
+        # Check if this is an o3de_add_target
+        if interface_target.kind == "o3de_add_target":
+            # If target has FILES_CMAKE includes, update those
+            if interface_target.files_cmake_list:
+                for files_cmake in interface_target.files_cmake_list:
+                    include_path = (cmake_path.parent / files_cmake).resolve()
+                    
+                    if include_path.exists():
+                        self._update_interface_files_cmake(include_path, rel_hdr)
+                        self.log(f"Updated interface header in: {files_cmake}")
+                        return
+            
+            # Otherwise, add to target directly
+            self._add_interface_to_target(cmake_path, interface_target, rel_hdr)
+        else:
+            # For plain CMake targets, just add via target_sources
+            self._add_interface_to_target(cmake_path, interface_target, rel_hdr)
+
+    def _update_interface_files_cmake(self, files_cmake_path: Path, rel_hdr: str):
+        """Update a FILES_CMAKE file with interface header"""
+        if files_cmake_path.exists():
+            text = files_cmake_path.read_text(encoding="utf-8")
+        else:
+            text = "set(FILES\n)\n"
+        
+        # Check if already present
+        if rel_hdr in text:
+            self.log(f"Interface header already in {files_cmake_path.name}")
+            return
+        
+        # Find set(FILES ...) block
+        match = re.search(r'set\s*\(\s*FILES\b(.*?)(\))', text, flags=re.S | re.M)
+        if match:
+            end_pos = match.end(1)
+            text = text[:end_pos] + f"    {rel_hdr}\n" + text[end_pos:]
+        else:
+            # Create new block
+            text = text.rstrip() + f"\nset(FILES\n    {rel_hdr}\n)\n"
+        
+        files_cmake_path.write_text(text, encoding="utf-8", newline="\n")
+        self.log(f"Added interface header to {files_cmake_path.name}")
+
+    def _add_interface_to_target(self, cmake_path: Path, target: CMakeTarget, rel_hdr: str):
+        """Add interface header directly to target using target_sources"""
+        text = cmake_path.read_text(encoding="utf-8")
+        
+        # Check if already added
+        if rel_hdr in text:
+            self.log(f"Interface header already in {cmake_path.name}")
+            return
+        
+        # Look for existing target_sources for this target with INTERFACE
+        pattern = rf'target_sources\s*\(\s*{re.escape(target.name)}\s+INTERFACE\s+([^)]*)\)'
+        match = re.search(pattern, text, flags=re.S)
+        
+        if match:
+            # Add to existing INTERFACE block
+            content = match.group(1)
+            # Find indent
+            indent_match = re.search(r'\n(\s+)', content)
+            indent = indent_match.group(1) if indent_match else '    '
+            
+            # Add before closing paren
+            new_content = content.rstrip() + f'\n{indent}{rel_hdr}\n'
+            new_text = text[:match.start(1)] + new_content + text[match.end(1):]
+            text = new_text
+        else:
+            # Create new target_sources block
+            append = (
+                f"\n# Interface header\n"
+                f"target_sources({target.name} INTERFACE\n"
+                f"    {rel_hdr}\n"
+                f")\n"
+            )
+            text = text.rstrip() + append
+        
+        cmake_path.write_text(text, encoding="utf-8", newline="\n")
+        self.log(f"Added interface header to {target.name}")
     
     def _register_module_descriptor(self, dest_root: Path, component_name: str, 
                                     namespace: str, module_kind: str):
@@ -980,55 +1116,61 @@ class ComponentCreator:
             return
         
         # Find m_descriptors.insert block
-        pattern = r'(m_descriptors\.insert\s*\(\s*m_descriptors\.end\s*\(\s*\)\s*,\s*\{)\s*([^}]*?)(\s*\}\s*\)\s*;)'
-        
+        pattern = r'(m_descriptors\.insert\s*\(\s*m_descriptors\.end\s*\(\s*\)\s*,\s*\{)([^}]*)(\}\s*\)\s*;)'
         match = re.search(pattern, text, flags=re.S)
+
         if match:
-            prefix = match.group(1)
-            inner = match.group(2)
-            suffix = match.group(3)
-            
-            # Split into lines
-            inner_lines = inner.split('\n')
-            
-            # Find existing descriptors to detect indent
-            descriptor_indent = None
-            for line in inner_lines:
-                if '::CreateDescriptor()' in line:
-                    descriptor_indent = re.match(r'(\s*)', line).group(1)
-                    break
-            
-            if not descriptor_indent:
-                # Default indent - 4 spaces more than the opening brace line
-                base_match = re.match(r'(\s*)', prefix)
-                base_indent = base_match.group(1) if base_match else ''
-                descriptor_indent = base_indent + '    '
-            
-            # Remove trailing whitespace/empty lines
-            while inner_lines and not inner_lines[-1].strip():
-                inner_lines.pop()
-            
-            # Ensure last descriptor has a comma
-            if inner_lines and inner_lines[-1].strip():
-                last_line = inner_lines[-1]
-                if not last_line.rstrip().endswith(','):
-                    inner_lines[-1] = last_line.rstrip() + ','
-            
+            prefix = match.group(1)   # 'm_descriptors.insert(...{'
+            inner  = match.group(2)   # contents between '{' and '}'
+            suffix = match.group(3)   # '});'
+
+            # ----- NEW: compute block indent (indent of the m_descriptors line) -----
+            start = match.start()  # index of 'm' in m_descriptors
+            line_start = text.rfind('\n', 0, start)
+            if line_start == -1:
+                block_indent = ""
+            else:
+                block_indent = text[line_start + 1:start]
+            # ------------------------------------------------------------------------
+
+            # Detect indent from an existing descriptor line if possible
+            entry_indent_match = re.search(r'\n(\s*).*::CreateDescriptor\(\)', inner)
+            if entry_indent_match:
+                entry_indent = entry_indent_match.group(1)
+            else:
+                # Fallback: entries indented one level more than the block
+                entry_indent = block_indent + "    "
+
+            # Split into lines and remove empty/whitespace-only lines
+            lines = inner.split('\n')
+            cleaned = [line for line in lines if line.strip()]
+
+            # Ensure last existing descriptor has a trailing comma
+            if cleaned:
+                last = cleaned[-1].rstrip()
+                if not last.endswith(','):
+                    cleaned[-1] = last + ','
+
             # Add new descriptor with consistent indent
-            inner_lines.append(f'{descriptor_indent}{descriptor_line},')
-            
-            # Rebuild
-            new_inner = '\n'.join(inner_lines)
-            new_block = prefix + '\n' + new_inner + '\n' + suffix
-            
+            cleaned.append(f"{entry_indent}{descriptor_line},")
+
+            # Rebuild inner block:
+            #   newline
+            #   entries
+            #   newline + block_indent  (so the closing '});' aligns with the insert)
+            new_inner = '\n' + '\n'.join(cleaned) + '\n' + block_indent
+
+            new_block = prefix + new_inner + suffix
             text = text[:match.start()] + new_block + text[match.end():]
-            
+
             self.log(f"Added descriptor for {component_name}")
         else:
             self.log("Warning: Could not find m_descriptors.insert block")
         
         module_path.write_text(text, encoding="utf-8", newline="\n")
         self.log(f"Updated module: {module_path.name}")
+
+
     
     def _register_system_component(self, dest_root: Path, namespace: str,
                                 component_name: str, module_kind: str):
@@ -1084,14 +1226,23 @@ class ComponentCreator:
         
         if match:
             list_content = match.group(1)
-            
-            # Find indent from existing entries
-            indent_match = re.search(r'\n(\s+)azrtti_typeid', list_content)
-            if indent_match:
-                indent = indent_match.group(1)
+
+            # ----- NEW: compute block indent (indent of the 'return AZ::ComponentTypeList' line) -----
+            start = match.start()  # index of 'r' in return
+            line_start = text.rfind('\n', 0, start)
+            if line_start == -1:
+                block_indent = ""
             else:
-                # Default: reasonable indent
-                indent = "                "  # 16 spaces
+                block_indent = text[line_start + 1:start]
+            # -----------------------------------------------------------------------------------------
+
+            # Find indent from existing entries
+            entry_indent_match = re.search(r'\n(\s+)azrtti_typeid', list_content)
+            if entry_indent_match:
+                entry_indent = entry_indent_match.group(1)
+            else:
+                # Default: entries indented one level more than the block
+                entry_indent = block_indent + "    "
             
             # Split into lines and clean up
             lines = list_content.split('\n')
@@ -1102,18 +1253,22 @@ class ComponentCreator:
                 cleaned[-1] = cleaned[-1].rstrip() + ','
             
             # Add new entry with consistent indent
-            cleaned.append(f'{indent}{to_insert},')
+            cleaned.append(f'{entry_indent}{to_insert},')
             
-            # Rebuild with proper formatting
-            new_content = '\n' + '\n'.join(cleaned) + '\n'
+            # Rebuild with proper formatting:
+            #   newline
+            #   entries
+            #   newline + block_indent  (so the closing '};' aligns with the return line)
+            new_content = '\n' + '\n'.join(cleaned) + '\n' + block_indent
             
-            # Replace
+            # Replace just the contents between '{' and '}'
             new_text = text[:match.start(1)] + new_content + text[match.end(1):]
             
             module_path.write_text(new_text, encoding="utf-8", newline="\n")
             self.log(f"Registered in {module_kind} module: {module_path.name}")
         else:
             self.log(f"Warning: Could not find GetRequiredSystemComponents in {module_kind} module")
+
 
     def _register_generic_asset(self, dest_root: Path, namespace: str, asset_name: str, 
                             asset_ext: str = "mydata", asset_group: str = "Other"):
