@@ -109,6 +109,12 @@ namespace AZ
             copyImage.m_sourceImage = image;
             copyImage.m_sourceSize = image->GetDescriptor().m_size;
             copyImage.m_sourceSubresource.m_arraySlice = m_sourceArraySlice;
+            if ((image->GetAspectFlags() & RHI::ImageAspectFlags::Depth) != RHI::ImageAspectFlags::None)
+            {
+                // Only the depth is previewed, so no need to copy a potential stencil part as well
+                copyImage.m_sourceSubresource.m_aspect = RHI::ImageAspect::Depth;
+                copyImage.m_destinationSubresource.m_aspect = RHI::ImageAspect::Depth;
+            }
             copyImage.m_destinationImage = context.GetImage(m_destAttachmentId);
             
             m_copyItem = copyImage;
