@@ -19,6 +19,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QMenu>
+#include <QBrush>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
@@ -26,13 +27,8 @@
 
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/Algorithms.h>
-
-#include <MysticQt/Source/MysticQtManager.h>
-
-#include <EMotionFX/Source/BlendTree.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
-
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MotionData/MotionData.h>
@@ -41,18 +37,15 @@
 #include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/MotionEventTable.h>
-#include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "../../../../EMStudioSDK/Source/MainWindow.h"
 
 namespace EMStudio
 {
     // the constructor
     TrackDataWidget::TrackDataWidget(TimeViewPlugin* plugin, QWidget* parent)
-        : QOpenGLWidget(parent)
-        , QOpenGLFunctions()
+        : QWidget(parent)
         , m_brushBackground(QColor(40, 45, 50), Qt::SolidPattern)
         , m_brushBackgroundClipped(QColor(40, 40, 40), Qt::SolidPattern)
         , m_brushBackgroundOutOfRange(QColor(35, 35, 35), Qt::SolidPattern)
@@ -101,26 +94,14 @@ namespace EMStudio
     {
     }
 
-
-    // init gl
-    void TrackDataWidget::initializeGL()
+    void TrackDataWidget::resizeEvent(QResizeEvent* event)
     {
-        initializeOpenGLFunctions();
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    }
-
-
-    // resize
-    void TrackDataWidget::resizeGL(int w, int h)
-    {
-        MCORE_UNUSED(w);
-        MCORE_UNUSED(h);
+        QWidget::resizeEvent(event);
         if (m_plugin)
         {
             m_plugin->SetRedrawFlag();
         }
     }
-
 
     // calculate the selection rect
     void TrackDataWidget::CalcSelectRect(QRect& outRect)
@@ -134,15 +115,14 @@ namespace EMStudio
     }
 
 
-    void TrackDataWidget::paintGL()
+    void TrackDataWidget::paintEvent(QPaintEvent* event)
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        QWidget::paintEvent(event);
 
-        // start painting
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing, false);
 
-        QRect rect(0, 0, geometry().width(), geometry().height());
+        const QRect rect(0, 0, geometry().width(), geometry().height());
 
         // draw a background rect
         painter.setPen(Qt::NoPen);
@@ -2194,7 +2174,7 @@ namespace EMStudio
             // get the position
             if (localPos.y() < 0)
             {
-                return QOpenGLWidget::event(event);
+                return QWidget::event(event);
             }
 
             // if we have a recording
@@ -2228,7 +2208,7 @@ namespace EMStudio
                 TimeTrackElement*   element = m_plugin->GetElementAt(localPos.x(), localPos.y());
                 if (element == nullptr)
                 {
-                    return QOpenGLWidget::event(event);
+                    return QWidget::event(event);
                 }
 
                 QString toolTipString;
@@ -2242,7 +2222,7 @@ namespace EMStudio
             }
         }
 
-        return QOpenGLWidget::event(event);
+        return QWidget::event(event);
     }
 
     // update the rects
