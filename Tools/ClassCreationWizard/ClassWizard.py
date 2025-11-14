@@ -1658,7 +1658,7 @@ class ClassWizardWindow(QMainWindow):
         layout.addWidget(self.auto_register_check)
         
         self.remove_comments_check = QCheckBox("Remove Comments")
-        self.remove_comments_check.setChecked(True)
+        self.remove_comments_check.setChecked(False)
         self.remove_comments_check.setToolTip("Strip comments from generated files")
         layout.addWidget(self.remove_comments_check)
         
