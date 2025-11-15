@@ -337,25 +337,6 @@ typedef struct _SECURITY_ATTRIBUTES
 extern bool QueryPerformanceCounter(LARGE_INTEGER*);
 extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
 
-static pthread_mutex_t mutex_t;
-template<typename T>
-volatile T InterlockedIncrement(volatile T* pT)
-{
-    pthread_mutex_lock(&mutex_t);
-    ++(*pT);
-    pthread_mutex_unlock(&mutex_t);
-    return *pT;
-}
-
-template<typename T>
-volatile T InterlockedDecrement(volatile T* pT)
-{
-    pthread_mutex_lock(&mutex_t);
-    --(*pT);
-    pthread_mutex_unlock(&mutex_t);
-    return *pT;
-}
-
 #if 0
 template<typename S, typename T>
 inline const S& min(const S& rS, const T& rT)
