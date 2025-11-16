@@ -210,7 +210,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
                 pakList.emplace(levelContainerPakPath);
                 continue;
             }
-        } while (handle = pPak->FindNext(handle));
+        } while ((handle = pPak->FindNext(handle)));
 
         pPak->FindClose(handle);
     }
@@ -305,7 +305,7 @@ void CLevelSystem::PopulateLevels(
                     *pExistingInfo = levelInfo;
                 }
             }
-        } while (handle = pPak->FindNext(handle));
+        } while ((handle = pPak->FindNext(handle)));
 
         pPak->FindClose(handle);
     }

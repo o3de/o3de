@@ -56,7 +56,7 @@ namespace PhysX
             return;
         }
 
-        if (m_pxStaticRigidBody = PxActorFactories::CreatePxStaticRigidBody(configuration))
+        if ((m_pxStaticRigidBody = PxActorFactories::CreatePxStaticRigidBody(configuration)))
         {
             m_actorUserData = ActorData(m_pxStaticRigidBody.get());
             m_actorUserData.SetRigidBodyStatic(this);
