@@ -37,13 +37,6 @@ namespace UnitTest
 
             entity->Activate();
             EXPECT_EQ(AZ::Entity::State::Active, entity->GetState());
-
-            SurfaceData::SurfaceDataRegistryHandle providerHandle(AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfaceDataProviderHandle(entity->GetId()));
-            if (providerHandle == SurfaceData::InvalidSurfaceDataRegistryHandle)
-            {
-                // Sends out the message that will cause the entity to initialize its data
-                Physics::RigidBodyNotificationBus::Event(entity->GetId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, entity->GetId());
-            }
         }
 
         template <typename Component, typename Configuration>

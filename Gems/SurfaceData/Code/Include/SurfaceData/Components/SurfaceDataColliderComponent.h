@@ -14,7 +14,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
-#include <AzFramework/Physics/RigidBodyBus.h>
 
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
@@ -45,8 +44,7 @@ namespace SurfaceData
         , public AZ::TransformNotificationBus::Handler
         , public SurfaceDataProviderRequestBus::Handler
         , private SurfaceDataModifierRequestBus::Handler
-        , public Physics::ColliderComponentEventBus::Handler
-        , private Physics::RigidBodyNotificationBus::Handler
+        , public Physics::ColliderComponentEventBus::Handler        
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -66,11 +64,7 @@ namespace SurfaceData
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
-        bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
-
-        //////////////////////////////////////////////////////////////////////////
-        // RigidBodyNotificationBus
-        void OnPhysicsEnabled(const AZ::EntityId& entityId) override;        
+        bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;                
 
         //////////////////////////////////////////////////////////////////////////
         // ColliderComponentEventBus
