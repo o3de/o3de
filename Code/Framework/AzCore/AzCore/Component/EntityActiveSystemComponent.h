@@ -36,12 +36,11 @@ namespace AZ
         //! @}
 
         static constexpr size_t kInvalidIndex = std::numeric_limits<size_t>::max();
+        
+        size_t GetActiveTypeIndexByName(AZStd::string typeName) override;
+        size_t GetActiveTypeIndexById(AZ::Crc32 typeNameId) override;
 
-        size_t GetActiveTypeIndexByName(AZStd::string typeName) const noexcept override;
-        size_t GetActiveTypeIndexById(AZ::Crc32 typeNameId) const noexcept override;
-        size_t RegisterEntityActiveTypeByName(AZStd::string typeName) override;
-        size_t RegisterEntityActiveType(AZ::Crc32 typeNameId) override;
-
+        size_t ScanListForIndex(AZ::Crc32 typeNameId);
     private:
         AZStd::vector<AZ::Crc32> m_activeTypeNameToIndex = { ENTITY_ACTIVE_TYPE_NAME };
         static constexpr size_t s_maxStateFlags = 32;

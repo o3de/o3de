@@ -19,10 +19,8 @@ namespace AZ
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        virtual size_t GetActiveTypeIndexByName(AZStd::string typeName) const noexcept = 0;
-        virtual size_t GetActiveTypeIndexById(AZ::Crc32 typeNameId) const noexcept = 0;
-        virtual size_t RegisterEntityActiveTypeByName(AZStd::string typeName) = 0;
-        virtual size_t RegisterEntityActiveType(AZ::Crc32 typeNameId) = 0;
+        virtual size_t GetActiveTypeIndexByName(AZStd::string typeName) = 0;
+        virtual size_t GetActiveTypeIndexById(AZ::Crc32 typeNameId) = 0;
     };
     using EntityActiveSystemRequestBus = AZ::EBus<EntityActiveSystemRequests>;
 } // namespace AZ

@@ -155,7 +155,7 @@ namespace AzFramework
     {
         if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
         {
-            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::RegisterEntityActiveType, PARENT_ACTIVE_TYPE_NAME);
+            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
         }
 
         AZ::TransformBus::Handler::BusConnect(m_entity->GetId());
@@ -165,18 +165,21 @@ namespace AzFramework
         SetParentImpl(m_parentId, keepWorldTm);
     }
 
-    void TransformComponent::Activate() {}
+    void TransformComponent::Activate() 
+    {
+        m_entityId = GetEntityId();
+    }
 
     void TransformComponent::Deactivate() {}
 
     
     TransformComponent ::~TransformComponent()
     {
-        AZ::TransformNotificationBus::Event(m_parentId, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
+        AZ::TransformNotificationBus::Event(m_parentId, &AZ::TransformNotificationBus::Events::OnChildRemoved, m_entityId);
         auto parentTransform = AZ::TransformBus::FindFirstHandler(m_parentId);
         if (parentTransform)
         {
-            parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
+            parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, m_entityId);
         }
 
         m_notificationBus = nullptr;
@@ -537,6 +540,12 @@ namespace AzFramework
                 "Entity '%s' %s has static transform, but parent has non-static transform. This may lead to unexpected movement.",
                 GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
 
+            
+            if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
+            {
+                AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
+            }
+
             m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, parentEntity->IsEffectivelyActive());
             if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
             {
@@ -558,6 +567,11 @@ namespace AzFramework
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
 
+        if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
+        {
+            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
+        }
+
         m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, true);
         if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
         {
@@ -569,6 +583,11 @@ namespace AzFramework
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
 
+        if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
+        {
+            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
+        }
+
         m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, false);
         if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
         {
@@ -579,6 +598,13 @@ namespace AzFramework
     void TransformComponent::OnEntityDestruction([[maybe_unused]] const AZ::EntityId& parentEntityId)
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
+
+        // Catch if the destruction is a false fire from runtime start.
+        if(m_entity->GetState() != AZ::Entity::State::Init && m_entity->GetState() != AZ::Entity::State::Active)
+        {
+            return;
+        }
+        
         m_parentTM = nullptr;
         m_parentActive = false;
         SetParentImpl(AZ::EntityId(), true);

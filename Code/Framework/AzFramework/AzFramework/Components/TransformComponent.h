@@ -186,6 +186,7 @@ namespace AzFramework
         AZ::Transform m_localTM = AZ::Transform::CreateIdentity(); ///< Local transform relative to parent transform (same as worldTM if no parent).
         AZ::Transform m_worldTM = AZ::Transform::CreateIdentity(); ///< World transform including parent transform (same as localTM if no parent).
 
+        AZ::EntityId m_entityId; ///< Stored for Deconstructor event/bus firing.
         AZ::EntityId m_parentId; ///< If valid, this transform is parented to m_parentId.
         AZ::TransformInterface* m_parentTM = nullptr; ///< Cached - pointer to parent transform, to avoid extra calls. Valid only when if it's present.
         AZ::TransformNotificationBus::BusPtr m_notificationBus; ///< Cached bus pointer to the notification bus.

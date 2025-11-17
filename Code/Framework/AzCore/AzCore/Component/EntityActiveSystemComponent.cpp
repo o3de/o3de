@@ -39,12 +39,31 @@ namespace AZ
         m_activeTypeNameToIndex.clear();
     }
 
-    size_t EntityActiveSystemComponent::GetActiveTypeIndexByName(AZStd::string typeName) const noexcept
+    size_t EntityActiveSystemComponent::GetActiveTypeIndexByName(AZStd::string typeName)
     {
         return GetActiveTypeIndexById(AZ::Crc32{ typeName });
     }
 
-    size_t EntityActiveSystemComponent::GetActiveTypeIndexById(AZ::Crc32 typeNameId) const noexcept
+    size_t EntityActiveSystemComponent::GetActiveTypeIndexById(AZ::Crc32 typeNameId)
+    {
+        if (m_activeTypeNameToIndex.size() >= s_maxStateFlags)
+        {
+            return kInvalidIndex;
+        }
+
+        size_t index = ScanListForIndex(typeNameId);
+        
+        if(index != kInvalidIndex)
+        {
+            return index;
+        }
+
+        m_activeTypeNameToIndex.push_back(typeNameId);
+
+        return ScanListForIndex(typeNameId);
+    }
+
+    size_t EntityActiveSystemComponent::ScanListForIndex(AZ::Crc32 typeNameId)
     {
         for (size_t i = 0; i < m_activeTypeNameToIndex.size(); i++)
         {
@@ -55,30 +74,6 @@ namespace AZ
         }
 
         return kInvalidIndex;
-    }
-
-    size_t EntityActiveSystemComponent::RegisterEntityActiveTypeByName(AZStd::string typeName)
-    {
-        return RegisterEntityActiveType(AZ::Crc32{ typeName });
-    }
-
-    size_t EntityActiveSystemComponent::RegisterEntityActiveType(AZ::Crc32 typeNameId)
-    {
-        if (m_activeTypeNameToIndex.size() >= s_maxStateFlags)
-        {
-            return kInvalidIndex;
-        }
-
-        for (size_t i = 0; i < m_activeTypeNameToIndex.size(); i++)
-        {
-            if (m_activeTypeNameToIndex[i] == typeNameId)
-            {
-                return i;
-            }
-        }
-
-        m_activeTypeNameToIndex.push_back(typeNameId);
-        return GetActiveTypeIndexById(typeNameId);
     }
 
 } // namespace AZ
