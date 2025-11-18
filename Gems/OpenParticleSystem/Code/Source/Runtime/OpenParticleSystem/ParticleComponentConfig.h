@@ -8,13 +8,13 @@
  
 #pragma once
 
+#include <AzCore/Component/ComponentBus.h>
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
-#include <Atom/RPI.Public/Material/Material.h>
-#include <AzCore/Component/Component.h>
-#include <OpenParticleSystem/ParticleConstant.h>
 
 namespace OpenParticle
 {
+    class ReflectContext;
+
     class ParticleComponentConfig final
         : public AZ::ComponentConfig
     {
@@ -23,8 +23,6 @@ namespace OpenParticle
 
         static void Reflect(AZ::ReflectContext* context);
 
-        ParticleComponentConfig() = default;
-        ~ParticleComponentConfig() = default;
         AZ::Data::Asset<ParticleAsset> m_particleAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
         bool m_enable = true;
         bool m_followActiveCamera = false;

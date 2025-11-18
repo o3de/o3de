@@ -48,7 +48,7 @@ namespace OpenParticle
 
     protected:
         AZ::u32 OnConfigurationChanged() override;
-        void OpenParticleEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType);
+        static void OpenParticleEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType);
 
     private:
         // AzToolsFramework::EditorEntityVisibilityNotificationBus::Handler overrides

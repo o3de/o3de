@@ -54,7 +54,7 @@ namespace OpenParticle
                         ->Attribute("EditDescription", "Open in Particle Editor")
                         ->Attribute("EditCallback", &EditorParticleComponent::OpenParticleEditor)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentConfig::m_followActiveCamera, "Follow camera",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ParticleComponentConfig::m_followActiveCamera, "FollowActiveCamera",
                             "Particles always generated around active camera and absolute position of particle system will be ignored, global space "
                             "used forcibly.");
             }
@@ -66,14 +66,14 @@ namespace OpenParticle
                 ->Attribute(AZ::Script::Attributes::Module, "render")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
 
-            behaviorContext->EBus<EditorParticleRequestBus>("ParticleRequestBus")
+            behaviorContext->EBus<EditorParticleRequestBus>("EditorParticleRequestBus")
                 ->Attribute(AZ::Script::Attributes::Module, "OpenParticleSystem")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Event("SetMaterialDiffuseMap", &EditorParticleRequestBus::Events::SetMaterialDiffuseMap)
                     ->Attribute(AZ::Script::Attributes::ToolTip,  "Set new diffuse map for current particle system")
                 ;
 
-            behaviorContext->Class<EditorParticleComponent>()->RequestBus("ParticleRequestBus");
+            behaviorContext->Class<EditorParticleComponent>()->RequestBus("EditorParticleRequestBus");
         }
     }
 
