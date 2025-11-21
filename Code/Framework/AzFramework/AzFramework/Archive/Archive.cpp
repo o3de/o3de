@@ -1324,7 +1324,7 @@ namespace AZ::IO
                 auto& foundFilename = files.emplace_back(fileIterator.m_filename);
                 AZStd::to_lower(foundFilename.Native().begin(), foundFilename.Native().end());
             }
-            while (fileIterator = FindNext(fileIterator));
+            while ((fileIterator = FindNext(fileIterator)));
 
             // Open files in alphabetical order.
             AZStd::sort(files.begin(), files.end());

@@ -1452,7 +1452,7 @@ void CSystem::AddCVarGroupDirectory(const AZStd::string& sPath)
                 AddCVarGroupDirectory(ConcatPath(sPath.c_str(), handle.m_filename.data()));
             }
         }
-    } while (handle = gEnv->pCryPak->FindNext(handle));
+    } while ((handle = gEnv->pCryPak->FindNext(handle)));
 
     gEnv->pCryPak->FindClose(handle);
 }
