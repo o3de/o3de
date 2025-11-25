@@ -44,7 +44,7 @@ namespace SurfaceData
         , public AZ::TransformNotificationBus::Handler
         , public SurfaceDataProviderRequestBus::Handler
         , private SurfaceDataModifierRequestBus::Handler
-        , public Physics::ColliderComponentEventBus::Handler
+        , public Physics::ColliderComponentEventBus::Handler        
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -64,7 +64,7 @@ namespace SurfaceData
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
-        bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
+        bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;                
 
         //////////////////////////////////////////////////////////////////////////
         // ColliderComponentEventBus
