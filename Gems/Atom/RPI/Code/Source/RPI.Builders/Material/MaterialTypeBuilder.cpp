@@ -712,7 +712,7 @@ namespace AZ
                 AZStd::to_upper(materialTypeNameUpper);
                 generatedAzsl += AZStd::string::format("#define MATERIAL_TYPE_%s 1 \n", materialTypeNameUpper.c_str());
 
-                generatedAzsl += AZStd::string::format("#include \"%s\" \n", shaderTemplate.m_azsli.c_str());
+                generatedAzsl += AZStd::string::format("#include \"%s\" \n", AZ::IO::PathView(shaderTemplate.m_azsli).StringAsPosix().c_str());
 
                 AZ::IO::Path shaderName = shaderTemplate.m_shader;
                 shaderName = shaderName.Filename(); // Removes the folder path
