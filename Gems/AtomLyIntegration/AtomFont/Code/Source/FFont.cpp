@@ -1728,9 +1728,9 @@ void AZ::FFont::DrawScreenAlignedText3d(
     DrawStringUInternal(
         internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        positionNdc.GetX() * internalParams.m_viewport.GetWidth() + internalParams.m_position.GetX(), 
-        (1.0f - positionNdc.GetY()) * internalParams.m_viewport.GetHeight() + internalParams.m_position.GetY(), 
-        positionNdc.GetZ(), // Z
+        positionNdc.GetX() * internalParams.m_viewport.GetWidth(),
+        (1.0f - positionNdc.GetY()) * internalParams.m_viewport.GetHeight(),
+        positionNdc.GetZ(),
         text.data(),
         params.m_multiline,
         internalParams.m_ctx
