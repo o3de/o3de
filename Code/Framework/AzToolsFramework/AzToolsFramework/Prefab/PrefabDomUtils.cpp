@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+#include <AzCore/std/string/regex.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/JSON/prettywriter.h>
@@ -29,6 +29,13 @@ namespace AzToolsFramework
         {
             namespace Internal
             {
+                // regex to match  : optional uuid, optional space, TransformComponent
+                //   - `{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX} TransformComponent`
+                //   - `TransformComponent`
+                //  but do not match :
+                //   - `GradientEditorTransformComponent`
+                const AZStd::regex TransformComponentRegex(R"(^(\{........-....-....-....-............\})?\s?TransformComponent$)");
+
                 [[maybe_unused]] static constexpr const char* const ComponentRemovalNotice =
                     "[INFORMATION] %s data has been altered to remove component '%s'. "
                     "Please edit and save %s to persist the change.";
@@ -658,11 +665,12 @@ namespace AzToolsFramework
                         }
                         
                         AZStd::string componentAlias(componentsTypeIt->value.GetString());
-                        if (!componentAlias.contains("TransformComponent"))
+
+                        if (!AZStd::regex_match(componentAlias, Internal::TransformComponentRegex))
                         {
-                            continue;
+                            continue; // not the component we are looking for
                         }
-                        
+
                         constexpr const auto parentObjectName = "Parent Entity";
                         auto parentIt = componentIt->value.FindMember(parentObjectName);
                         if (parentIt == componentIt->value.MemberEnd() || !parentIt->value.IsString())
