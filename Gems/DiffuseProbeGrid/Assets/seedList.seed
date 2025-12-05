@@ -142,6 +142,69 @@
             },
             "platformFlags": 255,
             "pathHint": "passes/diffuseprobegridpreparepassrequest.azasset"
+        },
+        {
+            "assetId": {
+                "guid": "{66A5858B-5FFB-5CCE-ACEC-C065470941F2}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffusecomposite.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{985FA532-05D5-532C-AAAB-7A38D99B249E}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseglobalfullscreen.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{C36E2078-9853-5548-A8E0-33F2607B7838}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegriddownsample.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{59C6F544-3CFE-5F2B-A4A1-E1D14BAB6839}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridqueryfullscreen.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{55EBE62C-1FB4-5823-B66D-B03853006672}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridvisualizationcomposite.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{189103A6-6548-5B7E-A3AC-0F854D865B09}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridvisualizationraytracing.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{858724E9-B36D-5F36-8944-947224609995}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridvisualizationraytracingclosesthit.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{59981F35-8D89-5F2B-B3EB-C94F46A3A7FA}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/diffuseprobegridvisualizationraytracingmiss.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{5D846658-301B-548D-870A-B9F812D1586F}"
+            },
+            "platformFlags": 3,
+            "pathHint": "shaders/diffuseglobalillumination/sceneandviewsrgs.azshader"
         }
     ]
 }
