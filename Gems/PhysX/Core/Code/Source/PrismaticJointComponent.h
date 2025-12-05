@@ -49,6 +49,7 @@ namespace PhysX
     private:
         bool TryCachePhysXD6Joint();
 
+        physx::PxJoint* m_nativeJoint{ nullptr };
         // D6 joint will only be used when the "Use Motor" option is enabled.
         physx::PxD6Joint* m_nativeD6Joint{ nullptr };
     };

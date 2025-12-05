@@ -118,33 +118,46 @@ namespace PhysX
 
     float HingeJointComponent::GetPosition() const
     {
+        AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
+        PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
         return m_nativeJoint->getAngle();
     }
 
     float HingeJointComponent::GetVelocity() const
     {
+        AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
+        PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
         return m_nativeJoint->getVelocity();
     }
 
     AZStd::pair<float, float> HingeJointComponent::GetLimits() const
     {
+        AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
+        PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
         auto limit = m_nativeJoint->getLimit();
         return AZStd::pair<float, float>(limit.lower, limit.upper);
     }
 
     AZ::Transform HingeJointComponent::GetTransform() const
     {
+        AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
+        PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
         const auto worldFromLocal = m_nativeJoint->getRelativeTransform();
         return PxMathConvert(worldFromLocal);
     }
 
     void HingeJointComponent::SetVelocity(float velocity)
     {
+        AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
+        PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
         m_nativeJoint->setDriveVelocity(velocity, true);
     }
 
     void HingeJointComponent::SetMaximumForce(float force)
     {
+        AZ_Assert(m_nativeJoint, "PhysX Hinge Joint native pointer is null.");
+        PHYSX_SCENE_READ_LOCK(m_nativeJoint->getScene());
         m_nativeJoint->setDriveForceLimit(force);
     }
+
 } // namespace PhysX

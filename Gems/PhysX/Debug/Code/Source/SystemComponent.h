@@ -59,10 +59,12 @@ namespace PhysXDebug
         bool m_contactNormal = false;
 
         bool m_jointLocalFrames = false;
-        bool m_jointLimits = false;
+        bool m_jointCharacterLimits = false;
 
         bool m_mbpRegions = false;
         bool m_actorAxes = false;
+
+        bool m_showJoints = false;
 
         /// Determine if the PhysX Debug Gem Visualization is currently enabled (for the editor context)
         inline bool IsPhysXDebugEnabled() { return m_visualizationEnabled; };
@@ -177,6 +179,9 @@ namespace PhysXDebug
         /// Gather Joint Limits.
         void GatherJointLimits();
 
+        void GatherJoints();
+
+
         /// Helper functions to wrap buffer management functionality.
         void ClearBuffers();
         void GatherBuffers();
@@ -188,6 +193,9 @@ namespace PhysXDebug
 #ifdef IMGUI_ENABLED
         /// Build a specific color picker menu option.
         void BuildColorPickingMenuItem(const AZStd::string& label, AZ::Color& color);
+
+        /// Draw ImGui window for joint manipulation.
+        void DrawJointManipulationWindow();
 #endif // IMGUI_ENABLED
 
         physx::PxScene* GetCurrentPxScene();
@@ -207,6 +215,7 @@ namespace PhysXDebug
         AZStd::vector<AZ::Vector3> m_trianglePoints;
         AZStd::vector<AZ::Color> m_triangleColors;
 
+        AZStd::vector<AZ::Vector3> m_jointsConnectionLines;
         // joint limit buffers
         AZStd::vector<AZ::Vector3> m_jointVertexBuffer;
         AZStd::vector<AZ::u32> m_jointIndexBuffer;
@@ -214,6 +223,9 @@ namespace PhysXDebug
         AZStd::vector<bool> m_jointLineValidityBuffer;
 
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+
+        AZStd::unordered_map<AZ::EntityComponentIdPair, AZStd::string> m_jointsCache;
+        AZ::EntityComponentIdPair m_selectedJoint;
     };
 
     /// Possible console parameters for physx_Debug cvar.
