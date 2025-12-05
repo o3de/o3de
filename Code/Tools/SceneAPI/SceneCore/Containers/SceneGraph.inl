@@ -176,7 +176,7 @@ namespace AZ
                 return Find(path.c_str());
             }
 
-            SceneGraph::NodeIndex SceneGraph::Find(const Name& name)
+            SceneGraph::NodeIndex SceneGraph::Find(const Name& name) const
             {
                 return Find(name.GetPath());
             }
