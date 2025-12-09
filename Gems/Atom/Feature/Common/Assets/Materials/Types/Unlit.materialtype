@@ -1,0 +1,64 @@
+{
+    "description": "Renders a model unlit with a single surface color value.",
+    "version": 0,
+    "versionUpdates": [],
+    "propertyLayout": {
+        "propertyGroups": [
+            {
+                "name": "settings",
+                "displayName": "Base Color",
+                "properties": [
+                    {
+                        "name": "color",
+                        "displayName": "Color",
+                        "type": "Color",
+                        "defaultValue": [ 1.0, 1.0, 1.0 ],
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_unlitColor"
+                        }
+                    },
+                    {
+                        "name": "baseColorTexture",
+                        "displayName": "Texture",
+                        "description": "Base color texture map",
+                        "type": "Image",
+                        "defaultValue": "",
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_baseColorTexture"
+                        }
+                    },
+                    {
+                        "name": "textureMapUv",
+                        "displayName": "UV",
+                        "description": "Base color map UV set",
+                        "type": "Enum",
+                        "enumIsUv": true,
+                        "defaultValue": "Tiled",
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_baseColorMapUvIndex"
+                        }
+                    }
+                ]
+            },
+            {
+                "$import": "MaterialInputs/UvPropertyGroup.json"
+            }
+        ]
+    },
+    "functors": [],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    },
+    "shaders": [
+        {
+            "file": "../../Shaders/Unlit/Unlit.shader"
+        },
+        {
+            "file": "../../Shaders/Depth/DepthPass.shader"
+        }
+    ]
+}
