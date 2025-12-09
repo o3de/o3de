@@ -1,5 +1,0 @@
-# exclude everything
-site-packages/*
-
-# exception to the rule
-!site-packages/stub

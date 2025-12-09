@@ -1,6 +1,0 @@
-<download name="auto_test" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="41873" md5="8cbacbcd8f5ad20259d5d586004b8e28"/>
- </files>
-</download>

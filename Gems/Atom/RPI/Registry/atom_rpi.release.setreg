@@ -1,9 +1,0 @@
-{
-    "O3DE": {
-        "Atom": {
-            "RPI": {
-                "UseDebugFallbackImages": false
-            }
-        }
-    }
-}

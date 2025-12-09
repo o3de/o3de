@@ -1,8 +1,0 @@
-{
-    "values": [
-        {
-            "$type": "ScriptProcessorRule",
-            "scriptFilename": "Assets/TestAnim/scene_export_motion.py"
-        }
-    ]
-}

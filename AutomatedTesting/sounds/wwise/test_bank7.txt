@@ -1,8 +1,0 @@
-Event	ID	Name			Wwise Object Path	Notes
-	572999418	test_event_12_bank7_streamed_target			\Default Work Unit\test_event_12_bank7_streamed_target	
-	2110064689	test_event_11_bank7_streamed_target			\Default Work Unit\test_event_11_bank7_streamed_target	
-
-Streamed Audio	ID	Name	Audio source file	Generated audio file	Wwise Object Path	Notes
-	601903616	test_sfx_8_bank7_streamed	D:\code\o3de\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\gun_blaster_no_trigger_shot_1_56D34C19.wem	601903616.wem	\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_8_bank7_streamed	
-	656567798	test_sfx_7_bank7_streamed	D:\code\o3de\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\impact_bot_hits_metalelement_56D34C19.wem	656567798.wem	\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_7_bank7_streamed	
-

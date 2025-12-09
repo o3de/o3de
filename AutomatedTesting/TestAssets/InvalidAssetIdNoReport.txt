@@ -1,2 +1,0 @@
-The UUID for this asset is valid (_dev_Purple.tif), but the product ID is not. This will not generate a missing asset report because the product does not exist.
-{A2482826-053D-5634-A27B-084B1326AAE5}:[12345]

@@ -1,8 +1,0 @@
-.backup/
-.cache/
-*.log
-*.akd
-*.dat
-*.prof
-*.validationcache
-*.wsettings

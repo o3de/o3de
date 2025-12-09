@@ -1,8 +1,0 @@
-Event	ID	Name			Wwise Object Path	Notes
-	1100037040	test_event_4_bank2_streamed_target			\Default Work Unit\test_event_4_bank2_streamed_target	
-	2198406328	test_event_3_bank2_embedded_target			\Default Work Unit\test_event_3_bank2_embedded_target	
-
-Source plug-ins	ID	Name	Type		Wwise Object Path	Notes
-	256758283	Wwise Tone Generator	Wwise Tone Generator		\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_3_bank2_embedded\Wwise Tone Generator	
-	416959338	Wwise Tone Generator	Wwise Tone Generator		\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_4_bank2_streamed\Wwise Tone Generator	
-

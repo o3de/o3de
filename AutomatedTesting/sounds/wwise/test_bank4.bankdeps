@@ -1,8 +1,0 @@
-{
-    "version": "1.0",
-    "bankName": "test_bank4.bnk",
-    "dependencies": [
-        "Init.bnk"
-    ],
-    "includedEvents": []
-}

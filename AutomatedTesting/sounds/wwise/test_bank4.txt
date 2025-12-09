@@ -1,3 +1,0 @@
-In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
-	666825490	test_sfx_5_bank4_embedded	D:\code\o3de\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\AMZN_sfx_env_commsarray_apllyupdate_end_56D34C19.wem		\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_5_bank4_embedded		142170
-

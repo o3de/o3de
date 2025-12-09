@@ -1,7 +1,0 @@
-Event	ID	Name			Wwise Object Path	Notes
-	45654968	test_event_5_bank3_embedded_target_bank4			\Default Work Unit\test_event_5_bank3_embedded_target_bank4	Event that lives in test_bank3. This event targets only one media, which is embedded in test_bank4.
-	645979556	test_event_6_bank3_streamed_target_bank4			\Default Work Unit\test_event_6_bank3_streamed_target_bank4	Event that lives in test_bank3. This event targets only one media, which is streamed from test_bank4.
-
-Streamed Audio	ID	Name	Audio source file	Generated audio file	Wwise Object Path	Notes
-	196049145	test_sfx_6_bank4_streamed	D:\code\o3de\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\AMZ_sfx_NME_wpn_plasma_pistol_fire003_56D34C19.wem	196049145.wem	\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_6_bank4_streamed	
-

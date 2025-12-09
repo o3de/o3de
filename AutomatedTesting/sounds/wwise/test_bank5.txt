@@ -1,9 +1,0 @@
-Event	ID	Name			Wwise Object Path	Notes
-	509869576	test_event_8_bank5_referenced_event_bank1_streamed			\Default Work Unit\test_event_8_bank5_referenced_event_bank1_streamed	
-	839812857	test_event_2_bank1_streamed_target			\Default Work Unit\test_event_2_bank1_streamed_target	
-	865645077	test_event_1_bank1_embedded_target			\Default Work Unit\test_event_1_bank1_embedded_target	
-	3546419658	test_event_7_bank5_referenced_event_bank1_embedded			\Default Work Unit\test_event_7_bank5_referenced_event_bank1_embedded	
-
-Streamed Audio	ID	Name	Audio source file	Generated audio file	Wwise Object Path	Notes
-	499820003	test_sfx_2_bank1_streamed	D:\code\o3de\AutomatedTesting\sounds\wwise_project\.cache\Windows\SFX\env_door_scanner_scan_success_56D34C19.wem	499820003.wem	\Actor-Mixer Hierarchy\Default Work Unit\test_sfx_2_bank1_streamed	
-

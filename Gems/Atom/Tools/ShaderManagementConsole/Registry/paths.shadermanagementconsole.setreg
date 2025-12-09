@@ -1,9 +1,0 @@
-{
-    "O3DE": {
-        "AtomToolsFramework": {
-            "Application": {
-                "IgnoreCacheFolder": false
-            }
-        }
-    }
-}

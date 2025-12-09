@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="OpenParticleSystem">
-        <file alias="Icons/Particle.svg">../../../Assets/Editor/Icons/Particle.svg</file>
-    </qresource>
-</RCC>

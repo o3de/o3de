@@ -1,8 +1,0 @@
-{
-    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 5,
-    "parentMaterial": "basic.material",
-    "propertyValues": {
-        "roughness.factor": 0.8999999761581421
-    }
-}

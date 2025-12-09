@@ -1,9 +1,0 @@
-{
-    "project_name": "DummyProject",
-    "version": "1.0.0",
-    "product_name": "DummyProject",
-    "executable_name": "DummyProjectLauncher",
-    "modules" : [],
-    "project_id": "{91FB81A1-072C-4A80-8FCC-7E2C4C767B4D}",
-    "engine" : "o3de"
-}

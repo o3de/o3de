@@ -1,9 +1,0 @@
-{
-   "O3DE": {
-        "Autoexec": {
-            "ConsoleCommands": {
-                "LoadLevel": "defaultlevel"
-            }
-        }
-    }
-}

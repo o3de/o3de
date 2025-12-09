@@ -1,8 +1,0 @@
-{
-    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
-    "materialTypeVersion": 3,
-    "parentMaterial": "001_ManyFeatures.material",
-    "propertyValues": {
-        "blend.enableLayer2": false
-    }
-}

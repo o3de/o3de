@@ -1,5 +1,0 @@
-<RCC>
-	<qresource prefix="/controls/img">
-		<file alias="cvar_dark.bmp">../res/cvar_dark.bmp</file>
-	</qresource>
-</RCC>

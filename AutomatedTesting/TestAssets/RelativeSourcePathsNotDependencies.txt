@@ -1,8 +1,0 @@
-Reference another test asset, forward slashes.
-TestAssets/RelativeProductPathsNotDependencies.txt
-Back slashes
-TestAssets\WildcardScanTest1.txt
-Casing doesn't match
-TESTASSETS/ReportONEmISSINGdEPENDENCY.tXT
-Path inline TestAssets/InvalidAssetIdNoReport.txt test
-Path after=textures/_dev_Purple.tif equal sign

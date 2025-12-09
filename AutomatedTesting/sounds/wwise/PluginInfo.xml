@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<PluginInfo Project="AutomatedTesting" Platform="Windows" BasePlatform="Windows">
-	<Plugins>
-		<Plugin Name="Wwise Tone Generator" ID="6684674" DLL="AkToneGen" StaticLib="AkToneSource"/>
-		<Plugin Name="System" ID="11403271"/>
-		<Plugin Name="No Output" ID="11862023"/>
-	</Plugins>
-</PluginInfo>

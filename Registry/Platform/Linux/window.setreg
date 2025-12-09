@@ -1,9 +1,0 @@
-{
-    "O3DE": {
-        "Autoexec": {
-            "ConsoleCommands": {
-                "r_displayInfo": 3
-            }
-        }
-    }
-}

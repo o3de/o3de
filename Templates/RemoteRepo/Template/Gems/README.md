@@ -1,1 +1,0 @@
-This folder is where you should place all your gems

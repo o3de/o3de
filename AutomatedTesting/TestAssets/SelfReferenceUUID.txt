@@ -1,2 +1,0 @@
-Files that reference themselves shouldn't report a missing dependency, there's no reason to depend on yourself.
-33BCEE02F3225688ABEE534F6058593F

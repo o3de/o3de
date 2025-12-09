@@ -1,1 +1,0 @@
-The files in these folders are config files for building shaders, not real assets that will be used at runtime. They are in the "Assets" folder so we can create source dependencies with the azsl shader files to be able to detect changes in order to rebuild the shaders.

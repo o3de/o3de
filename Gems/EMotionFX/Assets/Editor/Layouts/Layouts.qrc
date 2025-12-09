@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/EMotionFX">
-        <file>AnimGraph.layout</file>
-    </qresource>
-</RCC>

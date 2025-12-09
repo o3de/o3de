@@ -1,8 +1,0 @@
-{
-    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 5,
-    "parentMaterial": "UvTilingBase.material",
-    "propertyValues": {
-        "occlusion.diffuseTextureMap": "../../Objects/cube/cube_diff.tif"
-    }
-}

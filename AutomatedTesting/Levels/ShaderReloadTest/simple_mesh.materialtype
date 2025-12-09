@@ -1,9 +1,0 @@
-{
-    "description": "For ShaderReloadTest.",
-    "version": 1,
-    "shaders": [
-        {
-            "file": "Levels/ShaderReloadTest/SimpleMesh.shader"
-        }
-    ]
-}

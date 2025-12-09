@@ -1,2 +1,0 @@
-This is a UUID that is not in the asset database, it will not generate a missing dependency message.
-88888888-4444-4444-4444-CCCCCCCCCCCC

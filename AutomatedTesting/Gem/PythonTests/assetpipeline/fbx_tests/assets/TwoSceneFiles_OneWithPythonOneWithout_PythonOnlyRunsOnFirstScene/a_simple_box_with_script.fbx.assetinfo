@@ -1,9 +1,0 @@
-{
-    "values":
-    [
-        {
-            "$type": "ScriptProcessorRule",
-            "scriptFilename": "TwoSceneFiles_OneWithPythonOneWithout_PythonOnlyRunsOnFirstScene/python_builder.py"
-        }
-    ]
-}
