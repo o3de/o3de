@@ -1,7 +1,8 @@
 {
     "name": "ParticleSystem",
     "systemConfig": {
-        "loop": true
+        "loop": true,
+        "parallel": true
     },
     "emitters": [
         {
@@ -14,8 +15,22 @@
                 "duration": 2.0,
                 "loop": true
             },
-            "material": "Materials/OpenParticle/ParticleMesh.material",
-            "model": "MaterialEditor/ViewportModels/Cube.fbx.azmodel",
+            "material": {
+                "assetId": {
+                    "guid": "{EBE3E883-8FE6-5A24-BE49-729E3AD42668}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlemesh.azmaterial"
+            },
+            "model": {
+                "assetId": {
+                    "guid": "{B991E03B-F50D-552E-9E2D-64FA6DAB1CCB}",
+                    "subId": 285127096
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materialeditor/viewportmodels/cube.fbx.azmodel"
+            },
             "OpenParticle::MeshConfig": {
                 "facing": "CAMERA_RECTANGLE",
                 "sortId": 0
@@ -77,7 +92,7 @@
                     "isUniform": false,
                     "distType": "Constant",
                     "distIndex": [
-                        1
+                        0
                     ]
                 }
             }

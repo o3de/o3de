@@ -123,7 +123,7 @@ namespace OpenParticle
         return *this;
     }
 
-    AZ::Outcome<AZ::Data::Asset<ParticleAsset>> ParticleAssetData::CreateParticleAsset(
+    ParticleAssetData::CreateParticleResult ParticleAssetData::CreateParticleAsset(
         AZ::Data::AssetId assetId, [[maybe_unused]] AZStd::string_view sourceFilePath, bool elevateWarnings) const
     {
         (void)elevateWarnings;
@@ -153,22 +153,8 @@ namespace OpenParticle
             auto materialAsset = emitter->m_material;
             if (!materialAsset.GetId().IsValid())
             {
-                AZ_Error("ParticleAssetData", false, "Cannot create particle data - no material assigned to render.");
-                continue;
-            }
-
-            if (materialAsset.GetStatus() != AZ::Data::AssetData::AssetStatus::Ready)
-            {
-                // we will need the material to be loaded in order to actually build the asset.
-                // This is not the case for the model asset.
-                materialAsset.QueueLoad();
-                materialAsset.BlockUntilLoadComplete();
-                if (!materialAsset)
-                {
-                    AZ_Error(
-                        "ParticleAssetData", false, "Unable to load material asset %s", materialAsset.ToString<AZStd::string>().c_str());
-                    continue;
-                }
+                AZ_Error("ParticleAssetData", false, "Cannot create particle data - no material assigned to render in emitter %s", emitter->m_name.c_str());
+                return AZ::Failure(CreateParticleAssetFailure::MaterialMissing);
             }
 
             AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
@@ -176,39 +162,53 @@ namespace OpenParticle
 
             if (emitter->m_renderConfig.empty())
             {
-                AZ_Error("ParticleAssetData", false, "RenderType is missing.");
-                continue;
+                AZ_Error("ParticleAssetData", false, "RenderType is missing in emitter %s", emitter->m_name.c_str());
+                return AZ::Failure(CreateParticleAssetFailure::RenderTypeMissing);
             }
 
-            auto materialType = materialAsset.Get()->GetMaterialTypeAsset();
-            if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::SpriteConfig>()) && !((materialType.GetHint().ends_with("particlesprite.azmaterialtype"))))
+            // we can only check this if the material is available.
+            // Its possible the user got a new project, and has not yet compiled all materials.  in this case,
+            // we cannot load the material in order to check it.  When this happens, we skip this check, because
+            // we know that the material will become available later, and when it does, this particle will be rebuilt, and this
+            // check would succeed.
+            if (materialAsset.IsReady())
             {
-                AZ_Error(
-                    "ParticleAssetData",
-                    false,
-                    "SpriteParticle needs material with ParticleSprite materialtype but is %s instead",
-                    materialType.ToString<AZStd::string>().c_str());
-                continue;
-            }
+                auto materialType = materialAsset.Get()->GetMaterialTypeAsset();
+                if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::SpriteConfig>()) &&
+                    !((materialType.GetHint().ends_with("particlesprite.azmaterialtype"))))
+                {
+                    AZ_Error(
+                        "ParticleAssetData",
+                        false,
+                        "SpriteParticle needs material with ParticleSprite materialtype but is %s instead in emitter %s",
+                        materialType.ToString<AZStd::string>().c_str(),
+                        emitter->m_name.c_str());
+                    return AZ::Failure(CreateParticleAssetFailure::IncorrectMaterialType);
+                }
 
-            if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::MeshConfig>()) && !(materialType.GetHint().ends_with("particlemesh.azmaterialtype")))
-            {
-                AZ_Error(
-                    "ParticleAssetData",
-                    false,
-                    "Mesh Particle needs material with ParticleMesh materialtype but is %s instead",
-                    materialType.ToString<AZStd::string>().c_str());
-                continue;
-            }
+                if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::MeshConfig>()) &&
+                    !(materialType.GetHint().ends_with("particlemesh.azmaterialtype")))
+                {
+                    AZ_Error(
+                        "ParticleAssetData",
+                        false,
+                        "Mesh Particle needs material with ParticleMesh materialtype but is %s instead in emitter %s",
+                        materialType.ToString<AZStd::string>().c_str(),
+                        emitter->m_name.c_str());
+                    return AZ::Failure(CreateParticleAssetFailure::IncorrectMaterialType);
+                }
 
-            if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::RibbonConfig>()) && !(materialType.GetHint().ends_with("particleribbon.azmaterialtype")))
-            {
-                AZ_Error(
-                    "ParticleAssetData",
-                    false,
-                    "Ribbon Particle needs material with ParticleMesh materialtype but is %s instead",
-                    materialType.ToString<AZStd::string>().c_str());
-                continue;
+                if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::RibbonConfig>()) &&
+                    !(materialType.GetHint().ends_with("particleribbon.azmaterialtype")))
+                {
+                    AZ_Error(
+                        "ParticleAssetData",
+                        false,
+                        "Ribbon Particle needs material with ParticleMesh materialtype but is %s instead in emitter %s",
+                        materialType.ToString<AZStd::string>().c_str(),
+                        emitter->m_name.c_str());
+                    return AZ::Failure(CreateParticleAssetFailure::IncorrectMaterialType);
+                }
             }
 
             bool skeletonSpawn = false;
@@ -228,8 +228,9 @@ namespace OpenParticle
                 if (!emitter->m_model.GetId().IsValid())
                 {
                     // mesh config, but with no model assigned, we cannot make a valid output.
-                    AZ_Error("ParticleAssetData", false, "Emitter Renderer set to `Mesh` but no mesh asset assigned.  Particles will not function.");
-                    continue;
+                    AZ_Error("ParticleAssetData", false, "Emitter Renderer set to `Mesh` but no mesh asset assigned in emitter %s.  Particles will not function.",
+                        emitter->m_name.c_str());
+                    return AZ::Failure(CreateParticleAssetFailure::MeshAssetMissing);
                 }
                 modelAsset = emitter->m_model;
             }
@@ -267,7 +268,8 @@ namespace OpenParticle
             particleAsset.Get()->SetReady();
             return AZ::Success(particleAsset);
         }
-        return AZ::Failure();
+        
+        return AZ::Failure(CreateParticleAssetFailure::Generic);
     }
 
     void ParticleAssetData::Reset()

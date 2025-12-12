@@ -1,237 +1,10 @@
 {
     "name": "ParticleSystem",
     "systemConfig": {
-        "loop": true
+        "loop": true,
+        "parallel": true
     },
     "emitters": [
-        {
-            "name": "green",
-            "config": {
-                "type": "CPU",
-                "maxSize": 500,
-                "startTime": 0.0,
-                "localSpace": false,
-                "duration": 2.0,
-                "loop": true
-            },
-            "material": "Materials/OpenParticle/ParticleSpriteEmit.material",
-            "OpenParticle::SpriteConfig": {
-                "facing": "CAMERA_RECTANGLE",
-                "sortId": 0,
-                "subImage": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "OpenParticle::EmitSpawn": {
-                "isProcessSpawnRate": true,
-                "spawnRateObject": {
-                    "dataValue": 1.0,
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        1
-                    ]
-                }
-            },
-            "OpenParticle::SpawnVelDirection": {
-                "strengthObject": {
-                    "dataValue": 1.0,
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0
-                    ]
-                },
-                "directionObject": {
-                    "dataValue": [
-                        -1.0,
-                        0.0,
-                        1.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnSize": {
-                "sizeObject": {
-                    "dataValue": [
-                        0.20000000298023224,
-                        0.20000000298023224,
-                        0.20000000298023224
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnLocPoint": {
-                "positionObject": {
-                    "dataValue": [
-                        -0.5,
-                        0.0,
-                        0.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnLifetime": {
-                "lifeTimeObject": {
-                    "dataValue": 1.0,
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnColor": {
-                "startColorObject": {
-                    "dataValue": [
-                        0.0,
-                        1.0,
-                        0.0,
-                        1.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnLocationEvent": {
-                "whetherSendEvent": true
-            },
-            "OpenParticle::UpdateDeathEvent": {
-                "whetherSendEvent": true
-            },
-            "OpenParticle::UpdateLocationEvent": {
-                "whetherSendEvent": true
-            }
-        },
-        {
-            "name": "red",
-            "config": {
-                "type": "CPU",
-                "maxSize": 400,
-                "startTime": 0.0,
-                "localSpace": false,
-                "duration": 2.0,
-                "loop": true
-            },
-            "material": "Materials/OpenParticle/ParticleSpriteEmit.material",
-            "OpenParticle::SpriteConfig": {
-                "facing": "CAMERA_RECTANGLE",
-                "sortId": 0,
-                "subImage": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "OpenParticle::ParticleEventHandler": {
-                "emitterIndex": 0,
-                "emitterName": "green",
-                "eventType": "UPDATE_DEATH",
-                "maxEventNum": 1,
-                "emitNum": 1,
-                "useEventInfo": true
-            },
-            "OpenParticle::ParticleEventHandler": {
-                "emitterIndex": 2,
-                "emitterName": "yellow",
-                "eventType": "SPAWN_LOCATION",
-                "maxEventNum": 1,
-                "emitNum": 1,
-                "useEventInfo": true
-            },
-            "OpenParticle::SpawnVelDirection": {
-                "strengthObject": {
-                    "dataValue": 1.0,
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0
-                    ]
-                },
-                "directionObject": {
-                    "dataValue": [
-                        0.0,
-                        0.0,
-                        1.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnSize": {
-                "sizeObject": {
-                    "dataValue": [
-                        0.20000000298023224,
-                        0.20000000298023224,
-                        0.20000000298023224
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnColor": {
-                "startColorObject": {
-                    "dataValue": [
-                        0.9795987010002136,
-                        0.04556344076991081,
-                        0.04556344076991081,
-                        1.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnLifetime": {
-                "lifeTimeObject": {
-                    "dataValue": 1.0,
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0
-                    ]
-                }
-            }
-        },
         {
             "name": "yellow",
             "config": {
@@ -242,7 +15,14 @@
                 "duration": 2.0,
                 "loop": true
             },
-            "material": "Materials/OpenParticle/ParticleSpriteEmit.material",
+            "material": {
+                "assetId": {
+                    "guid": "{B866A670-33AC-5775-B5AB-894DF9967B67}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlespriteemit.azmaterial"
+            },
             "OpenParticle::SpriteConfig": {
                 "facing": "CAMERA_RECTANGLE",
                 "sortId": 0,
@@ -337,6 +117,248 @@
                 "whetherSendEvent": true
             },
             "OpenParticle::UpdateDeathEvent": {
+                "whetherSendEvent": true
+            }
+        },
+        {
+            "name": "red",
+            "config": {
+                "type": "CPU",
+                "maxSize": 400,
+                "startTime": 0.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": {
+                "assetId": {
+                    "guid": "{B866A670-33AC-5775-B5AB-894DF9967B67}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlespriteemit.azmaterial"
+            },
+            "OpenParticle::SpriteConfig": {
+                "facing": "CAMERA_RECTANGLE",
+                "sortId": 0,
+                "subImage": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "OpenParticle::ParticleEventHandler": {
+                "emitterIndex": 2,
+                "emitterName": "green",
+                "eventType": "UPDATE_DEATH",
+                "maxEventNum": 1,
+                "emitNum": 1,
+                "useEventInfo": true
+            },
+            "OpenParticle::ParticleEventHandler": {
+                "emitterIndex": 0,
+                "emitterName": "yellow",
+                "eventType": "SPAWN_LOCATION",
+                "maxEventNum": 1,
+                "emitNum": 1,
+                "useEventInfo": true
+            },
+            "OpenParticle::SpawnVelDirection": {
+                "strengthObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                },
+                "directionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnSize": {
+                "sizeObject": {
+                    "dataValue": [
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.20000000298023224
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnColor": {
+                "startColorObject": {
+                    "dataValue": [
+                        0.9795987010002136,
+                        0.04556344076991081,
+                        0.04556344076991081,
+                        1.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            }
+        },
+        {
+            "name": "green",
+            "config": {
+                "type": "CPU",
+                "maxSize": 500,
+                "startTime": 0.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": {
+                "assetId": {
+                    "guid": "{B866A670-33AC-5775-B5AB-894DF9967B67}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlespriteemit.azmaterial"
+            },
+            "OpenParticle::SpriteConfig": {
+                "facing": "CAMERA_RECTANGLE",
+                "sortId": 0,
+                "subImage": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "OpenParticle::EmitSpawn": {
+                "isProcessSpawnRate": true,
+                "spawnRateObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnVelDirection": {
+                "strengthObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                },
+                "directionObject": {
+                    "dataValue": [
+                        -1.0,
+                        0.0,
+                        1.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnSize": {
+                "sizeObject": {
+                    "dataValue": [
+                        0.20000000298023224,
+                        0.20000000298023224,
+                        0.20000000298023224
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocPoint": {
+                "positionObject": {
+                    "dataValue": [
+                        -0.5,
+                        0.0,
+                        0.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnColor": {
+                "startColorObject": {
+                    "dataValue": [
+                        0.0,
+                        1.0,
+                        0.0,
+                        1.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocationEvent": {
+                "whetherSendEvent": true
+            },
+            "OpenParticle::UpdateDeathEvent": {
+                "whetherSendEvent": true
+            },
+            "OpenParticle::UpdateLocationEvent": {
                 "whetherSendEvent": true
             }
         }
