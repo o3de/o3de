@@ -411,7 +411,7 @@ namespace AZ
                         meshRenderData.IndexBufferView = RHI::IndexBufferView(
                             *meshRenderData.ComputeBuffersViews[mappedIdx]->GetBuffer(),
                             bufferDesc.m_viewOffsetInBytes,
-                            (uint64_t)bufferDesc.m_elementCount * bufferDesc.m_elementSize,
+                            aznumeric_cast<uint32_t>(static_cast<uint64_t>(bufferDesc.m_elementCount) * bufferDesc.m_elementSize),
                             (bufferDesc.m_elementFormat == RHI::Format::R32_UINT) ? RHI::IndexFormat::Uint32 : RHI::IndexFormat::Uint16);
                     }
                 }
