@@ -21,7 +21,7 @@ namespace LmbrCentral
         : public AZ::ComponentBus
     {
     public:
-        
+
         //! Set the target entity to look at
         virtual void SetTarget([[maybe_unused]] AZ::EntityId targetEntity) {}
 
@@ -30,6 +30,9 @@ namespace LmbrCentral
 
         //! Set the reference forward axis
         virtual void SetAxis([[maybe_unused]] AZ::Transform::Axis axis = AZ::Transform::Axis::ZPositive) {}
+
+        //! Set whether the Look At component is enabled
+        virtual void SetEnabled([[maybe_unused]] bool enabled = true) {}
     };
 
     using LookAtComponentRequestBus = AZ::EBus<LookAtComponentRequests>;
@@ -87,6 +90,7 @@ namespace LmbrCentral
         void SetTarget(AZ::EntityId targetEntity) override;
         void SetTargetPosition(const AZ::Vector3& targetPosition) override;
         void SetAxis(AZ::Transform::Axis axis) override;
+        void SetEnabled(bool enabled) override;
         //=====================================================================
 
     protected:
@@ -115,6 +119,8 @@ namespace LmbrCentral
         AZ::Vector3  m_targetPosition;
 
         AZ::Transform::Axis m_forwardAxis;
+
+        bool m_enabled = true;
     };
 
 }//namespace LmbrCentral

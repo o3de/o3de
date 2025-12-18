@@ -51,6 +51,8 @@ namespace LmbrCentral
                     ->Attribute(AZ::Script::Attributes::ToolTip, "Sets the target position to look at.")
                 ->Event("SetAxis", &LookAtComponentRequestBus::Events::SetAxis, "Set Axis", { { { "Axis", "The forward axis to use as reference" } } })
                 ->Attribute(AZ::Script::Attributes::ToolTip, "Specify the forward axis to use as reference for the look at")
+                ->Event("SetEnabled", &LookAtComponentRequestBus::Events::SetEnabled, "Set Enabled", { { { "Enabled", "Enables or disables the Look At component" } } })
+                ->Attribute(AZ::Script::Attributes::ToolTip, "Set whether the Look At component is enabled or disabled")
                 ;
 
             behaviorContext->EBus<LookAtComponentNotificationBus>("LookAtNotification", "LookAtComponentNotificationBus", "Notifications for the Look At Component")
@@ -134,6 +136,11 @@ namespace LmbrCentral
         RecalculateTransform();
     }
 
+    void LookAtComponent::SetEnabled(bool enabled)
+    {
+        m_enabled = enabled;
+    }
+
     //=========================================================================
     void LookAtComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& /*world*/)
     {
@@ -151,6 +158,9 @@ namespace LmbrCentral
     //=========================================================================
     void LookAtComponent::RecalculateTransform()
     {
+        if (!m_enabled)
+            return;
+
         AZ::Vector3 targetPosition = m_targetPosition;
 
         if (m_targetId.IsValid())
