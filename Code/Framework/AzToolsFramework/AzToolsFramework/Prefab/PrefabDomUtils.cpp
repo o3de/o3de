@@ -29,10 +29,6 @@ namespace AzToolsFramework
         {
             namespace Internal
             {
-                const AZStd::unordered_set<AZStd::string> TransformComponentNames= {
-                    "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
-                    "TransformComponent"
-                };
                 [[maybe_unused]] static constexpr const char* const ComponentRemovalNotice =
                     "[INFORMATION] %s data has been altered to remove component '%s'. "
                     "Please edit and save %s to persist the change.";
@@ -589,6 +585,11 @@ namespace AzToolsFramework
 
             bool SubstituteInvalidParentsInEntities(PrefabDom& templateDomRef)
             {
+                const AZStd::unordered_set<AZStd::string> TransformComponentNames = {
+                    "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "TransformComponent"
+                };
+
                 // Search for a TransformComponent and check the "Parent Entity" statement
                 auto sourceIt = templateDomRef.FindMember(PrefabDomUtils::SourceName);
                 if (sourceIt == templateDomRef.MemberEnd() || !sourceIt->value.IsString())
@@ -663,7 +664,8 @@ namespace AzToolsFramework
                         
                         AZStd::string componentAlias(componentsTypeIt->value.GetString());
 
-                        if (!Internal::TransformComponentNames.contains(componentAlias))
+
+                        if (!TransformComponentNames.contains(componentAlias))
                         {
                             continue; // not the component we are looking for
                         }
