@@ -161,17 +161,21 @@ namespace LmbrCentral
         }
 
     private:
-        void RecalculateTransform();
+        void RecalculateTransform(const float deltaTime);
 
         // Serialized data
-        AZ::EntityId m_targetId;
-        AZ::Vector3  m_targetPosition;
-        AZ::Transform::Axis m_forwardAxis;
-        float m_strength;
-        bool m_fixatePitch;
-        bool m_fixateRoll;
-        bool m_fixateYaw;
-        bool m_enabled;
+        AZ::EntityId m_targetId = AZ::EntityId();
+        AZ::Vector3  m_targetPosition = AZ::Vector3::CreateZero();
+        AZ::Transform::Axis m_forwardAxis = AZ::Constants::Axis::YPositive;
+        float m_strength = 1.f;
+        bool m_fixatePitch = true;
+        bool m_fixateRoll = true;
+        bool m_fixateYaw = true;
+        bool m_enabled = true;
+
+        // Framerate independence for strength application
+        float m_accumulatedDeltaTime = 0.f;
+        AZ::Transform m_lastDiscreteTM = AZ::Transform::Identity();
     };
 
 }//namespace LmbrCentral

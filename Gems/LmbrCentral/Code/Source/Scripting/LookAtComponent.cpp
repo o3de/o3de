@@ -149,7 +149,10 @@ namespace LmbrCentral
 
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_targetId);
 
-        RecalculateTransform();
+        if (m_strength == 1.f)
+        {
+            RecalculateTransform(0.f);
+        }
 
         LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnTargetChanged, m_targetId);
     }
@@ -170,7 +173,10 @@ namespace LmbrCentral
 
         m_targetPosition = targetPosition;
 
-        RecalculateTransform();
+        if (m_strength == 1.f)
+        {
+            RecalculateTransform(0.f);
+        }
 
         LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnTargetChanged, m_targetId);
     }
@@ -184,7 +190,10 @@ namespace LmbrCentral
     {
         m_forwardAxis = axis;
 
-        RecalculateTransform();
+        if (m_strength == 1.f)
+        {
+            RecalculateTransform(0.f);
+        }
     }
 
     float LookAtComponent::GetStrength() const
@@ -235,8 +244,11 @@ namespace LmbrCentral
     void LookAtComponent::SetEnabled(const bool enabled)
     {
         m_enabled = enabled;
+        AZ::TransformBus::EventResult(m_lastDiscreteTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         if (m_enabled)
+        {
             LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnEnabledChanged, m_enabled);
+        }
     }
 
     //=========================================================================
@@ -247,14 +259,14 @@ namespace LmbrCentral
     }
 
     //=========================================================================
-    void LookAtComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+    void LookAtComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
     {
-        RecalculateTransform();
+        RecalculateTransform(deltaTime);
         AZ::TickBus::Handler::BusDisconnect();
     }
 
     //=========================================================================
-    void LookAtComponent::RecalculateTransform()
+    void LookAtComponent::RecalculateTransform(const float deltaTime)
     {
         if (!m_enabled)
             return;
@@ -281,14 +293,45 @@ namespace LmbrCentral
                 );
             lookAtTransform.SetUniformScale(currentTM.GetUniformScale());
 
-            lookAtTransform.SetRotation(currentTM.GetRotation().Slerp(lookAtTransform.GetRotation(), m_strength));
+            // Only apply the strength / slerp when it's not at it's not maxed out to 1
+            if (m_strength < 1.f)
+            {
+                // Normalize the strength / slerp calculation to 30FPS
+                const float normalizedFrameRate = 30.f;
+
+                if (deltaTime < 1.f / normalizedFrameRate)
+                {
+                    m_accumulatedDeltaTime += deltaTime;
+                    if (m_accumulatedDeltaTime >= 1.f / normalizedFrameRate)
+                    {
+                        m_lastDiscreteTM = currentTM;
+                        m_accumulatedDeltaTime -= 1.f / normalizedFrameRate;
+                    }
+                }
+                else
+                {
+                    // When the frame rate is below 30FPS, simply use deltaTime
+                    m_lastDiscreteTM = currentTM;
+                    m_accumulatedDeltaTime = deltaTime;
+                }
+
+                const AZ::Quaternion targetRotation = m_lastDiscreteTM.GetRotation().Slerp(lookAtTransform.GetRotation(), m_accumulatedDeltaTime * normalizedFrameRate * m_strength);
+
+                lookAtTransform.SetRotation(targetRotation);
+            }
 
             if (!m_fixatePitch)
+            {
                 lookAtTransform.SetFromEulerRadians(AZ::Vector3(currentTM.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+            }
             if (!m_fixateRoll)
+            {
                 lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), currentTM.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+            }
             if (!m_fixateYaw)
+            {
                 lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), currentTM.GetRotation().GetEulerRadians().GetZ()));
+            }
 
             lookAtTransform.SetTranslation(currentTM.GetTranslation());
 

@@ -223,7 +223,7 @@ namespace LmbrCentral
 
                 lookAtTransform.SetTranslation(sourceTM.GetTranslation());
 
-                // update the rotation and translation for sourceTM based on lookAtTransform, but leave scale unchanged
+                // When strength is maxed out, update the rotation and translation for sourceTM based on lookAtTransform, but leave scale unchanged
                 if (m_strength == 1.f)
                 {
                     sourceTM.SetRotation(lookAtTransform.GetRotation());
