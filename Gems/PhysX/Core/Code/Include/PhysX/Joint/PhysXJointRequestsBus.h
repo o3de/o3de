@@ -40,7 +40,7 @@ namespace PhysX
         //! @param velocity velocity in meters per second (for prismatic joint) or radians per second (for hinge joint)
         virtual void SetVelocity(float velocity) = 0;
 
-        virtual void SetVelocityGeneral(const AZ::Vector3& linear, const AZ::Vector3& angular) { SetVelocity(linear.GetX()); }
+        virtual void SetVelocityGeneral(const AZ::Vector3& linear, const AZ::Vector3& angular) { AZ_UNUSED(angular); SetVelocity(linear.GetX()); }
 
         //! Gets local transformation of joint.
         //! Returns the local transform of the joint relative to its parent entity.
@@ -57,7 +57,7 @@ namespace PhysX
         //! querying limits of individual axes.
         //! @param id Axis identifier (joint-specific mapping)
         //! @return Pair of floats (min, max) in radians for angular axes, meters for linear axes
-        virtual AZStd::pair<float, float> GetLimitsAxis(int id) const { return GetLimits(); }
+        virtual AZStd::pair<float, float> GetLimitsAxis(int id) const {  AZ_UNUSED(id); return GetLimits(); }
 
         //! Sets maximum motor force.
         //! @param force in Newtons (for prismatic joint) or Newton-meters (for hinge joint).
@@ -68,7 +68,7 @@ namespace PhysX
         //! controlling maximum force of individual axis drives.
         //! @param id Axis identifier (joint-specific mapping)
         //! @param force Maximum force in Newtons (for linear axes) or Newton-meters (for angular axes)
-        virtual void SetMaximumForceAxis(int id, float force) { SetMaximumForce(force); }
+        virtual void SetMaximumForceAxis(int id, float force) { AZ_UNUSED(id); SetMaximumForce(force); }
 
         //! Returns underlying, cached native joint pointer, if available.
         //! Note that is quite unsafe to use this pointer, since you need to ensure the joint type is valid and available.

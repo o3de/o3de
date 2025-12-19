@@ -62,10 +62,6 @@ namespace PhysX
                     ->Value("Position", D6JointDriveType::Position)
                     ->Value("Velocity", D6JointDriveType::Velocity);
 
-                editContext->Enum<D6JointDriveFlag>("D6JointDriveFlag", "D6 Joint Drive Flag")
-                    ->Value("Force", D6JointDriveFlag::Force)
-                    ->Value("Acceleration", D6JointDriveFlag::Acceleration);
-
                 editContext->Class<D6JointDrive>("D6 Joint Drive", "Drive configuration for a D6 joint axis")
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
@@ -327,6 +323,7 @@ namespace PhysX
             m_nativeD6Joint->setMotion(physx::PxD6Axis::eSWING2, ConvertD6JointAxisToPxD6Motion(m_d6Configuration.m_motionSwing2));
 
             // Set linear limits per axis
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
             if (m_d6Configuration.m_motionX == D6JointAxis::Limited)
             {
                 physx::PxJointLinearLimitPair limitX(m_d6Configuration.m_motionLimitsX.first, m_d6Configuration.m_motionLimitsX.second);
@@ -344,6 +341,44 @@ namespace PhysX
                 physx::PxJointLinearLimitPair limitZ(m_d6Configuration.m_motionLimitsZ.first, m_d6Configuration.m_motionLimitsZ.second);
                 m_nativeD6Joint->setLinearLimit(physx::PxD6Axis::eZ, limitZ);
             }
+#else
+            // PhysX 4 doesn't support per-axis linear limits, only a single spherical limit
+            // Calculate the maximum extent from all limited axes
+            if (m_d6Configuration.m_motionX == D6JointAxis::Limited ||
+                m_d6Configuration.m_motionY == D6JointAxis::Limited ||
+                m_d6Configuration.m_motionZ == D6JointAxis::Limited)
+            {
+                AZ_Warning(
+                    "PhysX",
+                    false,
+                    "Entity [%s] D6 Joint: PhysX 4 does not support per-axis linear limits. "
+                    "Converting to a single spherical limit using the maximum extent from all limited axes. "
+                    "Consider upgrading to PhysX 5 for full per-axis linear limit support.",
+                    GetEntity()->GetName().c_str());
+
+                float maxExtent = 0.0f;
+                if (m_d6Configuration.m_motionX == D6JointAxis::Limited)
+                {
+                    const float extentX = AZ::GetMax(AZ::GetAbs(m_d6Configuration.m_motionLimitsX.first),
+                                                      AZ::GetAbs(m_d6Configuration.m_motionLimitsX.second));
+                    maxExtent = AZ::GetMax(maxExtent, extentX);
+                }
+                if (m_d6Configuration.m_motionY == D6JointAxis::Limited)
+                {
+                    const float extentY = AZ::GetMax(AZ::GetAbs(m_d6Configuration.m_motionLimitsY.first),
+                                                      AZ::GetAbs(m_d6Configuration.m_motionLimitsY.second));
+                    maxExtent = AZ::GetMax(maxExtent, extentY);
+                }
+                if (m_d6Configuration.m_motionZ == D6JointAxis::Limited)
+                {
+                    const float extentZ = AZ::GetMax(AZ::GetAbs(m_d6Configuration.m_motionLimitsZ.first),
+                                                      AZ::GetAbs(m_d6Configuration.m_motionLimitsZ.second));
+                    maxExtent = AZ::GetMax(maxExtent, extentZ);
+                }
+                physx::PxJointLinearLimit linearLimit(physx::PxTolerancesScale(), maxExtent);
+                m_nativeD6Joint->setLinearLimit(linearLimit);
+            }
+#endif
 
             // Set twist limit
             if (m_d6Configuration.m_motionTwist == D6JointAxis::Limited)
