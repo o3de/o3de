@@ -32,6 +32,19 @@ namespace AZ
             , m_importer(AZStd::make_unique<Assimp::Importer>())
             , m_extractEmbeddedTextures(false)
         {
+            // AssImp automatically converts all incoming scenes to Y-up coordinate system internally, regardless of their original orientation.
+            // It does this by either applying an identity matrix (if the scene was already Y-up) or a space-transforming root matrix.
+            // This means all AssImp data can be assumed to be Y-up.
+            // 
+            // Previously, O3DE ignored this root transform and assumed source data was Z-up, leading to incorrect orientations.
+            // The AssImpReadRootTransform flag was added to handle this properly for new projects while maintaining compatibility
+            // with existing projects that had manually counter-rotated assets to compensate for the incorrect behavior.
+            static constexpr const char* s_ReadRootTransformKey = "/O3DE/Preferences/SceneAPI/AssImpReadRootTransform";
+            m_readRootTransform = false;
+            if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+            {
+                settingsRegistry->Get(m_readRootTransform, s_ReadRootTransformKey);
+            }
         }
         AssImpSceneWrapper::AssImpSceneWrapper(aiScene* aiScene)
             : m_assImpScene(aiScene)
@@ -203,26 +216,7 @@ namespace AZ
 
         AZStd::optional<SceneAPI::DataTypes::MatrixType> AssImpSceneWrapper::UseForcedRootTransform() const
         {
-            // AssImp automatically converts all incoming scenes to Y-up coordinate system internally, regardless of their original orientation.
-            // It does this by either applying an identity matrix (if the scene was already Y-up) or a space-transforming root matrix.
-            // This means all AssImp data can be assumed to be Y-up.
-            // 
-            // Previously, O3DE ignored this root transform and assumed source data was Z-up, leading to incorrect orientations.
-            // The AssImpReadRootTransform flag was added to handle this properly for new projects while maintaining compatibility
-            // with existing projects that had manually counter-rotated assets to compensate for the incorrect behavior.
-            static constexpr const char* s_ReadRootTransformKey = "/O3DE/Preferences/SceneAPI/AssImpReadRootTransform";
-            bool readRootTransform = false;
-            if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
-            {
-                settingsRegistry->Get(readRootTransform, s_ReadRootTransformKey);
-            }
-
-            // for FBX, root transform is not converted where there are no meshes in the scene.
-            if ((m_assImpScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) && m_assImpScene->mMetaData->HasKey("UpAxis"))
-            {
-                readRootTransform = false;
-            }
-            if (!readRootTransform)
+            if (!m_readRootTransform)
             {
                 return AZStd::nullopt;
             }

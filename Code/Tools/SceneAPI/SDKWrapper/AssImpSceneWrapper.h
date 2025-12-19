@@ -54,6 +54,7 @@ namespace AZ
             aiAABB m_aabb;
             uint32_t m_vertices;
             bool m_extractEmbeddedTextures;
+            bool m_readRootTransform;
         };
 
     } // namespace AssImpSDKWrapper
