@@ -23,6 +23,11 @@ namespace LmbrCentral
                 ->Version(1)
                 ->Field("Target", &EditorLookAtComponent::m_targetId)
                 ->Field("ForwardAxis", &EditorLookAtComponent::m_forwardAxis)
+                ->Field("Strength", &EditorLookAtComponent::m_strength)
+                ->Field("FixatePitch", &EditorLookAtComponent::m_fixatePitch)
+                ->Field("FixateRoll", &EditorLookAtComponent::m_fixateRoll)
+                ->Field("FixateYaw", &EditorLookAtComponent::m_fixateYaw)
+                ->Field("Enabled", &EditorLookAtComponent::m_enabled)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -48,6 +53,23 @@ namespace LmbrCentral
                         ->EnumAttribute(AZ::Transform::Axis::ZPositive, "Z+")
                         ->EnumAttribute(AZ::Transform::Axis::ZNegative, "Z-")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorLookAtComponent::m_strength, "Strength", "Determines how quickly the rotation is performed and how much it resists changes in the rotation")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.0001f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.f)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixatePitch, "Fixate Pitch", "Whether the pitch is fixated towards the Look At entity / point")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixateRoll, "Fixate Roll", "Whether the pitch is fixated towards the Look At entity / point")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixateYaw, "Fixate Yaw", "Whether the pitch is fixated towards the Look At entity / point")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_enabled, "Enabled", "Whether the Look At component is enabled or Disabled")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::OnEnabledChanged)
                     ;
             }
         }
@@ -119,6 +141,11 @@ namespace LmbrCentral
         {
             lookAtComponent->m_targetId = m_targetId;
             lookAtComponent->m_forwardAxis = m_forwardAxis;
+            lookAtComponent->m_strength = m_strength;
+            lookAtComponent->m_fixatePitch = m_fixatePitch;
+            lookAtComponent->m_fixateRoll = m_fixateRoll;
+            lookAtComponent->m_fixateYaw = m_fixateYaw;
+            lookAtComponent->m_enabled = m_enabled;
         }
     }
 
@@ -152,6 +179,13 @@ namespace LmbrCentral
     }
 
     //=========================================================================
+    void EditorLookAtComponent::OnEnabledChanged()
+    {
+        if (m_enabled)
+            RecalculateTransform();
+    }
+
+    //=========================================================================
     void EditorLookAtComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
         RecalculateTransform();
@@ -161,6 +195,9 @@ namespace LmbrCentral
     //=========================================================================
     void EditorLookAtComponent::RecalculateTransform()
     {
+        if (!m_enabled)
+            return;
+
         if (m_targetId.IsValid())
         {
             AZ::TransformNotificationBus::MultiHandler::BusDisconnect(GetEntityId());
@@ -177,12 +214,24 @@ namespace LmbrCentral
                     m_forwardAxis
                     );
 
-                // update the rotation and translation for sourceTM based on lookAtTransform, but leave scale unchanged
-                sourceTM.SetRotation(lookAtTransform.GetRotation());
-                sourceTM.SetTranslation(lookAtTransform.GetTranslation());
+                if (!m_fixatePitch)
+                    lookAtTransform.SetFromEulerRadians(AZ::Vector3(sourceTM.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+                if (!m_fixateRoll)
+                    lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), sourceTM.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+                if (!m_fixateYaw)
+                    lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), sourceTM.GetRotation().GetEulerRadians().GetZ()));
 
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, lookAtTransform);
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, sourceTM);
+                lookAtTransform.SetTranslation(sourceTM.GetTranslation());
+
+                // update the rotation and translation for sourceTM based on lookAtTransform, but leave scale unchanged
+                if (m_strength == 1.f)
+                {
+                    sourceTM.SetRotation(lookAtTransform.GetRotation());
+                    sourceTM.SetTranslation(lookAtTransform.GetTranslation());
+
+                    AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, lookAtTransform);
+                    AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, sourceTM);
+                }
             }
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         }

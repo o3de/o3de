@@ -19,12 +19,18 @@ namespace LmbrCentral
     {
     public:
         AZ_EBUS_BEHAVIOR_BINDER(BehaviorLookAtComponentNotificationBusHandler, "{2C171B89-CE6A-4C53-A286-0E1236A61FA0}", AZ::SystemAllocator,
-            OnTargetChanged);
+            OnTargetChanged, OnEnabledChanged);
 
-        // Sent when the light is turned on.
+        // Sent when the target entityId changes
         void OnTargetChanged(AZ::EntityId entityId) override
         {
             Call(FN_OnTargetChanged, entityId);
+        }
+
+        // Sent when Look At is enabled or disabled
+        void OnEnabledChanged(bool enabled) override
+        {
+            Call(FN_OnEnabledChanged, enabled);
         }
     };
 
@@ -38,6 +44,11 @@ namespace LmbrCentral
                 ->Version(1)
                 ->Field("Target", &LookAtComponent::m_targetId)
                 ->Field("ForwardAxis", &LookAtComponent::m_forwardAxis)
+                ->Field("Strength", &LookAtComponent::m_strength)
+                ->Field("FixatePitch", &LookAtComponent::m_fixatePitch)
+                ->Field("FixateRoll", &LookAtComponent::m_fixateRoll)
+                ->Field("FixateYaw", &LookAtComponent::m_fixateYaw)
+                ->Field("Enabled", &LookAtComponent::m_enabled)
                 ;
         }
 
@@ -45,12 +56,39 @@ namespace LmbrCentral
         {
             behaviorContext->EBus<LookAtComponentRequestBus>("LookAt", "LookAtRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Gameplay")
+                ->Event("GetTarget", &LookAtComponentRequestBus::Events::GetTarget, "Get Target")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get the entity being looked at")
                 ->Event("SetTarget", &LookAtComponentRequestBus::Events::SetTarget, "Set Target", { { { "Target", "The entity to look at" } } })
                     ->Attribute(AZ::Script::Attributes::ToolTip, "Set the entity to look at")
+                ->Event("GetTargetPosition", &LookAtComponentRequestBus::Events::GetTargetPosition, "Get Target Position")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get the target position being looked at.")
                 ->Event("SetTargetPosition", &LookAtComponentRequestBus::Events::SetTargetPosition, "Set Target Position", { { { "Position", "The position to look at" } } })
-                    ->Attribute(AZ::Script::Attributes::ToolTip, "Sets the target position to look at.")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Set the target position to look at.")
+                ->Event("GetAxis", &LookAtComponentRequestBus::Events::GetAxis, "Get Axis")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get the forward axis being used as reference for the look at")
                 ->Event("SetAxis", &LookAtComponentRequestBus::Events::SetAxis, "Set Axis", { { { "Axis", "The forward axis to use as reference" } } })
-                ->Attribute(AZ::Script::Attributes::ToolTip, "Specify the forward axis to use as reference for the look at")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Set the forward axis to use as reference for the look at")
+                ->Event("GetStrength", &LookAtComponentRequestBus::Events::GetStrength, "Get Strength")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get the strength / quickness of the look at rotation")
+                ->Event("SetStrength", &LookAtComponentRequestBus::Events::SetStrength, "Set Strength", { { { "Strength", "Determines how quickly the rotation is performed and how much it resists changes in the rotation" } } })
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Set the strength / quickness of the look at rotation")
+                ->Event("GetFixatePitch", &LookAtComponentRequestBus::Events::GetFixatePitch, "Get Fixate Pitch")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get whether the pitch is fixated")
+                ->Event("SetFixatePitch", &LookAtComponentRequestBus::Events::SetFixatePitch, "Set Fixate Pitch", { { { "Fixate Pitch", "Whether the pitch is fixated towards the Look At entity / point" } } })
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Set whether the pitch is fixated")
+                ->Event("GetFixateRoll", &LookAtComponentRequestBus::Events::GetFixateRoll, "Get Fixate Roll")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get whether the roll is fixated")
+                ->Event("SetFixateRoll", &LookAtComponentRequestBus::Events::SetFixateRoll, "Set Fixate Roll", { { { "Fixate Roll", "Whether the roll is fixated towards the Look At entity / point" } } })
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Set whether the roll is fixated")
+                ->Event("GetFixateYaw", &LookAtComponentRequestBus::Events::GetFixateYaw, "Get Fixate Yaw")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get whether the yaw is fixated")
+                ->Event("SetFixateYaw", &LookAtComponentRequestBus::Events::SetFixateYaw, "Set Fixate Yaw", { { { "Fixate Yaw", "Whether the yaw is fixated towards the Look At entity / point" } } })
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Set whether the yaw is fixated")
+                ->Event("GetEnabled", &LookAtComponentRequestBus::Events::GetEnabled, "Get Enabled")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get whether the Look At component is enabled or disabled")
+                ->Event("SetEnabled", &LookAtComponentRequestBus::Events::SetEnabled, "Set Enabled", { { { "Enabled", "Whether the Look At component is enabled or disabled" } } })
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Set whether the Look At component is enabled or disabled")
+                ;
                 ;
 
             behaviorContext->EBus<LookAtComponentNotificationBus>("LookAtNotification", "LookAtComponentNotificationBus", "Notifications for the Look At Component")
@@ -94,7 +132,12 @@ namespace LmbrCentral
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect(m_targetId);
     }
 
-    void LookAtComponent::SetTarget(AZ::EntityId targetEntity)
+    AZ::EntityId LookAtComponent::GetTarget() const
+    {
+        return m_targetId;
+    }
+
+    void LookAtComponent::SetTarget(const AZ::EntityId& targetEntity)
     {
         if (m_targetId.IsValid())
         {
@@ -109,6 +152,11 @@ namespace LmbrCentral
         RecalculateTransform();
 
         LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnTargetChanged, m_targetId);
+    }
+
+    AZ::Vector3 LookAtComponent::GetTargetPosition() const
+    {
+        return m_targetPosition;
     }
 
     void LookAtComponent::SetTargetPosition(const AZ::Vector3& targetPosition)
@@ -127,11 +175,68 @@ namespace LmbrCentral
         LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnTargetChanged, m_targetId);
     }
 
-    void LookAtComponent::SetAxis(AZ::Transform::Axis axis)
+    AZ::Transform::Axis LookAtComponent::GetAxis() const
+    {
+        return m_forwardAxis;
+    }
+
+    void LookAtComponent::SetAxis(const AZ::Transform::Axis axis)
     {
         m_forwardAxis = axis;
 
         RecalculateTransform();
+    }
+
+    float LookAtComponent::GetStrength() const
+    {
+        return m_strength;
+    }
+
+    void LookAtComponent::SetStrength(const float strength)
+    {
+        m_strength = AZ::GetClamp(strength, 0.f, 1.f);
+    }
+
+    bool LookAtComponent::GetFixatePitch() const
+    {
+        return m_fixatePitch;
+    }
+
+    void LookAtComponent::SetFixatePitch(const bool fixatePitch)
+    {
+        m_fixatePitch = fixatePitch;
+    }
+
+    bool LookAtComponent::GetFixateRoll() const
+    {
+        return m_fixateRoll;
+    }
+
+    void LookAtComponent::SetFixateRoll(const bool fixateRoll)
+    {
+        m_fixateRoll = fixateRoll;
+    }
+
+    bool LookAtComponent::GetFixateYaw() const
+    {
+        return m_fixateYaw;
+    }
+
+    void LookAtComponent::SetFixateYaw(const bool fixateYaw)
+    {
+        m_fixateYaw = fixateYaw;
+    }
+
+    bool LookAtComponent::GetEnabled() const
+    {
+        return m_enabled;
+    }
+
+    void LookAtComponent::SetEnabled(const bool enabled)
+    {
+        m_enabled = enabled;
+        if (m_enabled)
+            LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnEnabledChanged, m_enabled);
     }
 
     //=========================================================================
@@ -151,6 +256,9 @@ namespace LmbrCentral
     //=========================================================================
     void LookAtComponent::RecalculateTransform()
     {
+        if (!m_enabled)
+            return;
+
         AZ::Vector3 targetPosition = m_targetPosition;
 
         if (m_targetId.IsValid())
@@ -172,6 +280,17 @@ namespace LmbrCentral
                 m_forwardAxis
                 );
             lookAtTransform.SetUniformScale(currentTM.GetUniformScale());
+
+            lookAtTransform.SetRotation(currentTM.GetRotation().Slerp(lookAtTransform.GetRotation(), m_strength));
+
+            if (!m_fixatePitch)
+                lookAtTransform.SetFromEulerRadians(AZ::Vector3(currentTM.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+            if (!m_fixateRoll)
+                lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), currentTM.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+            if (!m_fixateYaw)
+                lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), currentTM.GetRotation().GetEulerRadians().GetZ()));
+
+            lookAtTransform.SetTranslation(currentTM.GetTranslation());
 
             AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, lookAtTransform);
         }
