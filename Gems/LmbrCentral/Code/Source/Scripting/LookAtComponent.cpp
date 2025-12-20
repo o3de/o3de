@@ -332,7 +332,9 @@ namespace LmbrCentral
 
             // Only set the transform when enabled
             if (m_enabled)
+            {
                 AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, m_lookAtTransform);
+            }
         }
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
     }

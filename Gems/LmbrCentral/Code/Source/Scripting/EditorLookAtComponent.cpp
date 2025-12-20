@@ -182,7 +182,9 @@ namespace LmbrCentral
     void EditorLookAtComponent::OnEnabledChanged()
     {
         if (m_enabled)
+        {
             RecalculateTransform();
+        }
     }
 
     //=========================================================================
@@ -196,7 +198,9 @@ namespace LmbrCentral
     void EditorLookAtComponent::RecalculateTransform()
     {
         if (!m_enabled)
+        {
             return;
+        }
 
         if (m_targetId.IsValid())
         {
@@ -215,11 +219,17 @@ namespace LmbrCentral
                     );
 
                 if (!m_fixatePitch)
+                {
                     lookAtTransform.SetFromEulerRadians(AZ::Vector3(sourceTM.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+                }
                 if (!m_fixateRoll)
+                {
                     lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), sourceTM.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+                }
                 if (!m_fixateYaw)
+                {
                     lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), sourceTM.GetRotation().GetEulerRadians().GetZ()));
+                }
 
                 lookAtTransform.SetTranslation(sourceTM.GetTranslation());
 
