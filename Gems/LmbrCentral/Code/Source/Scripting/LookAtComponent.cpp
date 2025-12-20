@@ -241,12 +241,12 @@ namespace LmbrCentral
 
     void LookAtComponent::SetEnabled(const bool enabled)
     {
-        m_enabled = enabled;
-        AZ::TransformBus::EventResult(m_lastDiscreteTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        if (m_enabled)
+        if (m_enabled != enabled)
         {
             LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnEnabledChanged, m_enabled);
         }
+        m_enabled = enabled;
+        AZ::TransformBus::EventResult(m_lastDiscreteTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
     }
 
     //=========================================================================
