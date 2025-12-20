@@ -71,7 +71,13 @@ namespace LmbrCentral
         virtual bool GetEnabled() const = 0;
 
         //! Set whether the Look At component is enabled
-        virtual void SetEnabled([[maybe_unused]] bool enabled = true) {}
+        virtual void SetEnabled([[maybe_unused]] bool enabled) {}
+
+        //! Get whether the Look At transform is applied
+        virtual bool GetApplyLookAtTransform() const = 0;
+
+        //! Set whether the Look At transform is applied
+        virtual void SetApplyLookAtTransform([[maybe_unused]] bool applyLookAtTransform) {}
     };
 
     using LookAtComponentRequestBus = AZ::EBus<LookAtComponentRequests>;
@@ -144,6 +150,8 @@ namespace LmbrCentral
         void SetFixateYaw(const bool fixateYaw) override;
         bool GetEnabled() const override;
         void SetEnabled(const bool enabled) override;
+        bool GetApplyLookAtTransform() const override;
+        void SetApplyLookAtTransform(const bool applyLookAtTransform) override;
         //=====================================================================
 
     protected:
@@ -177,6 +185,7 @@ namespace LmbrCentral
         bool m_fixateRoll = true;
         bool m_fixateYaw = true;
         bool m_enabled = true;
+        bool m_applyLookAtTransform = true;
 
         // Framerate independence for strength application
         float m_accumulatedDeltaTime = 0.f;

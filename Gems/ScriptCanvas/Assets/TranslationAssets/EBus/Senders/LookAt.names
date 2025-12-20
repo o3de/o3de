@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Look At"
+                "name": "Look At",
+                "category": "Gameplay"
             },
             "methods": [
                 {
@@ -148,6 +149,30 @@
                             "details": {
                                 "name": "Strength",
                                 "tooltip": "How quickly the rotation is performed and how much it resists changes in the rotation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetApplyLookAtTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Apply Look At Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Apply Look At Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Set Apply Look At Transform",
+                        "tooltip": "Set whether the Look At transform is applied when the component is enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled",
+                                "tooltip": "Whether the Look At transform is applied when calculated"
                             }
                         }
                     ]
@@ -316,6 +341,30 @@
                             "details": {
                                 "name": "Fixate Yaw",
                                 "tooltip": "Whether the yaw is fixated towards the Look At entity / point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetApplyLookAtTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Apply Look At Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Apply Look At Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Get Apply Look At Transform",
+                        "tooltip": "Get whether the Look At transform is applied"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled",
+                                "tooltip": "Whether the Look At transform is applied when calculated"
                             }
                         }
                     ]

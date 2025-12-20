@@ -49,6 +49,7 @@ namespace LmbrCentral
                 ->Field("FixateRoll", &LookAtComponent::m_fixateRoll)
                 ->Field("FixateYaw", &LookAtComponent::m_fixateYaw)
                 ->Field("Enabled", &LookAtComponent::m_enabled)
+                ->Field("ApplyLookAtTransform", &LookAtComponent::m_applyLookAtTransform)
                 ;
         }
 
@@ -90,6 +91,10 @@ namespace LmbrCentral
                     ->Attribute(AZ::Script::Attributes::ToolTip, "Get whether the Look At component is enabled or disabled")
                 ->Event("SetEnabled", &LookAtComponentRequestBus::Events::SetEnabled, "Set Enabled", { { { "Enabled", "Whether the Look At component is enabled or disabled" } } })
                     ->Attribute(AZ::Script::Attributes::ToolTip, "Set whether the Look At component is enabled or disabled")
+                ->Event("GetApplyLookAtTransform", &LookAtComponentRequestBus::Events::GetApplyLookAtTransform, "Get Apply Look At Transform")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get whether the Look At transform is applied")
+                ->Event("SetApplyLookAtTransform", &LookAtComponentRequestBus::Events::SetApplyLookAtTransform, "Set Apply Look At Transform", { { { "Enabled", "Whether the Look At transform is applied when calculated" } } })
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Set whether the Look At transform is applied when the component is enabled")
                 ;
                 ;
 
@@ -247,6 +252,24 @@ namespace LmbrCentral
         }
         m_enabled = enabled;
         AZ::TransformBus::EventResult(m_lastDiscreteTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        if (m_enabled)
+        {
+            RecalculateTransform(0.f);
+        }
+    }
+
+    bool LookAtComponent::GetApplyLookAtTransform() const
+    {
+        return m_applyLookAtTransform;
+    }
+
+    void LookAtComponent::SetApplyLookAtTransform(const bool applyLookAtTransform)
+    {
+        m_applyLookAtTransform = applyLookAtTransform;
+        if (m_applyLookAtTransform)
+        {
+            RecalculateTransform(0.f);
+        }
     }
 
     //=========================================================================
@@ -266,6 +289,11 @@ namespace LmbrCentral
     //=========================================================================
     void LookAtComponent::RecalculateTransform(const float deltaTime)
     {
+        if (!m_enabled)
+        {
+            return;
+        }
+
         AZ::Vector3 targetPosition = m_targetPosition;
 
         if (m_targetId.IsValid())
@@ -330,8 +358,8 @@ namespace LmbrCentral
 
             m_lookAtTransform.SetTranslation(currentTM.GetTranslation());
 
-            // Only set the transform when enabled
-            if (m_enabled)
+            // Only set the transform when set to do so
+            if (m_applyLookAtTransform)
             {
                 AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, m_lookAtTransform);
             }

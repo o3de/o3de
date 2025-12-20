@@ -28,6 +28,7 @@ namespace LmbrCentral
                 ->Field("FixateRoll", &EditorLookAtComponent::m_fixateRoll)
                 ->Field("FixateYaw", &EditorLookAtComponent::m_fixateYaw)
                 ->Field("Enabled", &EditorLookAtComponent::m_enabled)
+                ->Field("ApplyLookAtTransform", &EditorLookAtComponent::m_applyLookAtTransform)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -68,8 +69,10 @@ namespace LmbrCentral
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_fixateYaw, "Fixate Yaw", "Whether the pitch is fixated towards the Look At entity / point")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_enabled, "Enabled", "Whether the Look At component is enabled or Disabled")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_enabled, "Enabled", "Whether the Look At component is enabled or disabled")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::OnEnabledChanged)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorLookAtComponent::m_applyLookAtTransform, "Apply Look At Transform", "Whether the Look At transform is applied when the component is enabled")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorLookAtComponent::RecalculateTransform)
                     ;
             }
         }
@@ -146,6 +149,7 @@ namespace LmbrCentral
             lookAtComponent->m_fixateRoll = m_fixateRoll;
             lookAtComponent->m_fixateYaw = m_fixateYaw;
             lookAtComponent->m_enabled = m_enabled;
+            lookAtComponent->m_applyLookAtTransform = m_applyLookAtTransform;
         }
     }
 
@@ -234,7 +238,7 @@ namespace LmbrCentral
                 lookAtTransform.SetTranslation(sourceTM.GetTranslation());
 
                 // When strength is maxed out, update the rotation and translation for sourceTM based on lookAtTransform, but leave scale unchanged
-                if (m_strength == 1.f)
+                if (m_strength == 1.f && m_applyLookAtTransform)
                 {
                     sourceTM.SetRotation(lookAtTransform.GetRotation());
                     sourceTM.SetTranslation(lookAtTransform.GetTranslation());

@@ -92,6 +92,7 @@ namespace LmbrCentral
         bool m_fixateRoll = true;
         bool m_fixateYaw = true;
         bool m_enabled = true;
+        bool m_applyLookAtTransform = true;
 
         // Transient data
         AZ::EntityId m_oldTargetId;
