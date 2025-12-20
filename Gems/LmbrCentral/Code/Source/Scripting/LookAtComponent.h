@@ -34,6 +34,9 @@ namespace LmbrCentral
         //! Set the target position to look at
         virtual void SetTargetPosition([[maybe_unused]] const AZ::Vector3& position) {}
 
+        //! Get the target Look At transform
+        virtual AZ::Transform GetLookAtTransform() const = 0;
+
         //! Get the reference forward axis
         virtual AZ::Transform::Axis GetAxis() const = 0;
 
@@ -128,6 +131,7 @@ namespace LmbrCentral
         void SetTarget(const AZ::EntityId& targetEntity) override;
         AZ::Vector3 GetTargetPosition() const override;
         void SetTargetPosition(const AZ::Vector3& targetPosition) override;
+        AZ::Transform GetLookAtTransform() const override;
         AZ::Transform::Axis GetAxis() const override;
         void SetAxis(AZ::Transform::Axis axis) override;
         float GetStrength() const override;
@@ -165,7 +169,8 @@ namespace LmbrCentral
 
         // Serialized data
         AZ::EntityId m_targetId = AZ::EntityId();
-        AZ::Vector3  m_targetPosition = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_targetPosition = AZ::Vector3::CreateZero();
+        AZ::Transform m_lookAtTransform = AZ::Transform::Identity();
         AZ::Transform::Axis m_forwardAxis = AZ::Constants::Axis::YPositive;
         float m_strength = 1.f;
         bool m_fixatePitch = true;

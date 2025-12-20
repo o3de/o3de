@@ -64,6 +64,8 @@ namespace LmbrCentral
                     ->Attribute(AZ::Script::Attributes::ToolTip, "Get the target position being looked at.")
                 ->Event("SetTargetPosition", &LookAtComponentRequestBus::Events::SetTargetPosition, "Set Target Position", { { { "Position", "The position to look at" } } })
                     ->Attribute(AZ::Script::Attributes::ToolTip, "Set the target position to look at.")
+                ->Event("GetLookAtTransform", &LookAtComponentRequestBus::Events::GetLookAtTransform, "Get Look At Transform")
+                    ->Attribute(AZ::Script::Attributes::ToolTip, "Get the target Look At transform.")
                 ->Event("GetAxis", &LookAtComponentRequestBus::Events::GetAxis, "Get Axis")
                     ->Attribute(AZ::Script::Attributes::ToolTip, "Get the forward axis being used as reference for the look at")
                 ->Event("SetAxis", &LookAtComponentRequestBus::Events::SetAxis, "Set Axis", { { { "Axis", "The forward axis to use as reference" } } })
@@ -149,10 +151,7 @@ namespace LmbrCentral
 
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_targetId);
 
-        if (m_strength == 1.f)
-        {
-            RecalculateTransform(0.f);
-        }
+        RecalculateTransform(0.f);
 
         LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnTargetChanged, m_targetId);
     }
@@ -173,12 +172,14 @@ namespace LmbrCentral
 
         m_targetPosition = targetPosition;
 
-        if (m_strength == 1.f)
-        {
-            RecalculateTransform(0.f);
-        }
+        RecalculateTransform(0.f);
 
         LookAtComponentNotificationBus::Broadcast(&LookAtComponentNotifications::OnTargetChanged, m_targetId);
+    }
+
+    AZ::Transform LookAtComponent::GetLookAtTransform() const
+    {
+        return m_lookAtTransform;
     }
 
     AZ::Transform::Axis LookAtComponent::GetAxis() const
@@ -190,10 +191,7 @@ namespace LmbrCentral
     {
         m_forwardAxis = axis;
 
-        if (m_strength == 1.f)
-        {
-            RecalculateTransform(0.f);
-        }
+        RecalculateTransform(0.f);
     }
 
     float LookAtComponent::GetStrength() const
@@ -268,9 +266,6 @@ namespace LmbrCentral
     //=========================================================================
     void LookAtComponent::RecalculateTransform(const float deltaTime)
     {
-        if (!m_enabled)
-            return;
-
         AZ::Vector3 targetPosition = m_targetPosition;
 
         if (m_targetId.IsValid())
@@ -286,12 +281,12 @@ namespace LmbrCentral
             AZ::Transform currentTM = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(currentTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
-            AZ::Transform lookAtTransform = AZ::Transform::CreateLookAt(
+            m_lookAtTransform = AZ::Transform::CreateLookAt(
                 currentTM.GetTranslation(),
                 targetPosition,
                 m_forwardAxis
                 );
-            lookAtTransform.SetUniformScale(currentTM.GetUniformScale());
+            m_lookAtTransform.SetUniformScale(currentTM.GetUniformScale());
 
             // Only apply the strength / slerp when it's not at it's not maxed out to 1
             if (m_strength < 1.f)
@@ -315,27 +310,29 @@ namespace LmbrCentral
                     m_accumulatedDeltaTime = deltaTime;
                 }
 
-                const AZ::Quaternion targetRotation = m_lastDiscreteTM.GetRotation().Slerp(lookAtTransform.GetRotation(), m_accumulatedDeltaTime * normalizedFrameRate * m_strength);
+                const AZ::Quaternion targetRotation = m_lastDiscreteTM.GetRotation().Slerp(m_lookAtTransform.GetRotation(), m_accumulatedDeltaTime * normalizedFrameRate * m_strength);
 
-                lookAtTransform.SetRotation(targetRotation);
+                m_lookAtTransform.SetRotation(targetRotation);
             }
 
             if (!m_fixatePitch)
             {
-                lookAtTransform.SetFromEulerRadians(AZ::Vector3(currentTM.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+                m_lookAtTransform.SetFromEulerRadians(AZ::Vector3(currentTM.GetRotation().GetEulerRadians().GetX(), m_lookAtTransform.GetRotation().GetEulerRadians().GetY(), m_lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
             }
             if (!m_fixateRoll)
             {
-                lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), currentTM.GetRotation().GetEulerRadians().GetY(), lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
+                m_lookAtTransform.SetFromEulerRadians(AZ::Vector3(m_lookAtTransform.GetRotation().GetEulerRadians().GetX(), currentTM.GetRotation().GetEulerRadians().GetY(), m_lookAtTransform.GetRotation().GetEulerRadians().GetZ()));
             }
             if (!m_fixateYaw)
             {
-                lookAtTransform.SetFromEulerRadians(AZ::Vector3(lookAtTransform.GetRotation().GetEulerRadians().GetX(), lookAtTransform.GetRotation().GetEulerRadians().GetY(), currentTM.GetRotation().GetEulerRadians().GetZ()));
+                m_lookAtTransform.SetFromEulerRadians(AZ::Vector3(m_lookAtTransform.GetRotation().GetEulerRadians().GetX(), m_lookAtTransform.GetRotation().GetEulerRadians().GetY(), currentTM.GetRotation().GetEulerRadians().GetZ()));
             }
 
-            lookAtTransform.SetTranslation(currentTM.GetTranslation());
+            m_lookAtTransform.SetTranslation(currentTM.GetTranslation());
 
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, lookAtTransform);
+            // Only set the transform when enabled
+            if (m_enabled)
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTM, m_lookAtTransform);
         }
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
     }

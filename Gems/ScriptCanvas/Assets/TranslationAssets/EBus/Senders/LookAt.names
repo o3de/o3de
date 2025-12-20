@@ -225,6 +225,30 @@
                     ]
                 },
                 {
+                    "base": "GetLookAtTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Look At Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Look At Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Get Look At Transform",
+                        "tooltip": "Get the target Look At transform."
+                    },
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Look At Transform",
+                                "tooltip": "The transform when looking at the target"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "SetStrength",
                     "entry": {
                         "name": "In",
