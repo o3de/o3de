@@ -23,6 +23,8 @@ namespace AZ::Render
         Barycentrics,
         Normals,
         UVs,
-        BaseColor
+        BaseColor,
+        EmissiveColor,
+        IrradianceColor
     };
 } // namespace AZ::Render

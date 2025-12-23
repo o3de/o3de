@@ -26,7 +26,7 @@ namespace SimuCore::ParticleCore {
         vel = std::min(vel, data->velocityRange);
         vel = data->velocityRange > AZ::Constants::FloatEpsilon ? vel / data->velocityRange : 1.f;
         LinearValue velSize = CalcDistributionTickValue(data->velScale, info.baseInfo, particle);
-        Vector3 size;
+        AZ::Vector3 size;
         if (data->velScale.distType == DistributionType::CONSTANT) {
             size = velSize.minValue * (1.0f - vel) + velSize.maxValue * vel;
         }

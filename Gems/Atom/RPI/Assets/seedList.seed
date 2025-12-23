@@ -39,7 +39,27 @@
             },
             "platformFlags": 255,
             "pathHint": "textures/defaults/missing.png.streamingimage"
+        },
+        {
+            "assetId": {
+                "guid": "{5AC35A99-540A-59D0-AB03-5D42DE9433D6}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/scenematerialsrg.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{3095BDDE-37CA-53A2-9C5A-AF42D9EE68BE}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/deferredpasssrg.azshader"
+        },
+        {
+            "assetId": {
+                "guid": "{B37F7B9E-C6D2-5098-99E1-1288FB4AD902}"
+            },
+            "platformFlags": 255,
+            "pathHint": "shaders/forwardpasssrg.azshader"
         }
     ]
 }
-

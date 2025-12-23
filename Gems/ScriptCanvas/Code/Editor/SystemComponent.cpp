@@ -32,7 +32,6 @@
 #include <Editor/View/Widgets/SourceHandlePropertyAssetCtrl.h>
 #include <Editor/View/Windows/MainWindow.h>
 #include <GraphCanvas/GraphCanvasBus.h>
-#include <LyViewPaneNames.h>
 #include <QDir>
 #include <QFileInfo>
 #include <QMenu>
@@ -48,14 +47,24 @@
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <ScriptCanvasContextIdentifiers.h>
 
+#if !SCRIPTCANVAS_STANDALONE_APPLICATION
+#include <LyViewPaneNames.h>
+#endif
+
 namespace ScriptCanvasEditor
 {
+#if SCRIPTCANVAS_STANDALONE_APPLICATION
     constexpr AZStd::string_view ScriptCanvasApplicationActionIdentifier = "o3de.action.tools.script_canvas";
+#endif
 
     static const size_t cs_jobThreads = 1;
 
     SystemComponent::SystemComponent()
     {
+#if !SCRIPTCANVAS_STANDALONE_APPLICATION
+        AzToolsFramework::UnregisterViewPane(LyViewPane::ScriptCanvas);
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+#endif
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusConnect();
         AZ::SystemTickBus::Handler::BusConnect();
         m_versionExplorer = AZStd::make_unique<VersionExplorer::Model>();
@@ -112,6 +121,10 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::Init()
     {
+#if !SCRIPTCANVAS_STANDALONE_APPLICATION
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+#endif
+
         m_viewportDragDropHandler = AZStd::make_unique<ScriptCanvasAssetDragDropHandler>();
     }
 
@@ -135,6 +148,9 @@ namespace ScriptCanvasEditor
 
         SystemRequestBus::Handler::BusConnect();
         ScriptCanvasExecutionBus::Handler::BusConnect();
+#if !SCRIPTCANVAS_STANDALONE_APPLICATION
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+#endif
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
@@ -153,6 +169,20 @@ namespace ScriptCanvasEditor
 
         m_nodeReplacementSystem.LoadReplacementMetadata();
     }
+
+#if !SCRIPTCANVAS_STANDALONE_APPLICATION
+    void SystemComponent::NotifyRegisterViews()
+    {
+        QtViewOptions options;
+        options.canHaveMultipleInstances = false;
+        options.isPreview = false;
+        options.showInMenu = true;
+        options.showOnToolsToolbar = true;
+        options.toolbarIcon = ":/Menu/script_canvas_editor.svg";
+
+        AzToolsFramework::RegisterViewPane<ScriptCanvasEditor::MainWindow>(LyViewPane::ScriptCanvas, LyViewPane::CategoryTools, options);
+    }
+#endif
 
     void SystemComponent::Deactivate()
     {
@@ -290,11 +320,41 @@ namespace ScriptCanvasEditor
 
         if (AZ::IO::Path(fullSourceFileName).Extension() == ScriptCanvasEditor::SourceDescription::GetFileExtension())
         {
+#if SCRIPTCANVAS_STANDALONE_APPLICATION
             auto scriptCanvasOpenInEditorCallback =
                 [this](const char* fullSourceFileNameInCall, [[maybe_unused]] const AZ::Uuid& sourceUUIDInCall)
-            {
-                OpenScriptCanvasEditor(fullSourceFileNameInCall);
-            };
+                {
+                    OpenScriptCanvasEditor(fullSourceFileNameInCall);
+                };
+
+#else
+            auto scriptCanvasOpenInEditorCallback = []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+                {
+                    AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
+
+                    auto sourceHandle = CompleteDescription(SourceHandle(nullptr, sourceUUIDInCall));
+                    if (sourceHandle)
+                    {
+                        AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::OpenViewPane, "Script Canvas");
+
+                        GeneralRequestBus::BroadcastResult(openOutcome
+                            , &GeneralRequests::OpenScriptCanvasAsset
+                            , *sourceHandle
+                            , Tracker::ScriptCanvasFileState::UNMODIFIED
+                            , -1);
+
+                        if (!openOutcome.IsSuccess())
+                        {
+                            AZ_Error("ScriptCanvas", false, openOutcome.GetError().data());
+                        }
+                        else
+                        {
+                            AZ_Warning("ScriptCanvas", false, "Unable to find full path for Source UUID %s", sourceUUIDInCall.ToString<AZStd::string>().c_str());
+                        }
+
+                    }
+                };
+#endif
 
             openers.push_back({ "O3DE_ScriptCanvasEditor"
                 , "Open In Script Canvas Editor..."
@@ -401,6 +461,7 @@ namespace ScriptCanvasEditor
         if (!actionManagerInterface)
             return;
 
+#if SCRIPTCANVAS_STANDALONE_APPLICATION
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Script Canvas";
@@ -416,10 +477,21 @@ namespace ScriptCanvasEditor
                 });
             AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", ScriptCanvasApplicationActionIdentifier.data());
         }
+#else
+        {
+            AzToolsFramework::ActionContextProperties contextProperties;
+            contextProperties.m_name = "O3DE Script Canvas";
+
+            // Register custom action contexts to allow duplicated shortcut hotkeys to work
+            actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, contextProperties);
+            actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, contextProperties);
+        }
+#endif
     }
 
     void SystemComponent::OnMenuBindingHook()
     {
+#if SCRIPTCANVAS_STANDALONE_APPLICATION
         auto* actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         AZ_Assert(actionManagerInterface, "ScriptCanvas System Component - could not get ActionManagerInterface");
 
@@ -441,6 +513,7 @@ namespace ScriptCanvasEditor
                 ScriptCanvasApplicationActionIdentifier.data(),
                 EditorIdentifiers::ToolsMenuIdentifier.data());
         }
+#endif
     }
 
 }

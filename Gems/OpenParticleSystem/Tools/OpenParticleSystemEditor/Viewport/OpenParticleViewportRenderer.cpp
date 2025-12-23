@@ -462,9 +462,9 @@ namespace OpenParticleSystemEditor
         const AZ::Vector2 gizmoAxisZ = gizmoEndAxisZ - gizmoStart;
 
         // draw the axes of the gizmo
-        DrawLine2d(auxGeom, gizmoStart, gizmoEndAxisX, AZ::Colors::Blue, 1.0);
+        DrawLine2d(auxGeom, gizmoStart, gizmoEndAxisX, AZ::Colors::Red, 1.0);
         DrawLine2d(auxGeom, gizmoStart, gizmoEndAxisY, AZ::Colors::Green, 1.0);
-        DrawLine2d(auxGeom, gizmoStart, gizmoEndAxisZ, AZ::Colors::Red, 1.0);
+        DrawLine2d(auxGeom, gizmoStart, gizmoEndAxisZ, AZ::Colors::Blue, 1.0);
 
         AzFramework::ViewportId viewportId;
         OpenParticleViewportWidgetRequestsBus::BroadcastResult(viewportId, &OpenParticleViewportWidgetRequestsBus::Handler::ViewportId);

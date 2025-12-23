@@ -15,6 +15,7 @@ set(FILES
     Tests/TestAssetCode/MeshFactory.h
     Tests/TestAssetCode/AnimGraphFactory.cpp
     Tests/TestAssetCode/AnimGraphFactory.h
+    Tests/TestAssetCode/AnimGraphAssetFactory.cpp
     Tests/TestAssetCode/AnimGraphAssetFactory.h
     Tests/TestAssetCode/ActorAssetFactory.h
     Tests/TestAssetCode/MotionSetAssetFactory.h

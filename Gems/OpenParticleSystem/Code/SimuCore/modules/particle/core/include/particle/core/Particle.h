@@ -8,30 +8,28 @@
 
 #pragma once
 
+
+#include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Color.h>
-#include "core/math/MatrixX.h"
-#include "core/math/Quaternion.h"
 #include "core/math/RandomStream.h"
-#include "core/math/VectorX.h"
-#include "core/math/Transform.h"
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace SimuCore::ParticleCore {
     struct Particle {
-        Transform spawnTrans;    // transform when spawn
-        Vector3 localPosition;     // local position in emitter
-        Vector3 globalPosition;    // global position in world
-        Vector3 velocity;          // velocity
-        Vector3 baseScale = Vector3::CreateOne();
-        Vector3 scale = Vector3::CreateOne();              // scale
-        Vector4 rotation = Vector4::CreateAxisY();        // xyz: axis w: angle
-        Vector4 rotationVector = Vector4::CreateAxisY();  // xyz: axis w: angle
-        Vector4 rotateAroundPoint; // xyz: rotation axis w: angle
+        AZ::Transform spawnTrans;    // transform when spawn
+        AZ::Vector3 localPosition;     // local position in emitter
+        AZ::Vector3 globalPosition;    // global position in world
+        AZ::Vector3 velocity;          // velocity
+        AZ::Vector3 baseScale = AZ::Vector3::CreateOne();
+        AZ::Vector3 scale = AZ::Vector3::CreateOne();              // scale
+        AZ::Vector4 rotation = AZ::Vector4::CreateAxisY();        // xyz: axis w: angle
+        AZ::Vector4 rotationVector = AZ::Vector4::CreateAxisY();  // xyz: axis w: angle
+        AZ::Vector4 rotateAroundPoint; // xyz: rotation axis w: angle
         AZ::Color color = AZ::Colors::White;             // rgba
         AZ::Color lightColor = AZ::Colors::White;        // light effect AZ::Color
-        Vector3 collisionPosition;
+        AZ::Vector3 collisionPosition;
         AZ::u64 id = UINT64_MAX;              // particle unique id
         AZ::u64 ribbonId = UINT64_MAX;        // in which ribbon
         AZ::u32 subUVFrame = 0u;              // subuv frame
@@ -49,26 +47,26 @@ namespace SimuCore::ParticleCore {
     };
 
     struct ParticleSpriteVertex {
-        Vector4 position{ 0.f, 0.f, 0.f, 0.f};
+        AZ::Vector4 position{ 0.f, 0.f, 0.f, 0.f};
         AZ::Color color{ 1.f, 1.f, 1.f, 1.f };
-        Vector4 initRotation{ 0.f, 1.f, 0.f, 0.f }; // axis-angle
-        Vector4 rotationVector{ 0.f, 1.f, 0.f, 0.f }; // axis-angle
-        Vector4 scale{ 1.f, 1.f, 1.f, 1.f};
-        Vector4 up{ 0.f, 1.f, 0.f, 0.f };
-        Vector4 velocity{0.f, 0.f, 0.f, 0.f};
-        Vector4 subuv{ 1.0f, 1.0f, 0.f, 0.f };
+        AZ::Vector4 initRotation{ 0.f, 1.f, 0.f, 0.f }; // axis-angle
+        AZ::Vector4 rotationVector{ 0.f, 1.f, 0.f, 0.f }; // axis-angle
+        AZ::Vector4 scale{ 1.f, 1.f, 1.f, 1.f};
+        AZ::Vector4 up{ 0.f, 1.f, 0.f, 0.f };
+        AZ::Vector4 velocity{0.f, 0.f, 0.f, 0.f};
+        AZ::Vector4 subuv{ 1.0f, 1.0f, 0.f, 0.f };
     };
 
     struct ParticleMeshVertex {
-        Vector3 position{ 0.f, 0.f, 0.f };
+        AZ::Vector3 position{ 0.f, 0.f, 0.f };
         AZ::Color color{ 1.f, 1.f, 1.f, 1.f };
-        Vector4 initRotation{ 0.f, 1.f, 0.f, 0.f }; // axis-angle
-        Quaternion rotationVector{ 0.f, 0.f, 0.f, 1.f }; // quaternion
-        Vector3 scale{ 1.f, 1.f, 1.f };
+        AZ::Vector4 initRotation{ 0.f, 1.f, 0.f, 0.f }; // axis-angle
+        AZ::Quaternion rotationVector{ 0.f, 0.f, 0.f, 1.f }; // quaternion
+        AZ::Vector3 scale{ 1.f, 1.f, 1.f };
     };
 
     struct ParticleRibbonVertex {
-        Vector4 position{ 0.f, 0.f, 0.f, 0.f};
+        AZ::Vector4 position{ 0.f, 0.f, 0.f, 0.f};
         AZ::Color color{ 1.f, 1.f, 1.f, 1.f };
         AZ::Vector2 uv{ 0.5f, 0.5f };
     };
@@ -232,9 +230,9 @@ namespace SimuCore::ParticleCore {
     };
 
     struct LinearValue {
-        Vector3 value;
-        Vector3 minValue;
-        Vector3 maxValue;
+        AZ::Vector3 value;
+        AZ::Vector3 minValue;
+        AZ::Vector3 maxValue;
     };
 
     constexpr AZ::u32 DISTRIBUTION_COUNT_ONE = 1;
@@ -244,8 +242,8 @@ namespace SimuCore::ParticleCore {
 
     using ValueObjFloat = ValueObject<float, DISTRIBUTION_COUNT_ONE>;
     using ValueObjVec2 = ValueObject<AZ::Vector2, DISTRIBUTION_COUNT_TWO>;
-    using ValueObjVec3 = ValueObject<Vector3, DISTRIBUTION_COUNT_THREE>;
-    using ValueObjVec4 = ValueObject<Vector4, DISTRIBUTION_COUNT_FOUR>;
+    using ValueObjVec3 = ValueObject<AZ::Vector3, DISTRIBUTION_COUNT_THREE>;
+    using ValueObjVec4 = ValueObject<AZ::Vector4, DISTRIBUTION_COUNT_FOUR>;
     using ValueObjColor = ValueObject<AZ::Color, DISTRIBUTION_COUNT_FOUR>;
     using ValueObjLinear = ValueObject<LinearValue, DISTRIBUTION_COUNT_THREE>;
 
@@ -257,9 +255,9 @@ namespace SimuCore::ParticleCore {
     };
 
     struct ParticleEventInfo {
-        Vector3 eventPosition;
+        AZ::Vector3 eventPosition;
         AZ::Color color;
-        Vector3 size;
+        AZ::Vector3 size;
         AZ::u64 particleId = UINT64_MAX;
         AZ::u32 emitNum = 0u;
         AZ::u32 locationEventIdx = 0u;
@@ -270,18 +268,18 @@ namespace SimuCore::ParticleCore {
     };
 
     struct InheritanceInfo {
-        Vector3 position;
-        Vector3 velocity;
-        Vector3 size;
+        AZ::Vector3 position;
+        AZ::Vector3 velocity;
+        AZ::Vector3 size;
         AZ::Color color;
         float currentLife;
         float lifetime;
     };
 
     struct InheritanceSpawn {
-        Vector3 position;
-        Vector3 velocity;
-        Vector3 size;
+        AZ::Vector3 position;
+        AZ::Vector3 velocity;
+        AZ::Vector3 size;
         AZ::Color color;
         AZ::u64 ribbonId = UINT64_MAX;
         float currentLife = 0.0f;
@@ -309,7 +307,7 @@ namespace SimuCore::ParticleCore {
 
     struct CollisionInfo {
         float collisionTimeBeforeTick = 0.0f;
-        Vector3 collisionPosition;
+        AZ::Vector3 collisionPosition;
     };
 
     struct EmitSpawnParam {
@@ -352,12 +350,12 @@ namespace SimuCore::ParticleCore {
     };
 
     struct SpawnInfo {
-        Transform emitterTrans;
-        Vector3 front = Vector3::CreateAxisZ();
-        const Vector3* vertexStream = nullptr;
+        AZ::Transform emitterTrans;
+        AZ::Vector3 front = AZ::Vector3::CreateAxisZ();
+        const AZ::Vector3* vertexStream = nullptr;
         const AZ::u32* indiceStream = nullptr;
         const double* areaStream = nullptr;
-        const Vector3* boneStream = nullptr;
+        const AZ::Vector3* boneStream = nullptr;
         RandomStream* randomStream = nullptr;
         ParticleEventPool* systemEventPool;
         BaseInfo baseInfo;
@@ -368,10 +366,10 @@ namespace SimuCore::ParticleCore {
     };
 
     struct UpdateInfo {
-        Transform emitterTrans;
-        Vector3 front = Vector3::CreateAxisZ();
-        Vector3 maxExtend = Vector3::CreateZero();
-        Vector3 minExtend = Vector3::CreateZero();
+        AZ::Transform emitterTrans;
+        AZ::Vector3 front = AZ::Vector3::CreateAxisZ();
+        AZ::Vector3 maxExtend = AZ::Vector3::CreateZero();
+        AZ::Vector3 minExtend = AZ::Vector3::CreateZero();
         RandomStream* randomStream = nullptr;
         BaseInfo baseInfo;
         float tickTime = 0.0f;
@@ -382,7 +380,7 @@ namespace SimuCore::ParticleCore {
     };
 
     struct EventInfo {
-        Transform emitterTrans;
+        AZ::Transform emitterTrans;
         Particle* particleBuffer = nullptr;
         ParticleEventPool* systemEventPool;
         AZ::u32 begin = 0;
@@ -519,7 +517,7 @@ namespace SimuCore::ParticleCore {
         BufferView vertexBuffer;
         BufferView indexBuffer;
         DrawArgs drawArgs;
-        AZStd::vector<Vector3> positionBuffer;
+        AZStd::vector<AZ::Vector3> positionBuffer;
     };
 
     struct WorldInfo {
@@ -527,11 +525,11 @@ namespace SimuCore::ParticleCore {
             AZ::u64 v;
             uintptr_t p;
         } viewKey;
-        Vector3 cameraPosition;
-        Vector3 cameraUp;
-        Vector3 cameraRight;
-        Vector3 axisZ;
-        Transform emitterTransform;
+        AZ::Vector3 cameraPosition;
+        AZ::Vector3 cameraUp;
+        AZ::Vector3 cameraRight;
+        AZ::Vector3 axisZ;
+        AZ::Transform emitterTransform;
     };
 
     enum class BufferUsage : AZ::u8 {

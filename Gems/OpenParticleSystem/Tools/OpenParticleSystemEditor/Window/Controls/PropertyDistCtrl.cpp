@@ -16,6 +16,26 @@
 
 namespace OpenParticleSystemEditor
 {
+    inline AZ::Vector4 QColorToAZVector4(const QColor& color)
+    {
+        return AZ::Vector4(
+            static_cast<float>(color.redF()),
+            static_cast<float>(color.greenF()),
+            static_cast<float>(color.blueF()),
+            static_cast<float>(color.alphaF())
+        );
+    }
+
+    inline QColor AZVector4ToQColor(const AZ::Vector4& color)
+    {
+        return QColor::fromRgbF(
+            static_cast<qreal>(color.GetX()),
+            static_cast<qreal>(color.GetY()),
+            static_cast<qreal>(color.GetZ()),
+            static_cast<qreal>(color.GetW())
+        );
+    }
+
     AZStd::vector<AzToolsFramework::PropertyHandlerBase*> g_propertyHandlers;
     AZStd::string g_distUsedwidgetName;
     void RegisterDistCtrlHandlers()
@@ -346,16 +366,15 @@ namespace OpenParticleSystemEditor
         for (int i = 0; i < static_cast<int>(stops.size()); i++)
         {
             QGradientStop stop = stops.at(i);
-            float time = stop.first;
-            [[maybe_unused]] QColor value = stop.second;
-            AZ::Vector4 vec(stop.second.redF(), stop.second.greenF(), stop.second.blueF(), stop.second.alphaF());
+            auto time = stop.first;
+            AZ::Vector4 vec(QColorToAZVector4(stop.second));
             for (int j = 0; j < ELEMENTCOUNT_COLOR; j++)
             {
                 int distIndex = static_cast<int>(GetDistIndex(OpenParticle::DistributionType::CURVE, j));
                 if (distIndex != 0 && distIndex <= sourceData->m_distribution.curves.size())
                 {
                     OpenParticle::KeyPoint key;
-                    key.time = time;
+                    key.time = static_cast<float>(time);
                     key.value = vec.GetElement(j);
                     sourceData->m_distribution.curves[distIndex - 1]->keyPoints.emplace_back(key);
                 }
@@ -1037,9 +1056,9 @@ namespace OpenParticleSystemEditor
                         OpenParticle::KeyPoint& key = (*iter);
                         auto curr = stops.at(stopIndex);
 
-                        AZ::Vector4 vec(curr.second.red(), curr.second.green(), curr.second.blue(), curr.second.alpha());
+                        AZ::Vector4 vec(QColorToAZVector4(curr.second));
                         vec.SetElement(i, key.value * MAXIMUM_COLOR_VALUE);
-                        QColor color(vec.GetX(), vec.GetY(), vec.GetZ(), vec.GetW());
+                        QColor color(AZVector4ToQColor(vec));
                         stops.replace(stopIndex, QPair<float, QColor>(key.time, color));
                     }
                 }

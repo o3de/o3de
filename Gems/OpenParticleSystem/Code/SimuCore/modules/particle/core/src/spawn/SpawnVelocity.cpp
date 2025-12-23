@@ -10,6 +10,8 @@
 #include "particle/core/ParticleHelper.h"
 #include "core/math/Constants.h"
 
+#include <AzCore/Math/Matrix3x3.h>
+
 namespace SimuCore::ParticleCore {
     void SpawnVelDirection::Execute(const SpawnVelDirection* data, const SpawnInfo& info, Particle& particle)
     {
@@ -26,40 +28,40 @@ namespace SimuCore::ParticleCore {
     void SpawnVelSector::Execute(const SpawnVelSector* data, const SpawnInfo& info, Particle& particle)
     {
         // define a plane, the given direction is in the plane
-        Vector3 defVector = Vector3::CreateAxisX();
+        AZ::Vector3 defVector = AZ::Vector3::CreateAxisX();
         if (abs(abs(data->direction.Dot(defVector)) - 1.f) <= AZ::Constants::FloatEpsilon) {
-            defVector = Vector3::CreateAxisY();
+            defVector = AZ::Vector3::CreateAxisY();
         }
-        Vector3 normal = data->direction.Cross(defVector);
+        AZ::Vector3 normal = data->direction.Cross(defVector);
 
         // calculate default sector in the plane
-        Vector3 axisUp = info.front.IsClose(Vector3::CreateAxisZ()) ? Vector3::CreateAxisY() : Vector3::CreateAxisZ();
-        Transform d = AZ::Transform::CreateLookAt(Vector3(0.0f), normal, info.front.IsClose(Vector3::CreateAxisZ()) ? AZ::Transform::Axis::YPositive : AZ::Transform::Axis::ZPositive);
-        Matrix3 rotationMatrix = Matrix3::CreateFromTransform(d);
+        AZ::Vector3 axisUp = info.front.IsClose(AZ::Vector3::CreateAxisZ()) ? AZ::Vector3::CreateAxisY() : AZ::Vector3::CreateAxisZ();
+        AZ::Transform d = AZ::Transform::CreateLookAt(AZ::Vector3(0.0f), normal, info.front.IsClose(AZ::Vector3::CreateAxisZ()) ? AZ::Transform::Axis::YPositive : AZ::Transform::Axis::ZPositive);
+        AZ::Matrix3x3 rotationMatrix = AZ::Matrix3x3::CreateFromTransform(d);
         float theta = AZ::DegToRad(data->centralAngle) * info.randomStream->Rand();
-        Vector3 vel(sin(theta), cos(theta), 0.0f); // xoy z+
-        Vector3 spawnDirection = rotationMatrix * vel;
+        AZ::Vector3 vel(sin(theta), cos(theta), 0.0f); // xoy z+
+        AZ::Vector3 spawnDirection = rotationMatrix * vel;
 
         // calculate right and front axis of this plane, rotate the sector's centralLine to specified direction
-        Vector3 normUp = axisUp;
+        AZ::Vector3 normUp = axisUp;
         normUp.Normalize();
         if (std::abs(normal.Dot(normUp)) > ALMOST_ONE) {
             normUp = { normUp.GetZ(), normUp.GetX(), normUp.GetY() };
         }
-        Vector3 right = normal.Cross(normUp);
+        AZ::Vector3 right = normal.Cross(normUp);
         right.Normalize();
-        Vector3 front = right.Cross(normal);
+        AZ::Vector3 front = right.Cross(normal);
         front.Normalize();
         double angleNeedRotated = atan2(front.Cross(data->direction).Dot(normal), front.Dot(data->direction));
         if (angleNeedRotated < 0) {
             angleNeedRotated = 2.f * AZ::Constants::Pi + angleNeedRotated;
         }
-        Quaternion q(normal, static_cast<float>(angleNeedRotated) - AZ::DegToRad(data->centralAngle / 2.f));
+        AZ::Quaternion q(normal, static_cast<float>(angleNeedRotated) - AZ::DegToRad(data->centralAngle / 2.f));
         spawnDirection = q.TransformVector(spawnDirection);
 
         // rotate around the sector direction
         if (abs(data->rotateAngle) > 0) {
-            Quaternion rotQuaternion(data->direction, AZ::DegToRad(data->rotateAngle));
+            AZ::Quaternion rotQuaternion(data->direction, AZ::DegToRad(data->rotateAngle));
             spawnDirection = rotQuaternion.TransformVector(spawnDirection);
         }
         particle.velocity = spawnDirection * CalcDistributionTickValue(data->strength, info.baseInfo, particle);
@@ -74,9 +76,9 @@ namespace SimuCore::ParticleCore {
     {
         float th = 2.f * AZ::Constants::Pi * info.randomStream->Rand();
         float ap = (AZ::DegToRad(data->angle) / 2.f) * info.randomStream->Rand();
-        Vector3 vel(cos(th) * sin(ap), sin(th) * sin(ap), -cos(ap)); // forward: -Z, right: +X, up: +Y
-        Transform d = AZ::Transform::CreateLookAt(Vector3(0.0f), data->direction, AZ::Transform::Axis::YPositive);
-        Vector3 spawnDirection = Matrix3::CreateFromTransform(d) * vel;
+        AZ::Vector3 vel(cos(th) * sin(ap), sin(th) * sin(ap), -cos(ap)); // forward: -Z, right: +X, up: +Y
+        AZ::Transform d = AZ::Transform::CreateLookAt(AZ::Vector3(0.0f), data->direction, AZ::Transform::Axis::YPositive);
+        AZ::Vector3 spawnDirection = AZ::Matrix3x3::CreateFromTransform(d) * vel;
         particle.velocity = spawnDirection * CalcDistributionTickValue(data->strength, info.baseInfo, particle);
     }
 
@@ -90,7 +92,7 @@ namespace SimuCore::ParticleCore {
         float th = 2.f * AZ::Constants::Pi * info.randomStream->Rand();
         float ap = AZ::Constants::Pi * info.randomStream->Rand();
 
-        Vector3 vel(cos(th) * sin(ap), cos(ap), sin(th) * sin(ap));
+        AZ::Vector3 vel(cos(th) * sin(ap), cos(ap), sin(th) * sin(ap));
         particle.velocity = vel * CalcDistributionTickValue(data->strength, info.baseInfo, particle);
     }
     
@@ -101,7 +103,7 @@ namespace SimuCore::ParticleCore {
 
     void SpawnVelConcentrate::Execute(const SpawnVelConcentrate* data, const SpawnInfo& info, Particle& particle)
     {
-        Vector3 direction = data->centre - particle.localPosition;
+        AZ::Vector3 direction = data->centre - particle.localPosition;
         if (direction.GetLengthSq() > 0) {
             particle.velocity =
                 direction / direction.GetLength() * CalcDistributionTickValue(data->rate, info.baseInfo, particle);

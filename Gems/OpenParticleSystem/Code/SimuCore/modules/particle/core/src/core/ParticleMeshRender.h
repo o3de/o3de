@@ -29,7 +29,7 @@ namespace SimuCore::ParticleCore {
         AZ::u32 DataSize() const override;
 
     private:
-        void UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<Vector3>& positionBuffer);
+        void UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<AZ::Vector3>& positionBuffer);
 
         AZ::u8* gDriver = nullptr;
         AZ::u32 particleSize = 0;

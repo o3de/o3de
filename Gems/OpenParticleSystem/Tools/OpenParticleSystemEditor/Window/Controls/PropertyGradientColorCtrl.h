@@ -53,7 +53,6 @@ namespace OpenParticleSystemEditor
         size_t GetDistIndex(const OpenParticle::DistributionType& distType, int index) const;
         void SetDistIndex(const OpenParticle::DistributionType& distType, size_t value, int index) const;
 
-        QToolButton* m_pDefaultButton = nullptr;
         GradientColorDialog* m_gradientColorDialog = nullptr;
         GradientWidget* m_gradientWidget = nullptr;
         QGradientStops m_gradientStops;

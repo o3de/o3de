@@ -8,19 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/std/string/string.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
-#include <QOpenGLFunctions>
-#include <QOpenGLWidget>
+#include <QWidget>
 #include <QPoint>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QPainter)
-
-#define NODEGRAPHWIDGET_USE_OPENGL
 
 namespace EMotionFX
 {
@@ -36,23 +31,17 @@ namespace EMStudio
     class NodeConnection;
     class AnimGraphPlugin;
 
-
-    /**
-     *
-     *
-     */
     class NodeGraphWidget
-        : public QOpenGLWidget
-        , public QOpenGLFunctions
+        : public QWidget
     {
         Q_OBJECT
         MCORE_MEMORYOBJECTCATEGORY(NodeGraphWidget, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
 
     public:
         NodeGraphWidget(AnimGraphPlugin* plugin, NodeGraph* activeGraph = nullptr, QWidget* parent = nullptr);
-        virtual ~NodeGraphWidget();
+        ~NodeGraphWidget() override;
 
-        AnimGraphPlugin* GetPlugin() { return m_plugin; }
+        AnimGraphPlugin* GetPlugin() const { return m_plugin; }
 
         void SetActiveGraph(NodeGraph* graph);
         NodeGraph* GetActiveGraph() const;
@@ -110,7 +99,7 @@ namespace EMStudio
         void ActiveGraphChanged();
 
     protected:
-        //virtual void paintEvent(QPaintEvent* event);
+        void paintEvent(QPaintEvent* event) override;
         void mouseMoveEvent(QMouseEvent* event) override;
         void mousePressEvent(QMouseEvent* event) override;
         void mouseDoubleClickEvent(QMouseEvent* event) override;
@@ -121,10 +110,6 @@ namespace EMStudio
         void keyReleaseEvent(QKeyEvent* event) override;
         void focusInEvent(QFocusEvent* event) override;
         void focusOutEvent(QFocusEvent* event) override;
-
-        void initializeGL() override;
-        void paintGL() override;
-        void resizeGL(int w, int h) override;
 
         GraphNode* UpdateMouseCursor(const QPoint& localMousePos, const QPoint& globalMousePos);
 

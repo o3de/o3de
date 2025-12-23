@@ -1125,7 +1125,7 @@ namespace {
                     ft.creationTime = handle.m_fileDesc.tCreate;
                     outputFolders.push_back(ft);
                 }
-            } while (handle = gEnv->pCryPak->FindNext(handle));
+            } while ((handle = gEnv->pCryPak->FindNext(handle)));
 
             gEnv->pCryPak->FindClose(handle);
         }

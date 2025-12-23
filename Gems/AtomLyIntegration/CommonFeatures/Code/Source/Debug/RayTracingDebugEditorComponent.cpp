@@ -56,6 +56,8 @@ namespace AZ::Render
                         ->EnumAttribute(RayTracingDebugViewMode::Normals, "Normals")
                         ->EnumAttribute(RayTracingDebugViewMode::UVs, "UV Coordinates")
                         ->EnumAttribute(RayTracingDebugViewMode::BaseColor, "Material Base Color")
+                        ->EnumAttribute(RayTracingDebugViewMode::EmissiveColor, "Material Emissive Color")
+                        ->EnumAttribute(RayTracingDebugViewMode::IrradianceColor, "Material Irradiance Color")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::Visibility, &RayTracingDebugComponentConfig::GetEnabled)
                 ;

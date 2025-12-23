@@ -92,6 +92,12 @@ namespace AZ
                 && aznumeric_cast<float>(outInfo.m_aboveIndices.size() + outInfo.m_belowIndices.size()) / aznumeric_cast<float>(indices.size()) < s_MaximumSplitAxisStraddlingTriangles;
         }
 
+        ModelKdTree::ModelKdTree() = default;
+
+        ModelKdTree::ModelKdTree(ModelKdTree&&) = default;
+
+        ModelKdTree::~ModelKdTree() = default;
+
         bool ModelKdTree::Build(const ModelAsset* model)
         {
             if (model == nullptr)

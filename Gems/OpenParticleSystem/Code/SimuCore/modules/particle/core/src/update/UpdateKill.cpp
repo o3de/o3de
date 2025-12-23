@@ -10,7 +10,7 @@
 #include "particle/core/ParticleHelper.h"
 
 namespace SimuCore::ParticleCore {
-    static bool BoxContainPoint(const Vector3& min, const Vector3& max, const Vector3& point)
+    static bool BoxContainPoint(const AZ::Vector3& min, const AZ::Vector3& max, const AZ::Vector3& point)
     {
         return (point.GetX() > min.GetX()) && (point.GetY() > min.GetY()) && (point.GetZ() > min.GetZ()) &&
             (point.GetX() < max.GetX()) && (point.GetY() < max.GetY()) && (point.GetZ() < max.GetZ());
@@ -18,17 +18,17 @@ namespace SimuCore::ParticleCore {
 
     void KillInBox::Execute(const KillInBox* data, const UpdateInfo& info, Particle& particle)
     {
-        Vector3 size = Vector3(
+        AZ::Vector3 size = AZ::Vector3(
             std::fabs(data->boxSize.GetX()), std::fabs(data->boxSize.GetY()), std::fabs(data->boxSize.GetZ())
         );
-        Vector3 min = data->useLocalSpace ?
+        AZ::Vector3 min = data->useLocalSpace ?
             info.emitterTrans.TransformPoint(data->positionOffset) - size / 2.0f :
             data->positionOffset - size / 2.0f;
-        Vector3 max = data->useLocalSpace ?
+        AZ::Vector3 max = data->useLocalSpace ?
             info.emitterTrans.TransformPoint(data->positionOffset) + size / 2.0f :
             data->positionOffset + size / 2.0f;
         bool containLast = BoxContainPoint(min, max, particle.globalPosition);
-        Vector3 newPosition = particle.globalPosition + particle.velocity * info.tickTime;
+        AZ::Vector3 newPosition = particle.globalPosition + particle.velocity * info.tickTime;
         bool containNow = BoxContainPoint(min, max, newPosition);
         if (!data->enableKill) {
             return;

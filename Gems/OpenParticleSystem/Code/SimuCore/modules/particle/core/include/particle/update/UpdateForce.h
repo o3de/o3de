@@ -33,8 +33,8 @@ namespace SimuCore::ParticleCore {
         static void Execute(const UpdateCurlNoiseForce* data, const UpdateInfo& info, Particle& particle);
         static void UpdateDistPtr(const UpdateCurlNoiseForce* data, const Distribution& distribution);
 
-        Vector3 panNoiseField;
-        Vector3 randomizationVector;
+        AZ::Vector3 panNoiseField;
+        AZ::Vector3 randomizationVector;
         float noiseStrength = 10.0f;
         float noiseFrequency = 5.0f;
         AZ::u32 randomSeed = 0;
@@ -46,7 +46,7 @@ namespace SimuCore::ParticleCore {
         static void Execute(const UpdatePointForce* data, const UpdateInfo& info, Particle& particle);
         static void UpdateDistPtr(const UpdatePointForce* data, const Distribution& distribution);
 
-        Vector3 position = { 0.f, 0.f, 0.f };
+        AZ::Vector3 position = { 0.f, 0.f, 0.f };
         float force = 0.f;
         bool useLocalSpace = true;
     };
@@ -60,10 +60,10 @@ namespace SimuCore::ParticleCore {
         ValueObjFloat vortexRate { 1.f };
         ValueObjFloat vortexRadius { 1.f };
         AZ::u64 padding0 = 0;
-        Vector3 vortexAxis = { 0.f, 0.f, 1.f };
-        Vector3 origin = { 0.f, 0.f, 0.f };
+        AZ::Vector3 vortexAxis = { 0.f, 0.f, 1.f };
+        AZ::Vector3 origin = { 0.f, 0.f, 0.f };
     private:
-        static void GetAxis(const Vector3& axis, Vector3 dir, Vector3& xAxis, Vector3& yAxis);
+        static void GetAxis(const AZ::Vector3& axis, AZ::Vector3 dir, AZ::Vector3& xAxis, AZ::Vector3& yAxis);
     };
 }
 

@@ -1112,8 +1112,8 @@ namespace ScriptCanvasEditor
 
         {
             QAction* deleteAction = new QAction(this);
-            deleteAction->setShortcut(QKeySequence(Qt::Key_Delete));
-
+            deleteAction->setShortcut(QKeySequence::Delete);
+            deleteAction->setShortcutContext(Qt::WidgetShortcut);
             QObject::connect(deleteAction, &QAction::triggered, this, &GraphVariablesTableView::OnDeleteSelected);
 
             addAction(deleteAction);
@@ -1122,7 +1122,7 @@ namespace ScriptCanvasEditor
         {
             QAction* copyAction = new QAction(this);
             copyAction->setShortcut(QKeySequence::Copy);
-
+            copyAction->setShortcutContext(Qt::WidgetShortcut);
             QObject::connect(copyAction, &QAction::triggered, this, &GraphVariablesTableView::OnCopySelected);
 
             addAction(copyAction);
@@ -1131,7 +1131,7 @@ namespace ScriptCanvasEditor
         {
             QAction* pasteAction = new QAction(this);
             pasteAction->setShortcut(QKeySequence::Paste);
-
+            pasteAction->setShortcutContext(Qt::WidgetShortcut);
             QObject::connect(pasteAction, &QAction::triggered, this, &GraphVariablesTableView::OnPaste);
 
             addAction(pasteAction);
@@ -1140,7 +1140,7 @@ namespace ScriptCanvasEditor
         {
             QAction* duplicateAction = new QAction(this);
             duplicateAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_D));
-
+            duplicateAction->setShortcutContext(Qt::WidgetShortcut);
             QObject::connect(duplicateAction, &QAction::triggered, this, &GraphVariablesTableView::OnDuplicate);
 
             addAction(duplicateAction);
@@ -1149,7 +1149,7 @@ namespace ScriptCanvasEditor
         {
             m_nextInstanceAction = new QAction(this);
             m_nextInstanceAction->setShortcut(QKeySequence(Qt::Key_F8));
-
+            m_nextInstanceAction->setShortcutContext(Qt::WidgetShortcut);
             QObject::connect(m_nextInstanceAction, &QAction::triggered, this, &GraphVariablesTableView::CycleToNextVariableReference);
 
             addAction(m_nextInstanceAction);
@@ -1158,7 +1158,7 @@ namespace ScriptCanvasEditor
         {
             m_previousInstanceAction = new QAction(this);
             m_previousInstanceAction->setShortcut(QKeySequence(Qt::Key_F7));
-
+            m_previousInstanceAction->setShortcutContext(Qt::WidgetShortcut);
             QObject::connect(m_previousInstanceAction, &QAction::triggered, this, &GraphVariablesTableView::CycleToPreviousVariableReference);
 
             addAction(m_previousInstanceAction);

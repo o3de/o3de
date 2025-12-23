@@ -129,11 +129,13 @@ namespace SurfaceData
         m_refresh = false;
 
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-        Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());
+        Physics::ColliderComponentEventBus::Handler::BusConnect(GetEntityId());        
 
         // Update the cached collider data and bounds, then register the surface data provider / modifier
         m_newPointWeights.AssignSurfaceTagWeights(m_configuration.m_providerTags, 1.0f);
+
         UpdateColliderData();
+        OnCompositionChanged();
     }
 
     void SurfaceDataColliderComponent::Deactivate()
@@ -281,7 +283,7 @@ namespace SurfaceData
             m_refresh = true;
             AZ::TickBus::Handler::BusConnect();
         }
-    }
+    }    
 
     void SurfaceDataColliderComponent::OnColliderChanged()
     {

@@ -877,7 +877,7 @@ namespace AzToolsFramework
             }
             else if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder)
             {
-                SetFolderSelection(entry->GetRelativePath());
+                SetFolderSelection(entry->GetFullPath());
                 SetSelectedAssetID(AZ::Data::AssetId());
             }
         }

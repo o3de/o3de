@@ -20,9 +20,15 @@ namespace AZ::RHI
         if (Validation::IsEnabled())
         {
             // Check buffer view does not reach outside buffer's memory
-            if (buffer.GetDescriptor().m_byteCount < (viewDescriptor.m_elementOffset + viewDescriptor.m_elementCount) * viewDescriptor.m_elementSize)
+            auto endOfView = (viewDescriptor.m_elementOffset + viewDescriptor.m_elementCount) * viewDescriptor.m_elementSize;
+            if (buffer.GetDescriptor().m_byteCount < endOfView)
             {
-                AZ_Warning("DeviceBufferView", false, "Buffer view out of boundaries of buffer's memory.");
+                AZ_Warning(
+                    "DeviceBufferView",
+                    false,
+                    "Buffer view out of boundaries of buffer's memory. Buffer size %jd. End of view %d",
+                    buffer.GetDescriptor().m_byteCount,
+                    (viewDescriptor.m_elementOffset + viewDescriptor.m_elementCount) * viewDescriptor.m_elementSize);
                 return ResultCode::OutOfMemory;
             }
         }

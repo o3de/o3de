@@ -207,8 +207,8 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    void ParticleSystem::UpdateWorldInfo(const Transform& cameraTrans,
-        const Transform& systemTrans, const Vector3& worldFront)
+    void ParticleSystem::UpdateWorldInfo(const AZ::Transform& cameraTrans,
+        const AZ::Transform& systemTrans, const AZ::Vector3& worldFront)
     {
         currentDistance = (cameraTrans.GetTranslation() - systemTrans.GetTranslation()).GetLengthSq();
         if (currentDistance < AZ::Constants::FloatEpsilon) {

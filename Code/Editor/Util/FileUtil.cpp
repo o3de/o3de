@@ -520,7 +520,7 @@ inline bool ScanDirectoryFiles(const QString& root, const QString& path, const Q
             file.time_write = fhandle.m_fileDesc.tWrite;
 
             files.push_back(file);
-        } while (fhandle = pIPak->FindNext(fhandle));
+        } while ((fhandle = pIPak->FindNext(fhandle)));
         pIPak->FindClose(fhandle);
     }
 
@@ -663,7 +663,7 @@ inline int ScanDirectoryRecursive(const QString& root, const QString& path, cons
                 {
                     anyFound = true;
                 }
-            } while (fhandle = pIPak->FindNext(fhandle));
+            } while ((fhandle = pIPak->FindNext(fhandle)));
             pIPak->FindClose(fhandle);
         }
     }

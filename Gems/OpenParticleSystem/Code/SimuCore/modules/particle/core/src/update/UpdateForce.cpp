@@ -24,7 +24,7 @@ namespace SimuCore::ParticleCore {
 
     void UpdateDragForce::Execute(const UpdateDragForce* data, const UpdateInfo& info, Particle& particle)
     {
-        Vector3 drag =
+        AZ::Vector3 drag =
             particle.velocity * (-CalcDistributionTickValue(data->dragCoefficient, info.baseInfo, particle));
         particle.velocity += drag * info.tickTime;
     }
@@ -36,28 +36,28 @@ namespace SimuCore::ParticleCore {
 
     void UpdateCurlNoiseForce::Execute(const UpdateCurlNoiseForce* data, const UpdateInfo& info, Particle& particle)
     {
-        Vector3 randomOffset = data->randomizationVector * Random::RandomRange(0.0f, 4096.0f) / 1000.0f;
+        AZ::Vector3 randomOffset = data->randomizationVector * Random::RandomRange(0.0f, 4096.0f) / 1000.0f;
         float frequencyScaled = data->noiseFrequency / 1000.0f;
-        Vector3 pos = info.localSpace ? particle.localPosition : particle.globalPosition;
-        Vector3 samplePosition = (pos + randomOffset) * frequencyScaled;
+        AZ::Vector3 pos = info.localSpace ? particle.localPosition : particle.globalPosition;
+        AZ::Vector3 samplePosition = (pos + randomOffset) * frequencyScaled;
         if (data->panNoise) {
             samplePosition -= data->panNoiseField * info.tickTime;
         }
-        Matrix4 jacobian = SimplexNoise::JacobianSimplexNoise(samplePosition * 125.0f); // 3 * Vector4
-        Vector3 force {
+        AZ::Matrix4x4 jacobian = SimplexNoise::JacobianSimplexNoise(samplePosition * 125.0f); // 3 * Vector4
+        AZ::Vector3 force {
             jacobian.GetRow(1).GetElement(2) - jacobian.GetRow(2).GetElement(1),
             jacobian.GetRow(2).GetElement(0) - jacobian.GetRow(0).GetElement(2),
             jacobian.GetRow(0).GetElement(1) - jacobian.GetRow(1).GetElement(0)
         };
         float length = force.GetLength();
         if (length < NOISE_COEFFICIENT) {
-            force = Vector3(0.0f, 0.0f, 1.0f);
+            force = AZ::Vector3(0.0f, 0.0f, 1.0f);
             length = 1.0f;
         } else {
             force /= length;
             length = AZ::GetClamp(length, 0.0f, 1.0f);
         }
-        Vector3 sampledNoise = force * length * data->noiseStrength;
+        AZ::Vector3 sampledNoise = force * length * data->noiseStrength;
         particle.velocity += sampledNoise * info.tickTime;
     }
 
@@ -69,7 +69,7 @@ namespace SimuCore::ParticleCore {
 
     void UpdatePointForce::Execute(const UpdatePointForce* data, const UpdateInfo& info, Particle& particle)
     {
-        Vector3 direction = data->useLocalSpace ?
+        AZ::Vector3 direction = data->useLocalSpace ?
             info.emitterTrans.TransformPoint(data->position) - particle.globalPosition :
             data->position - particle.globalPosition;
         if (direction.GetLengthSq() > 0.f)
@@ -86,18 +86,18 @@ namespace SimuCore::ParticleCore {
 
     void UpdateVortexForce::Execute(const UpdateVortexForce* data, const UpdateInfo& info, Particle& particle)
     {
-        if (data->vortexAxis == Vector3::CreateZero()) {
+        if (data->vortexAxis == AZ::Vector3::CreateZero()) {
             return;
         }
-        Vector3 axis = data->vortexAxis;
-        Vector3 direction = data->origin - particle.localPosition;
-        Vector3 dir = direction - direction.Dot(axis) * axis;
+        AZ::Vector3 axis = data->vortexAxis;
+        AZ::Vector3 direction = data->origin - particle.localPosition;
+        AZ::Vector3 dir = direction - direction.Dot(axis) * axis;
 
         float originPullVal = CalcDistributionTickValue(data->originPull, info.baseInfo, particle);
         float vortexRateVal = CalcDistributionTickValue(data->vortexRate, info.baseInfo, particle);
 
         if (originPullVal <= AZ::Constants::FloatEpsilon) {
-            particle.velocity = (particle.velocity == Vector3::CreateZero()) ?
+            particle.velocity = (particle.velocity == AZ::Vector3::CreateZero()) ?
                 vortexRateVal * dir.Cross(axis).GetNormalizedSafe() : particle.velocity;
         } else if (AZStd::abs(vortexRateVal) <= AZ::Constants::FloatEpsilon) {
             particle.velocity += dir.GetNormalizedSafe() * (originPullVal * info.tickTime);
@@ -107,10 +107,10 @@ namespace SimuCore::ParticleCore {
             auto r = AZStd::lerp(dir.GetLength(),
                 CalcDistributionTickValue(data->vortexRadius, info.baseInfo, particle), step);
             float theta = vortexRateVal * info.tickTime;
-            Vector3 xAxis;
-            Vector3 yAxis;
+            AZ::Vector3 xAxis;
+            AZ::Vector3 yAxis;
             GetAxis(axis, dir, xAxis, yAxis);
-            Vector3 lastPosition = particle.localPosition;
+            AZ::Vector3 lastPosition = particle.localPosition;
             particle.localPosition = data->origin - direction.Dot(axis) * axis -
                 xAxis * r * cos(theta) + yAxis * r * sin(theta);
             if (info.tickTime > AZ::Constants::FloatEpsilon) {
@@ -120,9 +120,9 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    void UpdateVortexForce::GetAxis(const Vector3& axis, Vector3 dir, Vector3& xAxis, Vector3& yAxis)
+    void UpdateVortexForce::GetAxis(const AZ::Vector3& axis, AZ::Vector3 dir, AZ::Vector3& xAxis, AZ::Vector3& yAxis)
     {
-        if (dir.IsClose(Vector3::CreateZero())) {
+        if (dir.IsClose(AZ::Vector3::CreateZero())) {
             if (AZStd::abs(axis.GetZ()) > AZ::Constants::FloatEpsilon) {
                 xAxis = {
                     1.f,

@@ -244,30 +244,25 @@ namespace AssetBundler
                 AssetFileInfoListComparison::ComparisonData comparisonStep = currentFileCopy.GetComparisonList()[comparisonStepIndex];
                 if (comparisonStep.m_firstInput.empty())
                 {
-                    if (comparisonStep.m_cachedFirstInputPath.empty())
-                    {
-                        AZ_Error("AssetBundler", false,
-                            "Unable to run Rule: Comparison Step #%u has no specified first input.", comparisonStepIndex);
-                        return;
-                    }
-
-                    FilePath firstInput = FilePath(comparisonStep.m_cachedFirstInputPath, platformName);
-                    currentFileCopy.SetFirstInput(comparisonStepIndex, firstInput.AbsolutePath());
+                    
+                    AZ_Error("AssetBundler", false,
+                        "Unable to run Rule: Comparison Step #%u has no specified first input.", comparisonStepIndex);
+                    return;
                 }
 
                 if (comparisonStep.m_comparisonType != AssetFileInfoListComparison::ComparisonType::FilePattern
                     && comparisonStep.m_secondInput.empty())
                 {
-                    if (comparisonStep.m_cachedSecondInputPath.empty())
-                    {
-                        AZ_Error("AssetBundler", false,
-                            "Unable to run Rule: Comparison Step #%u has no specified second input.", comparisonStepIndex);
-                        return;
-                    }
-
-                    FilePath secondInput = FilePath(comparisonStep.m_cachedSecondInputPath, platformName);
-                    currentFileCopy.SetSecondInput(comparisonStepIndex, secondInput.AbsolutePath());
+                    AZ_Error("AssetBundler", false,
+                        "Unable to run Rule: Comparison Step #%u has no specified second input.", comparisonStepIndex);
+                    return;
                 }
+
+                // update the paths to use
+                FilePath firstInput = FilePath(comparisonStep.m_firstInput, platformName);
+                currentFileCopy.SetFirstInput(comparisonStepIndex, firstInput.AbsolutePath());
+                FilePath secondInput = FilePath(comparisonStep.m_secondInput, platformName);
+                currentFileCopy.SetSecondInput(comparisonStepIndex, secondInput.AbsolutePath());
             }
 
             // Set the output location of the Asset List file that will be generated

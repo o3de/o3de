@@ -7,11 +7,8 @@
 #
 
 o3de_gem_setup("PhysX5")
-
-ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
-
 get_property(v_hacd_gem_root GLOBAL PROPERTY "@GEMROOT:PhysXCommon@")
-ly_add_external_target_path(${v_hacd_gem_root}/3rdParty)
+list(APPEND CMAKE_MODULE_PATH ${v_hacd_gem_root}/3rdParty)
 
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 

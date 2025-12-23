@@ -27,7 +27,7 @@ namespace SimuCore::ParticleCore {
     }
 
     static void UpdateParticle(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<ParticleMeshVertex>& vb,
-            AZStd::vector<Vector3>& positionBuffer)
+            AZStd::vector<AZ::Vector3>& positionBuffer)
     {
         const Particle* particle = pool.ParticleData().data();
         ParticleMeshVertex* meshInfo = vb.data();
@@ -39,16 +39,16 @@ namespace SimuCore::ParticleCore {
             meshInfo[i].position = curr.globalPosition - world.emitterTransform.GetTranslation();
             meshInfo[i].color = curr.color;
             meshInfo[i].scale = curr.scale;
-            Vector3 initAxis(curr.rotation.GetX(), curr.rotation.GetY(), curr.rotation.GetZ());
-            meshInfo[i].initRotation = initAxis.IsClose(Vector3::CreateZero()) ? Vector4(initAxis, 0.f) : curr.rotation;
-            Vector3 rotateAxis(curr.rotationVector.GetX(), curr.rotationVector.GetY(), curr.rotationVector.GetZ());
-            meshInfo[i].rotationVector = rotateAxis.IsClose(Vector3::CreateZero())
-                ? Quaternion(rotateAxis, 0.f)
-                : Quaternion(rotateAxis, AZ::DegToRad(curr.rotationVector.GetW()));
+            AZ::Vector3 initAxis(curr.rotation.GetX(), curr.rotation.GetY(), curr.rotation.GetZ());
+            meshInfo[i].initRotation = initAxis.IsClose(AZ::Vector3::CreateZero()) ? AZ::Vector4(initAxis, 0.f) : curr.rotation;
+            AZ::Vector3 rotateAxis(curr.rotationVector.GetX(), curr.rotationVector.GetY(), curr.rotationVector.GetZ());
+            meshInfo[i].rotationVector = rotateAxis.IsClose(AZ::Vector3::CreateZero())
+                ? AZ::Quaternion(rotateAxis, 0.f)
+                : AZ::Quaternion(rotateAxis, AZ::DegToRad(curr.rotationVector.GetW()));
         }
     }
 
-    void ParticleMeshRender::UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<Vector3>& positionBuffer)
+    void ParticleMeshRender::UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<AZ::Vector3>& positionBuffer)
     {
         auto& bufferView = bufferViews[world.viewKey.v];
         auto& vb = vbs[world.viewKey.v];

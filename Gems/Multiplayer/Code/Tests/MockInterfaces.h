@@ -12,6 +12,7 @@
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzTest/AzTest.h>
+#include <Multiplayer/EntityDomains/IEntityDomain.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 

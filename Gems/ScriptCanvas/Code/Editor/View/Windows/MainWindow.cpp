@@ -361,6 +361,15 @@ namespace ScriptCanvasEditor
     // MainWindow
     ////////////////
 
+#if !SCRIPTCANVAS_STANDALONE_APPLICATION
+
+    MainWindow::MainWindow(QWidget* parent)
+        : MainWindow(AZ::Crc32("ScriptCanvas"), parent)
+    {
+    }
+
+#endif
+
     MainWindow::MainWindow(const AZ::Crc32& toolId, QWidget* parent)
         : QMainWindow(parent, Qt::Widget | Qt::WindowMinMaxButtonsHint)
         , ui(new Ui::MainWindow)
@@ -397,14 +406,16 @@ namespace ScriptCanvasEditor
     {
         AZ_PROFILE_FUNCTION(ScriptCanvas);
 
+#if SCRIPTCANVAS_STANDALONE_APPLICATION
         static bool alreadyInit = false;
         if (alreadyInit)
         {
-            assert(false && "ScriptCanvas InitMainWindow() called twice, this shouldn't happen");
+            AZ_Assert(false, "ScriptCanvas InitMainWindow() called twice, this shouldn't happen");
             return;
         }
 
         alreadyInit = true;
+#endif
 
         AZStd::array<char, AZ::IO::MaxPathLength> unresolvedPath;
         AZ::IO::FileIOBase::GetInstance()->ResolvePath("@products@/translation/scriptcanvas_en_us.qm", unresolvedPath.data(), unresolvedPath.size());
@@ -968,8 +979,9 @@ namespace ScriptCanvasEditor
         m_workspace->Save();
         event->accept();
 
+#if SCRIPTCANVAS_STANDALONE_APPLICATION
         AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
-
+#endif
 
     }
 
@@ -2080,7 +2092,7 @@ namespace ScriptCanvasEditor
         GraphCanvas::SceneRequestBus::EventResult(copyMimeType, GetActiveGraphCanvasGraphId(), &GraphCanvas::SceneRequests::GetCopyMimeType);
 
         const bool pasteableClipboard = (!copyMimeType.empty() && QApplication::clipboard()->mimeData()->hasFormat(copyMimeType.c_str()))
-                                        || GraphVariablesTableView::HasCopyVariableData();
+                                        || !GraphVariablesTableView::HasCopyVariableData();
 
         ui->action_Paste->setEnabled(pasteableClipboard);
     }
@@ -2948,9 +2960,7 @@ namespace ScriptCanvasEditor
         ui->action_Cut->setEnabled(hasCopiableSelection);
         ui->action_Copy->setEnabled(hasCopiableSelection);
         ui->action_Duplicate->setEnabled(hasCopiableSelection);
-
-        // Delete will work for anything that is selectable
-        ui->action_Delete->setEnabled(hasSelection);
+        ui->action_Delete->setEnabled(m_selectedVariableIds.empty() && hasSelection);
     }
 
     void MainWindow::OnViewNodePalette()

@@ -19,7 +19,7 @@ namespace SimuCore::ParticleCore {
         auto fn = [&info]() {
             return info.randomStream->RandRange(-0.5f, 0.5f);
         };
-        Vector3 randomSize(fn(), fn(), fn());
+        AZ::Vector3 randomSize(fn(), fn(), fn());
         particle.localPosition += data->center + randomSize * data->size;
     }
 
@@ -50,29 +50,29 @@ namespace SimuCore::ParticleCore {
         float y = sin(th) * sin(ap) * tmp;
         float z = cos(ap) * tmp;
 
-        Vector3 vel;
+        AZ::Vector3 vel;
         switch (data->axis) {
             case Axis::X_POSITIVE:
-                vel = Vector3(abs(z), x, y);
+                vel = AZ::Vector3(abs(z), x, y);
                 break;
             case Axis::X_NEGATIVE:
-                vel = Vector3(-abs(z), x, y);
+                vel = AZ::Vector3(-abs(z), x, y);
                 break;
             case Axis::Y_POSITIVE:
-                vel = Vector3(x, abs(z), y);
+                vel = AZ::Vector3(x, abs(z), y);
                 break;
             case Axis::Y_NEGATIVE:
-                vel = Vector3(x, -abs(z), y);
+                vel = AZ::Vector3(x, -abs(z), y);
                 break;
             case Axis::Z_POSITIVE:
-                vel = Vector3(x, y, abs(z));
+                vel = AZ::Vector3(x, y, abs(z));
                 break;
             case Axis::Z_NEGATIVE:
-                vel = Vector3(x, y, -abs(z));
+                vel = AZ::Vector3(x, y, -abs(z));
                 break;
             case Axis::NO_AXIS:
             default:
-                vel = Vector3(x, y, z);
+                vel = AZ::Vector3(x, y, z);
                 break;
         }
         particle.localPosition += data->center + vel * data->radius * data->ratio;
@@ -108,7 +108,7 @@ namespace SimuCore::ParticleCore {
      * @param info
      * @return A point random sampled via mesh face area
      */
-    Vector3 SpawnLocSkeleton::SamplePointViaArea(const SpawnInfo& info)
+    AZ::Vector3 SpawnLocSkeleton::SamplePointViaArea(const SpawnInfo& info)
     {
         auto cumulativeCnt = info.indiceCount / FACE_DIMENSION;
         auto totalArea = *(info.areaStream + cumulativeCnt - 1);
@@ -154,33 +154,33 @@ namespace SimuCore::ParticleCore {
         float y = cos(th) * data->radius * tmp;
         float z = ap * data->height;
         if (data->height - 0.f <= AZ::Constants::FloatEpsilon) {
-            particle.localPosition += data->center + Vector3(x, y, z);
+            particle.localPosition += data->center + AZ::Vector3(x, y, z);
             return;
         }
 
-        Vector3 vector3;
+        AZ::Vector3 vector3;
         switch (data->axis) {
             case Axis::Z_POSITIVE:
-                vector3 = Vector3(x, y, z);
+                vector3 = AZ::Vector3(x, y, z);
                 break;
             case Axis::Z_NEGATIVE:
-                vector3 = Vector3(x, y, -z);
+                vector3 = AZ::Vector3(x, y, -z);
                 break;
             case Axis::X_POSITIVE:
-                vector3 = Vector3(z, x, y);
+                vector3 = AZ::Vector3(z, x, y);
                 break;
             case Axis::X_NEGATIVE:
-                vector3 = Vector3(-z, x, y);
+                vector3 = AZ::Vector3(-z, x, y);
                 break;
             case Axis::Y_POSITIVE:
-                vector3 = Vector3(x, z, y);
+                vector3 = AZ::Vector3(x, z, y);
                 break;
             case Axis::Y_NEGATIVE:
-                vector3 = Vector3(x, -z, y);
+                vector3 = AZ::Vector3(x, -z, y);
                 break;
             case Axis::NO_AXIS:
             default:
-                vector3 = Vector3(x, y, z);
+                vector3 = AZ::Vector3(x, y, z);
                 break;
         }
 
@@ -215,7 +215,7 @@ namespace SimuCore::ParticleCore {
         float y = (tmpR + r * cos(th)) * sin(ap);
         float z = r * sin(th);
 
-        Vector3 vec = x * data->xAxis + y * data->yAxis + z * data->torusAxis;
+        AZ::Vector3 vec = x * data->xAxis + y * data->yAxis + z * data->torusAxis;
         particle.localPosition += data->center + vec;
     }
     

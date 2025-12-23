@@ -699,6 +699,7 @@ namespace ScriptCanvasEditor
                     m_nextCycleAction->setText(tr("Next Instance in Graph"));
 
                     m_nextCycleAction->setShortcut(QKeySequence(Qt::Key_F8));
+                    m_nextCycleAction->setShortcutContext(Qt::WidgetShortcut);
                     treeView->addAction(m_nextCycleAction);
 
                     QObject::connect(m_nextCycleAction, &QAction::triggered, this, &NodePaletteDockWidget::CycleToNextNode);
@@ -709,6 +710,7 @@ namespace ScriptCanvasEditor
                     m_previousCycleAction->setText(tr("Previous Instance in Graph"));
 
                     m_previousCycleAction->setShortcut(QKeySequence(Qt::Key_F7));
+                    m_previousCycleAction->setShortcutContext(Qt::WidgetShortcut);
                     treeView->addAction(m_previousCycleAction);
 
                     QObject::connect(m_previousCycleAction, &QAction::triggered, this, &NodePaletteDockWidget::CycleToPreviousNode);

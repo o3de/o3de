@@ -108,9 +108,9 @@ namespace OpenParticle
 
         bool m_changedDiffuseMap;
         AZStd::unordered_map<AZ::u32, AZ::RPI::MaterialPropertyValue> m_diffuseMapInstances;
-        AZStd::unordered_map<AZ::u32, AZStd::vector<SimuCore::Vector3>> m_boneStreams;
-        AZStd::unordered_map<AZ::u32, AZStd::vector<SimuCore::Vector3>> m_vertexStreams;
-        AZStd::unordered_map<AZ::u32, AZStd::vector<SimuCore::Vector3>> m_vertexCoordSteams;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::Vector3>> m_boneStreams;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::Vector3>> m_vertexStreams;
+        AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::Vector3>> m_vertexCoordSteams;
         AZStd::unordered_map<AZ::u32, AZStd::vector<AZ::u32>> m_indiceStreams;
         AZStd::unordered_map<AZ::u32, AZStd::vector<double>> m_areaStreams;
 

@@ -107,9 +107,9 @@ namespace SimuCore::ParticleCore {
     {
         LinearValue updateValue = valueObject.dataValue;
         if (valueObject.isUniform) {
-            updateValue.value = Vector3(valueObject.dataValue.value.GetX());
-            updateValue.minValue = Vector3(valueObject.dataValue.minValue.GetX());
-            updateValue.maxValue = Vector3(valueObject.dataValue.maxValue.GetX());
+            updateValue.value = AZ::Vector3(valueObject.dataValue.value.GetX());
+            updateValue.minValue = AZ::Vector3(valueObject.dataValue.minValue.GetX());
+            updateValue.maxValue = AZ::Vector3(valueObject.dataValue.maxValue.GetX());
         }
         if (valueObject.distType == DistributionType::CURVE) {
             for (AZ::u32 index = 0; index < DISTRIBUTION_COUNT_THREE; ++index) 

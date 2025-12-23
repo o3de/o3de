@@ -156,7 +156,7 @@ namespace SimuCore::ParticleCore {
         return emitterID;
     }
 
-    const Transform& ParticleEmitter::GetEmitterTransform() const
+    const AZ::Transform& ParticleEmitter::GetEmitterTransform() const
     {
         return emitterTransform;
     }
@@ -537,7 +537,7 @@ namespace SimuCore::ParticleCore {
         moveDistance = distance;
     }
 
-    void ParticleEmitter::SetEmitterTransform(const SimuCore::Transform& transform)
+    void ParticleEmitter::SetEmitterTransform(const AZ::Transform& transform)
     {
         emitterTransform = transform;
     }
@@ -612,13 +612,13 @@ namespace SimuCore::ParticleCore {
         return false;
     }
 
-    void ParticleEmitter::SetAabbExtends(const Vector3& max, const Vector3& min)
+    void ParticleEmitter::SetAabbExtends(const AZ::Vector3& max, const AZ::Vector3& min)
     {
         maxExtend = max;
         minExtend = min;
     }
 
-    void ParticleEmitter::SetWorldFront(const Vector3& front)
+    void ParticleEmitter::SetWorldFront(const AZ::Vector3& front)
     {
         worldFront = front;
     }

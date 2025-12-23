@@ -29,7 +29,11 @@ namespace AZ
             struct TriangleIndices { uint32_t index1, index2, index3; };
             using ObjectIdTriangleIndices = AZStd::tuple<AZ::u8, TriangleIndices>;
 
-            ModelKdTree() = default;
+            ModelKdTree();
+
+            ModelKdTree(ModelKdTree&&);
+
+            ~ModelKdTree();
 
             bool Build(const ModelAsset* model);
             //! Return if a ray intersected the model.

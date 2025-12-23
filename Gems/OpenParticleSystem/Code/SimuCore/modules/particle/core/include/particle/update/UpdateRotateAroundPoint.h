@@ -15,9 +15,9 @@ namespace SimuCore::ParticleCore {
         static void Execute(const UpdateRotateAroundPoint* data, const UpdateInfo& info, Particle& particle);
         static void UpdateDistPtr(const UpdateRotateAroundPoint* data, const Distribution& distribution);
 
-        Vector3 xAxis = { 1.f, 0.f, 0.f };   // Two axes determine a plane.
-        Vector3 yAxis = { 0.f, 1.f, 0.f };   // The rotation axis is obtained by multiplying two axes.
-        Vector3 center = { 0.f, 0.f, 0.f };
+        AZ::Vector3 xAxis = { 1.f, 0.f, 0.f };   // Two axes determine a plane.
+        AZ::Vector3 yAxis = { 0.f, 1.f, 0.f };   // The rotation axis is obtained by multiplying two axes.
+        AZ::Vector3 center = { 0.f, 0.f, 0.f };
         float rotateRate = 1.f;
         float radius = 1.f;
     };

@@ -98,23 +98,13 @@ void PropertyAssetDirectorySelectionCtrl::SetFolderSelection(const AZStd::string
     if (strFolderPath.empty())
     {
         m_folderPath.clear();
-    }    
-    // AssetBrowser will return relative paths for subdirectories of the game project,
-    // with the game project folder included in the path.
-    else if (AzFramework::StringFunc::Path::IsRelative(strFolderPath.c_str()))
-    {
-        // This assumes the asset picker will always a path relative to
-        // the project folder, which we need to omit since file IO routines
-        // seem to assume this anyways.
-        strFolderPath = strFolderPath.substr(strFolderPath.find('/') + 1);
-        m_folderPath = PathUtil::MakeGamePath(strFolderPath);
-        AZStd::to_lower(m_folderPath.begin(), m_folderPath.end());
     }
-    // For paths in gems, absolute paths are returned
+    // AssetBrowser will return absolute paths
     else
     {
+        strFolderPath = PathUtil::ToUnixPath(strFolderPath.c_str());
         m_folderPath = Path::FullPathToGamePath(strFolderPath.c_str());
-        AZStd::to_lower(m_folderPath.begin(), m_folderPath.end());
+        m_folderPath = PathUtil::ToLower(m_folderPath);
     }
 }
 
