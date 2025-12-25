@@ -320,7 +320,7 @@ namespace LmbrCentral
             if (m_strength < 1.f)
             {
                 // Normalize the strength / slerp calculation to 30FPS
-                const float normalizedFrameRate = 30.f;
+                constexpr float normalizedFrameRate = 30.f;
 
                 if (deltaTime < 1.f / normalizedFrameRate)
                 {
