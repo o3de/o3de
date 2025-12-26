@@ -31,6 +31,8 @@ namespace AZ
                     bool());
                 MOCK_CONST_METHOD0(HasTextureCoordinates,
                     bool());
+                MOCK_CONST_METHOD0(GetPositions,
+                    const AZStd::vector<AZ::Vector3>&());
                 MOCK_CONST_METHOD1(GetPosition,
                     const AZ::Vector3 & (unsigned int index));
                 MOCK_CONST_METHOD1(GetNormal,

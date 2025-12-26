@@ -21,6 +21,7 @@ namespace AZ::SceneAPI::DataTypes
         MOCK_CONST_METHOD0(GetVertexIndexCount, size_t());
         MOCK_CONST_METHOD0(GetVertexCount, unsigned int());
         MOCK_CONST_METHOD0(GetFaceCount, unsigned int());
+        MOCK_CONST_METHOD0(GetPositions, const AZStd::vector<AZ::Vector3>&());
         MOCK_CONST_METHOD1(GetFaceInfo, const Face&(unsigned int index));
         MOCK_CONST_METHOD1(GetPosition, const AZ::Vector3&(unsigned int index));
         MOCK_CONST_METHOD1(GetNormal, const AZ::Vector3&(unsigned int index));
