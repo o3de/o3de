@@ -282,14 +282,14 @@ namespace PhysX
             AZ_Warning(
                 "PhysX",
                 false,
-                "Entity [%s] Hinge Joint component missing lead entity. This joint will be a global constraint on the follower's global "
+                "Entity [%s] D6 Joint component missing lead entity. This joint will be a global constraint on the follower's global "
                 "position.",
                 GetEntity()->GetName().c_str());
         }
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AZ_Assert(sceneInterface, "No sceneInterface");
         AZ_Warning(
-            "D6JointComponent", leadFollowerInfo.m_followerActor, "No valid followe actor for D6 joint, D6 joint will not be created.");
+            "D6JointComponent", leadFollowerInfo.m_followerActor, "No valid follower actor for D6 joint, D6 joint will not be created.");
         AZ_Warning("D6JointComponent", leadFollowerInfo.m_leadActor, "No valid lead actor for D6 joint, D6 joint will not be created.");
 
         if (leadFollowerInfo.m_followerActor == nullptr || leadFollowerInfo.m_leadActor == nullptr)
