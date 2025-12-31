@@ -473,20 +473,10 @@ namespace PhysX
         }
         const physx::PxD6Axis::Enum pxAxis = idToPxD6AxisEnum.at(id);
         PHYSX_SCENE_READ_LOCK(m_nativeD6Joint->getScene());
-        if (pxAxis == physx::PxD6Axis::eX)
+        if (pxAxis == physx::PxD6Axis::eX || pxAxis == physx::PxD6Axis::eY || pxAxis == physx::PxD6Axis::eZ)
         {
-            physx::PxJointLinearLimitPair limitX = m_nativeD6Joint->getLinearLimit(physx::PxD6Axis::eX);
-            return AZStd::make_pair(limitX.lower, limitX.upper);
-        }
-        else if (pxAxis == physx::PxD6Axis::eY)
-        {
-            physx::PxJointLinearLimitPair limitY = m_nativeD6Joint->getLinearLimit(physx::PxD6Axis::eY);
-            return AZStd::make_pair(limitY.lower, limitY.upper);
-        }
-        else if (pxAxis == physx::PxD6Axis::eZ)
-        {
-            physx::PxJointLinearLimitPair limitZ = m_nativeD6Joint->getLinearLimit(physx::PxD6Axis::eZ);
-            return AZStd::make_pair(limitZ.lower, limitZ.upper);
+            physx::PxJointLinearLimitPair limit = m_nativeD6Joint->getLinearLimit(pxAxis);
+            return AZStd::make_pair(limit.lower, limit.upper);
         }
         else if (pxAxis == physx::PxD6Axis::eTWIST)
         {
