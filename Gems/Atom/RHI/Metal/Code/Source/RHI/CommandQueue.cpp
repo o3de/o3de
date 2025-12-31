@@ -115,7 +115,7 @@ namespace AZ
             }
             
             //Queue the fence signals, swapchain presents and commit call for this command buffer
-            QueueCommand([=](void* unused)
+            QueueCommand([=, this](void* unused)
             {
                  //Autoreleasepool is to ensure that the driver is not leaking memory related to the command buffer and encoder
                  @autoreleasepool

@@ -55,8 +55,9 @@ if (NOT launcher_generator_LY_PROJECTS AND NOT LY_MONOLITHIC_GAME)
     # they can use this in their code and logic to avoid doing things like loading the burned-in
     # registry keys.
     set(GENERIC_LAUNCHER_COMPILE_DEFINITION "O3DE_IS_GENERIC_LAUNCHER")
+else ()
+    set(launcher_generator_BUILD_GENERIC FALSE)
 endif()
-
 
 foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME launcher_generator_LY_PROJECTS)
 

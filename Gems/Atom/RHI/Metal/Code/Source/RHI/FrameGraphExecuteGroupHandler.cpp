@@ -55,7 +55,7 @@ namespace AZ
             if constexpr (RHI::ForceCpuGpuInSync)
             {
                 //Cache the name of the scope we just queued and wait for it to finish on the cpu
-                m_device->SetLastExecutingScope(m_workRequest.m_commandList->GetName().GetStringView());
+                m_device->SetLastExecutingScope(m_workRequest.m_commandLists.front()->GetName().GetStringView());
                 cmdQueue->FlushCommands();
                 cmdQueue->WaitForIdle();
             }
