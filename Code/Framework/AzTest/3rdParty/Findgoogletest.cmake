@@ -60,7 +60,7 @@ set(INSTALL_GTEST OFF)
 set(gmock_build_tests OFF)
 set(gtest_build_tests OFF)
 set(gtest_build_samples OFF)
-set(gtest_hide_internal_symbols ON)
+set(gtest_hide_internal_symbols OFF) # Required as AZtest modifies internal runtime flags such as FLAGS_gtest_catch_exceptions
 
 # Save values that apply globally that the 3rd party library may mess with
 # Some of these are null, hence the set(xxx "quoted value") so that if it isn't set it becomes the empty string.
