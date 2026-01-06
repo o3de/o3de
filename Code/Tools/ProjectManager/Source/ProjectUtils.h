@@ -39,6 +39,10 @@ namespace O3DE::ProjectManager
         bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
         bool FindSupportedCompiler(const ProjectInfo& projectInfo, QWidget* parent = nullptr);
+
+        // Returns a failure string, or a success with message notes.
+        // If there are no notes, return an empty string on success.
+        // Any notes returned will be showend as a message box or output log, regardless of success or failure.
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform(const ProjectInfo& projectInfo);
 
         //! Detect if cmake is installed

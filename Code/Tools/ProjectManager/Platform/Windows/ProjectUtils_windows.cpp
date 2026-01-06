@@ -139,9 +139,11 @@ namespace O3DE::ProjectManager
             QFileInfo vsWhereFile(vsWherePath);
             if (vsWhereFile.exists() && vsWhereFile.isFile())
             {
-                QStringList vsWhereBaseArguments =
-                    QStringList{ "-version", "[16.11,18)", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" };
+                // note that the following version ranges are INCLUSIVE of 17.14 (Vs2022), but EXCLUSIVE of 19.0
+                // This covers the range ov VS2022 (v17.x) and VS2026 (v18.x), but not next VS202x (v19.x)
 
+                QStringList vsWhereBaseArguments =
+                   QStringList{ "-version", "[17.14, 19)", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" };
                 QProcess vsWhereIsCompleteProcess;
                 vsWhereIsCompleteProcess.setProcessChannelMode(QProcess::MergedChannels);
 
@@ -152,22 +154,44 @@ namespace O3DE::ProjectManager
                     QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
                     if (vsWhereIsCompleteOutput.startsWith("1"))
                     {
+                        return AZ::Success(QString()); // No notes!
+                    }
+                }
+
+                // if we fail to find a supported compiler here, we allow it to use some future unknown verson of vs, as long as its
+                // above 17.14 (Visual Studio 2022), instead of blocking compilation.
+                // note the open ended range here, indicating at least 17.14 but possibly a future version way ahead.
+                vsWhereBaseArguments =
+                    QStringList{ "-version", "[17.14, )", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" };
+                
+                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "isComplete" });
+
+                if (vsWhereIsCompleteProcess.waitForStarted() && vsWhereIsCompleteProcess.waitForFinished())
+                {
+                    QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
+                    if (vsWhereIsCompleteOutput.startsWith("1"))
+                    {
                         QProcess vsWhereCompilerVersionProcess;
                         vsWhereCompilerVersionProcess.setProcessChannelMode(QProcess::MergedChannels);
                         vsWhereCompilerVersionProcess.start(
-                            vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "catalog_productDisplayVersion" });
+                            vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "displayName" });
 
                         if (vsWhereCompilerVersionProcess.waitForStarted() && vsWhereCompilerVersionProcess.waitForFinished())
                         {
                             QString vsWhereCompilerVersionOutput(vsWhereCompilerVersionProcess.readAllStandardOutput());
-                            return AZ::Success(vsWhereCompilerVersionOutput);
+                            return AZ::Success(
+                                QObject::tr("A version of Visual Studio was found that isn't supported: %1<br><br>"
+                                        "O3DE will attempt to build the project with it, but there may be issues."
+                                        "  O3DE officially supports Visual Studio 2022 v17.14 or higher, and 2026 v18.0 or higher."
+                                        "<br><br>Refer to the <a href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual "
+                                        "Studio requirements</a> for more information.")).arg(vsWhereCompilerVersionOutput.trimmed());
                         }
                     }
                 }
             }
 
             return AZ::Failure(
-                QObject::tr("Visual Studio 2019 version 16.11 or higher or Visual Studio 2022 version 17.0 or higher not found.<br><br>"
+                QObject::tr("Visual Studio 2022 v17.14 or higher, or Visual Studio 2026 v18.0 or higher not found.<br><br>"
                             "A compatible version of Visual Studio is required to build this project.<br>"
                             "Refer to the <a href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual "
                             "Studio requirements</a> for more information."));
