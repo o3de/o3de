@@ -89,7 +89,7 @@ namespace O3DE::ProjectManager
             QString xcodeBuilderVersionNumber = queryXcodeBuildVersion.GetValue().split("\n")[0];
             AZ_TracePrintf("Project Manager", "XcodeBuilder version %s detected.", xcodeBuilderVersionNumber.toUtf8().constData());
 
-            return AZ::Success(xcodeBuilderVersionNumber);
+            return AZ::Success(QString());
         }
 
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)

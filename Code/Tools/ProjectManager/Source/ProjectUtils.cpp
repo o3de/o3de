@@ -575,14 +575,15 @@ namespace O3DE::ProjectManager
         {
             auto findCompilerResult = FindSupportedCompilerForPlatform(projectInfo);
 
-            if (!findCompilerResult.IsSuccess())
+            QString messageNotes = findCompilerResult.IsSuccess() ? findCompilerResult.GetValue() : findCompilerResult.GetError();
+            if (!messageNotes.isEmpty())
             {
                 QMessageBox vsWarningMessage(parent);
                 vsWarningMessage.setIcon(QMessageBox::Warning);
                 vsWarningMessage.setWindowTitle(QObject::tr("Create Project"));
                 // Makes link clickable
                 vsWarningMessage.setTextFormat(Qt::RichText);
-                vsWarningMessage.setText(findCompilerResult.GetError());
+                vsWarningMessage.setText(messageNotes);
                 vsWarningMessage.setStandardButtons(QMessageBox::Close);
 
                 QSpacerItem* horizontalSpacer = new QSpacerItem(600, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
