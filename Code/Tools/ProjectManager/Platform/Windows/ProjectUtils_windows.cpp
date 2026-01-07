@@ -142,6 +142,17 @@ namespace O3DE::ProjectManager
             QString programFilesPath = environment.value("ProgramFiles(x86)");
             QString vsWherePath = QDir(programFilesPath).filePath("Microsoft Visual Studio/Installer/vswhere.exe");
 
+            // Range which represents an ideal supported version of Visual Studio
+            QStringList versionArgumentsIdeal{ "-version", "[17.14, 19)" }; // 17.14 is VS2022, 18.xxxx is VS2026
+
+            // Range which represents a deprecated, but still functional version of Visual Studio
+            QStringList versionArgumentsDeprecated{ "-version", "[16.11, 19)" }; // 16.11 is last of VS2019.
+
+            // Range which represents a future version of Visual Studio which we don't know about and was released
+            // as a surprise.
+            QStringList versionArgumentsFutureVS{ "-version", "[16.11, )" };
+
+
             QFileInfo vsWhereFile(vsWherePath);
             if (vsWhereFile.exists() && vsWhereFile.isFile())
             {
@@ -149,11 +160,10 @@ namespace O3DE::ProjectManager
                 QStringList isCompleteArguments{ "-property", "isComplete" }; // returns a 1 if all components are available.
 
                 // Check 1: are we in a perfect situation, where we are exactly on the supported versions?
-                QStringList versionArguments{ "-version", "[17.14, 19)" }; // 17.14 is VS2022, 18.xxxx is VS2026
-
+                
                 QProcess vsWhereIsCompleteProcess;
                 vsWhereIsCompleteProcess.setProcessChannelMode(QProcess::MergedChannels);
-                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArguments + isCompleteArguments);
+                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArgumentsIdeal + isCompleteArguments);
                 if (vsWhereIsCompleteProcess.waitForStarted() && vsWhereIsCompleteProcess.waitForFinished())
                 {
                     QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
@@ -164,9 +174,7 @@ namespace O3DE::ProjectManager
                 }
 
                 // If we get here, we are not in the perfect supported version range, but might still be in the deprecated range.
-                versionArguments = QStringList{ "-version", "[16.11, 19)" }; // 16.11 is last of VS2019.
-
-                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArguments + isCompleteArguments);
+                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArgumentsDeprecated + isCompleteArguments);
                 if (vsWhereIsCompleteProcess.waitForStarted() && vsWhereIsCompleteProcess.waitForFinished())
                 {
                     QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
@@ -175,13 +183,13 @@ namespace O3DE::ProjectManager
                         QProcess vsWhereCompilerVersionProcess;
                         vsWhereCompilerVersionProcess.setProcessChannelMode(QProcess::MergedChannels);
                         vsWhereCompilerVersionProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "displayName" });
-
+                        // note that displayname includes product so will be something like "Visual Studio 2019"
                         if (vsWhereCompilerVersionProcess.waitForStarted() && vsWhereCompilerVersionProcess.waitForFinished())
                         {
                             QString vsWhereCompilerVersionOutput(vsWhereCompilerVersionProcess.readAllStandardOutput());
                             return AZ::Success(
                                        QObject::tr(
-                                           "Visual studio 2019 (version %1) used, this will be deprecated in future releases.<br><br>"
+                                           "%1 is being used - this will be deprecated in future releases.<br><br>"
                                            "Please consider upgrading soon.<br><br>"
                                            "<br><br>Refer to the <a "
                                            "href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual "
@@ -193,8 +201,7 @@ namespace O3DE::ProjectManager
 
                 // if we get here, we might be on an unknown, perhaps supported future version, denoted with
                 // the open range with no parameter `, )` at the end:
-                versionArguments = QStringList{ "-version", "[16.11, )" };
-                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArguments + isCompleteArguments);
+                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArgumentsFutureVS + isCompleteArguments);
                 if (vsWhereIsCompleteProcess.waitForStarted() && vsWhereIsCompleteProcess.waitForFinished())
                 {
                     QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
