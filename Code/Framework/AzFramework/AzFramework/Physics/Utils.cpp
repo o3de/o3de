@@ -135,6 +135,7 @@ namespace Physics
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);
             ReflectWindBus(context);
             ReflectCharacterBus(context);
+            CollisionMeshAsset::Reflect(context);
         }
     }
 

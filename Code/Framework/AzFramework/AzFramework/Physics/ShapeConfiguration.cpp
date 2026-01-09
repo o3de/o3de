@@ -18,6 +18,14 @@
 
 namespace Physics
 {
+    void CollisionMeshAsset::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CollisionMeshAsset>();
+        }
+    }
+
     void ShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

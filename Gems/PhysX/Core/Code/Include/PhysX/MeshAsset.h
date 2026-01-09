@@ -70,11 +70,11 @@ namespace PhysX
 
         //! Represents a PhysX mesh asset. This is an AZ::Data::AssetData wrapper around MeshAssetData
         class MeshAsset
-            : public AZ::Data::AssetData
+            : public Physics::CollisionMeshAsset
         {
         public:
             AZ_CLASS_ALLOCATOR(MeshAsset, AZ::SystemAllocator);
-            AZ_RTTI(MeshAsset, "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}", AZ::Data::AssetData);
+            AZ_RTTI(MeshAsset, "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}", Physics::CollisionMeshAsset);
 
             static void Reflect(AZ::ReflectContext* context);
 

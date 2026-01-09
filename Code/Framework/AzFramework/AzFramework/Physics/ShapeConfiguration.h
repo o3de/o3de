@@ -55,6 +55,16 @@ namespace Physics
         static constexpr AZ::u8 DefaultCylinderSubdivisionCount = 16;
     } // namespace ShapeConstants
 
+    class AZF_API CollisionMeshAsset
+        : public AZ::Data::AssetData
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CollisionMeshAsset, AZ::SystemAllocator);
+        AZ_RTTI(CollisionMeshAsset, "{B3308B0E-B925-43C5-8345-85B72385C36D}", AZ::Data::AssetData);
+
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
     class AZF_API ShapeConfiguration
     {
     public:
@@ -196,7 +206,7 @@ namespace Physics
             return AZStd::make_shared<PhysicsAssetShapeConfiguration>(*this);
         }
 
-        AZ::Data::Asset<AZ::Data::AssetData> m_asset{ AZ::Data::AssetLoadBehavior::PreLoad };
+        AZ::Data::Asset<CollisionMeshAsset> m_asset{ AZ::Data::AssetLoadBehavior::PreLoad };
         AZ::Vector3 m_assetScale = AZ::Vector3::CreateOne();
         bool m_useMaterialsFromAsset = true;
         AZ::u8 m_subdivisionLevel = 4; ///< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
