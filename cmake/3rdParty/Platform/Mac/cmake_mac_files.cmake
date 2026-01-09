@@ -8,7 +8,9 @@
 
 set(FILES
     BuiltInPackages_mac.cmake
+    BuiltInPackages_mac_arm64.cmake
     OpenGLInterface_mac.cmake
     Wwise_mac.cmake
     Python_mac.cmake
+    Python_mac_arm64.cmake
 )
