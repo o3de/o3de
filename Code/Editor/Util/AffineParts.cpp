@@ -9,6 +9,8 @@
 
 #include "EditorDefs.h"
 
+#include <CryCommon/MathConversion.h>
+
 /**** Decompose.h - Basic declarations ****/
 typedef struct
 {
@@ -825,8 +827,10 @@ void AffineParts::Decompose(const Matrix34& tm)
 {
     SAffineParts parts;
 
-    Matrix44 tm44(tm);
-    HMatrix& H = *((HMatrix*)&tm44); // Treat HMatrix as a Matrix44.
+    AZ::Matrix3x4 tm34 = LYTransformToAZMatrix3x4(tm);
+    AZ::Matrix4x4 tm44 = AZ::Matrix4x4::CreateFromMatrix3x4(tm34);
+    HMatrix H;
+    tm44.StoreToRowMajorFloat16((float*)&H);
 
     decomp_affine(H, &parts);
 
@@ -842,8 +846,10 @@ void AffineParts::SpectralDecompose(const Matrix34& tm)
 {
     SAffineParts parts;
 
-    Matrix44 tm44(tm);
-    HMatrix& H = *((HMatrix*)&tm44); // Treat HMatrix as a Matrix44.
+    AZ::Matrix3x4 tm34 = LYTransformToAZMatrix3x4(tm);
+    AZ::Matrix4x4 tm44 = AZ::Matrix4x4::CreateFromMatrix3x4(tm34);
+    HMatrix H;
+    tm44.StoreToRowMajorFloat16((float*)&H);
 
     spectral_decomp_affine(H, &parts);
 
