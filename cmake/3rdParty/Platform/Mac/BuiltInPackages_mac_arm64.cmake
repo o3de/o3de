@@ -18,7 +18,7 @@ ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform            
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-mac-arm64                        TARGETS expat                       PACKAGE_HASH 70f195977a17b08a4dc8687400fd7f2589e3b414d4961b562129166965b6f658)
+ly_associate_package(PACKAGE_NAME expat-2.7.3-rev1-mac-arm64                        TARGETS expat                       PACKAGE_HASH 76a6793f180f6df456394d02d9a23df585af6a10689308e539b50e26c5edf437)
 ly_associate_package(PACKAGE_NAME assimp-5.4.3-rev3-mac-arm64                       TARGETS assimp                      PACKAGE_HASH bfda2c319bb4cc26aea8445a9ad33347e0e5ead2a959a5eafb5eed47431f56ef)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.8.2505.1-o3de-rev3-mac-arm64 TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 507bae13171d67e1d760a3ebb7ee75f48a6e97445c347d1c774fdb10eefff26d)
 ly_associate_package(PACKAGE_NAME SPIRVCross-1.3.275.0-rev1-mac-arm64               TARGETS SPIRVCross                  PACKAGE_HASH 5ad9629f677c42847daf8b097728323685d7018d3ac8af0508d1bd0727a81304)
