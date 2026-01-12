@@ -78,7 +78,6 @@ CErrorReport::CErrorReport()
     m_errors.reserve(100);
     m_bImmediateMode = true;
     m_bShowErrors = true;
-    m_pParticle = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

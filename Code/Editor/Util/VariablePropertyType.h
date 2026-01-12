@@ -42,7 +42,7 @@ enum PropertyType
     ePropertySequenceId,
     ePropertyLightAnimation,
     ePropertyDeprecated1, // formerly ePropertyFlare
-    ePropertyParticleName,
+    ePropertyDeprecated2,  // formerly ePropertyParticleName
     ePropertyAudioTrigger,
     ePropertyAudioSwitch,
     ePropertyAudioSwitchState,

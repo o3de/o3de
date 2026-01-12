@@ -267,9 +267,6 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     case ePropertySequenceId:
     case ePropertyLocalString:
     case ePropertyLightAnimation:
-    case ePropertyParticleName:
-        m_reflectedVarAdapter = new ReflectedVarGenericPropertyAdapter(desc.m_type);
-        break;
     case ePropertyTexture:
     case ePropertyAudioTrigger:
     case ePropertyAudioSwitch:

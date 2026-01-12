@@ -1384,10 +1384,6 @@ void CSystem::CreateSystemVars()
     REGISTER_STRING(
         "capture_file_prefix", "", 0, "If set, specifies the prefix to use for the captured frame instead of the default 'Frame'.");
 
-    m_gpu_particle_physics =
-        REGISTER_INT("gpu_particle_physics", 0, VF_REQUIRE_APP_RESTART, "Enable GPU physics if available (0=off / 1=enabled).");
-    assert(m_gpu_particle_physics);
-
     REGISTER_COMMAND(
         "LoadConfig",
         &LoadConfigurationCmd,

@@ -162,7 +162,7 @@ struct IVariable
         DT_UIENUM,          // DEPRECATED
         DT_SEQUENCE_ID,     // Movie Sequence
         DT_LIGHT_ANIMATION, // Light Animation Node in the global Light Animation Set
-        DT_PARTICLE_EFFECT,
+        DT_DEPRECATED_01,  // formerly DT_Particle_effect
         DT_DEPRECATED,      // formerly DT_FLARE
         DT_AUDIO_TRIGGER,
         DT_AUDIO_SWITCH,

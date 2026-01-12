@@ -210,8 +210,6 @@ CSystem::CSystem()
     m_pUserCallback = NULL;
     m_sys_firstlaunch = NULL;
 
-    m_gpu_particle_physics = NULL;
-
     m_bInitializedSuccessfully = false;
     m_bRelaunch = false;
     m_iLoadingMode = 0;
