@@ -129,7 +129,8 @@ namespace AZ
 
                 createdBoneData->SetWorldTransform(globalTransform);
 
-                context.m_createdData.push_back(AZStd::move(createdBoneData));
+                // Insert at front to ensure bone data is handled before mesh data in SceneImporter
+                context.m_createdData.insert(context.m_createdData.begin(), AZStd::move(createdBoneData));
 
                 return Events::ProcessingResult::Success;
             }
