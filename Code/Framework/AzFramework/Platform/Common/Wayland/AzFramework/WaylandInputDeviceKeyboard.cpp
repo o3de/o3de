@@ -81,7 +81,7 @@ namespace AzFramework
         void* data, struct wl_keyboard* wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
-        self->SendKeyEvent(key, state == WL_KEYBOARD_KEY_STATE_PRESSED);
+        self->SendKeyEvent(key, state == WL_KEYBOARD_KEY_STATE_PRESSED || state == WL_KEYBOARD_KEY_STATE_REPEATED);
     }
 
     void WaylandInputDeviceKeyboard::KeyboardModifiers(
@@ -192,6 +192,8 @@ namespace AzFramework
 
     void WaylandInputDeviceKeyboard::TickInputDevice()
     {
+        //Need version 10 to get repeated key events.
+        //find out if wl_keybaord v10 is supported in the majority of compositors before removing.
         if (!m_currentHeldKey.empty() && m_repeatRatePerSec != 0)
         {
             AZ::TimeMs currentElapsed;
