@@ -170,7 +170,8 @@ namespace AzFramework
     {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB && PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
         //Check for a Wayland env var if we also support X11
-        if (getenv("WAYLAND_DISPLAY") != nullptr)
+        const char* waylandEnvVar = getenv("WAYLAND_DISPLAY");
+        if (waylandEnvVar != nullptr && strlen(waylandEnvVar) > 0)
         {
             g_useWayland = true;
             AZ_Printf("NativeUISystemComponent", "Using Wayland, found WAYLAND_DISPLAY env var.");
