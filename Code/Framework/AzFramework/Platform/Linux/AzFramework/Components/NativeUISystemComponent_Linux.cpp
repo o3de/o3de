@@ -37,7 +37,7 @@ constexpr int g_max_gamepads = 4;
 
 constexpr rlim_t g_minimumOpenFileHandles = 65536L;
 
-static bool g_useWayland = false;
+[[maybe_unused]] static bool g_useWayland = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
