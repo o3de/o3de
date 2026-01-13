@@ -235,7 +235,7 @@ namespace AzFramework
                 QueueRawTextEvent(AZStd::move(text));
             }
         }
-        else if (m_currentHeldKey == text) // The held key is released and it's the same.
+        else if (m_currentHeldKey == text) // The held key is released, and it's the same.
         {
             ResetRepeatState();
         }

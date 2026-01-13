@@ -17,7 +17,7 @@
 
 namespace AzFramework
 {
-    // Using the accelerated values should be default for relative pointer
+    // Using the accelerated values should be the default for relative pointer
     AZ_CVAR(
         bool,
         wl_accel,
@@ -68,7 +68,7 @@ namespace AzFramework
         self->m_focusedWindow = nullptr;
 
         // I don't really see a need to save the pointer leave serial
-        // If you do please update the code that checks to see if currentSerial is at MAX since
+        // If you do, please update the code that checks to see if currentSerial is at MAX since
         // those assume if it's not at MAX then the pointer has entered.
         self->m_currentSerial = UINT32_MAX;
 
@@ -313,8 +313,7 @@ namespace AzFramework
     {
         // We can do this when locked but only as a hint to the compositor
         // that we want the cursor to show up at that location when unlocked.
-        // I think O3DE uses this to warp the cursor somewhere when unlocked which in that case
-        // won't work.
+        // I think O3DE uses this to warp the cursor somewhere when unlocked, which won't work on Wayland by design.
     }
 
     AZ::Vector2 WaylandInputDeviceMouse::GetSystemCursorPositionNormalized() const
@@ -403,7 +402,7 @@ namespace AzFramework
 
             if (m_focusedWindow == nullptr)
             {
-                // No focused window!
+                // No focused window.
                 return;
             }
 
@@ -412,7 +411,7 @@ namespace AzFramework
                 void* constraintWindowRawPtr = nullptr;
                 InputSystemCursorConstraintRequestBus::BroadcastResult(
                     constraintWindowRawPtr, &InputSystemCursorConstraintRequestBus::Events::GetSystemCursorConstraintWindow);
-                auto constraintWlWindow = (WaylandNativeWindow*)constraintWindowRawPtr;
+                auto constraintWlWindow = static_cast<WaylandNativeWindow*>(constraintWindowRawPtr);
                 if (constraintWlWindow == nullptr)
                 {
                     // Use focused

@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/tokenize.h>
@@ -98,7 +97,7 @@ namespace AzFramework
         ~WaylandConnectionManagerImpl() override
         {
             {
-                // GloablRegistryRemove will modify the vector
+                // GlobalRegistryRemove will modify the vector
                 // copy it for local
                 auto seats = m_seats;
                 for (auto& seat : seats)
@@ -137,8 +136,8 @@ namespace AzFramework
                         interfaceId, &WaylandInterfaceNotificationsBus::Events::OnProtocolError, interfaceId, code);
                 }
 
-                // Man page says: Note: Errors are fatal. If this function returns non-zero the display can no longer be used.
-                // let's die
+                // Man page says: Note: Errors are fatal. If this function returns non-zero, the display can no longer be used.
+                // let's crash
                 AZ_Fatal("Wayland", "Protocol error occurred %d, please check above for more info.", errorCode);
                 AZ_Crash();
             }
@@ -241,20 +240,13 @@ namespace AzFramework
         static void GlobalRegistryRemove(void* data, wl_registry* registry, uint32_t id)
         {
             auto self = static_cast<WaylandConnectionManagerImpl*>(data);
-            if (self->m_compositorId == id)
+            if (self->m_seats.find(id) != self->m_seats.end())
             {
-                // OH GOD OH NO!
-            }
-            else if (self->m_seats.find(id) != self->m_seats.end())
-            {
-                // it be a seat
                 auto seat = self->m_seats[id];
 
-                // Tell people using this seat to release any wl resources.
                 AzFramework::SeatNotificationsBus::Event(seat->m_playerIdx, &AzFramework::SeatNotificationsBus::Events::ReleaseSeat);
 
                 self->m_seats.erase(id);
-
                 wl_seat_destroy(seat->m_seat);
                 delete seat;
             }
@@ -277,7 +269,6 @@ namespace AzFramework
             AZ_Info("Wayland", "Supports Keyboard? %s", self->m_supportsKeyboard ? "yes" : "no");
             AZ_Info("Wayland", "Supports Touch? %s", self->m_supportsTouch ? "yes" : "no");
 
-            // Tell people that the caps have changed
             AzFramework::SeatNotificationsBus::Event(self->m_playerIdx, &AzFramework::SeatNotificationsBus::Events::SeatCapsChanged);
         }
 
