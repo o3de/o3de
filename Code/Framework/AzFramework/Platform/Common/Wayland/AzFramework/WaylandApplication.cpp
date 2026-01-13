@@ -523,15 +523,16 @@ namespace AzFramework
 
     WaylandApplication::~WaylandApplication()
     {
-        if (WaylandConnectionManagerInterface::Get() == m_waylandConnectionManager.get())
-        {
-            WaylandConnectionManagerInterface::Unregister(m_waylandConnectionManager.get());
-        }
         m_outputManager.reset();
         m_relativePointerManager.reset();
         m_pointerConstraintsManager.reset();
         m_cursorShapeManager.reset();
         m_xdgManager.reset();
+
+        if (WaylandConnectionManagerInterface::Get() == m_waylandConnectionManager.get())
+        {
+            WaylandConnectionManagerInterface::Unregister(m_waylandConnectionManager.get());
+        }
         m_waylandConnectionManager.reset();
         LinuxLifecycleEvents::Bus::Handler::BusDisconnect();
     }
