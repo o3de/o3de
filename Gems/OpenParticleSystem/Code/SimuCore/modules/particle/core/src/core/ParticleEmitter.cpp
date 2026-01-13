@@ -232,9 +232,11 @@ namespace SimuCore::ParticleCore {
         AZ::u32 beginPos;
         bool useSpawnEventInfo = spawnEvents.empty() ? false : spawnEvents.front().useEventInfo;
         AZ::u32 numPerSpawnEventEmit = spawnEvents.empty() ? 0 : spawnEvents.front().emitNum;
+        AZ::u32 numPerInheritEventEmit = spawnInheritances.empty() ? 0 : spawnInheritances.front()->emitNum;
 
         particlePool.ParallelSpawn(newParticleNum, beginPos,
-                [this, &cfg, &spawnEvents, useSpawnEventInfo, numPerSpawnEventEmit, &beginPos, &spawnInheritances](Particle* particles,
+            [this, &cfg, &spawnEvents, useSpawnEventInfo, numPerSpawnEventEmit, numPerInheritEventEmit, &beginPos, &spawnInheritances](
+                Particle* particles,
                         AZ::u32 begin,
                         AZ::u32 end, AZ::u32 alive) {
                     for (AZ::u32 i = begin; i < end; ++i)
@@ -245,7 +247,7 @@ namespace SimuCore::ParticleCore {
                         const ParticleEventInfo* relatedSpawnEvent =
                                 spawnEvents.empty() ? nullptr : &spawnEvents[(i - beginPos) / numPerSpawnEventEmit];
                         const InheritanceSpawn* relatedInheritanceEvent =
-                                spawnInheritances.empty() ? nullptr : spawnInheritances[i - beginPos];
+                            spawnInheritances.empty() ? nullptr : spawnInheritances[(i - beginPos) / numPerInheritEventEmit];
                         if (useSpawnEventInfo && relatedSpawnEvent)
                         {
                             particle.localPosition += emitterTransform.GetInverse().TransformPoint(relatedSpawnEvent->eventPosition);
@@ -394,13 +396,14 @@ namespace SimuCore::ParticleCore {
         updateInfo.minExtend = minExtend;
 
         AZ::u32 numPerSpawnEventEmit = spawnEvents.empty() ? 0 : spawnEvents.front().emitNum;
+        AZ::u32 numPerInheritEventEmit = spawnInheritances.empty() ? 0 : spawnInheritances.front()->emitNum;
 
-        particlePool.ParallelUpdate(beginPos, [&spawnEvents, numPerSpawnEventEmit, &spawnInheritances, &cfg, &updateInfo, beginPos, this](Particle* particles, AZ::u32 begin, AZ::u32 end) {
+        particlePool.ParallelUpdate(beginPos, [&spawnEvents, numPerSpawnEventEmit, numPerInheritEventEmit, &spawnInheritances, &cfg, &updateInfo, beginPos, this](Particle* particles, AZ::u32 begin, AZ::u32 end) {
             for (AZ::u32 i = begin; i < end; ++i) {
                 auto& particle = particles[i];
 
                 const ParticleEventInfo* relatedSpawnEvent = spawnEvents.empty() ? nullptr : &spawnEvents[(i - beginPos) / numPerSpawnEventEmit];
-                const InheritanceSpawn* relatedInheritanceEvent = spawnInheritances.empty() ? nullptr : spawnInheritances[i - beginPos];
+                const InheritanceSpawn* relatedInheritanceEvent = spawnInheritances.empty() ? nullptr : spawnInheritances[(i - beginPos) / numPerInheritEventEmit];
                 auto delta = relatedSpawnEvent != nullptr ? relatedSpawnEvent->eventTimeBeforeTick
                                                           : relatedInheritanceEvent != nullptr ? relatedInheritanceEvent->emitTime
                                                                                                : 0;

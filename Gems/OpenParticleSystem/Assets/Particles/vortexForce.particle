@@ -1,7 +1,8 @@
 {
     "name": "ParticleSystem",
     "systemConfig": {
-        "loop": true
+        "loop": true,
+        "parallel": true
     },
     "emitters": [
         {
@@ -14,7 +15,14 @@
                 "duration": 100.0,
                 "loop": true
             },
-            "material": "Materials/OpenParticle/ParticleSpriteEmit.material",
+            "material": {
+                "assetId": {
+                    "guid": "{B866A670-33AC-5775-B5AB-894DF9967B67}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlespriteemit.azmaterial"
+            },
             "OpenParticle::SpriteConfig": {
                 "facing": "CAMERA_RECTANGLE",
                 "sortId": 0,
@@ -30,7 +38,7 @@
                     "isUniform": false,
                     "distType": "Constant",
                     "distIndex": [
-                        1
+                        0
                     ]
                 }
             },

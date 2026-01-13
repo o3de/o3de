@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/JSON/prettywriter.h>
@@ -585,6 +585,11 @@ namespace AzToolsFramework
 
             bool SubstituteInvalidParentsInEntities(PrefabDom& templateDomRef)
             {
+                const AZStd::unordered_set<AZStd::string> TransformComponentNames = {
+                    "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "TransformComponent"
+                };
+
                 // Search for a TransformComponent and check the "Parent Entity" statement
                 auto sourceIt = templateDomRef.FindMember(PrefabDomUtils::SourceName);
                 if (sourceIt == templateDomRef.MemberEnd() || !sourceIt->value.IsString())
@@ -658,11 +663,13 @@ namespace AzToolsFramework
                         }
                         
                         AZStd::string componentAlias(componentsTypeIt->value.GetString());
-                        if (!componentAlias.contains("TransformComponent"))
+
+
+                        if (!TransformComponentNames.contains(componentAlias))
                         {
-                            continue;
+                            continue; // not the component we are looking for
                         }
-                        
+
                         constexpr const auto parentObjectName = "Parent Entity";
                         auto parentIt = componentIt->value.FindMember(parentObjectName);
                         if (parentIt == componentIt->value.MemberEnd() || !parentIt->value.IsString())

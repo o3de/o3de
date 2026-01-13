@@ -1,111 +1,10 @@
 {
     "name": "ParticleSystem",
     "systemConfig": {
-        "loop": true
+        "loop": true,
+        "parallel": true
     },
     "emitters": [
-        {
-            "name": "Emitter0",
-            "config": {
-                "type": "CPU",
-                "maxSize": 50,
-                "startTime": 0.0,
-                "localSpace": false,
-                "duration": 2.0,
-                "loop": true
-            },
-            "material": "Materials/OpenParticle/ParticleSpriteEmit.material",
-            "OpenParticle::SpriteConfig": {
-                "facing": "CAMERA_RECTANGLE",
-                "sortId": 0,
-                "subImage": [
-                    1.0,
-                    1.0
-                ]
-            },
-            "OpenParticle::EmitSpawn": {
-                "isProcessSpawnRate": true,
-                "spawnRateObject": {
-                    "dataValue": 5.0,
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnLifetime": {
-                "lifeTimeObject": {
-                    "dataValue": 4.0,
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnLocPoint": {
-                "positionObject": {
-                    "dataValue": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::UpdateConstForce": {
-                "forceObject": {
-                    "dataValue": [
-                        0.0,
-                        0.0,
-                        0.5
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::UpdateSizeByVelocity": {
-                "velocityRange": 2.0,
-                "velScaleObject": {
-                    "dataValue": {
-                        "value": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ],
-                        "minValue": [
-                            0.5,
-                            1.0,
-                            0.5
-                        ],
-                        "maxValue": [
-                            4.0,
-                            1.0,
-                            4.0
-                        ]
-                    },
-                    "isUniform": false,
-                    "distType": "Curve",
-                    "distIndex": [
-                        1,
-                        2,
-                        3
-                    ]
-                }
-            }
-        },
         {
             "name": "Emitter1",
             "config": {
@@ -116,7 +15,14 @@
                 "duration": 2.0,
                 "loop": true
             },
-            "material": "Materials/OpenParticle/ParticleSpriteEmit.material",
+            "material": {
+                "assetId": {
+                    "guid": "{B866A670-33AC-5775-B5AB-894DF9967B67}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlespriteemit.azmaterial"
+            },
             "OpenParticle::SpriteConfig": {
                 "facing": "CAMERA_RECTANGLE",
                 "sortId": 0,
@@ -204,6 +110,115 @@
                         0,
                         0,
                         0
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Emitter0",
+            "config": {
+                "type": "CPU",
+                "maxSize": 50,
+                "startTime": 0.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": {
+                "assetId": {
+                    "guid": "{B866A670-33AC-5775-B5AB-894DF9967B67}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlespriteemit.azmaterial"
+            },
+            "OpenParticle::SpriteConfig": {
+                "facing": "CAMERA_RECTANGLE",
+                "sortId": 0,
+                "subImage": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "OpenParticle::EmitSpawn": {
+                "isProcessSpawnRate": true,
+                "spawnRateObject": {
+                    "dataValue": 5.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 4.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocPoint": {
+                "positionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::UpdateConstForce": {
+                "forceObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        0.5
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::UpdateSizeByVelocity": {
+                "velocityRange": 2.0,
+                "velScaleObject": {
+                    "dataValue": {
+                        "value": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "minValue": [
+                            0.5,
+                            1.0,
+                            0.5
+                        ],
+                        "maxValue": [
+                            4.0,
+                            1.0,
+                            4.0
+                        ]
+                    },
+                    "isUniform": false,
+                    "distType": "Curve",
+                    "distIndex": [
+                        1,
+                        2,
+                        3
                     ]
                 }
             }
