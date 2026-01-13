@@ -17,7 +17,7 @@
 #include <AzFramework/WaylandNativeWindow.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
-#include <wayland-client.hpp>
+#include <wayland-client.h>
 
 namespace AzFramework
 {
@@ -148,7 +148,7 @@ namespace AzFramework
         self->m_pending.m_resize = false;
 
         xdg_toplevel_state* state;
-        wl_array_for_each_cpp(state, states)
+        wl_array_for_each_cpp(state, states, xdg_toplevel_state)
         {
             if (*state == XDG_TOPLEVEL_STATE_FULLSCREEN)
             {
@@ -187,7 +187,7 @@ namespace AzFramework
     {
         auto self = (AzFramework::WaylandNativeWindow*)data;
         xdg_toplevel_wm_capabilities* cap;
-        wl_array_for_each_cpp(cap, caps)
+        wl_array_for_each_cpp(cap, caps, xdg_toplevel_wm_capabilities)
         {
             if (*cap == XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN)
             {

@@ -14,7 +14,7 @@
 #include <AzFramework/Protocols/XdgDecorManager.h>
 #include <AzFramework/WaylandInputDeviceKeyboard.h>
 #include <AzFramework/WaylandInputDeviceMouse.h>
-#include <wayland-client.hpp>
+#include <wayland-client.h>
 #include <xdg-shell-client-protocol.h>
 
 namespace AzFramework

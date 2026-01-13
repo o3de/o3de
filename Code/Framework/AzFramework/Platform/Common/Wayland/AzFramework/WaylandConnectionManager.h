@@ -12,7 +12,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <wayland-client.hpp>
+#include <wayland-client.h>
 
 struct xkb_context;
 namespace AzFramework

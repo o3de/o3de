@@ -22,7 +22,7 @@
 
 #include <sys/poll.h>
 #include <wayland-client-protocol.h>
-#include <wayland-client.hpp>
+#include <wayland-client.h>
 #include <xkbcommon/xkbcommon.h>
 
 AZStd::vector<AZStd::string> g_blockedProtocols;
