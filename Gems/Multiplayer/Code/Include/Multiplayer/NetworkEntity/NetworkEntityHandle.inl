@@ -80,7 +80,7 @@ namespace Multiplayer
     {
         if (AZ::Entity* entity{ GetEntity() })
         {
-            entity->Activate();
+            entity->SetEntityActive(true);
         }
     }
 
@@ -88,7 +88,7 @@ namespace Multiplayer
     {
         if (AZ::Entity* entity{ GetEntity() })
         {
-            entity->Deactivate();
+            entity->SetEntityActive(false);
         }
     }
 

@@ -278,7 +278,7 @@ namespace Multiplayer
 
         SyncActivatingEntityTransform(entity);
 
-        entity->Activate();
+        entity->SetEntityActive(true);
 
         m_replicationManager.m_orphanedEntityRpcs.DispatchOrphanedRpcs(*this);
     }

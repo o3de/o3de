@@ -83,7 +83,7 @@ namespace LmbrCentral
             {
                 if (entity->GetState() != AZ::Entity::State::Active)
                 {
-                    entity->Activate();
+                    entity->SetEntityActive(true);
                 }
             }
         );
@@ -99,7 +99,7 @@ namespace LmbrCentral
             {
                 if (entity->GetState() == AZ::Entity::State::Active)
                 {
-                    entity->Deactivate();
+                    entity->SetEntityActive(false);
                 }
             }
         );
