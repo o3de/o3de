@@ -226,14 +226,8 @@ set(FILES
     Passes/Silhouette.pass
     Passes/SilhouetteGather.pass
     Passes/Skinning.pass
-    Passes/SkyAtmosphere.pass
-    Passes/SkyAtmosphereParent.pass
     Passes/SkyBox.pass
     Passes/SkyBox_TwoOutputs.pass
-    Passes/SkyRayMarching.pass
-    Passes/SkyTransmittanceLUT.pass
-    Passes/SkyViewLUT.pass
-    Passes/SkyVolumeLUT.pass
     Passes/SlowClear.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
@@ -703,15 +697,6 @@ set(FILES
     Shaders/SkinnedMesh/LinearSkinningCS.azsl
     Shaders/SkinnedMesh/LinearSkinningCS.shader
     Shaders/SkinnedMesh/LinearSkinningPassSRG.azsli
-    Shaders/SkyAtmosphere/SkyAtmosphereCommon.azsli
-    Shaders/SkyAtmosphere/SkyRayMarching.azsl
-    Shaders/SkyAtmosphere/SkyRayMarching.shader
-    Shaders/SkyAtmosphere/SkyTransmittanceLUT.azsl
-    Shaders/SkyAtmosphere/SkyTransmittanceLUT.shader
-    Shaders/SkyAtmosphere/SkyViewLUT.azsl
-    Shaders/SkyAtmosphere/SkyViewLUT.shader
-    Shaders/SkyAtmosphere/SkyVolumeLUT.azsl
-    Shaders/SkyAtmosphere/SkyVolumeLUT.shader
     Shaders/SkyBox/MultiViewSkyBox.shader
     Shaders/SkyBox/SkyBox.azsl
     Shaders/SkyBox/SkyBox.shader
