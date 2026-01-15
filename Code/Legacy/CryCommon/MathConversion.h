@@ -15,7 +15,6 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix3x4.h>
-#include <AzCore/Math/Quaternion.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Plane.h>
 #include <Cry_Math.h>
@@ -84,20 +83,6 @@ inline ColorB AZColorToLYColorB(const AZ::Color& source)
 inline AZ::Color LYColorBToAZColor(const ColorB& source)
 {
     return AZ::Color(source.r, source.g, source.b, source.a);
-}
-
-
-inline AZ::Quaternion LYQuaternionToAZQuaternion(const Quat& source)
-{
-    const float f4[4] = { source.v.x, source.v.y, source.v.z, source.w };
-    return AZ::Quaternion::CreateFromFloat4(f4);
-}
-
-inline Quat AZQuaternionToLYQuaternion(const AZ::Quaternion& source)
-{
-    float f4[4];
-    source.StoreToFloat4(f4);
-    return Quat(f4[3], f4[0], f4[1], f4[2]);
 }
 
 inline Matrix34 AZTransformToLYTransform(const AZ::Transform& source)
