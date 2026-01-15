@@ -520,7 +520,7 @@ struct IUiAnimTrack
     virtual void GetValue(float time, float& value) = 0;
     virtual void GetValue(float time, Vec3& value) = 0;
     virtual void GetValue(float time, Vec4& value) = 0;
-    virtual void GetValue(float time, Quat& value) = 0;
+    virtual void GetValue(float time, AZ::Quaternion& value) = 0;
     virtual void GetValue(float time, bool& value) = 0;
     virtual void GetValue(float time, AZ::Vector2& value) = 0;
     virtual void GetValue(float time, AZ::Vector3& value) = 0;
@@ -534,7 +534,7 @@ struct IUiAnimTrack
     virtual void SetValue(float time, const float& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Vec3& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Vec4& value, bool bDefault = false) = 0;
-    virtual void SetValue(float time, const Quat& value, bool bDefault = false) = 0;
+    virtual void SetValue(float time, const AZ::Quaternion& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const AZ::Vector2& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const AZ::Vector3& value, bool bDefault = false) = 0;

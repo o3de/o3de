@@ -1406,7 +1406,7 @@ void EditorViewportWidget::CenterOnAABB(const AZ::Aabb& aabb)
     affineParts.SpectralDecompose(originalTM);
 
     // Forward vector is y component of rotation matrix
-    Matrix33 rotationMatrix(affineParts.rot);
+    Matrix33 rotationMatrix = AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3(affineParts.rot));
     const Vec3 viewDirection = rotationMatrix.GetColumn1().GetNormalized();
 
     // Compute adjustment required by FOV != 90 degrees

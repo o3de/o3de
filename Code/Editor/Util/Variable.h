@@ -269,7 +269,6 @@ struct IVariable
     virtual void Set(const Vec3& value) = 0;
     virtual void Set(const Vec4& value) = 0;
     virtual void Set(const Ang3& value) = 0;
-    virtual void Set(const Quat& value) = 0;
     virtual void Set(const QString& value) = 0;
     virtual void Set(const char* value) = 0;
     virtual void SetDisplayValue(const QString& value) = 0;
@@ -295,7 +294,6 @@ struct IVariable
     virtual void Get(Vec3& value) const  = 0;
     virtual void Get(Vec4& value) const  = 0;
     virtual void Get(Ang3& value) const  = 0;
-    virtual void Get(Quat& value) const  = 0;
     virtual void Get(QString& value) const = 0;
     virtual QString GetDisplayValue() const = 0;
     virtual bool HasDefaultValue() const = 0;
@@ -443,7 +441,6 @@ public:
     void Set([[maybe_unused]] const Vec3& value) override           { assert(0); }
     void Set([[maybe_unused]] const Vec4& value) override           { assert(0); }
     void Set([[maybe_unused]] const Ang3& value) override           { assert(0); }
-    void Set([[maybe_unused]] const Quat& value) override           { assert(0); }
     void Set([[maybe_unused]] const QString& value) override        { assert(0); }
     void Set([[maybe_unused]] const char* value) override           { assert(0); }
     void SetDisplayValue(const QString& value) override             { Set(value); }
@@ -466,7 +463,6 @@ public:
     void Get([[maybe_unused]] Vec3& value) const override           { assert(0); }
     void Get([[maybe_unused]] Vec4& value) const override           { assert(0); }
     void Get([[maybe_unused]] Ang3& value) const override           { assert(0); }
-    void Get([[maybe_unused]] Quat& value) const override           { assert(0); }
     void Get([[maybe_unused]] QString& value) const override        { assert(0); }
     QString GetDisplayValue() const override { QString val; Get(val); return val; }
 
@@ -927,9 +923,6 @@ namespace var_type
     struct type_traits<Vec4>
         : public type_traits_base<IVariable::VECTOR4, false, false, false, false> {};
     template<>
-    struct type_traits<Quat>
-        : public type_traits_base<IVariable::QUAT, false, false, false, false> {};
-    template<>
     struct type_traits<AZStd::string>
         : public type_traits_base<IVariable::STRING, false, false, false, false> {};
     template<>
@@ -974,7 +967,6 @@ namespace var_type
         void operator()(const Vec2& from, Vec2& to) const { to = from; }
         void operator()(const Vec3& from, Vec3& to) const { to = from; }
         void operator()(const Vec4& from, Vec4& to) const { to = from; }
-        void operator()(const Quat& from, Quat& to) const { to = from; }
         void operator()(const QString& from, QString& to) const { to = from; }
 
         void operator()(const AZ::Color& from, AZ::Color& to) const { to = from; }
@@ -992,7 +984,6 @@ namespace var_type
         void operator()(const Vec3& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3").arg(value.x).arg(value.y).arg(value.z); }
         void operator()(const Vec4& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(value.x).arg(value.y).arg(value.z).arg(value.w); }
         void operator()(const Ang3& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3").arg(value.x).arg(value.y).arg(value.z); }
-        void operator()(const Quat& value, QString& to) const { to = QString::fromLatin1("%1,%2,%3,%4").arg(value.w).arg(value.v.x).arg(value.v.y).arg(value.v.z); }
 
         void operator()(const AZ::Color& from,  QString& to) const      { to = QString::fromLatin1("%1,%2,%3,%4").arg(from.GetR()).arg(from.GetG()).arg(from.GetB()).arg(from.GetA()); }
         void operator()(const AZ::Vector2& from,  QString& to) const    { to = QString::fromLatin1("%1,%2").arg(from.GetX()).arg(from.GetY()); }
@@ -1033,14 +1024,6 @@ namespace var_type
             azsnprintf(buf, sizeof(buf), "%f,%f,%f", value.x, value.y, value.z);
             to.assign(buf);
         }
-        void operator()(const Quat& value, AZStd::string& to) const
-        {
-            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
-            char buf[256] = { 0 };
-            azsnprintf(buf, sizeof(buf), "%f,%f,%f,%f", value.w, value.v.x, value.v.y, value.v.z);
-            to.assign(buf);
-        }
-
         void operator()(const AZ::Color& from, AZStd::string& to) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
@@ -1082,14 +1065,11 @@ namespace var_type
         void operator()(const Vec3& from, AZ::Vector3& to) const    { to.Set(from.x, from.y, from.z); }
         void operator()(const Vec4& from, AZ::Vector4& to) const    { to.Set(from.x, from.y, from.z, from.w); }
         void operator()(const Ang3& from, AZ::Vector3& to) const    { to.Set(from.x, from.y, from.z); }
-        void operator()(const Quat& from, AZ::Quaternion& to) const { to.Set(from.v.x, from.v.y, from.v.z, from.w); }
-
         /////////////////////////////////////////// Current to Legal Math Types
         void operator()(const AZ::Vector2& from, Vec2& to) const    { to.set(from.GetX(), from.GetY()); }
         void operator()(const AZ::Vector3& from, Vec3& to) const    { to.Set(from.GetX(), from.GetY(), from.GetZ()); }
         void operator()(const AZ::Vector4& from, Vec4& to) const    { to = Vec4(from.GetX(), from.GetY(), from.GetZ(), from.GetW()); }
         void operator()(const AZ::Vector3& from, Ang3& to) const    { to.Set(from.GetX(), from.GetY(), from.GetZ()); }
-        void operator()(const AZ::Quaternion& from, Quat& to) const { to = Quat(from.GetW(), from.GetX(), from.GetY(), from.GetZ()); }
 
         /////////////////////////////////////////// From QString
         void operator()(const QString& from, int& value) const      { value = from.toInt(); }
@@ -1140,19 +1120,6 @@ namespace var_type
             value.y = parts[1].toFloat();
             value.z = parts[2].toFloat();
         };
-        void operator()(const QString& from, Quat& value) const
-        {
-            QStringList parts = from.split(QStringLiteral(","));
-            while (parts.size() < 4)
-            {
-                parts.push_back(QString());
-            }
-            value.w = parts[0].toFloat();
-            value.v.x = parts[1].toFloat();
-            value.v.y = parts[2].toFloat();
-            value.v.z = parts[3].toFloat();
-        };
-
         void operator()(const QString& from, AZ::Color& value) const
         {
             QStringList parts = from.split(QStringLiteral(","));
@@ -1261,12 +1228,6 @@ namespace var_type
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
             azsscanf(from.c_str(), "%f,%f,%f", &value.x, &value.y, &value.z);
         }
-        void operator()(const AZStd::string& from, Quat& value) const
-        {
-            AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
-            azsscanf(from.c_str(), "%f,%f,%f,%f", &value.w, &value.v.x, &value.v.y, &value.v.z);
-        }
-
         void operator()(const AZStd::string& from, AZ::Color& value) const
         {
             AZ::Locale::ScopedSerializationLocale scopedLocale; // String should be interpreted in the "C" Locale.
@@ -1330,11 +1291,6 @@ namespace var_type
     {
         return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
     }
-    inline bool compare(const Quat& q1, const Quat& q2)
-    {
-        return q1.v.x == q2.v.x && q1.v.y == q2.v.y && q1.v.z == q2.v.z && q1.w == q2.w;
-    }
-    
     inline bool compare(const char* s1, const char* s2)
     {
         return strcmp(s1, s2) == 0;
@@ -1354,7 +1310,6 @@ namespace var_type
     inline void init(Vec3& val) { val.x = 0; val.y = 0; val.z = 0; };
     inline void init(Vec4& val) { val.x = 0; val.y = 0; val.z = 0; val.w = 0;  };
     inline void init(Ang3& val) { val.x = 0; val.y = 0; val.z = 0; };
-    inline void init(Quat& val) { val.v.x = 0; val.v.y = 0; val.v.z = 0; val.w = 0; };
 
     inline void init(AZ::Color& val)        { val = AZ::Color::CreateZero(); }
     inline void init(AZ::Vector2& val)      { val = AZ::Vector2::CreateZero(); }
@@ -1433,7 +1388,6 @@ public:
     void Set(const Vec3& value) override                { SetValue(value); }
     void Set(const Vec4& value) override                { SetValue(value); }
     void Set(const Ang3& value) override                { SetValue(value); }
-    void Set(const Quat& value) override                { SetValue(value); }
     void Set(const QString& value) override             { SetValue(value); }
     void Set(const char* value) override                { SetValue(QString(value)); }
 
@@ -1454,7 +1408,6 @@ public:
     void Get(Vec2& value) const override                { GetValue(value); }
     void Get(Vec3& value) const override                { GetValue(value); }
     void Get(Vec4& value) const override                { GetValue(value); }
-    void Get(Quat& value) const override                { GetValue(value); }
     void Get(QString& value) const override             { GetValue(value); }
 
     void Get(AZ::Color& value) const override           { GetValue(value); }

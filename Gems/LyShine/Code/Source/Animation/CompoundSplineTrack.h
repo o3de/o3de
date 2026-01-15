@@ -81,7 +81,7 @@ public:
     void GetValue(float time, float& value) override;
     void GetValue(float time, Vec3& value) override;
     void GetValue(float time, Vec4& value) override;
-    void GetValue(float time, Quat& value) override;
+    void GetValue(float time, AZ::Quaternion& value) override;
     void GetValue(float time, AZ::Vector2& value) override;
     void GetValue(float time, AZ::Vector3& value) override;
     void GetValue(float time, AZ::Vector4& value) override;
@@ -95,7 +95,7 @@ public:
     void SetValue(float time, const float& value, bool bDefault = false) override;
     void SetValue(float time, const Vec3& value, bool bDefault = false) override;
     void SetValue(float time, const Vec4& value, bool bDefault = false) override;
-    void SetValue(float time, const Quat& value, bool bDefault = false) override;
+    void SetValue(float time, const AZ::Quaternion& value, bool bDefault = false) override;
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue(float time, const AZ::Vector2& value, bool bDefault = false) override;
     void SetValue(float time, const AZ::Vector3& value, bool bDefault = false) override;

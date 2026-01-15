@@ -132,7 +132,7 @@ public:
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] float& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec3& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] Vec4& value) override { assert(0); };
-    void GetValue([[maybe_unused]] float time, [[maybe_unused]] Quat& value) override { assert(0); };
+    void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Quaternion& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] bool& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector2& value) override { assert(0); };
     void GetValue([[maybe_unused]] float time, [[maybe_unused]] AZ::Vector3& value) override { assert(0); };
@@ -146,7 +146,7 @@ public:
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const float& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec3& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Vec4& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
-    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const Quat& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
+    void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const bool& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector2& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };
     void SetValue([[maybe_unused]] float time, [[maybe_unused]] const AZ::Vector3& value, [[maybe_unused]] bool bDefault = false) override { assert(0); };

@@ -129,14 +129,14 @@ namespace Maestro
             return Vec3(0, 0, 0);
         }
 
-        Quat GetRotate() override
+        AZ::Quaternion GetRotate() override
         {
-            return Quat(0, 0, 0, 0);
+            return AZ::Quaternion::CreateZero();
         }
 
-        Quat GetRotate(float /*time*/) override
+        AZ::Quaternion GetRotate(float /*time*/) override
         {
-            return Quat(0, 0, 0, 0);
+            return AZ::Quaternion::CreateZero();
         }
 
         Vec3 GetScale() override

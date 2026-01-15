@@ -201,7 +201,7 @@ void UiCompoundSplineTrack::GetValue(float time, Vec4& value)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void UiCompoundSplineTrack::GetValue(float time, Quat& value)
+void UiCompoundSplineTrack::GetValue(float time, AZ::Quaternion& value)
 {
     if (m_nDimensions == 3)
     {
@@ -211,12 +211,12 @@ void UiCompoundSplineTrack::GetValue(float time, Quat& value)
         {
             m_subTracks[i]->GetValue(time, angles[i]);
         }
-        value = Quat::CreateRotationXYZ(Ang3(DEG2RAD(angles[0]), DEG2RAD(angles[1]), DEG2RAD(angles[2])));
+        value = AZ::Quaternion::CreateFromEulerDegreesXYZ(AZ::Vector3(angles[0], angles[1], angles[2]));
     }
     else
     {
         assert(0);
-        value.SetIdentity();
+        value = AZ::Quaternion::CreateIdentity();
     }
 }
 
@@ -292,15 +292,15 @@ void UiCompoundSplineTrack::SetValue(float time, const Vec4& value, bool bDefaul
 }
 
 //////////////////////////////////////////////////////////////////////////
-void UiCompoundSplineTrack::SetValue(float time, const Quat& value, bool bDefault)
+void UiCompoundSplineTrack::SetValue(float time, const AZ::Quaternion& value, bool bDefault)
 {
     if (m_nDimensions == 3)
     {
         // Assume Euler Angles XYZ
-        Ang3 angles = Ang3::GetAnglesXYZ(value);
+        AZ::Vector3 angles = value.GetEulerDegreesXYZ();
         for (int i = 0; i < 3; i++)
         {
-            float degree = RAD2DEG(angles[i]);
+            float degree = angles[i];
             if (false == bDefault)
             {
                 // Try to prefer the shortest path of rotation.

@@ -335,10 +335,9 @@ namespace Maestro
         position.Set(pos.GetX(), pos.GetY(), pos.GetZ());
     }
 
-    void CAnimComponentNode::ConvertBetweenWorldAndLocalRotation(Quat& rotation, ETransformSpaceConversionDirection conversionDirection) const
+    void CAnimComponentNode::ConvertBetweenWorldAndLocalRotation(AZ::Quaternion& rotation, ETransformSpaceConversionDirection conversionDirection) const
     {
-        AZ::Quaternion rot(rotation.v.x, rotation.v.y, rotation.v.z, rotation.w);
-        AZ::Transform rotTransform = AZ::Transform::CreateFromQuaternion(rot);
+        AZ::Transform rotTransform = AZ::Transform::CreateFromQuaternion(rotation);
         rotTransform.ExtractUniformScale();
 
         AZ::Transform parentTransform = AZ::Transform::Identity();
@@ -350,9 +349,7 @@ namespace Maestro
         }
 
         rotTransform = parentTransform * rotTransform;
-        rot = rotTransform.GetRotation();
-
-        rotation = Quat(rot);
+        rotation = rotTransform.GetRotation();
     }
 
     void CAnimComponentNode::ConvertBetweenWorldAndLocalScale(Vec3& scale, ETransformSpaceConversionDirection conversionDirection) const
@@ -463,18 +460,16 @@ namespace Maestro
         }
     }
 
-    Quat CAnimComponentNode::GetRotate(float time)
+    AZ::Quaternion CAnimComponentNode::GetRotate(float time)
     {
-        Quat worldRot;
+        AZ::Quaternion worldRot;
 
         // If there is rotation track data, get the rotation from there.
         // Otherwise just use the current entity rotation value.
         IAnimTrack* rotTrack = GetTrackForParameter(AnimParamType::Rotation);
         if (rotTrack != nullptr && rotTrack->GetNumKeys() > 0)
         {
-            AZ::Quaternion value;
-            rotTrack->GetValue(time, value);
-            worldRot = AZQuaternionToLYQuaternion(value);
+            rotTrack->GetValue(time, worldRot);
 
             // Track values are always stored as relative to the parent (local), so convert to world.
             ConvertBetweenWorldAndLocalRotation(worldRot, eTransformConverstionDirection_toWorldSpace);
@@ -487,7 +482,7 @@ namespace Maestro
         return worldRot;
     }
 
-    Quat CAnimComponentNode::GetRotate()
+    AZ::Quaternion CAnimComponentNode::GetRotate()
     {
         SequenceComponentRequests::AnimatablePropertyAddress animatableAddress(m_componentId, "Rotation");
         SequenceComponentRequests::AnimatedQuaternionValue rotValue(AZ::Quaternion::CreateIdentity());
@@ -495,7 +490,7 @@ namespace Maestro
 
         // Always return world rotation because Component Entity AZ::Transforms do not correctly set
         // CBaseObject parenting. This should probably be fixed, but for now, we explicitly change from Local to World space here.
-        Quat worldRot(rotValue.GetQuaternionValue());
+        AZ::Quaternion worldRot(rotValue.GetQuaternionValue());
         ConvertBetweenWorldAndLocalRotation(worldRot, eTransformConverstionDirection_toWorldSpace);
 
         return worldRot;

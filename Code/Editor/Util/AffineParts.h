@@ -15,8 +15,8 @@
 struct AffineParts
 {
     Vec3 pos;               //!< Translation components
-    Quat rot;           //!< Essential rotation.
-    Quat rotScale;  //!< Stretch rotation.
+    AZ::Quaternion rot;      //!< Essential rotation.
+    AZ::Quaternion rotScale; //!< Stretch rotation.
     Vec3 scale;         //!< Stretch factors.
     float fDet;         //!< Sign of determinant.
 
