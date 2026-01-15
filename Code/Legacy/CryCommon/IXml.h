@@ -26,10 +26,6 @@ typedef Vec3_tpl<f32>   Vec3;
 struct Vec4;
 
 template <typename F>
-struct Quat_tpl;
-typedef Quat_tpl<f32>  Quat;
-
-template <typename F>
 struct Ang3_tpl;
 typedef Ang3_tpl<f32>       Ang3;
 
@@ -304,7 +300,7 @@ public:
     virtual void setAttr(const char* key, const Ang3& value) = 0;
     virtual void setAttr(const char* key, const Vec3& value) = 0;
     virtual void setAttr(const char* key, const Vec4& value) = 0;
-    virtual void setAttr(const char* key, const Quat& value) = 0;
+    virtual void setAttr(const char* key, const AZ::Quaternion& value) = 0;
 #if defined(LINUX64) || defined(APPLE)
     // Compatibility functions, on Linux and Mac long int is the default int64_t
     ILINE void setAttr(const char* key, unsigned long int value, bool useHexFormat = true)
@@ -351,7 +347,7 @@ public:
     virtual bool getAttr(const char* key, Ang3& value) const = 0;
     virtual bool getAttr(const char* key, Vec3& value) const = 0;
     virtual bool getAttr(const char* key, Vec4& value) const = 0;
-    virtual bool getAttr(const char* key, Quat& value) const = 0;
+    virtual bool getAttr(const char* key, AZ::Quaternion& value) const = 0;
     virtual bool getAttr(const char* key, bool& value) const = 0;
     virtual bool getAttr(const char* key, XmlString& value) const = 0;
     virtual bool getAttr(const char* key, ColorB& value) const = 0;

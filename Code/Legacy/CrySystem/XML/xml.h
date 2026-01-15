@@ -207,7 +207,7 @@ public:
     void setAttr(const char* key, const Ang3& value) override;
     void setAttr(const char* key, const Vec3& value) override;
     void setAttr(const char* key, const Vec4& value) override;
-    void setAttr(const char* key, const Quat& value) override;
+    void setAttr(const char* key, const AZ::Quaternion& value) override;
 
     //! Delete attrbute.
     void delAttr(const char* key) override;
@@ -230,7 +230,7 @@ public:
     bool getAttr(const char* key, Ang3& value) const override;
     bool getAttr(const char* key, Vec3& value) const override;
     bool getAttr(const char* key, Vec4& value) const override;
-    bool getAttr(const char* key, Quat& value) const override;
+    bool getAttr(const char* key, AZ::Quaternion& value) const override;
     bool getAttr(const char* key, ColorB& value) const override;
 
 protected:

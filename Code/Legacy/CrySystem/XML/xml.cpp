@@ -338,11 +338,11 @@ void CXmlNode::setAttr(const char* key, const Vec2& value)
     setAttr(key, str);
 }
 
-void CXmlNode::setAttr(const char* key, const Quat& value)
+void CXmlNode::setAttr(const char* key, const AZ::Quaternion& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.w, value.v.x, value.v.y, value.v.z);
+    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.GetW(), value.GetX(), value.GetY(), value.GetZ());
     setAttr(key, str);
 }
 
@@ -508,7 +508,7 @@ bool CXmlNode::getAttr(const char* key, Vec2& value) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CXmlNode::getAttr(const char* key, Quat& value) const
+bool CXmlNode::getAttr(const char* key, AZ::Quaternion& value) const
 {
     const char* svalue = GetValue(key);
     if (svalue)
@@ -519,10 +519,8 @@ bool CXmlNode::getAttr(const char* key, Quat& value) const
         {
             if (fabs(w) > VEC_EPSILON || fabs(x) > VEC_EPSILON || fabs(y) > VEC_EPSILON || fabs(z) > VEC_EPSILON)
             {
-                //[AlexMcC|02.03.10] directly assign to members to avoid triggering the assert in Quat() with data from bad assets
-                value.w = w;
-                value.v = Vec3(x, y, z);
-                return value.IsValid();
+                value.Set(x, y, z, w);
+                return value.IsFinite();
             }
         }
     }

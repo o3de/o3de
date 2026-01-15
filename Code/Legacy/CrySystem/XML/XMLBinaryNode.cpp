@@ -249,7 +249,7 @@ bool CBinaryXmlNode::getAttr(const char* key, Vec2& value) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBinaryXmlNode::getAttr(const char* key, Quat& value) const
+bool CBinaryXmlNode::getAttr(const char* key, AZ::Quaternion& value) const
 {
     const char* svalue = GetValue(key);
     if (svalue)
@@ -259,7 +259,7 @@ bool CBinaryXmlNode::getAttr(const char* key, Quat& value) const
         float w, x, y, z;
         if (azsscanf(svalue, "%f,%f,%f,%f", &w, &x, &y, &z) == 4)
         {
-            value = Quat(w, x, y, z);
+            value = AZ::Quaternion(w, x, y, z);
             return true;
         }
     }
