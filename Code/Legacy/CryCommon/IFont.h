@@ -23,6 +23,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Matrix3x4.h>
 
 struct ISystem;
 
@@ -155,7 +156,7 @@ struct STextDrawContext
 
     ColorB m_colorOverride;
 
-    Matrix34 m_transform;
+    AZ::Matrix3x4 m_transform;
 
     int m_baseState;
     bool m_overrideViewProjMatrices;
@@ -181,7 +182,7 @@ struct STextDrawContext
         , m_framed(false)
         , m_colorOverride(0, 0, 0, 0)
         , m_drawTextFlags(0)
-        , m_transform(IDENTITY)
+        , m_transform(AZ::Matrix3x4::CreateIdentity())
         , m_baseState(-1) // indicates not set, would like to set to GS_DEPTHFUNC_LEQUAL but header dependencies preclude that
         , m_overrideViewProjMatrices(true) // the old behavior that overrides the currently set view and projection matrices
         , m_kerningEnabled(true)
@@ -202,7 +203,7 @@ struct STextDrawContext
     void EnableFrame(bool enable) { m_framed = enable; }
     void SetColor(const ColorF& col) { m_colorOverride = col; }
     void SetFlags(int flags) { m_drawTextFlags = flags; }
-    void SetTransform(const Matrix34& transform) { m_transform = transform; }
+    void SetTransform(const AZ::Matrix3x4& transform) { m_transform = transform; }
     void SetBaseState(int baseState) { m_baseState = baseState; }
     void SetOverrideViewProjMatrices(bool overrideViewProjMatrices) { m_overrideViewProjMatrices = overrideViewProjMatrices; }
     void SetLineSpacing(float lineSpacing) { m_lineSpacing = lineSpacing; }
