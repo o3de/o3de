@@ -24,7 +24,7 @@ namespace EditorUtilsTest
 
     typedef float HMatrix[4][4]; /* Right-handed, for column vectors */
 
-   TEST_F(LegacryDeprecationHelper, TestLegacyMaxtrix44_HMatrixConversion)
+   TEST_F(LegacryDeprecationHelper, TestLegacyMatrix44_HMatrixConversion)
     {
        AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
 
@@ -52,4 +52,45 @@ namespace EditorUtilsTest
         AZ_POP_DISABLE_WARNING;
     }
 
+    TEST_F(LegacryDeprecationHelper, TestLegacyMatrix33_CreateFromEulerAngles)
+    {
+        AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
+
+        // The legacy function Matrix33::CreateRotationXYZ is equivalent to the AZ::Matrix3x3 constructur with Quaternion argument created
+        // by AZ::Quaternion::CreateFromEulerRadiansZYX
+        Matrix33 legacyMatrix = Matrix33::CreateRotationXYZ(Ang3(1.f, 2.f, 3.f));
+        AZ::Matrix3x3 newMatrix(AZ::Quaternion::CreateFromEulerRadiansZYX(AZ::Vector3(1.f, 2.f, 3.f)));
+
+        // Validation
+        for (int r = 0; r < 3; ++r)
+        {
+            for (int c = 0; c < 3; ++c)
+            {
+                ASSERT_NEAR(legacyMatrix(r, c), newMatrix(r, c), 1e-6f);
+            }
+        }
+
+        AZ_POP_DISABLE_WARNING;
+    }
+
+    TEST_F(LegacryDeprecationHelper, TestLegacyMatrix33_GetEulerAngles)
+    {
+        AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
+
+        Matrix33 legacyMatrix = Matrix33::CreateRotationXYZ(Ang3(1.f, 2.f, 3.f));
+        AZ::Matrix3x3 newMatrix = AZ::Matrix3x3::CreateFromRowMajorFloat9(legacyMatrix.GetData());
+
+        // The legacy function Ang3::GetAnglesXYZ(Matrix33) is equivalent to
+        // AZ::Quaternion::CreateFromMatrix3x3(AZ::Matrix3x3).GetEulerRadiansZYX()
+        Ang3 legacyAngles = Ang3::GetAnglesXYZ(legacyMatrix);
+        AZ::Vector3 newAngles = AZ::Quaternion::CreateFromMatrix3x3(newMatrix).GetEulerRadiansZYX();
+
+        // Validation
+        for (int r = 0; r < 3; ++r)
+        {
+            ASSERT_NEAR(legacyAngles[r], newAngles[r], 1e-6f);
+        }
+
+        AZ_POP_DISABLE_WARNING;
+    }
 } // namespace EditorUtilsTest
