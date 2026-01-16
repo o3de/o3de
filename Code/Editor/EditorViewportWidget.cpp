@@ -1187,9 +1187,9 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 #endif // defined(AZ_PLATFORM_WINDOWS)
 }
 
-void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix)
+void EditorViewportWidget::SetViewTM(const AZ::Matrix3x4& camMatrix)
 {
-    GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
+    GetCurrentAtomView()->SetCameraTransform(camMatrix);
 
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
     {
@@ -1197,10 +1197,10 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix)
     }
 }
 
-const Matrix34& EditorViewportWidget::GetViewTM() const
+const AZ::Matrix3x4& EditorViewportWidget::GetViewTM() const
 {
     // `m_viewTmStorage' is only required because we must return a reference
-    m_viewTmStorage = AZTransformToLYTransform(GetCurrentAtomView()->GetCameraTransform());
+    m_viewTmStorage = AZ::Matrix3x4::CreateFromTransform(GetCurrentAtomView()->GetCameraTransform());
     return m_viewTmStorage;
 };
 
@@ -1401,7 +1401,7 @@ void EditorViewportWidget::CenterOnAABB(const AZ::Aabb& aabb)
     const float centerScale = 1.25f;
 
     // Decompose original transform matrix
-    const Matrix34& originalTM = GetViewTM();
+    const AZ::Matrix3x4& originalTM = GetViewTM();
     AffineParts affineParts;
     affineParts.SpectralDecompose(originalTM);
 
@@ -1416,7 +1416,7 @@ void EditorViewportWidget::CenterOnAABB(const AZ::Aabb& aabb)
     // Compute new transform matrix
     const float distanceToTarget = selectionSize * fovScale * centerScale;
     const Vec3 newPosition = AZVec3ToLYVec3(selectionCenter) - (viewDirection * distanceToTarget);
-    Matrix34 newTM = Matrix34(rotationMatrix, newPosition);
+    AZ::Matrix3x4 newTM = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(LyMatrix3x3ToAzMatrix3x3(rotationMatrix), LYVec3ToAZVec3(newPosition));
 
     // Set new orbit distance
     float orbitDistance = distanceToTarget;
@@ -1706,7 +1706,7 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
         else
         {
             // Use viewTM, which is synced with the camera and guaranteed to be up-to-date
-            cameraPos = LYVec3ToAZVec3(GetViewTM().GetTranslation());
+            cameraPos = GetViewTM().GetTranslation();
         }
 
         return true;
@@ -1763,23 +1763,24 @@ void EditorViewportWidget::OnRootPrefabInstanceLoaded()
     SetDefaultCamera();
 
     // set the camera position once we know the entire scene (level) has finished loading
-    Matrix34 defaultView = Matrix34::CreateIdentity();
+    AZ::Matrix3x4 defaultView = AZ::Matrix3x4::CreateIdentity();
     // check to see if we have an existing last known location for this level
     auto* viewBookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
     if (const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = viewBookmarkInterface->LoadLastKnownLocation();
         lastKnownLocationBookmark.has_value())
     {
-        defaultView.SetTranslation(Vec3(lastKnownLocationBookmark->m_position));
-        defaultView.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(SandboxEditor::CameraRotation(
-            AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetZ())))));
+        defaultView.SetTranslation(lastKnownLocationBookmark->m_position);
+        defaultView.SetRotationPartFromQuaternion(
+            SandboxEditor::CameraRotation(
+                AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetZ())));
     }
     else
     {
         // set the default editor camera position and orientation if there was no last known location
         const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
-        defaultView.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
-        defaultView.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
-            SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
+        defaultView.SetTranslation(m_editorViewportSettings.DefaultEditorCameraPosition());
+        defaultView.SetRotationPartFromQuaternion(
+            SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())));
     }
 
     SetViewTM(defaultView);
@@ -1915,7 +1916,7 @@ void EditorViewportWidget::BuildDragDropContext(
 
 void EditorViewportWidget::RestoreViewportAfterGameMode()
 {
-    Matrix34 preGameModeViewTM = m_preGameModeViewTM;
+    AZ::Matrix3x4 preGameModeViewTM = m_preGameModeViewTM;
 
     QString text = QString(
         tr("When leaving \" Game Mode \" the engine will automatically restore your camera position to the default position before you "

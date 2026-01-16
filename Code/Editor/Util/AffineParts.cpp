@@ -823,11 +823,10 @@ static  void spectral_decomp_affine(HMatrix A, SAffineParts* parts)
 }
 
 // Decompose matrix to affine parts.
-void AffineParts::Decompose(const Matrix34& tm)
+void AffineParts::Decompose(const AZ::Matrix3x4& tm34)
 {
     SAffineParts parts;
 
-    AZ::Matrix3x4 tm34 = LYTransformToAZMatrix3x4(tm);
     AZ::Matrix4x4 tm44 = AZ::Matrix4x4::CreateFromMatrix3x4(tm34);
     HMatrix H;
     tm44.StoreToRowMajorFloat16((float*)&H);
@@ -842,11 +841,10 @@ void AffineParts::Decompose(const Matrix34& tm)
 }
 
 // Spectral matrix decompostion to affine parts.
-void AffineParts::SpectralDecompose(const Matrix34& tm)
+void AffineParts::SpectralDecompose(const AZ::Matrix3x4& tm34)
 {
     SAffineParts parts;
 
-    AZ::Matrix3x4 tm34 = LYTransformToAZMatrix3x4(tm);
     AZ::Matrix4x4 tm44 = AZ::Matrix4x4::CreateFromMatrix3x4(tm34);
     HMatrix H;
     tm44.StoreToRowMajorFloat16((float*)&H);

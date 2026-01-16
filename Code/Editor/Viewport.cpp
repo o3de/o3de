@@ -178,7 +178,7 @@ QtViewport::QtViewport(QWidget* parent)
 
     m_activeAxis = AXIS_TERRAIN;
 
-    m_screenTM.SetIdentity();
+    m_screenTM = AZ::Matrix3x4::CreateIdentity();
 
     m_bAdvancedSelectMode = false;
 
@@ -948,7 +948,7 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                         all6DOFs[5] = msg.raw_rotation[2];
                     }
 
-                    Matrix34 viewTM = GetViewTM();
+                    AZ::Matrix3x4 viewTM = GetViewTM();
 
                     // Scale axis according to CVars
                     ICVar* sys_scale3DMouseTranslation = gEnv->pConsole->GetCVar("sys_scale3DMouseTranslation");
@@ -960,13 +960,13 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                     t *= sys_scale3DMouseTranslation->GetFVal();
 
                     float as = 0.001f * gSettings.cameraMoveSpeed;
-                    Ang3 ypr = CreateAnglesYPR(Matrix33(viewTM));
+                    Ang3 ypr = CreateAnglesYPR(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromMatrix3x4(viewTM)));
                     ypr.x += -all6DOFs[5] * as * fScaleYPR;
                     ypr.y = AZStd::clamp(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
                     ypr.z = 0;                                                  // to have camera always upward
 
-                    viewTM = Matrix34(CreateOrientationYPR(ypr), viewTM.GetTranslation());
-                    viewTM = viewTM * Matrix34::CreateTranslationMat(t);
+                    viewTM = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(LyMatrix3x3ToAzMatrix3x3(CreateOrientationYPR(ypr)), viewTM.GetTranslation());
+                    viewTM = viewTM * AZ::Matrix3x4::CreateTranslation(LYVec3ToAZVec3(t));
 
                     SetViewTM(viewTM);
                 }

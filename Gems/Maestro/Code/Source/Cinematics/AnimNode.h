@@ -144,7 +144,7 @@ namespace Maestro
             return Vec3(0, 0, 0);
         }
 
-        virtual Matrix34 GetReferenceMatrix() const;
+        virtual AZ::Matrix3x4 GetReferenceMatrix() const;
 
         //////////////////////////////////////////////////////////////////////////
         bool IsParamValid(const CAnimParamType& paramType) const override;
