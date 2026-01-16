@@ -14,7 +14,6 @@
 #include "platform.h" // Note: This should be first to get consistent debugging definitions
 
 #include <CryCommon/ISystem.h>
-#include <CryAssert.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION

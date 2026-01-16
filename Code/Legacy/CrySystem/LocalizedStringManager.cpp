@@ -676,7 +676,7 @@ bool CLocalizedStringsManager::InitLocalizationData(
             vEntries.push_back(entry->getContent());
         }
 
-        CRY_ASSERT(m_tagFileNames.size() < 255);
+        AZ_Assert(m_tagFileNames.size() < 255, "m_tagFileNames must have less than 255 entries");
 
         uint8 curNumTags = static_cast<uint8>(m_tagFileNames.size());
 
@@ -1735,7 +1735,7 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
 //////////////////////////////////////////////////////////////////////////
 CLocalizedStringsManager::LoadFunc CLocalizedStringsManager::GetLoadFunction() const
 {
-    CRY_ASSERT_MESSAGE(gEnv && gEnv->pConsole, "System environment or console missing!");
+    AZ_Assert(gEnv && gEnv->pConsole, "System environment or console missing!");
     if (gEnv && gEnv->pConsole)
     {
         int32_t localizationFormat{};
@@ -2624,7 +2624,7 @@ void CLocalizedStringsManager::LocalizeNumber_Decimal(float number, int decimals
 bool CLocalizedStringsManager::ProjectUsesLocalization() const
 {
     ICVar* pCVar = gEnv->pConsole->GetCVar("sys_localization_folder");
-    CRY_ASSERT_MESSAGE(pCVar,
+    AZ_Assert(pCVar,
         "Console variable 'sys_localization_folder' not defined! "
         "This was previously defined at startup in CSystem::CreateSystemVars.");
 

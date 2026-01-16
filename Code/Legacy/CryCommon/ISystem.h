@@ -16,8 +16,6 @@
 #define CRYSYSTEM_API AZ_DLL_IMPORT
 #endif
 #include <AzCore/IO/SystemFile.h>
-
-#include "CryAssert.h"
 #include <CryCommon/IValidator.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -599,7 +597,7 @@ struct SSystemGlobalEnvironment
     threadID                                 mMainThreadId;     //The main thread ID is used in multiple systems so should be stored globally
 
     //////////////////////////////////////////////////////////////////////////
-    // Used by CRY_ASSERT
+    // Used by AZ_Assert
     bool                                            bIgnoreAllAsserts;
     bool                                            bNoAssertDialog;
     //////////////////////////////////////////////////////////////////////////

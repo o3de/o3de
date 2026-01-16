@@ -254,7 +254,7 @@ CSystem::~CSystem()
     UnregisterWindowMessageHandler(this);
 #endif
 
-    CRY_ASSERT(m_windowMessageHandlers.empty() && "There exists a dangling window message handler somewhere");
+    AZ_Assert(m_windowMessageHandlers.empty(), "There exists a dangling window message handler somewhere");
 
     SAFE_DELETE(m_pXMLUtils);
     SAFE_DELETE(m_pSystemEventDispatcher);
@@ -1250,7 +1250,7 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
     assert(pHandler && !stl::find(m_windowMessageHandlers, pHandler) && "This IWindowMessageHandler is already registered");
     m_windowMessageHandlers.push_back(pHandler);
 #else
-    CRY_ASSERT(false && "This platform does not support window message handlers");
+    AZ_Assert(false, "This platform does not support window message handlers");
 #endif
 }
 
@@ -1261,7 +1261,7 @@ void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
     [[maybe_unused]] bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);
     assert(pHandler && bRemoved && "This IWindowMessageHandler was not registered");
 #else
-    CRY_ASSERT(false && "This platform does not support window message handlers");
+    AZ_Assert(false, "This platform does not support window message handlers");
 #endif
 }
 
@@ -1389,10 +1389,10 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
         LPBYTE rawInputBytes = rawInputBytesArray.data();
 
         [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
-        CRY_ASSERT(bytesCopied == rawInputSize);
+        AZ_Assert(bytesCopied == rawInputSize, "bytesCopied must match rawInputSize");
 
         [[maybe_unused]] RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
-        CRY_ASSERT(rawInput);
+        AZ_Assert(rawInput, "rawInput must be valid");
 
         AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
 

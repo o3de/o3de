@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <CryAssert.h>
 #include <dirent.h>
 #include <vector>
 #include <AzCore/std/string/string.h>

@@ -227,7 +227,7 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 #endif
 
 // Assert dialog box macros
-#include "CryAssert.h"
+#include <AzCore/Debug/Trace.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Platform dependent functions that emulate Win32 API.
