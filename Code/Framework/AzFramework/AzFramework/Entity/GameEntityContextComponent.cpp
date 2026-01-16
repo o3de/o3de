@@ -54,11 +54,8 @@ namespace AzFramework
                 ->Event(
                     "DestroyGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants)
                 ->Event("ActivateGameEntity", &GameEntityContextRequestBus::Events::ActivateGameEntity)
-                //->Event("ActivateGameEntityAndDescendants", &GameEntityContextRequestBus::Events::ActivateGameEntityAndDescendants)
                 ->Event("DeactivateGameEntity", &GameEntityContextRequestBus::Events::DeactivateGameEntity)
                     ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
-                //->Event("DeactivateGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DeactivateGameEntityAndDescendants)
-                //    ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
                 ->Event("GetEntityName", &GameEntityContextRequestBus::Events::GetEntityName)
                 ;
 
@@ -216,12 +213,6 @@ namespace AzFramework
     {
         EntityContext::OnContextEntitiesAdded(entities);
 
-        // Assure the Parent index is aquired by now.
-        // if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
-        // {
-        //     AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::RegisterEntityActiveType, PARENT_ACTIVE_TYPE_NAME);
-        // }
-
     #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
         auto timeOfLastEventPump = AZStd::chrono::steady_clock::now();
         auto PumpSystemEventsIfNeeded = [&timeOfLastEventPump]()
@@ -251,13 +242,11 @@ namespace AzFramework
         {
             if (entity->GetState() == AZ::Entity::State::Init)
             {
-                // if(entity->IsEffectivelyActive())
-                // {
+                // Calls Apply, this will result in activation, or remaining inactive based on Init.
                     entity->ApplyEffectiveActiveState();
                 #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
                     PumpSystemEventsIfNeeded();
                 #endif // (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
-                // }
             }
         }
     }
@@ -305,8 +294,6 @@ namespace AzFramework
             AZ::ComponentApplicationBus::BroadcastResult(currentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, *entityIdIter);
             if (currentEntity)
             {
-                //RemoveEntityFromParentChildTree(entity->GetId());
-
                 if (currentEntity->GetEntitySpawnTicketId() > 0)
                 {
                     SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();

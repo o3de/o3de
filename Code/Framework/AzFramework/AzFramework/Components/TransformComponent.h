@@ -29,8 +29,6 @@ namespace AzFramework
 
     /// @deprecated Use AZ::TransformConfig
     using TransformComponentConfiguration = AZ::TransformConfig;
-    
-    static constexpr AZ::Crc32 PARENT_ACTIVE_TYPE_NAME = AZ_CRC_CE("Parent");
 
     //! Fundamental component that describes the entity in 3D space.
     class AZF_API TransformComponent
@@ -76,6 +74,9 @@ namespace AzFramework
         //! Set the parent entity and notifies all interested parties.
         //! This will use worldTM as a localTM and move the transform relative to the parent.
         void SetParentRelative(AZ::EntityId id) override;
+
+        //! Reference to what active type index position the "Parent" type is for Entity Activation Handling.
+        static size_t s_parentActiveTypeIndex;
     protected:
 
         // Component
@@ -126,6 +127,8 @@ namespace AzFramework
 
         AZ::Vector3 GetLocalRotation() override;
         AZ::Quaternion GetLocalRotationQuaternion() override;
+
+        static size_t GetParentActiveIndex();
 
         // Scale Modifiers
         AZ::Vector3 GetLocalScale() override;
@@ -195,8 +198,6 @@ namespace AzFramework
         bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
         
-        //! Local reference to what active type index position the "Parent" type is for Entity Activation Handling.
-        size_t parentActiveTypeIndex = std::numeric_limits<size_t>::max();
         /// Behavior for this entity's transform when its parent's transform changes.
         AZ::OnParentChangedBehavior m_onParentChangedBehavior = AZ::OnParentChangedBehavior::Update;
     };

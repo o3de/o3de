@@ -82,6 +82,8 @@ namespace AZ
 
 namespace AzFramework
 {
+    size_t TransformComponent::s_parentActiveTypeIndex = std::numeric_limits<size_t>::max();
+
     bool TransformComponentVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         if (classElement.GetVersion() < 3)
@@ -151,13 +153,17 @@ namespace AzFramework
         return false;
     }
 
+    size_t TransformComponent::GetParentActiveIndex()
+    {
+        if(TransformComponent::s_parentActiveTypeIndex == std::numeric_limits<size_t>::max())
+        {
+            AZ::EntityActiveSystemRequestBus::BroadcastResult(TransformComponent::s_parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, AZ::PARENT_ACTIVE_TYPE_NAME);
+        }
+        return TransformComponent::s_parentActiveTypeIndex;
+    }
+
     void TransformComponent::Init()
     {
-        if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
-        {
-            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
-        }
-
         AZ::TransformBus::Handler::BusConnect(m_entity->GetId());
         AZ::TransformNotificationBus::Bind(m_notificationBus, m_entity->GetId());
 
@@ -540,13 +546,7 @@ namespace AzFramework
                 "Entity '%s' %s has static transform, but parent has non-static transform. This may lead to unexpected movement.",
                 GetEntity()->GetName().c_str(), GetEntityId().ToString().c_str());
 
-            
-            if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
-            {
-                AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
-            }
-
-            m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, parentEntity->IsEffectivelyActive());
+            m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), parentEntity->IsEffectivelyActive());
             if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
             {
                 m_entity->ApplyEffectiveActiveState();
@@ -567,12 +567,7 @@ namespace AzFramework
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
 
-        if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
-        {
-            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
-        }
-
-        m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, true);
+        m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), true);
         if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
         {
             m_entity->ApplyEffectiveActiveState();
@@ -583,12 +578,7 @@ namespace AzFramework
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
 
-        if(parentActiveTypeIndex == std::numeric_limits<size_t>::max())
-        {
-            AZ::EntityActiveSystemRequestBus::BroadcastResult(parentActiveTypeIndex, &AZ::EntityActiveSystemRequests::GetActiveTypeIndexById, PARENT_ACTIVE_TYPE_NAME);
-        }
-
-        m_entity->SetEffectiveActiveLayerByTypeIndex(parentActiveTypeIndex, false);
+        m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), false);
         if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
         {
             m_entity->ApplyEffectiveActiveState();
@@ -665,9 +655,6 @@ namespace AzFramework
                 m_transformChangedEvent.Signal(m_localTM, m_worldTM);
             }
         }
-
-        //Notify the GameEntityContext of this change to update the parent child hierarchy and evaluate new active state.
-        //GameEntityContextRequestBus::Broadcast(&GameEntityContextRequests::UpdateParentChildHierarchy, GetEntityId(), oldParent, m_parentId);
 
         AZ::TransformNotificationBus::Event(m_notificationBus, &AZ::TransformNotificationBus::Events::OnParentChanged, oldParent, parentId);
         m_parentChangedEvent.Signal(oldParent, parentId);
