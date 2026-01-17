@@ -329,7 +329,6 @@ namespace AzFramework
     {
         wl_output* m_output = nullptr;
         uint32_t m_id = 0;
-        bool m_isDone = false;
         int32_t m_x = 0;
         int32_t m_y = 0;
         int32_t m_width = 0;
@@ -376,7 +375,7 @@ namespace AzFramework
         uint32_t GetRefreshRateMhz(wl_output* output) override
         {
             OutputInfo* info = static_cast<OutputInfo*>(wl_output_get_user_data(output));
-            if (info == nullptr || !info->m_isDone)
+            if (info == nullptr)
                 return 0;
 
             return info->m_refreshRateMhz;
@@ -385,7 +384,7 @@ namespace AzFramework
         AZStd::string GetOutputName(wl_output* output) override
         {
             OutputInfo* info = static_cast<OutputInfo*>(wl_output_get_user_data(output));
-            if (info == nullptr || !info->m_isDone)
+            if (info == nullptr)
                 return {};
 
             return info->m_name;
@@ -394,7 +393,7 @@ namespace AzFramework
         AZStd::string GetOutputDesc(wl_output* output) override
         {
             OutputInfo* info = static_cast<OutputInfo*>(wl_output_get_user_data(output));
-            if (info == nullptr || !info->m_isDone)
+            if (info == nullptr)
                 return {};
 
             return info->m_desc;
@@ -472,8 +471,8 @@ namespace AzFramework
 
         static void OutputDone(void* data, struct wl_output* wl_output)
         {
-            auto self = static_cast<OutputInfo*>(data);
-            self->m_isDone = true;
+            [[maybe_unused]]auto self = static_cast<OutputInfo*>(data);
+            //Unused since by the time we use OutputInfo the info is already done.
         }
 
         static void OutputScale(void* data, struct wl_output* wl_output, int32_t factor)
