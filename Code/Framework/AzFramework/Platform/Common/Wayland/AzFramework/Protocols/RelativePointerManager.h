@@ -40,7 +40,7 @@ namespace AzFramework
         RelativePointerManagerImpl();
         ~RelativePointerManagerImpl() override;
 
-        void OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version) override;
+        void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) override;
         void OnUnregister(wl_registry* registry, uint32_t id) override;
 
         zwp_relative_pointer_v1* GetRelativePointer(wl_pointer* pointer) override;

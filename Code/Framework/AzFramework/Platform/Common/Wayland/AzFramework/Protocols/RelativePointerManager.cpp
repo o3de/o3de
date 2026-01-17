@@ -20,9 +20,9 @@ namespace AzFramework
         WaylandRegistryEventsBus::Handler::BusDisconnect();
     }
 
-    void RelativePointerManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version)
+    void RelativePointerManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version)
     {
-        if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) != 0)
+        if (interface != AZ_CRC_CE("zwp_relative_pointer_manager_v1"))
         {
             return;
         }

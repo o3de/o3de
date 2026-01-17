@@ -37,7 +37,7 @@ namespace AzFramework
 
         zxdg_decoration_manager_v1* GetXdgDecor() const override;
 
-        void OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version) override;
+        void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) override;
 
         void OnUnregister(wl_registry*, uint32_t id) override;
 

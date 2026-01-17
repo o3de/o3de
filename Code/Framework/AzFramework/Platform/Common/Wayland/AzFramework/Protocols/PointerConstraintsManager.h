@@ -40,7 +40,7 @@ namespace AzFramework
         PointerConstraintsManagerImpl();
         ~PointerConstraintsManagerImpl() override;
 
-        void OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version) override;
+        void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) override;
         void OnUnregister(wl_registry* registry, uint32_t id) override;
 
         zwp_pointer_constraints_v1* GetConstraints() override;

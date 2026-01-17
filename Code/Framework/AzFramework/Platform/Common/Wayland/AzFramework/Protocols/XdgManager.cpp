@@ -54,9 +54,9 @@ namespace AzFramework
     {
         return m_decor;
     }
-    void XdgManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version)
+    void XdgManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version)
     {
-        if (WL_IS_INTERFACE(xdg_wm_base_interface))
+        if (interface == AZ_CRC_CE("xdg_wm_base"))
         {
             m_xdg = static_cast<xdg_wm_base*>(wl_registry_bind(registry, id, &xdg_wm_base_interface, version));
             xdg_wm_base_add_listener(m_xdg, &s_xdg_wm_listener, this);
@@ -68,7 +68,7 @@ namespace AzFramework
                 XdgShellConnectionManagerInterface::Register(this);
             }
         }
-        else if (WL_IS_INTERFACE(zxdg_decoration_manager_v1_interface))
+        if (interface == AZ_CRC_CE("zxdg_decoration_manager_v1"))
         {
             m_decor =
                 static_cast<zxdg_decoration_manager_v1*>(wl_registry_bind(registry, id, &zxdg_decoration_manager_v1_interface, version));

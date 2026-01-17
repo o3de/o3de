@@ -20,9 +20,9 @@ namespace AzFramework
         WaylandRegistryEventsBus::Handler::BusDisconnect();
     }
 
-    void PointerConstraintsManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version)
+    void PointerConstraintsManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version)
     {
-        if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) != 0)
+        if (interface != AZ_CRC_CE("zwp_pointer_constraints_v1"))
         {
             return;
         }

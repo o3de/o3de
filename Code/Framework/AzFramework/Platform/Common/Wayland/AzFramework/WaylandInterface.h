@@ -46,7 +46,7 @@ namespace AzFramework
 
         virtual ~WaylandRegistryEvents() = default;
 
-        virtual void OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version) = 0;
+        virtual void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) = 0;
 
         virtual void OnUnregister(wl_registry* registry, uint32_t id) = 0;
     };

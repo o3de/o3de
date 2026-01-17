@@ -233,7 +233,12 @@ namespace AzFramework
             }
             else
             {
-                WaylandRegistryEventsBus::Broadcast(&WaylandRegistryEventsBus::Events::OnRegister, registry, id, interface, version);
+                WaylandRegistryEventsBus::Broadcast(
+                    &WaylandRegistryEventsBus::Events::OnRegister,
+                    registry,
+                    id,
+                    AZ::Crc32(interface),
+                    version);
             }
         }
 
@@ -395,9 +400,9 @@ namespace AzFramework
             return info->m_desc;
         }
 
-        void OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version) override
+        void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) override
         {
-            if (!WL_IS_INTERFACE(wl_output_interface))
+            if (interface != AZ_CRC("wl_output"))
             {
                 return;
             }

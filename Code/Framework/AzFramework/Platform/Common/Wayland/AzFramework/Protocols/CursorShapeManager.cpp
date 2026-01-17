@@ -25,9 +25,9 @@ namespace AzFramework
         }
     }
 
-    void CursorShapeManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const char* interface, uint32_t version)
+    void CursorShapeManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version)
     {
-        if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) != 0)
+        if (interface != AZ_CRC_CE("wp_cursor_shape_manager_v1"))
         {
             return;
         }
