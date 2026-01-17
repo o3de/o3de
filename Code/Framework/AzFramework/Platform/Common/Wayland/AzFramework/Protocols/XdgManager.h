@@ -19,7 +19,7 @@
 
 namespace AzFramework
 {
-    //XDG has a few protocols so this class just manages them all
+    //XDG has a few protocols, so this class just manages them all
     class XdgManagerImpl
         : public XdgShellConnectionManager
         , public XdgDecorConnectionManager

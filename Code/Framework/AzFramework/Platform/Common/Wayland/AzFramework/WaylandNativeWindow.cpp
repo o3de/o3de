@@ -378,7 +378,7 @@ namespace AzFramework
 
     uint32_t WaylandNativeWindow::GetDisplayRefreshRate() const
     {
-        return m_currentRefreshFramerate;
+        return static_cast<uint32_t>(AZStd::ceil(static_cast<float>(m_currentRefreshMhz) / 1000.0f));
     }
 
     WindowSize WaylandNativeWindow::GetMaximumClientAreaSize() const
@@ -475,8 +475,7 @@ namespace AzFramework
     void WaylandNativeWindow::InternalUpdateRefreshRate(uint32_t newRefreshMhz)
     {
         m_currentRefreshMhz = newRefreshMhz;
-        m_currentRefreshFramerate = (uint32_t)AZStd::ceil((float)m_currentRefreshMhz / 1000.0f);
-        WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnRefreshRateChanged, m_currentRefreshFramerate);
+        WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnRefreshRateChanged, GetDisplayRefreshRate());
     }
 
     void WaylandNativeWindow::InternalUpdateBufferScale()

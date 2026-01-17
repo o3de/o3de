@@ -13,7 +13,6 @@
 #include <AzFramework/Protocols/OutputManager.h>
 #include <AzFramework/WaylandConnectionManager.h>
 
-// Notes: XdgShell is optional
 namespace AzFramework
 {
     class WaylandApplication final

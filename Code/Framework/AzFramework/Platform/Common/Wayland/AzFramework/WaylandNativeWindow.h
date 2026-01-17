@@ -132,10 +132,7 @@ namespace AzFramework
         WaylandInputDeviceMouse* m_focusedCursor = nullptr;
         WaylandInputDeviceKeyboard* m_focusedKeyboard = nullptr;
 
-        //
         uint32_t m_currentRefreshMhz = 0;
-        uint32_t m_currentRefreshFramerate = 60;
-
         float m_dpiScaleFactor = 1.0f;
 
         struct
