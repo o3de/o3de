@@ -535,9 +535,11 @@ namespace AzFramework
             parentId = handler->GetParentId();
         }
 #endif
+
+        // If the parent entity exists to componentApplication, then this transform is ready to process runtime data and state.
+        // Otherwise, EntityId references set earlier are good enough.
         AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
         AZ::Entity* parentEntity = (componentApplication != nullptr) ? componentApplication->FindEntity(parentEntityId) : nullptr;
-        AZ_Assert(parentEntity, "We expect to have a parent entity associated with the provided parent's entity Id.");
         if (parentEntity)
         {
             m_parentTM = parentEntity->GetTransform();
