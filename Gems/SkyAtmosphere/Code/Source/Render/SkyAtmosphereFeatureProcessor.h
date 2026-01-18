@@ -61,6 +61,6 @@ namespace SkyAtmosphere
         };
 
         AZ::Render::SparseVector<SkyAtmosphere> m_atmospheres;
-        AZStd::map<AZ::RPI::RenderPipeline*, AZStd::vector<SkyAtmosphereParentPass*>> m_renderPipelineToSkyAtmosphereParentPasses;
+        AZStd::map<AZ::RPI::RenderPipeline*, SkyAtmosphereParentPass*> m_renderPipelineToSkyAtmosphereParentPass;
     };
 }
