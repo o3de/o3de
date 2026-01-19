@@ -14,8 +14,8 @@ function(Getmimalloc)
     include(FetchContent)
 
     set(MIMALLOC_GIT_REPOSITORY "https://github.com/microsoft/mimalloc.git")
-    set(MIMALLOC_GIT_TAG "dfa50c37d951128b1e77167dd9291081aa88eea4")
-    set(MIMALLOC_VERSION_STRING "v3.1.5")
+    set(MIMALLOC_GIT_TAG "6a53d72d46a1a641d8e5793db37cb2da60e04192")
+    set(MIMALLOC_VERSION_STRING "v2.2.7")
 
     FetchContent_Declare(
         mimalloc

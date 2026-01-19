@@ -11,8 +11,7 @@ if (TARGET 3rdParty::mimalloc)
 endif()
 
 set(MIMALLOC_GIT_REPOSITORY "https://github.com/microsoft/mimalloc.git")
-set(MIMALLOC_GIT_TAG "dfa50c37d951128b1e77167dd9291081aa88eea4")
-set(MIMALLOC_VERSION_STRING "v3.1.5")
+set(MIMALLOC_VERSION_STRING "v2.2.7")
 
 message(STATUS "AzCore uses mimalloc ${MIMALLOC_VERSION_STRING} (MIT) from ${MIMALLOC_GIT_REPOSITORY}")
 
