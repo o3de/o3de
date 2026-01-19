@@ -737,7 +737,7 @@ struct Matrix34_tpl
     */
     ILINE void SetScale(const Vec3_tpl<F>& s, const Vec3_tpl<F>& t = Vec3(ZERO))
     {
-        *this = Matrix33::CreateScale(s);
+        *this = Matrix33_tpl<F>::CreateScale(s);
         this->SetTranslation(t);
     }
 
