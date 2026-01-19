@@ -1406,8 +1406,8 @@ void EditorViewportWidget::CenterOnAABB(const AZ::Aabb& aabb)
     affineParts.SpectralDecompose(originalTM);
 
     // Forward vector is y component of rotation matrix
-    Matrix33 rotationMatrix = AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3(affineParts.rot));
-    const Vec3 viewDirection = rotationMatrix.GetColumn1().GetNormalized();
+    AZ::Matrix3x3 rotationMatrix(affineParts.rot);
+    const Vec3 viewDirection = AZVec3ToLYVec3(rotationMatrix.GetColumn(1).GetNormalized());
 
     // Compute adjustment required by FOV != 90 degrees
     const float fov = GetFOV();
@@ -1416,7 +1416,7 @@ void EditorViewportWidget::CenterOnAABB(const AZ::Aabb& aabb)
     // Compute new transform matrix
     const float distanceToTarget = selectionSize * fovScale * centerScale;
     const Vec3 newPosition = AZVec3ToLYVec3(selectionCenter) - (viewDirection * distanceToTarget);
-    AZ::Matrix3x4 newTM = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(LyMatrix3x3ToAzMatrix3x3(rotationMatrix), LYVec3ToAZVec3(newPosition));
+    AZ::Matrix3x4 newTM = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(rotationMatrix, LYVec3ToAZVec3(newPosition));
 
     // Set new orbit distance
     float orbitDistance = distanceToTarget;

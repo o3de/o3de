@@ -863,17 +863,17 @@ bool QtViewport::GetAdvancedSelectModeFlag()
 //   z-ROLL
 //   </PRE>
 // Note: If we are looking along the z-axis, its not possible to specify the x and z-angle
-inline Ang3 CreateAnglesYPR(const Matrix33& m)
+inline Ang3 CreateAnglesYPR(const AZ::Matrix3x3& m)
 {
-    assert(m.IsOrthonormal());
-    float l = Vec3(m.m01, m.m11, 0.0f).GetLength();
+    assert(m.IsOrthogonal());
+    float l = Vec3(m(0, 1), m(1, 1), 0.0f).GetLength();
     if (l > 0.0001)
     {
-        return Ang3(atan2f(-m.m01 / l, m.m11 / l), atan2f(m.m21, l), atan2f(-m.m20 / l, m.m22 / l));
+        return Ang3(atan2f(-m(0, 1) / l, m(1, 1) / l), atan2f(m(2, 1), l), atan2f(-m(2, 0) / l, m(2, 2) / l));
     }
     else
     {
-        return Ang3(0, atan2f(m.m21, l), 0);
+        return Ang3(0, atan2f(m(2, 1), l), 0);
     }
 }
 
@@ -896,7 +896,7 @@ inline Ang3 CreateAnglesYPR(const Matrix33& m)
 //
 //  Example:
 //      Matrix33 orientation=CreateOrientationYPR( Ang3(1,2,3) );
-inline Matrix33 CreateOrientationYPR(const Ang3& ypr)
+inline AZ::Matrix3x3 CreateOrientationYPR(const Ang3& ypr)
 {
     f32 sz, cz;
     sincos_tpl(ypr.x, &sz, &cz);            //Zaxis = YAW
@@ -904,16 +904,16 @@ inline Matrix33 CreateOrientationYPR(const Ang3& ypr)
     sincos_tpl(ypr.y, &sx, &cx);            //Xaxis = PITCH
     f32 sy, cy;
     sincos_tpl(ypr.z, &sy, &cy);            //Yaxis = ROLL
-    Matrix33 c;
-    c.m00 = cy * cz - sy * sz * sx;
-    c.m01 = -sz * cx;
-    c.m02 = sy * cz + cy * sz * sx;
-    c.m10 = cy * sz + sy * sx * cz;
-    c.m11 = cz * cx;
-    c.m12 = sy * sz - cy * sx * cz;
-    c.m20 = -sy * cx;
-    c.m21 = sx;
-    c.m22 = cy * cx;
+    AZ::Matrix3x3 c;
+    c.SetElement(0, 0, cy * cz - sy * sz * sx);
+    c.SetElement(0, 1, -sz * cx);
+    c.SetElement(0, 2, sy * cz + cy * sz * sx);
+    c.SetElement(1, 0, cy * sz + sy * sx * cz);
+    c.SetElement(1, 1, cz * cx);
+    c.SetElement(1, 2, sy * sz - cy * sx * cz);
+    c.SetElement(2, 0, -sy * cx);
+    c.SetElement(2, 1, sx);
+    c.SetElement(2, 2, cy * cx);
     return c;
 }
 
@@ -960,12 +960,12 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                     t *= sys_scale3DMouseTranslation->GetFVal();
 
                     float as = 0.001f * gSettings.cameraMoveSpeed;
-                    Ang3 ypr = CreateAnglesYPR(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromMatrix3x4(viewTM)));
+                    Ang3 ypr = CreateAnglesYPR(AZ::Matrix3x3::CreateFromMatrix3x4(viewTM));
                     ypr.x += -all6DOFs[5] * as * fScaleYPR;
                     ypr.y = AZStd::clamp(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
                     ypr.z = 0;                                                  // to have camera always upward
 
-                    viewTM = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(LyMatrix3x3ToAzMatrix3x3(CreateOrientationYPR(ypr)), viewTM.GetTranslation());
+                    viewTM = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(CreateOrientationYPR(ypr), viewTM.GetTranslation());
                     viewTM = viewTM * AZ::Matrix3x4::CreateTranslation(LYVec3ToAZVec3(t));
 
                     SetViewTM(viewTM);
