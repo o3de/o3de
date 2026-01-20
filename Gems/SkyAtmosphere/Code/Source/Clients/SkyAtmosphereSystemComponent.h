@@ -9,8 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
-#include <SkyAtmosphere/SkyAtmosphereBus.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
 namespace SkyAtmosphere
 {
@@ -43,6 +42,8 @@ namespace SkyAtmosphere
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
+    private:
+        AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
     };
 
 } // namespace SkyAtmosphere
