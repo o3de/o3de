@@ -196,7 +196,7 @@ void CCommentNodeAnimator::DrawText(const char* szFontName, float fSize, const V
         }
 
         // Color
-        ctx.SetColor(AZColorToLYColorB(col));
+        ctx.SetColor(col);
 
         pFont->DrawString(pos.x, pos.y, szText, true, ctx);
     }

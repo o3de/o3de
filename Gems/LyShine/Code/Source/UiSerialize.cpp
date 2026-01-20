@@ -319,15 +319,6 @@ namespace UiSerialize
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
 
-        if (serializeContext)
-        {
-            serializeContext->Class<ColorB>()->
-                Field("r", &ColorB::r)->
-                Field("g", &ColorB::g)->
-                Field("b", &ColorB::b)->
-                Field("a", &ColorB::a);
-        }
-
         // Vec2 (still used in UI Animation sequence splines)
         {
             if (serializeContext)

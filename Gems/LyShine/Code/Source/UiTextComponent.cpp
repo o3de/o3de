@@ -1792,7 +1792,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
     // makes sense to not mark the render cache dirty on most fades or alpha changes.
     if (m_drawBatchLines.m_fontEffectHasTransparency)
     {
-        if (!m_renderCache.m_batches.empty() && m_renderCache.m_batches[0]->m_color.a != finalAlphaByte)
+        if (!m_renderCache.m_batches.empty() && m_renderCache.m_batches[0]->m_color.GetA8() != finalAlphaByte)
         {
             MarkRenderCacheDirty();
         }
@@ -1885,14 +1885,14 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             // We never do this if any font effect used has transparency since in that case
             // not all of the verts will have the same alpha. We handle that case above
             // by regenerating the render cache in that case.
-            if (!m_drawBatchLines.m_fontEffectHasTransparency && batch->m_color.a != finalAlphaByte)
+            if (!m_drawBatchLines.m_fontEffectHasTransparency && batch->m_color.GetA8() != finalAlphaByte)
             {
                 for (int i=0; i < batch->m_cachedPrimitive.m_numVertices; ++i)
                 {
                     batch->m_cachedPrimitive.m_vertices[i].color.a = finalAlphaByte;
                 }
 
-                batch->m_color.a = finalAlphaByte;
+                batch->m_color.SetA8(finalAlphaByte);
             }
 
             // We always use wrap mode for text (isClamp false). This is historically what was done
@@ -3967,7 +3967,7 @@ void UiTextComponent::RenderToCache(float alpha)
     AZ::Color color(m_overrideColor);
     color.SetA(alpha);
     color = color.GammaToLinear(); // the colors are specified in sRGB but we want linear colors in the shader
-    fontContext.SetColor(AZColorToLYColorB(color));
+    fontContext.SetColor(color);
 
     // FFont.cpp uses the alpha value of the color to decide whether to use the color, if the alpha value is zero
     // (in a ColorB format) then the color set via SetColor is ignored and it usually ends up drawing with an alpha of 1.
@@ -3978,7 +3978,7 @@ void UiTextComponent::RenderToCache(float alpha)
     if (!fontContext.IsColorOverridden())
     {
         color.SetA(1.f);
-        fontContext.SetColor(AZColorToLYColorB(color));
+        fontContext.SetColor(color);
     }
 
     // Tell the font system how to we are aligning the text
@@ -4048,7 +4048,7 @@ void UiTextComponent::RenderDrawBatchLines(
     // by the font size
     float newlinePosYIncrement = 0.0f;
 
-    const ColorB origColor(fontContext.m_colorOverride);
+    const AZ::Color origColor(fontContext.m_colorOverride);
 
     for (const DrawBatchLine& drawBatchLine : drawBatchLines.batchLines)
     {
@@ -4080,14 +4080,14 @@ void UiTextComponent::RenderDrawBatchLines(
                 Vec2 textSize(drawBatch.size.GetX(), drawBatch.size.GetY());
                 xDrawPosOffset = textSize.x;
 
-                ColorB batchColor = origColor;
+                AZ::Color batchColor = origColor;
                 const bool drawBatchHasColorAssigned = drawBatch.color != TextMarkup::ColorInvalid;
                 if (drawBatchHasColorAssigned)
                 {
                     AZ::Color color(drawBatch.color);
                     color.SetA(1.f);
                     color = color.GammaToLinear(); // the colors are specified in markup in sRGB but we want linear colors in the shader
-                    batchColor = AZColorToLYColorB(color);
+                    batchColor = color;
                 }
 
                 fontContext.m_colorOverride = batchColor;

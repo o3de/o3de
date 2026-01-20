@@ -155,7 +155,7 @@ bool TUiAnimSplineTrack<Vec2>::Serialize([[maybe_unused]] IUiAnimationSystem* ui
         {
             unsigned int abgr;
             xmlNode->getAttr("CustomColor", abgr);
-            m_customColor = ColorB(abgr);
+            m_customColor.FromU32(abgr);
         }
 
         SetNumKeys(num);
@@ -207,7 +207,7 @@ bool TUiAnimSplineTrack<Vec2>::Serialize([[maybe_unused]] IUiAnimationSystem* ui
         xmlNode->setAttr("HasCustomColor", m_bCustomColorSet);
         if (m_bCustomColorSet)
         {
-            xmlNode->setAttr("CustomColor", m_customColor.pack_abgr8888());
+            xmlNode->setAttr("CustomColor", m_customColor.ToU32());
         }
         I2DBezierKey key;
         for (int i = 0; i < num; i++)

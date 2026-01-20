@@ -2071,8 +2071,8 @@ void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* pai
     QColor trackColor = CUiAVCustomizeTrackColorsDlg::GetTrackColor(pTrack->GetParameterType());
     if (pTrack->HasCustomColor())
     {
-        ColorB customColor = pTrack->GetCustomColor();
-        trackColor = QColor(customColor.r, customColor.g, customColor.b);
+        AZ::Color customColor = pTrack->GetCustomColor();
+        trackColor = QColor(customColor.GetR8(), customColor.GetG8(), customColor.GetB8());
     }
     // For the case of tracks belonging to an inactive director node,
     // changes the track color to a custom one.

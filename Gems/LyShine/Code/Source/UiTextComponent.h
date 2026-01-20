@@ -605,7 +605,7 @@ private: // types
     {
         AZ::Vector2         m_position;
         AZStd::string       m_text;
-        ColorB              m_color;
+        AZ::Color           m_color;
         IFFont*             m_font;
         uint32              m_fontTextureVersion;
         LyShine::UiPrimitive      m_cachedPrimitive;

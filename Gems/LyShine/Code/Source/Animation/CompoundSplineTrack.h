@@ -115,9 +115,9 @@ public:
     void SetSubTrackName(const int i, const AZStd::string& name) { assert (i < MAX_SUBTRACKS); m_subTrackNames[i] = name; }
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
-    ColorB GetCustomColor() const override
+    AZ::Color GetCustomColor() const override
     { return m_customColor; }
-    void SetCustomColor(ColorB color) override
+    void SetCustomColor(const AZ::Color& color) override
     {
         m_customColor = color;
         m_bCustomColorSet = true;
@@ -157,7 +157,7 @@ protected:
     UiAnimParamData m_componentParamData;
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
-    ColorB m_customColor;
+    AZ::Color m_customColor;
     bool m_bCustomColorSet;
 #endif
 
