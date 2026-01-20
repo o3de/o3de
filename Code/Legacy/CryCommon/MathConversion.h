@@ -88,6 +88,8 @@ inline AZ::Color LYColorFToAZColor(const ColorF& source)
 }
 AZ_POP_DISABLE_WARNING
 
+// Disable the deprecated-declarations warning for all conversion operators of ColorB
+AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
 inline ColorB AZColorToLYColorB(const AZ::Color& source)
 {
     return ColorB(source.ToU32());
@@ -97,6 +99,7 @@ inline AZ::Color LYColorBToAZColor(const ColorB& source)
 {
     return AZ::Color(source.r, source.g, source.b, source.a);
 }
+AZ_POP_DISABLE_WARNING
 
 inline Matrix33 AZMatrix3x3ToLYMatrix3x3(const AZ::Matrix3x3& source)
 {

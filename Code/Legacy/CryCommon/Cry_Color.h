@@ -17,6 +17,8 @@
 template <class T>
 struct Color_tpl;
 
+// O3DE_DEPRECATION_NOTICE(GHI-19504) - Use AZ::Color
+AZ_DEPRECATED_MESSAGE("ColorB is deprecated, use AZ::Color instead.")
 typedef Color_tpl<uint8> ColorB; // [ 0,  255]
 
 // O3DE_DEPRECATION_NOTICE(GHI-19504) - Use AZ::Color
