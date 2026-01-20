@@ -2007,7 +2007,6 @@ bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyT
     if (dlg.exec() == QDialog::Accepted)
     {
         const AZ::Color col = dlg.currentColor();
-        ColorF colArray(col.GetR8(), col.GetG8(), col.GetB8(), col.GetA8());
 
         CTrackViewSequence* sequence = pTrack->GetSequence();
         if (nullptr != sequence)
@@ -2025,7 +2024,7 @@ bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyT
 
                     I2DBezierKey bezierKey;
                     newKey.GetKey(&bezierKey);
-                    bezierKey.value = Vec2(keyTime, colArray[i]);
+                    bezierKey.value = Vec2(keyTime, col.GetElement(i));
                     newKey.SetKey(&bezierKey);
 
                     keyCreated = true;
@@ -2047,8 +2046,7 @@ void CTrackViewDopeSheetBase::OnCurrentColorChange(const AZ::Color& color)
 
 void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo)
 {
-    ColorF colArray(static_cast<f32>(color.red()), static_cast<f32>(color.green()), static_cast<f32>(color.blue()), static_cast<f32>(color.alpha()));
-
+    AZ::Color colArray(color.red(), color.green(), color.blue(), color.alpha());
 
     CTrackViewSequence* sequence = m_colorUpdateTrack->GetSequence();
     if (nullptr != sequence)
@@ -2074,7 +2072,7 @@ void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo
     }
 }
 
-void CTrackViewDopeSheetBase::UpdateColorKeyHelper(const ColorF& color)
+void CTrackViewDopeSheetBase::UpdateColorKeyHelper(const AZ::Color& color)
 {
     const unsigned int numChildNodes = m_colorUpdateTrack->GetChildCount();
     for (unsigned int i = 0; i < numChildNodes; ++i)
@@ -2094,7 +2092,7 @@ void CTrackViewDopeSheetBase::UpdateColorKeyHelper(const ColorF& color)
         }
 
         bezierKey.value.x = m_colorUpdateKeyTime;
-        bezierKey.value.y = color[i];
+        bezierKey.value.y = color.GetElement(i);
         subTrackKey.SetKey(&bezierKey);
     }
 }

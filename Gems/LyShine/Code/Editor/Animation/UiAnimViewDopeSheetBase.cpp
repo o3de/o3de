@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 #include "Editor/Resource.h"
+#include "MathConversion.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewDopeSheetBase.h"
 
@@ -1761,7 +1762,6 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
     if (dlg.exec() == QDialog::Accepted)
     {
         const AZ::Color col = dlg.selectedColor().GammaToLinear();
-        const ColorF colArray(col.GetR(), col.GetG(), col.GetB(), col.GetA());
 
         RecordTrackUndo(pTrack);
         CUiAnimViewSequenceNotificationContext context(pTrack->GetSequence());
@@ -1776,7 +1776,7 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
 
                 I2DBezierKey bezierKey;
                 newKey.GetKey(&bezierKey);
-                bezierKey.value = Vec2(keyTime, colArray[i]);
+                bezierKey.value = Vec2(keyTime, col.GetElement(i));
                 newKey.SetKey(&bezierKey);
 
                 keyCreated = true;
@@ -3065,7 +3065,7 @@ void CUiAnimViewDopeSheetBase::DrawColorGradient(QPainter* painter, const QRect&
         Vec3 vColor(0, 0, 0);
         pTrack->GetValue(TimeFromPointUnsnapped(QPoint(x, rc.top())), vColor);
 
-        painter->setPen(ColorLinearToGamma(vColor / 255.0f));
+        painter->setPen(ColorLinearToGamma(LYVec3ToAZColor(vColor / 255.0f)));
         painter->drawLine(x, rc.top(), x, rc.bottom());
     }
     painter->setPen(pOldPen);

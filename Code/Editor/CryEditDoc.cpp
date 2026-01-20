@@ -1460,7 +1460,7 @@ void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
     {
         AZ::Vector3 value;
         pVar->Get(value);
-        QColor gammaColor = ColorLinearToGamma(ColorF(value.GetX(), value.GetY(), value.GetZ()));
+        QColor gammaColor = ColorLinearToGamma(AZ::Color(value));
         childValue = QStringLiteral("%1,%2,%3").arg(gammaColor.red()).arg(gammaColor.green()).arg(gammaColor.blue());
     }
     else

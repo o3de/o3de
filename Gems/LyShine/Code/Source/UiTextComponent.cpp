@@ -28,6 +28,7 @@
 
 #include <ILocalizationManager.h>
 
+#include "MathConversion.h"
 #include "UiSerialize.h"
 #include "TextMarkup.h"
 #include "UiTextComponentOffsetsSelector.h"
@@ -3963,9 +3964,10 @@ void UiTextComponent::RenderToCache(float alpha)
     STextDrawContext fontContext(GetTextDrawContextPrototype(requestFontSize, drawBatchLines.fontSizeScale));
     fontContext.SetOverrideViewProjMatrices(false);
 
-    ColorF color = LyShine::MakeColorF(m_overrideColor.GetAsVector3(), alpha);
-    color.srgb2rgb();   // the colors are specified in sRGB but we want linear colors in the shader
-    fontContext.SetColor(color);
+    AZ::Color color(m_overrideColor);
+    color.SetA(alpha);
+    color = color.GammaToLinear(); // the colors are specified in sRGB but we want linear colors in the shader
+    fontContext.SetColor(AZColorToLYColorB(color));
 
     // FFont.cpp uses the alpha value of the color to decide whether to use the color, if the alpha value is zero
     // (in a ColorB format) then the color set via SetColor is ignored and it usually ends up drawing with an alpha of 1.
@@ -3975,8 +3977,8 @@ void UiTextComponent::RenderToCache(float alpha)
     // cache to modify the alpha values of.
     if (!fontContext.IsColorOverridden())
     {
-        color.a = 1.0f;
-        fontContext.SetColor(color);
+        color.SetA(1.f);
+        fontContext.SetColor(AZColorToLYColorB(color));
     }
 
     // Tell the font system how to we are aligning the text
@@ -4082,9 +4084,10 @@ void UiTextComponent::RenderDrawBatchLines(
                 const bool drawBatchHasColorAssigned = drawBatch.color != TextMarkup::ColorInvalid;
                 if (drawBatchHasColorAssigned)
                 {
-                    ColorF color = LyShine::MakeColorF(drawBatch.color, 1.0f);  // need ColorF to do srgb conversion
-                    color.srgb2rgb();   // the colors are specified in markup in sRGB but we want linear colors in the shader
-                    batchColor = color;
+                    AZ::Color color(drawBatch.color);
+                    color.SetA(1.f);
+                    color = color.GammaToLinear(); // the colors are specified in markup in sRGB but we want linear colors in the shader
+                    batchColor = AZColorToLYColorB(color);
                 }
 
                 fontContext.m_colorOverride = batchColor;

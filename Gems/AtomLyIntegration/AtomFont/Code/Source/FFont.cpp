@@ -1618,7 +1618,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
         posY *= WindowScaleHeight / (viewport.m_maxY - viewport.m_minY);
     }
     internalParams.m_ctx.SetBaseState(GS_NODEPTHTEST);
-    internalParams.m_ctx.SetColor(AZColorToLYColorF(params.m_color));
+    internalParams.m_ctx.SetColor(AZColorToLYColorB(params.m_color));
     internalParams.m_ctx.SetEffect(params.m_effectIndex);
     internalParams.m_ctx.SetCharWidthScale((params.m_monospace || params.m_scaleWithWindow) ? 0.5f : 1.0f);
     internalParams.m_ctx.EnableFrame(false);

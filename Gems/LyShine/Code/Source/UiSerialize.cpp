@@ -321,12 +321,6 @@ namespace UiSerialize
 
         if (serializeContext)
         {
-            serializeContext->Class<ColorF>()->
-                Field("r", &ColorF::r)->
-                Field("g", &ColorF::g)->
-                Field("b", &ColorF::b)->
-                Field("a", &ColorF::a);
-
             serializeContext->Class<ColorB>()->
                 Field("r", &ColorB::r)->
                 Field("g", &ColorB::g)->
