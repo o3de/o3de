@@ -32,12 +32,13 @@ namespace AZ
         ;
     }
 
-    AZ_MATH_INLINE Color::Color(u8 r, u8 g, u8 b, u8 a)
+    template<typename T, typename>
+    AZ_MATH_INLINE Color::Color(T r, T g, T b, T a)
     {
-        SetR8(r);
-        SetG8(g);
-        SetB8(b);
-        SetA8(a);
+        SetR8(static_cast<u8>(r));
+        SetG8(static_cast<u8>(g));
+        SetB8(static_cast<u8>(b));
+        SetA8(static_cast<u8>(a));
     }
 
 
@@ -382,6 +383,18 @@ namespace AZ
     AZ_MATH_INLINE float Color::ConvertSrgbLinearToGamma(float x)
     {
         return x <= 0.0031308 ? 12.92f * x : static_cast<float>(1.055 * pow(static_cast<double>(x), 1.0 / 2.4) - 0.055);
+    }
+
+    AZ_MATH_INLINE void Color::Saturate()
+    {
+        m_color = m_color.GetClamp(Vector4(0.f), Vector4(1.f));
+    }
+
+    AZ_MATH_INLINE Color Color::GetSaturated() const
+    {
+        Color copy(*this);
+        copy.Saturate();
+        return copy;
     }
 
     AZ_MATH_INLINE Color Color::LinearToGamma() const
