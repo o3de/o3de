@@ -201,7 +201,7 @@ struct STextDrawContext
     void SetSizeIn800x600(bool sizeIn800x600) { m_sizeIn800x600 = sizeIn800x600; }
     void EnableClipping(bool enable) { m_clippingEnabled = enable; }
     void EnableFrame(bool enable) { m_framed = enable; }
-    void SetColor(const ColorF& col) { m_colorOverride = col; }
+    void SetColor(const ColorB& col) { m_colorOverride = col; }
     void SetFlags(int flags) { m_drawTextFlags = flags; }
     void SetTransform(const AZ::Matrix3x4& transform) { m_transform = transform; }
     void SetBaseState(int baseState) { m_baseState = baseState; }

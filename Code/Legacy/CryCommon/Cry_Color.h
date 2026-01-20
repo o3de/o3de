@@ -432,6 +432,3 @@ inline void Color_tpl<T>::clamp(T bottom, T top)
     b = min(top, max(bottom, b));
     a = min(top, max(bottom, a));
 }
-
-#define Col_TrackviewDefault    ColorF (0.187820792f, 0.187820792f, 1.0f)
-#define Clr_Empty                               ColorF(0.0f, 0.0f, 0.0f, 1.0f)
