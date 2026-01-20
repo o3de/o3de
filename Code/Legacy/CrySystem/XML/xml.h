@@ -231,7 +231,7 @@ public:
     bool getAttr(const char* key, Vec3& value) const override;
     bool getAttr(const char* key, Vec4& value) const override;
     bool getAttr(const char* key, AZ::Quaternion& value) const override;
-    bool getAttr(const char* key, ColorB& value) const override;
+    bool getAttr(const char* key, AZ::Color& value) const override;
 
 protected:
 
