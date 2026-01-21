@@ -509,7 +509,7 @@ void CSystem::SleepIfNeeded()
     m_lastTickTime = CTimeValue(lastTimeSec);
 }
 
-extern DWORD g_idDebugThreads[];
+extern AZStd::thread_id g_idDebugThreads[];
 extern int g_nDebugThreads;
 int prev_sys_float_exceptions = -1;
 

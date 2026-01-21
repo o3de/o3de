@@ -187,7 +187,7 @@ void UpdateFPExceptionsMaskForThreads()
     {
         if (g_idDebugThreads[i] != AZStd::this_thread::get_id())
         {
-            HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i]);
+            HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i].m_id);
             ctx.ContextFlags = CONTEXT_ALL;
             SuspendThread(hThread);
             GetThreadContext(hThread, &ctx);
@@ -250,7 +250,7 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
         {
             if (g_idDebugThreads[i] != AZStd::this_thread::get_id())
             {
-                SuspendThread(OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i]));
+                SuspendThread(OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i].m_id));
             }
         }
     }
@@ -516,7 +516,7 @@ void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTER
                     if (g_idDebugThreads[i] != AZStd::this_thread::get_id())
                     {
                         fprintf(f, "\n\nSuspended thread (%s):\n", g_nameDebugThreads[i]);
-                        HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i]);
+                        HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i].m_id);
 
                         // mirrors the AZ::Debug::Trace::PrintCallstack() functionality, but prints to a file
                         {
