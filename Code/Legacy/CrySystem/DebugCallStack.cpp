@@ -36,7 +36,7 @@ static constexpr const char* IssueReportLinkFallback = "https://github.com/o3de/
 
 extern int prev_sys_float_exceptions;
 
-DWORD g_idDebugThreads[10];
+AZStd::thread_id g_idDebugThreads[10];
 const char* g_nameDebugThreads[10];
 int g_nDebugThreads = 0;
 AZStd::spin_mutex g_lockThreadDumpList;
@@ -147,7 +147,7 @@ void DebugCallStack::SetUserDialogEnable(const bool bUserDialogEnable)
 void MarkThisThreadForDebugging(const char* name)
 {
     AZStd::scoped_lock lock(g_lockThreadDumpList);
-    DWORD id = GetCurrentThreadId();
+    AZStd::thread_id id = AZStd::this_thread::get_id();
     if (g_nDebugThreads == sizeof(g_idDebugThreads) / sizeof(g_idDebugThreads[0]))
     {
         return;
@@ -167,7 +167,7 @@ void MarkThisThreadForDebugging(const char* name)
 void UnmarkThisThreadFromDebugging()
 {
     AZStd::scoped_lock lock(g_lockThreadDumpList);
-    DWORD id = GetCurrentThreadId();
+    AZStd::thread_id id = AZStd::this_thread::get_id();
     for (int i = g_nDebugThreads - 1; i >= 0; i--)
     {
         if (g_idDebugThreads[i] == id)
@@ -185,7 +185,7 @@ void UpdateFPExceptionsMaskForThreads()
     CONTEXT ctx;
     for (int i = 0; i < g_nDebugThreads; i++)
     {
-        if (g_idDebugThreads[i] != GetCurrentThreadId())
+        if (g_idDebugThreads[i] != AZStd::this_thread::get_id())
         {
             HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i]);
             ctx.ContextFlags = CONTEXT_ALL;
@@ -248,7 +248,7 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
     {
         for (int i = 0; i < g_nDebugThreads; i++)
         {
-            if (g_idDebugThreads[i] != GetCurrentThreadId())
+            if (g_idDebugThreads[i] != AZStd::this_thread::get_id())
             {
                 SuspendThread(OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i]));
             }
@@ -513,7 +513,7 @@ void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTER
             {
                 for (int i = 0; i < g_nDebugThreads; i++)
                 {
-                    if (g_idDebugThreads[i] != GetCurrentThreadId())
+                    if (g_idDebugThreads[i] != AZStd::this_thread::get_id())
                     {
                         fprintf(f, "\n\nSuspended thread (%s):\n", g_nameDebugThreads[i]);
                         HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, TRUE, g_idDebugThreads[i]);
