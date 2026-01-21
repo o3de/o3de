@@ -16,7 +16,7 @@
 #include <linux/input-event-codes.h>
 
 #include "pointer-constraints-unstable-v1-client-protocol.h"
-#include "ProtocolNames.h"
+#include "WaylandProtocolNames.h"
 
 namespace AzFramework
 {

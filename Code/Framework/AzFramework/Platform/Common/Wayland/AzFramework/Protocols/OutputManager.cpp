@@ -8,7 +8,7 @@
 
 #include "OutputManager.h"
 
-#include <AzFramework/ProtocolNames.h>
+#include <AzFramework/WaylandProtocolNames.h>
 
 namespace AzFramework
 {

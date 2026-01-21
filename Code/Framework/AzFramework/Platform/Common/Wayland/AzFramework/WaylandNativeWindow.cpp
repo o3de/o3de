@@ -17,7 +17,7 @@
 
 #include <wayland-client.h>
 
-#include "ProtocolNames.h"
+#include "WaylandProtocolNames.h"
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 
 namespace AzFramework

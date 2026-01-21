@@ -8,7 +8,7 @@
 
 #include "SeatManager.h"
 
-#include <AzFramework/ProtocolNames.h>
+#include <AzFramework/WaylandProtocolNames.h>
 
 namespace AzFramework
 {

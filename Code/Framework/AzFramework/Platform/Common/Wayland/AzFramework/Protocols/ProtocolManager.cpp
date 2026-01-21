@@ -7,7 +7,7 @@
  */
 
 #include <AzFramework/Protocols/ProtocolManager.h>
-#include <AzFramework/ProtocolNames.h>
+#include <AzFramework/WaylandProtocolNames.h>
 #include <cursor-shape-v1-client-protocol.h>
 #include <pointer-constraints-unstable-v1-client-protocol.h>
 

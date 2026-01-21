@@ -8,7 +8,7 @@
 
 #include <AzFramework/Protocols/XdgManager.h>
 #include <AzFramework/WaylandConnectionManager.h>
-#include <AzFramework/ProtocolNames.h>
+#include <AzFramework/WaylandProtocolNames.h>
 
 #include <xdg-shell-client-protocol.h>
 #include <xdg-decoration-unstable-v1-client-protocol.h>
