@@ -11,10 +11,15 @@
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Protocols/OutputManager.h>
+#include <AzFramework/Protocols/ProtocolManager.h>
 #include <AzFramework/WaylandConnectionManager.h>
+
+#include "Protocols/SeatManager.h"
 
 namespace AzFramework
 {
+    class XdgManagerImpl;
+
     class WaylandApplication final
         : public Application::Implementation
         , public LinuxLifecycleEvents::Bus::Handler
@@ -31,12 +36,11 @@ namespace AzFramework
 
     private:
         AZStd::unique_ptr<WaylandConnectionManager> m_waylandConnectionManager;
-        AZStd::unique_ptr<OutputManager> m_outputManager;
 
         // These are protocol managers we will keep alive
-        AZStd::unique_ptr<class XdgManagerImpl> m_xdgManager;
-        AZStd::unique_ptr<class RelativePointerManager> m_relativePointerManager;
-        AZStd::unique_ptr<class PointerConstraintsManager> m_pointerConstraintsManager;
-        AZStd::unique_ptr<class CursorShapeManager> m_cursorShapeManager;
+        AZStd::unique_ptr<ProtocolManager> m_protocolManger;
+        AZStd::unique_ptr<SeatManager> m_seatManager;
+        AZStd::unique_ptr<OutputManager> m_outputManager;
+        AZStd::unique_ptr<XdgManagerImpl> m_xdgManager;
     };
 } // namespace AzFramework

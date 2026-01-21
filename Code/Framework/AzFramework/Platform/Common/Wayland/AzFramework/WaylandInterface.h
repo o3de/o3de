@@ -11,6 +11,9 @@
 #include <wayland-client.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Crc.h>
 
 #define WL_IS_INTERFACE(wantedInter) strcmp(interface, wantedInter.name) == 0
 
@@ -18,6 +21,8 @@
 for (pos = static_cast<type*>((array)->data); \
 reinterpret_cast<char*>(pos) < (static_cast<char*>((array)->data) + (array)->size); \
 (pos)++)
+
+#define WL_GET_PROXY_ID(proxy) wl_proxy_get_id(reinterpret_cast<wl_proxy*>(proxy))
 
 namespace AzFramework
 {
@@ -88,4 +93,26 @@ namespace AzFramework
     };
 
     using WaylandInterfaceNotificationsBus = AZ::EBus<WaylandInterfaceNotifications, WaylandInterfaceNotificationsBusTraits>;
+
+    //Ebus to get a Wayland proxy
+    class WaylandProxyBusEvents
+    {
+    public:
+        AZ_RTTI(WaylandProxyBusEvents, "{ECE07457-9F6E-4C5D-AE9A-DA7F1A366392}")
+        virtual ~WaylandProxyBusEvents() = default;;
+
+        virtual wl_proxy* GetProxy(AZ::Crc32 interface) = 0;
+    };
+
+    class WaylandProxyBusTraits : public AZ::EBusTraits
+    {
+    public:
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+
+        // interface name
+        using BusIdType = AZ::Crc32;
+    };
+
+    using WaylandProxyBus = AZ::EBus<WaylandProxyBusEvents, WaylandProxyBusTraits>;
 } // namespace AzFramework

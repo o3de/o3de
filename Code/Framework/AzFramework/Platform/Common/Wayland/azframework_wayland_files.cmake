@@ -19,28 +19,19 @@ set(FILES
     AzFramework/WaylandInputDeviceKeyboard.cpp
     AzFramework/WaylandInputDeviceKeyboard.h
 
+    AzFramework/Protocols/ProtocolManager.cpp
+    AzFramework/Protocols/ProtocolManager.h
+
     AzFramework/Protocols/OutputManager.h
+    AzFramework/Protocols/OutputManager.cpp
     AzFramework/Protocols/SeatManager.h
+    AzFramework/Protocols/SeatManager.cpp
 
     #XDG
     AzFramework/Protocols/XdgManager.cpp
     AzFramework/Protocols/XdgManager.h
 
-    #XDG Shell
-    AzFramework/Protocols/XdgShellManager.h
-
-    #XDG Decor
-    AzFramework/Protocols/XdgDecorManager.h
-
-    #Cursor Shpae
-    AzFramework/Protocols/CursorShapeManager.cpp
-    AzFramework/Protocols/CursorShapeManager.h
-
-    #Pointer Constraints
-    AzFramework/Protocols/PointerConstraintsManager.cpp
-    AzFramework/Protocols/PointerConstraintsManager.h
-
-    #Relative Pointer
-    AzFramework/Protocols/RelativePointerManager.cpp
-    AzFramework/Protocols/RelativePointerManager.h
+    #Helper interfaces
+    AzFramework/Protocols/CursorShapeInterface.h
+    AzFramework/Protocols/RelativePointerInterface.h
 )

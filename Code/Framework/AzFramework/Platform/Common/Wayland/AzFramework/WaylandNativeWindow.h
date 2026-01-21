@@ -11,11 +11,14 @@
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
-#include <AzFramework/Protocols/XdgDecorManager.h>
 #include <AzFramework/WaylandInputDeviceKeyboard.h>
 #include <AzFramework/WaylandInputDeviceMouse.h>
 #include <wayland-client.h>
 #include <xdg-shell-client-protocol.h>
+
+struct xdg_wm_base;
+struct zxdg_decoration_manager_v1;
+struct zxdg_toplevel_decoration_v1;
 
 namespace AzFramework
 {
@@ -78,38 +81,22 @@ namespace AzFramework
 
     private:
         static void SurfaceEnter(void* data, struct wl_surface* wl_surface, struct wl_output* output);
-
         static void SurfaceLeave(void* data, struct wl_surface* wl_surface, struct wl_output* output);
-
         static void SurfacePreferredScale(void* data, struct wl_surface* wl_surface, int32_t factor);
-
         static void SurfacePreferredTransform(void* data, struct wl_surface* wl_surface, uint32_t transform);
 
-        const wl_surface_listener s_surfaceListener = {
-            .enter = SurfaceEnter,
-            .leave = SurfaceLeave,
-            .preferred_buffer_scale = SurfacePreferredScale,
-            .preferred_buffer_transform = SurfacePreferredTransform,
-        };
+        static wl_surface_listener s_surfaceListener;
 
         static void XdgSurfaceConfigure(void* data, struct xdg_surface* xdg_surface, uint32_t serial);
 
-        const xdg_surface_listener s_xdgSurfaceListener = {
-            .configure = XdgSurfaceConfigure,
-        };
+        static xdg_surface_listener s_xdgSurfaceListener;
 
         static void XdgTopLevelConfigure(void*, struct xdg_toplevel*, int32_t, int32_t, struct wl_array*);
-
         static void XdgTopLevelClose(void* data, struct xdg_toplevel* xdg_toplevel);
-
         static void XdgTopLevelConfigureBounds(void*, struct xdg_toplevel*, int32_t, int32_t);
-
         static void XdgTopLevelWmCaps(void*, struct xdg_toplevel*, struct wl_array*);
 
-        const xdg_toplevel_listener s_xdgTopLevelListener = { .configure = XdgTopLevelConfigure,
-                                                              .close = XdgTopLevelClose,
-                                                              .configure_bounds = XdgTopLevelConfigureBounds,
-                                                              .wm_capabilities = XdgTopLevelWmCaps };
+        static xdg_toplevel_listener s_xdgTopLevelListener;
 
     private:
         WaylandWindowFlags m_flags = WaylandWindowFlags_None;
@@ -117,7 +104,7 @@ namespace AzFramework
         // Globals cache
         wl_display* m_display = nullptr;
         wl_compositor* m_compositor = nullptr;
-        xdg_wm_base* m_xdgShell = nullptr;
+        xdg_wm_base* m_xdgWmBase = nullptr;
         zxdg_decoration_manager_v1* m_xdgDecor = nullptr;
 
         // Per window

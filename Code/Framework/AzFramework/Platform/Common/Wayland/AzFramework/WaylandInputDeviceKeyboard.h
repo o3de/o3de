@@ -50,9 +50,7 @@ namespace AzFramework
             void* data, struct wl_keyboard* wl_keyboard, uint32_t serial, struct wl_surface* surface, struct wl_array* keys);
 
         static void KeyboardLeave(void* data, struct wl_keyboard* wl_keyboard, uint32_t serial, struct wl_surface* surface);
-
         static void KeyboardKeymap(void* data, struct wl_keyboard* wl_keyboard, uint32_t format, int32_t fd, uint32_t size);
-
         static void KeyboardKey(void* data, struct wl_keyboard* wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state);
 
         static void KeyboardModifiers(
@@ -66,12 +64,7 @@ namespace AzFramework
 
         static void KeyboardRepeatInfo(void* data, struct wl_keyboard* wl_keyboard, int32_t rate, int32_t delay);
 
-        const wl_keyboard_listener s_keyboard_listener = { .keymap = KeyboardKeymap,
-                                                           .enter = KeyboardEnter,
-                                                           .leave = KeyboardLeave,
-                                                           .key = KeyboardKey,
-                                                           .modifiers = KeyboardModifiers,
-                                                           .repeat_info = KeyboardRepeatInfo };
+        static wl_keyboard_listener s_keyboard_listener;
 
         void SendKeyEvent(uint32_t waylandKey, bool isPressed);
         const InputChannelId* InputChannelFromKeySym(xkb_keysym_t keysym);

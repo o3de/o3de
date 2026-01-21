@@ -12,6 +12,15 @@
 
 namespace AzFramework
 {
+    wl_keyboard_listener WaylandInputDeviceKeyboard::s_keyboard_listener = {
+        .keymap = KeyboardKeymap,
+        .enter = KeyboardEnter,
+        .leave = KeyboardLeave,
+        .key = KeyboardKey,
+        .modifiers = KeyboardModifiers,
+        .repeat_info = KeyboardRepeatInfo
+    };
+
     void WaylandInputDeviceKeyboard::KeyboardEnter(
         void* data, struct wl_keyboard* wl_keyboard, uint32_t serial, struct wl_surface* surface, struct wl_array* keys)
     {
@@ -34,7 +43,8 @@ namespace AzFramework
         }
     }
 
-    void WaylandInputDeviceKeyboard::KeyboardLeave(void* data, struct wl_keyboard* wl_keyboard, uint32_t serial, struct wl_surface* surface)
+    void WaylandInputDeviceKeyboard::KeyboardLeave(void* data, struct wl_keyboard* wl_keyboard, uint32_t serial,
+                                                   struct wl_surface* surface)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
         if (surface != nullptr)
@@ -49,7 +59,8 @@ namespace AzFramework
         self->m_currentSerial = UINT32_MAX;
     }
 
-    void WaylandInputDeviceKeyboard::KeyboardKeymap(void* data, struct wl_keyboard* wl_keyboard, uint32_t format, int32_t fd, uint32_t size)
+    void WaylandInputDeviceKeyboard::KeyboardKeymap(void* data, struct wl_keyboard* wl_keyboard, uint32_t format,
+                                                    int32_t fd, uint32_t size)
     {
         if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
         {
@@ -59,14 +70,15 @@ namespace AzFramework
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
 
         char* map_shm = static_cast<char*>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
-        if(map_shm == MAP_FAILED)
+        if (map_shm == MAP_FAILED)
         {
             AZ_Error("WaylandInputDeviceKeyboard", map_shm != MAP_FAILED, "Failed to MMAP: %s", strerror(errno));
             return;
         }
 
         xkb_keymap* xkb_keymap =
-            xkb_keymap_new_from_string(self->m_xkbContext, map_shm, XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
+            xkb_keymap_new_from_string(self->m_xkbContext, map_shm, XKB_KEYMAP_FORMAT_TEXT_V1,
+                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
         munmap(map_shm, size);
         close(fd);
 
@@ -97,7 +109,8 @@ namespace AzFramework
         xkb_state_update_mask(self->m_xkbState, mods_depressed, mods_latched, mods_locked, 0, 0, group);
     }
 
-    void WaylandInputDeviceKeyboard::KeyboardRepeatInfo(void* data, struct wl_keyboard* wl_keyboard, int32_t rate, int32_t delay)
+    void WaylandInputDeviceKeyboard::KeyboardRepeatInfo(void* data, struct wl_keyboard* wl_keyboard, int32_t rate,
+                                                        int32_t delay)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
         self->m_repeatDelayMs = delay;
@@ -106,7 +119,7 @@ namespace AzFramework
 
     WaylandInputDeviceKeyboard::WaylandInputDeviceKeyboard(AzFramework::InputDeviceKeyboard& inputDevice)
         : InputDeviceKeyboard::Implementation(inputDevice)
-        , m_playerIdx(inputDevice.GetInputDeviceId().GetIndex())
+          , m_playerIdx(inputDevice.GetInputDeviceId().GetIndex())
     {
         SeatCapsChanged();
         SeatNotificationsBus::Handler::BusConnect(m_playerIdx);
@@ -123,7 +136,8 @@ namespace AzFramework
         UpdateKeyboard(nullptr);
     }
 
-    WaylandInputDeviceKeyboard::Implementation* WaylandInputDeviceKeyboard::Create(AzFramework::InputDeviceKeyboard& inputDevice)
+    WaylandInputDeviceKeyboard::Implementation* WaylandInputDeviceKeyboard::Create(
+        AzFramework::InputDeviceKeyboard& inputDevice)
     {
         return aznew WaylandInputDeviceKeyboard(inputDevice);
     }
@@ -232,7 +246,8 @@ namespace AzFramework
                     ResetRepeatState();
                 }
                 m_currentHeldKey = text;
-                AZ::ITimeRequestBus::BroadcastResult(m_heldKeyElapsed, &AZ::ITimeRequestBus::Events::GetRealElapsedTimeMs);
+                AZ::ITimeRequestBus::BroadcastResult(m_heldKeyElapsed,
+                                                     &AZ::ITimeRequestBus::Events::GetRealElapsedTimeMs);
 
                 QueueRawTextEvent(AZStd::move(text));
             }
@@ -521,5 +536,4 @@ namespace AzFramework
         xkb_state_key_get_utf8(m_xkbState, code, chars.data(), chars.size() + 1);
         return chars;
     }
-
 } // namespace AzFramework

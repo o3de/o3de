@@ -6,8 +6,6 @@
  *
  */
 
-#include "Protocols/XdgShellManager.h"
-
 #include <AzCore/Console/IConsole.h>
 #include <AzFramework/Application/Application.h>
 
@@ -18,6 +16,9 @@
 #include <AzFramework/Windowing/NativeWindow.h>
 
 #include <wayland-client.h>
+
+#include "ProtocolNames.h"
+#include "xdg-decoration-unstable-v1-client-protocol.h"
 
 namespace AzFramework
 {
@@ -73,6 +74,24 @@ namespace AzFramework
         cvar_wl_fullscreen_Changed,
         AZ::ConsoleFunctorFlags::DontReplicate,
         "WAYLAND ONLY: Make main surface fullscreen.");
+
+    wl_surface_listener WaylandNativeWindow::s_surfaceListener = {
+        .enter = SurfaceEnter,
+        .leave = SurfaceLeave,
+        .preferred_buffer_scale = SurfacePreferredScale,
+        .preferred_buffer_transform = SurfacePreferredTransform,
+    };
+
+    xdg_surface_listener WaylandNativeWindow::s_xdgSurfaceListener = {
+        .configure = XdgSurfaceConfigure,
+    };
+
+    xdg_toplevel_listener WaylandNativeWindow::s_xdgTopLevelListener = {
+        .configure = XdgTopLevelConfigure,
+        .close = XdgTopLevelClose,
+        .configure_bounds = XdgTopLevelConfigureBounds,
+        .wm_capabilities = XdgTopLevelWmCaps
+    };
 
     void WaylandNativeWindow::SurfaceEnter(void* data, struct wl_surface* /*wl_surface*/, struct wl_output* output)
     {
@@ -207,14 +226,14 @@ namespace AzFramework
             m_display = connectionManager->GetWaylandDisplay();
             m_compositor = connectionManager->GetWaylandCompositor();
         }
-        if (auto xdgShellManager = AzFramework::XdgShellConnectionManagerInterface::Get(); xdgShellManager != nullptr)
-        {
-            m_xdgShell = xdgShellManager->GetXdgWmBase();
-        }
-        if (auto xdgDecorManager = AzFramework::XdgDecorConnectionManagerInterface::Get(); xdgDecorManager != nullptr)
-        {
-            m_xdgDecor = xdgDecorManager->GetXdgDecor();
-        }
+
+        wl_proxy* proxy;
+        WaylandProxyBus::EventResult(proxy, XdgWmBaseName, &WaylandProxyBus::Events::GetProxy, XdgWmBaseName);
+        m_xdgWmBase = reinterpret_cast<xdg_wm_base*>(proxy);
+
+        WaylandProxyBus::EventResult(proxy, XdgDecorationManagerName, &WaylandProxyBus::Events::GetProxy, XdgDecorationManagerName);
+        m_xdgDecor = reinterpret_cast<zxdg_decoration_manager_v1*>(proxy);
+
         AZ_Error(WaylandErrorWindow, m_display != nullptr, "Unable to get Wayland display.");
         AZ_Error(WaylandErrorWindow, m_compositor != nullptr, "Unable to get Wayland compositor.");
         // TODO: Allow building with libdecor.
@@ -279,11 +298,11 @@ namespace AzFramework
         m_width = geometry.m_width;
         m_height = geometry.m_height;
 
-        // It's possible we don't have access to XdgShell
-        // it's a stable wayland protocol, so any normal desktop compositor will have it
-        if (m_xdgShell != nullptr)
+        // It's possible we don't have access to XdgShell,
+        // but it's a stable wayland protocol, so any normal desktop compositor will have it
+        if (m_xdgWmBase != nullptr)
         {
-            m_xdgSurface = xdg_wm_base_get_xdg_surface(m_xdgShell, m_surface);
+            m_xdgSurface = xdg_wm_base_get_xdg_surface(m_xdgWmBase, m_surface);
             AZ_Error(WaylandErrorWindow, m_xdgSurface != nullptr, "Failed to create XDG surface.");
 
             m_xdgToplevel = xdg_surface_get_toplevel(m_xdgSurface);

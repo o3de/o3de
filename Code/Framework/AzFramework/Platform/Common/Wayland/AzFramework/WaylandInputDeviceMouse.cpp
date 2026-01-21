@@ -15,6 +15,9 @@
 
 #include <linux/input-event-codes.h>
 
+#include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "ProtocolNames.h"
+
 namespace AzFramework
 {
     // Using the accelerated values should be the default for relative pointer
@@ -25,6 +28,24 @@ namespace AzFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "WAYLAND ONLY: Set to use accelerated values, this only works if the compositor supports relative pointer.");
+
+    wl_pointer_listener WaylandInputDeviceMouse::s_pointer_listener = {
+        .enter = PointerEnter,
+        .leave = PointerLeave,
+        .motion = PointerMotion,
+        .button = PointerButton,
+        .axis = PointerAxis,
+        .frame = PointerFrame,
+        .axis_source = PointerAxisSource,
+        .axis_stop = PointerAxisStop,
+        .axis_discrete = PointerAxisDiscrete,
+        .axis_value120 = PointerAxisValue120,
+        .axis_relative_direction = PointerAxisRelDir
+    };
+
+    zwp_relative_pointer_v1_listener WaylandInputDeviceMouse::s_rel_pointer_listener = {
+        .relative_motion = RelPointerMotion
+    };
 
     void WaylandInputDeviceMouse::PointerEnter(
         void* data,
@@ -54,7 +75,8 @@ namespace AzFramework
         self->InternalApplyCursorState();
     }
 
-    void WaylandInputDeviceMouse::PointerLeave(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t serial, struct wl_surface* surface)
+    void WaylandInputDeviceMouse::PointerLeave(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t serial,
+                                               struct wl_surface* surface)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
 
@@ -88,7 +110,8 @@ namespace AzFramework
     }
 
     void WaylandInputDeviceMouse::PointerButton(
-        void* data, struct wl_pointer* /*wl_pointer*/, uint32_t /*serial*/, uint32_t /*time*/, uint32_t button, uint32_t state)
+        void* data, struct wl_pointer* /*wl_pointer*/, uint32_t /*serial*/, uint32_t /*time*/, uint32_t button,
+        uint32_t state)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
         bool pressed = state & wl_pointer_button_state::WL_POINTER_BUTTON_STATE_PRESSED;
@@ -115,7 +138,8 @@ namespace AzFramework
         }
     }
 
-    void WaylandInputDeviceMouse::PointerAxis(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t time, uint32_t axis, wl_fixed_t value)
+    void WaylandInputDeviceMouse::PointerAxis(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t time,
+                                              uint32_t axis, wl_fixed_t value)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
         self->m_axisEvent.m_eventMask |= POINTER_EVENT_AXIS;
@@ -131,7 +155,8 @@ namespace AzFramework
         self->m_axisEvent.m_axisSource = axis_source;
     }
 
-    void WaylandInputDeviceMouse::PointerAxisStop(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t time, uint32_t axis)
+    void WaylandInputDeviceMouse::PointerAxisStop(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t time,
+                                                  uint32_t axis)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
         self->m_axisEvent.m_time = time;
@@ -139,7 +164,8 @@ namespace AzFramework
         self->m_axisEvent.m_axis[axis].m_valid = true;
     }
 
-    void WaylandInputDeviceMouse::PointerAxisDiscrete(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t axis, int32_t discrete)
+    void WaylandInputDeviceMouse::PointerAxisDiscrete(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t axis,
+                                                      int32_t discrete)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
         self->m_axisEvent.m_eventMask |= POINTER_EVENT_AXIS_DISCRETE;
@@ -166,7 +192,8 @@ namespace AzFramework
             const auto& verticalScrollEvent = self->m_axisEvent.m_axis[WL_POINTER_AXIS_VERTICAL_SCROLL];
             if (verticalScrollEvent.m_valid)
             {
-                self->QueueRawMovementEvent(InputDeviceMouse::Movement::Z, -(float)wl_fixed_to_double(verticalScrollEvent.m_value) * 8.0f);
+                self->QueueRawMovementEvent(InputDeviceMouse::Movement::Z,
+                                            -(float)wl_fixed_to_double(verticalScrollEvent.m_value) * 8.0f);
             }
         }
 
@@ -206,8 +233,8 @@ namespace AzFramework
 
     WaylandInputDeviceMouse::WaylandInputDeviceMouse(AzFramework::InputDeviceMouse& inputDevice)
         : InputDeviceMouse::Implementation(inputDevice)
-        , m_playerIdx(inputDevice.GetInputDeviceId().GetIndex())
-        , m_cursorState(SystemCursorState::UnconstrainedAndVisible)
+          , m_playerIdx(inputDevice.GetInputDeviceId().GetIndex())
+          , m_cursorState(SystemCursorState::UnconstrainedAndVisible)
     {
         SeatCapsChanged();
         SeatNotificationsBus::Handler::BusConnect(m_playerIdx);
@@ -256,11 +283,11 @@ namespace AzFramework
         {
             wl_pointer_add_listener(m_pointer, &s_pointer_listener, this);
 
-            if (auto cursorManager = CursorShapeManagerInterface::Get())
+            if (auto cursorManager = CursorShapeInterface::Get())
             {
                 m_shapeDevice = cursorManager->GetCursorShapeDevice(m_pointer);
             }
-            if (auto relManager = RelativePointerManagerInterface::Get())
+            if (auto relManager = RelativePointerInterface::Get())
             {
                 m_relPointer = relManager->GetRelativePointer(m_pointer);
                 if (m_relPointer != nullptr)
@@ -343,7 +370,7 @@ namespace AzFramework
         switch (m_cursorState)
         {
         case SystemCursorState::ConstrainedAndHidden:
-            InternalSetShape(WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, false);
+            InternalSetShape(WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, true);
             InternalConstrainMouse(true);
             break;
 
@@ -358,7 +385,7 @@ namespace AzFramework
             break;
 
         case SystemCursorState::UnconstrainedAndHidden:
-            InternalSetShape(WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, false);
+            InternalSetShape(WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, true);
             InternalConstrainMouse(false);
             break;
         default:
@@ -406,11 +433,16 @@ namespace AzFramework
                 return;
             }
 
-            if (auto constraintsManager = PointerConstraintsManagerInterface::Get())
+            wl_proxy* proxy;
+            WaylandProxyBus::EventResult(proxy, PointerConstraintsName, &WaylandProxyBus::Events::GetProxy,
+                                         PointerConstraintsName);
+            auto constraints = reinterpret_cast<zwp_pointer_constraints_v1*>(proxy);
+            if (constraints)
             {
                 void* constraintWindowRawPtr = nullptr;
                 InputSystemCursorConstraintRequestBus::BroadcastResult(
-                    constraintWindowRawPtr, &InputSystemCursorConstraintRequestBus::Events::GetSystemCursorConstraintWindow);
+                    constraintWindowRawPtr,
+                    &InputSystemCursorConstraintRequestBus::Events::GetSystemCursorConstraintWindow);
                 auto constraintWlWindow = static_cast<WaylandNativeWindow*>(constraintWindowRawPtr);
                 if (constraintWlWindow == nullptr)
                 {
@@ -427,7 +459,7 @@ namespace AzFramework
                     (int32_t)m_currentRegion.m_height);
 
                 const auto constraintSize = constraintWlWindow->GetClientAreaSize();
-                m_currentRegion = { 0, 0, constraintSize.m_width, constraintSize.m_height };
+                m_currentRegion = {0, 0, constraintSize.m_width, constraintSize.m_height};
                 wl_region_add(
                     m_confinedRegion,
                     (int32_t)m_currentRegion.m_posX,
@@ -436,7 +468,7 @@ namespace AzFramework
                     (int32_t)m_currentRegion.m_height);
 
                 m_lockedPointer = zwp_pointer_constraints_v1_lock_pointer(
-                    constraintsManager->GetConstraints(),
+                    constraints,
                     (wl_surface*)m_focusedWindow->GetWindowHandle(),
                     m_pointer,
                     m_confinedRegion,
@@ -456,5 +488,4 @@ namespace AzFramework
             }
         }
     }
-
 } // namespace AzFramework

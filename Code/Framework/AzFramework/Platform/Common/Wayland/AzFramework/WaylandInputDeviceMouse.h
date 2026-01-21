@@ -10,14 +10,15 @@
 
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <AzFramework/Protocols/CursorShapeManager.h>
-#include <AzFramework/Protocols/PointerConstraintsManager.h>
-#include <AzFramework/Protocols/RelativePointerManager.h>
+#include <AzFramework/Protocols/CursorShapeInterface.h>
+#include <AzFramework/Protocols/RelativePointerInterface.h>
 #include <AzFramework/Protocols/SeatManager.h>
 #include <AzFramework/WaylandConnectionManager.h>
 #include <AzFramework/WaylandInterface.h>
 
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+
+struct zwp_locked_pointer_v1;
 
 namespace AzFramework
 {
@@ -60,37 +61,20 @@ namespace AzFramework
             wl_fixed_t surface_y);
 
         static void PointerLeave(void* data, struct wl_pointer* wl_pointer, uint32_t serial, struct wl_surface* surface);
-
         static void PointerMotion(void* data, struct wl_pointer* wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
 
         static void PointerButton(
             void* data, struct wl_pointer* wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
 
         static void PointerAxis(void* data, struct wl_pointer* wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
-
         static void PointerFrame(void* data, struct wl_pointer* wl_pointer);
-
         static void PointerAxisSource(void* data, struct wl_pointer* wl_pointer, uint32_t axis_source);
-
         static void PointerAxisStop(void* data, struct wl_pointer* wl_pointer, uint32_t time, uint32_t axis);
-
         static void PointerAxisDiscrete(void* data, struct wl_pointer* wl_pointer, uint32_t axis, int32_t discrete);
-
         static void PointerAxisValue120(void* data, struct wl_pointer* wl_pointer, uint32_t axis, int32_t value120);
-
         static void PointerAxisRelDir(void* data, struct wl_pointer* wl_pointer, uint32_t axis, uint32_t direction);
 
-        const wl_pointer_listener s_pointer_listener = { .enter = PointerEnter,
-                                                         .leave = PointerLeave,
-                                                         .motion = PointerMotion,
-                                                         .button = PointerButton,
-                                                         .axis = PointerAxis,
-                                                         .frame = PointerFrame,
-                                                         .axis_source = PointerAxisSource,
-                                                         .axis_stop = PointerAxisStop,
-                                                         .axis_discrete = PointerAxisDiscrete,
-                                                         .axis_value120 = PointerAxisValue120,
-                                                         .axis_relative_direction = PointerAxisRelDir };
+        static wl_pointer_listener s_pointer_listener;
 
         static void RelPointerMotion(
             void* data,
@@ -102,7 +86,7 @@ namespace AzFramework
             wl_fixed_t dx_unaccel,
             wl_fixed_t dy_unaccel);
 
-        const zwp_relative_pointer_v1_listener s_rel_pointer_listener = { .relative_motion = RelPointerMotion };
+        static zwp_relative_pointer_v1_listener s_rel_pointer_listener;
 
     protected:
         uint32_t m_playerIdx = 0;
