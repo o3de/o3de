@@ -24,7 +24,8 @@
         },
         {
             "file": "Include/${GemName}/${Name}Interface.h",
-            "isTemplated": true
+            "isTemplated": true,
+            "condition": "!skip_interface"
         }
     ],
     "createDirectories": [
@@ -34,5 +35,37 @@
         {
             "dir": "Source"
         }
-    ]
+    ],
+    "class_wizard": {
+        "display_name": "Basic Component",
+        "class_name": "default_component",
+        "description": "A standard game component with optional interface header",
+        "component_suffix": "Component",
+
+        "input_vars": [
+            {
+                "input_type": "toggle",
+                "var_name": "skip_interface",
+                "title": "Skip Interface",
+                "default_value": false,
+                "description": "Do not create the Interface.h file"
+            }
+        ],
+
+        "process_commands": [
+            {
+                "command": "register_file_list",
+                "args": { "component_name": "${Name}${ComponentSuffix}" }
+            },
+            {
+                "command": "register_module_descriptor",
+                "args": { "component_name": "${Name}${ComponentSuffix}", "module_kind": "runtime" }
+            },
+            {
+                "command": "register_interface_header",
+                "condition": "!skip_interface",
+                "args": { "component_name": "${Name}" }
+            }
+        ]
+    }
 }

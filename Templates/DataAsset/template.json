@@ -32,7 +32,8 @@
         },
         {
             "file": "Include/${GemName}/${Name}Interface.h",
-            "isTemplated": true
+            "isTemplated": true,
+            "condition": "!skip_interface"
         },
         {
             "file": "${GemName}DataAssetRegistry.setreg",
@@ -47,32 +48,82 @@
             "dir": "Source"
         }
     ],
-    "component_gen": [{
-        "unique_template_vars": [
+    "class_wizard": {
+        "display_name": "Data Asset",
+        "class_name": "data_asset",
+        "description": "Creates a custom data asset with setreg configuration",
+        "component_suffix": "Asset",
+
+        "input_vars": [
+            {
+                "input_type": "toggle",
+                "var_name": "skip_interface",
+                "title": "Skip Interface",
+                "default_value": false,
+                "description": "Do not create the Interface.h file"
+            },
             {
                 "input_type": "text",
                 "var_name": "file_extension",
                 "title": "File Extension",
-                "default_value": "dataasset"
+                "default_value": "dataasset",
+                "required": true,
+                "description": "The file extension for this asset type (without dot)"
             },
             {
                 "input_type": "text",
                 "var_name": "asset_group",
                 "title": "Asset Group",
-                "default_value": "Asset Group"
+                "default_value": "DataAssets",
+                "description": "The asset browser group for this asset type"
             }
         ],
-        "type_process": [{
-            "system_register": "${GemName}DataAssetSystemComponent",
-            "editor_system_register": "${GemName}DataAssetSystemComponent",
-            "file_register": "${GemName}DataAssetSystemComponent",
-            "register_asset_setreg": [{
-                "group": "asset_group",
-                "extension": "file_extension"
-            }]
-        }],
-        "final_process": [{
-            "skip_file_register": "True"
-        }]
-    }]
+
+        "process_commands": [
+            {
+                "command": "register_file_list",
+                "args": { "component_name": "${GemName}DataAssetSystemComponent" }
+            },
+            {
+                "command": "register_file_list",
+                "args": { "component_name": "${Name}${ComponentSuffix}" }
+            },
+            {
+                "command": "register_module_descriptor",
+                "args": { "component_name": "${GemName}DataAssetSystemComponent", "module_kind": "runtime" }
+            },
+            {
+                "command": "register_system_component",
+                "args": { "component_name": "${GemName}DataAssetSystemComponent", "module_kind": "runtime" }
+            },
+            {
+                "command": "register_system_component",
+                "args": { "component_name": "${GemName}DataAssetSystemComponent", "module_kind": "editor" }
+            },
+            {
+                "command": "register_generic_asset",
+                "args": {
+                    "asset_name": "${Name}${ComponentSuffix}",
+                    "asset_ext": "${file_extension}",
+                    "asset_group": "${asset_group}"
+                }
+            },
+            {
+                "command": "copy_setreg",
+                "args": { "setreg_name": "${GemName}DataAssetRegistry" }
+            },
+            {
+                "command": "register_asset_setreg",
+                "args": {
+                    "asset_name": "${Name}${ComponentSuffix}",
+                    "asset_ext": "${file_extension}"
+                }
+            },
+            {
+                "command": "register_interface_header",
+                "condition": "!skip_interface",
+                "args": { "component_name": "${Name}" }
+            }
+        ]
+    }
 }
