@@ -40,8 +40,11 @@ function(ly_add_autogen)
         )
         # Print informative errors if the python script exited with error status.
         if(NOT AUTOGEN_RESULT EQUAL 0)
-            message("AutoGen expansion rules failed for target: ${ly_add_autogen_NAME}")
-            message(${AUTOGEN_ERROR})
+            message(FATAL_ERROR
+                "AutoGen expansion rules failed for target: ${ly_add_autogen_NAME}"
+                "\n"
+                "${AUTOGEN_ERROR}"
+            )
         endif()
         unset(AUTOGEN_RESULT)
         unset(AUTOGEN_ERROR)
