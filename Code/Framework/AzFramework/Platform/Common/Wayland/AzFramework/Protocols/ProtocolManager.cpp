@@ -36,7 +36,7 @@ namespace AzFramework
         }
     }
 
-    void ProtocolManager::OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version)
+    void ProtocolManager::OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version)
     {
         if (interface == CursorShapeManagerName)
         {
@@ -49,6 +49,7 @@ namespace AzFramework
             WaylandProxyBus::MultiHandler::BusConnect(CursorShapeManagerName);
             return;
         }
+
         if (interface == PointerConstraintsName)
         {
             m_constraintsManager =
@@ -56,6 +57,7 @@ namespace AzFramework
             WaylandProxyBus::MultiHandler::BusConnect(PointerConstraintsName);
             return;
         }
+
         if (interface == RelativePointerManagerName)
         {
             m_relativePointerManager =
@@ -74,6 +76,7 @@ namespace AzFramework
             WaylandProxyBus::MultiHandler::BusDisconnect(CursorShapeManagerName);
             return;
         }
+
         if (id == WL_GET_PROXY_ID(m_constraintsManager))
         {
             zwp_pointer_constraints_v1_destroy(m_constraintsManager);
@@ -81,6 +84,7 @@ namespace AzFramework
             WaylandProxyBus::MultiHandler::BusDisconnect(PointerConstraintsName);
             return;
         }
+
         if (id == WL_GET_PROXY_ID(m_relativePointerManager))
         {
             zwp_relative_pointer_manager_v1_destroy(m_relativePointerManager);
@@ -96,10 +100,12 @@ namespace AzFramework
         {
             return reinterpret_cast<wl_proxy*>(m_cursorManager);
         }
+
         if (interface == PointerConstraintsName)
         {
             return reinterpret_cast<wl_proxy*>(m_constraintsManager);
         }
+
         if (interface == RelativePointerManagerName)
         {
             return reinterpret_cast<wl_proxy*>(m_relativePointerManager);

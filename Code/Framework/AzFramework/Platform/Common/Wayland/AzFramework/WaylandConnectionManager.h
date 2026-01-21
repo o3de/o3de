@@ -21,7 +21,6 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(WaylandConnectionManager, "{120B08F8-C381-436C-806D-5439CE816223}");
-
         virtual ~WaylandConnectionManager() = default;
 
         virtual void DoRoundtrip() const = 0;

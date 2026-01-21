@@ -15,7 +15,7 @@
 
 namespace AzFramework
 {
-    static xdg_wm_base_listener s_xdg_wm_listener = { XdgManagerImpl::XdgPing };
+    static xdg_wm_base_listener s_xdgWmListener = { XdgManagerImpl::XdgPing };
 
     XdgManagerImpl::XdgManagerImpl()
     {
@@ -36,12 +36,12 @@ namespace AzFramework
         }
     }
 
-    void XdgManagerImpl::OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version)
+    void XdgManagerImpl::OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version)
     {
         if (interface == XdgWmBaseName)
         {
             m_xdg = static_cast<xdg_wm_base*>(wl_registry_bind(registry, id, &xdg_wm_base_interface, version));
-            xdg_wm_base_add_listener(m_xdg, &s_xdg_wm_listener, this);
+            xdg_wm_base_add_listener(m_xdg, &s_xdgWmListener, this);
             WaylandInterfaceNotificationsBus::MultiHandler::BusConnect(id);
             WaylandProxyBus::MultiHandler::BusConnect(XdgWmBaseName);
             return;
@@ -143,7 +143,7 @@ namespace AzFramework
         return nullptr;
     }
 
-    void XdgManagerImpl::XdgPing(void* data, xdg_wm_base* xdg, uint32_t serial)
+    void XdgManagerImpl::XdgPing(void*, xdg_wm_base* xdg, uint32_t serial)
     {
         // You ping, I pong :)
         xdg_wm_base_pong(xdg, serial);

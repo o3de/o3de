@@ -23,7 +23,6 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(RelativePointerInterfaceRequests, "{AA4CD0C4-0140-406C-B2A7-A39AEFD88346}");
-
         virtual ~RelativePointerInterfaceRequests() = default;
 
         virtual zwp_relative_pointer_v1* GetRelativePointer(wl_pointer* pointer) = 0;

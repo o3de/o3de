@@ -54,31 +54,31 @@ namespace AzFramework
     private:
         static void PointerEnter(
             void* data,
-            struct wl_pointer* wl_pointer,
+            wl_pointer* wl_pointer,
             uint32_t serial,
-            struct wl_surface* surface,
+            wl_surface* surface,
             wl_fixed_t surface_x,
             wl_fixed_t surface_y);
 
-        static void PointerLeave(void* data, struct wl_pointer* wl_pointer, uint32_t serial, struct wl_surface* surface);
-        static void PointerMotion(void* data, struct wl_pointer* wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
+        static void PointerLeave(void* data, wl_pointer* wl_pointer, uint32_t serial, wl_surface* surface);
+        static void PointerMotion(void* data, wl_pointer* wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
 
         static void PointerButton(
-            void* data, struct wl_pointer* wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
+            void* data, wl_pointer* wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
 
-        static void PointerAxis(void* data, struct wl_pointer* wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
-        static void PointerFrame(void* data, struct wl_pointer* wl_pointer);
-        static void PointerAxisSource(void* data, struct wl_pointer* wl_pointer, uint32_t axis_source);
-        static void PointerAxisStop(void* data, struct wl_pointer* wl_pointer, uint32_t time, uint32_t axis);
-        static void PointerAxisDiscrete(void* data, struct wl_pointer* wl_pointer, uint32_t axis, int32_t discrete);
-        static void PointerAxisValue120(void* data, struct wl_pointer* wl_pointer, uint32_t axis, int32_t value120);
-        static void PointerAxisRelDir(void* data, struct wl_pointer* wl_pointer, uint32_t axis, uint32_t direction);
+        static void PointerAxis(void* data, wl_pointer* wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
+        static void PointerFrame(void* data, wl_pointer* wl_pointer);
+        static void PointerAxisSource(void* data, wl_pointer* wl_pointer, uint32_t axis_source);
+        static void PointerAxisStop(void* data, wl_pointer* wl_pointer, uint32_t time, uint32_t axis);
+        static void PointerAxisDiscrete(void* data, wl_pointer* wl_pointer, uint32_t axis, int32_t discrete);
+        static void PointerAxisValue120(void* data, wl_pointer* wl_pointer, uint32_t axis, int32_t value120);
+        static void PointerAxisRelDir(void* data, wl_pointer* wl_pointer, uint32_t axis, uint32_t direction);
 
-        static wl_pointer_listener s_pointer_listener;
+        static wl_pointer_listener s_pointerListener;
 
         static void RelPointerMotion(
             void* data,
-            struct zwp_relative_pointer_v1* zwp_relative_pointer_v1,
+            zwp_relative_pointer_v1* zwp_relative_pointer_v1,
             uint32_t utime_hi,
             uint32_t utime_lo,
             wl_fixed_t dx,
@@ -86,7 +86,7 @@ namespace AzFramework
             wl_fixed_t dx_unaccel,
             wl_fixed_t dy_unaccel);
 
-        static zwp_relative_pointer_v1_listener s_rel_pointer_listener;
+        static zwp_relative_pointer_v1_listener s_relPointerListener;
 
     protected:
         uint32_t m_playerIdx = 0;

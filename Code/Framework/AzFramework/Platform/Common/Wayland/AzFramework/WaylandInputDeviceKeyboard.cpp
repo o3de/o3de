@@ -12,7 +12,7 @@
 
 namespace AzFramework
 {
-    wl_keyboard_listener WaylandInputDeviceKeyboard::s_keyboard_listener = {
+    wl_keyboard_listener WaylandInputDeviceKeyboard::s_keyboardListener = {
         .keymap = KeyboardKeymap,
         .enter = KeyboardEnter,
         .leave = KeyboardLeave,
@@ -22,7 +22,7 @@ namespace AzFramework
     };
 
     void WaylandInputDeviceKeyboard::KeyboardEnter(
-        void* data, struct wl_keyboard* wl_keyboard, uint32_t serial, struct wl_surface* surface, struct wl_array* keys)
+        void* data, wl_keyboard*, uint32_t serial, wl_surface* surface, wl_array* keys)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
         if (surface != nullptr)
@@ -43,8 +43,8 @@ namespace AzFramework
         }
     }
 
-    void WaylandInputDeviceKeyboard::KeyboardLeave(void* data, struct wl_keyboard* wl_keyboard, uint32_t serial,
-                                                   struct wl_surface* surface)
+    void WaylandInputDeviceKeyboard::KeyboardLeave(void* data, wl_keyboard*, uint32_t /*serial*/,
+                                                   wl_surface* surface)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
         if (surface != nullptr)
@@ -59,7 +59,7 @@ namespace AzFramework
         self->m_currentSerial = UINT32_MAX;
     }
 
-    void WaylandInputDeviceKeyboard::KeyboardKeymap(void* data, struct wl_keyboard* wl_keyboard, uint32_t format,
+    void WaylandInputDeviceKeyboard::KeyboardKeymap(void* data, wl_keyboard*, uint32_t format,
                                                     int32_t fd, uint32_t size)
     {
         if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
@@ -90,7 +90,7 @@ namespace AzFramework
     }
 
     void WaylandInputDeviceKeyboard::KeyboardKey(
-        void* data, struct wl_keyboard* wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+        void* data, wl_keyboard*, uint32_t /*serial*/, uint32_t /*time*/, uint32_t key, uint32_t state)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
         self->SendKeyEvent(key, state == WL_KEYBOARD_KEY_STATE_PRESSED || state == WL_KEYBOARD_KEY_STATE_REPEATED);
@@ -98,8 +98,8 @@ namespace AzFramework
 
     void WaylandInputDeviceKeyboard::KeyboardModifiers(
         void* data,
-        struct wl_keyboard* wl_keyboard,
-        uint32_t serial,
+        wl_keyboard*,
+        uint32_t /*serial*/,
         uint32_t mods_depressed,
         uint32_t mods_latched,
         uint32_t mods_locked,
@@ -109,7 +109,7 @@ namespace AzFramework
         xkb_state_update_mask(self->m_xkbState, mods_depressed, mods_latched, mods_locked, 0, 0, group);
     }
 
-    void WaylandInputDeviceKeyboard::KeyboardRepeatInfo(void* data, struct wl_keyboard* wl_keyboard, int32_t rate,
+    void WaylandInputDeviceKeyboard::KeyboardRepeatInfo(void* data, wl_keyboard*, int32_t rate,
                                                         int32_t delay)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
@@ -157,7 +157,7 @@ namespace AzFramework
         m_keyboard = newKeyboard;
         if (m_keyboard)
         {
-            wl_keyboard_add_listener(m_keyboard, &s_keyboard_listener, this);
+            wl_keyboard_add_listener(m_keyboard, &s_keyboardListener, this);
         }
     }
 

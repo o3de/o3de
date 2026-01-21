@@ -80,21 +80,21 @@ namespace AzFramework
         void SetKeyboardFocus(WaylandInputDeviceKeyboard* keyboard);
 
     private:
-        static void SurfaceEnter(void* data, struct wl_surface* wl_surface, struct wl_output* output);
-        static void SurfaceLeave(void* data, struct wl_surface* wl_surface, struct wl_output* output);
-        static void SurfacePreferredScale(void* data, struct wl_surface* wl_surface, int32_t factor);
-        static void SurfacePreferredTransform(void* data, struct wl_surface* wl_surface, uint32_t transform);
+        static void SurfaceEnter(void* data, wl_surface* wl_surface, wl_output* output);
+        static void SurfaceLeave(void* data, wl_surface* wl_surface, wl_output* output);
+        static void SurfacePreferredScale(void* data, wl_surface* wl_surface, int32_t factor);
+        static void SurfacePreferredTransform(void* data, wl_surface* wl_surface, uint32_t transform);
 
         static wl_surface_listener s_surfaceListener;
 
-        static void XdgSurfaceConfigure(void* data, struct xdg_surface* xdg_surface, uint32_t serial);
+        static void XdgSurfaceConfigure(void* data, xdg_surface* xdg_surface, uint32_t serial);
 
         static xdg_surface_listener s_xdgSurfaceListener;
 
-        static void XdgTopLevelConfigure(void*, struct xdg_toplevel*, int32_t, int32_t, struct wl_array*);
-        static void XdgTopLevelClose(void* data, struct xdg_toplevel* xdg_toplevel);
-        static void XdgTopLevelConfigureBounds(void*, struct xdg_toplevel*, int32_t, int32_t);
-        static void XdgTopLevelWmCaps(void*, struct xdg_toplevel*, struct wl_array*);
+        static void XdgTopLevelConfigure(void*, xdg_toplevel*, int32_t, int32_t, wl_array*);
+        static void XdgTopLevelClose(void* data, xdg_toplevel* xdg_toplevel);
+        static void XdgTopLevelConfigureBounds(void*, xdg_toplevel*, int32_t, int32_t);
+        static void XdgTopLevelWmCaps(void*, xdg_toplevel*, wl_array*);
 
         static xdg_toplevel_listener s_xdgTopLevelListener;
 

@@ -23,7 +23,6 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(SeatManagerRequests, "{F2601B85-C823-454C-8053-18F44293F58A}");
-
         virtual ~SeatManagerRequests() = default;
 
         virtual uint32_t GetSeatCount() const = 0;
@@ -38,7 +37,6 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(SeatNotifications, "{6BBCA05F-51BE-4244-92FB-A54938339A38}");
-
         virtual ~SeatNotifications() = default;
 
         virtual void SeatCapsChanged() = 0;
@@ -66,7 +64,7 @@ namespace AzFramework
         ~SeatManager() override;
 
         //WaylandRegistryEventsBus
-        void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) override;
+        void OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version) override;
         void OnUnregister(wl_registry*, uint32_t id) override;
 
         //SeatManager

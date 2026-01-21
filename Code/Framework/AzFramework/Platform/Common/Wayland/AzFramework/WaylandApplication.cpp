@@ -64,7 +64,7 @@ namespace AzFramework
             m_xkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
             AZ_Error("Application", m_xkbContext != nullptr, "Unable to get XKB context.");
 
-            wl_registry_add_listener(m_registry, &s_registry_listener, this);
+            wl_registry_add_listener(m_registry, &s_registryListener, this);
 
             WaylandConnectionManagerBus::Handler::BusConnect();
         }
@@ -140,7 +140,6 @@ namespace AzFramework
             if (WL_IS_INTERFACE(wl_compositor_interface))
             {
                 self->m_compositor = static_cast<wl_compositor*>(wl_registry_bind(registry, id, &wl_compositor_interface, version));
-                self->m_compositorId = id;
             }
             else
             {
@@ -163,10 +162,9 @@ namespace AzFramework
         WaylandUniquePtr<wl_display, wl_display_disconnect> m_waylandDisplay = nullptr;
         wl_registry* m_registry = nullptr;
         wl_compositor* m_compositor = nullptr;
-        uint32_t m_compositorId = 0;
         xkb_context* m_xkbContext = nullptr;
 
-        const wl_registry_listener s_registry_listener = { .global = GlobalRegistryHandler, .global_remove = GlobalRegistryRemove };
+        const wl_registry_listener s_registryListener = { .global = GlobalRegistryHandler, .global_remove = GlobalRegistryRemove };
     };
 
     WaylandApplication::WaylandApplication()

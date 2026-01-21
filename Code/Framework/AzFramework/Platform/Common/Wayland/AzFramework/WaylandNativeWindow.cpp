@@ -93,7 +93,7 @@ namespace AzFramework
         .wm_capabilities = XdgTopLevelWmCaps
     };
 
-    void WaylandNativeWindow::SurfaceEnter(void* data, struct wl_surface* /*wl_surface*/, struct wl_output* output)
+    void WaylandNativeWindow::SurfaceEnter(void* data, wl_surface*, wl_output* output)
     {
         auto self = static_cast<WaylandNativeWindow*>(data);
 
@@ -114,21 +114,21 @@ namespace AzFramework
         }
     }
 
-    void WaylandNativeWindow::SurfaceLeave(void* /*data*/, struct wl_surface* /*wl_surface*/, struct wl_output* /*output*/)
+    void WaylandNativeWindow::SurfaceLeave(void* /*data*/, wl_surface*, wl_output*)
     {
     }
 
-    void WaylandNativeWindow::SurfacePreferredScale(void* data, struct wl_surface* /*wl_surface*/, int32_t factor)
+    void WaylandNativeWindow::SurfacePreferredScale(void* data, wl_surface*, int32_t factor)
     {
         auto self = static_cast<WaylandNativeWindow*>(data);
         self->InternalUpdateScaleFactor((float)factor);
     }
 
-    void WaylandNativeWindow::SurfacePreferredTransform(void* /*data*/, struct wl_surface* /*wl_surface*/, uint32_t /*transform*/)
+    void WaylandNativeWindow::SurfacePreferredTransform(void* /*data*/, wl_surface*, uint32_t /*transform*/)
     {
     }
 
-    void WaylandNativeWindow::XdgSurfaceConfigure(void* data, struct xdg_surface* xdg_surface, uint32_t serial)
+    void WaylandNativeWindow::XdgSurfaceConfigure(void* data, xdg_surface* xdg_surface, uint32_t serial)
     {
         auto self = static_cast<WaylandNativeWindow*>(data);
 
@@ -158,9 +158,9 @@ namespace AzFramework
     }
 
     void WaylandNativeWindow::XdgTopLevelConfigure(
-        void* data, struct xdg_toplevel* xdg_toplevel, int32_t width, int32_t height, struct wl_array* states)
+        void* data, xdg_toplevel*, int32_t width, int32_t height, wl_array* states)
     {
-        auto self = (AzFramework::WaylandNativeWindow*)data;
+        auto self = static_cast<AzFramework::WaylandNativeWindow*>(data);
 
         self->m_pending.m_fullscreen = false;
         self->m_pending.m_resize = false;
@@ -189,19 +189,19 @@ namespace AzFramework
         }
     }
 
-    void WaylandNativeWindow::XdgTopLevelClose(void* data, struct xdg_toplevel* /*xdg_toplevel*/)
+    void WaylandNativeWindow::XdgTopLevelClose(void* data, xdg_toplevel*)
     {
         auto self = static_cast<WaylandNativeWindow*>(data);
         self->Deactivate();
     }
 
-    void WaylandNativeWindow::XdgTopLevelConfigureBounds(void* data, struct xdg_toplevel*, int32_t width, int32_t height)
+    void WaylandNativeWindow::XdgTopLevelConfigureBounds(void* data, xdg_toplevel*, int32_t width, int32_t height)
     {
         auto self = static_cast<WaylandNativeWindow*>(data);
         self->m_recommendedGeoBounds = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
     }
 
-    void WaylandNativeWindow::XdgTopLevelWmCaps(void* data, struct xdg_toplevel*, struct wl_array* caps)
+    void WaylandNativeWindow::XdgTopLevelWmCaps(void* data, xdg_toplevel*, wl_array* caps)
     {
         auto self = static_cast<WaylandNativeWindow*>(data);
         xdg_toplevel_wm_capabilities* cap;
@@ -260,7 +260,7 @@ namespace AzFramework
             return;
         }
 
-        WindowNotificationBus::Event(reinterpret_cast<NativeWindowHandle>(m_surface), &WindowNotificationBus::Events::OnWindowClosed);
+        WindowNotificationBus::Event(m_surface, &WindowNotificationBus::Events::OnWindowClosed);
 
         if (m_xdgTopLevelDecor != nullptr)
         {

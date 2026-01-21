@@ -23,7 +23,6 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(CursorShapeInterfaceRequests, "{569EF165-AB9D-4F81-8E79-CE0E69600B8F}");
-
         virtual ~CursorShapeInterfaceRequests() = default;
 
         virtual wp_cursor_shape_device_v1* GetCursorShapeDevice(wl_pointer* pointer) = 0;

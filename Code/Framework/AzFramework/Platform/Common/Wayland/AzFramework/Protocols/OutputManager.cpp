@@ -31,7 +31,7 @@ namespace AzFramework
         WaylandRegistryEventsBus::Handler::BusDisconnect();
     }
 
-    void OutputManager::OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version)
+    void OutputManager::OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version)
     {
         if (interface != WaylandOutputName)
         {
@@ -91,7 +91,7 @@ namespace AzFramework
         return info->m_desc;
     }
 
-    void OutputManager::OutputGeometry(void* data, struct wl_output* wl_output, int32_t x, int32_t y,
+    void OutputManager::OutputGeometry(void* data, wl_output*, int32_t x, int32_t y,
                                        int32_t physical_width, int32_t physical_height, int32_t subpixel,
                                        const char* make, const char* model,
                                        int32_t transform)
@@ -107,7 +107,7 @@ namespace AzFramework
         self->m_transform = static_cast<wl_output_transform>(transform);
     }
 
-    void OutputManager::OutputMode(void* data, struct wl_output* wl_output, uint32_t flags, int32_t width,
+    void OutputManager::OutputMode(void* data, wl_output*, uint32_t flags, int32_t width,
                                    int32_t height, int32_t refresh)
     {
         auto self = static_cast<OutputInfo*>(data);
@@ -120,25 +120,25 @@ namespace AzFramework
         }
     }
 
-    void OutputManager::OutputDone(void* data, struct wl_output* wl_output)
+    void OutputManager::OutputDone(void* data, wl_output*)
     {
-        [[maybe_unused]]auto self = static_cast<OutputInfo*>(data);
+        [[maybe_unused]] auto self = static_cast<OutputInfo*>(data);
         //Unused since by the time we use OutputInfo the info is already done.
     }
 
-    void OutputManager::OutputScale(void* data, struct wl_output* wl_output, int32_t factor)
+    void OutputManager::OutputScale(void* data, wl_output*, int32_t factor)
     {
         auto self = static_cast<OutputInfo*>(data);
         self->m_scaleFactor = factor;
     }
 
-    void OutputManager::OutputName(void* data, struct wl_output* wl_output, const char* name)
+    void OutputManager::OutputName(void* data, wl_output*, const char* name)
     {
         auto self = static_cast<OutputInfo*>(data);
         self->m_name = AZStd::string(name);
     }
 
-    void OutputManager::OutputDesc(void* data, struct wl_output* wl_output, const char* description)
+    void OutputManager::OutputDesc(void* data, wl_output*, const char* description)
     {
         auto self = static_cast<OutputInfo*>(data);
         self->m_desc = AZStd::string(description);

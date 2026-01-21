@@ -22,7 +22,6 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(OutputManagerRequests, "{8EEBB5C3-91BA-4AE8-8529-6F0FE69E7E9B}");
-
         virtual ~OutputManagerRequests() = default;
 
         virtual uint32_t GetRefreshRateMhz(wl_output* output) = 0;
@@ -41,7 +40,7 @@ namespace AzFramework
         ~OutputManager() override;
 
         //WaylandRegistryEventsBus
-        void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) override;
+        void OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version) override;
         void OnUnregister(wl_registry*, uint32_t id) override;
 
         //OutputManagerInterface

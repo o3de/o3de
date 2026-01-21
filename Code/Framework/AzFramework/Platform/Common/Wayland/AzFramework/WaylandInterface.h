@@ -48,11 +48,9 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(WaylandRegistryEvents, "{135E6733-E960-43B7-872C-C7B1E527D9B8}");
-
         virtual ~WaylandRegistryEvents() = default;
 
-        virtual void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) = 0;
-
+        virtual void OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version) = 0;
         virtual void OnUnregister(wl_registry* registry, uint32_t id) = 0;
     };
 
@@ -77,7 +75,6 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(WaylandInterfaceNotifications, "{B8748E75-B6E0-48B3-95DC-26D24774E752}");
-
         virtual ~WaylandInterfaceNotifications() = default;
 
         virtual void OnProtocolError(uint32_t registryId, uint32_t errorCode) = 0;

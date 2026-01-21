@@ -32,7 +32,7 @@ namespace AzFramework
         m_seats.clear();
     }
 
-    void SeatManager::OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version)
+    void SeatManager::OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version)
     {
         if (interface != WaylandSeatName)
         {
@@ -101,7 +101,7 @@ namespace AzFramework
         return nullptr;
     }
 
-    void SeatManager::SeatCaps(void* data, struct wl_seat* wl_seat, uint32_t capabilities)
+    void SeatManager::SeatCaps(void* data, wl_seat*, uint32_t capabilities)
     {
         auto self = static_cast<WaylandSeat*>(data);
 

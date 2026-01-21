@@ -29,7 +29,7 @@ namespace AzFramework
         AZ::ConsoleFunctorFlags::Null,
         "WAYLAND ONLY: Set to use accelerated values, this only works if the compositor supports relative pointer.");
 
-    wl_pointer_listener WaylandInputDeviceMouse::s_pointer_listener = {
+    wl_pointer_listener WaylandInputDeviceMouse::s_pointerListener = {
         .enter = PointerEnter,
         .leave = PointerLeave,
         .motion = PointerMotion,
@@ -43,15 +43,15 @@ namespace AzFramework
         .axis_relative_direction = PointerAxisRelDir
     };
 
-    zwp_relative_pointer_v1_listener WaylandInputDeviceMouse::s_rel_pointer_listener = {
+    zwp_relative_pointer_v1_listener WaylandInputDeviceMouse::s_relPointerListener = {
         .relative_motion = RelPointerMotion
     };
 
     void WaylandInputDeviceMouse::PointerEnter(
         void* data,
-        struct wl_pointer* /*wl_pointer*/,
+        wl_pointer* /*wl_pointer*/,
         uint32_t serial,
-        struct wl_surface* surface,
+        wl_surface* surface,
         wl_fixed_t surface_x,
         wl_fixed_t surface_y)
     {
@@ -75,8 +75,8 @@ namespace AzFramework
         self->InternalApplyCursorState();
     }
 
-    void WaylandInputDeviceMouse::PointerLeave(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t serial,
-                                               struct wl_surface* surface)
+    void WaylandInputDeviceMouse::PointerLeave(void* data, wl_pointer* /*wl_pointer*/, uint32_t serial,
+                                               wl_surface* surface)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
 
@@ -99,7 +99,7 @@ namespace AzFramework
     }
 
     void WaylandInputDeviceMouse::PointerMotion(
-        void* data, struct wl_pointer* /*wl_pointer*/, uint32_t /*time*/, wl_fixed_t surface_x, wl_fixed_t surface_y)
+        void* data, wl_pointer* /*wl_pointer*/, uint32_t /*time*/, wl_fixed_t surface_x, wl_fixed_t surface_y)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
         self->m_position = AZ::Vector2((float)wl_fixed_to_double(surface_x), (float)wl_fixed_to_double(surface_y));
@@ -110,7 +110,7 @@ namespace AzFramework
     }
 
     void WaylandInputDeviceMouse::PointerButton(
-        void* data, struct wl_pointer* /*wl_pointer*/, uint32_t /*serial*/, uint32_t /*time*/, uint32_t button,
+        void* data, wl_pointer* /*wl_pointer*/, uint32_t /*serial*/, uint32_t /*time*/, uint32_t button,
         uint32_t state)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
@@ -138,7 +138,7 @@ namespace AzFramework
         }
     }
 
-    void WaylandInputDeviceMouse::PointerAxis(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t time,
+    void WaylandInputDeviceMouse::PointerAxis(void* data, wl_pointer* /*wl_pointer*/, uint32_t time,
                                               uint32_t axis, wl_fixed_t value)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
@@ -148,14 +148,14 @@ namespace AzFramework
         self->m_axisEvent.m_axis[axis].m_value = value;
     }
 
-    void WaylandInputDeviceMouse::PointerAxisSource(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t axis_source)
+    void WaylandInputDeviceMouse::PointerAxisSource(void* data, wl_pointer* /*wl_pointer*/, uint32_t axis_source)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
         self->m_axisEvent.m_eventMask |= POINTER_EVENT_AXIS_SOURCE;
         self->m_axisEvent.m_axisSource = axis_source;
     }
 
-    void WaylandInputDeviceMouse::PointerAxisStop(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t time,
+    void WaylandInputDeviceMouse::PointerAxisStop(void* data, wl_pointer* /*wl_pointer*/, uint32_t time,
                                                   uint32_t axis)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
@@ -164,7 +164,7 @@ namespace AzFramework
         self->m_axisEvent.m_axis[axis].m_valid = true;
     }
 
-    void WaylandInputDeviceMouse::PointerAxisDiscrete(void* data, struct wl_pointer* /*wl_pointer*/, uint32_t axis,
+    void WaylandInputDeviceMouse::PointerAxisDiscrete(void* data, wl_pointer* /*wl_pointer*/, uint32_t axis,
                                                       int32_t discrete)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
@@ -174,16 +174,16 @@ namespace AzFramework
     }
 
     void WaylandInputDeviceMouse::PointerAxisValue120(
-        void* /*data*/, struct wl_pointer* /*wl_pointer*/, uint32_t /*axis*/, int32_t /*value120*/)
+        void* /*data*/, wl_pointer* /*wl_pointer*/, uint32_t /*axis*/, int32_t /*value120*/)
     {
     }
 
     void WaylandInputDeviceMouse::PointerAxisRelDir(
-        void* /*data*/, struct wl_pointer* /*wl_pointer*/, uint32_t /*axis*/, uint32_t /*direction*/)
+        void* /*data*/, wl_pointer* /*wl_pointer*/, uint32_t /*axis*/, uint32_t /*direction*/)
     {
     }
 
-    void WaylandInputDeviceMouse::PointerFrame(void* data, struct wl_pointer*)
+    void WaylandInputDeviceMouse::PointerFrame(void* data, wl_pointer*)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
 
@@ -202,7 +202,7 @@ namespace AzFramework
 
     void WaylandInputDeviceMouse::RelPointerMotion(
         void* data,
-        struct zwp_relative_pointer_v1*,
+        zwp_relative_pointer_v1*,
         uint32_t,
         uint32_t,
         wl_fixed_t dx,
@@ -281,7 +281,7 @@ namespace AzFramework
         m_pointer = newPointer;
         if (m_pointer)
         {
-            wl_pointer_add_listener(m_pointer, &s_pointer_listener, this);
+            wl_pointer_add_listener(m_pointer, &s_pointerListener, this);
 
             if (auto cursorManager = CursorShapeInterface::Get())
             {
@@ -293,7 +293,7 @@ namespace AzFramework
                 if (m_relPointer != nullptr)
                 {
                     zwp_relative_pointer_v1_set_user_data(m_relPointer, this);
-                    zwp_relative_pointer_v1_add_listener(m_relPointer, &s_rel_pointer_listener, this);
+                    zwp_relative_pointer_v1_add_listener(m_relPointer, &s_relPointerListener, this);
                 }
             }
         }

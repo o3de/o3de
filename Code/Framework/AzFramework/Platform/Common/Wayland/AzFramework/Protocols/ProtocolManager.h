@@ -33,7 +33,7 @@ namespace AzFramework
         ~ProtocolManager() override;
 
         // WaylandRegistryEventsBus
-        void OnRegister(wl_registry* registry, uint32_t id, const AZ::Crc32 interface, uint32_t version) override;
+        void OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version) override;
         void OnUnregister(wl_registry* registry, uint32_t id) override;
 
         // WaylandProxyBus
