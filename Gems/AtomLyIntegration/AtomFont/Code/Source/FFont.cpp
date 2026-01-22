@@ -793,9 +793,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
 
         if (drawFrame)
         {
-            Color tempColor(255, 255, 255, 255);
-            // note: this ends up in r,g,b,a order on little-endian machines
-            uint32_t frameColor = Color::CreateU32(tempColor.GetB8(), tempColor.GetG8(), tempColor.GetR8(), tempColor.GetA8());
+            uint32_t frameColor = Colors::White.ToU32();
 
             Vec2 textSize = GetTextSizeUInternal(viewport, str, asciiMultiLine, ctx);
 

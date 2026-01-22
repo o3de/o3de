@@ -381,21 +381,21 @@ namespace AZ
                 case AZ::RHI::Format::R16_FLOAT:
                     {
                         auto actualMem = reinterpret_cast<const float*>(mem);
-                        return AZ::Color(SHalf(actualMem[indices.first]), 0.0f, 0.0f, 1.0f);
+                        return AZ::Color(static_cast<float>(SHalf(actualMem[indices.first])), 0.0f, 0.0f, 1.0f);
                     }
                 case AZ::RHI::Format::R16G16_FLOAT:
                     {
                         auto actualMem = reinterpret_cast<const float*>(mem);
-                        return AZ::Color(SHalf(actualMem[indices.first + 0]), SHalf(actualMem[indices.first + 1]), 0.0f, 1.0f);
+                        return AZ::Color(static_cast<float>(SHalf(actualMem[indices.first + 0])), static_cast<float>(SHalf(actualMem[indices.first + 1])), 0.0f, 1.0f);
                     }
                 case AZ::RHI::Format::R16G16B16A16_FLOAT:
                     {
                         auto actualMem = reinterpret_cast<const float*>(mem);
                         return AZ::Color(
-                            SHalf(actualMem[indices.first + 0]),
-                            SHalf(actualMem[indices.first + 1]),
-                            SHalf(actualMem[indices.first + 2]),
-                            SHalf(actualMem[indices.first + 3]));
+                            static_cast<float>(SHalf(actualMem[indices.first + 0])),
+                            static_cast<float>(SHalf(actualMem[indices.first + 1])),
+                            static_cast<float>(SHalf(actualMem[indices.first + 2])),
+                            static_cast<float>(SHalf(actualMem[indices.first + 3])));
                     }
                 case AZ::RHI::Format::D32_FLOAT:
                 case AZ::RHI::Format::R32_FLOAT:

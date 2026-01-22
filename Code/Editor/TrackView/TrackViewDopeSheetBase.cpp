@@ -1996,9 +1996,9 @@ bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyT
     pTrack->GetValue(keyTime, vColor);
 
     const AZ::Color defaultColor(
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetX())), 0, 255),
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetY())), 0, 255),
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetZ())), 0, 255),
+        clamp_tpl(FloatToIntRet(vColor.GetX()), 0, 255),
+        clamp_tpl(FloatToIntRet(vColor.GetY()), 0, 255),
+        clamp_tpl(FloatToIntRet(vColor.GetZ()), 0, 255),
         255);
     AzQtComponents::ColorPicker dlg(AzQtComponents::ColorPicker::Configuration::RGB, QString(), this);
     dlg.setWindowTitle(tr("Select Color"));
@@ -2112,9 +2112,9 @@ void CTrackViewDopeSheetBase::EditSelectedColorKey(CTrackViewTrack* pTrack)
             pTrack->GetValue(m_colorUpdateKeyTime, color);
 
             const AZ::Color defaultColor(
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetX())), AZ::u8(0), AZ::u8(255)),
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetY())), AZ::u8(0), AZ::u8(255)),
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetZ())), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(FloatToIntRet(color.GetX()), 0, 255),
+                clamp_tpl(FloatToIntRet(color.GetY()), 0, 255),
+                clamp_tpl(FloatToIntRet(color.GetZ()), 0, 255),
                 255);
 
             AzQtComponents::ColorPicker picker(AzQtComponents::ColorPicker::Configuration::RGB);

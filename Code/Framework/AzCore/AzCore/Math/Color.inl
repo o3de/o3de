@@ -26,15 +26,20 @@ namespace AZ
         ;
     }
 
-    AZ_MATH_INLINE Color::Color(float r, float g, float b, float a)
+    template<typename T> requires AZStd::is_floating_point_v<T>
+    AZ_MATH_INLINE Color::Color(T r, T g, T b, T a)
         : m_color(r, g, b, a)
     {
         ;
     }
 
-    template<typename T, typename>
+    template<typename T> requires AZStd::is_integral_v<T>
     AZ_MATH_INLINE Color::Color(T r, T g, T b, T a)
     {
+        AZ_MATH_ASSERT(r >= 0 && r <= 255, "R component must be in the range [0..255]");
+        AZ_MATH_ASSERT(g >= 0 && g <= 255, "G component must be in the range [0..255]");
+        AZ_MATH_ASSERT(b >= 0 && b <= 255, "B component must be in the range [0..255]");
+        AZ_MATH_ASSERT(a >= 0 && a <= 255, "A component must be in the range [0..255]");
         SetR8(static_cast<u8>(r));
         SetG8(static_cast<u8>(g));
         SetB8(static_cast<u8>(b));

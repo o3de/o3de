@@ -11,6 +11,8 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/std/typetraits/is_integral.h>
+#include <AzCore/std/typetraits/is_floating_point.h>
 
 namespace AZ
 {
@@ -37,12 +39,14 @@ namespace AZ
         explicit Color(float rgba);
 
         //! Constructs a color from the given floating point RGBA values in the range [0..1].
-        Color(float r, float g, float b, float a = 1.f);
+        //! This must be a template function so that constructing a Color with mixed floating point and integer arguments is not possible.
+        template<typename T> requires AZStd::is_floating_point_v<T>
+        Color(T r, T g, T b, T a = T(1));
 
-        //! Constructs a color from the given integer RGBA values in the range [0..255]. This must be a template function so that calling
-        //! the constructor with non-u8 integer types such as int/uint is not ambiguous.
-        template<typename T, typename = AZStd::enable_if_t<AZStd::is_integral_v<T>>>
-        Color(T r, T g, T b, T a = 255);
+        //! Constructs a color from the given integer RGBA values in the range [0..255].
+        //! This must be a template function so that calling the constructor with non-u8 integer types such as int/uint is not ambiguous.
+        template<typename T> requires AZStd::is_integral_v<T>
+        Color(T r, T g, T b, T a = T(255));
 
         //! Creates a vector with all components set to zero, more efficient than calling Color(0.0f).
         static Color CreateZero();
