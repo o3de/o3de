@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/EntityActiveSystemComponent.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
