@@ -331,7 +331,6 @@ namespace AzFramework
 
             if (m_xdgDecor != nullptr)
             {
-                // We have decor support yippie
                 m_xdgTopLevelDecor = zxdg_decoration_manager_v1_get_toplevel_decoration(m_xdgDecor, m_xdgToplevel);
                 AZ_Error(WaylandErrorWindow, m_xdgTopLevelDecor != nullptr, "Failed to create XDG Toplevel decor.");
 
