@@ -41,8 +41,7 @@ function(ly_add_autogen)
         # Make sure the script exited with success status before proceeding.
         if(NOT AUTOGEN_RESULT EQUAL 0)
             message(FATAL_ERROR
-                "AutoGen expansion rules failed for target: ${ly_add_autogen_NAME}"
-                "\n"
+                "AutoGen expansion rules failed for target: ${ly_add_autogen_NAME}" "\n"
                 "${AUTOGEN_ERROR}"
             )
         endif()
