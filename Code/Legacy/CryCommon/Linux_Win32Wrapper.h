@@ -19,21 +19,6 @@
 #define _CLIENT_BLOCK    4
 #define _MAX_BLOCKS      5
 
-typedef void* HMODULE;
-
-typedef struct _MEMORYSTATUS
-{
-    DWORD dwLength;
-    DWORD dwMemoryLoad;
-    SIZE_T dwTotalPhys;
-    SIZE_T dwAvailPhys;
-    SIZE_T dwTotalPageFile;
-    SIZE_T dwAvailPageFile;
-    SIZE_T dwTotalVirtual;
-    SIZE_T dwAvailVirtual;
-} MEMORYSTATUS, * LPMEMORYSTATUS;
-
-extern void GlobalMemoryStatus(LPMEMORYSTATUS lpmem);
 
 #if defined(PLATFORM_64BIT)
 #   define MEMORY_ALLOCATION_ALIGNMENT 16
