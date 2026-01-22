@@ -227,10 +227,11 @@ namespace AzFramework
             m_compositor = connectionManager->GetWaylandCompositor();
         }
 
-        wl_proxy* proxy;
+        wl_proxy* proxy = nullptr;
         WaylandProxyBus::EventResult(proxy, XdgWmBaseName, &WaylandProxyBus::Events::GetProxy, XdgWmBaseName);
         m_xdgWmBase = reinterpret_cast<xdg_wm_base*>(proxy);
 
+        proxy = nullptr;
         WaylandProxyBus::EventResult(proxy, XdgDecorationManagerName, &WaylandProxyBus::Events::GetProxy, XdgDecorationManagerName);
         m_xdgDecor = reinterpret_cast<zxdg_decoration_manager_v1*>(proxy);
 
@@ -380,6 +381,7 @@ namespace AzFramework
         {
             return;
         }
+
         if (clientAreaSize.m_width == m_width && clientAreaSize.m_height == m_height)
         {
             return;
@@ -419,7 +421,7 @@ namespace AzFramework
             return;
         }
 
-        if (GetFullScreenState() == fullScreenState)
+        if (GetFullScreenState() == fullScreenState || !CanToggleFullScreenState())
         {
             return;
         }
