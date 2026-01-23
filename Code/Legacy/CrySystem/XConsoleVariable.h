@@ -185,7 +185,7 @@ protected:
     {
         static char szReturnString[8];
 
-        sprintf_s(szReturnString, "%.1g", m_fValue);
+        azsprintf(szReturnString, "%.1g", m_fValue);
         return szReturnString;
     }
 
@@ -306,7 +306,7 @@ protected:
     {
         static char szReturnString[8];
 
-        sprintf_s(szReturnString, "%.1g", m_fValue);
+        azsprintf(szReturnString, "%.1g", m_fValue);
         return szReturnString;
     }
 

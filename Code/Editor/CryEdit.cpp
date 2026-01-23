@@ -2724,9 +2724,9 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
         QByteArray windowsErrorMessage(ERROR_LEN, 0);
         QByteArray cwd(ERROR_LEN, 0);
-        DWORD dw = GetLastError();
 
 #ifdef WIN32
+        DWORD dw = GetLastError();
         wchar_t windowsErrorMessageW[ERROR_LEN];
         windowsErrorMessageW[0] = L'\0';
         FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -2738,7 +2738,8 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         _getcwd(cwd.data(), cwd.length());
         AZStd::to_string(windowsErrorMessage.data(), ERROR_LEN, windowsErrorMessageW);
 #else
-        windowsErrorMessage = strerror(dw);
+        int errorNum = errno;
+        windowsErrorMessage = strerror(errorNum);
         cwd = QDir::currentPath().toUtf8();
 #endif
 

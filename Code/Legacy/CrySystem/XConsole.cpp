@@ -1761,7 +1761,7 @@ void CXConsole::Exit(const char* szExitComments, ...)
         // make result string
         va_list     arglist;
         va_start(arglist, szExitComments);
-        vsprintf_s(sResultMessageText, szExitComments, arglist);
+        azvsprintf(sResultMessageText, szExitComments, arglist);
         va_end(arglist);
     }
     else
@@ -2002,7 +2002,7 @@ void CXConsole::DisplayVarValue(ICVar* pVar)
             }
             else
             {
-                sprintf_s(szRealState, " RealState=%d", iRealState);
+                azsnprintf(szRealState, AZ_ARRAY_SIZE(szRealState)-1, " RealState=%d", iRealState);
             }
         }
     }

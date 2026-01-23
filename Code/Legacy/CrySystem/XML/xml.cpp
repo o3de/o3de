@@ -273,7 +273,7 @@ void CXmlNode::setAttr(const char* key, float value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT, value);
+    azsprintf(str, FLOAT_FMT, value);
     setAttr(key, str);
 }
 
@@ -281,7 +281,7 @@ void CXmlNode::setAttr(const char* key, double value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, DOUBLE_FMT, value);
+    azsprintf(str, DOUBLE_FMT, value);
     setAttr(key, str);
 }
 
@@ -289,7 +289,7 @@ void CXmlNode::setAttr(const char* key, double value)
 void CXmlNode::setAttr(const char* key, int64 value)
 {
     char str[32];
-    sprintf_s(str, "%" PRId64, value);
+    azsprintf(str, "%" PRId64, aznumeric_cast<int64_t>(value));
     setAttr(key, str);
 }
 
@@ -299,11 +299,11 @@ void CXmlNode::setAttr(const char* key, uint64 value, bool useHexFormat)
     char str[32] = { 0 };
     if (useHexFormat)
     {
-        sprintf_s(str, "%" PRIX64, value);
+        azsprintf(str, "%" PRIX64, aznumeric_cast<uint64_t>(value));
     }
     else
     {
-        sprintf_s(str, "%" PRIu64, value);
+        azsprintf(str, "%" PRIu64, aznumeric_cast<uint64_t>(value));
     }
     setAttr(key, str);
 }
@@ -312,21 +312,21 @@ void CXmlNode::setAttr(const char* key, const Ang3& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
     setAttr(key, str);
 }
 void CXmlNode::setAttr(const char* key, const Vec3& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
     setAttr(key, str);
 }
 void CXmlNode::setAttr(const char* key, const Vec4& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z, value.w);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z, value.w);
     setAttr(key, str);
 }
 
@@ -334,7 +334,7 @@ void CXmlNode::setAttr(const char* key, const Vec2& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT, value.x, value.y);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT, value.x, value.y);
     setAttr(key, str);
 }
 
@@ -342,7 +342,7 @@ void CXmlNode::setAttr(const char* key, const AZ::Quaternion& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.GetW(), value.GetX(), value.GetY(), value.GetZ());
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.GetW(), value.GetX(), value.GetY(), value.GetZ());
     setAttr(key, str);
 }
 
@@ -1433,7 +1433,7 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
         else
         {
             char str[1024];
-            sprintf_s(str, "%s%s at line %d", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser));
+            azsprintf(str, "%s%s at line %d", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser));
             errorString = str;
             if (!bSuppressWarnings)
             {
@@ -1473,7 +1473,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
 
         if (!xmlFile.Open(filename, "rb"))
         {
-            sprintf_s(str, "%sCan't open file (%s)", errorPrefix, filename);
+            azsprintf(str, "%sCan't open file (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
@@ -1482,7 +1482,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         fileSize = xmlFile.GetLength();
         if (fileSize <= 0)
         {
-            sprintf_s(str, "%sFile is empty (%s)", errorPrefix, filename);
+            azsprintf(str, "%sFile is empty (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
@@ -1491,7 +1491,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         pFileContents = new char[fileSize];
         if (!pFileContents)
         {
-            sprintf_s(str, "%sCan't allocate %u bytes of memory (%s)", errorPrefix, static_cast<unsigned>(fileSize), filename);
+            azsprintf(str, "%sCan't allocate %u bytes of memory (%s)", errorPrefix, static_cast<unsigned>(fileSize), filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
@@ -1500,7 +1500,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         if (xmlFile.ReadRaw(pFileContents, fileSize) != fileSize)
         {
             delete [] pFileContents;
-            sprintf_s(str, "%sCan't read file (%s)", errorPrefix, filename);
+            azsprintf(str, "%sCan't read file (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
@@ -1529,7 +1529,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
     if (result != XMLBinary::XMLBinaryReader::eResult_NotBinXml)
     {
         delete [] pFileContents;
-        sprintf_s(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
+        azsprintf(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
         errorString = str;
         CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
         return 0;
@@ -1561,7 +1561,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         }
         else
         {
-            sprintf_s(str, "%s%s at line %d (%s)", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser), filename);
+            azsprintf(str, "%s%s at line %d (%s)", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser), filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
         }
