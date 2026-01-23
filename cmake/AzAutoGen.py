@@ -297,7 +297,7 @@ def ProcessExpansionRule(autogenConfig, sourceFiles, templateFiles, templateCach
                 templateFile = fullPathTemplate
                 break
         if templateFile is None:
-            print("No matching template file found for %s, template may be missing from your _files.cmake" % expansionRuleSet[1])
+            PrintError("No matching template file found for %s, template may be missing from your _files.cmake" % expansionRuleSet[1])
             return
         # We have a few potential modes of input to output mapping that we'll have to handle depending on how the user formatted their azdef expansion rule
         # if the data input file was explicit

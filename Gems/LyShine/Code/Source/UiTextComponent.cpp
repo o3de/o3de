@@ -1874,8 +1874,6 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     // Render the text batches
 
-    STextDrawContext fontContext(m_renderCache.m_fontContext);
-
     for (RenderCacheBatch* batch : m_renderCache.m_batches)
     {
         AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - move IFont.h out of CryCommon/engine code
@@ -4009,11 +4007,7 @@ void UiTextComponent::RenderToCache(float alpha)
     AZ::Matrix4x4 transform;
     UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transform);
 
-    float transFloats[16];
-    transform.StoreToRowMajorFloat16(transFloats);
-    Matrix34 transform34(transFloats[0], transFloats[1], transFloats[2], transFloats[3],
-        transFloats[4], transFloats[5], transFloats[6], transFloats[7],
-        transFloats[8], transFloats[9], transFloats[10], transFloats[11]);
+    AZ::Matrix3x4 transform34 = AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(transform);
     fontContext.SetTransform(transform34);
 
     // Get the rect that positions the text prior to scale and rotate. The scale and rotate transform

@@ -584,7 +584,7 @@ namespace AzToolsFramework
         m_gui->m_entitySearchBox->setClearButtonEnabled(true);
         AzQtComponents::LineEdit::applySearchStyle(m_gui->m_entitySearchBox);
 
-        m_itemNames = QStringList{"Universal", "Editor only"};
+        m_itemNames = QStringList{tr("Start active"), tr("Start inactive"), tr("Editor only")};
         int itemNameCount = m_itemNames.size();
         QStandardItemModel* model = new QStandardItemModel(itemNameCount, 1);
         for (int row = 0; row < itemNameCount; ++row)
@@ -2664,18 +2664,6 @@ namespace AzToolsFramework
             }
         }
 
-        if (allInactive)
-        {
-            AZ_Warning("Prefab", false, "All entities found to be inactive. This is an option that's not supported with Prefabs.");
-            allInactive = false;
-            allEditorOnly = true;
-        }
-        if (someInactive)
-        {
-            AZ_Warning("Prefab", false, "Some inactive entities found. This is an option that's not supported with Prefabs.");
-            someInactive = false;
-        }
-
         m_gui->m_statusComboBox->setItalic(false);
         if (allActive)
         {
@@ -2728,12 +2716,11 @@ namespace AzToolsFramework
         case StatusStartActive:
             return 0;
         case StatusStartInactive:
-            AZ_Assert(false, "StatusStartInactive is not supported when Prefabs are enabled.");
-            return 0;
-        case StatusEditorOnly:
             return 1;
-        case StatusItems:
+        case StatusEditorOnly:
             return 2;
+        case StatusItems:
+            return 3;
         default:
             AZ_Assert(false, "StatusType for EntityPropertyEditor is out of bounds.");
             return 1;
@@ -2747,6 +2734,8 @@ namespace AzToolsFramework
         case 0:
             return StatusStartActive;
         case 1:
+            return StatusStartInactive;
+        case 2:
             return StatusEditorOnly;
         default:
             AZ_Assert(index < StatusType::StatusItems, "Index for EntityPropertyEditor::IndexToStatusType is out of bounds");

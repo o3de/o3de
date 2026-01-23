@@ -22,12 +22,12 @@ struct AffineParts
 
     /** Decompose matrix to its affine parts.
     */
-    void Decompose(const Matrix34& mat);
+    void Decompose(const AZ::Matrix3x4& mat);
 
     /** Decompose matrix to its affine parts.
             Assume there`s no stretch rotation.
     */
-    void SpectralDecompose(const Matrix34& mat);
+    void SpectralDecompose(const AZ::Matrix3x4& mat);
 };
 
 #endif // CRYINCLUDE_EDITOR_UTIL_AFFINEPARTS_H

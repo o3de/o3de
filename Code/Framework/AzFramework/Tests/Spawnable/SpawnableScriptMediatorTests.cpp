@@ -203,7 +203,7 @@ namespace UnitTest
         AzFramework::TransformComponent parentTransformComponent;
         parentEntity.AddComponent(&parentTransformComponent);
         parentEntity.Init();
-        parentEntity.Activate();
+        parentEntity.ApplyEffectiveActiveState();
 
         mediator.SpawnAndParent(ticket, parentEntity.GetId());
         WaitForResponse(mediator);
@@ -218,10 +218,14 @@ namespace UnitTest
         mediator.Despawn(ticket);
         WaitForResponse(mediator);
 
+        // Wait for entities to actually be destroyed
+        AZ::TickBus::ExecuteQueuedEvents();
+
         AZ::TransformBus::EventResult(descendantIds, parentId, &AZ::TransformBus::Events::GetAllDescendants);
         EXPECT_TRUE(descendantIds.empty());
 
-        parentEntity.Deactivate();
+        parentEntity.SetEntityActive(false);
+        parentEntity.ApplyEffectiveActiveState();
     }
 
     TEST_F(SpawnableScriptMediatorTests, SpawnAndParentAndTransform_Works)
@@ -276,6 +280,9 @@ namespace UnitTest
         mediator.Despawn(ticket);
         WaitForResponse(mediator);
 
+        // Wait for entities to actually be destroyed
+        AZ::TickBus::ExecuteQueuedEvents();
+        
         AZ::TransformBus::EventResult(descendantIds, parentId, &AZ::TransformBus::Events::GetAllDescendants);
         EXPECT_TRUE(descendantIds.empty());
 

@@ -492,8 +492,8 @@ void CErrorReportDialog::OnReportItemDblClick(const QModelIndex& index)
         if (GetPositionFromString(pError->error, &x, &y, &z))
         {
             CViewport* vp = GetIEditor()->GetActiveView();
-            Matrix34 tm = vp->GetViewTM();
-            tm.SetTranslation(Vec3(x, y, z));
+            AZ::Matrix3x4 tm = vp->GetViewTM();
+            tm.SetTranslation(x, y, z);
             vp->SetViewTM(tm);
         }
     }
@@ -522,8 +522,8 @@ void CErrorReportDialog::OnReportHyperlink(const QModelIndex& index)
         if (GetPositionFromString(pError->error, &x, &y, &z))
         {
             CViewport* vp = GetIEditor()->GetActiveView();
-            Matrix34 tm = vp->GetViewTM();
-            tm.SetTranslation(Vec3(x, y, z));
+            AZ::Matrix3x4 tm = vp->GetViewTM();
+            tm.SetTranslation(x, y, z);
             vp->SetViewTM(tm);
         }
     }

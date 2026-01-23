@@ -132,6 +132,32 @@ namespace AZ
         //! Gets the state of the entity.
         //! @return The state of the entity. For example, the entity has been initialized, the entity is active, and so on.
         State GetState() const { return m_state; }
+        
+        //! Sets the "Entity" active state type to determine whether the local state of the entity should be active or inactive. This only alters the local active state factor.
+        //! @param active Whether the state should be set to activated or deactivated.
+        //! @return Whether, by changing this state, an effective state change happened. (Entity changing from Active -> Inactive or Inactive -> Active)
+        bool SetEntityActive(bool active);
+
+        //! Gets the active state by type index. This returns a specific active state based on input index without any other active types factored.
+        //! @param index The index that will be checked for active state. Can be 0-31 (32 possible flags.) 
+        //! @return The state of this one index flag. Without any other active types factored in.
+        bool GetEffectiveActiveLayerByTypeIndex(size_t index) const noexcept;
+        //! Sets the active state by type index. This sets the active state of one single flag, identified by index. 
+        //! @param index  The index that will be targeted to change its active state. Can be 0-31 (32 possible flags.) 
+        //! @param active Whether the state should be set to activated or deactivated.
+        //! @return Whether, by changing this state, an effective state change happened. (Entity changing from Active -> Inactive or Inactive -> Active)
+        bool SetEffectiveActiveLayerByTypeIndex(size_t index, bool active);
+
+        //! This method actually drives the Entity to check its effective state and then change itself to that desired state if appropriate.
+        //! Will only drive a change if it's actually changing from Active -> Inactive or Inactive -> Active. Otherwise stays dormant.
+        //! @return Whether the effective state and therefore the entity itself has had its functional Activation state changed. Activate() and Deactivate().
+        bool ApplyEffectiveActiveState();
+
+        //! Returns the current functional active state of the Entity. This is the evaluated combination of all the Active Type flags on this entity.
+        //! If all active, then active, otherwise inactive (deactivate).
+        //! @return The current "Effectively Active" state of the Entity.
+        bool IsEffectivelyActive() { return m_activeStateByType == s_allStatesOn; }
+
 
         //! Gets the ticket id used to spawn the entity.
         //! @return the ticket id used to spawn the entity. If entity is not spawned, the id will be 0.
@@ -423,13 +449,28 @@ namespace AZ
         //! The state of the entity.
         State m_state;
 
+        //! Expanded Entity State Handling to Introduce an Active by State Type mask for up to 32 possible activeTypes registered by the
+        //! system on startup. Based on state of "entity" type is default at 0 and any other type is an index of the int mask, we determine
+        //! what the absolute desired state (Effective State) of this entity is.
+
+        static constexpr size_t s_maxStateFlags = 32;
+        static constexpr uint32_t s_allOn32 = 0xFFFFFFFFu;
+        static constexpr uint32_t s_allStatesOn =
+                                    (s_maxStateFlags == 0)  ? 0u :
+                                    (s_maxStateFlags >= 32) ? s_allOn32 :
+                                    (s_allOn32 >> (32 - s_maxStateFlags));
+
+        //! The current int carrying the masked state of all Active States by Type, each held on a defined index.
+        //! Starts all active to assure unused type indexes start active.
+        uint32_t m_activeStateByType = s_allStatesOn;
+
         //! Foundational entity properties/flags.
         //! To keep AZ::Entity lightweight, one should resist the urge the add flags here unless they're extremely
         //! common to AZ::Entity use cases, and inherently fundamental.
         //! Furthermore, if more than 4 flags are needed, please consider using a more space-efficient container,
         //! such as AZStd::bit_set<>. With just a couple flags, AZStd::bit_set's word-size of 32-bits will actually waste space.
         bool m_isDependencyReady;           ///< Indicates the component dependencies have been evaluated and sorting was completed successfully.
-        bool m_isRuntimeActiveByDefault;    ///< Indicates the entity should be activated on initial creation.
+        bool m_isRuntimeActiveByDefault;    ///< Indicates the entity should be activated on initial creation. 
     };
 
     template<class ComponentType, typename... Args>
