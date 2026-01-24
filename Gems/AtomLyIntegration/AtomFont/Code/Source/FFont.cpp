@@ -831,10 +831,10 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
 
                 if (ctx.m_drawTextFlags & eDrawText_UseTransform)
                 {
-                    v0 = ctx.m_transform * v0;
-                    v2 = ctx.m_transform * v2;
-                    v1 = ctx.m_transform * v1;
-                    v3 = ctx.m_transform * v3;
+                    v0 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v0));
+                    v2 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v2));
+                    v1 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v1));
+                    v3 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v3));
                 }
 
                 Vec2 gradientUvMin, gradientUvMax;
@@ -1060,10 +1060,10 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
 
             if (ctx.m_drawTextFlags & eDrawText_UseTransform)
             {
-                v0 = ctx.m_transform * v0;
-                v2 = ctx.m_transform * v2;
-                v1 = ctx.m_transform * v1;
-                v3 = ctx.m_transform * v3;
+                v0 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v0));
+                v2 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v2));
+                v1 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v1));
+                v3 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v3));
             }
 
             if (AddQuad(v0, v1, v2, v3, tc0, tc1, tc2, tc3, packedColor))
@@ -1593,7 +1593,7 @@ static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::T
         if (params.m_useTransform)
         {
             ctx.m_drawTextFlags |= eDrawText_UseTransform;
-            ctx.SetTransform(AZMatrix3x4ToLYMatrix3x4(params.m_transform));
+            ctx.SetTransform(params.m_transform);
         }
 }
 

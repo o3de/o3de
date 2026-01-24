@@ -75,6 +75,14 @@ namespace SkyAtmosphere
         auto* passSystem = AZ::RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
 
+        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler(
+            []()
+            {
+                const char* passTemplatesFile = "Passes/SkyAtmospherePassTemplates.azasset";
+                AZ::RPI::PassSystemInterface::Get()->LoadPassTemplateMappings(passTemplatesFile);
+            });
+        passSystem->ConnectEvent(m_loadTemplatesHandler);
+
         // Add Sky Atmosphere Parent pass
         passSystem->AddPassCreator(AZ::Name("SkyAtmosphereParentPass"), &SkyAtmosphereParentPass::Create);
 
@@ -88,6 +96,7 @@ namespace SkyAtmosphere
         {
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyAtmosphereFeatureProcessor>();
         }
+        m_loadTemplatesHandler.Disconnect();
     }
 
 } // namespace SkyAtmosphere

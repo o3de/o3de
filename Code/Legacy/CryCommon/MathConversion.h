@@ -40,6 +40,16 @@ inline Vec3 AZVec3ToLYVec3(const AZ::Vector3& source)
     return Vec3(source.GetX(), source.GetY(), source.GetZ());
 }
 
+inline AZ::Vector3 LYAng3ToAZVec3(const Ang3& source)
+{
+    return AZ::Vector3(source.x, source.y, source.z);
+}
+
+inline Ang3 AZVec3ToLYAng3(const AZ::Vector3& source)
+{
+    return Ang3(source.GetX(), source.GetY(), source.GetZ());
+}
+
 inline AZ::Vector4 LYVec4ToAZVec4(const Vec4& source)
 {
     return AZ::Vector4(source.x, source.y, source.z, source.w);
@@ -85,15 +95,8 @@ inline AZ::Color LYColorBToAZColor(const ColorB& source)
     return AZ::Color(source.r, source.g, source.b, source.a);
 }
 
-inline Matrix34 AZTransformToLYTransform(const AZ::Transform& source)
-{
-    return Matrix34::CreateFromVectors(
-        AZVec3ToLYVec3(source.GetBasisX()),
-        AZVec3ToLYVec3(source.GetBasisY()),
-        AZVec3ToLYVec3(source.GetBasisZ()),
-        AZVec3ToLYVec3(source.GetTranslation()));
-}
-
+// Disable the deprecated-declarations warning for all conversion operators of Matrix33
+AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
 inline Matrix33 AZMatrix3x3ToLYMatrix3x3(const AZ::Matrix3x3& source)
 {
     return Matrix33::CreateFromVectors(
@@ -108,6 +111,18 @@ inline AZ::Matrix3x3 LyMatrix3x3ToAzMatrix3x3(const Matrix33& source)
         LYVec3ToAZVec3(source.GetColumn(0)),
         LYVec3ToAZVec3(source.GetColumn(1)),
         LYVec3ToAZVec3(source.GetColumn(2)));
+}
+AZ_POP_DISABLE_WARNING
+
+// Disable the deprecated-declarations warning for all conversion operators of Matrix34
+AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
+inline Matrix34 AZTransformToLYTransform(const AZ::Transform& source)
+{
+    return Matrix34::CreateFromVectors(
+        AZVec3ToLYVec3(source.GetBasisX()),
+        AZVec3ToLYVec3(source.GetBasisY()),
+        AZVec3ToLYVec3(source.GetBasisZ()),
+        AZVec3ToLYVec3(source.GetTranslation()));
 }
 
 inline Matrix34 AZMatrix3x4ToLYMatrix3x4(const AZ::Matrix3x4& source)
@@ -134,6 +149,7 @@ inline AZ::Matrix3x4 LYTransformToAZMatrix3x4(const Matrix34& source)
 {
     return AZ::Matrix3x4::CreateFromRowMajorFloat12(source.GetData());
 }
+AZ_POP_DISABLE_WARNING
 
 inline AZ::Plane LyPlaneToAZPlane(const ::Plane& source)
 {

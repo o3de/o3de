@@ -8,9 +8,12 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Component/EntityActiveSystemBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -149,6 +152,7 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::AddGameEntity(AZ::Entity* entity)
     {
+        //AddEntityToParentChildTree(entity);
         AddEntity(entity);
     }
 
@@ -163,7 +167,7 @@ namespace AzFramework
         // Caller will want to configure entity before it's activated.
         entity->SetRuntimeActiveByDefault(false);
 
-        AddEntity(entity);
+        AddGameEntity(entity);
 
         return entity;
     }
@@ -238,13 +242,11 @@ namespace AzFramework
         {
             if (entity->GetState() == AZ::Entity::State::Init)
             {
-                if (entity->IsRuntimeActiveByDefault())
-                {
-                    entity->Activate();
+                // Calls Apply, this will result in activation, or remaining inactive based on Init.
+                    entity->ApplyEffectiveActiveState();
                 #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
                     PumpSystemEventsIfNeeded();
                 #endif // (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
-                }
             }
         }
     }
@@ -340,7 +342,31 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::ActivateGameEntity(const AZ::EntityId& entityId)
     {
-        ActivateEntity(entityId);
+        // Verify that this context has the right to perform operations on the entity
+        bool validEntity = IsOwnedByThisContext(entityId);
+        AZ_Warning("GameEntityContext", validEntity, "Entity with id %llu does not belong to the game context.", entityId);
+
+        if (validEntity)
+        {
+            // Look up the entity and activate it.
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            if (entity)
+            {
+                // Safety Check: Is the entity initialized?
+                if (entity->GetState() == AZ::Entity::State::Constructed)
+                {
+                    AZ_Warning("GameEntityContext", false, "Entity with id %llu was not initialized before activation requested.", entityId);
+                    entity->Init();
+                }
+
+                if (entity->GetState() == AZ::Entity::State::Init)
+                {
+                    entity->SetEntityActive(true);
+                    entity->ApplyEffectiveActiveState();
+                }
+            }
+        }
     }
 
     //=========================================================================
@@ -348,7 +374,40 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::DeactivateGameEntity(const AZ::EntityId& entityId)
     {
-        DeactivateEntity(entityId);
+        // Verify that this context has the right to perform operations on the entity
+        bool validEntity = IsOwnedByThisContext(entityId);
+        AZ_Warning("GameEntityContext", validEntity, "Entity with id %llu does not belong to the game context.", entityId);
+
+        if (validEntity)
+        {
+            // Then look up the entity and deactivate it.
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+            if (entity)
+            {
+                switch (entity->GetState())
+                {
+                case AZ::Entity::State::Activating:
+                    // Queue deactivate to trigger next frame
+                    AZ::TickBus::QueueFunction([entity]()
+                    {
+                        entity->SetEntityActive(false);
+                        entity->ApplyEffectiveActiveState();
+                    });
+                    break;
+
+                case AZ::Entity::State::Active:
+                    // Deactivate immediately
+                    entity->SetEntityActive(false);
+                    entity->ApplyEffectiveActiveState();
+                    break;
+
+                default:
+                    // Don't do anything, it's not even active.
+                    break;
+                }
+            }
+        }
     }
 
     //=========================================================================
@@ -374,4 +433,5 @@ namespace AzFramework
         AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, id);
         return entityName;
     }
+    
 } // namespace AzFramework

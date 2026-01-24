@@ -20,6 +20,7 @@ class CStartupLogoDialog;
 struct IInitializeUIInfo;
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Vector3.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -92,7 +93,7 @@ public:
     ISystem* GetSystem() { return m_pISystem; };
     //! Set player position in game.
     //! @param bEyePos If set then given position is position of player eyes.
-    void SetPlayerViewMatrix(const Matrix34& tm, bool bEyePos = true);
+    void SetPlayerViewMatrix(const AZ::Matrix3x4& tm, bool bEyePos = true);
     //! When set, player in game will be every frame synchronized with editor camera.
     void SyncPlayerPosition(bool bEnable);
     bool IsSyncPlayerPosition() const { return m_bSyncPlayerPosition; };
@@ -135,7 +136,7 @@ private:
     bool m_bJustCreated;
     bool m_bIgnoreUpdates;
     ISystem* m_pISystem;
-    Matrix34 m_playerViewTM;
+    AZ::Matrix3x4 m_playerViewTM;
     struct SSystemUserCallback* m_pSystemUserCallback;
     AZStd::unique_ptr<AZ::DynamicModuleHandle> m_hSystemHandle;
     enum EPendingGameMode

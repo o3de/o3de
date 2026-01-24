@@ -35,7 +35,18 @@ function(ly_add_autogen)
         execute_process(
             COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${ly_add_autogen_NAME}" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/${ly_add_autogen_NAME}/" "${CMAKE_CURRENT_SOURCE_DIR}" "${input_files_path}" "${ly_add_autogen_AUTOGEN_RULES}" "-n"
             OUTPUT_VARIABLE AUTOGEN_OUTPUTS
+            ERROR_VARIABLE AUTOGEN_ERROR
+            RESULT_VARIABLE AUTOGEN_RESULT
         )
+        # Make sure the script exited with success status before proceeding.
+        if(NOT AUTOGEN_RESULT EQUAL 0)
+            message(FATAL_ERROR
+                "AutoGen expansion rules failed for target: ${ly_add_autogen_NAME}" "\n"
+                "${AUTOGEN_ERROR}"
+            )
+        endif()
+        unset(AUTOGEN_RESULT)
+        unset(AUTOGEN_ERROR)
         string(STRIP "${AUTOGEN_OUTPUTS}" AUTOGEN_OUTPUTS)
         set(AZCG_DEPENDENCIES ${AZCG_INPUTFILES})
         list(APPEND AZCG_DEPENDENCIES "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py")

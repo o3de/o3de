@@ -46,6 +46,9 @@ set(FILES
     Component/ComponentExport.h
     Component/Entity.cpp
     Component/Entity.h
+    Component/EntityActiveSystemBus.h
+    Component/EntityActiveSystemComponent.cpp
+    Component/EntityActiveSystemComponent.h
     Component/EntityBus.cpp
     Component/EntityBus.h
     Component/EntityId.h

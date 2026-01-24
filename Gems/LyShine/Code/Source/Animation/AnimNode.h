@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Matrix3x4.h>
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiAnimationSystem.h"
 
@@ -77,7 +78,7 @@ public:
     virtual void OnStop() {}
     virtual void OnLoop() {}
 
-    virtual Matrix34 GetReferenceMatrix() const;
+    virtual AZ::Matrix3x4 GetReferenceMatrix() const;
 
     //////////////////////////////////////////////////////////////////////////
     bool IsParamValid(const CUiAnimParamType& paramType) const override;

@@ -40,6 +40,7 @@ on:
       - development
       - stabilization/**
       - hotfix/**
+      - point-release/**
 
 jobs:
 

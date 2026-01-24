@@ -11,6 +11,7 @@
 
 #include <AzCore/Name/NameDictionary.h>
 
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
@@ -38,7 +39,7 @@ namespace SkyAtmosphere
         DisableSceneNotification();
 
         m_atmospheres.Clear();
-        m_renderPipelineToSkyAtmosphereParentPasses.clear();
+        m_renderPipelineToSkyAtmosphereParentPass.clear();
     }
 
     SkyAtmosphereFeatureProcessor::AtmosphereId SkyAtmosphereFeatureProcessor::CreateAtmosphere()
@@ -63,8 +64,8 @@ namespace SkyAtmosphere
             m_atmospheres.Release(id.GetIndex());
         }
 
-        for (auto& [_, skyAtmosphereParentPasses] : m_renderPipelineToSkyAtmosphereParentPasses)
-            for (auto pass : skyAtmosphereParentPasses)
+        for (auto& [_, pass] : m_renderPipelineToSkyAtmosphereParentPass)
+            if (pass)
             {
                 pass->ReleaseAtmospherePass(id);
             }
@@ -105,9 +106,9 @@ namespace SkyAtmosphere
         atmosphere.m_passNeedsUpdate = true;
         atmosphere.m_enabled = true;
 
-        for (auto& [_, skyAtmosphereParentPasses] : m_renderPipelineToSkyAtmosphereParentPasses)
+        for (auto& [_, pass] : m_renderPipelineToSkyAtmosphereParentPass)
         {
-            for (auto pass : skyAtmosphereParentPasses)
+            if (pass)
             {
                 pass->CreateAtmospherePass(id);
             }
@@ -116,23 +117,47 @@ namespace SkyAtmosphere
 
     void SkyAtmosphereFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
     {
-        if (m_renderPipelineToSkyAtmosphereParentPasses.find(renderPipeline) != m_renderPipelineToSkyAtmosphereParentPasses.end())
+        if (m_renderPipelineToSkyAtmosphereParentPass.find(renderPipeline) != m_renderPipelineToSkyAtmosphereParentPass.end())
         {
-            m_renderPipelineToSkyAtmosphereParentPasses.erase(renderPipeline);
+            m_renderPipelineToSkyAtmosphereParentPass.erase(renderPipeline);
         }
-        m_renderPipelineToSkyAtmosphereParentPasses[renderPipeline] = {};
-
-        auto& skyAtmosphereParentPasses = m_renderPipelineToSkyAtmosphereParentPasses[renderPipeline];
+        m_renderPipelineToSkyAtmosphereParentPass[renderPipeline] = nullptr;
 
         AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(AZ::Name("SkyAtmosphereParentTemplate"), renderPipeline);
         AZ::RPI::PassSystemInterface::Get()->ForEachPass(
             passFilter,
-            [&skyAtmosphereParentPasses](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+            [](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
             {
-                SkyAtmosphereParentPass* parentPass = static_cast<SkyAtmosphereParentPass*>(pass);
-                skyAtmosphereParentPasses.emplace_back(parentPass);
+                AZ::RPI::PassSystemInterface::Get()->RemovePassFromLibrary(pass);
                 return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             });
+
+        const char* passRequestAssetFilePath = "Passes/SkyAtmospherePassRequest.azasset";
+        AZ::Data::Asset<AZ::RPI::AnyAsset> passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+            passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+
+        const AZ::RPI::PassRequest *passRequest = nullptr;
+        if (passRequestAsset->IsReady())
+        {
+            passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+        }
+        // Create the pass
+        AZ::RPI::Ptr<AZ::RPI::Pass> parentPass = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
+        if (!parentPass)
+        {
+            AZ_Error("SkyAtmosphere", false, "Create SkyAtmosphere parent pass from pass request failed");
+            return;
+        }
+
+        // Insert the SkyAtmosphereParentPass after SkyBoxPass
+        bool success = renderPipeline->AddPassAfter(parentPass, AZ::Name("SkyBoxPass"));
+        // only create pass resources if it was success
+        if (!success)
+        {
+            AZ_Error("SkyAtmosphere", false, "Add the SkyAtmosphere parent pass to render pipeline [%s] failed",
+                renderPipeline->GetId().GetCStr());
+        }
+        m_renderPipelineToSkyAtmosphereParentPass[renderPipeline] = static_cast<SkyAtmosphereParentPass*>(parentPass.get());
 
         // make sure atmospheres are created if needed
         for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
@@ -156,7 +181,7 @@ namespace SkyAtmosphere
 
         if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Removed)
         {
-            m_renderPipelineToSkyAtmosphereParentPasses.erase(pipeline);
+            m_renderPipelineToSkyAtmosphereParentPass.erase(pipeline);
         }
     }
     
@@ -170,9 +195,9 @@ namespace SkyAtmosphere
             if (atmosphere.m_id.IsValid() && atmosphere.m_enabled && atmosphere.m_passNeedsUpdate)
             {
                 // update every atmosphere parent pass (per-pipeline)
-                for (auto& [_, skyAtmosphereParentPasses] : m_renderPipelineToSkyAtmosphereParentPasses)
+                for (auto& [_, pass] : m_renderPipelineToSkyAtmosphereParentPass)
                 {
-                    for (auto pass : skyAtmosphereParentPasses)
+                    if (pass)
                     {
                         pass->UpdateAtmospherePassSRG(atmosphere.m_id, atmosphere.m_params);
                     }
