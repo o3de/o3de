@@ -60,8 +60,9 @@ namespace EMStudio
     {
         if (m_nonFilterableSourceIndex != sourceIndex)
         {
+            beginFilterChange();
             m_nonFilterableSourceIndex = sourceIndex;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
