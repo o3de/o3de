@@ -25,10 +25,6 @@
 #include <MeshletsRenderObject.h>
 #include <MeshletsFeatureProcessor.h>
 
-#ifndef SAFE_DELETE
-    #define SAFE_DELETE(p){if(p){delete p;p=nullptr;}}
-#endif
-
 namespace AZ
 {
     namespace Meshlets

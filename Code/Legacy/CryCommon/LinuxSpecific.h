@@ -85,23 +85,6 @@ typedef float FLOAT;
 
 #define _PACK __attribute__ ((packed))
 
-// Safe memory freeing
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(p)          { if (p) { delete (p);       (p) = NULL; } \
-}
-#endif
-
-#ifndef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY(p)    { if (p) { delete[] (p);     (p) = NULL; } \
-}
-#endif
-
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)         { if (p) { (p)->Release();   (p) = NULL; } \
-}
-#endif
-
-
 #define MAKEWORD(a, b)      ((WORD)(((BYTE)((DWORD_PTR)(a) & 0xff)) | ((WORD)((BYTE)((DWORD_PTR)(b) & 0xff))) << 8))
 #define MAKELONG(a, b)      ((LONG)(((WORD)((DWORD_PTR)(a) & 0xffff)) | ((DWORD)((WORD)((DWORD_PTR)(b) & 0xffff))) << 16))
 #define LOWORD(l)           ((WORD)((DWORD_PTR)(l) & 0xffff))

@@ -761,9 +761,9 @@ struct Vec3_tpl
     }
 
     //f32* fptr=vec;
-    DEPRECATED operator F* ()                   { return (F*)this; }
+    operator F* ()                   { return (F*)this; }
     template <class T>
-    explicit DEPRECATED Vec3_tpl(const T* src) { x = F(src[0]); y = F(src[1]); z = F(src[2]); }
+    explicit Vec3_tpl(const T* src) { x = F(src[0]); y = F(src[1]); z = F(src[2]); }
 
     ILINE Vec3_tpl& zero() { x = y = z = 0; return *this; }
     ILINE F len() const
