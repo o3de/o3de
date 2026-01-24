@@ -501,8 +501,9 @@ namespace AzToolsFramework
 
         void FilteredLogDataModel::SetTabSettings(const TabSettings& source)
         {
+            beginFilterChange();
             m_tabSettings = source;
-            invalidateFilter();
+            endFilterChange();
         }
 
         bool FilteredLogDataModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
