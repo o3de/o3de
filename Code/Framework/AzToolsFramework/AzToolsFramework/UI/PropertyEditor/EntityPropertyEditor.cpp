@@ -588,7 +588,7 @@ namespace AzToolsFramework
         AzQtComponents::LineEdit::applySearchStyle(m_gui->m_entitySearchBox);
 
         m_itemNames = QStringList{tr("Start active"), tr("Start inactive"), tr("Editor only")};
-        int itemNameCount = m_itemNames.size();
+        const int itemNameCount = aznumeric_cast<int>(m_itemNames.size());
         QStandardItemModel* model = new QStandardItemModel(itemNameCount, 1);
         for (int row = 0; row < itemNameCount; ++row)
         {
