@@ -546,10 +546,10 @@ namespace ScriptCanvasEditor
 
         if (m_filter != escapedString)
         {
+            beginFilterChange();
             m_filter = escapedString;
             m_regex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
-
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -557,9 +557,9 @@ namespace ScriptCanvasEditor
     {
         if (m_severityFilter != severityFilter)
         {
+            beginFilterChange();
             m_severityFilter = severityFilter;
-
-            invalidateFilter();
+            endFilterChange();
         }
     }
 

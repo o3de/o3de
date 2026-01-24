@@ -29,7 +29,8 @@ namespace AzToolsFramework
 
     void EntityOutlinerSortFilterProxyModel::UpdateFilter()
     {
-        invalidateFilter();
+        beginFilterChange();
+        endFilterChange();
     }
 
     void EntityOutlinerSortFilterProxyModel::setSourceModel(QAbstractItemModel* sourceModel)

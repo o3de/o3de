@@ -141,8 +141,9 @@ namespace ScriptCanvasEditor
 
     void UnitTestBrowserFilterModel::SetSearchFilter(const QString& filter)
     {
+        beginFilterChange();
         m_textFilter = filter.toUtf8().data();
-        invalidateFilter();
+        endFilterChange();
     }
 
     void UnitTestBrowserFilterModel::OnTestStart(const AZ::Uuid& sourceID)
