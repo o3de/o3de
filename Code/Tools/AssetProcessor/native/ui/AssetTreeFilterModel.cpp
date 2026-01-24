@@ -22,11 +22,12 @@ namespace AssetProcessor
 
     void AssetTreeFilterModel::FilterChanged(const QString& newFilter)
     {
+        beginFilterChange();
         // If the search was changed, clear the asset that had visibility forced.
         m_pathToForceVisibleAsset.clear();
         setFilterRegularExpression(newFilter);
         setFilterCaseSensitivity(Qt::CaseInsensitive);
-        invalidateFilter();
+        endFilterChange();
     }
 
     bool AssetTreeFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
@@ -145,6 +146,8 @@ namespace AssetProcessor
         {
             return;
         }
+
+        beginFilterChange();
         m_pathToForceVisibleAsset.clear();
 
         for (AssetTreeItem* item = static_cast<AssetTreeItem*>(sourceIndex.internalPointer());
@@ -154,7 +157,7 @@ namespace AssetProcessor
             m_pathToForceVisibleAsset.push_front(item->GetData());
         }
 
-        invalidateFilter();
+        endFilterChange();
     }
 
 }

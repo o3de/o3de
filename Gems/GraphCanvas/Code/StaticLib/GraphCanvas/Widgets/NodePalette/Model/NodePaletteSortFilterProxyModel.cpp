@@ -282,15 +282,16 @@ namespace GraphCanvas
     {
         if (m_hasSourceSlotFilter)
         {
+            beginFilterChange();
             m_hasSourceSlotFilter = false;
             m_sourceSlotFilter.clear();
-
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
     void NodePaletteSortFilterProxyModel::FilterForSourceSlot(const AZ::EntityId& /*sceneId*/, const AZ::EntityId& /*sourceSlotId*/)
     {
+        beginFilterChange();
         m_hasSourceSlotFilter = true;
         m_sourceSlotAutoCompleteModel->beginResetModel();
         m_sourceSlotAutoCompleteModel->ClearAvailableItems();
@@ -326,7 +327,7 @@ namespace GraphCanvas
         }
 
         m_sourceSlotAutoCompleteModel->endResetModel();
-        invalidateFilter();
+        endFilterChange();
     }
 
     bool NodePaletteSortFilterProxyModel::HasFilter() const
