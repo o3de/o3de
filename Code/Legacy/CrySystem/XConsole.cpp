@@ -2021,8 +2021,7 @@ void CXConsole::DisplayVarValue(ICVar* pVar)
             sValue += " (";
             if (nonAlphaBits != 0)
             {
-                char nonAlphaChars[3] = { 0 };  // 1..63 + '\0'
-                azitoa(nonAlphaBits, nonAlphaChars, AZ_ARRAY_SIZE(nonAlphaChars), 10);
+                AZStd::string nonAlphaChars = AZStd::to_string(nonAlphaBits);
                 sValue += nonAlphaChars;
                 sValue += ", ";
             }

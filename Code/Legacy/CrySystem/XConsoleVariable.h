@@ -106,7 +106,10 @@ public:
     // interface ICVar --------------------------------------------------------------------------------------
 
     int GetIVal() const override { return atoi(m_sValue.c_str()); }
-    int64 GetI64Val() const override { return _atoi64(m_sValue.c_str()); }
+    int64 GetI64Val() const override 
+    { 
+        return std::atoll(m_sValue.c_str());
+    }
     float GetFVal() const override { return (float)atof(m_sValue.c_str()); }
     const char* GetString() const override { return m_sValue.c_str(); }
     void ResetImpl() override
@@ -247,7 +250,7 @@ public:
     // interface ICVar --------------------------------------------------------------------------------------
 
     int GetIVal() const override { return atoi(m_sValue.c_str()); }
-    int64 GetI64Val() const override { return _atoi64(m_sValue.c_str()); }
+    int64 GetI64Val() const override { return std::atoll(m_sValue.c_str()); }
     float GetFVal() const override { return (float)atof(m_sValue.c_str()); }
     const char* GetString() const override
     {

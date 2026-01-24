@@ -257,16 +257,14 @@ void CXmlNode::setAttr(const char* key, const char* value)
 
 void CXmlNode::setAttr(const char* key, int value)
 {
-    char str[128];
-    azitoa(value, str, AZ_ARRAY_SIZE(str), 10);
-    setAttr(key, str);
+    AZStd::string str = AZStd::to_string(value);
+    setAttr(key, str.c_str());
 }
 
 void CXmlNode::setAttr(const char* key, unsigned int value)
 {
-    char str[128];
-    azui64toa(value, str, AZ_ARRAY_SIZE(str), 10);
-    setAttr(key, str);
+    AZStd::string uintStr = AZStd::to_string(value);
+    setAttr(key, uintStr.c_str());
 }
 
 void CXmlNode::setAttr(const char* key, float value)
