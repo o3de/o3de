@@ -223,12 +223,13 @@ namespace
         AZStd::string filename;
         AZStd::string ext;
 
-        bool ret = AZ::StringFunc::Path::Split(pFile, 
-                                               &drive,    /* AZStd::string* pDstDriveOut */
-                                               &dir,      /* AZStd::string* pDstFolderPathOut */
-                                               &filename, /* AZStd::string* pDstNameOut */  
-                                               &ext       /* AZStd::string* pDstExtensionOut */
-                                               );
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(pFile,
+                                        &drive,    /* AZStd::string* pDstDriveOut */
+                                        &dir,      /* AZStd::string* pDstFolderPathOut */
+                                        &filename, /* AZStd::string* pDstNameOut */
+                                        &ext       /* AZStd::string* pDstExtensionOut */
+                                        );
         AZ_Assert(ret, "Failed to split file path: %s", pFile);
 
         if (drive.length() != 0)

@@ -74,12 +74,13 @@ namespace Path
     inline QString GetExt(const QString& filepath)
     {
         AZStd::string ext;
-        bool ret = AZ::StringFunc::Path::Split(filepath.toUtf8().data(), 
-                                                nullptr, /* AZStd::string* pDstDriveOut */
-                                                nullptr, /* AZStd::string* pDstFolderPathOut */
-                                                nullptr, /* AZStd::string* pDstNameOut */  
-                                                &ext     /* AZStd::string* pDstExtensionOut */
-                                               );
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        nullptr, /* AZStd::string* pDstDriveOut */
+                                        nullptr, /* AZStd::string* pDstFolderPathOut */
+                                        nullptr, /* AZStd::string* pDstNameOut */
+                                        &ext     /* AZStd::string* pDstExtensionOut */
+                                        );
         AZ_Assert(ret, "Failed to get extension from path: %s", filepath.toUtf8().data());
 
         if (!ext.empty() && ext[0] == '.')
@@ -95,12 +96,13 @@ namespace Path
         AZStd::string drive;
         AZStd::string dir;
 
-        bool ret = AZ::StringFunc::Path::Split(filepath.toUtf8().data(), 
-                                                &drive,  /* AZStd::string* pDstDriveOut */
-                                                &dir,    /* AZStd::string* pDstFolderPathOut */
-                                                nullptr, /* AZStd::string* pDstNameOut */  
-                                                nullptr  /* AZStd::string* pDstExtensionOut */
-                                               );
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        &drive,  /* AZStd::string* pDstDriveOut */
+                                        &dir,    /* AZStd::string* pDstFolderPathOut */
+                                        nullptr, /* AZStd::string* pDstNameOut */
+                                        nullptr  /* AZStd::string* pDstExtensionOut */
+                                        );
         AZ_Assert(ret, "Failed to get path from full filepath: %s", filepath.toUtf8().data());
 
         QString root = QString::fromUtf8(drive.c_str()) + QString::fromUtf8(dir.c_str());
@@ -113,12 +115,13 @@ namespace Path
         AZStd::string filename;
         AZStd::string ext;
 
-        bool ret = AZ::StringFunc::Path::Split(filepath.toUtf8().data(), 
-                                               nullptr,   /* AZStd::string* pDstDriveOut */
-                                               nullptr,   /* AZStd::string* pDstFolderPathOut */
-                                               &filename, /* AZStd::string* pDstNameOut */  
-                                               &ext       /* AZStd::string* pDstExtensionOut */
-                                              );
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        nullptr,   /* AZStd::string* pDstDriveOut */
+                                        nullptr,   /* AZStd::string* pDstFolderPathOut */
+                                        &filename, /* AZStd::string* pDstNameOut */
+                                        &ext       /* AZStd::string* pDstExtensionOut */
+                                        );
         AZ_Assert(ret, "Failed to get file from full filepath: %s", filepath.toUtf8().data());
 
         AZStd::string path;
@@ -131,12 +134,13 @@ namespace Path
     {
         AZStd::string filename;
 
-        bool ret = AZ::StringFunc::Path::Split(filepath.toUtf8().data(), 
-                                               nullptr,   /* AZStd::string* pDstDriveOut */
-                                               nullptr,   /* AZStd::string* pDstFolderPathOut */
-                                               &filename, /* AZStd::string* pDstNameOut */  
-                                               nullptr    /* AZStd::string* pDstExtensionOut */
-                                               );
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        nullptr,   /* AZStd::string* pDstDriveOut */
+                                        nullptr,   /* AZStd::string* pDstFolderPathOut */
+                                        &filename, /* AZStd::string* pDstNameOut */
+                                        nullptr    /* AZStd::string* pDstExtensionOut */
+                                        );
         AZ_Assert(ret, "Failed to get file name from full filepath: %s", filepath.toUtf8().data());
 
         QString fname = QString::fromUtf8(filename.c_str());
@@ -240,12 +244,13 @@ namespace Path
         AZStd::string dir;
         AZStd::string filename;
 
-        bool ret = AZ::StringFunc::Path::Split(filepath.toUtf8().data(), 
-                                               &drive,  /* AZStd::string* pDstDriveOut */
-                                               &dir, /* AZStd::string* pDstFolderPathOut */
-                                               &filename, /* AZStd::string* pDstNameOut */  
-                                               nullptr /* AZStd::string* pDstExtensionOut */
-                                               );
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        &drive,  /* AZStd::string* pDstDriveOut */
+                                        &dir, /* AZStd::string* pDstFolderPathOut */
+                                        &filename, /* AZStd::string* pDstNameOut */
+                                        nullptr /* AZStd::string* pDstExtensionOut */
+                                        );
         AZ_Assert(ret, "Failed to get file name from full filepath: %s", filepath.toUtf8().data());
         AZStd::string rootPath = drive + dir;
         AZStd::string path;
