@@ -168,8 +168,6 @@ typedef int64 __int64;
 typedef uint64 __uint64;
 #endif
 
-typedef unsigned long int threadID;
-
 #define TRUE 1
 #define FALSE 0
 

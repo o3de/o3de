@@ -327,8 +327,6 @@ void SetFlags(T& dest, U flags, bool b)
     #include AZ_RESTRICTED_FILE(platform_h)
 #endif
 
-threadID CryGetCurrentThreadId();
-
 #ifdef __GNUC__
     #define NO_INLINE __attribute__ ((noinline))
     #define NO_INLINE_WEAK __attribute__ ((noinline)) __attribute__((weak)) // marks a function as no_inline, but also as weak to prevent multiple-defined errors

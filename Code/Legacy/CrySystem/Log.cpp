@@ -161,7 +161,7 @@ CLog::CLog(ISystem* pSystem)
     m_topIndenter = NULL;
 #endif
 
-    m_nMainThreadId = CryGetCurrentThreadId();
+    m_nMainThreadId = AZStd::this_thread::get_id();
 
     m_iLastHistoryItem = 0;
     memset(m_history, 0, sizeof(m_history));
@@ -1184,7 +1184,7 @@ const char* CLog::GetAssetScopeString()
 
 bool CLog::LogToMainThread(AZStd::string_view szString, ELogType logType, bool appendToPrevLine, SLogMsg::Destination destination)
 {
-    if (CryGetCurrentThreadId() != m_nMainThreadId)
+    if (AZStd::this_thread::get_id().m_id != m_nMainThreadId)
     {
         // When logging from other thread then main, push all log strings to queue.
         constexpr size_t fixedBufferMaxSize = AZStd::variant_alternative_t<0, SLogMsg::MessageString>{}.max_size();
@@ -1693,7 +1693,7 @@ void CLog::RemoveCallback(ILogCallback* pCallback)
 //////////////////////////////////////////////////////////////////////////
 void CLog::Update()
 {
-    if (CryGetCurrentThreadId() == m_nMainThreadId)
+    if (AZStd::this_thread::get_id().m_id == m_nMainThreadId)
     {
         if (!m_threadSafeMsgQueue.empty())
         {

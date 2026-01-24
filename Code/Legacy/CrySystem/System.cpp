@@ -17,6 +17,7 @@
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Debug/Budget.h>
+#include <AzCore/std/parallel/thread.h>
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
@@ -412,12 +413,12 @@ void CSystem::ShutDown()
 /////////////////////////////////////////////////////////////////////////////////
 void CSystem::Quit()
 {
-    CryLogAlways("CSystem::Quit invoked from thread %" PRI_THREADID " (main is %" PRI_THREADID ")", GetCurrentThreadId(), gEnv->mMainThreadId);
+    CryLogAlways("CSystem::Quit invoked from thread %" PRI_THREADID " (main is %" PRI_THREADID ")", AZStd::this_thread::get_id().m_id, gEnv->mMainThreadId.m_id);
 
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
 
     // If this was set from anywhere but the main thread, bail and let the main thread handle shutdown
-    if (GetCurrentThreadId() != gEnv->mMainThreadId)
+    if (AZStd::this_thread::get_id() != gEnv->mMainThreadId)
     {
         return;
     }
@@ -508,7 +509,7 @@ void CSystem::SleepIfNeeded()
     m_lastTickTime = CTimeValue(lastTimeSec);
 }
 
-extern DWORD g_idDebugThreads[];
+extern AZStd::thread_id g_idDebugThreads[];
 extern int g_nDebugThreads;
 int prev_sys_float_exceptions = -1;
 
