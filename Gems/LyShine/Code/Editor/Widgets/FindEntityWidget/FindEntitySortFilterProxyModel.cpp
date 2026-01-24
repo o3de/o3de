@@ -16,7 +16,8 @@ FindEntitySortFilterProxyModel::FindEntitySortFilterProxyModel(QObject* pParent)
 
 void FindEntitySortFilterProxyModel::UpdateFilter()
 {
-    invalidateFilter();
+    beginFilterChange();
+    endFilterChange();
 }
 
 bool FindEntitySortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
