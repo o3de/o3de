@@ -139,9 +139,11 @@ TEST_F(UtilitiesUnitTests, CopyFileWithTimeout_FeedFilesInDifferentStates_Succee
     QString outputFileName(dir.filePath("test1.txt"));
     
     QFile inputFile(fileName);
-    inputFile.open(QFile::WriteOnly);
+    bool res = inputFile.open(QFile::WriteOnly);
+    AZ_Assert(res, "Failed to open file %s", qPrintable(fileName));
     QFile outputFile(outputFileName);
-    outputFile.open(QFile::WriteOnly);
+    res = outputFile.open(QFile::WriteOnly);
+    AZ_Assert(res, "Failed to open file %s", qPrintable(outputFileName));
 
     const int waitTimeInSeconds = 1; // Timeout for copying files
 #if defined(AZ_PLATFORM_WINDOWS)
@@ -181,7 +183,8 @@ TEST_F(UtilitiesUnitTests, CopyFileWithTimeout_FeedFilesInDifferentStates_Succee
         [&]()
         {
             //opening file
-            outputFile.open(QFile::WriteOnly);
+            const bool res = outputFile.open(QFile::WriteOnly);
+            AZ_Assert(res, "Failed to open file");
             setupDone = true;
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(500));
             //closing file
@@ -221,7 +224,8 @@ TEST_F(UtilitiesUnitTests, CheckCanLock_FeedFileToLock_GetsLockStatus)
     // on windows, opening a file for reading locks it
     // but on other platforms, this is not the case.
     QFile lockTestFile(lockTestFileName);
-    lockTestFile.open(QFile::ReadOnly);
+    const bool res = lockTestFile.open(QFile::ReadOnly);
+    AZ_Assert(res, "Failed to open file %s", qPrintable(lockTestFileName));
 #elif defined(AZ_PLATFORM_LINUX)
     int handle = open(lockTestFileName.toUtf8().constData(), O_RDONLY | O_EXCL | O_NONBLOCK);
 #else
