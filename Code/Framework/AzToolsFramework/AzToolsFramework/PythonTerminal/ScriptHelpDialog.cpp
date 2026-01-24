@@ -127,8 +127,9 @@ namespace AzToolsFramework
         const QString lowerText = text.toLower();
         if (m_commandFilter != lowerText)
         {
+            beginFilterChange();
             m_commandFilter = lowerText;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -137,8 +138,9 @@ namespace AzToolsFramework
         const QString lowerText = text.toLower();
         if (m_moduleFilter != lowerText)
         {
+            beginFilterChange();
             m_moduleFilter = lowerText;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -147,8 +149,9 @@ namespace AzToolsFramework
         const QString lowerText = text.toLower();
         if (m_descriptionFilter != lowerText)
         {
+            beginFilterChange();
             m_descriptionFilter = lowerText;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -157,8 +160,9 @@ namespace AzToolsFramework
         const QString lowerText = text.toLower();
         if (m_exampleFilter != lowerText)
         {
+            beginFilterChange();
             m_exampleFilter = lowerText;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 

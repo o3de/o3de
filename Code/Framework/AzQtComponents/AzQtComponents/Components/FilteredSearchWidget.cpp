@@ -644,8 +644,9 @@ namespace AzQtComponents
 
     void SearchTypeSelectorFilterModel::setNoResultsMessageRow(int row)
     {
+        beginFilterChange();
         m_noResultsRow = row;
-        invalidateFilter();
+        endFilterChange();
     }
 
 
