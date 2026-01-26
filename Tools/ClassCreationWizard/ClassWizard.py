@@ -951,6 +951,15 @@ class AddGemDependencyCommand(WizardCommand):
         return "add_gem_dependency"
 
     def execute(self, ctx: CommandContext) -> bool:
+        # Guard: don't add a gem as a dependency of itself
+        dep_name = self.dependency
+        if dep_name.startswith("Gem::"):
+            dep_name = dep_name[len("Gem::"):]
+        dep_gem = dep_name.split(".")[0]  # Strip .API, .Private, etc.
+        if dep_gem == ctx.namespace:
+            ctx.log(f"Skipping self-dependency: {self.dependency} (target gem is {ctx.namespace})")
+            return True
+
         if not ctx.build_target:
             ctx.log("Warning: No build target selected")
             return True
