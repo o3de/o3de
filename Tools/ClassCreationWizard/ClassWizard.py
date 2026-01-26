@@ -1120,28 +1120,113 @@ class WizardTemplateScanner:
 
     def scan(self, engine_path: Path, project_path: Optional[Path] = None) -> List[WizardTemplate]:
         """
-        Scan engine and project Templates folders for class_wizard enabled templates.
+        Scan engine, project, and gem Templates folders for class_wizard enabled templates.
+
+        Scan order:
+            1. Engine Templates/
+            2. Project Templates/
+            3. Gem Templates/ (for each gem used by the project, resolved via o3de manifest)
 
         Returns:
             List of WizardTemplate objects
         """
         templates = []
+        scanned_dirs = set()  # Avoid scanning the same directory twice
 
         # Scan engine templates
         engine_templates = engine_path / "Templates"
         if engine_templates.is_dir():
+            scanned_dirs.add(engine_templates.resolve())
             templates.extend(self._scan_directory(engine_templates))
 
         # Scan project templates if provided
         if project_path:
             project_templates = project_path / "Templates"
-            if project_templates.is_dir():
+            if project_templates.is_dir() and project_templates.resolve() not in scanned_dirs:
+                scanned_dirs.add(project_templates.resolve())
                 templates.extend(self._scan_directory(project_templates))
+
+        # Scan gem templates
+        if project_path:
+            gem_dirs = self._resolve_project_gem_paths(project_path)
+            for gem_dir in gem_dirs:
+                gem_templates = gem_dir / "Templates"
+                if gem_templates.is_dir() and gem_templates.resolve() not in scanned_dirs:
+                    scanned_dirs.add(gem_templates.resolve())
+                    templates.extend(self._scan_directory(gem_templates))
 
         # Sort by display name
         templates.sort(key=lambda t: t.display_name.lower())
 
         return templates
+
+    def _resolve_project_gem_paths(self, project_path: Path) -> List[Path]:
+        """Resolve gem directory paths for a project using the o3de manifest.
+
+        Reads the project's gem_names from project.json, then resolves each
+        gem name to an actual filesystem path via the o3de manifest's
+        external_subdirectories list.
+        """
+        gem_paths = []
+
+        # Read project gem names
+        project_json = project_path / "project.json"
+        if not project_json.is_file():
+            return gem_paths
+
+        try:
+            project_data = json.loads(project_json.read_text(encoding="utf-8"))
+        except Exception:
+            return gem_paths
+
+        gem_names_raw = project_data.get("gem_names", [])
+        # Strip version specifiers (e.g. "GS_Cinematics==1.0.0" -> "GS_Cinematics")
+        project_gem_names = set()
+        for name in gem_names_raw:
+            clean = name.split("==")[0].split(">=")[0].split("<=")[0].split("~=")[0].strip()
+            project_gem_names.add(clean.lower())
+
+        # Include project-local external_subdirectories (e.g. "Gem")
+        for ext_sub in project_data.get("external_subdirectories", []):
+            ext_path = (project_path / ext_sub).resolve()
+            if ext_path.is_dir():
+                gem_paths.append(ext_path)
+
+        # Read o3de manifest
+        manifest_path = Path.home() / ".o3de" / "o3de_manifest.json"
+        if not manifest_path.is_file():
+            return gem_paths
+
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except Exception:
+            return gem_paths
+
+        # Check each external subdirectory in the manifest
+        already_resolved = {p.resolve() for p in gem_paths}
+        for ext_dir_str in manifest.get("external_subdirectories", []):
+            ext_dir = Path(ext_dir_str)
+            if not ext_dir.is_dir():
+                continue
+
+            # Read gem.json to get the gem's registered name
+            gem_json = ext_dir / "gem.json"
+            if not gem_json.is_file():
+                continue
+
+            try:
+                gem_data = json.loads(gem_json.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+
+            gem_name = gem_data.get("gem_name", "")
+            if gem_name.lower() in project_gem_names:
+                resolved = ext_dir.resolve()
+                if resolved not in already_resolved:
+                    already_resolved.add(resolved)
+                    gem_paths.append(ext_dir)
+
+        return gem_paths
 
     def _scan_directory(self, templates_dir: Path) -> List[WizardTemplate]:
         """Scan a templates directory for class_wizard enabled templates"""
@@ -1544,7 +1629,8 @@ class ComponentCreator:
                 namespace=config['namespace'],
                 component_name=config['component_name'],
                 component_template=template.template_name,
-                keep_license=config.get('keep_license', False)
+                keep_license=config.get('keep_license', False),
+                template_path=template.template_path
             ):
                 self.log("Failed to stage component")
                 return False
@@ -1635,11 +1721,16 @@ class ComponentCreator:
 
     def _create_staged_component(self, stage_dir: Path, namespace: str,
                                 component_name: str, component_template: str,
-                                keep_license: bool) -> bool:
+                                keep_license: bool,
+                                template_path: Optional[Path] = None) -> bool:
         """Create the staged component using o3de create-from-template"""
         try:
-            template_path = self.engine_path / "Templates" / component_template
-            use_template_path = (template_path / "template.json").is_file()
+            # Use the provided template_path (from WizardTemplate), or fall back to engine
+            if template_path and (template_path / "template.json").is_file():
+                use_template_path = True
+            else:
+                template_path = self.engine_path / "Templates" / component_template
+                use_template_path = (template_path / "template.json").is_file()
             
             script_name = "o3de.bat" if sys.platform == "win32" else "o3de.sh"
             o3de_script = self.engine_path / "scripts" / script_name
