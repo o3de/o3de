@@ -1,8 +1,0 @@
-There needs to be a file type definition ".mydataasset"
-
-There needs to be an Asset Processor setreg in Registry for the new asset.
-- This needs the same GUID from the Asset class.
-
-There needs to be a data asset system component to register the generic handlers.
-
-Asset system might need a build target dependency. can't recall.
