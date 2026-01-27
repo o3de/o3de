@@ -137,7 +137,7 @@ namespace AzFramework
                 return;
             }
 
-            if (WL_IS_INTERFACE(wl_compositor_interface))
+            if (strcmp(interface, wl_compositor_interface.name) == 0)
             {
                 self->m_compositor = static_cast<wl_compositor*>(wl_registry_bind(registry, id, &wl_compositor_interface, version));
             }
@@ -152,7 +152,7 @@ namespace AzFramework
             }
         }
 
-        static void GlobalRegistryRemove(void* data, wl_registry* registry, uint32_t id)
+        static void GlobalRegistryRemove(void*, wl_registry* registry, uint32_t id)
         {
             WaylandRegistryEventsBus::Broadcast(&WaylandRegistryEventsBus::Events::OnUnregister, registry, id);
         }

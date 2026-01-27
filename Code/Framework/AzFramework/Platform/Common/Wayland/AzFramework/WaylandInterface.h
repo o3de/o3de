@@ -15,8 +15,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Crc.h>
 
-#define WL_IS_INTERFACE(wantedInter) strcmp(interface, wantedInter.name) == 0
-
 #define wl_array_for_each_cpp(pos, array, type) \
 for (pos = static_cast<type*>((array)->data); \
 reinterpret_cast<char*>(pos) < (static_cast<char*>((array)->data) + (array)->size); \

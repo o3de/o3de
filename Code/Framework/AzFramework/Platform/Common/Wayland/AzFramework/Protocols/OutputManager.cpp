@@ -96,6 +96,8 @@ namespace AzFramework
                                        const char* make, const char* model,
                                        int32_t transform)
     {
+        //data is guaranteed to be a valid OutputInfo pointer, OutputManager controls the lifetime of our wayland
+        //output proxy objects and ensures the data pointer is only deleted when the proxy is destroyed.
         auto self = static_cast<OutputInfo*>(data);
         self->m_x = x;
         self->m_y = y;
@@ -120,10 +122,9 @@ namespace AzFramework
         }
     }
 
-    void OutputManager::OutputDone(void* data, wl_output*)
+    void OutputManager::OutputDone(void*, wl_output*)
     {
-        [[maybe_unused]] auto self = static_cast<OutputInfo*>(data);
-        //Unused since by the time we use OutputInfo the info is already done.
+        //Required no-op, libwayland doesn't null check listener callbacks.
     }
 
     void OutputManager::OutputScale(void* data, wl_output*, int32_t factor)
