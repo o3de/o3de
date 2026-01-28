@@ -261,6 +261,7 @@ namespace AZ::RPI
                     auto defaultSampler =
                         RHI::SamplerState::Create(RHI::FilterMode::Linear, RHI::FilterMode::Linear, RHI::AddressMode::Wrap);
                     defaultSampler.m_anisotropyMax = 16;
+                    defaultSampler.m_anisotropyEnable = true;
                     instanceData.m_textureSamplers = AZStd::make_unique<TextureSamplerRegistry>();
                     instanceData.m_textureSamplers->Init(desc.m_count, defaultSampler);
                 }
@@ -707,6 +708,7 @@ namespace AZ::RPI
         {
             auto defaultSampler = RHI::SamplerState::Create(RHI::FilterMode::Linear, RHI::FilterMode::Linear, RHI::AddressMode::Wrap);
             defaultSampler.m_anisotropyMax = 16;
+            defaultSampler.m_anisotropyEnable = true;
             m_sceneTextureSamplers.Init(AZ_TRAITS_SCENE_MATERIALS_MAX_SAMPLERS, defaultSampler);
         }
 
