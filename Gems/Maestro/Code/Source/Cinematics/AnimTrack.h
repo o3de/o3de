@@ -352,12 +352,12 @@ namespace Maestro
         virtual int GetActiveKey(float time, KeyType* key);
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
-        ColorB GetCustomColor() const override
+        AZ::Color GetCustomColor() const override
         {
             return m_customColor;
         }
 
-        void SetCustomColor(ColorB color) override
+        void SetCustomColor(const AZ::Color& color) override
         {
             m_customColor = color;
             m_bCustomColorSet = true;
@@ -432,7 +432,7 @@ namespace Maestro
         int m_flags;
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
-        ColorB m_customColor;
+        AZ::Color m_customColor;
         bool m_bCustomColorSet;
 #endif
 
@@ -639,7 +639,7 @@ namespace Maestro
             {
                 unsigned int abgr;
                 xmlNode->getAttr("CustomColor", abgr);
-                m_customColor = ColorB(abgr);
+                m_customColor.FromU32(abgr);
             }
 #endif
 
@@ -669,7 +669,7 @@ namespace Maestro
             xmlNode->setAttr("HasCustomColor", m_bCustomColorSet);
             if (m_bCustomColorSet)
             {
-                xmlNode->setAttr("CustomColor", m_customColor.pack_abgr8888());
+                xmlNode->setAttr("CustomColor", m_customColor.ToU32());
             }
 #endif
 

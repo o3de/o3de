@@ -16,9 +16,6 @@
 #include <Atom/RHI/BufferScopeAttachment.h>
 namespace ImGui
 {
-    #ifndef SAFE_DELETE
-    #define SAFE_DELETE(p){if(p){delete p;p=nullptr;}}
-    #endif
     #ifndef ImGuiMouseButton_Left
         #define ImGuiMouseButton_Left 0
     #endif

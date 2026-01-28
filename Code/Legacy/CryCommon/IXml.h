@@ -10,10 +10,7 @@
 #include <platform.h>
 #include <Cry_Math.h>
 #include <AzCore/IO/FileIO.h>
-
-template <class T>
-struct Color_tpl;
-typedef Color_tpl<uint8> ColorB;
+#include <AzCore/Math/Color.h>
 
 template <typename F>
 struct Vec2_tpl;
@@ -350,7 +347,7 @@ public:
     virtual bool getAttr(const char* key, AZ::Quaternion& value) const = 0;
     virtual bool getAttr(const char* key, bool& value) const = 0;
     virtual bool getAttr(const char* key, XmlString& value) const = 0;
-    virtual bool getAttr(const char* key, ColorB& value) const = 0;
+    virtual bool getAttr(const char* key, AZ::Color& value) const = 0;
 
 #if defined(LINUX64) || defined(APPLE)
     // Compatibility functions, on Linux and Mac long int is the default int64_t

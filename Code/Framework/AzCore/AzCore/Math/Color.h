@@ -11,6 +11,8 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/std/typetraits/is_integral.h>
+#include <AzCore/std/typetraits/is_floating_point.h>
 
 namespace AZ
 {
@@ -36,9 +38,15 @@ namespace AZ
         //! Constructs vector with all components set to the same specified value.
         explicit Color(float rgba);
 
-        Color(float r, float g, float b, float a);
+        //! Constructs a color from the given floating point RGBA values in the range [0..1].
+        //! This must be a template function so that constructing a Color with mixed floating point and integer arguments is not possible.
+        template<typename T> requires AZStd::is_floating_point_v<T>
+        Color(T r, T g, T b, T a = T(1));
 
-        Color(u8 r, u8 g, u8 b, u8 a);
+        //! Constructs a color from the given integer RGBA values in the range [0..255].
+        //! This must be a template function so that calling the constructor with non-u8 integer types such as int/uint is not ambiguous.
+        template<typename T> requires AZStd::is_integral_v<T>
+        Color(T r, T g, T b, T a = T(255));
 
         //! Creates a vector with all components set to zero, more efficient than calling Color(0.0f).
         static Color CreateZero();
@@ -142,6 +150,12 @@ namespace AZ
 
         //! Convert SRGB linear space to gamma space
         static float ConvertSrgbLinearToGamma(float x);
+
+        //! Clamps the color to the range [0..1]
+        void Saturate();
+
+        //! Returns a color which was clamped in the range [0..1]
+        Color GetSaturated() const;
 
         //! Convert color from linear to gamma corrected space.
         Color LinearToGamma() const;

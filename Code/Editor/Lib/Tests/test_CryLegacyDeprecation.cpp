@@ -93,4 +93,32 @@ namespace EditorUtilsTest
 
         AZ_POP_DISABLE_WARNING;
     }
+
+    TEST_F(LegacryDeprecationHelper, TestLegacyColor_ToU32)
+    {
+        AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
+
+        ColorB legacyColor(50, 100, 150, 200);
+        AZ::Color newColor(50, 100, 150, 200);
+
+        ASSERT_EQ(legacyColor.pack_abgr8888(), newColor.ToU32());
+
+        AZ_POP_DISABLE_WARNING;
+    }
+
+    TEST_F(LegacryDeprecationHelper, TestLegacyColor_FromU32)
+   {
+       AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
+
+       ColorF legacyColor(3365299250u);
+       AZ::Color newColor;
+       newColor.FromU32(3365299250u);
+
+       for (int r = 0; r < 4; ++r)
+       {
+           ASSERT_NEAR(legacyColor[r], newColor.GetElement(r), 1e-6f);
+       }
+
+       AZ_POP_DISABLE_WARNING;
+   }
 } // namespace EditorUtilsTest

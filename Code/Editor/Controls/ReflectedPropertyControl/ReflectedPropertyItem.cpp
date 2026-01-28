@@ -32,7 +32,7 @@ const float ReflectedPropertyItem::s_DefaultNumStepIncrements = 500.0f;
 //so we work around by adding the base property to the list of children and showing the value of the base property
 //in the container value space instead of "X Elements"
 
-static ColorF StringToColor(const QString &value)
+static AZ::Color StringToColor(const QString &value)
 {
     // note that converting back and forth between these values is happening in 2 cases
     // one is when its being read from the UI and the other is when it is being read from XML
@@ -44,7 +44,7 @@ static ColorF StringToColor(const QString &value)
 
     AZ::Locale::ScopedSerializationLocale localeScope;
 
-    ColorF color;
+    AZ::Color color;
     float r, g, b, a;
     int res = azsscanf(value.toUtf8().data(), "%f,%f,%f,%f", &r, &g, &b, &a);
     if (res == 4)
@@ -53,13 +53,13 @@ static ColorF StringToColor(const QString &value)
     }
     else if (res == 3)
     {
-        color.Set(r, g, b);
+        color.Set(r, g, b, 1.f);
     }
     else
     {
         unsigned abgr;
         azsscanf(value.toUtf8().data(), "%u", &abgr);
-        color = ColorF(abgr);
+        color.FromU32(abgr);
     }
     return color;
 }
@@ -604,14 +604,14 @@ void ReflectedPropertyItem::SetValue(const QString& sValue, bool bRecordUndo, bo
             {
             case ePropertyColor:
             {
-                ColorF color = StringToColor(value);
+                AZ::Color color = StringToColor(value);
                 if (m_pVariable->GetType() == IVariable::VECTOR)
                 {
-                    m_pVariable->Set(color.toVector3());
+                    m_pVariable->Set(color.GetAsVector3());
                 }
                 else
                 {
-                    m_pVariable->Set(static_cast<int>(color.pack_abgr8888()));
+                    m_pVariable->Set(static_cast<int>(color.ToU32()));
                 }
                 break;
             }

@@ -57,7 +57,7 @@ private:
     void AnimateCommentTextTrack(CTrackViewTrack* pTrack, const SAnimContext& ac);
     CTrackViewKeyHandle GetActiveKeyHandle(CTrackViewTrack* pTrack, float fTime);
     Vec2 GetScreenPosFromNormalizedPos(const Vec2& unitPos);
-    void DrawText(const char* szFontName, float fSize, const Vec2& unitPos, const ColorF col, const char* szText, int align);
+    void DrawText(const char* szFontName, float fSize, const Vec2& unitPos, const AZ::Color col, const char* szText, int align);
 
     CTrackViewAnimNode* m_pCommentNode;
     CCommentContext m_commentContext;

@@ -17,11 +17,15 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Component/EntityId.h>
 
+#include "MathConversion.h"
+
 enum EAnimKeyFlags
 {
     AKEY_SELECTED = 0x01,       //! This key is selected in track view.
     AKEY_SORT_MARKER = 0x02     //! Internal use to locate a key after a sort.
 };
+
+const AZ::Color TrackviewDefaultColor(0.187820792f, 0.187820792f, 1.0f);
 
 //! Interface to animation key.
 //! Not real interface though...
@@ -235,7 +239,7 @@ struct ISoundKey
     ISoundKey()
         : fDuration(0.0f)
     {
-        customColor.Set(Col_TrackviewDefault.r, Col_TrackviewDefault.g, Col_TrackviewDefault.b);
+        customColor = AZColorToLYVec3(TrackviewDefaultColor);
     }
 
     AZStd::string sStartTrigger;

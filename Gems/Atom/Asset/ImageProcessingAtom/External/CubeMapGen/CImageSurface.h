@@ -20,15 +20,6 @@
 #define WCHAR wchar_t
 #endif // WCHAR
 
-#ifndef SAFE_DELETE 
-#define SAFE_DELETE(p)       { if(p) { delete (p);   (p)=NULL; } }
-#endif
-
-#ifndef SAFE_DELETE_ARRAY 
-#define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p); (p)=NULL; } }
-#endif
-
-
 //Data types processed by cube map processor
 // note that UNORM data types use the full range 
 // of the unsigned integer to represent the range [0, 1] inclusive
