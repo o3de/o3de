@@ -15,9 +15,14 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
-from typing import Optional, List, Dict, Tuple, Any, Callable, Type
-from abc import ABC, abstractmethod
+from typing import Optional, List, Dict, Tuple, Any, Callable
 from dataclasses import dataclass, field
+
+# Command plugin infrastructure — base classes, registry, and plugin loader
+from command_plugin import (
+    CommandContext, WizardCommand, CommandRegistry, CommandPluginLoader,
+    CMakeTarget, CMakeAnalyzer
+)
 
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import (
@@ -103,78 +108,10 @@ class WizardTemplate:
 
 
 # ============================================================================
-# Command System Infrastructure
+# Command System Infrastructure (imported from command_plugin.py)
 # ============================================================================
-
-class CommandContext:
-    """Execution context passed to all commands"""
-
-    def __init__(self,
-                 dest_root: Path,
-                 namespace: str,
-                 component_name: str,
-                 build_target: Optional['CMakeTarget'],
-                 variables: Dict[str, Any],
-                 logger: Callable[[str], None],
-                 engine_path: Path):
-        self.dest_root = dest_root
-        self.namespace = namespace
-        self.component_name = component_name
-        self.build_target = build_target
-        self.variables = variables
-        self.logger = logger
-        self.engine_path = engine_path
-
-    def log(self, message: str):
-        """Log a message using the provided logger"""
-        self.logger(message)
-
-
-class WizardCommand(ABC):
-    """Abstract base class for all wizard commands"""
-
-    @abstractmethod
-    def execute(self, ctx: CommandContext) -> bool:
-        """Execute the command. Returns True on success."""
-        pass
-
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        """Return the command name for logging"""
-        pass
-
-
-class CommandRegistry:
-    """Registry of available wizard commands"""
-
-    _commands: Dict[str, Type[WizardCommand]] = {}
-
-    @classmethod
-    def register(cls, name: str):
-        """Decorator to register a command class"""
-        def decorator(command_class: Type[WizardCommand]):
-            cls._commands[name] = command_class
-            return command_class
-        return decorator
-
-    @classmethod
-    def get(cls, name: str) -> Optional[Type[WizardCommand]]:
-        """Get a command class by name"""
-        return cls._commands.get(name)
-
-    @classmethod
-    def create(cls, name: str, args: Dict[str, str]) -> Optional[WizardCommand]:
-        """Create a command instance by name with given arguments"""
-        command_class = cls._commands.get(name)
-        if command_class is None:
-            return None
-        return command_class(**args)
-
-    @classmethod
-    def list_commands(cls) -> List[str]:
-        """List all registered command names"""
-        return list(cls._commands.keys())
+# CommandContext, WizardCommand, CommandRegistry, CommandPluginLoader,
+# CMakeTarget, CMakeAnalyzer are imported at the top of this file.
 
 
 class VariableResolver:
@@ -275,897 +212,13 @@ class VariableResolver:
 
 
 # ============================================================================
-# Wizard Command Implementations
+# Wizard Command Implementations (loaded dynamically from commands/ directory)
 # ============================================================================
+# Commands are now individual .py files in the commands/ directory.
+# They self-register via @CommandRegistry.register() when loaded by CommandPluginLoader.
+# See command_plugin.py for the plugin infrastructure.
 
-@CommandRegistry.register("register_file_list")
-class RegisterFileListCommand(WizardCommand):
-    """Add component .h/.cpp files to CMake FILES_CMAKE"""
 
-    def __init__(self, component_name: str):
-        self.component_name = component_name
-
-    @property
-    def name(self) -> str:
-        return "register_file_list"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        ctx.log(f"Registering files for '{self.component_name}'...")
-
-        if not ctx.build_target:
-            ctx.log("Warning: No build target selected, skipping file registration")
-            return True
-
-        rel_hdr = f"Source/{self.component_name}.h"
-        rel_cpp = f"Source/{self.component_name}.cpp"
-
-        cmake_path = ctx.build_target.file
-
-        # If target has FILES_CMAKE includes, update those
-        if ctx.build_target.files_cmake_list:
-            for files_cmake in ctx.build_target.files_cmake_list:
-                include_path = (cmake_path.parent / files_cmake).resolve()
-
-                if include_path.exists():
-                    self._update_files_cmake(include_path, rel_hdr, rel_cpp, ctx)
-                    ctx.log(f"Updated: {files_cmake}")
-                    return True
-
-        # Otherwise append target_sources directly to CMakeLists.txt
-        cmake_text = cmake_path.read_text(encoding="utf-8")
-
-        append = (
-            f"\n# Added by Class Wizard\n"
-            f"target_sources({ctx.build_target.name} PRIVATE\n"
-            f"    {rel_hdr}\n"
-            f"    {rel_cpp}\n"
-            f")\n"
-        )
-
-        if append not in cmake_text:
-            cmake_text = cmake_text.rstrip() + append
-            cmake_path.write_text(cmake_text, encoding="utf-8", newline="\n")
-            ctx.log(f"Added target_sources block to {cmake_path.name}")
-
-        return True
-
-    def _update_files_cmake(self, files_cmake_path: Path, rel_hdr: str, rel_cpp: str, ctx: CommandContext):
-        """Update a FILES_CMAKE include file"""
-        if files_cmake_path.exists():
-            text = files_cmake_path.read_text(encoding="utf-8")
-        else:
-            text = "set(FILES\n)\n"
-
-        # Find set(FILES ...) block
-        match = re.search(r'set\s*\(\s*FILES\b(.*?)(\))', text, flags=re.S | re.M)
-        if match:
-            end_pos = match.end(1)
-
-            # Check if files already exist
-            if rel_hdr not in text:
-                text = text[:end_pos] + f"    {rel_hdr}\n" + text[end_pos:]
-
-            # Re-find the match after first insertion
-            match = re.search(r'set\s*\(\s*FILES\b(.*?)(\))', text, flags=re.S | re.M)
-            if match:
-                end_pos = match.end(1)
-                if rel_cpp not in text:
-                    text = text[:end_pos] + f"    {rel_cpp}\n" + text[end_pos:]
-        else:
-            # Create new set(FILES) block
-            text = text.rstrip() + f"\nset(FILES\n    {rel_hdr}\n    {rel_cpp}\n)\n"
-
-        files_cmake_path.write_text(text, encoding="utf-8", newline="\n")
-
-
-@CommandRegistry.register("register_module_descriptor")
-class RegisterModuleDescriptorCommand(WizardCommand):
-    """Register component in gem module descriptor"""
-
-    def __init__(self, component_name: str, module_kind: str = "runtime"):
-        self.component_name = component_name
-        self.module_kind = module_kind
-
-    @property
-    def name(self) -> str:
-        return "register_module_descriptor"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        ctx.log(f"Registering '{self.component_name}' in {self.module_kind} module descriptor...")
-
-        # Find module file
-        suffix = "EditorModule" if self.module_kind == "editor" else "Module"
-        candidates = [
-            ctx.dest_root / "Code" / "Source" / "Tools" / f"{ctx.namespace}{suffix}.cpp",
-            ctx.dest_root / "Code" / "Source" / f"{ctx.namespace}{suffix}.cpp",
-            ctx.dest_root / "Source" / f"{ctx.namespace}{suffix}.cpp",
-            ctx.dest_root / "Code" / "Source" / f"{ctx.namespace}{suffix}Interface.cpp",
-            ctx.dest_root / "Source" / f"{ctx.namespace}{suffix}Interface.cpp",
-            ctx.dest_root / "Source" / "Tools" / f"{ctx.namespace}{suffix}.cpp",
-        ]
-
-        module_path = None
-        for candidate in candidates:
-            if candidate.is_file():
-                module_path = candidate
-                break
-
-        if not module_path:
-            # Search for any Module.cpp
-            for pattern in ["Code/Source/*Module.cpp", "Source/*Module.cpp"]:
-                matches = list(ctx.dest_root.glob(pattern))
-                if matches:
-                    module_path = matches[0]
-                    break
-
-        if not module_path:
-            ctx.log(f"Warning: Could not find {self.module_kind} module file")
-            return True
-
-        text = module_path.read_text(encoding="utf-8")
-        include_line = f'#include "{self.component_name}.h"'
-
-        # Add include if not present
-        if include_line not in text:
-            lines = text.splitlines()
-            last_include = 0
-            for i, line in enumerate(lines):
-                if line.strip().startswith("#include"):
-                    last_include = i
-            lines.insert(last_include + 1, include_line)
-            text = "\n".join(lines) + "\n"
-
-        # Check if descriptor already exists
-        descriptor_line = f"{self.component_name}::CreateDescriptor()"
-
-        if descriptor_line in text:
-            ctx.log(f"Descriptor already present for {self.component_name}")
-            module_path.write_text(text, encoding="utf-8", newline="\n")
-            return True
-
-        # Find m_descriptors.insert block
-        pattern = r'(m_descriptors\.insert\s*\(\s*m_descriptors\.end\s*\(\s*\)\s*,\s*\{)([^}]*)(\}\s*\)\s*;)'
-        match = re.search(pattern, text, flags=re.S)
-
-        if match:
-            prefix = match.group(1)
-            inner = match.group(2)
-            suffix_str = match.group(3)
-
-            # Compute block indent
-            start = match.start()
-            line_start = text.rfind('\n', 0, start)
-            if line_start == -1:
-                block_indent = ""
-            else:
-                block_indent = text[line_start + 1:start]
-
-            # Detect indent from existing entries
-            entry_indent_match = re.search(r'\n(\s*).*::CreateDescriptor\(\)', inner)
-            if entry_indent_match:
-                entry_indent = entry_indent_match.group(1)
-            else:
-                entry_indent = block_indent + "    "
-
-            # Clean and rebuild
-            lines = inner.split('\n')
-            cleaned = [line for line in lines if line.strip()]
-
-            if cleaned and not cleaned[-1].rstrip().endswith(','):
-                cleaned[-1] = cleaned[-1].rstrip() + ','
-
-            cleaned.append(f"{entry_indent}{descriptor_line},")
-
-            new_inner = '\n' + '\n'.join(cleaned) + '\n' + block_indent
-            new_block = prefix + new_inner + suffix_str
-            text = text[:match.start()] + new_block + text[match.end():]
-
-            ctx.log(f"Added descriptor for {self.component_name}")
-        else:
-            ctx.log("Warning: Could not find m_descriptors.insert block")
-
-        module_path.write_text(text, encoding="utf-8", newline="\n")
-        ctx.log(f"Updated module: {module_path.name}")
-        return True
-
-
-@CommandRegistry.register("register_system_component")
-class RegisterSystemComponentCommand(WizardCommand):
-    """Register system component in module's required components list"""
-
-    def __init__(self, component_name: str, module_kind: str = "runtime"):
-        self.component_name = component_name
-        self.module_kind = module_kind
-
-    @property
-    def name(self) -> str:
-        return "register_system_component"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        ctx.log(f"Registering system component '{self.component_name}' in {self.module_kind} module...")
-
-        # Find module file
-        suffix = "EditorModule" if self.module_kind == "editor" else "Module"
-        candidates = [
-            ctx.dest_root / "Code" / "Source" / "Tools" / f"{ctx.namespace}{suffix}.cpp",
-            ctx.dest_root / "Code" / "Source" / f"{ctx.namespace}{suffix}.cpp",
-            ctx.dest_root / "Source" / f"{ctx.namespace}{suffix}.cpp",
-            ctx.dest_root / "Code" / "Source" / f"{ctx.namespace}{suffix}Interface.cpp",
-            ctx.dest_root / "Source" / f"{ctx.namespace}{suffix}Interface.cpp",
-            ctx.dest_root / "Source" / "Tools" / f"{ctx.namespace}{suffix}.cpp",
-        ]
-
-        module_path = None
-        for candidate in candidates:
-            if candidate.is_file():
-                module_path = candidate
-                break
-
-        if not module_path:
-            ctx.log(f"Warning: Could not find {self.module_kind} module file")
-            return True
-
-        text = module_path.read_text(encoding="utf-8")
-        include_line = f'#include "{self.component_name}.h"'
-
-        # Add include
-        if include_line not in text:
-            lines = text.splitlines()
-            last_include = 0
-            for i, line in enumerate(lines):
-                if line.strip().startswith("#include"):
-                    last_include = i
-            lines.insert(last_include + 1, include_line)
-            text = "\n".join(lines) + "\n"
-
-        # Add to GetRequiredSystemComponents
-        fq_component = f"{ctx.namespace}::{self.component_name}"
-        to_insert = f"azrtti_typeid<{fq_component}>()"
-
-        if to_insert in text:
-            ctx.log(f"Component already registered in {self.module_kind}")
-            return True
-
-        # Find ComponentTypeList
-        pattern = r'return\s+AZ::ComponentTypeList\s*\{([^}]*)\}'
-        match = re.search(pattern, text, flags=re.S)
-
-        if match:
-            list_content = match.group(1)
-
-            # Compute indent
-            start = match.start()
-            line_start = text.rfind('\n', 0, start)
-            if line_start == -1:
-                block_indent = ""
-            else:
-                block_indent = text[line_start + 1:start]
-
-            entry_indent_match = re.search(r'\n(\s+)azrtti_typeid', list_content)
-            if entry_indent_match:
-                entry_indent = entry_indent_match.group(1)
-            else:
-                entry_indent = block_indent + "    "
-
-            lines = list_content.split('\n')
-            cleaned = [line for line in lines if line.strip()]
-
-            if cleaned and not cleaned[-1].rstrip().endswith(','):
-                cleaned[-1] = cleaned[-1].rstrip() + ','
-
-            cleaned.append(f'{entry_indent}{to_insert},')
-
-            new_content = '\n' + '\n'.join(cleaned) + '\n' + block_indent
-            new_text = text[:match.start(1)] + new_content + text[match.end(1):]
-
-            module_path.write_text(new_text, encoding="utf-8", newline="\n")
-            ctx.log(f"Registered in {self.module_kind} module: {module_path.name}")
-        else:
-            ctx.log(f"Warning: Could not find GetRequiredSystemComponents in {self.module_kind} module")
-
-        return True
-
-
-@CommandRegistry.register("register_interface_header")
-class RegisterInterfaceHeaderCommand(WizardCommand):
-    """Register interface header to INTERFACE/API target"""
-
-    def __init__(self, component_name: str):
-        self.component_name = component_name
-
-    @property
-    def name(self) -> str:
-        return "register_interface_header"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        if not ctx.build_target:
-            ctx.log("Warning: No build target selected for interface header")
-            return True
-
-        # Check if interface header exists
-        interface_hdr_path = ctx.dest_root / "Include" / ctx.namespace / f"{self.component_name}Interface.h"
-
-        if not interface_hdr_path.exists():
-            ctx.log(f"No interface header found at {interface_hdr_path}, skipping")
-            return True
-
-        ctx.log(f"Registering interface header for '{self.component_name}'...")
-
-        # Find best target for interface (INTERFACE > .API > fallback)
-        cmake_dir = ctx.build_target.file.parent
-        all_targets = CMakeAnalyzer.scan_targets(cmake_dir, ctx.namespace)
-
-        interface_target = self._find_interface_target(all_targets, ctx.namespace, ctx.build_target)
-
-        rel_hdr = f"Include/{ctx.namespace}/{self.component_name}Interface.h"
-
-        # Register to the target
-        if interface_target.kind == "o3de_add_target" and interface_target.files_cmake_list:
-            for files_cmake in interface_target.files_cmake_list:
-                include_path = (interface_target.file.parent / files_cmake).resolve()
-                if include_path.exists():
-                    self._update_interface_files_cmake(include_path, rel_hdr, ctx)
-                    return True
-
-        self._add_interface_to_target(interface_target.file, interface_target, rel_hdr, ctx)
-        return True
-
-    def _find_interface_target(self, targets: List['CMakeTarget'], gem_name: str, fallback: 'CMakeTarget') -> 'CMakeTarget':
-        """Find best target for interface headers"""
-        for target in targets:
-            if 'INTERFACE' in target.name.upper():
-                return target
-
-        for target in targets:
-            if target.name.endswith('.API') or '.API.' in target.name:
-                return target
-
-        return fallback
-
-    def _update_interface_files_cmake(self, files_cmake_path: Path, rel_hdr: str, ctx: CommandContext):
-        """Add interface header to FILES_CMAKE file"""
-        if files_cmake_path.exists():
-            text = files_cmake_path.read_text(encoding="utf-8")
-        else:
-            text = "set(FILES\n)\n"
-
-        if rel_hdr in text:
-            ctx.log(f"Interface header already in {files_cmake_path.name}")
-            return
-
-        match = re.search(r'set\s*\(\s*FILES\b(.*?)(\))', text, flags=re.S | re.M)
-        if match:
-            end_pos = match.end(1)
-            text = text[:end_pos] + f"    {rel_hdr}\n" + text[end_pos:]
-        else:
-            text = text.rstrip() + f"\nset(FILES\n    {rel_hdr}\n)\n"
-
-        files_cmake_path.write_text(text, encoding="utf-8", newline="\n")
-        ctx.log(f"Added interface header to {files_cmake_path.name}")
-
-    def _add_interface_to_target(self, cmake_path: Path, target: 'CMakeTarget', rel_hdr: str, ctx: CommandContext):
-        """Add interface header via target_sources"""
-        text = cmake_path.read_text(encoding="utf-8")
-
-        if rel_hdr in text:
-            ctx.log(f"Interface header already in {cmake_path.name}")
-            return
-
-        pattern = rf'target_sources\s*\(\s*{re.escape(target.name)}\s+INTERFACE\s+([^)]*)\)'
-        match = re.search(pattern, text, flags=re.S)
-
-        if match:
-            content = match.group(1)
-            indent_match = re.search(r'\n(\s+)', content)
-            indent = indent_match.group(1) if indent_match else '    '
-            new_content = content.rstrip() + f'\n{indent}{rel_hdr}\n'
-            new_text = text[:match.start(1)] + new_content + text[match.end(1):]
-            text = new_text
-        else:
-            append = (
-                f"\n# Interface header\n"
-                f"target_sources({target.name} INTERFACE\n"
-                f"    {rel_hdr}\n"
-                f")\n"
-            )
-            text = text.rstrip() + append
-
-        cmake_path.write_text(text, encoding="utf-8", newline="\n")
-        ctx.log(f"Added interface header to {target.name}")
-
-
-@CommandRegistry.register("register_generic_asset")
-class RegisterGenericAssetCommand(WizardCommand):
-    """Register asset in DataAssetSystemComponent"""
-
-    def __init__(self, asset_name: str, asset_ext: str = "mydata", asset_group: str = "Other"):
-        self.asset_name = asset_name
-        self.asset_ext = asset_ext
-        self.asset_group = asset_group
-
-    @property
-    def name(self) -> str:
-        return "register_generic_asset"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        ctx.log(f"Registering GenericAssetHandler for {self.asset_name}...")
-
-        sys_comp_name = f"{ctx.namespace}DataAssetSystemComponent"
-
-        # Find the system component .cpp file
-        candidates = [
-            ctx.dest_root / "Code" / "Source" / f"{sys_comp_name}.cpp",
-            ctx.dest_root / "Source" / f"{sys_comp_name}.cpp",
-        ]
-
-        cpp_path = None
-        for candidate in candidates:
-            if candidate.is_file():
-                cpp_path = candidate
-                break
-
-        if not cpp_path:
-            ctx.log(f"Warning: Could not find {sys_comp_name}.cpp")
-            return True
-
-        text = cpp_path.read_text(encoding="utf-8")
-
-        # Add include for the asset
-        include_line = f'#include "{self.asset_name}.h"'
-        if include_line not in text:
-            lines = text.splitlines()
-            last_include = 0
-            for i, line in enumerate(lines):
-                if line.strip().startswith("#include") and '"' in line:
-                    last_include = i
-            lines.insert(last_include + 1, include_line)
-            text = "\n".join(lines) + "\n"
-
-        # Find Activate() method
-        activate_pattern = r'void\s+' + re.escape(sys_comp_name) + r'::Activate\s*\([^)]*\)\s*\{([^}]*)\}'
-        match = re.search(activate_pattern, text, flags=re.S)
-
-        if match:
-            body = match.group(1)
-            handler_check = f'{self.asset_name}Handler'
-
-            if handler_check not in body:
-                indent_match = re.search(r'\n(\s+)(?:auto\*|m_assetHandlers)', body)
-                if not indent_match:
-                    indent_match = re.search(r'\n(\s+)\S', body)
-
-                base_indent = indent_match.group(1) if indent_match else '        '
-                has_handlers = 'Handler' in body or 'm_assetHandlers' in body
-                suffix = '\n\n' if has_handlers else '\n'
-
-                registration_block = (
-                    f'{base_indent}// Register {self.asset_name}\n'
-                    f'{base_indent}auto* {self.asset_name}Handler = aznew AzFramework::GenericAssetHandler<{self.asset_name}>("{self.asset_name}", "{self.asset_group}", "{self.asset_ext}");\n'
-                    f'{base_indent}{self.asset_name}Handler->Register();\n'
-                    f'{base_indent}m_assetHandlers.emplace_back({self.asset_name}Handler);{suffix}'
-                )
-
-                lines = body.split('\n')
-                insert_line = 0
-                for i, line in enumerate(lines):
-                    if line.strip():
-                        insert_line = i
-                        break
-
-                if insert_line == 0 and not lines[0].strip():
-                    new_body = lines[0] + '\n' + registration_block + '\n'.join(lines[1:])
-                else:
-                    new_body = '\n'.join(lines[:insert_line]) + '\n' + registration_block + '\n'.join(lines[insert_line:])
-
-                text = text[:match.start(1)] + new_body + text[match.end(1):]
-                ctx.log(f"Added GenericAssetHandler registration for {self.asset_name}")
-
-        # Find Reflect() method
-        reflect_pattern = r'void\s+' + re.escape(sys_comp_name) + r'::Reflect\s*\([^)]*\)\s*\{([^}]*)\}'
-        match = re.search(reflect_pattern, text, flags=re.S)
-
-        if match:
-            body = match.group(1)
-            reflect_call = f'{self.asset_name}::Reflect(context);'
-
-            if reflect_call not in body:
-                indent_match = re.search(r'\n(\s+)\w+::Reflect', body)
-                if not indent_match:
-                    indent_match = re.search(r'\n(\s+)\S', body)
-
-                base_indent = indent_match.group(1) if indent_match else '        '
-                reflect_line = f'{base_indent}{reflect_call}\n'
-
-                lines = body.split('\n')
-                insert_line = 0
-                for i, line in enumerate(lines):
-                    if line.strip():
-                        insert_line = i
-                        break
-
-                if insert_line == 0 and not lines[0].strip():
-                    new_body = lines[0] + '\n' + reflect_line + '\n'.join(lines[1:])
-                else:
-                    new_body = '\n'.join(lines[:insert_line]) + '\n' + reflect_line + '\n'.join(lines[insert_line:])
-
-                text = text[:match.start(1)] + new_body + text[match.end(1):]
-                ctx.log(f"Added Reflect call for {self.asset_name}")
-
-        cpp_path.write_text(text, encoding="utf-8", newline="\n")
-        ctx.log(f"Updated {sys_comp_name}.cpp")
-        return True
-
-
-@CommandRegistry.register("register_asset_setreg")
-class RegisterAssetSetregCommand(WizardCommand):
-    """Update .setreg with asset config"""
-
-    def __init__(self, asset_name: str, asset_ext: str = "mydata"):
-        self.asset_name = asset_name
-        self.asset_ext = asset_ext
-
-    @property
-    def name(self) -> str:
-        return "register_asset_setreg"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        ctx.log(f"Updating setreg for {self.asset_name}...")
-
-        # Find setreg file
-        setreg_name = f"{ctx.namespace}DataAssetRegistry.setreg"
-        setreg_path = self._find_setreg(ctx, setreg_name)
-
-        if not setreg_path:
-            ctx.log(f"Warning: Could not find setreg file {setreg_name}")
-            return True
-
-        # Extract GUID
-        guid = self._extract_asset_guid(ctx, self.asset_name)
-        if not guid:
-            guid = "{00000000-0000-0000-0000-000000000000}"
-            ctx.log("Warning: Using placeholder GUID")
-
-        # Load setreg
-        try:
-            data = json.loads(setreg_path.read_text(encoding="utf-8"))
-        except Exception:
-            data = {"Amazon": {"AssetProcessor": {"Settings": {}}}}
-
-        # Ensure structure
-        if "Amazon" not in data:
-            data["Amazon"] = {}
-        if "AssetProcessor" not in data["Amazon"]:
-            data["Amazon"]["AssetProcessor"] = {}
-        if "Settings" not in data["Amazon"]["AssetProcessor"]:
-            data["Amazon"]["AssetProcessor"]["Settings"] = {}
-
-        settings = data["Amazon"]["AssetProcessor"]["Settings"]
-
-        # Update RC entry
-        rc_key = f"RC {self.asset_name}"
-        settings[rc_key] = {
-            "glob": f"*.{self.asset_ext}",
-            "params": "copy",
-            "productAssetType": guid
-        }
-
-        setreg_path.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8", newline="\n")
-        ctx.log(f"Updated setreg: {setreg_path}")
-        return True
-
-    def _find_setreg(self, ctx: CommandContext, setreg_name: str) -> Optional[Path]:
-        """Find the setreg file"""
-        candidates = [
-            ctx.dest_root / "Registry" / setreg_name,
-            ctx.dest_root.parent / "Registry" / setreg_name,
-            ctx.dest_root / setreg_name,
-            # Also check if dest_root is Gem folder
-            ctx.dest_root / "Gem" / "Registry" / setreg_name,
-        ]
-
-        ctx.log(f"Looking for setreg file: {setreg_name}")
-        for candidate in candidates:
-            ctx.log(f"  Checking: {candidate}")
-            if candidate.is_file():
-                ctx.log(f"  Found: {candidate}")
-                return candidate
-
-        ctx.log(f"  Setreg not found in any expected location")
-        return None
-
-    def _extract_asset_guid(self, ctx: CommandContext, asset_name: str) -> Optional[str]:
-        """Extract UUID from asset class"""
-        # Pattern for GUID with or without curly braces, with or without quotes
-        guid_pattern = r'\{?[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}?'
-
-        candidates = [
-            ctx.dest_root / "Source" / f"{asset_name}.h",
-            ctx.dest_root / "Source" / f"{asset_name}.cpp",
-            ctx.dest_root / "Code" / "Source" / f"{asset_name}.h",
-            ctx.dest_root / "Code" / "Source" / f"{asset_name}.cpp",
-        ]
-
-        ctx.log(f"Searching for GUID in asset files for '{asset_name}'...")
-
-        for candidate in candidates:
-            if not candidate.is_file():
-                ctx.log(f"  Not found: {candidate}")
-                continue
-
-            ctx.log(f"  Checking: {candidate}")
-
-            try:
-                text = candidate.read_text(encoding="utf-8", errors="ignore")
-            except Exception as e:
-                ctx.log(f"  Error reading: {e}")
-                continue
-
-            # AZ_RTTI - more permissive pattern to handle quotes and braces
-            rtti_match = re.search(
-                rf'AZ_RTTI\s*\(\s*{re.escape(asset_name)}\s*,\s*["\']?({guid_pattern})["\']?',
-                text
-            )
-            if rtti_match:
-                guid = rtti_match.group(1)
-                # Ensure GUID has curly braces
-                if not guid.startswith('{'):
-                    guid = '{' + guid + '}'
-                ctx.log(f"  Found GUID via AZ_RTTI: {guid}")
-                return guid
-
-            # AZ_TYPE_INFO
-            type_info_match = re.search(
-                rf'AZ_TYPE_INFO\s*\(\s*{re.escape(asset_name)}\s*,\s*["\']?({guid_pattern})["\']?',
-                text
-            )
-            if type_info_match:
-                guid = type_info_match.group(1)
-                if not guid.startswith('{'):
-                    guid = '{' + guid + '}'
-                ctx.log(f"  Found GUID via AZ_TYPE_INFO: {guid}")
-                return guid
-
-            # Fallback: Just search for any GUID near the class name
-            class_pattern = rf'class\s+{re.escape(asset_name)}\b.*?({guid_pattern})'
-            class_match = re.search(class_pattern, text, re.DOTALL)
-            if class_match:
-                guid = class_match.group(1)
-                if not guid.startswith('{'):
-                    guid = '{' + guid + '}'
-                ctx.log(f"  Found GUID via class search: {guid}")
-                return guid
-
-        ctx.log(f"  No GUID found for {asset_name}")
-        return None
-
-
-@CommandRegistry.register("add_gem_dependency")
-class AddGemDependencyCommand(WizardCommand):
-    """Add gem dependency to BUILD_DEPENDENCIES"""
-
-    def __init__(self, dependency: str):
-        self.dependency = dependency
-
-    @property
-    def name(self) -> str:
-        return "add_gem_dependency"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        # Guard: don't add a gem as a dependency of itself
-        dep_name = self.dependency
-        if dep_name.startswith("Gem::"):
-            dep_name = dep_name[len("Gem::"):]
-        dep_gem = dep_name.split(".")[0]  # Strip .API, .Private, etc.
-        if dep_gem == ctx.namespace:
-            ctx.log(f"Skipping self-dependency: {self.dependency} (target gem is {ctx.namespace})")
-            return True
-
-        if not ctx.build_target:
-            ctx.log("Warning: No build target selected")
-            return True
-
-        ctx.log(f"Adding dependency '{self.dependency}' to target '{ctx.build_target.name}'...")
-
-        cmake_path = ctx.build_target.file
-        if not cmake_path.is_file():
-            ctx.log(f"Warning: CMake file not found: {cmake_path}")
-            return True
-
-        text = cmake_path.read_text(encoding="utf-8")
-
-        # Find target blocks
-        macro_pat = r'(?:o3de_add_target|ly_add_target)\s*\((?P<body>.*?)\)\s*'
-
-        for match in re.finditer(macro_pat, text, flags=re.S | re.M):
-            body = match.group('body')
-
-            name_match = re.search(r'\bNAME\s+([^\s\)]+)', body)
-            if not name_match:
-                continue
-
-            name_in_cmake = name_match.group(1).strip('"\'')
-
-            # Match target
-            is_match = False
-            if name_in_cmake == ctx.build_target.raw_name:
-                is_match = True
-            elif '${' in name_in_cmake and '.' in ctx.build_target.name:
-                if '.' in name_in_cmake:
-                    cmake_suffix = name_in_cmake.split('.', 1)[1]
-                    target_suffix = ctx.build_target.name.split('.', 1)[1] if '.' in ctx.build_target.name else ''
-                    if cmake_suffix == target_suffix:
-                        is_match = True
-
-            if not is_match:
-                continue
-
-            if self.dependency in body:
-                ctx.log(f"Dependency already present: {self.dependency}")
-                return True
-
-            lines = body.splitlines()
-
-            # Find BUILD_DEPENDENCIES
-            deps_idx = None
-            for i, line in enumerate(lines):
-                if re.match(r'^\s*BUILD_DEPENDENCIES\b', line):
-                    deps_idx = i
-                    break
-
-            base_indent = '    '
-            for line in lines:
-                if line.strip() and not line.strip().startswith('#'):
-                    base_indent = re.match(r'(\s*)', line).group(1)
-                    break
-
-            if deps_idx is None:
-                lines.append('')
-                lines.append(f'{base_indent}BUILD_DEPENDENCIES')
-                lines.append(f'{base_indent}    PRIVATE')
-                lines.append(f'{base_indent}        {self.dependency}')
-            else:
-                private_idx = None
-                for i in range(deps_idx + 1, len(lines)):
-                    if re.match(r'^\s*PRIVATE\b', lines[i]):
-                        private_idx = i
-                    if re.match(r'^\s*[A-Z_]+\b', lines[i]) and not re.match(r'^\s*(PRIVATE|PUBLIC|INTERFACE)\b', lines[i]):
-                        break
-
-                if private_idx is None:
-                    indent = re.match(r'(\s*)', lines[deps_idx]).group(1)
-                    lines.insert(deps_idx + 1, f'{indent}    PRIVATE')
-                    lines.insert(deps_idx + 2, f'{indent}        {self.dependency}')
-                else:
-                    indent = re.match(r'(\s*)', lines[private_idx]).group(1)
-                    lines.insert(private_idx + 1, f'{indent}    {self.dependency}')
-
-            new_body = '\n'.join(lines) + '\n'
-            new_text = text[:match.start()] + match.group(0).replace(body, new_body) + text[match.end():]
-
-            cmake_path.write_text(new_text, encoding='utf-8', newline='\n')
-            ctx.log(f"Added dependency {self.dependency} to {ctx.build_target.name}")
-            return True
-
-        ctx.log(f"Warning: Could not find target block for {ctx.build_target.name}")
-        return True
-
-
-@CommandRegistry.register("copy_setreg")
-class CopySetregCommand(WizardCommand):
-    """Copy setreg file to Registry folder"""
-
-    def __init__(self, setreg_name: str):
-        self.setreg_name = setreg_name
-
-    @property
-    def name(self) -> str:
-        return "copy_setreg"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        ctx.log(f"Handling setreg file: {self.setreg_name}...")
-
-        # Determine target Registry directory
-        dest_root = ctx.dest_root.resolve()
-
-        if dest_root.name == "Gem":
-            project_json = dest_root.parent / "project.json"
-            if project_json.is_file():
-                target_dir = dest_root / "Registry"
-            else:
-                target_dir = dest_root / "Registry"
-        elif dest_root.name == "Code":
-            gem_json = dest_root.parent / "gem.json"
-            if gem_json.is_file():
-                target_dir = dest_root.parent / "Registry"
-            else:
-                target_dir = dest_root / "Registry"
-        else:
-            target_dir = dest_root / "Registry"
-
-        target_dir.mkdir(parents=True, exist_ok=True)
-        ctx.log(f"Registry directory: {target_dir}")
-
-        return True
-
-
-@CommandRegistry.register("copy_file")
-class CopyFileCommand(WizardCommand):
-    """Copy a file to destination"""
-
-    def __init__(self, source: str, dest: str):
-        self.source = source
-        self.dest = dest
-
-    @property
-    def name(self) -> str:
-        return "copy_file"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        source_path = ctx.dest_root / self.source
-        dest_path = ctx.dest_root / self.dest
-
-        if not source_path.exists():
-            ctx.log(f"Warning: Source file not found: {source_path}")
-            return True
-
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, dest_path)
-        ctx.log(f"Copied {self.source} to {self.dest}")
-        return True
-
-
-@CommandRegistry.register("replace_text")
-class ReplaceTextCommand(WizardCommand):
-    """Replace text in a generated file. Supports literal replacement or replacement from an input variable."""
-
-    def __init__(self, component_name: str, text_to_replace: str,
-                 replacement: str = "", replacement_var: str = ""):
-        self.component_name = component_name
-        self.text_to_replace = text_to_replace
-        self.replacement = replacement
-        self.replacement_var = replacement_var
-
-    @property
-    def name(self) -> str:
-        return "replace_text"
-
-    def execute(self, ctx: CommandContext) -> bool:
-        # Determine replacement value
-        if self.replacement_var:
-            repl_value = ctx.variables.get(self.replacement_var, "")
-            if repl_value is None:
-                repl_value = ""
-        else:
-            repl_value = self.replacement
-
-        # Locate the target file in dest_root
-        target = self._find_file(ctx.dest_root, self.component_name)
-        if not target:
-            ctx.log(f"Warning: File not found for replace_text: {self.component_name}")
-            return True
-
-        text = target.read_text(encoding="utf-8")
-        if self.text_to_replace not in text:
-            ctx.log(f"Warning: Text not found in {target.name}: {self.text_to_replace!r}")
-            return True
-
-        text = text.replace(self.text_to_replace, repl_value)
-        target.write_text(text, encoding="utf-8")
-        ctx.log(f"Replaced text in {target.name}")
-        return True
-
-    @staticmethod
-    def _find_file(dest_root: Path, filename: str) -> Optional[Path]:
-        """Search for a file in common subdirectories"""
-        for subdir in ["Source", "Include", "Code/Source", "Code/Include", ""]:
-            candidate = dest_root / subdir / filename if subdir else dest_root / filename
-            if candidate.is_file():
-                return candidate
-        # Fallback: recursive search
-        for match in dest_root.rglob(filename):
-            if match.is_file():
-                return match
-        return None
 
 
 # ============================================================================
@@ -1429,172 +482,37 @@ def validate_engine_path(path_str: str) -> Path:
 
 
 # ============================================================================
-# CMake Analysis
+# CMake Analysis (imported from command_plugin.py)
 # ============================================================================
+# CMakeTarget and CMakeAnalyzer are imported at the top of this file.
 
-class CMakeTarget:
-    """Represents a CMake build target with its metadata"""
-    
-    def __init__(self, name: str, raw_name: str, kind: str, 
-                 file: Path, files_cmake_list: List[str]):
-        self.name = name
-        self.raw_name = raw_name
-        self.kind = kind
-        self.file = file
-        self.files_cmake_list = files_cmake_list
-    
-    def __repr__(self):
-        return f"CMakeTarget({self.name}, {self.kind}, {self.file.name})"
-
-
-class CMakeAnalyzer:
-    """Analyzes CMake files to discover build targets"""
-    
-    LY_MACRO_PAT = re.compile(
-        r'(?:o3de_add_target|ly_add_target)\s*\((?P<body>.*?)\)\s*',
-        re.S | re.M
-    )
-    ADD_LIB_PAT = re.compile(r'add_library\s*\(\s*(?P<name>[^\s\)]+)')
-    ADD_EXE_PAT = re.compile(r'add_executable\s*\(\s*(?P<name>[^\s\)]+)')
-    
-    @staticmethod
-    def resolve_target_name(raw_name: str, gem_name: str) -> str:
-        """Resolve CMake variables in target names"""
-        raw = raw_name.strip().strip('"\'')
-        mapping = {
-            '${GemName}': gem_name,
-            '${gem_name}': gem_name,
-            '${Name}': gem_name,
-            '${GEM_NAME}': gem_name,
-        }
-        result = raw
-        for var, value in mapping.items():
-            result = result.replace(var, value)
-        return result
-    
-    @staticmethod
-    def extract_files_cmake_list(body: str) -> List[str]:
-        """Extract FILES_CMAKE entries from a macro body"""
-        files = []
-        pattern = re.compile(
-            r'\bFILES_CMAKE\b(?P<section>.*?)(?=^\s*[A-Z_]+\b|\Z)',
-            re.S | re.M
-        )
-        for match in pattern.finditer(body):
-            section = match.group('section')
-            for tok in re.findall(r'"([^"]+)"|([^\s"\)]+)', section):
-                token = tok[0] or tok[1]
-                if token and token not in files:
-                    files.append(token)
-        return files
-    
-    @classmethod
-    def scan_targets(cls, gem_path: Path, gem_name: str) -> List[CMakeTarget]:
-        """
-        Scan a gem directory for CMake targets.
-        
-        Returns:
-            List of CMakeTarget objects found
-        """
-        results = []
-        
-        if not gem_path.is_dir():
-            return results
-        
-        cmake_files = list(gem_path.rglob("CMakeLists.txt"))
-        
-        for cmake_file in cmake_files:
-            try:
-                text = cmake_file.read_text(encoding="utf-8")
-            except Exception:
-                continue
-            
-            # Parse o3de_add_target / ly_add_target
-            for match in cls.LY_MACRO_PAT.finditer(text):
-                body = match.group("body") or ""
-                name_match = re.search(r'\bNAME\s+(".*?"|[^\s\)]+)', body)
-                if not name_match:
-                    continue
-                
-                raw_name = name_match.group(1).strip('"\'')
-                resolved = cls.resolve_target_name(raw_name, gem_name)
-                files_list = cls.extract_files_cmake_list(body)
-                
-                results.append(CMakeTarget(
-                    name=resolved,
-                    raw_name=raw_name,
-                    kind="o3de_add_target",
-                    file=cmake_file,
-                    files_cmake_list=files_list
-                ))
-            
-            # Parse add_library
-            for match in cls.ADD_LIB_PAT.finditer(text):
-                raw = match.group("name")
-                resolved = cls.resolve_target_name(raw, gem_name)
-                results.append(CMakeTarget(
-                    name=resolved,
-                    raw_name=raw,
-                    kind="add_library",
-                    file=cmake_file,
-                    files_cmake_list=[]
-                ))
-            
-            # Parse add_executable
-            for match in cls.ADD_EXE_PAT.finditer(text):
-                raw = match.group("name")
-                resolved = cls.resolve_target_name(raw, gem_name)
-                results.append(CMakeTarget(
-                    name=resolved,
-                    raw_name=raw,
-                    kind="add_executable",
-                    file=cmake_file,
-                    files_cmake_list=[]
-                ))
-        
-        # Deduplicate by (name, file)
-        seen = set()
-        unique = []
-        for target in results:
-            key = (target.name, str(target.file))
-            if key not in seen:
-                seen.add(key)
-                unique.append(target)
-        
-        unique.sort(key=lambda t: t.name.lower())
-        return unique
-
-
-# ============================================================================
-# Gem Discovery
-# ============================================================================
 
 class GemInfo:
     """Information about an O3DE gem"""
-    
+
     def __init__(self, name: str, path: Path):
         self.name = name
         self.path = path
-    
+
     def __repr__(self):
         return f"GemInfo({self.name}, {self.path})"
 
 
 class GemDiscovery:
     """Discovers gems in an O3DE project"""
-    
+
     @staticmethod
     def get_enabled_gems(engine_path: Path, project_path: Path,
                         include_dependencies: bool = True) -> List[GemInfo]:
         """
         Get list of enabled gems for a project, excluding engine-internal gems.
-        
+
         Returns:
             List of GemInfo objects
         """
         pkg_root = engine_path / "scripts" / "o3de"
         sys.path.insert(0, str(pkg_root))
-        
+
         try:
             from o3de import manifest
             mapping = manifest.get_project_enabled_gems(
@@ -1604,20 +522,20 @@ class GemDiscovery:
         finally:
             if sys.path and sys.path[0] == str(pkg_root):
                 sys.path.pop(0)
-        
+
         engine_root = engine_path.resolve()
         gems = []
-        
+
         for namespec, gem_path_str in mapping.items():
             gem_path = Path(gem_path_str).resolve()
-            
+
             # Skip engine-internal gems
             try:
                 gem_path.relative_to(engine_root)
                 continue
             except ValueError:
                 pass
-            
+
             # Extract display name from gem.json
             name = namespec
             gem_json = gem_path / "gem.json"
@@ -1627,9 +545,9 @@ class GemDiscovery:
                     name = data.get("gem_name") or data.get("display_name") or namespec
                 except Exception:
                     pass
-            
+
             gems.append(GemInfo(name, gem_path))
-        
+
         gems.sort(key=lambda g: g.name.lower())
         return gems
 
@@ -1746,10 +664,7 @@ class ComponentCreator:
             # Execute process commands
             # Registration commands only run with automatic_register;
             # all other commands (replace_text, add_gem_dependency, etc.) always run.
-            REGISTRATION_COMMANDS = {
-                'register_file_list', 'register_module_descriptor',
-                'register_system_component', 'register_interface_header',
-            }
+            # Commands self-declare via is_registration_command property.
             auto_register = config.get('automatic_register', False)
 
             if template.process_commands:
@@ -1767,7 +682,7 @@ class ComponentCreator:
 
                 for cmd_def in template.process_commands:
                     # Skip registration commands when automatic_register is off
-                    if cmd_def.command in REGISTRATION_COMMANDS and not auto_register:
+                    if CommandRegistry.is_registration_command(cmd_def.command) and not auto_register:
                         continue
 
                     # Check condition
@@ -3141,6 +2056,12 @@ class ClassWizardWindow(QMainWindow):
 
             self.log(f"Loaded {len(self.gems)} gems")
 
+            # Load command plugins
+            tool_dir = Path(__file__).resolve().parent
+            plugin_loader = CommandPluginLoader(logger=self.log)
+            gem_paths = [gem.path for gem in self.gems if hasattr(gem, 'path') and gem.path]
+            plugin_loader.discover_and_load(tool_dir, self.project_path, gem_paths)
+
             # Scan for wizard-enabled templates
             self.template_scanner = WizardTemplateScanner(logger=self.log)
             self.available_templates = self.template_scanner.scan(
@@ -3775,6 +2696,16 @@ def main():
         except ValidationError as e:
             print(f"Error: {e}")
             return 1
+
+    # Load command plugins from engine/project/gem directories
+    if engine_path:
+        tool_dir = Path(__file__).resolve().parent
+        loader = CommandPluginLoader()
+        gem_paths = []
+        if project_path:
+            scanner = WizardTemplateScanner()
+            gem_paths = scanner._resolve_project_gem_paths(project_path)
+        loader.discover_and_load(tool_dir, project_path, gem_paths)
 
     # Discover templates if engine path is valid
     templates = []
