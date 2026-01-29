@@ -81,6 +81,10 @@
 
         "process_commands": [
             {
+                "command": "add_gem_dependency",
+                "args": { "dependency": "AZ::AzFramework" }
+            },
+            {
                 "command": "register_file_list",
                 "args": { "component_name": "${GemName}DataAssetSystemComponent" }
             },

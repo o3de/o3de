@@ -30,5 +30,9 @@ namespace ${GemName}
         AZ_CLASS_ALLOCATOR(${SanitizedCppName}Asset, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
+
+        // Replace this variable with ANY other variable you intend to expose through Reflection().
+        // This is in order to make this Asset visible to the Editor. No variables prevents it from appearing.
+        bool singleVariable = true;
     };
 } // namespace ${GemName}
