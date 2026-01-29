@@ -1114,6 +1114,60 @@ class CopyFileCommand(WizardCommand):
         return True
 
 
+@CommandRegistry.register("replace_text")
+class ReplaceTextCommand(WizardCommand):
+    """Replace text in a generated file. Supports literal replacement or replacement from an input variable."""
+
+    def __init__(self, component_name: str, text_to_replace: str,
+                 replacement: str = "", replacement_var: str = ""):
+        self.component_name = component_name
+        self.text_to_replace = text_to_replace
+        self.replacement = replacement
+        self.replacement_var = replacement_var
+
+    @property
+    def name(self) -> str:
+        return "replace_text"
+
+    def execute(self, ctx: CommandContext) -> bool:
+        # Determine replacement value
+        if self.replacement_var:
+            repl_value = ctx.variables.get(self.replacement_var, "")
+            if repl_value is None:
+                repl_value = ""
+        else:
+            repl_value = self.replacement
+
+        # Locate the target file in dest_root
+        target = self._find_file(ctx.dest_root, self.component_name)
+        if not target:
+            ctx.log(f"Warning: File not found for replace_text: {self.component_name}")
+            return True
+
+        text = target.read_text(encoding="utf-8")
+        if self.text_to_replace not in text:
+            ctx.log(f"Warning: Text not found in {target.name}: {self.text_to_replace!r}")
+            return True
+
+        text = text.replace(self.text_to_replace, repl_value)
+        target.write_text(text, encoding="utf-8")
+        ctx.log(f"Replaced text in {target.name}")
+        return True
+
+    @staticmethod
+    def _find_file(dest_root: Path, filename: str) -> Optional[Path]:
+        """Search for a file in common subdirectories"""
+        for subdir in ["Source", "Include", "Code/Source", "Code/Include", ""]:
+            candidate = dest_root / subdir / filename if subdir else dest_root / filename
+            if candidate.is_file():
+                return candidate
+        # Fallback: recursive search
+        for match in dest_root.rglob(filename):
+            if match.is_file():
+                return match
+        return None
+
+
 # ============================================================================
 # Template Scanner
 # ============================================================================
@@ -1654,11 +1708,18 @@ class ComponentCreator:
                     self.log(f"Skipping file (condition not met): {resolved_file}")
 
             # Remove skipped files from stage
+            interface_skipped = False
             for skip_file in files_to_skip:
                 skip_path = stage_dir / skip_file
+                if 'Interface' in skip_file:
+                    interface_skipped = True
                 if skip_path.exists():
                     skip_path.unlink()
                     self.log(f"Removed from stage: {skip_file}")
+
+            # Clean interface references from remaining staged files
+            if interface_skipped:
+                self._clean_interface_references(stage_dir, config['component_name'])
 
             # Handle setreg file if present
             setreg_path = None
@@ -1682,11 +1743,18 @@ class ComponentCreator:
 
             self.log(f"Created {created} file(s), skipped {skipped} existing file(s)")
 
-            # Execute process commands if automatic registration enabled
-            if config.get('automatic_register', False):
+            # Execute process commands
+            # Registration commands only run with automatic_register;
+            # all other commands (replace_text, add_gem_dependency, etc.) always run.
+            REGISTRATION_COMMANDS = {
+                'register_file_list', 'register_module_descriptor',
+                'register_system_component', 'register_interface_header',
+            }
+            auto_register = config.get('automatic_register', False)
+
+            if template.process_commands:
                 self.log("Executing process commands...")
 
-                # Create command context
                 ctx = CommandContext(
                     dest_root=config['dest_dir'],
                     namespace=config['namespace'],
@@ -1697,8 +1765,11 @@ class ComponentCreator:
                     engine_path=self.engine_path
                 )
 
-                # Execute each command
                 for cmd_def in template.process_commands:
+                    # Skip registration commands when automatic_register is off
+                    if cmd_def.command in REGISTRATION_COMMANDS and not auto_register:
+                        continue
+
                     # Check condition
                     if not resolver.evaluate_condition(cmd_def.condition):
                         self.log(f"Skipping command '{cmd_def.command}' (condition not met)")
@@ -1793,7 +1864,47 @@ class ComponentCreator:
         except Exception as e:
             self.log(f"Error: {e}")
             return False
-    
+
+    def _clean_interface_references(self, stage_dir: Path, component_name: str):
+        """Remove interface-related references from staged .h and .cpp files
+        when the interface file has been skipped."""
+        self.log("Cleaning interface references from staged files...")
+
+        for source_file in stage_dir.rglob("*"):
+            if not source_file.is_file() or source_file.suffix not in ('.h', '.cpp'):
+                continue
+
+            text = source_file.read_text(encoding="utf-8")
+            original = text
+
+            # Remove #include line for the interface header
+            text = re.sub(
+                r'^#include\s+[<"].*?Interface\.h[>"]\s*\n',
+                '', text, flags=re.MULTILINE
+            )
+
+            # Remove RequestBus::Handler inheritance (", public ...RequestBus::Handler")
+            text = re.sub(
+                r'\s*,\s*public\s+\S+RequestBus::Handler',
+                '', text
+            )
+
+            # Remove RequestBus::Handler::BusConnect(...) lines
+            text = re.sub(
+                r'^\s*\S+RequestBus::Handler::BusConnect\(.*?\);\s*\n',
+                '', text, flags=re.MULTILINE
+            )
+
+            # Remove RequestBus::Handler::BusDisconnect(...) lines
+            text = re.sub(
+                r'^\s*\S+RequestBus::Handler::BusDisconnect\(.*?\);\s*\n',
+                '', text, flags=re.MULTILINE
+            )
+
+            if text != original:
+                source_file.write_text(text, encoding="utf-8")
+                self.log(f"Cleaned interface references from: {source_file.name}")
+
     def _merge_stage_into_dest(self, stage: Path, dest: Path,
                             skip_existing: bool, strip_comments: bool,
                             keep_license: bool) -> Tuple[int, int]:
