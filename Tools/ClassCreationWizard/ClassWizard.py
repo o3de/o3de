@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Tuple, Any, Callable
 from dataclasses import dataclass, field
 
-# Command plugin infrastructure — base classes, registry, and plugin loader
+# Command plugin infrastructure base classes, registry, and plugin loader
 from command_plugin import (
     CommandContext, WizardCommand, CommandRegistry, CommandPluginLoader,
     CMakeTarget, CMakeAnalyzer
