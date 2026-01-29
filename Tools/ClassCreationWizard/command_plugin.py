@@ -227,7 +227,7 @@ class CommandRegistry:
     """Registry of available wizard commands.
 
     Commands self-register via the @CommandRegistry.register decorator.
-    First registration wins — duplicate names are logged but not overwritten.
+    First registration wins -- duplicate names are logged but not overwritten.
     """
 
     _commands: Dict[str, Type[WizardCommand]] = {}
