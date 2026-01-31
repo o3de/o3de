@@ -144,7 +144,7 @@ namespace AzQtComponents
         void setupDropZones(QWidget* dock, const QPoint& globalPos = QPoint());
         void raiseDockWidgets();
         void dropDockWidget(QDockWidget* dock, QWidget* onto, Qt::DockWidgetArea area);
-        QMainWindow* createFloatingMainWindow(const QString& name, const QRect& geometry, bool skipTitleBarDrawing = false);
+        QMainWindow* createFloatingMainWindow(const QString& name, const QRect& geometry);
         QString getUniqueDockWidgetName(const QString& prefix);
         void destroyIfUseless(QMainWindow* mw);
         void clearDraggingState();

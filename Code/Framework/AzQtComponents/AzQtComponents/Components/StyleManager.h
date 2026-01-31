@@ -26,7 +26,6 @@ namespace AzQtComponents
 {
     class StyleSheetCache;
     class StylesheetPreprocessor;
-    class TitleBarOverdrawHandler;
     class AutoCustomWindowDecorations;
 
     /**
@@ -110,7 +109,6 @@ namespace AzQtComponents
 
         StylesheetPreprocessor* m_stylesheetPreprocessor = nullptr;
         StyleSheetCache* m_stylesheetCache = nullptr;
-        TitleBarOverdrawHandler* m_titleBarOverdrawHandler = nullptr;
 
         using WidgetToStyleSheetMap = QHash<QWidget*, QString>;
         AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'AzQtComponents::StyleManager::m_widgetToStyleSheetMap': class 'QHash<QWidget *,QString>' needs to have dll-interface to be used by clients of class 'AzQtComponents::StyleManager'
