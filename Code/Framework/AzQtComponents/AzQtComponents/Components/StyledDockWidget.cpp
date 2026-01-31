@@ -11,7 +11,6 @@
 #include <AzQtComponents/Components/DockMainWindow.h>
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 
 #include <QGuiApplication>
 #include <QMainWindow>
@@ -32,30 +31,8 @@ namespace AzQtComponents
         bool FloatingWindowsSupportMinimize();
     }
 
-    static bool forceSkipTitleBarOverdraw()
-    {
-#ifdef Q_OS_WIN
-        if ((QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10)))
-        {
-            // non-win10 never uses title bar overdraw
-            return true;
-        }
-
-        return false;
-#else
-        // Non-windows never uses title bar overdraw
-        return true;
-#endif
-    }
-
     StyledDockWidget::StyledDockWidget(const QString& name, QWidget* parent)
-        : StyledDockWidget(name, false, parent)
-    {
-    }
-
-    StyledDockWidget::StyledDockWidget(const QString& name, bool skipTitleBarDrawing, QWidget* parent)
         : QDockWidget(name, parent)
-        , m_skipTitleBarOverdraw(skipTitleBarDrawing || forceSkipTitleBarOverdraw())
     {
         init();
     }
@@ -67,11 +44,6 @@ namespace AzQtComponents
 
     void StyledDockWidget::init()
     {
-        if (doesTitleBarOverdraw() && TitleBarOverdrawHandler::getInstance())
-        {
-            TitleBarOverdrawHandler::getInstance()->addTitleBarOverdrawWidget(this);
-        }
-
         connect(this, &QDockWidget::topLevelChanged, this, &StyledDockWidget::onFloatingChanged);
         createCustomTitleBar();
     }
@@ -139,11 +111,6 @@ namespace AzQtComponents
             titleBar->setDrawSideBorders(!isFloating());
         }
 
-        if (isFloating())
-        {
-            fixFramelessFlags();
-        }
-
         QDockWidget::showEvent(event);
     }
 
@@ -201,114 +168,10 @@ namespace AzQtComponents
         p.drawPrimitive(QStyle::PE_FrameDockWidget, framOpt);
     }
 
-    bool StyledDockWidget::doesTitleBarOverdraw() const
-    {
-        return !m_skipTitleBarOverdraw;
-    }
-
-    bool StyledDockWidget::skipTitleBarOverdraw() const
-    {
-        return m_skipTitleBarOverdraw;
-    }
-
-    void StyledDockWidget::fixFramelessFlags()
-    {
-        // This ensures we have native frames (but no native titlebar)
-        QWindow* w = windowHandle();
-        if (doesTitleBarOverdraw() && w && (w->flags() & Qt::FramelessWindowHint) && isFloating())
-        {
-            w->setFlags(WindowDecorationWrapper::specialFlagsForOS() | Qt::Tool);
-        }
-    }
-
     void StyledDockWidget::onFloatingChanged(bool floating)
     {
         if (floating)
         {
-            fixFramelessFlags();
-
-            // Detach the floating window from the parent/owner chain so the OS treats it
-            // as a fully independent application window (own Alt-Tab entry, own taskbar button).
-            //
-            // Qt floating dock widgets inherit their native owner from the QWidget parent.
-            // On Windows this means all floating panels share the main editor's HWND as owner,
-            // causing Alt-Tab to cycle them as a group. The only Qt-agnostic way to clear the
-            // native owner is to destroy and recreate the window via setParent(nullptr, flags).
-            //
-            // We also swap Qt::Tool for Qt::Window because tool windows (WS_EX_TOOLWINDOW on
-            // Windows) are hidden from Alt-Tab by the OS even when they have no owner.
-            //
-            // Deferred via singleShot(0) so the native window is fully realized first.
-            QWidget* topLevel = window();
-            QTimer::singleShot(0, topLevel, [topLevel]
-            {
-                if (!topLevel->isVisible())
-                {
-                    return;
-                }
-
-                Qt::WindowFlags flags = topLevel->windowFlags();
-                if (QWindow* win = topLevel->windowHandle())
-                {
-                    flags = win->flags();
-                }
-                flags &= ~Qt::Tool;
-                flags |= Qt::Window;
-
-                topLevel->setParent(nullptr, flags);
-                topLevel->show();
-
-                // setParent(nullptr) detaches us from the editor main window, which breaks
-                // FancyDocking::QueueUpdateFloatingWindowTitle - it locates the floating
-                // wrapper via m_mainWindow->findChild<>() against the editor main window,
-                // which now returns nullptr. Without that update the new native window has
-                // no title and the OS falls back to QApplication::applicationName()
-                // ("O3DE Editor"). Replicate FancyDocking's title logic here: dig into our
-                // inner DockMainWindow for the top-left visible dock widget and use its
-                // title. Use a second deferred timer so the inner dock widgets have time
-                // to be moved into the wrapper before we read them.
-                QTimer::singleShot(0, topLevel, [topLevel]
-                {
-                    QString title = topLevel->windowTitle();
-
-                    if (QDockWidget* wrapper = qobject_cast<QDockWidget*>(topLevel))
-                    {
-                        if (QMainWindow* innerMain = qobject_cast<QMainWindow*>(wrapper->widget()))
-                        {
-                            const QDockWidget* topLeftWidget = nullptr;
-                            int topLeftDist = 0;
-                            const auto children = innerMain->findChildren<QDockWidget*>(QString(), Qt::FindDirectChildrenOnly);
-                            for (QDockWidget* child : children)
-                            {
-                                if (!child->isVisible())
-                                {
-                                    continue;
-                                }
-                                int dist = child->pos().manhattanLength();
-                                if (!topLeftWidget || dist < topLeftDist)
-                                {
-                                    topLeftWidget = child;
-                                    topLeftDist = dist;
-                                }
-                            }
-                            if (topLeftWidget)
-                            {
-                                title = topLeftWidget->windowTitle();
-                            }
-                        }
-                    }
-
-                    if (!title.isEmpty())
-                    {
-                        topLevel->setWindowTitle(title);
-                        if (QWindow* win = topLevel->windowHandle())
-                        {
-                            win->setTitle(title);
-                        }
-                    }
-                });
-            });
-
             // Perform platform-specific handling for floating windows (e.g. minimizing into the taskbar)
             Platform::HandleFloatingWindow(window());
         }

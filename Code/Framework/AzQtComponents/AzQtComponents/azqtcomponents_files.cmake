@@ -49,8 +49,6 @@ set(FILES
     Components/O3DEStylesheet.h
     Components/Titlebar.cpp
     Components/Titlebar.h
-    Components/TitleBarOverdrawHandler.cpp
-    Components/TitleBarOverdrawHandler.h
     Components/ToastNotification.cpp
     Components/ToastNotification.h
     Components/ToastNotificationConfiguration.h

@@ -279,13 +279,8 @@ bool QtViewPane::CloseInstance(QDockWidget* dockWidget, CloseModes closeModes)
     return canClose;
 }
 
-static bool SkipTitleBarOverdraw(QtViewPane* pane)
-{
-    return !pane->m_options.isDockable;
-}
-
 DockWidget::DockWidget(QWidget* widget, QtViewPane* pane, [[maybe_unused]] QSettings* settings, QMainWindow* parent, AzQtComponents::FancyDocking* advancedDockManager)
-    : AzQtComponents::StyledDockWidget(pane->m_name, SkipTitleBarOverdraw(pane),
+    : AzQtComponents::StyledDockWidget(pane->m_name,
 #if AZ_TRAIT_OS_PLATFORM_APPLE
           pane->m_options.detachedWindow ? nullptr : parent)
 #else

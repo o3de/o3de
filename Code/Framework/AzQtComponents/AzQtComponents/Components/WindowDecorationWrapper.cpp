@@ -13,7 +13,6 @@
 #include <AzQtComponents/Components/DockBarButton.h>
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Titlebar.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
 #include <QTimer>
@@ -31,6 +30,8 @@
 #include <QLayout>
 
 #ifdef Q_OS_WIN
+#include <dwmapi.h>
+#include <windowsx.h>
 #endif
 
 namespace AzQtComponents
@@ -123,11 +124,6 @@ namespace AzQtComponents
 
         // Create a QWindow -- windowHandle()
         setAttribute(Qt::WA_NativeWindow, true);
-
-        if (auto handler = TitleBarOverdrawHandler::getInstance())
-        {
-            handler->addTitleBarOverdrawWidget(this);
-        }
     }
 
     WindowDecorationWrapper::~WindowDecorationWrapper()
@@ -514,6 +510,23 @@ namespace AzQtComponents
 
     bool WindowDecorationWrapper::nativeEvent(const QByteArray& eventType, void* message, qintptr* result)
     {
+#ifdef Q_OS_WIN
+        QWindow* window = windowHandle();
+        if (!m_windowAttributesInit && window && window->handle())
+        {
+            m_windowAttributesInit = true;
+            auto hwnd = (HWND)window->winId();
+
+            // Enable aero snap feature
+            LONG style = GetWindowLong(hwnd, GWL_STYLE);
+            style |= WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+            SetWindowLong(hwnd, GWL_STYLE, style);
+            SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+
+            updateRoundedCorners();
+        }
+#endif
+
         return handleNativeEvent(eventType, message, result, this);
     }
 
@@ -523,6 +536,7 @@ namespace AzQtComponents
         {
             // only way to know when the window has minimized/maximized or full screen has changed
             saveGeometryToSettings();
+            updateRoundedCorners();
         }
 
         QFrame::changeEvent(ev);
@@ -538,82 +552,98 @@ namespace AzQtComponents
             return false;
         }
 
-        if (isWin10())
+        auto wrapper = qobject_cast<const WindowDecorationWrapper*>(widget);
+        if (isWin10() && widget->window() && wrapper)
         {
-            if (widget->window() && msg->message == WM_NCHITTEST && GetAsyncKeyState(VK_RBUTTON) >= 0) // We're not interested in right click
+            /**
+             * This code block fixes the title being clipped when maximized 
+             */
+            if (msg->message == WM_GETMINMAXINFO)
             {
+                auto mmi = reinterpret_cast<MINMAXINFO*>(msg->lParam);
+                mmi->ptMaxPosition.x = 0;
+                mmi->ptMaxPosition.y = 0;
+                mmi->ptMaxSize.x = GetSystemMetrics(SM_CXSCREEN);
+                mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN);
+                *result = 0;
+                return true;
+            }
+
+            if (msg->message == WM_NCHITTEST)
+            {
+                HWND handle = (HWND)widget->window()->winId();
+
+                /**
+                 * This code block increase the resize grab area around the frameless window
+                 */
+                if (!(widget->window()->windowState() & Qt::WindowMaximized))
+                {
+                    const LONG border = 12;
+
+                    RECT winRect;
+                    GetWindowRect(handle, &winRect);
+
+                    const LONG x = GET_X_LPARAM(msg->lParam);
+                    const LONG y = GET_Y_LPARAM(msg->lParam);
+
+                    // Resize borders
+                    if (wrapper->canResizeWidth() && x < winRect.left + border)
+                    {
+                        if (y < winRect.top + border)
+                            return *result = HTTOPLEFT, true;
+                        if (y > winRect.bottom - border)
+                            return *result = HTBOTTOMLEFT, true;
+
+                        return *result = HTLEFT, true;
+                    }
+                    if (wrapper->canResizeWidth() && x > winRect.right - border)
+                    {
+                        if (y < winRect.top + border)
+                            return *result = HTTOPRIGHT, true;
+                        if (y > winRect.bottom - border)
+                            return *result = HTBOTTOMRIGHT, true;
+
+                        return *result = HTRIGHT, true;
+                    }
+                    if (wrapper->canResizeHeight() && y < winRect.top + border)
+                        return *result = HTTOP, true;
+                    if (wrapper->canResizeHeight() && y > winRect.bottom - border)
+                        return *result = HTBOTTOM, true;
+                }
 
                 /**
                  * This code block enables Windows native dragging, which enables the "Aero Snap" feature,
                  * where we can snap our windows to the sides of the screen.
                  */
-                HWND handle = (HWND)widget->window()->winId();
                 const LRESULT defWinProcResult = DefWindowProc(handle, msg->message, msg->wParam, msg->lParam);
-                if (defWinProcResult == 1)
+                if (defWinProcResult == 1 && GetAsyncKeyState(VK_RBUTTON) >= 0)
                 {
-                    if (auto wrapper = qobject_cast<const WindowDecorationWrapper *>(widget))
+                    /**
+                        * We only care about the title bars belonging to WindowDecorationWrapper.
+                        * The ones from StyledDockWidget::titleBar() must use our custom dragging, so the docking system works,
+                        * we can't use the native dragging and we can't have "Aero Snap" for dock widgets.
+                        */
+                    TitleBar* titleBar = wrapper->titleBar();
+                    const short global_x = static_cast<short>(LOWORD(msg->lParam));
+                    const short global_y = static_cast<short>(HIWORD(msg->lParam));
+
+                    const QPoint globalPos = QPoint(global_x, global_y);
+                    const QPoint local = titleBar->mapFromGlobal(globalPos);
+                    if (titleBar->draggableRect().contains(local))
                     {
-                        /**
-                         * We only care about the title bars belonging to WindowDecorationWrapper.
-                         * The ones from StyledDockWidget::titleBar() must use our custom dragging, so the docking system works,
-                         * we can't use the native dragging and we can't have "Aero Snap" for dock widgets.
-                         */
-                        TitleBar* titleBar = wrapper->titleBar();
-                        const short global_x = static_cast<short>(LOWORD(msg->lParam));
-                        const short global_y = static_cast<short>(HIWORD(msg->lParam));
-
-                        const QPoint globalPos = QPoint(global_x, global_y);
-                        const QPoint local = titleBar->mapFromGlobal(globalPos);
-                        if (titleBar->draggableRect().contains(local))
+                        if (titleBar->isTopResizeArea(globalPos))
                         {
-                            if (titleBar->isTopResizeArea(globalPos))
-                            {
-                                *result = HTTOP;
-                            }
-                            else
-                            {
-                                *result = HTCAPTION;
-                            }
-
-                            return true;
+                            *result = HTTOP;
                         }
+                        else
+                        {
+                            *result = HTCAPTION;
+                        }
+
+                        return true;
                     }
                 }
             }
-        }
-        else
-        {
-            // No other event to process for win10()
-            // for Win10 we have the native title-bar, so maximized geometry is calculated correctly out of the box
-            return false;
-        }
-
-        if (msg->message == WM_GETMINMAXINFO && widget->isMaximized())
-        {
-            // When Windows maximizes a window without native titlebar it will cover the taskbar.
-            // Qt is patched to catch this case, but only for Qt::FramelessWindowHint cases, which
-            // we're not using, so calculate the size ourselves.
-
-            QWindow* w = widget->windowHandle();
-            if (!w || !w->screen() || w->screen() != QApplication::primaryScreen())
-            {
-                // WM_GETMINMAXINFO only works for the primary screen
-                return false;
-            }
-
-            // Get the sizes Windows would have chosen
-            DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-
-            const QScreen *screen = w->screen();
-            const QRect availableGeometry = screen->availableGeometry();
-            auto mmi = reinterpret_cast<MINMAXINFO*>(msg->lParam);
-            mmi->ptMaxSize.y = availableGeometry.height();
-            mmi->ptMaxSize.x = availableGeometry.width();
-            mmi->ptMaxPosition.y = availableGeometry.y();
-            mmi->ptMaxPosition.x = availableGeometry.x();
-
-            *result = 0;
-            return true;
         }
 #else
         Q_UNUSED(eventType)
@@ -817,6 +847,25 @@ namespace AzQtComponents
         updateTitleBarButtons();
     }
 
+    void WindowDecorationWrapper::updateRoundedCorners()
+    {
+#ifdef Q_OS_WIN
+        static HMODULE dwmapiModule = LoadLibraryA("Dwmapi.dll");
+        using FuncSetWin = HRESULT(WINAPI*)(HWND, DWORD, LPCVOID, DWORD);
+        static FuncSetWin fn = (FuncSetWin)GetProcAddress(dwmapiModule, "DwmSetWindowAttribute");
+
+        QWindow* window = windowHandle();
+        if (window && window->handle() && fn)
+        {
+            auto hwnd = (HWND)window->winId();
+
+            // Set rounded corners
+            const DWM_WINDOW_CORNER_PREFERENCE pref = (window->windowState() & Qt::WindowMaximized) ? DWMWCP_DONOTROUND : DWMWCP_ROUND;
+            fn(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &pref, sizeof(pref));
+        }
+#endif
+    }
+
     void WindowDecorationWrapper::updateTitleBarButtons()
     {
         if (!autoTitleBarButtonsEnabled() || !isAttached() || m_titleBar == nullptr)
@@ -844,19 +893,13 @@ namespace AzQtComponents
         m_titleBar->setButtons(buttons);
     }
 
-    /** static */
-    QMargins WindowDecorationWrapper::win10TitlebarHeight(QWindow* w)
-    {
-        qDebug() << w->geometry() << w->frameGeometry() << w->frameMargins();
-        return QMargins(0, -w->frameMargins().top(), 0, 0);
-    }
-
     Qt::WindowFlags WindowDecorationWrapper::specialFlagsForOS()
     {
         // Qt::CustomizeWindowHint means native frame but no native titlebar
-        // For Win 10 we have the native titlebar but we draw on top of it, otherwise QTBUG-47543
+        // For Win 10 we use frameless, as a titlebar margin would be added otherwise (see QTBUG-47543)
+        // With frameless we have to support more custom code for resizing and default styling
 
-        return isWin10() ? Qt::WindowFlags() : Qt::CustomizeWindowHint;
+        return isWin10() ? (Qt::FramelessWindowHint | Qt::WindowMaximizeButtonHint) : Qt::CustomizeWindowHint;
     }
 
     void WindowDecorationWrapper::drawFrame(const QStyleOption *option, QPainter *painter, const QWidget *widget)

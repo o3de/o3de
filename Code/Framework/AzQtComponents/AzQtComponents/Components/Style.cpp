@@ -40,7 +40,6 @@
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 #include <AzQtComponents/Utilities/TextUtilities.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
@@ -1123,8 +1122,6 @@ namespace AzQtComponents
         }
 
         QScopedValueRollback<QWidget*> recursionGuard(alreadyStyling, widget);
-
-        TitleBarOverdrawHandler::getInstance()->polish(widget);
 
         if (hasStyle(widget))
         {
