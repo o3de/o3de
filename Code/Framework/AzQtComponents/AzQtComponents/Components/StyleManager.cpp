@@ -30,7 +30,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleSheetCache.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 namespace AzQtComponents
@@ -167,8 +166,6 @@ namespace AzQtComponents
         QFont defaultFont("Open Sans");
         defaultFont.setPixelSize(12);
         QApplication::setFont(defaultFont);
-
-        m_titleBarOverdrawHandler = TitleBarOverdrawHandler::createHandler(application, this);
 
         // The window decoration wrappers require the titlebar overdraw handler
         // so we can't initialize the custom window decoration monitor until the

@@ -110,7 +110,6 @@ namespace AzQtComponents
     private:
         friend class StyledDockWidget;
         static bool handleNativeEvent(const QByteArray& eventType, void* message, qintptr* result, const QWidget* widget);
-        static QMargins win10TitlebarHeight(QWindow *w);
         static Qt::WindowFlags specialFlagsForOS();
         static void drawFrame(const QStyleOption *option, QPainter *painter, const QWidget *widget);
         QWidget* topLevelParent();
@@ -130,6 +129,7 @@ namespace AzQtComponents
         void adjustSizeGripGeometry();
         void adjustWidgetGeometry();
         void updateConstraints();
+        void updateRoundedCorners();
         void enableSaveRestoreGeometry(QSettings* settings, const QString& key, bool autoRestoreOnShow);
 
         bool m_initialized = false;
@@ -144,6 +144,7 @@ namespace AzQtComponents
         bool m_restoringGeometry = false;
         bool m_autoRestoreOnShow = false;
         bool m_blockForRestoreOnShow = false;
+        bool m_windowAttributesInit = false;
     };
 } // namespace AzQtComponents
 

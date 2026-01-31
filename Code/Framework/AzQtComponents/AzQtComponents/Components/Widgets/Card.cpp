@@ -14,7 +14,6 @@
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h> // for the QMargins metatype declarations
 #include <QMenu>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -195,7 +194,7 @@ namespace AzQtComponents
 
     int Card::getNotificationCount() const
     {
-        return m_notifications.size();
+        return aznumeric_cast<int>(m_notifications.size());
     }
 
 
