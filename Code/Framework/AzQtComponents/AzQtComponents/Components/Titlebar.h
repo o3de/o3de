@@ -196,7 +196,6 @@ namespace AzQtComponents
         static bool unpolish(Style* style, QWidget* widget, const Config& config);
         static int titleBarHeight(const Style* style, const QStyleOption* option, const QWidget* widget, const Config& config, const TabWidget::Config& tabConfig);
 
-        bool usesCustomTopBorderResizing() const;
         void checkEnableMouseTracking();
         QWidget* dockWidget() const;
         bool isInDockWidget() const;
