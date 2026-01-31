@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/numeric.h>
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
@@ -129,7 +130,7 @@ namespace AzQtComponents
 
     bool BreadCrumbs::isUpAvailable() const
     {
-        int separatorIndex = m_currentPath.lastIndexOf(g_separator);
+        int separatorIndex = aznumeric_cast<int>(m_currentPath.lastIndexOf(g_separator));
         return (separatorIndex > 0);
     }
 
@@ -151,7 +152,7 @@ namespace AzQtComponents
         m_lineEdit->setText(newPath);
 
         // update internals
-        m_currentPathSize = m_currentPath.split(g_separator, Qt::SkipEmptyParts).size();
+        m_currentPathSize = aznumeric_cast<int>(m_currentPath.split(g_separator, Qt::SkipEmptyParts).size());
         m_currentPathIcons.resize(m_currentPathSize);
 
         updateGeometry();
@@ -520,7 +521,7 @@ namespace AzQtComponents
         m_truncatedPaths = fullPath;
 
         // used to measure the width used by the path.
-        const int availableWidth = width() - g_leftMargin
+        const double availableWidth = width() - g_leftMargin
             - (isEditable() ? g_borderWidthWhenEditable*2.0 + g_reservedEmptySpace: 0)
             // using sizeHint() because width() will be the QWidget's default 100px before the first layouting
             - (m_menuButton->isVisible() ? m_menuButton->sizeHint().width() + layout()->spacing() : 0);
@@ -591,7 +592,7 @@ namespace AzQtComponents
             }
             plainTextPath = plaintextWithNext;
 
-            const QString linkPath = buildPathFromList(fullPath, m_truncatedPaths.size());
+            const QString linkPath = buildPathFromList(fullPath, aznumeric_cast<int>(m_truncatedPaths.size()));
             const QString& part = m_truncatedPaths.takeLast();
             htmlString.prepend(QString("%1%2").arg(iconHtml, formatLink(linkPath, part)));
 
@@ -673,7 +674,7 @@ namespace AzQtComponents
 
     void BreadCrumbs::onLinkActivated(const QString& link)
     {
-        int linkIndex = link.count(g_separator);
+        int linkIndex = aznumeric_cast<int>(link.count(g_separator));
         Q_EMIT linkClicked(link, linkIndex);
         if (m_pushPathOnLinkActivation)
         {

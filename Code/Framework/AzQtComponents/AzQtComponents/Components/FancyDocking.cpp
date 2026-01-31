@@ -94,17 +94,6 @@ namespace AzQtComponents
     namespace
     {
         static const char* g_AutoSavePropertyName = "AutoSaveLayout";
-
-        static bool shouldSkipTitleBarOverdraw(QDockWidget* dockWidget)
-        {
-            StyledDockWidget* styledDockChild = qobject_cast<StyledDockWidget*>(dockWidget);
-            if (styledDockChild != nullptr)
-            {
-                return styledDockChild->skipTitleBarOverdraw();
-            }
-
-            return false;
-        }
     }
 
     /**
@@ -167,9 +156,9 @@ namespace AzQtComponents
      * Create a new QDockWidget whose main widget will be a DockMainWindow. It will be created floating
      * with the given geometry. The QDockWidget will be named with the given name
      */
-    QMainWindow* FancyDocking::createFloatingMainWindow(const QString& name, const QRect& geometry, bool skipTitleBarOverdraw)
+    QMainWindow* FancyDocking::createFloatingMainWindow(const QString& name, const QRect& geometry)
     {
-        auto dockWidget = new StyledDockWidget(QString(), skipTitleBarOverdraw, m_mainWindow);
+        auto dockWidget = new StyledDockWidget(QString(), m_mainWindow);
         dockWidget->setObjectName(name);
         if (!restoreDockWidget(dockWidget))
         {
@@ -1649,7 +1638,7 @@ namespace AzQtComponents
                 continue;
             }
 
-            QRect floatingRect = isWin10() ? dockWidgetWindow->geometry() : dockWidgetWindow->frameGeometry();
+            QRect floatingRect = dockWidgetWindow->frameGeometry();
             AdjustForSnappingToFloatingWindow(rect, floatingRect);
         }
 
@@ -1684,7 +1673,7 @@ namespace AzQtComponents
         QWindow* mainWindow = m_mainWindow->window()->windowHandle();
         if (mainWindow)
         {
-            QRect mainWindowRect = isWin10() ? mainWindow->geometry() : mainWindow->frameGeometry();
+            QRect mainWindowRect = mainWindow->frameGeometry();
             AdjustForSnappingToFloatingWindow(rect, mainWindowRect);
         }
     }
@@ -1698,14 +1687,9 @@ namespace AzQtComponents
         }
 
         // Qt returns right/bottom with a -1 offset because of historical reasons,
-        // so we need to use x + width instead (but not on Win10)
-        int screenRectRight = screenRect.x() + screenRect.width();
-        int screenRectBottom = screenRect.y() + screenRect.height();
-        if (isWin10())
-        {
-            screenRectRight -= 1;
-            screenRectBottom -= 1;
-        }
+        // so we need to use x + width instead
+        const int screenRectRight = screenRect.x() + screenRect.width();
+        const int screenRectBottom = screenRect.y() + screenRect.height();
 
         // First, check snapping to left/right edges of the screen
         if (qAbs(rect.left() - screenRect.left()) <= g_snapThresholdInPixels)
@@ -1738,24 +1722,14 @@ namespace AzQtComponents
     bool FancyDocking::AdjustForSnappingToFloatingWindow(QRect& rect, const QRect& floatingRect)
     {
         QRect currentPlaceholderRect = m_state.placeholder();
-        int rectLeft = rect.left();
-        int rectRight = rect.x() + rect.width();
-        int rectTop = rect.top();
-        int rectBottom = rect.y() + rect.height();
-        int floatingRectLeft = floatingRect.left();
-        int floatingRectRight = floatingRect.x() + floatingRect.width();
-        int floatingRectTop = floatingRect.top();
-        int floatingRectBottom = floatingRect.y() + floatingRect.height();
-
-        // Qt returns right/bottom with a -1 offset because of historical reasons,
-        // so we need to use x + width instead (but not on Win10)
-        if (isWin10())
-        {
-            rectRight -= 1;
-            rectBottom -= 1;
-            floatingRectRight -= 1;
-            floatingRectBottom -= 1;
-        }
+        const int rectLeft = rect.left();
+        const int rectRight = rect.x() + rect.width();
+        const int rectTop = rect.top();
+        const int rectBottom = rect.y() + rect.height();
+        const int floatingRectLeft = floatingRect.left();
+        const int floatingRectRight = floatingRect.x() + floatingRect.width();
+        const int floatingRectTop = floatingRect.top();
+        const int floatingRectBottom = floatingRect.y() + floatingRect.height();
 
         // First, check snapping to the left/right edges of the floating window
         // Ensure that we only snap if the placeholder has been dragged within the top/bottom
@@ -2297,7 +2271,7 @@ namespace AzQtComponents
         {
             // Create a floating window container for this dock widget
             QScopedValueRollback<bool> guard(m_state.updateInProgress, true); // Don't let mainWindow get deleted while we do this
-            QMainWindow* mainWindow = createFloatingMainWindow(getUniqueDockWidgetName(m_floatingWindowIdentifierPrefix), geometry, shouldSkipTitleBarOverdraw(dock));
+            QMainWindow* mainWindow = createFloatingMainWindow(getUniqueDockWidgetName(m_floatingWindowIdentifierPrefix), geometry);
             OptimizedSetParent(dock, mainWindow);
             mainWindow->addDockWidget(Qt::LeftDockWidgetArea, dock);
             dock->show();
@@ -2412,7 +2386,7 @@ namespace AzQtComponents
             QRect placeholderRect = m_state.placeholder();
             QMargins margins;
             QWindow* mainWindowHandle = m_mainWindow->window()->windowHandle();
-            if (mainWindowHandle && !isWin10())
+            if (mainWindowHandle)
             {
                 margins = mainWindowHandle->frameMargins();
             }
@@ -2427,16 +2401,6 @@ namespace AzQtComponents
                 margins.setLeft(margins.left() + wrapperMargins.left());
                 margins.setRight(margins.right() + wrapperMargins.right());
                 margins.setBottom(margins.bottom() + wrapperMargins.bottom());
-            }
-
-            // Qt returns right/bottom with a -1 offset because of historical reasons,
-            // but even though we ignore this on Win10 when snapping the placeholder,
-            // we have to actually put the offset back in before we place it because
-            // it ends up being adjusted afterwards
-            if (isWin10())
-            {
-                margins.setRight(margins.right() + 1);
-                margins.setBottom(margins.bottom() + 1);
             }
 
             if (m_state.snappedSide & SnapLeft)
@@ -3344,7 +3308,6 @@ namespace AzQtComponents
 
             // Iterate over the child dock widgets to determine their dock widget options; must do this first before creating the floating main window
             QVector<QDockWidget*> childDockWidgets;
-            bool skipTitleBarOverdraw = false;
             for (const QString &childName : childDockNames)
             {
                 QDockWidget* child = m_mainWindow->findChild<QDockWidget*>(childName, Qt::FindDirectChildrenOnly);
@@ -3355,8 +3318,6 @@ namespace AzQtComponents
 
                 // save the children so that we don't have to do a find on the main window again in the next loop
                 childDockWidgets.push_back(child);
-
-                skipTitleBarOverdraw = skipTitleBarOverdraw || shouldSkipTitleBarOverdraw(child);
             }
 
             // Restore geometry for this floating dock widget
@@ -3369,7 +3330,7 @@ namespace AzQtComponents
             }
 
             // reparent and dock the child widgets to the new container now
-            QMainWindow* mainWindow = createFloatingMainWindow(floatingDockName, restoredRect, skipTitleBarOverdraw);
+            QMainWindow* mainWindow = createFloatingMainWindow(floatingDockName, restoredRect);
             for (auto t = childDockWidgets.begin(); t != childDockWidgets.end(); t++)
             {
                 QDockWidget* child = *t;
@@ -3556,7 +3517,7 @@ namespace AzQtComponents
                 auto it2 = m_restoreFloatings.find(floatingDockWidgetName);
                 if (it2 != m_restoreFloatings.end())
                 {
-                    QMainWindow* mainWindow = createFloatingMainWindow(floatingDockWidgetName, it2->second, true);
+                    QMainWindow* mainWindow = createFloatingMainWindow(floatingDockWidgetName, it2->second);
                     mainWindow->restoreState(it2->first);
                     OptimizedSetParent(dock, mainWindow);
                     m_restoreFloatings.erase(it2);
