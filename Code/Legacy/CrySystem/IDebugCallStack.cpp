@@ -53,7 +53,7 @@ void IDebugCallStack::LogCallstack()
     AZ::Debug::Trace::Instance().PrintCallstack("", 2);
 }
 
-const char* IDebugCallStack::TranslateExceptionCode(DWORD dwExcept)
+const char* IDebugCallStack::TranslateExceptionCode(AZ::u32 dwExcept)
 {
     switch (dwExcept)
     {

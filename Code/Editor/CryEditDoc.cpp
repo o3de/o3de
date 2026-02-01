@@ -1329,7 +1329,7 @@ bool CCryEditDoc::DoFileSave()
     if (QString::compare(GetIEditor()->GetLevelName(), temporaryLevelName) == 0)
     {
         QString filename;
-        if (CCryEditApp::instance()->GetDocManager()->DoPromptFileName(filename, ID_FILE_SAVE_AS, 0, false, nullptr)
+        if (CCryEditApp::instance()->GetDocManager()->DoPromptFileName(filename, false)
             && !filename.isEmpty() && !QFileInfo(filename).exists())
         {
             if (SaveLevel(filename))

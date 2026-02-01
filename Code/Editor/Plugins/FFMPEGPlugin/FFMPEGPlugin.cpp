@@ -37,7 +37,7 @@ const char* CFFMPEGPlugin::GetPluginGUID()
     return PluginInfo::kGUID;
 }
 
-DWORD CFFMPEGPlugin::GetPluginVersion()
+AZ::u32 CFFMPEGPlugin::GetPluginVersion()
 {
     return PluginInfo::kVersion;
 }

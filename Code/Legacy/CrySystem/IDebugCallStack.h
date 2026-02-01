@@ -69,7 +69,7 @@ protected:
     IDebugCallStack();
     virtual ~IDebugCallStack();
 
-    static const char* TranslateExceptionCode(DWORD dwExcept);
+    static const char* TranslateExceptionCode(AZ::u32 dwExcept);
     static void PutVersion(char* str, size_t length);
 
     bool m_bIsFatalError;

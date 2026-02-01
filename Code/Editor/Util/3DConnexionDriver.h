@@ -51,7 +51,7 @@ public:
     void Release() { delete this; };
     void ShowAbout() {};
     const char* GetPluginGUID() { return "{AD109901-9128-4ffd-8E67-137CB2B1C41B}"; };
-    DWORD GetPluginVersion() { return 1; };
+    AZ::u32 GetPluginVersion() { return 1; };
     const char* GetPluginName() { return "3DConnexionDriver"; };
     bool CanExitNow() { return true; };
     void OnEditorNotify([[maybe_unused]] EEditorNotifyEvent aEventId){}

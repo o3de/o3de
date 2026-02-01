@@ -277,7 +277,7 @@ bool QueryPerformanceFrequency(LARGE_INTEGER* frequency)
 #include <thread>
 
 //////////////////////////////////////////////////////////////////////////
-DWORD Sleep(DWORD dwMilliseconds)
+AZ::u32 Sleep(AZ::u32 dwMilliseconds)
 {
 #if defined(LINUX) || defined(APPLE)
     std::this_thread::sleep_for(std::chrono::milliseconds(dwMilliseconds));
@@ -317,32 +317,6 @@ DWORD Sleep(DWORD dwMilliseconds)
     return 0;
 #endif
 }
-
-#if defined(LINUX) || defined(APPLE)
-BOOL GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize)
-{
-    if (!lpBuffer || !lpnSize)
-    {
-        return FALSE;
-    }
-
-    int err = gethostname(lpBuffer, *lpnSize);
-
-    if (-1 == err)
-    {
-        CryLog("GetComputerName falied [%d]\n", errno);
-        return FALSE;
-    }
-    return TRUE;
-}
-#endif
-
-#if AZ_TRAIT_COMPILER_DEFINE_GETCURRENTPROCESSID
-DWORD GetCurrentProcessId(void)
-{
-    return (DWORD)getpid();
-}
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
