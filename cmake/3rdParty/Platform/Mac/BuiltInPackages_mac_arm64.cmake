@@ -28,7 +28,7 @@ ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.361-rev1-mac-arm64          
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-mac-arm64                          TARGETS Lua                         PACKAGE_HASH b44daae6bfdf092c7935e4aebafded6772853250c6f0a209866a1ac599857d58)
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-mac-arm64                    TARGETS mcpp                        PACKAGE_HASH 7826e3cdb70940c3efa788ab28ba02133ad494a123ae5c71ff38732ba1dabfef)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac-arm64                       TARGETS mikkelsen                   PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
-ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-mac-arm64              TARGETS GoogleBenchmark             PACKAGE_HASH a1c8793eb1760905290065929b45600a4b4457345fcc129fce253d1a8980bbce)
+ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev2-mac-arm64              TARGETS googlebenchmark             PACKAGE_HASH c33706b0e495aa17ae8c169a708fdf7ec5b76ec396e63a469ec059bd05e79d7c)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev3-mac-arm64     TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH bc322f9e28d519ab5959a638b38ee3b773fefb868802823fad2396ab4f7bcbc8)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1w-rev1-mac-arm64                     TARGETS OpenSSL                     PACKAGE_HASH 3367bdf98e73cf2413eb495853972aa4ccd29c2ef58392fa7b7fa99001b1e2e0)
 ly_associate_package(PACKAGE_NAME OpenEXR-3.4.4-rev1-mac-arm64                      TARGETS OpenEXR                     PACKAGE_HASH 4a093f5ca03836631dc66166b8f493925d0445467219efcbca3a5a0ee2ccbf4b)
