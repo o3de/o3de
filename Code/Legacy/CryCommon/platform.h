@@ -77,22 +77,6 @@
     #endif
 #endif
 
-#if !defined(PRI_THREADID)
-    #if defined(AZ_RESTRICTED_PLATFORM)
-        #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_7
-        #include AZ_RESTRICTED_FILE(platform_h)
-    #endif
-    #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-        #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-    #elif defined(MAC) || defined(IOS) && defined(__LP64__) && defined(__LP64__)
-        #define PRI_THREADID "lld"
-    #elif defined(LINUX64) || defined(ANDROID)
-        #define PRI_THREADID "ld"
-    #else
-        #define PRI_THREADID "d"
-    #endif
-#endif
-
 #include "ProjectDefines.h"                         // to get some defines available in every CryEngine project
 
 // Function attribute for printf/scanf-style parameters.

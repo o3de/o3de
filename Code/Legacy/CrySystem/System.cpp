@@ -413,7 +413,7 @@ void CSystem::ShutDown()
 /////////////////////////////////////////////////////////////////////////////////
 void CSystem::Quit()
 {
-    CryLogAlways("CSystem::Quit invoked from thread %" PRI_THREADID " (main is %" PRI_THREADID ")", AZStd::this_thread::get_id().m_id, gEnv->mMainThreadId.m_id);
+    CryLogAlways("CSystem::Quit invoked from thread %p (main is %p)", AZStd::this_thread::get_id().m_id, gEnv->mMainThreadId.m_id);
 
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
 
