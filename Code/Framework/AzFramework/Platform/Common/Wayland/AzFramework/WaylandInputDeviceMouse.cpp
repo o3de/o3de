@@ -433,7 +433,7 @@ namespace AzFramework
                 return;
             }
 
-            wl_proxy* proxy;
+            wl_proxy* proxy = nullptr;
             WaylandProxyBus::EventResult(proxy, PointerConstraintsName, &WaylandProxyBus::Events::GetProxy,
                                          PointerConstraintsName);
             auto constraints = reinterpret_cast<zwp_pointer_constraints_v1*>(proxy);
