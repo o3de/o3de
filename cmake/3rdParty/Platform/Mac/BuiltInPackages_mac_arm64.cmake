@@ -12,7 +12,7 @@
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
 ly_associate_package(PACKAGE_NAME pybind11-2.10.0-rev1-multiplatform                TARGETS pybind11                    PACKAGE_HASH 6690acc531d4b8cd453c19b448e2fb8066b2362cbdd2af1ad5df6e0019e6c6c4)
-ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                        TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
+ly_associate_package(PACKAGE_NAME cityhash-1.1-rev1-mac-arm64                       TARGETS cityhash                    PACKAGE_HASH c5844582b4fe819e74ca923dbb58405dd687a4b9acb82d7de04e3e766addb4ed)
 ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                           TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
@@ -43,3 +43,4 @@ ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev2-mac-arm64                      
 ly_associate_package(PACKAGE_NAME azslc-1.8.22-rev1-mac-arm64                       TARGETS azslc                       PACKAGE_HASH ff7c0bb755ae1fc7f2f5e2b02bb4ddfdf85deea5b22ba2f8baae4ff7b0fc8374)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev2-mac-arm64                      TARGETS SQLite                      PACKAGE_HASH 6fa05df3f97fed97bdef293ac85b250ffe443a43e776ad54312b7b356d41fccb)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev2-mac-arm64          TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 4854edb7b88fa6437b4e69e87d0ee111a25313ac2a2db5bb2f8b674ba0974f95)
+ly_associate_package(PACKAGE_NAME poly2tri-7f0487a-rev1-mac-arm64                   TARGETS poly2tri                    PACKAGE_HASH 7a55c3fe80a75d19b78179e0a682ee1020bc66e1da6e482e8bb19f06f8b45c10
