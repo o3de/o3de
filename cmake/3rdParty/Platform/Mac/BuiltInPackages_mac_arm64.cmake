@@ -43,3 +43,4 @@ ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev2-mac-arm64                      
 ly_associate_package(PACKAGE_NAME azslc-1.8.22-rev1-mac-arm64                       TARGETS azslc                       PACKAGE_HASH ff7c0bb755ae1fc7f2f5e2b02bb4ddfdf85deea5b22ba2f8baae4ff7b0fc8374)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev2-mac-arm64                      TARGETS SQLite                      PACKAGE_HASH 6fa05df3f97fed97bdef293ac85b250ffe443a43e776ad54312b7b356d41fccb)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev2-mac-arm64          TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 4854edb7b88fa6437b4e69e87d0ee111a25313ac2a2db5bb2f8b674ba0974f95)
+ly_associate_package(PACKAGE_NAME PhysX-5.1.1-rev4-mac-arm64                        TARGETS PhysX                       PACKAGE_HASH ac9cb2916df87a9d3f4d4ad85795bba0e03b3dadc70b8a817076356084594fa7
