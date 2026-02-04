@@ -13,7 +13,7 @@ ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform            
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
 ly_associate_package(PACKAGE_NAME pybind11-2.10.0-rev1-multiplatform                TARGETS pybind11                    PACKAGE_HASH 6690acc531d4b8cd453c19b448e2fb8066b2362cbdd2af1ad5df6e0019e6c6c4)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                        TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
-ly_associate_package(PACKAGE_NAME zstd-1.35-multiplatform                           TARGETS zstd                        PACKAGE_HASH 45d466c435f1095898578eedde85acf1fd27190e7ea99aeaa9acfd2f09e12665)
+ly_associate_package(PACKAGE_NAME zstd-1.35-rev1-mac-arm64                          TARGETS zstd                        PACKAGE_HASH bb401d198d9fd2be2669acb6fe8dbe59fd7d33a66b5f2fd7d3e0221e5b72d1f4)
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                   TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
 
@@ -35,7 +35,7 @@ ly_associate_package(PACKAGE_NAME OpenEXR-3.4.4-rev1-mac-arm64                  
 ly_associate_package(PACKAGE_NAME qt-5.15.2-rev8-mac-arm64                          TARGETS Qt                          PACKAGE_HASH d0f97579ea2822c73f0b316a26c68ceb5332763e691d7e78d6b02fe3104b1d31)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-mac-arm64                         TARGETS PNG                         PACKAGE_HASH 515252226a6958c459f53d8598d80ec4f90df33d2f1637104fd1a636f4962f07)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac-arm64                TARGETS libsamplerate               PACKAGE_HASH 1a4954bd2e24b04da6c121e36fde1884e1e3f9492f580cf347637d0bea4b65e0)
-ly_associate_package(PACKAGE_NAME zlib-1.3.1-rev2-mac-arm64                         TARGETS zlib                        PACKAGE_HASH 52e62890329d3e003226fca88df30701cdd862a5f137eb5f75dff504377c13b3)
+ly_associate_package(PACKAGE_NAME zlib-1.3.1-rev3-mac-arm64                         TARGETS zlib                        PACKAGE_HASH 23f4633078644752df52c1130db97d85c56b8f3c584c478294beaf3d6879115c)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-mac-arm64                 TARGETS squish                      PACKAGE_HASH 51346fba3ba2380cfe82d6af9e2e9284ccdfd6093349e9de88078c52c28c6327)
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev5-mac-arm64                   TARGETS astc                        PACKAGE_HASH be8c272683e1cd50e2ecdd16abf3188bc7543654acbc43c01533921486db828e)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac-arm64                TARGETS ISPCTexComp                 PACKAGE_HASH 0992e6662f193379cdc9ba8ab9b7a24404564df9bcc5f39d9527b7258ae4172c)
