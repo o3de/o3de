@@ -403,6 +403,70 @@ Benchmark source: `Gems/Atom/RHI/Code/Tests/LinearAllocatorBenchmarks.cpp`
 - Deallocate: Free list insertion, coalescing checks
 - No bulk reset - must free each allocation individually
 
+### Realistic Workload Benchmarks
+
+These benchmarks simulate actual Atom renderer patterns including memory initialization.
+
+Benchmark source: `Gems/Atom/RHI/Code/Tests/RealisticLinearAllocatorBenchmarks.cpp`
+
+#### DrawPacket Simulation (mimics DeviceDrawPacketBuilder)
+
+Allocates contiguous memory for DrawPacket headers, DrawItem arrays, sort keys, filter masks, and SRG pointers.
+
+| Allocator | 100 packets | 1000 packets | 5000 packets |
+|-----------|-------------|--------------|--------------|
+| **LinearAllocator** | 1.17 µs | 12.3 µs | 63.9 µs |
+| **SystemAllocator** | 7.14 µs | 72.4 µs | 362 µs |
+| **malloc/free** | 8.26 µs | 86.6 µs | 471 µs |
+
+LinearAllocator is **~6x faster** for DrawPacket construction.
+
+#### Mixed Frame Workload (DrawPackets + Staging + Misc)
+
+Combined allocation pattern simulating a complete rendering frame.
+
+| Scene Complexity | LinearAllocator | SystemAllocator | malloc | Allocations |
+|------------------|-----------------|-----------------|--------|-------------|
+| 1 (simple) | 2.12 µs | 10.8 µs | 12.8 µs | 170 |
+| 5 (medium) | 11.3 µs | 53.7 µs | 66.9 µs | 850 |
+| 10 (complex) | 22.6 µs | 108 µs | 130 µs | 1,700 |
+
+LinearAllocator is **~5x faster** for mixed frame workloads.
+
+#### Sustained 60-Frame Load (1 second at 60 FPS)
+
+Tests allocator behavior over multiple frames.
+
+| Allocations/Frame | LinearAllocator | SystemAllocator | malloc |
+|-------------------|-----------------|-----------------|--------|
+| 100 | 0.017 ms | 0.44 ms | 0.48 ms |
+| 500 | 0.091 ms | 2.22 ms | 2.26 ms |
+| 1000 | 0.18 ms | 4.46 ms | 4.41 ms |
+| 2000 | 0.36 ms | 9.01 ms | 8.88 ms |
+
+LinearAllocator is **~25x faster** for sustained frame loads.
+
+#### DrawPacket With Memory Access
+
+Includes memory initialization (write) and traversal (read) to test cache locality.
+
+| Allocator | 1000 packets | Throughput |
+|-----------|--------------|------------|
+| **LinearAllocator** | 16.9 µs | 59M items/sec |
+| **SystemAllocator** | 78.6 µs | 12.7M items/sec |
+| **malloc/free** | 90.9 µs | 11.2M items/sec |
+
+LinearAllocator is **~5x faster** even when including memory access patterns.
+
+#### Why Realistic Results Differ from Microbenchmarks
+
+The realistic benchmarks show 5-25x advantage (vs 20-35x in microbenchmarks) because:
+- Memory initialization (`memset`) time is included
+- Larger allocations reduce relative allocator overhead
+- Cache effects from memory access patterns
+
+The advantage is still substantial and represents real-world performance gains.
+
 ### When to Use Each Allocator
 
 | Use Case | Recommended Allocator |
