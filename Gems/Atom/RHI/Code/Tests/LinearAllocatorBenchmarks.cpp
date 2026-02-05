@@ -12,9 +12,13 @@
 #include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI/PoolAllocator.h>
 #include <AzCore/Math/Random.h>
+#include <AzCore/Memory/AllocatorInstance.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
 #include <benchmark/benchmark.h>
+#include <cstdlib>
+#include <vector>
 
 namespace Benchmark
 {
@@ -356,6 +360,386 @@ namespace Benchmark
     }
 
     //
+    // Comparison: SystemAllocator (O3DE's main heap allocator)
+    //
+    // This compares the arena approach against a full-featured allocator
+    // using the same "allocate many, free all" pattern
+    //
+
+    class SystemAllocatorFixture : public ::benchmark::Fixture
+    {
+    public:
+        void SetUp(const ::benchmark::State& state) override
+        {
+            m_numAllocations = static_cast<size_t>(state.range(0));
+            m_pointers.reserve(m_numAllocations);
+        }
+
+        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        {
+            // Ensure all allocations are freed
+            for (void* ptr : m_pointers)
+            {
+                if (ptr)
+                {
+                    AZ::AllocatorInstance<AZ::SystemAllocator>::Get().deallocate(ptr, 0, 0);
+                }
+            }
+            m_pointers.clear();
+        }
+
+    protected:
+        size_t m_numAllocations = 0;
+        AZStd::vector<void*> m_pointers;
+    };
+
+    // Benchmark: SystemAllocator - allocate many small objects, then free all
+    BENCHMARK_DEFINE_F(SystemAllocatorFixture, BM_AllocateThenFreeAll_Small)(benchmark::State& state)
+    {
+        const size_t allocationSize = SmallAllocationSize;
+        const size_t numAllocations = m_numAllocations;
+        auto& allocator = AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
+
+        for (auto _ : state)
+        {
+            m_pointers.clear();
+
+            // Allocate phase
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                void* ptr = allocator.allocate(allocationSize, DefaultAlignment);
+                m_pointers.push_back(ptr);
+                benchmark::DoNotOptimize(ptr);
+            }
+
+            // Free all phase
+            for (void* ptr : m_pointers)
+            {
+                allocator.deallocate(ptr, allocationSize, DefaultAlignment);
+            }
+            m_pointers.clear();
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+        state.SetBytesProcessed(state.iterations() * numAllocations * allocationSize);
+    }
+
+    // Benchmark: SystemAllocator - allocate many medium objects, then free all
+    BENCHMARK_DEFINE_F(SystemAllocatorFixture, BM_AllocateThenFreeAll_Medium)(benchmark::State& state)
+    {
+        const size_t allocationSize = MediumAllocationSize;
+        const size_t numAllocations = m_numAllocations;
+        auto& allocator = AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
+
+        for (auto _ : state)
+        {
+            m_pointers.clear();
+
+            // Allocate phase
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                void* ptr = allocator.allocate(allocationSize, DefaultAlignment);
+                m_pointers.push_back(ptr);
+                benchmark::DoNotOptimize(ptr);
+            }
+
+            // Free all phase
+            for (void* ptr : m_pointers)
+            {
+                allocator.deallocate(ptr, allocationSize, DefaultAlignment);
+            }
+            m_pointers.clear();
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+        state.SetBytesProcessed(state.iterations() * numAllocations * allocationSize);
+    }
+
+    // Benchmark: SystemAllocator - mixed sizes, then free all
+    BENCHMARK_DEFINE_F(SystemAllocatorFixture, BM_AllocateThenFreeAll_Mixed)(benchmark::State& state)
+    {
+        const size_t numAllocations = m_numAllocations;
+        auto& allocator = AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
+
+        // Pre-generate allocation sizes
+        AZ::SimpleLcgRandom random(42);
+        AZStd::vector<size_t> sizes;
+        sizes.reserve(numAllocations);
+        for (size_t i = 0; i < numAllocations; ++i)
+        {
+            size_t sizeClass = random.GetRandom() % 3;
+            switch (sizeClass)
+            {
+            case 0: sizes.push_back(SmallAllocationSize); break;
+            case 1: sizes.push_back(MediumAllocationSize); break;
+            case 2: sizes.push_back(LargeAllocationSize); break;
+            }
+        }
+
+        for (auto _ : state)
+        {
+            m_pointers.clear();
+            size_t totalBytes = 0;
+
+            // Allocate phase
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                void* ptr = allocator.allocate(sizes[i], DefaultAlignment);
+                m_pointers.push_back(ptr);
+                totalBytes += sizes[i];
+                benchmark::DoNotOptimize(ptr);
+            }
+
+            // Free all phase
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                allocator.deallocate(m_pointers[i], sizes[i], DefaultAlignment);
+            }
+            m_pointers.clear();
+
+            state.counters[s_counterTotalAllocated] = benchmark::Counter(
+                static_cast<double>(totalBytes), benchmark::Counter::kDefaults);
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+    }
+
+    //
+    // Comparison: Raw malloc/free (standard C allocator)
+    //
+    // Baseline comparison against the system's default allocator
+    //
+
+    class MallocFixture : public ::benchmark::Fixture
+    {
+    public:
+        void SetUp(const ::benchmark::State& state) override
+        {
+            m_numAllocations = static_cast<size_t>(state.range(0));
+            m_pointers.reserve(m_numAllocations);
+        }
+
+        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        {
+            for (void* ptr : m_pointers)
+            {
+                if (ptr)
+                {
+                    free(ptr);
+                }
+            }
+            m_pointers.clear();
+        }
+
+    protected:
+        size_t m_numAllocations = 0;
+        std::vector<void*> m_pointers;  // Use std::vector to avoid AZ allocator
+    };
+
+    // Benchmark: malloc - allocate many small objects, then free all
+    BENCHMARK_DEFINE_F(MallocFixture, BM_AllocateThenFreeAll_Small)(benchmark::State& state)
+    {
+        const size_t allocationSize = SmallAllocationSize;
+        const size_t numAllocations = m_numAllocations;
+
+        for (auto _ : state)
+        {
+            m_pointers.clear();
+
+            // Allocate phase
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                void* ptr = malloc(allocationSize);
+                m_pointers.push_back(ptr);
+                benchmark::DoNotOptimize(ptr);
+            }
+
+            // Free all phase
+            for (void* ptr : m_pointers)
+            {
+                free(ptr);
+            }
+            m_pointers.clear();
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+        state.SetBytesProcessed(state.iterations() * numAllocations * allocationSize);
+    }
+
+    // Benchmark: malloc - allocate many medium objects, then free all
+    BENCHMARK_DEFINE_F(MallocFixture, BM_AllocateThenFreeAll_Medium)(benchmark::State& state)
+    {
+        const size_t allocationSize = MediumAllocationSize;
+        const size_t numAllocations = m_numAllocations;
+
+        for (auto _ : state)
+        {
+            m_pointers.clear();
+
+            // Allocate phase
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                void* ptr = malloc(allocationSize);
+                m_pointers.push_back(ptr);
+                benchmark::DoNotOptimize(ptr);
+            }
+
+            // Free all phase
+            for (void* ptr : m_pointers)
+            {
+                free(ptr);
+            }
+            m_pointers.clear();
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+        state.SetBytesProcessed(state.iterations() * numAllocations * allocationSize);
+    }
+
+    // Benchmark: malloc - mixed sizes, then free all
+    BENCHMARK_DEFINE_F(MallocFixture, BM_AllocateThenFreeAll_Mixed)(benchmark::State& state)
+    {
+        const size_t numAllocations = m_numAllocations;
+
+        // Pre-generate allocation sizes (use std random to avoid AZ allocator)
+        std::vector<size_t> sizes;
+        sizes.reserve(numAllocations);
+        unsigned int seed = 42;
+        for (size_t i = 0; i < numAllocations; ++i)
+        {
+            seed = seed * 1103515245 + 12345;  // Simple LCG
+            size_t sizeClass = (seed >> 16) % 3;
+            switch (sizeClass)
+            {
+            case 0: sizes.push_back(SmallAllocationSize); break;
+            case 1: sizes.push_back(MediumAllocationSize); break;
+            case 2: sizes.push_back(LargeAllocationSize); break;
+            }
+        }
+
+        for (auto _ : state)
+        {
+            m_pointers.clear();
+            size_t totalBytes = 0;
+
+            // Allocate phase
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                void* ptr = malloc(sizes[i]);
+                m_pointers.push_back(ptr);
+                totalBytes += sizes[i];
+                benchmark::DoNotOptimize(ptr);
+            }
+
+            // Free all phase
+            for (void* ptr : m_pointers)
+            {
+                free(ptr);
+            }
+            m_pointers.clear();
+
+            state.counters[s_counterTotalAllocated] = benchmark::Counter(
+                static_cast<double>(totalBytes), benchmark::Counter::kDefaults);
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+    }
+
+    //
+    // Direct comparison benchmark: Same workload across all allocators
+    //
+    // This benchmark runs the exact same allocation pattern across:
+    // - LinearAllocator (arena)
+    // - SystemAllocator (O3DE heap)
+    // - malloc/free (system heap)
+    //
+
+    // LinearAllocator version of the canonical benchmark
+    BENCHMARK_DEFINE_F(LinearAllocatorFixture, BM_CanonicalWorkload)(benchmark::State& state)
+    {
+        const size_t numAllocations = 1000;
+        const size_t sizes[] = { 32, 64, 128, 256, 512, 1024, 2048, 4096 };
+        const size_t numSizes = sizeof(sizes) / sizeof(sizes[0]);
+
+        for (auto _ : state)
+        {
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                size_t size = sizes[i % numSizes];
+                AZ::RHI::VirtualAddress addr = m_allocator.Allocate(size, 16);
+                benchmark::DoNotOptimize(addr);
+            }
+
+            // Reset arena
+            m_allocator.GarbageCollectForce();
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+    }
+
+    // SystemAllocator version of the canonical benchmark
+    BENCHMARK_DEFINE_F(SystemAllocatorFixture, BM_CanonicalWorkload)(benchmark::State& state)
+    {
+        const size_t numAllocations = 1000;
+        const size_t sizes[] = { 32, 64, 128, 256, 512, 1024, 2048, 4096 };
+        const size_t numSizes = sizeof(sizes) / sizeof(sizes[0]);
+        auto& allocator = AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
+
+        for (auto _ : state)
+        {
+            m_pointers.clear();
+
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                size_t size = sizes[i % numSizes];
+                void* ptr = allocator.allocate(size, 16);
+                m_pointers.push_back(ptr);
+                benchmark::DoNotOptimize(ptr);
+            }
+
+            // Free all
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                size_t size = sizes[i % numSizes];
+                allocator.deallocate(m_pointers[i], size, 16);
+            }
+            m_pointers.clear();
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+    }
+
+    // malloc version of the canonical benchmark
+    BENCHMARK_DEFINE_F(MallocFixture, BM_CanonicalWorkload)(benchmark::State& state)
+    {
+        const size_t numAllocations = 1000;
+        const size_t sizes[] = { 32, 64, 128, 256, 512, 1024, 2048, 4096 };
+        const size_t numSizes = sizeof(sizes) / sizeof(sizes[0]);
+
+        for (auto _ : state)
+        {
+            m_pointers.clear();
+
+            for (size_t i = 0; i < numAllocations; ++i)
+            {
+                size_t size = sizes[i % numSizes];
+                void* ptr = malloc(size);
+                m_pointers.push_back(ptr);
+                benchmark::DoNotOptimize(ptr);
+            }
+
+            // Free all
+            for (void* ptr : m_pointers)
+            {
+                free(ptr);
+            }
+            m_pointers.clear();
+        }
+
+        state.SetItemsProcessed(state.iterations() * numAllocations);
+    }
+
+    //
     // Register benchmarks with various capacity sizes
     //
 
@@ -397,6 +781,57 @@ namespace Benchmark
     BENCHMARK_REGISTER_F(FreeListAllocatorFixture, BM_AllocateAndDeallocate)
         ->Unit(benchmark::kMicrosecond)
         ->Arg(1024 * 1024);     // 1 MB
+
+    // SystemAllocator benchmarks (allocate-then-free-all pattern)
+    BENCHMARK_REGISTER_F(SystemAllocatorFixture, BM_AllocateThenFreeAll_Small)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(1000)             // 1000 allocations
+        ->Arg(5000)             // 5000 allocations
+        ->Arg(10000);           // 10000 allocations
+
+    BENCHMARK_REGISTER_F(SystemAllocatorFixture, BM_AllocateThenFreeAll_Medium)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(1000)
+        ->Arg(5000)
+        ->Arg(10000);
+
+    BENCHMARK_REGISTER_F(SystemAllocatorFixture, BM_AllocateThenFreeAll_Mixed)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(1000)
+        ->Arg(5000)
+        ->Arg(10000);
+
+    // malloc/free benchmarks (allocate-then-free-all pattern)
+    BENCHMARK_REGISTER_F(MallocFixture, BM_AllocateThenFreeAll_Small)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(1000)
+        ->Arg(5000)
+        ->Arg(10000);
+
+    BENCHMARK_REGISTER_F(MallocFixture, BM_AllocateThenFreeAll_Medium)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(1000)
+        ->Arg(5000)
+        ->Arg(10000);
+
+    BENCHMARK_REGISTER_F(MallocFixture, BM_AllocateThenFreeAll_Mixed)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(1000)
+        ->Arg(5000)
+        ->Arg(10000);
+
+    // Canonical workload comparison (same pattern, all allocators)
+    BENCHMARK_REGISTER_F(LinearAllocatorFixture, BM_CanonicalWorkload)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(16 * 1024 * 1024);  // 16 MB arena
+
+    BENCHMARK_REGISTER_F(SystemAllocatorFixture, BM_CanonicalWorkload)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(1000);              // Number of allocations
+
+    BENCHMARK_REGISTER_F(MallocFixture, BM_CanonicalWorkload)
+        ->Unit(benchmark::kMicrosecond)
+        ->Arg(1000);              // Number of allocations
 
 } // namespace Benchmark
 
