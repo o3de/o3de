@@ -10,6 +10,7 @@ set(FILES
     Tests/RHITestFixture.h
     Tests/AllocatorTests.cpp
     Tests/LinearAllocatorBenchmarks.cpp
+    Tests/RealisticLinearAllocatorBenchmarks.cpp
     Tests/BufferTests.cpp
     Tests/DrawPacketTests.cpp
     Tests/FrameGraphTests.cpp
