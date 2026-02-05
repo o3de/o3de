@@ -199,9 +199,9 @@ static void TestFormatMessage ([[maybe_unused]] IConsoleCmdArgs* pArgs)
     AZStd::string fmt2 ("abc %[action:abc] %2 def % gh%1i %1");
     AZStd::string out1, out2;
     LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::FormatStringMessage, out1, fmt1, "first", "second", "third", nullptr);
-    CryLogAlways("%s", out1.c_str());
+    AZ_Printf("LocalizedStringManager", "%s", out1.c_str());
     LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::FormatStringMessage, out2, fmt2, "second", nullptr, nullptr, nullptr);
-    CryLogAlways("%s", out2.c_str());
+    AZ_Printf("LocalizedStringManager", "%s", out2.c_str());
 }
 #endif //#if !defined(_RELEASE)
 
@@ -410,7 +410,7 @@ bool CLocalizedStringsManager::SetLanguage(const char* sLanguage)
 {
     if (m_cvarLocalizationDebug >= 2)
     {
-        CryLog("<Localization> Set language to %s", sLanguage);
+        AZ_Info("Localization", "Set language to %s", sLanguage);
     }
 
     // Check if already language loaded.
@@ -428,7 +428,7 @@ bool CLocalizedStringsManager::SetLanguage(const char* sLanguage)
 
     if (m_cvarLocalizationDebug >= 2)
     {
-        CryLog("<Localization> Insert new language to %s", sLanguage);
+        AZ_Info("Localization", "Insert new language to %s", sLanguage);
     }
 
     pLanguage->sLanguage = sLanguage;
@@ -616,7 +616,7 @@ void CLocalizedStringsManager::OnSystemEvent(
         {
             if (m_cvarLocalizationDebug >= 2)
             {
-                CryLog("<Localization> Loading Requested Tags");
+                AZ_Info("Localization", "Loading Requested Tags");
             }
 
             for (TStringVec::iterator it = m_tagLoadRequests.begin(); it != m_tagLoadRequests.end(); ++it)
@@ -649,7 +649,7 @@ bool CLocalizedStringsManager::InitLocalizationData(
 
     if (!root)
     {
-        CryLog("Loading Localization File %s failed!", sFileName);
+        AZ_Info("Localization", "Loading Localization File %s failed!", sFileName);
         return false;
     }
 
@@ -700,7 +700,7 @@ bool CLocalizedStringsManager::RequestLoadLocalizationDataByTag(const char* sTag
 
     if (m_cvarLocalizationDebug >= 2)
     {
-        CryLog("<Localization> RequestLoadLocalizationDataByTag %s", sTag);
+        AZ_Info("Localization", "RequestLoadLocalizationDataByTag %s", sTag);
     }
 
     m_tagLoadRequests.push_back(sTag);
@@ -749,7 +749,7 @@ bool CLocalizedStringsManager::LoadLocalizationDataByTag(
 
     if (m_cvarLocalizationDebug >= 2)
     {
-        CryLog("<Localization> LoadLocalizationDataByTag %s with result %d", sTag, bResult);
+        AZ_Info("Localization", "LoadLocalizationDataByTag %s with result %d", sTag, bResult);
     }
 
     it->second.loaded = true;
@@ -839,7 +839,7 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
                             {
                                 if (m_cvarLocalizationDebug >= 2)
                                 {
-                                    CryLog("<Localization> Releasing coder %u as it no longer has associated strings", entry->huffmanTreeIndex);
+                                    AZ_Info("Localization", "Releasing coder %u as it no longer has associated strings", entry->huffmanTreeIndex);
                                 }
                                 //This coding table no longer needed, it has no more associated strings
                                 SAFE_DELETE(m_pLanguage->m_vEncoders[entry->huffmanTreeIndex]);
@@ -864,7 +864,7 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
 
     if (m_cvarLocalizationDebug >= 2)
     {
-        CryLog("<Localization> ReleaseLocalizationDataByTag %s", sTag);
+        AZ_Info("Localization", "ReleaseLocalizationDataByTag %s", sTag);
     }
 
     it->second.loaded = false;
@@ -947,7 +947,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     IXmlTableReader* const pXmlTableReader = m_pSystem->GetXmlUtils()->CreateXmlTableReader();
     if (!pXmlTableReader)
     {
-        CryLog("Loading Localization File %s failed (XML system failure)!", sFileName);
+        AZ_Info("Localization", "Loading Localization File %s failed (XML system failure)!", sFileName);
         return false;
     }
 
@@ -960,7 +960,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
         root = m_pSystem->LoadXmlFromFile(sPath.c_str());
         if (!root)
         {
-            CryLog("Loading Localization File %s failed!", sPath.c_str());
+            AZ_Info("Localization", "Loading Localization File %s failed!", sPath.c_str());
             pXmlTableReader->Release();
             return false;
         }
@@ -971,7 +971,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     //sReExport += ".re";
     //root->saveToFile(sReExport.c_str());
 
-    CryLog("Loading Localization File %s", sFileName);
+    AZ_Info("Localization", "Loading Localization File %s", sFileName);
     INDENT_LOG_DURING_SCOPE();
 
     //Create a huffman coding table for these strings - if they're going to be encoded or compressed
@@ -1004,7 +1004,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     {
         if (!pXmlTableReader->Begin(root))
         {
-            CryLog("Loading Localization File %s failed! The file is in an unsupported format.", sPath.c_str());
+            AZ_Info("Localization", "Loading Localization File %s failed! The file is in an unsupported format.", sPath.c_str());
             pXmlTableReader->Release();
             return false;
         }
@@ -1375,7 +1375,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
         keyCRC = AZ::Crc32(szLowerCaseKey);
         if (m_cvarLocalizationDebug >= 3)
         {
-            CryLogAlways("<Localization dupe/clash detection> CRC32: 0x%8X, Key: %s", keyCRC, szLowerCaseKey);
+            AZ_Printf("LocalizedStringManager", "<Localization dupe/clash detection> CRC32: 0x%8X, Key: %s", keyCRC, szLowerCaseKey);
         }
 
         if (m_pLanguage->m_keysMap.find(keyCRC) != m_pLanguage->m_keysMap.end())
@@ -1433,7 +1433,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
             if (m_cvarLocalizationEncode == 1)
             {
                 pEncoder->Update((const uint8*)(sTmp.c_str()), sTmp.length());
-                //CryLogAlways("%u Storing %s (%u)", m_pLanguage->m_vLocalizedStrings.size(), sTmp.c_str(), sTmp.length());
+                //AZ_Printf("LocalizedStringManager", "%u Storing %s (%u)", m_pLanguage->m_vLocalizedStrings.size(), sTmp.c_str(), sTmp.length());
                 pEntry->TranslatedText.szCompressed = new uint8[sTmp.length() + 1];
                 pEntry->flags |= SLocalizedStringEntry::IS_COMPRESSED;
                 //Store the raw string. It'll be compressed later
@@ -1661,7 +1661,7 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
         keyCRC = AZ::Crc32(lowerKey);
         if (m_cvarLocalizationDebug >= 3)
         {
-            CryLogAlways("<Localization dupe/clash detection> CRC32: 0%8X, Key: %s", keyCRC, lowerKey.c_str());
+            AZ_Printf("LocalizedStringManager", "<Localization dupe/clash detection> CRC32: 0%8X, Key: %s", keyCRC, lowerKey.c_str());
         }
         if (m_pLanguage->m_keysMap.find(keyCRC) != m_pLanguage->m_keysMap.end())
         {
@@ -1772,7 +1772,7 @@ void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocaliz
 
     if (m_cvarLocalizationDebug >= 2)
     {
-        CryLog("<Localization> Add new string <%u> with ID %d to <%s>", keyCRC32, nId, pLanguage->sLanguage.c_str());
+        AZ_Info("Localization", "Add new string <%u> with ID %d to <%s>", keyCRC32, nId, pLanguage->sLanguage.c_str());
     }
 }
 
@@ -1988,12 +1988,12 @@ void CLocalizedStringsManager::ListAndClearProblemLabels()
 {
     if (m_haveWarnedAboutAtLeastOneLabel)
     {
-        CryLog ("These labels caused localization problems:");
+        AZ_Info("Localization", "These labels caused localization problems:");
         INDENT_LOG_DURING_SCOPE();
 
         for (std::map<AZStd::string, bool>::iterator iter = m_warnedAboutLabels.begin(); iter != m_warnedAboutLabels.end(); iter++)
         {
-            CryLog ("%s", iter->first.c_str());
+            AZ_Info("Localization", "%s", iter->first.c_str());
         }
 
         m_warnedAboutLabels.clear();

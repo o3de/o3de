@@ -77,7 +77,7 @@ bool CMemoryBlock::Allocate(int size, int uncompressedSize)
     {
         QString str;
         str = QStringLiteral("CMemoryBlock::Allocate failed to allocate %1Mb of Memory").arg(size / (1024 * 1024));
-        CryLogAlways("%s", str.toUtf8().data());
+        AZ_Printf("MemoryBlock", "%s", str.toUtf8().data());
 
         QMessageBox::critical(QApplication::activeWindow(), QString(), str + QString("\r\nSandbox will try to reduce its working memory set to free memory for this allocation."));
         GetIEditor()->ReduceMemory();

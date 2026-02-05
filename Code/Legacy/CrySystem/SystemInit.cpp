@@ -35,7 +35,6 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Quality/QualitySystemBus.h>
 
-#include "AZCoreLogSink.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
@@ -173,7 +172,7 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
                 memset(&a, 0, sizeof(a));
                 [[maybe_unused]] float* b = &a;
                 [[maybe_unused]] float c = 3;
-                CryLog("%f", (c / *b));
+                AZ_Info("System", "%f", (c / *b));
             }
             break;
         case 3:
@@ -751,18 +750,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
     m_pCmdLine = new CCmdLine(startupParams.szSystemCmdLine);
 
-    // Init AZCoreLogSink. Don't suppress system output if we're running as an editor-server
-    bool suppressSystemOutput = true;
-    if (const ICmdLineArg* isEditorServerArg = m_pCmdLine->FindArg(eCLAT_Pre, "editorsv_isDedicated"))
-    {
-        bool editorsv_isDedicated = false;
-        if (isEditorServerArg->GetBoolValue(editorsv_isDedicated) && editorsv_isDedicated)
-        {
-            suppressSystemOutput = false;
-        }
-    }
-    AZCoreLogSink::Connect(suppressSystemOutput);
-
     // Registers all AZ Console Variables functors specified within CrySystem
     if (auto azConsole = AZ::Interface<AZ::IConsole>::Get(); azConsole)
     {
@@ -1101,7 +1088,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     InlineInitializationProcessing("CSystem::Init End");
 
     // All CVARs should now be registered, load and apply quality settings for the default quality group
-    // using device rules to auto-detected the correct quality level 
+    // using device rules to auto-detected the correct quality level
     AzFramework::QualitySystemEvents::Bus::Broadcast(
         &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
         AzFramework::QualityLevel::LevelFromDeviceRules);
@@ -1429,7 +1416,7 @@ void CSystem::CreateSystemVars()
 /////////////////////////////////////////////////////////////////////
 void CSystem::AddCVarGroupDirectory(const AZStd::string& sPath)
 {
-    CryLog("creating CVarGroups from directory '%s' ...", sPath.c_str());
+    AZ_Info("System", "creating CVarGroups from directory '%s' ...", sPath.c_str());
     INDENT_LOG_DURING_SCOPE();
 
     AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(ConcatPath(sPath.c_str(), "*.cfg").c_str());

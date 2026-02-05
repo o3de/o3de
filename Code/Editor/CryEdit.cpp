@@ -1706,7 +1706,7 @@ bool CCryEditApp::InitInstance()
         int startUpMacroIndex = GetIEditor()->GetToolBoxManager()->GetMacroIndex("startup", true);
         if (startUpMacroIndex >= 0)
         {
-            CryLogAlways("Executing the startup macro");
+            AZ_Printf("CryEdit", "Executing the startup macro");
             GetIEditor()->GetToolBoxManager()->ExecuteMacro(startUpMacroIndex, true);
         }
     }
@@ -1977,7 +1977,7 @@ int CCryEditApp::ExitInstance(int exitCode)
             int shutDownMacroIndex = GetIEditor()->GetToolBoxManager()->GetMacroIndex("shutdown", true);
             if (shutDownMacroIndex >= 0)
             {
-                CryLogAlways("Executing the shutdown macro");
+                AZ_Printf("CryEdit", "Executing the shutdown macro");
                 GetIEditor()->GetToolBoxManager()->ExecuteMacro(shutDownMacroIndex, true);
             }
         }
@@ -2907,7 +2907,7 @@ void CCryEditApp::OnViewConfigureLayout()
     if (GetIEditor()->IsInGameMode())
     {
         // you may not change your viewports while game mode is running.
-        CryLog("You may not change viewport configuration while in game mode.");
+        AZ_Info("CryEdit", "You may not change viewport configuration while in game mode.");
         return;
     }
     CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();

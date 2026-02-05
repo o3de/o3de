@@ -38,7 +38,7 @@ bool RCON_IsRemoteAllowedToConnect(const AZ::AzSock::AzSocketAddress& connectee)
     auto console = AZ::Interface<AZ::IConsole>::Get();
     if ((!gEnv) || console == nullptr)
     {
-        CryLog("Cannot allow incoming connection for remote console, because we do not yet have a console or an environment.");
+        AZ_Info("RCON", "Cannot allow incoming connection for remote console, because we do not yet have a console or an environment.");
         return false;
     }
 
@@ -47,7 +47,7 @@ bool RCON_IsRemoteAllowedToConnect(const AZ::AzSock::AzSocketAddress& connectee)
     if (console->GetCvarValue("log_RemoteConsoleAllowedAddresses", remoteConsoleAllowedHostList)
         != AZ::GetValueResult::Success)
     {
-        CryLog("Cannot allow incoming connection for remote console, because there is no registered log_RemoteConsoleAllowedAddresses console variable.");
+        AZ_Info("RCON", "Cannot allow incoming connection for remote console, because there is no registered log_RemoteConsoleAllowedAddresses console variable.");
         return false;
     }
 
@@ -191,7 +191,7 @@ void SRemoteServer::Run()
     m_socket = AZ::AzSock::Socket();
     if (!AZ::AzSock::IsAzSocketValid(m_socket))
     {
-        CryLog("Remote console FAILED. socket() => SOCKET_ERROR");
+        AZ_Info("RCON", "Remote console FAILED. socket() => SOCKET_ERROR");
         return;
     }
 
@@ -204,7 +204,7 @@ void SRemoteServer::Run()
 
 
     //
-    // There may be multiple processes running, and each process will require a unique port for remote console to work. 
+    // There may be multiple processes running, and each process will require a unique port for remote console to work.
     // So we need to be able to bind to ascending ports so that automated tests can connect to each process. QA's Automated
     // tools depend on this behavior for successful testing to occur.
     // Please check with ly-networking, ly-systems or ly-qa before changing this.
@@ -226,7 +226,7 @@ void SRemoteServer::Run()
 
     if ( !bindOk )
     {
-        CryLog("Failed to bind Remote Console to ports %hu to %hu", remotePort, static_cast<AZ::u16>(remotePort + kMaxBindPorts - 1) );
+        AZ_Info("RCON", "Failed to bind Remote Console to ports %hu to %hu", remotePort, static_cast<AZ::u16>(remotePort + kMaxBindPorts - 1) );
         return;
     }
 
@@ -236,11 +236,11 @@ void SRemoteServer::Run()
 
     if (!AZ::AzSock::SocketErrorOccured(result))
     {
-        CryLog("Remote console listening on: %d\n", sockName.GetAddrPort());
+        AZ_Info("RCON", "Remote console listening on: %d\n", sockName.GetAddrPort());
     }
     else
     {
-        CryLog("Remote console FAILED to listen on: %d\n", sockName.GetAddrPort());
+        AZ_Info("RCON", "Remote console FAILED to listen on: %d\n", sockName.GetAddrPort());
     }
 
     while (m_bAcceptClients)
@@ -269,7 +269,7 @@ void SRemoteServer::Run()
         pClient->StartClient(sClient);
     }
     AZ::AzSock::CloseSocket(m_socket);
-    CryLog("Remote console terminating.\n");
+    AZ_Info("RCON", "Remote console terminating.\n");
     //AZ::AzSock::Shutdown();
 }
 
@@ -394,7 +394,7 @@ void SRemoteClient::Run()
 
     bool ok = true;
     bool autoCompleteDoneSent = false;
-    
+
     // Send a message that is used to verify that the Remote Console connected
     SNoDataEvent<eCET_ConnectMessage> connectMessage;
     SRemoteEventFactory::GetInst()->WriteToBuffer(&connectMessage, szBuff, size, kDefaultBufferSize);

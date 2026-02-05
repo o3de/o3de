@@ -153,7 +153,6 @@ SSystemCVars g_cvars;
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/ComponentApplication.h>
-#include "AZCoreLogSink.h"
 
 namespace
 {
@@ -258,8 +257,6 @@ CSystem::~CSystem()
     SAFE_DELETE(m_pXMLUtils);
     SAFE_DELETE(m_pSystemEventDispatcher);
 
-    AZCoreLogSink::Disconnect();
-
     m_env.pSystem = 0;
     gEnv = 0;
 }
@@ -286,7 +283,7 @@ void CSystem::SetDevMode(bool bEnable)
 ///////////////////////////////////////////////////
 void CSystem::ShutDown()
 {
-    CryLogAlways("System Shutdown");
+    AZ_Printf("System", "Shutdown");
 
     // Disconnect any networking connections at the beginning of shutting down.
     // This needs to happen before unloading the level because the network connection might queue
@@ -413,7 +410,11 @@ void CSystem::ShutDown()
 /////////////////////////////////////////////////////////////////////////////////
 void CSystem::Quit()
 {
-    CryLogAlways("CSystem::Quit invoked from thread %" PRI_THREADID " (main is %" PRI_THREADID ")", AZStd::this_thread::get_id().m_id, gEnv->mMainThreadId.m_id);
+    AZ_Printf(
+        "Cry",
+        "CSystem::Quit invoked from thread %p (main is %p)",
+        AZStd::this_thread::get_id().m_id,
+        gEnv->mMainThreadId.m_id);
 
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
 
@@ -1226,7 +1227,7 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
     {
         const AZ::TimeMs endTime = AZ::GetRealElapsedTimeMs();
         [[maybe_unused]] const double numSeconds = AZ::TimeMsToSecondsDouble(endTime - s_startTime);
-        CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
+        AZ_Info("System", "SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
             m_systemGlobalState, systemGlobalState,
             CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),
             numSeconds);

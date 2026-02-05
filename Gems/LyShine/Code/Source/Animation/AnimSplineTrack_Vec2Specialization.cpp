@@ -166,12 +166,12 @@ bool TUiAnimSplineTrack<Vec2>::Serialize([[maybe_unused]] IUiAnimationSystem* ui
             XmlNodeRef keyNode = xmlNode->getChild(i);
             if (!keyNode->getAttr("time", key.time))
             {
-                CryLog("[UI_ANIMATION:TUiAnimSplineTrack<Vec2>::Serialize]Ill formed legacy track:missing time information.");
+                AZ_Info("TUiAnimSplineTrack<Vec2>::Serialize", "Ill formed legacy track:missing time information.");
                 return false;
             }
             if (!keyNode->getAttr("value", key.value))
             {
-                CryLog("[UI_ANIMATION:TUiAnimSplineTrack<Vec2>::Serialize]Ill formed legacy track:missing value information.");
+                AZ_Info("TUiAnimSplineTrack<Vec2>::Serialize", "Ill formed legacy track:missing value information.");
                 return false;
             }
             //assert(key.time == key.value.x);
@@ -183,13 +183,13 @@ bool TUiAnimSplineTrack<Vec2>::Serialize([[maybe_unused]] IUiAnimationSystem* ui
             // In-/Out-tangent
             if (!keyNode->getAttr("ds", m_spline->key(i).ds))
             {
-                CryLog("[UI_ANIMATION:TUiAnimSplineTrack<Vec2>::Serialize]Ill formed legacy track:missing ds spline information.");
+                AZ_Info("TUiAnimSplineTrack<Vec2>::Serialize", "Ill formed legacy track:missing ds spline information.");
                 return false;
             }
 
             if (!keyNode->getAttr("dd", m_spline->key(i).dd))
             {
-                CryLog("[UI_ANIMATION:TUiAnimSplineTrack<Vec2>::Serialize]Ill formed legacy track:dd spline information.");
+                AZ_Info("TUiAnimSplineTrack<Vec2>::Serialize", "Ill formed legacy track:dd spline information.");
                 return false;
             }
         }

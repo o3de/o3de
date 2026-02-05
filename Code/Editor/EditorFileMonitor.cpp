@@ -92,7 +92,7 @@ bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const 
         }
         else
         {
-            CryLogAlways("File Monitor: [%s] not found outside of PAK files. Monitoring disabled for this item", sFolderRelativeToGame);
+            AZ_Printf("FileMonitor", "[%s] not found outside of PAK files. Monitoring disabled for this item", sFolderRelativeToGame);
             success = false;
         }
     }

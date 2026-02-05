@@ -59,40 +59,6 @@
     #include <cinttypes>
 #endif
 
-#if !defined(PRISIZE_T)
-    #if defined(AZ_RESTRICTED_PLATFORM)
-        #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_6
-        #include AZ_RESTRICTED_FILE(platform_h)
-    #endif
-    #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-        #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-    #elif defined(WIN64)
-        #define PRISIZE_T "I64u" //size_t defined as unsigned __int64
-    #elif defined(WIN32) || defined(LINUX32)
-        #define PRISIZE_T "u"
-    #elif defined(MAC) || defined(LINUX64) || defined(IOS)
-        #define PRISIZE_T "lu"
-    #else
-        #error "Please defined PRISIZE_T for this platform"
-    #endif
-#endif
-
-#if !defined(PRI_THREADID)
-    #if defined(AZ_RESTRICTED_PLATFORM)
-        #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_7
-        #include AZ_RESTRICTED_FILE(platform_h)
-    #endif
-    #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-        #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-    #elif defined(MAC) || defined(IOS) && defined(__LP64__) && defined(__LP64__)
-        #define PRI_THREADID "lld"
-    #elif defined(LINUX64) || defined(ANDROID)
-        #define PRI_THREADID "ld"
-    #else
-        #define PRI_THREADID "d"
-    #endif
-#endif
-
 #include "ProjectDefines.h"                         // to get some defines available in every CryEngine project
 
 // Function attribute for printf/scanf-style parameters.

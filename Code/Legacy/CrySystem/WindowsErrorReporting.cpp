@@ -55,14 +55,14 @@ LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExcept
 
     if (!hndDBGHelpDLL)
     {
-        CryLogAlways("Failed to record DMP file: Could not open DBGHELP.DLL");
+        AZ_Printf("System", "Failed to record DMP file: Could not open DBGHELP.DLL");
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
     MINIDUMPWRITEDUMP dumpFnPtr = (MINIDUMPWRITEDUMP)::GetProcAddress(hndDBGHelpDLL, "MiniDumpWriteDump");
     if (!dumpFnPtr)
     {
-        CryLogAlways("Failed to record DMP file: Unable to find MiniDumpWriteDump in DBGHELP.DLL");
+        AZ_Printf("System", "Failed to record DMP file: Unable to find MiniDumpWriteDump in DBGHELP.DLL");
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
@@ -71,7 +71,7 @@ LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExcept
     HANDLE hFile = ::CreateFileW(szDumpPathW.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
-        CryLogAlways("Failed to record DMP file: could not open file '%s' for writing - error code: %d", szDumpPath, GetLastError());
+        AZ_Printf("System", "Failed to record DMP file: could not open file '%s' for writing - error code: %d", szDumpPath, GetLastError());
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
@@ -85,12 +85,12 @@ LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExcept
 
     if (bOK)
     {
-        CryLogAlways("Successfully recorded DMP file:  '%s'", szDumpPath);
+        AZ_Printf("System", "Successfully recorded DMP file:  '%s'", szDumpPath);
         return EXCEPTION_EXECUTE_HANDLER; // SUCCESS!  you can execute your handlers now
     }
     else
     {
-        CryLogAlways("Failed to record DMP file: '%s' - error code: %d", szDumpPath, GetLastError());
+        AZ_Printf("System", "Failed to record DMP file: '%s' - error code: %d", szDumpPath, GetLastError());
     }
 
     return EXCEPTION_CONTINUE_SEARCH;

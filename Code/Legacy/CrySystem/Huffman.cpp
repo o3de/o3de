@@ -42,16 +42,16 @@ void HuffmanCoder::BitStreamBuilder::AddBits(uint8 value, uint32 numBits)
     mask = (uint8)(1 << (numBits - 1));
     while (mask != 0)
     {
-        //CryLogAlways("mask is %u", mask);
+        //AZ_Printf("Huffman", "mask is %u", mask);
         if (mask & value)
         {
-            //CryLogAlways("Buffer value was %u", *m_pBufferCursor.ptr);
+            //AZ_Printf("Huffman", "Buffer value was %u", *m_pBufferCursor.ptr);
             *(m_pBufferCursor.ptr) |= m_mask;
-            //CryLogAlways("Buffer value now %u", *m_pBufferCursor.ptr);
+            //AZ_Printf("Huffman", "Buffer value now %u", *m_pBufferCursor.ptr);
         }
-        //CryLogAlways("m_mask was %u", m_mask);
+        //AZ_Printf("Huffman", "m_mask was %u", m_mask);
         m_mask = m_mask >> 1;
-        //CryLogAlways("m_mask now %u", m_mask);
+        //AZ_Printf("Huffman", "m_mask now %u", m_mask);
         if (m_mask == 0)
         {
             if (m_pBufferCursor.ptr == m_pBufferEnd.ptr)
@@ -59,9 +59,9 @@ void HuffmanCoder::BitStreamBuilder::AddBits(uint8 value, uint32 numBits)
                 CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Bit Stream has consumed the last byte of the buffer and is requesting another. This stream will be truncated here.");
                 return;
             }
-            //CryLogAlways("Buffer cursor was %u (%p)", *m_pBufferCursor.ptr, m_pBufferCursor.ptr);
+            //AZ_Printf("Huffman", "Buffer cursor was %u (%p)", *m_pBufferCursor.ptr, m_pBufferCursor.ptr);
             m_pBufferCursor.ptr++;
-            //CryLogAlways("Buffer cursor now %u (%p)", *m_pBufferCursor.ptr, m_pBufferCursor.ptr);
+            //AZ_Printf("Huffman", "Buffer cursor now %u (%p)", *m_pBufferCursor.ptr, m_pBufferCursor.ptr);
             m_mask = 0x80;
         }
         mask = mask >> 1L;
@@ -85,18 +85,18 @@ uint8 HuffmanCoder::BitStreamBuilder::GetBit()
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Bit Stream has consumed the last byte of the buffer and is requesting another. This stream will be truncated here.");
             return 2;
         }
-        //CryLogAlways("Buffer cursor was %u (%p)", *m_pBufferCursor.const_ptr, m_pBufferCursor.const_ptr);
+        //AZ_Printf("Huffman", "Buffer cursor was %u (%p)", *m_pBufferCursor.const_ptr, m_pBufferCursor.const_ptr);
         m_pBufferCursor.const_ptr++;
-        //CryLogAlways("Buffer cursor now %u (%p)", *m_pBufferCursor.const_ptr, m_pBufferCursor.const_ptr);
+        //AZ_Printf("Huffman", "Buffer cursor now %u (%p)", *m_pBufferCursor.const_ptr, m_pBufferCursor.const_ptr);
         m_mask = 0x80;
     }
     if (m_mask & *(m_pBufferCursor.const_ptr))
     {
         value = 1;
     }
-    //CryLogAlways("m_mask was %u", m_mask);
+    //AZ_Printf("Huffman", "m_mask was %u", m_mask);
     m_mask = m_mask >> 1;
-    //CryLogAlways("m_mask now %u", m_mask);
+    //AZ_Printf("Huffman", "m_mask now %u", m_mask);
 
     return value;
 }
@@ -174,7 +174,7 @@ void HuffmanCoder::CompressInput(const uint8* const pInput, const size_t numByte
             }
         }
         szBits[32] = 0;
-        CryLogAlways("%c - %s (%u)", value, szBits, numBits);*/
+        AZ_Printf("Huffman", "%c - %s (%u)", value, szBits, numBits);*/
         streamBuilder.AddBits(value, numBits);
     }
     streamBuilder.AddBits(m_Codes[END_OF_STREAM].value, m_Codes[END_OF_STREAM].numBits);
@@ -194,7 +194,7 @@ size_t HuffmanCoder::UncompressInput(const uint8* const pInput, const size_t num
         {
             uint8 bitValue = streamBuilder.GetBit();
 #if 0
-            CryLogAlways("bit=%ld\n", bitValue);
+            AZ_Printf("Huffman", "bit=%ld\n", bitValue);
 #endif
 
             if (bitValue == 0)
@@ -215,10 +215,10 @@ size_t HuffmanCoder::UncompressInput(const uint8* const pInput, const size_t num
         code = node;
 #if 0
         {
-            CryLogAlways("%c", code);
+            AZ_Printf("Huffman", "%c", code);
             if (code == '\0')
             {
-                CryLogAlways("EOM");
+                AZ_Printf("Huffman", "EOM");
             }
         }
 #endif

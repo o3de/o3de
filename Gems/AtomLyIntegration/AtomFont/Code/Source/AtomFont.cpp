@@ -159,7 +159,7 @@ namespace
     //! Returns true if the XML tree was traversed successfully, false otherwise.
     //!
     //! Note that, if this function returns true, it simply means that there were
-    //! no unexpected structure issues with the given XML tree, it doesn't 
+    //! no unexpected structure issues with the given XML tree, it doesn't
     //! necessarily mean that all the required fields were parsed.
     bool ParseFontFamilyXml(const XmlNodeRef& node, FontFamilyTagXml& xmlData)
     {
@@ -329,7 +329,7 @@ namespace
 
 AZ::AtomFont::AtomFont([[maybe_unused]] ISystem* system)
 {
-    CryLogAlways("Using FreeType %d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
+    AZ_Printf("AtomFont", "Using FreeType %d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
 
     // Persist fonts for application lifetime to prevent unnecessary work
     REGISTER_CVAR(r_persistFontFamilies, r_persistFontFamilies, VF_NULL, "Persist loaded font families for lifetime of application.");
@@ -423,7 +423,7 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
     FontFamilyPtr fontFamily(nullptr);
     AZStd::string fontFamilyPath;
     AZStd::string fontFamilyFullPath;
-    
+
     XmlNodeRef root = LoadFontFamilyXml(fontFamilyName, fontFamilyPath, fontFamilyFullPath);
 
     if (root)
@@ -437,8 +437,8 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
             FontTagXml* langSpecificFont = nullptr;
 
             // Note that we don't break out of this for-loop early because we
-            // want to find both the default font family and the 
-            // language-specific font family. We prefer the lang-specific 
+            // want to find both the default font family and the
+            // language-specific font family. We prefer the lang-specific
             // family but will fall back on the default if it doesn't exist.
             for (FontTagXml& fontTagXml : xmlData.m_fontTagsXml)
             {
@@ -468,7 +468,7 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
                 // Prefer lang-specific font-family over default, if it exists
                 FontTagXml* fontTagXml = langSpecificFont ? langSpecificFont : defaultFont;
 
-                // Pre-pend font family's path to make font family XML paths 
+                // Pre-pend font family's path to make font family XML paths
                 // relative to font family file
                 fontTagXml->m_fontFilename = fontFamilyPath + fontTagXml->m_fontFilename;
                 fontTagXml->m_boldFontFilename = fontFamilyPath + fontTagXml->m_boldFontFilename;
@@ -493,7 +493,7 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
                     });
 
                     // Map the font family name both by path and by name defined
-                    // within the Font Family XML itself. This allows font 
+                    // within the Font Family XML itself. This allows font
                     // families to also be referenced simply by name.
                     if (!AddFontFamilyToMaps(fontFamilyFullPath.c_str(), xmlData.m_fontFamilyName.c_str(), fontFamily))
                     {
@@ -557,7 +557,7 @@ FontFamilyPtr AZ::AtomFont::LoadFontFamily(const char* fontFamilyName)
             fontFamily->italic = font;
             fontFamily->boldItalic = font;
 
-            // The other three stylings need to have their ref count 
+            // The other three stylings need to have their ref count
             // incremented (even though in this particular case its all the
             // same font) because when ReleaseFontFamily executes all fonts
             // in the family will be (corresondingly) Release'd.
@@ -597,7 +597,7 @@ FontFamilyPtr AZ::AtomFont::GetFontFamily(const char* fontFamilyName)
     {
         // Iterate through all fonts, returning the first match where simply
         // the filename of a font could be a match. This case will likely be
-        // hit when text markup references a font that doesn't belong to a 
+        // hit when text markup references a font that doesn't belong to a
         // font family.
         for (const auto& fontFamilyIter : m_fontFamilies)
         {
@@ -705,7 +705,7 @@ void AZ::AtomFont::UnregisterFont(const char* fontName)
     for (auto reverseMapEntry : m_fontFamilyReverseLookup)
     {
         FontFamily* fontFamily = reverseMapEntry.first;
-        AZ_Assert(fontFamily->normal != fontPtr, 
+        AZ_Assert(fontFamily->normal != fontPtr,
             "The following font is being freed but still in use by a FontFamily: %s",
             fontName);
         AZ_Assert(fontFamily->italic != fontPtr,
@@ -787,7 +787,7 @@ bool AZ::AtomFont::AddFontFamilyToMaps(const char* fontFamilyFilename, const cha
         return false;
     }
 
-    // We don't support "updating" mapped values. 
+    // We don't support "updating" mapped values.
     AZStd::string loweredFilename(PathUtil::MakeGamePath(AZStd::string(fontFamilyFilename)).c_str());
     AZStd::to_lower<AZStd::string::iterator>(loweredFilename.begin(), loweredFilename.end());
     if (m_fontFamilies.find(loweredFilename) != m_fontFamilies.end())
@@ -796,7 +796,7 @@ bool AZ::AtomFont::AddFontFamilyToMaps(const char* fontFamilyFilename, const cha
         return false;
     }
 
-    // Similarly, we don't support Font Family XMLs that have the same font 
+    // Similarly, we don't support Font Family XMLs that have the same font
     // family name (we assume all Font Family names are unique).
     AZStd::string loweredFontFamilyName(fontFamilyName);
     AZStd::to_lower<AZStd::string::iterator>(loweredFontFamilyName.begin(), loweredFontFamilyName.end());
@@ -810,7 +810,7 @@ bool AZ::AtomFont::AddFontFamilyToMaps(const char* fontFamilyFilename, const cha
     AZStd::pair<AZStd::string, AZStd::weak_ptr<FontFamily>> insertPair(loweredFilename, fontFamily);
     auto iterPosition = m_fontFamilies.insert(insertPair).first;
     m_fontFamilyReverseLookup[fontFamily.get()] = iterPosition;
-    
+
     // Then, by Font Family name
     AZStd::pair<AZStd::string, AZStd::weak_ptr<FontFamily>> nameInsertPair(loweredFontFamilyName, fontFamily);
     m_fontFamilies.insert(nameInsertPair);
@@ -829,7 +829,7 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, AZStd::st
     AZ::RPI::AssetUtils::TryToCompileAsset(outputFullPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::None);
     XmlNodeRef root = SafeLoadXmlFromFile(outputFullPath);
 
-    // When parsing a <font> tag in markup, only the font name is given and 
+    // When parsing a <font> tag in markup, only the font name is given and
     // not a path, so we try to build a "best guess" path from the name.
     if (!root)
     {

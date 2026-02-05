@@ -125,7 +125,7 @@ CUndoManager::~CUndoManager()
 //////////////////////////////////////////////////////////////////////////
 void CUndoManager::Begin()
 {
-    //CryLog( "<Undo> Begin SuspendCount=%d",m_suspendCount );
+    //AZ_Info("Undo", "Begin SuspendCount=%d", m_suspendCount);
     //if (m_bSuperRecording)
     //CLogFile::FormatLine( "<Undo> Begin (Inside SuperSuper)" );
     if (m_bUndoing || m_bRedoing) // If Undoing or redoing now, ignore this calls.
@@ -172,7 +172,7 @@ void CUndoManager::Restore(bool bUndo)
         }
         EndRestoreTransaction();
     }
-    //CryLog( "Restore Undo" );
+    //AZ_Info("Undo", "Restore Undo");
 }
 
 // This function is used below to decide if an operation should force a save or not. This currently
@@ -185,7 +185,7 @@ static bool ShouldPersist(const QString& name)
 //////////////////////////////////////////////////////////////////////////
 void CUndoManager::Accept(const QString& name)
 {
-    //CryLog( "<Undo> Accept, Suspend Count=%d",m_suspendCount );
+    //AZ_Info("Undo", "Accept, Suspend Count=%d", m_suspendCount);
     if (m_bUndoing || m_bRedoing) // If Undoing or redoing now, ignore this calls.
     {
         return;
@@ -193,7 +193,7 @@ void CUndoManager::Accept(const QString& name)
 
     if (!m_bRecording)
     {
-        //CLogFile::WriteLine( "<Undo> Accept (Not recording)" );
+        //CLogFile::WriteLine("<Undo> Accept (not recording)");
         return;
     }
 
@@ -266,7 +266,7 @@ void CUndoManager::Accept(const QString& name)
 //////////////////////////////////////////////////////////////////////////
 void CUndoManager::Cancel()
 {
-    //CryLog( "<Undo> Cancel" );
+    //AZ_Info("Undo", "Cancel");
     if (m_bUndoing || m_bRedoing) // If Undoing or redoing now, ignore this calls.
     {
         return;
@@ -412,7 +412,7 @@ void CUndoManager::Undo(int numSteps)
 //////////////////////////////////////////////////////////////////////////
 void CUndoManager::RecordUndo(IUndoObject* obj)
 {
-    //CryLog( "<Undo> RecordUndo Name=%s",obj->GetDescription() );
+    //AZ_Info("Undo", "RecordUndo Name=%s", obj->GetDescription());
 
     if (m_bUndoing || m_bRedoing) // If Undoing or redoing now, ignore this calls.
     {

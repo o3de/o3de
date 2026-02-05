@@ -104,8 +104,8 @@ void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
     if (pCmd->GetArgCount() > 1)
     {
         // console commands are interpreted in the invarant locale as they come from cfg files which need to be
-        // portable. 
-        AZ::Locale::ScopedSerializationLocale scopedLocale; 
+        // portable.
+        AZ::Locale::ScopedSerializationLocale scopedLocale;
 
         pConsole->m_waitSeconds.SetSeconds(atof(pCmd->GetArg(1)));
         const AZ::TimeMs elaspedTimeMs = AZ::GetRealElapsedTimeMs();
@@ -806,7 +806,7 @@ ICVar* CXConsole::GetCVar(const char* sName)
     if (con_debug)
     {
         // Log call stack on get cvar.
-        CryLog("GetCVar(\"%s\") called", sName);
+        AZ_Info("Console", "GetCVar(\"%s\") called", sName);
         m_pSystem->debug_LogCallStack();
     }
 
@@ -1138,7 +1138,7 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
     int commandCount = 0;
     int cvarCount = 0;
 
-    CryLogAlways("[CVARS]: [BEGIN AUDIT]");
+    AZ_Printf("CVars", "[BEGIN AUDIT]");
 
     for (ConsoleCommandsMapItor it = m_mapCommands.begin(); it != m_mapCommands.end(); ++it)
     {
@@ -1150,7 +1150,7 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
         bool shouldLog = ((cheatFlags | devOnlyFlags | dediOnlyFlags) == 0) || (((cheatFlags | devOnlyFlags | dediOnlyFlags) & ~excludeMask) != 0);
         if (shouldLog)
         {
-            CryLogAlways("[CVARS]: [COMMAND] %s%s%s%s%s",
+            AZ_Printf("CVars", "[COMMAND] %s%s%s%s%s",
                 command.m_sName.c_str(),
                 (cheatFlags != 0) ? " [VF_CHEAT]" : "",
                 (devOnlyFlags != 0) ? " [VF_DEV_ONLY]" : "",
@@ -1174,20 +1174,26 @@ void CXConsole::AuditCVars(IConsoleCmdArgs* pArg)
         bool shouldLog = ((cheatFlags | constFlags | readOnlyFlags | devOnlyFlags | dediOnlyFlags) == 0) || (((cheatFlags | constFlags | readOnlyFlags | devOnlyFlags | dediOnlyFlags) & ~excludeMask) != 0);
         if (shouldLog)
         {
-            CryLogAlways("[CVARS]: [VARIABLE] %s%s%s%s%s%s%s",
+            AZ_Printf(
+                "CVars",
+                "[VARIABLE] %s%s%s%s%s%s%s",
                 pVariable->GetName(),
                 (cheatFlags != 0) ? " [VF_CHEAT]" : "",
                 (constFlags != 0) ? " [VF_CONST_CVAR]" : "",
                 (readOnlyFlags != 0) ? " [VF_READONLY]" : "",
                 (devOnlyFlags != 0) ? " [VF_DEV_ONLY]" : "",
                 (dediOnlyFlags != 0) ? " [VF_DEDI_ONLY]" : "",
-                ""
-                );
+                "");
             ++cvarCount;
         }
     }
 
-    CryLogAlways("[CVARS]: [END AUDIT] (commands %d/%" PRISIZE_T "; variables %d/%" PRISIZE_T ")", commandCount, m_mapCommands.size(), cvarCount, m_mapVariables.size());
+    AZ_Printf(
+        "CVars",
+        "[END AUDIT] (commands %d/%d; variables %d/%d)",
+        commandCount,
+        m_mapCommands.size(),
+        cvarCount, m_mapVariables.size());
 }
 #endif // ALLOW_AUDIT_CVARS
 
@@ -1596,7 +1602,7 @@ void CXConsole::ExecuteDeferredCommands()
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::ExecuteCommand(CConsoleCommand& cmd, AZStd::string& str, bool bIgnoreDevMode)
 {
-    CryLog ("[CONSOLE] Executing console command '%s'", str.c_str());
+    AZ_Info("Console", "Executing console command '%s'", str.c_str());
     INDENT_LOG_DURING_SCOPE();
 
     std::vector<AZStd::string> args;

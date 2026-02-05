@@ -129,14 +129,14 @@ protected:
 
     void PrintHelp()
     {
-        CryLogAlways("%s.%s:", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "%s.%s:", m_module.c_str(), m_name.c_str());
         if (m_description.length() > 0)
         {
-            CryLogAlways("    %s", m_description.c_str());
+            AZ_Printf("Command", "    %s", m_description.c_str());
         }
         if (m_example.length() > 0)
         {
-            CryLogAlways("    Usage:  %s", m_example.c_str());
+            AZ_Printf("Command", "    Usage:  %s", m_example.c_str());
         }
     }
 };
@@ -395,7 +395,7 @@ QString CCommand1<LIST(1, P)>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 1);
     if (args.GetArgCount() < 1)
     {
-        CryLogAlways("Cannot execute the command %s.%s! One argument required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! One argument required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -408,7 +408,7 @@ QString CCommand1<LIST(1, P)>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s)! Invalid argument type.",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s)! Invalid argument type.",
             m_module, m_name, args.GetArg(0).c_str());
         PrintHelp();
     }
@@ -432,7 +432,7 @@ QString CCommand1wRet<LIST(1, P), RT>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 1);
     if (args.GetArgCount() < 1)
     {
-        CryLogAlways("Cannot execute the command %s.%s! One argument required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! One argument required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -446,7 +446,7 @@ QString CCommand1wRet<LIST(1, P), RT>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s)! Invalid argument type.",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s)! Invalid argument type.",
             m_module, m_name, args.GetArg(0).c_str());
         PrintHelp();
     }
@@ -470,7 +470,7 @@ QString CCommand2<LIST(2, P)>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 2);
     if (args.GetArgCount() < 2)
     {
-        CryLogAlways("Cannot execute the command %s.%s! Two arguments required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! Two arguments required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -485,7 +485,7 @@ QString CCommand2<LIST(2, P)>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s,%s)! Invalid argument type(s).",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s,%s)! Invalid argument type(s).",
             m_module, m_name, args.GetArg(0).c_str(), args.GetArg(1).c_str());
         PrintHelp();
     }
@@ -509,7 +509,7 @@ QString CCommand2wRet<LIST(2, P), RT>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 2);
     if (args.GetArgCount() < 2)
     {
-        CryLogAlways("Cannot execute the command %s.%s! Two arguments required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! Two arguments required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -525,7 +525,7 @@ QString CCommand2wRet<LIST(2, P), RT>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s,%s)! Invalid argument type(s).",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s,%s)! Invalid argument type(s).",
             m_module, m_name, args.GetArg(0).c_str(), args.GetArg(1).c_str());
         PrintHelp();
     }
@@ -549,7 +549,7 @@ QString CCommand3<LIST(3, P)>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 3);
     if (args.GetArgCount() < 3)
     {
-        CryLogAlways("Cannot execute the command %s.%s! Three arguments required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! Three arguments required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -566,7 +566,7 @@ QString CCommand3<LIST(3, P)>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s,%s,%s)! Invalid argument type(s).",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s,%s,%s)! Invalid argument type(s).",
             m_module, m_name, args.GetArg(0).c_str(), args.GetArg(1).c_str(), args.GetArg(2).c_str());
         PrintHelp();
     }
@@ -590,7 +590,7 @@ QString CCommand3wRet<LIST(3, P), RT>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 3);
     if (args.GetArgCount() < 3)
     {
-        CryLogAlways("Cannot execute the command %s.%s! Three arguments required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! Three arguments required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -608,7 +608,7 @@ QString CCommand3wRet<LIST(3, P), RT>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s,%s,%s)! Invalid argument type(s).",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s,%s,%s)! Invalid argument type(s).",
             m_module, m_name, args.GetArg(0).c_str(), args.GetArg(1).c_str(), args.GetArg(2).c_str());
         PrintHelp();
     }
@@ -632,7 +632,7 @@ QString CCommand4<LIST(4, P)>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 4);
     if (args.GetArgCount() < 4)
     {
-        CryLogAlways("Cannot execute the command %s.%s! Four arguments required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! Four arguments required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -651,7 +651,7 @@ QString CCommand4<LIST(4, P)>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s,%s,%s,%s)! Invalid argument type(s).",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s,%s,%s,%s)! Invalid argument type(s).",
             m_module, m_name, args.GetArg(0).c_str(), args.GetArg(1).c_str(), args.GetArg(2).c_str(),
             args.GetArg(3).c_str());
         PrintHelp();
@@ -676,7 +676,7 @@ QString CCommand4wRet<LIST(4, P), RT>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 4);
     if (args.GetArgCount() < 4)
     {
-        CryLogAlways("Cannot execute the command %s.%s! Four arguments required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! Four arguments required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -696,7 +696,7 @@ QString CCommand4wRet<LIST(4, P), RT>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s,%s,%s,%s)! Invalid argument type(s).",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s,%s,%s,%s)! Invalid argument type(s).",
             m_module, m_name, args.GetArg(0).c_str(), args.GetArg(1).c_str(), args.GetArg(2).c_str(),
             args.GetArg(3).c_str());
         PrintHelp();
@@ -721,7 +721,7 @@ QString CCommand5<LIST(5, P)>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 5);
     if (args.GetArgCount() < 5)
     {
-        CryLogAlways("Cannot execute the command %s.%s! Five arguments required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! Five arguments required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -742,7 +742,7 @@ QString CCommand5<LIST(5, P)>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s,%s,%s,%s,%s)! Invalid argument type(s).",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s,%s,%s,%s,%s)! Invalid argument type(s).",
             m_module, m_name, args.GetArg(0).c_str(), args.GetArg(1).c_str(), args.GetArg(2).c_str(),
             args.GetArg(3).c_str(), args.GetArg(4).c_str());
         PrintHelp();
@@ -767,7 +767,7 @@ QString CCommand6<LIST(6, P)>::Execute(const CCommand::CArgs& args)
     assert(args.GetArgCount() == 6);
     if (args.GetArgCount() < 6)
     {
-        CryLogAlways("Cannot execute the command %s.%s! Six arguments required.", m_module.c_str(), m_name.c_str());
+        AZ_Printf("Command", "Cannot execute the command %s.%s! Six arguments required.", m_module.c_str(), m_name.c_str());
         PrintHelp();
         return "";
     }
@@ -790,7 +790,7 @@ QString CCommand6<LIST(6, P)>::Execute(const CCommand::CArgs& args)
     }
     else
     {
-        CryLogAlways("Cannot execute the command %s.%s(%s,%s,%s,%s,%s,%s)! Invalid argument type(s).",
+        AZ_Printf("Command", "Cannot execute the command %s.%s(%s,%s,%s,%s,%s,%s)! Invalid argument type(s).",
             m_module.c_str(), m_name.c_str(), args.GetArg(0).c_str(), args.GetArg(1).c_str(), args.GetArg(2).c_str(),
             args.GetArg(3).c_str(), args.GetArg(4).c_str(), args.GetArg(5).c_str());
         PrintHelp();

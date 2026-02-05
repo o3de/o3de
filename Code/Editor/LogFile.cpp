@@ -177,7 +177,7 @@ void CLogFile::FormatLineV(const char * format, va_list argList)
 {
     char szBuffer[MAX_LOGBUFFER_SIZE];
     azvsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, format, argList);
-    CryLog("%s", szBuffer);
+    AZ_Info("LogFile", "%s", szBuffer);
 }
 
 namespace LogFileInternal
@@ -380,7 +380,7 @@ namespace LogFileInternal
         auto queryOSInfoOutcome = QueryOSInfoUsingWMI();
         if (!queryOSInfoOutcome)
         {
-            CryLog("Failed to query Windows version info using WMI with error: %s.\n"
+            AZ_Info("LogFile", "Failed to query Windows version info using WMI with error: %s.\n"
                 "Falling back to using GetVersionEx", queryOSInfoOutcome.GetError().c_str());
             return QueryOSInfoUsingGetVersionEx();
         }
@@ -417,10 +417,10 @@ void CLogFile::AboutSystem()
 
     // Format and send OS information line
     azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current Language: %s ", szLanguageBuffer.c_str());
-    CryLog("%s", szBuffer);
+    AZ_Info("LogFile", "%s", szBuffer);
 #else
     QLocale locale;
-    CryLog("Current Language: %s (%s)", qPrintable(QLocale::languageToString(locale.language())), qPrintable(QLocale::countryToString(locale.country())));
+    AZ_Info("LogFile", "Current Language: %s (%s)", qPrintable(QLocale::languageToString(locale.language())), qPrintable(QLocale::countryToString(locale.country())));
 #endif
 
 
@@ -433,10 +433,10 @@ void CLogFile::AboutSystem()
     // Show Windows directory
     //////////////////////////////////////////////////////////////////////
 
-    CryLog("%s", str.toUtf8().data());
+    AZ_Info("LogFile", "%s", str.toUtf8().data());
 #elif defined(AZ_PLATFORM_LINUX)
     // TODO: Add more detail about the current Linux Distro
-    CryLog("Linux");
+    AZ_Info("LogFile", "Linux");
 #elif AZ_TRAIT_OS_PLATFORM_APPLE
     QString operatingSystemName;
     if (QSysInfo::MacintoshVersion >= Q_MV_OSX(10, 12))
@@ -455,9 +455,9 @@ void CLogFile::AboutSystem()
     Gestalt(gestaltSystemVersionMinor, &minorVersion);
     AZ_POP_DISABLE_WARNING
 
-    CryLog("%s - %d.%d", qPrintable(operatingSystemName), majorVersion, minorVersion);
+    AZ_Info("LogFile", "%s - %d.%d", qPrintable(operatingSystemName), majorVersion, minorVersion);
 #else
-    CryLog("Unknown Operating System");
+    AZ_Info("LogFile", "Unknown Operating System");
 #endif
 
     //////////////////////////////////////////////////////////////////////
@@ -473,7 +473,7 @@ void CLogFile::AboutSystem()
     str += szBuffer;
     azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %ld minutes", GetTickCount() / 60000);
     str += szBuffer;
-    CryLog("%s", str.toUtf8().data());
+    AZ_Info("LogFile", "%s", str.toUtf8().data());
 #else
     struct timespec ts;
 #if AZ_TRAIT_OS_PLATFORM_APPLE
@@ -486,7 +486,7 @@ void CLogFile::AboutSystem()
 #else
     clock_gettime(CLOCK_MONOTONIC, &ts);
 #endif
-    CryLog("Local time is %s, system running for %ld minutes", qPrintable(QTime::currentTime().toString("hh:mm:ss")), ts.tv_sec / 60);
+    AZ_Info("LogFile", "Local time is %s, system running for %ld minutes", qPrintable(QTime::currentTime().toString("hh:mm:ss")), ts.tv_sec / 60);
 #endif
 
     //////////////////////////////////////////////////////////////////////
@@ -498,7 +498,7 @@ void CLogFile::AboutSystem()
     azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "%zdMB phys. memory installed, %zdMB paging available",
         MemoryStatus.dwTotalPhys / 1048576 + 1,
         MemoryStatus.dwAvailPageFile / 1048576);
-    CryLog("%s", szBuffer);
+    AZ_Info("LogFile", "%s", szBuffer);
 #elif defined(AZ_PLATFORM_LINUX)
     //KDAB_TODO
 #else
@@ -508,7 +508,7 @@ void CLogFile::AboutSystem()
     Gestalt(gestaltPhysicalRAMSizeInMegabytes, &mb);
     Gestalt(gestaltLogicalRAMSize, &lmb);
     AZ_POP_DISABLE_WARNING
-    CryLog("%dMB phys. memory installed, %dMB paging available", mb, lmb);
+    AZ_Info("LogFile", "%dMB phys. memory installed, %dMB paging available", mb, lmb);
 #endif
 
     //////////////////////////////////////////////////////////////////////
@@ -524,12 +524,12 @@ void CLogFile::AboutSystem()
     azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %ldx%ldx%ld, %s",
         DisplayConfig.dmPelsWidth, DisplayConfig.dmPelsHeight,
         DisplayConfig.dmBitsPerPel, szLanguageBuffer.c_str());
-    CryLog("%s", szBuffer);
+    AZ_Info("LogFile", "%s", szBuffer);
 #else
     auto screen = QGuiApplication::primaryScreen();
     if (screen)
     {
-        CryLog("Current display mode is %dx%dx%d, %s", screen->size().width(), screen->size().height(), screen->depth(), qPrintable(screen->name()));
+        AZ_Info("LogFile", "Current display mode is %dx%dx%d, %s", screen->size().width(), screen->size().height(), screen->depth(), qPrintable(screen->name()));
     }
 #endif
 
@@ -571,17 +571,17 @@ void CLogFile::AboutSystem()
     // Any mouse attached ?
     if (!GetSystemMetrics(SM_MOUSEPRESENT))
     {
-        CryLog("%s", (str + " keyboard and no mouse installed").toUtf8().data());
+        AZ_Info("LogFile", "%s", (str + " keyboard and no mouse installed").toUtf8().data());
     }
     else
     {
         azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " keyboard and %i+ button mouse installed",
             GetSystemMetrics(SM_CMOUSEBUTTONS));
         str += szBuffer;
-        CryLog("%s", str.toUtf8().data());
+        AZ_Info("LogFile", "%s", str.toUtf8().data());
     }
 
-    CryLog("--------------------------------------------------------------------------------");
+    AZ_Info("LogFile", "--------------------------------------------------------------------------------");
 #endif
 }
 
@@ -604,7 +604,7 @@ QString CLogFile::GetMemUsage()
 //////////////////////////////////////////////////////////////////////////
 void CLogFile::WriteLine(const char* pszString)
 {
-    CryLog("%s", pszString);
+    AZ_Info("LogFile", "%s", pszString);
 }
 
 //////////////////////////////////////////////////////////////////////////

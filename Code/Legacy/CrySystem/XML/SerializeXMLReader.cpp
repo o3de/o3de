@@ -16,7 +16,7 @@
 #define TAG_SCRIPT_TYPE "t"
 #define TAG_SCRIPT_NAME "n"
 
-//#define LOG_SERIALIZE_STACK(tag,szName) CryLogAlways( "<%s> %s/%s",tag,GetStackInfo().c_str(), szName);
+//#define LOG_SERIALIZE_STACK(tag,szName) AZ_Printf("SerializeXMLReader", "<%s> %s/%s",tag,GetStackInfo().c_str(), szName);
 #define LOG_SERIALIZE_STACK(tag, szName)
 
 CSerializeXMLReaderImpl::CSerializeXMLReaderImpl(const XmlNodeRef& nodeRef)

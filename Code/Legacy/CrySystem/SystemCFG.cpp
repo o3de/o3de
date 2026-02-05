@@ -88,10 +88,10 @@ void CSystem::SetVersionInfo(const char* const szVersion)
     m_fileVersion.Set(szVersion);
     m_productVersion.Set(szVersion);
     m_buildVersion.Set(szVersion);
-    CryLog("SetVersionInfo '%s'", szVersion);
-    CryLog("FileVersion: %d.%d.%d.%d", m_fileVersion.v[3], m_fileVersion.v[2], m_fileVersion.v[1], m_fileVersion.v[0]);
-    CryLog("ProductVersion: %d.%d.%d.%d", m_productVersion.v[3], m_productVersion.v[2], m_productVersion.v[1], m_productVersion.v[0]);
-    CryLog("BuildVersion: %d.%d.%d.%d", m_buildVersion.v[3], m_buildVersion.v[2], m_buildVersion.v[1], m_buildVersion.v[0]);
+    AZ_Info("System", "SetVersionInfo '%s'", szVersion);
+    AZ_Info("System", "FileVersion: %d.%d.%d.%d", m_fileVersion.v[3], m_fileVersion.v[2], m_fileVersion.v[1], m_fileVersion.v[0]);
+    AZ_Info("System", "ProductVersion: %d.%d.%d.%d", m_productVersion.v[3], m_productVersion.v[2], m_productVersion.v[1], m_productVersion.v[0]);
+    AZ_Info("System", "BuildVersion: %d.%d.%d.%d", m_buildVersion.v[3], m_buildVersion.v[2], m_buildVersion.v[1], m_buildVersion.v[0]);
 }
 #endif // #ifndef _RELEASE
 
@@ -180,7 +180,7 @@ void CSystem::LogVersion()
 
     [[maybe_unused]] const SFileVersion& ver = GetFileVersion();
 
-    CryLogAlways("BackupNameAttachment=\" Build(%d) %s\"  -- used by backup system\n", ver.v[0], s);          // read by CreateBackupFile()
+    AZ_Printf("System", "BackupNameAttachment=\" Build(%d) %s\"  -- used by backup system\n", ver.v[0], s);          // read by CreateBackupFile()
 
     // Use strftime to build a customized time string.
 #ifdef AZ_COMPILER_MSVC
@@ -188,27 +188,27 @@ void CSystem::LogVersion()
 #else
     strftime(s, 128, "Log Started at %c", today);
 #endif
-    CryLogAlways("%s", s);
+    AZ_Printf("System", "%s", s);
 
-    CryLogAlways("Built on " __DATE__ " " __TIME__);
+    AZ_Printf("System", "Built on " __DATE__ " " __TIME__);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMCFG_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE(SystemCFG_cpp)
 #elif defined(ANDROID)
-    CryLogAlways("Running 32 bit Android version API VER:%d", __ANDROID_API__);
+    AZ_Printf("System", "Running 32 bit Android version API VER:%d", __ANDROID_API__);
 #elif defined(IOS)
-    CryLogAlways("Running 64 bit iOS version");
+    AZ_Printf("System", "Running 64 bit iOS version");
 #elif defined(WIN64)
-    CryLogAlways("Running 64 bit Windows version");
+    AZ_Printf("System", "Running 64 bit Windows version");
 #elif defined(WIN32)
-    CryLogAlways("Running 32 bit Windows version");
+    AZ_Printf("System", "Running 32 bit Windows version");
 #elif defined(LINUX64)
-    CryLogAlways("Running 64 bit Linux version");
+    AZ_Printf("System", "Running 64 bit Linux version");
 #elif defined(LINUX32)
-    CryLogAlways("Running 32 bit Linux version");
+    AZ_Printf("System", "Running 32 bit Linux version");
 #elif defined(MAC)
-    CryLogAlways("Running 64 bit Mac version");
+    AZ_Printf("System", "Running 64 bit Mac version");
 #endif
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_SYSTEMCFG_MODULENAME
     AZ::Utils::GetExecutablePath(s, sizeof(s));
@@ -216,15 +216,15 @@ void CSystem::LogVersion()
     // Log EXE filename only if possible (not full EXE path which could contain sensitive info)
     AZStd::string exeName;
     if (AzFramework::StringFunc::Path::GetFullFileName(s, exeName)) {
-        CryLogAlways("Executable: %s", exeName.c_str());
+        AZ_Printf("System", "Executable: %s", exeName.c_str());
     }
 #endif
 
-    CryLogAlways("FileVersion: %d.%d.%d.%d", m_fileVersion.v[3], m_fileVersion.v[2], m_fileVersion.v[1], m_fileVersion.v[0]);
+    AZ_Printf("System", "FileVersion: %d.%d.%d.%d", m_fileVersion.v[3], m_fileVersion.v[2], m_fileVersion.v[1], m_fileVersion.v[0]);
 #if defined(LY_BUILD)
-    CryLogAlways("ProductVersion: %d.%d.%d.%d - Build %d", m_productVersion.v[3], m_productVersion.v[2], m_productVersion.v[1], m_productVersion.v[0], LY_BUILD);
+    AZ_Printf("System", "ProductVersion: %d.%d.%d.%d - Build %d", m_productVersion.v[3], m_productVersion.v[2], m_productVersion.v[1], m_productVersion.v[0], LY_BUILD);
 #else // defined(LY_BUILD)
-    CryLogAlways("ProductVersion: %d.%d.%d.%d", m_productVersion.v[3], m_productVersion.v[2], m_productVersion.v[1], m_productVersion.v[0]);
+    AZ_Printf("System", "ProductVersion: %d.%d.%d.%d", m_productVersion.v[3], m_productVersion.v[2], m_productVersion.v[1], m_productVersion.v[0]);
 #endif // defined(LY_BUILD)
 
 
@@ -236,11 +236,11 @@ void CSystem::LogVersion()
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #elif defined(_MSC_VER)
-    CryLogAlways("Using Microsoft (tm) C++ Standard Library implementation\n");
+    AZ_Printf("System", "Using Microsoft (tm) C++ Standard Library implementation\n");
 #elif defined(__clang__)
-    CryLogAlways("Using CLANG C++ Standard Library implementation\n");
+    AZ_Printf("System", "Using CLANG C++ Standard Library implementation\n");
 #elif defined(__GNUC__)
-    CryLogAlways("Using GNU C++ Standard Library implementation\n");
+    AZ_Printf("System", "Using GNU C++ Standard Library implementation\n");
 #else
 #error "Please specify C++ STL library"
 #endif
@@ -250,8 +250,8 @@ void CSystem::LogVersion()
 void CSystem::LogBuildInfo()
 {
     [[maybe_unused]] auto projectName = AZ::Utils::GetProjectName();
-    CryLogAlways("GameName: %s", projectName.c_str());
-    CryLogAlways("BuildTime: " __DATE__ " " __TIME__);
+    AZ_Printf("System", "GameName: %s", projectName.c_str());
+    AZ_Printf("System", "BuildTime: " __DATE__ " " __TIME__);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -427,7 +427,7 @@ static bool ParseSystemConfig(const AZStd::string& strSysConfigFilePath, ILoadCo
 
     delete []sAllText;
 
-    CryLog("Loading Config file %s (%s)", filename.c_str(), filenameLog.c_str());
+    AZ_Info("System", "Loading Config file %s (%s)", filename.c_str(), filenameLog.c_str());
 
     pSink->OnLoadConfigurationEntry_End();
 

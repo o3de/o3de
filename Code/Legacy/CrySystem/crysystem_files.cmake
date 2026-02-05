@@ -22,7 +22,6 @@ set(FILES
     XConsole.cpp
     XConsoleVariable.cpp
     AZCrySystemInitLogSink.h
-    AZCoreLogSink.h
     CmdLine.h
     CmdLineArg.h
     ConsoleBatchFile.h

@@ -230,7 +230,7 @@ QString CEditorCommandManager::Execute(const AZStd::string& module, const AZStd:
     }
     else
     {
-        CryLogAlways("Error: Trying to execute a unknown command, '%s'!", fullName.c_str());
+        AZ_Printf("CommandManager", "Error: Trying to execute a unknown command, '%s'!", fullName.c_str());
     }
 
     return "";
@@ -263,7 +263,7 @@ QString CEditorCommandManager::Execute(const AZStd::string& cmdLine)
     }
     else
     {
-        CryLogAlways("Error: Trying to execute a unknown command, '%s'!", cmdLine.c_str());
+        AZ_Printf("CommandManager", "Error: Trying to execute a unknown command, '%s'!", cmdLine.c_str());
     }
 
     return "";
@@ -282,7 +282,7 @@ void CEditorCommandManager::Execute(int commandId)
     }
     else
     {
-        CryLogAlways("Error: Trying to execute a unknown command of ID '%d'!", commandId);
+        AZ_Printf("CommandManager", "Error: Trying to execute a unknown command of ID '%d'!", commandId);
     }
 }
 

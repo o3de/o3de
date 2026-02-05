@@ -438,7 +438,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 {
     gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START);
 
-    CryLog ("Level system is loading \"%s\"", _levelName);
+    AZ_Info("LevelSystem", "Loading \"%s\"", _levelName);
     INDENT_LOG_DURING_SCOPE();
 
     char levelName[256];
@@ -751,7 +751,7 @@ void CLevelSystem::UnloadLevel()
         return;
     }
 
-    CryLog("UnloadLevel Start");
+    AZ_Info("LevelSystem", "UnloadLevel Start");
     INDENT_LOG_DURING_SCOPE();
 
     // Flush core buses. We're about to unload Cry modules and need to ensure we don't have module-owned functions left behind.
@@ -806,7 +806,7 @@ void CLevelSystem::UnloadLevel()
     m_bLevelLoaded = false;
 
     [[maybe_unused]] const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
-    CryLog("UnloadLevel End: %.1f sec", AZ::TimeMsToSeconds(unloadTimeMs));
+    AZ_Info("LevelSystem", "UnloadLevel End: %.1f sec", AZ::TimeMsToSeconds(unloadTimeMs));
 
     // Must be sent last.
     // Cleanup all containers

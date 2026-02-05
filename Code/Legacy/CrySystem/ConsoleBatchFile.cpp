@@ -105,11 +105,11 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
         }
         else
         {
-            CryLog("%s \"%s\" not found!", szLog, filename.c_str());
+            AZ_Info("ConsoleBatchFile", "%s \"%s\" not found!", szLog, filename.c_str());
             return false;
         }
 
-        CryLog("%s \"%s\" found in %s ...", szLog, PathUtil::GetFile(filenameLog.c_str()), PathUtil::GetPath(filenameLog).c_str());
+        AZ_Info("ConsoleBatchFile", "%s \"%s\" found in %s ...", szLog, PathUtil::GetFile(filenameLog.c_str()), PathUtil::GetPath(filenameLog).c_str());
     }
 
     size_t nLen = file.GetLength();

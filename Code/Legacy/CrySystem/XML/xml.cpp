@@ -1666,7 +1666,7 @@ XmlNodeRef CXmlNodePool::GetXmlNode(const char* sNodeName)
 
         m_nAllocated++;
         //if (0 == m_nAllocated % 1000)
-        //CryLog("[CXmlNodePool]: already reused nodes [%d]", m_nAllocated);
+        //AZ_Info("XmlNodePool", "already reused nodes [%d]", m_nAllocated);
     }
     else
     {
@@ -1680,7 +1680,7 @@ XmlNodeRef CXmlNodePool::GetXmlNode(const char* sNodeName)
 
         m_nAllocated++;
         //if (0 == m_nAllocated % 1000)
-        //CryLog("[CXmlNodePool]: already allocated nodes [%d]", m_nAllocated);
+        //AZ_Info("XmlNodePool", "Already allocated nodes [%d]", m_nAllocated);
     }
     return pNode;
 }
@@ -1708,7 +1708,7 @@ void CXmlNodePool::OnRelease(int iRefCount, void* pThis)
 
         if (0 == m_nAllocated)
         {
-            //CryLog("[CXmlNodePool]: clear shared string pool");
+            //AZ_Info("XmlNodePool", "Clear shared string pool");
             static_cast<CXmlStringPool*>(m_pStringPool)->Clear();
         }
     }

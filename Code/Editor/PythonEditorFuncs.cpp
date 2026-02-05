@@ -321,7 +321,7 @@ namespace
     {
         if (strcmp(pMessage, "") != 0)
         {
-            CryLogAlways("%s", pMessage);
+            AZ_Printf("Python", "%s", pMessage);
         }
     }
 

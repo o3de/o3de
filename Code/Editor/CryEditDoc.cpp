@@ -703,7 +703,7 @@ bool CCryEditDoc::BeforeSaveDocument(const QString& lpszPathName, TSaveDocContex
         return false;
     }
 
-    CryLog("Saving to %s...", levelFriendlyName.toUtf8().data());
+    AZ_Info("CryEditDoc", "Saving to %s...", levelFriendlyName.toUtf8().data());
     GetIEditor()->Notify(eNotify_OnBeginSceneSave);
 
     bool bSaved(true);

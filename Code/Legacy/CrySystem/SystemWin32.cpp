@@ -267,15 +267,15 @@ void CSystem::FatalError(const char* format, ...)
     // get system error message before any attempt to write into log
     const char* szSysErrorMessage = GetLastSystemErrorMessage();
 
-    CryLogAlways("=============================================================================");
-    CryLogAlways("*ERROR");
-    CryLogAlways("=============================================================================");
+    AZ_Printf("System", "=============================================================================");
+    AZ_Printf("System", "*ERROR");
+    AZ_Printf("System", "=============================================================================");
     // write both messages into log
-    CryLogAlways("%s", szBuffer);
+    AZ_Printf("System", "%s", szBuffer);
 
     if (szSysErrorMessage)
     {
-        CryLogAlways("Last System Error: %s", szSysErrorMessage);
+        AZ_Printf("System", "Last System Error: %s", szSysErrorMessage);
     }
 
     if (GetUserCallback())
@@ -380,7 +380,7 @@ void CSystem::debug_LogCallStack(int nMaxFuncs, [[maybe_unused]] int nFlags)
     GetISystem()->debug_GetCallStack(funcs, nCount);
     for (int i = 1; i < nCount; i++) // start from 1 to skip this function.
     {
-        CryLogAlways("    %02d) %s", i, funcs[i]);
+        AZ_Printf("System", "    %02d) %s", i, funcs[i]);
     }
 }
 
