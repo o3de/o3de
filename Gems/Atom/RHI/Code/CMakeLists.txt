@@ -215,6 +215,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::${gem_name}.Edit
                     Gem::${gem_name}.Public
                     Gem::Atom_Feature_Common.Public
+                    3rdParty::GoogleBenchmark
         )
         ly_add_googletest(
             NAME Gem::${gem_name}.Tests
