@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <Components/SkyAtmosphereComponent.h>
 
@@ -25,6 +26,15 @@ namespace SkyAtmosphere
 
         EditorSkyAtmosphereComponent() = default;
         EditorSkyAtmosphereComponent(const SkyAtmosphereComponentConfig& config);
+
+        static void DeprecatedTypeNameVisitor(const AZ::DeprecatedTypeNameCallback& visitCallback)
+        {
+            constexpr AZStd::string_view deprecatedName = "AZ::Render::EditorSkyAtmosphereComponent";
+            if (visitCallback)
+            {
+                visitCallback(deprecatedName);
+            }
+        }
 
     private:
         //! EditorRenderComponentAdapter
