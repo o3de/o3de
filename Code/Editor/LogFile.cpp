@@ -605,6 +605,7 @@ QString CLogFile::GetMemUsage()
 void CLogFile::WriteLine(const char* pszString)
 {
     AZ_Info("LogFile", "%s", pszString);
+    AZ_UNUSED(pszString);
 }
 
 //////////////////////////////////////////////////////////////////////////
