@@ -127,8 +127,11 @@ namespace O3DE::ProjectManager
             {
                 if (auto ninjaVersionQueryResult = FindSupportedNinja(); !ninjaVersionQueryResult.IsSuccess())
                 {
+                    // if we FAIL to find ninja, we need to fail here and advise the user to install it.
                     return ninjaVersionQueryResult;
                 }
+                // if we ARE able to find ninja, and in script only mode, we dont need to verify anything else
+                return AZ::Success(QString());
             }
 
             // we want to help the user here, by showing a helpful error message depending on their situation
