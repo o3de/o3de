@@ -209,7 +209,7 @@ namespace ScriptCanvasEditor
     void SystemComponent::OpenScriptCanvasEditor(const AZStd::string& sourcePath)
     {
         QStringList arguments;
-        arguments.append(sourcePath.c_str());
+        arguments.append(QString(R"("%1")").arg(sourcePath.c_str()));
 
         AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
         if (!projectPath.empty())

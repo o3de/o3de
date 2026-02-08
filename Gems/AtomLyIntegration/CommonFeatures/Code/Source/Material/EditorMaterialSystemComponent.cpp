@@ -146,7 +146,7 @@ namespace AZ
         void EditorMaterialSystemComponent::OpenMaterialEditor(const AZStd::string& sourcePath)
         {
             QStringList arguments;
-            arguments.append(sourcePath.c_str());
+            arguments.append(QString(R"("%1")").arg(sourcePath.c_str()));
 
             // Use the same RHI as the main editor
             AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
@@ -168,7 +168,7 @@ namespace AZ
         void EditorMaterialSystemComponent::OpenMaterialCanvas(const AZStd::string& sourcePath)
         {
             QStringList arguments;
-            arguments.append(sourcePath.c_str());
+            arguments.append(QString(R"("%1")").arg(sourcePath.c_str()));
 
             // Use the same RHI as the main Canvas
             AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
