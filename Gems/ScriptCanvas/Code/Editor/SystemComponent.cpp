@@ -214,7 +214,7 @@ namespace ScriptCanvasEditor
         AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
         if (!projectPath.empty())
         {
-            arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+            arguments.append(QString(R"(--project-path="%1")").arg(projectPath.c_str()));
         }
 
         AZ_TracePrintf("ScriptCanvasApplication", "Launching Script Canvas Editor");

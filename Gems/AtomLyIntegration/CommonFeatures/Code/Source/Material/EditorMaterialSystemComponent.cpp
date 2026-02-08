@@ -158,7 +158,7 @@ namespace AZ
             AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
             if (!projectPath.empty())
             {
-                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+                arguments.append(QString(R"(--project-path="%1")").arg(projectPath.c_str()));
             }
 
             AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
@@ -180,7 +180,7 @@ namespace AZ
             AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
             if (!projectPath.empty())
             {
-                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+                arguments.append(QString(R"(--project-path="%1")").arg(projectPath.c_str()));
             }
 
             AZ_TracePrintf("MaterialComponent", "Launching Material Canvas");
