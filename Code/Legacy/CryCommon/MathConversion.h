@@ -75,6 +75,8 @@ inline Vec4 AZColorToLYVec4(const AZ::Color& source)
     return Vec4(source.GetR(), source.GetG(), source.GetB(), source.GetA());
 }
 
+// Disable the deprecated-declarations warning for all conversion operators of ColorF
+AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
 inline ColorF AZColorToLYColorF(const AZ::Color& source)
 {
     return ColorF(source.ToU32());
@@ -84,7 +86,10 @@ inline AZ::Color LYColorFToAZColor(const ColorF& source)
 {
     return AZ::Color(source.r, source.g, source.b, source.a);
 }
+AZ_POP_DISABLE_WARNING
 
+// Disable the deprecated-declarations warning for all conversion operators of ColorB
+AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
 inline ColorB AZColorToLYColorB(const AZ::Color& source)
 {
     return ColorB(source.ToU32());
@@ -94,6 +99,7 @@ inline AZ::Color LYColorBToAZColor(const ColorB& source)
 {
     return AZ::Color(source.r, source.g, source.b, source.a);
 }
+AZ_POP_DISABLE_WARNING
 
 // Disable the deprecated-declarations warning for all conversion operators of Matrix33
 AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");

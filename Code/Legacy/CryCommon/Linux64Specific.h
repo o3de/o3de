@@ -74,7 +74,7 @@ typedef const char* LPCSTR, * PCSTR;
 typedef long long           LONGLONG;
 typedef ULONG_PTR           SIZE_T;
 typedef uint8               byte;
-#define ILINE __forceinline
+
 #define _A_RDONLY (0x01)
 #define _A_SUBDIR (0x10)
 #define _A_HIDDEN (0x02)

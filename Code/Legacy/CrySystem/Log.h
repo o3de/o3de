@@ -202,14 +202,14 @@ public: // -------------------------------------------------------------------
     // create backup of log file, useful behavior - only on development platform
     void CreateBackupFile() const;
 
-    ICVar*                 m_pLogVerbosity;                                             //
-    ICVar*                 m_pLogWriteToFile;                                       //
-    ICVar*                 m_pLogWriteToFileVerbosity;                      //
-    ICVar*                 m_pLogVerbosityOverridesWriteToFile;     //
-    ICVar*                 m_pLogSpamDelay;                       //
-    ICVar*                 m_pLogModule;                                                    // Module filter for log
-    Callbacks               m_callbacks;                                                    //
+    ICVar*                 m_pLogVerbosity;
+    ICVar*                 m_pLogWriteToFile;
+    ICVar*                 m_pLogWriteToFileVerbosity;
+    ICVar*                 m_pLogVerbosityOverridesWriteToFile;
+    ICVar*                 m_pLogSpamDelay;
+    ICVar*                 m_pLogModule;                           // Module filter for log
+    Callbacks              m_callbacks;  
 
-    threadID m_nMainThreadId;
-    CryMT::queue<SLogMsg> m_threadSafeMsgQueue;
+    AZStd::thread_id       m_nMainThreadId;
+    CryMT::queue<SLogMsg>  m_threadSafeMsgQueue;
 };

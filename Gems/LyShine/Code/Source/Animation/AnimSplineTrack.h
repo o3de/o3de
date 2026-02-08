@@ -325,9 +325,9 @@ public:
         m_defaultValue = value;
     }
 
-    ColorB GetCustomColor() const
+    AZ::Color GetCustomColor() const
     { return m_customColor; }
-    void SetCustomColor(ColorB color)
+    void SetCustomColor(const AZ::Color& color)
     {
         m_customColor = color;
         m_bCustomColorSet = true;
@@ -369,7 +369,7 @@ private:
     int m_flags;
     CUiAnimParamType m_nParamType;
 
-    ColorB m_customColor;
+    AZ::Color m_customColor;
     bool m_bCustomColorSet;
 
     float m_fMinKeyValue;
@@ -412,7 +412,7 @@ inline bool TUiAnimSplineTrack<T>::Serialize(IUiAnimationSystem* uiAnimationSyst
         {
             unsigned int abgr;
             xmlNode->getAttr("CustomColor", abgr);
-            m_customColor = ColorB(abgr);
+            m_customColor.FromU32(abgr);
         }
 
         T value;
@@ -456,7 +456,7 @@ inline bool TUiAnimSplineTrack<T>::Serialize(IUiAnimationSystem* uiAnimationSyst
         xmlNode->setAttr("HasCustomColor", m_bCustomColorSet);
         if (m_bCustomColorSet)
         {
-            xmlNode->setAttr("CustomColor", m_customColor.pack_abgr8888());
+            xmlNode->setAttr("CustomColor", m_customColor.ToU32());
         }
 
         ITcbKey key;

@@ -181,9 +181,9 @@ public:
     int GetActiveKey(float time, KeyType* key);
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
-    ColorB GetCustomColor() const override
+    AZ::Color GetCustomColor() const override
     { return m_customColor; }
-    void SetCustomColor(ColorB color) override
+    void SetCustomColor(const AZ::Color& color) override
     {
         m_customColor = color;
         m_bCustomColorSet = true;
@@ -226,7 +226,7 @@ protected:
     UiAnimParamData m_componentParamData;
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
-    ColorB m_customColor;
+    AZ::Color m_customColor;
     bool m_bCustomColorSet;
 #endif
 
@@ -372,7 +372,7 @@ inline bool TUiAnimTrack<KeyType>::Serialize([[maybe_unused]] IUiAnimationSystem
         {
             unsigned int abgr;
             xmlNode->getAttr("CustomColor", abgr);
-            m_customColor = ColorB(abgr);
+            m_customColor.FromU32(abgr);
         }
 #endif
 
@@ -401,7 +401,7 @@ inline bool TUiAnimTrack<KeyType>::Serialize([[maybe_unused]] IUiAnimationSystem
         xmlNode->setAttr("HasCustomColor", m_bCustomColorSet);
         if (m_bCustomColorSet)
         {
-            xmlNode->setAttr("CustomColor", m_customColor.pack_abgr8888());
+            xmlNode->setAttr("CustomColor", m_customColor.ToU32());
         }
 #endif
 

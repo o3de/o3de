@@ -654,10 +654,7 @@ BOOL SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-threadID GetCurrentThreadId()
-{
-    return threadID(pthread_self());
-}
+
 #endif
 
 #include <chrono>
@@ -829,11 +826,6 @@ void CryMessageBox(const char* lpText, const char* lpCaption, [[maybe_unused]] u
 }
 
 #if defined(LINUX) || defined(APPLE)
-
-threadID CryGetCurrentThreadId()
-{
-    return GetCurrentThreadId();
-}
 
 #endif//LINUX APPLE
 

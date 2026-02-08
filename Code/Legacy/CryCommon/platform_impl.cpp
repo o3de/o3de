@@ -229,11 +229,6 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-threadID CryGetCurrentThreadId()
-{
-    return GetCurrentThreadId();
-}
 
 #endif // _WIN32
 

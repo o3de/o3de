@@ -50,7 +50,7 @@ void CSystemEventDispatcher::OnSystemEventAnyThread(ESystemEvent event, UINT_PTR
 //////////////////////////////////////////////////////////////////////////
 void CSystemEventDispatcher::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)
 {
-    if (gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId())
+    if (gEnv && gEnv->mMainThreadId == AZStd::this_thread::get_id())
     {
         for (TSystemEventListeners::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
         {
@@ -75,7 +75,7 @@ void CSystemEventDispatcher::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, 
 void CSystemEventDispatcher::Update()
 {
     AZ_PROFILE_FUNCTION(CrySystem);
-    assert(gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId());
+    assert(gEnv && gEnv->mMainThreadId == AZStd::this_thread::get_id());
 
     SEventParams params;
     while (m_systemEventQueue.try_pop(params))

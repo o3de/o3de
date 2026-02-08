@@ -44,7 +44,7 @@ on:
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
-# Note: All 3P Github Actions use the commit hash for security reasons 
+# Note: All 3P Github Actions use the commit hash for security reasons
 # Avoid using the tag version, which is vulnerable to supply chain attacks
 
 jobs:
@@ -55,8 +55,25 @@ jobs:
     runs-on: ${{ inputs.image }}
 
     steps:
+      - name: Check disk space
+        # Check if the workspace has enough free space, otherwise flag the disk for resizing
+        env:
+          MIN_FREE_DISK: 70 # in GB
+        id: check-disk
+        run: |
+          AVAIL_GB=$(df ${{ github.workspace }} --output=avail --block-size=1G | tail -1 | tr -d ' ')
+          echo "Workspace has ${AVAIL_GB}GB available"
+          if [ "$AVAIL_GB" -lt ${{ env.MIN_FREE_DISK }} ]; then
+            echo "needs_resize=true" >> $GITHUB_OUTPUT
+            echo "Workspace has less than ${{ env.MIN_FREE_DISK }}GB available, resizing disk"
+          else
+            echo "needs_resize=false" >> $GITHUB_OUTPUT
+            echo "Workspace has enough free space, skipping disk resize"
+          fi
+
       - name: Maximize build space
-        # Resize and combine disks as LVM in order to maximize the amount of space for builds
+        # Resize and combine disks as LVM to maximize space for builds, if below the minimum free space
+        if: steps.check-disk.outputs.needs_resize == 'true'
         uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c # v10
         with:
           root-reserve-mb: 8000
@@ -65,7 +82,7 @@ jobs:
           remove-haskell: true
           remove-codeql: true
           remove-docker-images: true
-            
+
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:

@@ -17,7 +17,12 @@
 template <class T>
 struct Color_tpl;
 
+// O3DE_DEPRECATION_NOTICE(GHI-19504) - Use AZ::Color
+AZ_DEPRECATED_MESSAGE("ColorB is deprecated, use AZ::Color instead.")
 typedef Color_tpl<uint8> ColorB; // [ 0,  255]
+
+// O3DE_DEPRECATION_NOTICE(GHI-19504) - Use AZ::Color
+AZ_DEPRECATED_MESSAGE("ColorF is deprecated, use AZ::Color instead.")
 typedef Color_tpl<float> ColorF; // [0.0, 1.0]
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,8 +45,10 @@ struct Color_tpl
     // works together with pack_abgr8888
     ILINE Color_tpl(const unsigned int abgr);
     ILINE Color_tpl(const f32 c);
+    AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
     ILINE Color_tpl(const ColorF& c);
     ILINE Color_tpl(const ColorF& c, float fAlpha);
+    AZ_POP_DISABLE_WARNING;
     ILINE Color_tpl(const Vec3& c, float fAlpha);
     ILINE Color_tpl(const Vec4& c);
 
@@ -275,7 +282,7 @@ ILINE Color_tpl<uint8>::Color_tpl(const float c)
     a = (uint8)(c * 255);
 }
 //-----------------------------------------------------------------------------
-
+AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
 template<>
 ILINE Color_tpl<f32>::Color_tpl(const ColorF& c)
 {
@@ -301,6 +308,7 @@ ILINE Color_tpl<f32>::Color_tpl(const ColorF& c, float fAlpha)
     b = c.b;
     a = fAlpha;
 }
+AZ_POP_DISABLE_WARNING;
 
 template<>
 ILINE Color_tpl<f32>::Color_tpl(const Vec3& c, float fAlpha)
@@ -320,6 +328,7 @@ ILINE Color_tpl<f32>::Color_tpl(const Vec4& c)
     a = c.w;
 }
 
+AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations");
 template<>
 ILINE Color_tpl<uint8>::Color_tpl(const ColorF& c, float fAlpha)
 {
@@ -328,6 +337,8 @@ ILINE Color_tpl<uint8>::Color_tpl(const ColorF& c, float fAlpha)
     b = (uint8)(c.b * 255);
     a = (uint8)(fAlpha * 255);
 }
+AZ_POP_DISABLE_WARNING;
+
 template<>
 ILINE Color_tpl<uint8>::Color_tpl(const Vec3& c, float fAlpha)
 {
@@ -432,6 +443,3 @@ inline void Color_tpl<T>::clamp(T bottom, T top)
     b = min(top, max(bottom, b));
     a = min(top, max(bottom, a));
 }
-
-#define Col_TrackviewDefault    ColorF (0.187820792f, 0.187820792f, 1.0f)
-#define Clr_Empty                               ColorF(0.0f, 0.0f, 0.0f, 1.0f)

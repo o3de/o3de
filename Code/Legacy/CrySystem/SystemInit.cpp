@@ -729,7 +729,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     }
 
     SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_INIT);
-    gEnv->mMainThreadId = GetCurrentThreadId(); // Set this ASAP on startup
+    gEnv->mMainThreadId = AZStd::this_thread::get_id(); // Set this ASAP on startup
 
     InlineInitializationProcessing("CSystem::Init start");
 

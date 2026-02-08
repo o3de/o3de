@@ -114,7 +114,7 @@ bool UiCompoundSplineTrack::Serialize(IUiAnimationSystem* uiAnimationSystem, Xml
         {
             unsigned int abgr;
             xmlNode->getAttr("CustomColor", abgr);
-            m_customColor = ColorB(abgr);
+            m_customColor.FromU32(abgr);
         }
     }
     else
@@ -124,7 +124,7 @@ bool UiCompoundSplineTrack::Serialize(IUiAnimationSystem* uiAnimationSystem, Xml
         xmlNode->setAttr("HasCustomColor", m_bCustomColorSet);
         if (m_bCustomColorSet)
         {
-            xmlNode->setAttr("CustomColor", m_customColor.pack_abgr8888());
+            xmlNode->setAttr("CustomColor", m_customColor.ToU32());
         }
     }
 #endif

@@ -867,7 +867,7 @@ namespace UnitTest
         CheckEndToEndDataTypeResolution("MyFloat", "false", 0.0f);
         CheckEndToEndDataTypeResolution("MyFloat", "true", 1.0f);
         
-        CheckEndToEndDataTypeResolution("MyColor", "[0.1,0.2,0.3]", Color{0.1f, 0.2f, 0.3f, 1.0});
+        CheckEndToEndDataTypeResolution("MyColor", "[0.1,0.2,0.3]", Color{0.1f, 0.2f, 0.3f, 1.0f});
         CheckEndToEndDataTypeResolution("MyColor", "[0.1, 0.2, 0.3, 0.5]", Color{0.1f, 0.2f, 0.3f, 0.5f});
         CheckEndToEndDataTypeResolution("MyColor", "{\"RGB8\": [255, 0, 255, 0]}", Color{1.0f, 0.0f, 1.0f, 0.0f});
         
