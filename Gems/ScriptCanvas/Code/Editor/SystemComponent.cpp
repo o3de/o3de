@@ -222,7 +222,7 @@ namespace ScriptCanvasEditor
         AZ_Assert(!engineRoot.empty(), "Cannot query Engine Path");
 
         AZ::IO::FixedMaxPath launchPath =
-            AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / (QString("ScriptCanvasApplication") + AZ_TRAIT_OS_EXECUTABLE_EXTENSION).toUtf8().constData();
+            AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "ScriptCanvasApplication" AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
 
         QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }

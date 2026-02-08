@@ -267,7 +267,7 @@ namespace Multiplayer
 
         // 2. Try from the executable folder where the Editor was launched from.
         AZ::IO::FixedMaxPath serverPathFromEditorLocation = AZ::Utils::GetExecutableDirectory();
-        serverPathFromEditorLocation /= AZStd::string_view(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+        serverPathFromEditorLocation /= AZ::Utils::GetProjectName() + ".ServerLauncher" AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
         if (AZ::IO::SystemFile::Exists(serverPathFromEditorLocation.c_str()))
         {
             serverPath = serverPathFromEditorLocation;
@@ -282,7 +282,7 @@ namespace Multiplayer
                 settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
             {
                 serverPathFromProjectBin /= projectModulePath;
-                serverPathFromProjectBin /= AZStd::string_view(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                serverPathFromProjectBin /= AZ::Utils::GetProjectName() + ".ServerLauncher" AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
                 if (AZ::IO::SystemFile::Exists(serverPathFromProjectBin.c_str()))
                 {
                     serverPath = serverPathFromProjectBin;
@@ -659,7 +659,7 @@ namespace Multiplayer
             // Find any existing server launchers before launching a new one.
             // It's possible for a rogue server launcher to exist if the Editor shutdown unexpectedly while running a previous multiplayer session.
             // It's also common to open ServerLaunchers by hand for testing, but then to forget to shut it down before starting the editor play mode.
-            const AZStd::string serverExeFilename(AZ::Utils::GetProjectName() + ".ServerLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+            const AZStd::string serverExeFilename(AZ::Utils::GetProjectName() + ".ServerLauncher" AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
             int existingServers = AzFramework::ProcessUtils::ProcessCount(serverExeFilename);
             if (existingServers > 0)
             {
