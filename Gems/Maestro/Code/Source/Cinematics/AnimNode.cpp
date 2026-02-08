@@ -1183,7 +1183,7 @@ namespace Maestro
 
             // run this on the main thread to prevent further threading issues downstream in
             // AnimNodes that may use EBuses that are not thread safe
-            if (gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId())
+            if (gEnv && gEnv->mMainThreadId == AZStd::this_thread::get_id())
             {
                 UpdateDynamicParamsInternal();
             }

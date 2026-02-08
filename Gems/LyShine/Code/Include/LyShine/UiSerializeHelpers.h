@@ -152,26 +152,6 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Helper function to make a ColorF out of an RGB color and an alpha
-    inline ColorF MakeColorF(AZ::Vector3 color, float alpha)
-    {
-        return ColorF(color.GetX(), color.GetY(), color.GetZ(), alpha);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Helper function to make an AZ::Vector3 from the rgb elements of a ColorF
-    inline AZ::Vector3 MakeColorVector3(ColorF color)
-    {
-        return AZ::Vector3(color.r, color.g, color.b);
-    }
-
-    // Helper function to make an AZ::Color from a ColorF
-    inline AZ::Color MakeColorAZColor(ColorF color)
-    {
-        return AZ::Color(color.r, color.g, color.b, color.a);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     // Helper function to VersionConverter to convert a ColorF field to a Vector3 color and a float
     // alpha.
     // Inline to avoid DLL linkage issues
@@ -186,17 +166,19 @@ namespace LyShine
         {
             AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(index);
 
-            ColorF oldData;
+            float r, g, b, a;
 
-            if (!(GetSubElementValue(elementNode, "r", oldData.r) &&
-                  GetSubElementValue(elementNode, "g", oldData.g) &&
-                  GetSubElementValue(elementNode, "b", oldData.b) &&
-                  GetSubElementValue(elementNode, "a", oldData.a)))
+            if (!(GetSubElementValue(elementNode, "r", r) &&
+                  GetSubElementValue(elementNode, "g", g) &&
+                  GetSubElementValue(elementNode, "b", b) &&
+                  GetSubElementValue(elementNode, "a", a)))
             {
                 // Error, old subElement was not a ColorF
                 AZ_Error("Serialization", false, "Element %s is not a ColorF.", colorElementName);
                 return false;
             }
+
+            AZ::Color oldData(r, g, b, a);
 
             // Remove old version.
             classElement.RemoveElement(index);
@@ -219,10 +201,10 @@ namespace LyShine
                 return false;
             }
 
-            AZ::Vector3 newColorData(oldData.r, oldData.g, oldData.b);
+            AZ::Vector3 newColorData(oldData.GetAsVector3());
             classElement.GetSubElement(newColorElementIndex).SetData(context, newColorData);
 
-            float newAlphaData(oldData.a);
+            float newAlphaData(oldData.GetA());
             classElement.GetSubElement(newAlphaElementIndex).SetData(context, newAlphaData);
         }
 
@@ -286,17 +268,19 @@ namespace LyShine
         {
             AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(index);
 
-            ColorF oldData;
+            float r, g, b, a;
 
-            if (!(GetSubElementValue(elementNode, "r", oldData.r) &&
-                  GetSubElementValue(elementNode, "g", oldData.g) &&
-                  GetSubElementValue(elementNode, "b", oldData.b) &&
-                  GetSubElementValue(elementNode, "a", oldData.a)))
+            if (!(GetSubElementValue(elementNode, "r", r) &&
+                  GetSubElementValue(elementNode, "g", g) &&
+                  GetSubElementValue(elementNode, "b", b) &&
+                  GetSubElementValue(elementNode, "a", a)))
             {
                 // Error, old subElement was not a ColorF
                 AZ_Error("Serialization", false, "Element %s is not a ColorF.", colorElementName);
                 return false;
             }
+
+            AZ::Color oldData(r, g, b, a);
 
             // Remove old version.
             classElement.RemoveElement(index);
@@ -311,7 +295,7 @@ namespace LyShine
                 return false;
             }
 
-            classElement.GetSubElement(newColorElementIndex).SetData(context, MakeColorAZColor(oldData));
+            classElement.GetSubElement(newColorElementIndex).SetData(context, oldData);
         }
 
         // if the field did not exist then we do not report an error

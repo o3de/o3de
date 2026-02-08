@@ -27,6 +27,7 @@
 
 #include <Include/SandboxAPI.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/Math/Color.h>
 
 #ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -319,8 +320,8 @@ inline bool CheckVirtualKey(Qt::Key virtualKey)
 }
 
 class QColor;
-QColor ColorLinearToGamma(ColorF col);
-ColorF ColorGammaToLinear(const QColor& col);
+QColor ColorLinearToGamma(const AZ::Color& col);
+AZ::Color ColorGammaToLinear(const QColor& col);
 
 QColor ColorToQColor(uint32 color);
 

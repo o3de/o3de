@@ -99,7 +99,7 @@ namespace AZ
 
         struct FontRenderingPass
         {
-            ColorB m_color = {255, 255, 255, 255};
+            Color m_color = {255, 255, 255, 255};
             Vec2 m_posOffset = {0,0};
             int m_blendSrc = GS_BLSRC_SRCALPHA;
             int m_blendDest = GS_BLDST_ONEMINUSSRCALPHA;

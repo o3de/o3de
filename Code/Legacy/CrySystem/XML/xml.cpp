@@ -528,7 +528,7 @@ bool CXmlNode::getAttr(const char* key, AZ::Quaternion& value) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CXmlNode::getAttr(const char* key, ColorB& value) const
+bool CXmlNode::getAttr(const char* key, AZ::Color& value) const
 {
     const char* svalue = GetValue(key);
     if (svalue)
@@ -541,7 +541,7 @@ bool CXmlNode::getAttr(const char* key, ColorB& value) const
             // If we only found 3 values, a should be unchanged, and still be 255
             if (r < 256 && g < 256 && b < 256 && a < 256)
             {
-                value = ColorB(static_cast<uint8>(r), static_cast<uint8>(g), static_cast<uint8>(b), static_cast<uint8>(a));
+                value = AZ::Color(r, g, b, a);
                 return true;
             }
         }

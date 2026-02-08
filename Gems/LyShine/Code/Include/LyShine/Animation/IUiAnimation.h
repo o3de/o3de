@@ -415,8 +415,8 @@ struct IUiAnimTrack
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
     // This color is used for the editor.
-    virtual ColorB GetCustomColor() const = 0;
-    virtual void SetCustomColor(ColorB color) = 0;
+    virtual AZ::Color GetCustomColor() const = 0;
+    virtual void SetCustomColor(const AZ::Color& color) = 0;
     virtual bool HasCustomColor() const = 0;
     virtual void ClearCustomColor() = 0;
 #endif

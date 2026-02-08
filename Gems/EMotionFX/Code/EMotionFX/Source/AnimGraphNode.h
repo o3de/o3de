@@ -170,7 +170,7 @@ namespace EMotionFX
         virtual bool GetNeedsNetTimeSync() const                { return false; }
         virtual bool GetCanBeEntryNode() const                  { return true; }
         virtual AZ::Color GetVisualColor() const                { return AZ::Color(0.28f, 0.24f, 0.93f, 1.0f); }
-        virtual AZ::Color GetHasChildIndicatorColor() const     { return AZ::Color(1.0f, 1.0f, 0, 1.0f); }
+        virtual AZ::Color GetHasChildIndicatorColor() const     { return AZ::Color(1.0f, 1.0f, 0.f, 1.0f); }
 
         void InitInternalAttributes(AnimGraphInstance* animGraphInstance) override;
         void RemoveInternalAttributesForAllInstances() override;
