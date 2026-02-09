@@ -805,6 +805,13 @@ function(generate_all_gems_translations)
             list(APPEND _gem_src_dirs "${_gem_root}/Code/Tools")
         endif()
 
+        # Additional: Code/StaticLib/ (some Gems have shared widget code here, e.g. GraphCanvas)
+        # GraphCanvas places its AssetEditorMainWindow and many other UI widgets in StaticLib/
+        # which are inherited by LandscapeCanvas, ScriptCanvas, MaterialCanvas, etc.
+        if(IS_DIRECTORY "${_gem_root}/Code/StaticLib")
+            list(APPEND _gem_src_dirs "${_gem_root}/Code/StaticLib")
+        endif()
+
         # Fallback: if neither Source/ nor Tools/ found, try Code/ directly
         if(NOT _gem_src_dirs AND IS_DIRECTORY "${_gem_root}/Code")
             list(APPEND _gem_src_dirs "${_gem_root}/Code")

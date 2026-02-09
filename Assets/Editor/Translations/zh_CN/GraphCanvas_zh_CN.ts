@@ -85,12 +85,12 @@
     <message>
         <location filename="../../../../Gems/GraphCanvas/Code/Source/Components/GridComponent.cpp" line="47"/>
         <source>The &quot;major pitch&quot; of the grid</source>
-        <translation>网格的"主间距"</translation>
+        <translation>网格的&quot;主间距&quot;</translation>
     </message>
     <message>
         <location filename="../../../../Gems/GraphCanvas/Code/Source/Components/GridComponent.cpp" line="48"/>
         <source>The &quot;minor pitch&quot; of the grid</source>
-        <translation>网格的"次间距"</translation>
+        <translation>网格的&quot;次间距&quot;</translation>
     </message>
     <message>
         <location filename="../../../../Gems/GraphCanvas/Code/Source/Components/Nodes/Comment/CommentNodeTextComponent.cpp" line="104"/>
@@ -393,11 +393,104 @@
     </message>
 </context>
 <context>
+    <name>GraphCanvas::AssetEditorMainWindow</name>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="328"/>
+        <source>&amp;File</source>
+        <translation>文件(&amp;F)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="344"/>
+        <source>&amp;New Asset</source>
+        <translation>新建资产(&amp;N)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="359"/>
+        <source>&amp;Open</source>
+        <translation>打开(&amp;O)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="370"/>
+        <source>&amp;Save</source>
+        <translation>保存(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="381"/>
+        <source>&amp;Save As...</source>
+        <translation>另存为(&amp;S)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="382"/>
+        <source>Ctrl+Shift+S</source>
+        <translation>Ctrl+Shift+S</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="391"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="405"/>
+        <source>&amp;Edit</source>
+        <translation>编辑(&amp;E)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="418"/>
+        <source>Cut</source>
+        <translation>剪切</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="432"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="446"/>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="460"/>
+        <source>Duplicate</source>
+        <translation>复制副本</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="474"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="545"/>
+        <source>&amp;View</source>
+        <translation>视图(&amp;V)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="587"/>
+        <source>Restore Default Layout</source>
+        <translation>恢复默认布局</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="130"/>
+        <source>Node Palette</source>
+        <translation>节点面板</translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <location filename="../../../../Gems/GraphCanvas/Code/Source/Components/NodePropertyDisplays/EntityIdNodePropertyDisplay.cpp" line="105"/>
         <source>(Entity not found)</source>
         <translation>（未找到实体）</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h" line="67"/>
+        <source>Node Palette</source>
+        <translation>节点面板</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h" line="68"/>
+        <source>Bookmarks</source>
+        <translation>书签</translation>
     </message>
 </context>
 </TS>
