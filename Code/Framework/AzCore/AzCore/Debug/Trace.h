@@ -452,3 +452,7 @@ namespace AZ
 #   define AZ_DbgIf(expression)         if (false)
 #   define AZ_DbgElseIf(expression)     else if (false)
 #endif
+
+// Support for deprecation of CRY_ASSERT and CryAssert.h
+#undef assert
+#define assert(condition) AZ_Assert(condition, "%s", #condition)

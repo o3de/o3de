@@ -62,8 +62,8 @@ namespace Maestro
         Vec3 GetOffsetPosition(const Vec3& position) override;
 
         Vec3 GetPos() override;
-        Quat GetRotate() override;
-        Quat GetRotate(float time) override;
+        AZ::Quaternion GetRotate() override;
+        AZ::Quaternion GetRotate(float time) override;
         Vec3 GetScale() override;
         //////////////////////////////////////////////////////////////////////////
 

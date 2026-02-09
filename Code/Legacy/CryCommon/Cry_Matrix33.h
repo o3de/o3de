@@ -973,6 +973,8 @@ struct Matrix33_tpl
 // Typedefs                                                                  //
 ///////////////////////////////////////////////////////////////////////////////
 
+// O3DE_DEPRECATION_NOTICE(GHI-19495) - Use AZ::Matrix3x3
+AZ_DEPRECATED_MESSAGE("Matrix33 is deprecated, use AZ::Matrix3x3 instead.")
 typedef Matrix33_tpl<f32>  Matrix33;  //always 32 bit
 
 //----------------------------------------------------------------------------------

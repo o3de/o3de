@@ -56,7 +56,7 @@ public:
     bool IsConstCVar() const override {return (m_nFlags & VF_CONST_CVAR) != 0; }
     void SetDataProbeString(const char* pDataProbeString) override
     {
-        CRY_ASSERT(m_pDataProbeString == NULL);
+        AZ_Assert(m_pDataProbeString == NULL, "m_pDataProbeString must be NULL");
         m_pDataProbeString = new char[ strlen(pDataProbeString) + 1 ];
         azstrcpy(m_pDataProbeString, strlen(pDataProbeString) + 1, pDataProbeString);
     }

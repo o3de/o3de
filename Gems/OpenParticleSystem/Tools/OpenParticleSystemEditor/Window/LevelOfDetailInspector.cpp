@@ -161,7 +161,7 @@ namespace OpenParticleSystemEditor
         auto it = AZStd::find(m_levels.begin(), m_levels.end(), levelWidget);
         if (it != m_levels.end())
         {
-            index = it - m_levels.begin();
+            index = static_cast<AZ::u32>(it - m_levels.begin());
             m_levels.erase(it);
         }
         m_layout->removeWidget(levelWidget);
@@ -373,8 +373,8 @@ namespace OpenParticleSystemEditor
                 {
                     return;
                 }
-                AZ::u32 index = it - m_checkboxes.begin();
-                bool checked = state == Qt::Checked ? true : false;
+                AZ::u32 index = static_cast<AZ::u32>(it - m_checkboxes.begin());
+                bool checked = state == Qt::Checked;
                 emit OnEmitterChecked(index, checked);
             });
         m_layout->addWidget(checkbox);

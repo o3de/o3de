@@ -87,7 +87,7 @@ namespace
                 CViewport* pGameViewport = pViewManager ? pViewManager->GetGameViewport() : nullptr;
                 if (pGameViewport)
                 {
-                    pGameViewport->SetViewTM(Matrix34::CreateIdentity());
+                    pGameViewport->SetViewTM(AZ::Matrix3x4::CreateIdentity());
                 }
             }
         }

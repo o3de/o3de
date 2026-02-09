@@ -183,8 +183,8 @@ private:
     bool IsBoundsVisible(const AZ::Aabb& box) const override;
     void CenterOnAABB(const AZ::Aabb& aabb) override;
     void OnTitleMenu(QMenu* menu) override;
-    void SetViewTM(const Matrix34& tm) override;
-    const Matrix34& GetViewTM() const override;
+    void SetViewTM(const AZ::Matrix3x4& tm) override;
+    const AZ::Matrix3x4& GetViewTM() const override;
     void Update() override;
     void UpdateContent(int flags) override;
 
@@ -316,7 +316,7 @@ private:
     AZ::EntityId m_viewEntityIdCachedForEditMode;
 
     // The editor camera TM before switching to game mode
-    Matrix34 m_preGameModeViewTM;
+    AZ::Matrix3x4 m_preGameModeViewTM;
 
     // Disables rendering during some periods of time, e.g. undo/redo, resize events
     uint m_disableRenderingCount = 0;
@@ -381,5 +381,5 @@ private:
     EditorViewportSettings m_editorViewportSettings;
 
     // DO NOT USE THIS! It exists only to satisfy the signature of the base class method GetViewTm
-    mutable Matrix34 m_viewTmStorage;
+    mutable AZ::Matrix3x4 m_viewTmStorage;
 };

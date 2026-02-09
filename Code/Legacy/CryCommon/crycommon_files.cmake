@@ -35,7 +35,6 @@ set(FILES
     LCGRandom.h
     BaseTypes.h
     AnimKey.h
-    CryAssert.h
     CryFile.h
     CryListenerSet.h
     CryPath.h

@@ -78,7 +78,7 @@ private:
     uint32 m_nextSequenceId;
 
     // Used to handle object attach/detach
-    std::unordered_map<CUiAnimViewNode*, Matrix34> m_prevTransforms;
+    std::unordered_map<CUiAnimViewNode*, AZ::Matrix3x4> m_prevTransforms;
 
     static CUiAnimViewSequenceManager* s_instance;
     IUiAnimationSystem* m_animationSystem;

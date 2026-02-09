@@ -36,6 +36,8 @@ namespace AZ
         DoNotUpdate //!< Do not update this entity's world transform when the parent's transform changes.
     };
 
+    static constexpr AZ::Crc32 PARENT_ACTIVE_TYPE_NAME = AZ_CRC_CE("Parent");
+
     //! Interface for AZ::TransformBus, which is an EBus that receives requests
     //! to translate (position), rotate, and scale an entity in 3D space. It
     //! also receives requests to get and set the parent of an entity and get

@@ -83,8 +83,6 @@
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 #include <Silhouette/SilhouetteCompositePass.h>
 #include <Silhouette/SilhouetteFeatureProcessor.h>
-#include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
-#include <SkyAtmosphere/SkyAtmosphereParentPass.h>
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 #include <SplashScreen/SplashScreenFeatureProcessor.h>
 #include <SplashScreen/SplashScreenPass.h>
@@ -126,7 +124,6 @@ namespace AZ
             AuxGeomFeatureProcessor::Reflect(context);
             TransformServiceFeatureProcessor::Reflect(context);
             ProjectedShadowFeatureProcessor::Reflect(context);
-            SkyAtmosphereFeatureProcessor::Reflect(context);
             SkyBoxFeatureProcessor::Reflect(context);
             SkyBoxFogSettings::Reflect(context);
             UseTextureFunctor::Reflect(context);
@@ -206,7 +203,6 @@ namespace AZ
             ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
             if (!appType.IsHeadless())
             {
-                AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SkyAtmosphereFeatureProcessor, SkyAtmosphereFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<SkyBoxFeatureProcessor, SkyBoxFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<ImageBasedLightFeatureProcessor, ImageBasedLightFeatureProcessorInterface>();
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<DecalTextureArrayFeatureProcessor, DecalFeatureProcessorInterface>();
@@ -233,9 +229,6 @@ namespace AZ
 
             auto* passSystem = RPI::PassSystemInterface::Get();
             AZ_Assert(passSystem, "Cannot get the pass system.");
-
-            // Add Sky Atmosphere Parent pass
-            passSystem->AddPassCreator(Name("SkyAtmosphereParentPass"), &SkyAtmosphereParentPass::Create);
 
             // Add DisplayMapper pass
             passSystem->AddPassCreator(Name("AcesOutputTransformLutPass"), &AcesOutputTransformLutPass::Create);
@@ -372,7 +365,6 @@ namespace AZ
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<DecalTextureArrayFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ImageBasedLightFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyBoxFeatureProcessor>();
-                AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyAtmosphereFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RayTracingDebugFeatureProcessor>();
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<RenderDebugFeatureProcessor>();

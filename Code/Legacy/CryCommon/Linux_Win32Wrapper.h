@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <CryAssert.h>
 #include <dirent.h>
 #include <vector>
 #include <AzCore/std/string/string.h>
@@ -354,9 +353,6 @@ inline void SetLastError(DWORD dwErrCode) { errno = dwErrCode; }
 #define ERROR_NOT_ENOUGH_MEMORY   8L
 #define ERROR_PATH_NOT_FOUND      3L
 #define FILE_FLAG_SEQUENTIAL_SCAN 0x08000000
-
-//////////////////////////////////////////////////////////////////////////
-extern threadID GetCurrentThreadId();
 
 //////////////////////////////////////////////////////////////////////////
 extern DWORD Sleep(DWORD dwMilliseconds);

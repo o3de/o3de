@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 #include "Editor/Resource.h"
+#include "MathConversion.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewDopeSheetBase.h"
 
@@ -1761,7 +1762,6 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
     if (dlg.exec() == QDialog::Accepted)
     {
         const AZ::Color col = dlg.selectedColor().GammaToLinear();
-        const ColorF colArray(col.GetR(), col.GetG(), col.GetB(), col.GetA());
 
         RecordTrackUndo(pTrack);
         CUiAnimViewSequenceNotificationContext context(pTrack->GetSequence());
@@ -1776,7 +1776,7 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
 
                 I2DBezierKey bezierKey;
                 newKey.GetKey(&bezierKey);
-                bezierKey.value = Vec2(keyTime, colArray[i]);
+                bezierKey.value = Vec2(keyTime, col.GetElement(i));
                 newKey.SetKey(&bezierKey);
 
                 keyCreated = true;
@@ -2071,8 +2071,8 @@ void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* pai
     QColor trackColor = CUiAVCustomizeTrackColorsDlg::GetTrackColor(pTrack->GetParameterType());
     if (pTrack->HasCustomColor())
     {
-        ColorB customColor = pTrack->GetCustomColor();
-        trackColor = QColor(customColor.r, customColor.g, customColor.b);
+        AZ::Color customColor = pTrack->GetCustomColor();
+        trackColor = QColor(customColor.GetR8(), customColor.GetG8(), customColor.GetB8());
     }
     // For the case of tracks belonging to an inactive director node,
     // changes the track color to a custom one.
@@ -3065,7 +3065,7 @@ void CUiAnimViewDopeSheetBase::DrawColorGradient(QPainter* painter, const QRect&
         Vec3 vColor(0, 0, 0);
         pTrack->GetValue(TimeFromPointUnsnapped(QPoint(x, rc.top())), vColor);
 
-        painter->setPen(ColorLinearToGamma(vColor / 255.0f));
+        painter->setPen(ColorLinearToGamma(LYVec3ToAZColor(vColor / 255.0f)));
         painter->drawLine(x, rc.top(), x, rc.bottom());
     }
     painter->setPen(pOldPen);

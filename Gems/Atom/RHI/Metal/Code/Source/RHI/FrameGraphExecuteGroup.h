@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <RHI/CommandQueue.h>
+#include <RHI/Scope.h>
 
 namespace AZ
 {

@@ -11,7 +11,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
@@ -52,7 +51,20 @@ namespace OpenParticle
             SimuCore::ParticleCore::MeshSampleType m_meshSampleType;
         };
 
-        AZ::Outcome<AZ::Data::Asset<ParticleAsset>> CreateParticleAsset(
+        
+        enum class CreateParticleAssetFailure
+        {
+            MaterialMissing,       // No material assigned for rendering
+            RenderTypeMissing,     // No render type assigned
+            IncorrectMaterialType, // Incorrect material type assigned for the render type (ie, "Sprite" but on mesh renderer)
+            MeshAssetMissing,      // Mesh renderer used, but no mesh asset assigned
+            Generic,               // Generic failure - check log for details.
+        };
+
+        using CreateParticleResult = AZ::Outcome<AZ::Data::Asset<ParticleAsset>, CreateParticleAssetFailure>;
+
+
+        CreateParticleResult CreateParticleAsset(
             AZ::Data::AssetId assetId, [[maybe_unused]] AZStd::string_view sourceFilePath, bool elevateWarnings = true) const;
 
         void Reset();

@@ -249,7 +249,7 @@ bool CBinaryXmlNode::getAttr(const char* key, Vec2& value) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBinaryXmlNode::getAttr(const char* key, Quat& value) const
+bool CBinaryXmlNode::getAttr(const char* key, AZ::Quaternion& value) const
 {
     const char* svalue = GetValue(key);
     if (svalue)
@@ -259,7 +259,7 @@ bool CBinaryXmlNode::getAttr(const char* key, Quat& value) const
         float w, x, y, z;
         if (azsscanf(svalue, "%f,%f,%f,%f", &w, &x, &y, &z) == 4)
         {
-            value = Quat(w, x, y, z);
+            value = AZ::Quaternion(w, x, y, z);
             return true;
         }
     }
@@ -267,7 +267,7 @@ bool CBinaryXmlNode::getAttr(const char* key, Quat& value) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CBinaryXmlNode::getAttr(const char* key, ColorB& value) const
+bool CBinaryXmlNode::getAttr(const char* key, AZ::Color& value) const
 {
     const char* svalue = GetValue(key);
     if (svalue)
@@ -281,7 +281,7 @@ bool CBinaryXmlNode::getAttr(const char* key, ColorB& value) const
             // If we only found 3 values, a should be unchanged, and still be 255
             if (r < 256 && g < 256 && b < 256 && a < 256)
             {
-                value = ColorB(static_cast<uint8>(r), static_cast<uint8>(g), static_cast<uint8>(b), static_cast<uint8>(a));
+                value = AZ::Color(r, g, b, a);
                 return true;
             }
         }

@@ -9,6 +9,7 @@
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>

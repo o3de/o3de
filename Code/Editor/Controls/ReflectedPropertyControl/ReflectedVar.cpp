@@ -304,8 +304,6 @@ AZ::u32 CReflectedVarGenericProperty::handler()
         return AZ_CRC_CE("ePropertyLocalString");
     case ePropertyLightAnimation:
         return AZ_CRC_CE("ePropertyLightAnimation");
-    case ePropertyParticleName:
-        return AZ_CRC_CE("ePropertyParticleName");
     default:
         AZ_Assert(false, "No property handlers defined for the property type");
         return AZ_CRC_CE("Default");

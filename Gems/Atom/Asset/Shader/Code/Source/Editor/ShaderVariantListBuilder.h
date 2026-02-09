@@ -54,7 +54,7 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(ShaderVariantListBuilder);
 
             // Keys of job parameters that are shared between CreateJobs() and ProcessJob().
-            static constexpr uint32_t ShaderVariantLoadErrorParam = 0;
+            static constexpr uint32_t ShaderNotReadyYetParam = 0;
             static constexpr uint32_t ShouldExitEarlyFromProcessJobParam = 1;
             static constexpr uint32_t ShaderVariantListAbsolutePathJobParam = 2;
             static constexpr uint32_t ShaderAbsolutePathJobParam = 3;

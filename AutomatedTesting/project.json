@@ -59,6 +59,7 @@
         "ScriptCanvasPhysics",
         "ScriptCanvasTesting",
         "ScriptEvents",
+        "SkyAtmosphere",
         "Stars",
         "StartingPointCamera",
         "StartingPointInput",

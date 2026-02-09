@@ -70,8 +70,8 @@ namespace AZ
         virtual void Release() override {}
         virtual IFFont* NewFont([[maybe_unused]] const char* fontName) override { return &NullFFont; }
         virtual IFFont* GetFont([[maybe_unused]] const char* fontName) const override { return &NullFFont; }
-        virtual FontFamilyPtr LoadFontFamily([[maybe_unused]] const char* fontFamilyName) override { CRY_ASSERT(false); return nullptr; }
-        virtual FontFamilyPtr GetFontFamily([[maybe_unused]] const char* fontFamilyName) override { CRY_ASSERT(false); return nullptr; }
+        virtual FontFamilyPtr LoadFontFamily([[maybe_unused]] const char* fontFamilyName) override { AZ_Assert(false,"LoadFontFamily not implemented"); return nullptr; }
+        virtual FontFamilyPtr GetFontFamily([[maybe_unused]] const char* fontFamilyName) override { AZ_Assert(false,"GetFontFamily not implemented"); return nullptr; }
         virtual void AddCharsToFontTextures([[maybe_unused]] FontFamilyPtr fontFamily, [[maybe_unused]] const char* chars, [[maybe_unused]] int glyphSizeX, [[maybe_unused]] int glyphSizeY) override {};
         virtual AZStd::string GetLoadedFontNames() const override { return ""; }
         virtual void OnLanguageChanged() override { }

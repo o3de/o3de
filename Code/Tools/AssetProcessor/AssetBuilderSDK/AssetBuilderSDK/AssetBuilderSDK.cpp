@@ -756,7 +756,6 @@ namespace AssetBuilderSDK
     static constexpr AZ::Data::AssetType prefabsLibraryAssetType("{2DC3C556-9461-4729-8313-2BA0CB64EF52}"); // from PrefabsLibraryAssetTypeInfo.cpp
     static constexpr AZ::Data::AssetType entityPrototypeLibraryAssetType("{B034F8AB-D881-4A35-A408-184E3FDEB2FE}"); // from EntityPrototypeLibraryAssetTypeInfo.cpp
     static constexpr AZ::Data::AssetType gameTokenAssetType("{1D4B56F8-366A-4040-B645-AE87E3A00DAB}"); // from GameTokenAssetTypeInfo.cpp
-    static constexpr AZ::Data::AssetType particleAssetType("{6EB56B55-1B58-4EE3-A268-27680338AE56}"); // from ParticleAsset.h
     static constexpr AZ::Data::AssetType lensFlareAssetType("{CF44D1F0-F178-4A3D-A9E6-D44721F50C20}"); // from LensFlareAsset.h
     static constexpr AZ::Data::AssetType fontAssetType("{57767D37-0EBE-43BE-8F60-AB36D2056EF8}"); // form UiAssetTypes.h
     static constexpr AZ::Data::AssetType uiCanvasAssetType("{E48DDAC8-1F1E-4183-AAAB-37424BCC254B}"); // from UiAssetTypes.h
@@ -922,12 +921,6 @@ namespace AssetBuilderSDK
                 {
                     azdestroy(xmlDoc, AZ::SystemAllocator, AZ::rapidxml::xml_document<char>);
                     return fontAssetType;
-                }
-
-                if (!azstricmp(xmlRootNode->name(), "ParticleLibrary"))
-                {
-                    azdestroy(xmlDoc, AZ::SystemAllocator, AZ::rapidxml::xml_document<char>);
-                    return particleAssetType;
                 }
 
                 if (!azstricmp(xmlRootNode->name(), "LensFlareLibrary"))

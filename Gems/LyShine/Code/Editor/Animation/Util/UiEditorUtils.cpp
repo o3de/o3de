@@ -95,27 +95,15 @@ QString TrimTrailingZeros(QString str)
 }
 
 //////////////////////////////////////////////////////////////////////////
-QColor ColorLinearToGamma(ColorF col)
+QColor ColorLinearToGamma(const AZ::Color& col)
 {
-    float r = clamp_tpl(col.r, 0.0f, 1.0f);
-    float g = clamp_tpl(col.g, 0.0f, 1.0f);
-    float b = clamp_tpl(col.b, 0.0f, 1.0f);
-
-    r = AZ::Color::ConvertSrgbLinearToGamma(r);
-    g = AZ::Color::ConvertSrgbLinearToGamma(g);
-    b = AZ::Color::ConvertSrgbLinearToGamma(b);
-
-    return QColor(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f));
+    AZ::Color gammaColor = col.GetSaturated().LinearToGamma();
+    return QColor(gammaColor.GetR8(), gammaColor.GetG8(), gammaColor.GetB8(), gammaColor.GetA8());
 }
 
 //////////////////////////////////////////////////////////////////////////
-ColorF ColorGammaToLinear(const QColor& col)
+AZ::Color ColorGammaToLinear(const QColor& col)
 {
-    float r = (float)col.red() / 255.0f;
-    float g = (float)col.green() / 255.0f;
-    float b = (float)col.blue() / 255.0f;
-
-    return ColorF(AZ::Color::ConvertSrgbGammaToLinear(r),
-        AZ::Color::ConvertSrgbGammaToLinear(g),
-        AZ::Color::ConvertSrgbGammaToLinear(b));
+    AZ::Color gammaColor(col.red(), col.green(), col.blue(), col.alpha());
+    return gammaColor.GammaToLinear();
 }

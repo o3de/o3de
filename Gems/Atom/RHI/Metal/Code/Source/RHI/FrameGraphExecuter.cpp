@@ -82,9 +82,10 @@ namespace AZ
                     }
                     else
                     {
-                        mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
-                        FrameGraphExecuteGroupMerged* scopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
-                        scopeContextGroup->Init(static_cast<Device&>(scopeBase->GetDevice()), AZStd::move(mergedScopes), GetGroupCount());
+                        mergedScopes.clear();
+                        mergedScopes.push_back(&scope);
+                        FrameGraphExecuteGroupPrimary* scopeContextGroup = AddGroup<FrameGraphExecuteGroupPrimary>();
+                        scopeContextGroup->Init(static_cast<Device&>(scope.GetDevice()), AZStd::move(mergedScopes));
                     }
                 }
             }

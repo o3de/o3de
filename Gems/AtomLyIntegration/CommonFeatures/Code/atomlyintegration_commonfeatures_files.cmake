@@ -179,11 +179,6 @@ set(FILES
     Source/SpecularReflections/SpecularReflectionsComponentConfig.cpp
     Source/SpecularReflections/SpecularReflectionsComponentController.h
     Source/SpecularReflections/SpecularReflectionsComponentController.cpp
-    Source/SkyAtmosphere/SkyAtmosphereComponentConfig.cpp
-    Source/SkyAtmosphere/SkyAtmosphereComponentController.cpp
-    Source/SkyAtmosphere/SkyAtmosphereComponentController.h
-    Source/SkyAtmosphere/SkyAtmosphereComponent.cpp
-    Source/SkyAtmosphere/SkyAtmosphereComponent.h
     Source/SkyBox/HDRiSkyboxComponentConfig.cpp
     Source/SkyBox/HDRiSkyboxComponentController.cpp
     Source/SkyBox/HDRiSkyboxComponentController.h

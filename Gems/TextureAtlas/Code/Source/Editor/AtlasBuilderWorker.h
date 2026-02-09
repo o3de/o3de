@@ -44,7 +44,7 @@ namespace TextureAtlasBuilder
             m_maxDimension(4096),
             m_padding(1),
             // Default color should be a non-transparent color that isn't used often in uis
-            m_unusedColor(.235f, .702f, .443f, 1)
+            m_unusedColor(.235f, .702f, .443f)
         {
         }
 

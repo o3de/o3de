@@ -682,9 +682,9 @@ void CUiAnimNode::PostLoad()
 }
 
 //////////////////////////////////////////////////////////////////////////
-Matrix34 CUiAnimNode::GetReferenceMatrix() const
+AZ::Matrix3x4 CUiAnimNode::GetReferenceMatrix() const
 {
-    static Matrix34 tm(IDENTITY);
+    static AZ::Matrix3x4 tm = AZ::Matrix3x4::CreateIdentity();
     return tm;
 }
 

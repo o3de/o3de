@@ -66,8 +66,6 @@ typedef unsigned char       byte;
 
 #define __int64     long long
 
-#define ILINE __forceinline
-
 #define _A_RDONLY (0x01)
 #define _A_SUBDIR (0x10)
 

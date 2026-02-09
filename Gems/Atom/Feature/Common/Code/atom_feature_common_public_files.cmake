@@ -130,7 +130,6 @@ set(FILES
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h
-    Include/Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyBoxFogSettings.h

@@ -11,6 +11,10 @@ set(LY_LINK_OPTIONS
         -ObjC
 )
 
+if(launcher_generator_BUILD_GENERIC)
+    return()
+endif()
+
 # Add resources and app icons to launchers
 list(APPEND candidate_paths ${project_real_path}/Resources/Platform/iOS)
 list(APPEND candidate_paths ${project_real_path}/Gem/Resources/Platform/iOS) # Legacy projects

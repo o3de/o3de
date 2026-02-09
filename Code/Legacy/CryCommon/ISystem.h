@@ -9,15 +9,13 @@
 #pragma once
 
 #include <AzCore/PlatformDef.h>
-
+#include <AzCore/std/parallel/thread.h>
 #ifdef CRYSYSTEM_EXPORTS
 #define CRYSYSTEM_API AZ_DLL_EXPORT
 #else
 #define CRYSYSTEM_API AZ_DLL_IMPORT
 #endif
 #include <AzCore/IO/SystemFile.h>
-
-#include "CryAssert.h"
 #include <CryCommon/IValidator.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -596,10 +594,10 @@ struct SSystemGlobalEnvironment
     #include AZ_RESTRICTED_FILE(ISystem_h)
 #endif
 
-    threadID                                 mMainThreadId;     //The main thread ID is used in multiple systems so should be stored globally
+    AZStd::thread_id                                mMainThreadId;     //The main thread ID is used in multiple systems so should be stored globally
 
     //////////////////////////////////////////////////////////////////////////
-    // Used by CRY_ASSERT
+    // Used by AZ_Assert
     bool                                            bIgnoreAllAsserts;
     bool                                            bNoAssertDialog;
     //////////////////////////////////////////////////////////////////////////

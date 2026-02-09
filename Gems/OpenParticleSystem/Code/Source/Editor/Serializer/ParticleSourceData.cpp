@@ -562,7 +562,7 @@ namespace OpenParticle
         m_renderConfig.clear();
     }
 
-    AZ::Outcome<AZ::Data::Asset<ParticleAsset>> ParticleSourceData::CreateParticleAsset(
+    ParticleAssetData::CreateParticleResult ParticleSourceData::CreateParticleAsset(
         AZ::Data::AssetId assetId, AZStd::string_view sourceFilePath, bool elevateWarnings) const
     {
         return m_assetData.CreateParticleAsset(assetId, sourceFilePath, elevateWarnings);

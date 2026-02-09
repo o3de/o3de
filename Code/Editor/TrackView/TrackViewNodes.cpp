@@ -2188,15 +2188,14 @@ void CTrackViewNodesCtrl::CustomizeTrackColor(CTrackViewTrack* pTrack)
     AZ::Color defaultColor;
     if (pTrack->HasCustomColor())
     {
-        ColorB customColor = pTrack->GetCustomColor();
-        defaultColor = AZ::Color(customColor.r, customColor.g, customColor.b, customColor.a);
+        defaultColor = pTrack->GetCustomColor();
     }
     const AZ::Color color = AzQtComponents::ColorPicker::getColor(AzQtComponents::ColorPicker::Configuration::RGB, defaultColor, tr("Select Color"));
     if (color != defaultColor)
     {
         AzToolsFramework::ScopedUndoBatch undoBatch("Customize Track Color");
 
-        pTrack->SetCustomColor(ColorB(color.GetR8(), color.GetG8(), color.GetB8()));
+        pTrack->SetCustomColor(color);
         undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
 
         UpdateDopeSheet();

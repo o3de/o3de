@@ -249,10 +249,10 @@ template <typename T>
 inline CListenerSet<T>::~CListenerSet()
 {
     // Ensure no notifications are in progress
-    CRY_ASSERT(m_activeNotifications == 0);
+    AZ_Assert(m_activeNotifications == 0, "m_activeNotifications must be zero");
 
     // Ensure NULL elements were removed at end of last notification
-    CRY_ASSERT(!m_cleanupRequired);
+    AZ_Assert(!m_cleanupRequired, "m_cleanupRequired must be false");
 }
 
 // Appends a listener to the end of the collection. Name is optional but recommended.
@@ -262,7 +262,7 @@ inline bool CListenerSet<T>::Add(T pListener, const char* name, [[maybe_unused]]
     bool success = false;
 
     // Ensure the listener exists
-    CRY_ASSERT(pListener);
+    AZ_Assert(pListener, "pListener is null");
 
     if (pListener)
     {
@@ -435,7 +435,7 @@ template <typename T>
 inline void CListenerSet<T>::EndNotificationScope()
 {
     // Ensure at least one notification scope was started
-    CRY_ASSERT(m_activeNotifications > 0);
+    AZ_Assert(m_activeNotifications > 0, "m_activeNotifications must be non-zero");
 
     // If this is the last notification
     if (--m_activeNotifications == 0)
@@ -448,7 +448,7 @@ template <typename T>
 inline void CListenerSet<T>::EraseNullElements()
 {
     // Ensure no modification while notification(s) are ongoing
-    CRY_ASSERT(m_activeNotifications == 0);
+    AZ_Assert(m_activeNotifications == 0, "m_activeNotifications must be zero");
 
     if (m_cleanupRequired && m_activeNotifications == 0)
     {
@@ -550,7 +550,7 @@ template <typename T>
 ILINE T CListenerNotifier<T>::operator*()
 {
     // Ensure IsReady() was called and its return value checked
-    CRY_ASSERT(m_pListener);
+    AZ_Assert(m_pListener, "m_pListener is null");
 
     // Clear cached listener pointer to force a IsReady() call before this can be called again.
     // This is done as the listener could be removed during any call to its own event handlers

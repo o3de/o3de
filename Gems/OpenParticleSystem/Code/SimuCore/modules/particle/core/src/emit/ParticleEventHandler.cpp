@@ -96,7 +96,10 @@ namespace SimuCore::ParticleCore {
                     spawn.emitTime = info.tickTime;
                 }
             }
-            (void)emitSpawnParam.inheritanceSpawn.emplace_back(&spawn);
+            for (AZ::u32 i = 0; i < spawn.emitNum; i++)
+            {
+                (void)emitSpawnParam.inheritanceSpawn.emplace_back(&spawn);
+            }
         }
         info.emitterInheritances->swap(*tempMap);
         delete tempMap;

@@ -37,7 +37,6 @@ class CTrackViewSequenceManager;
 class CGameEngine;
 class CToolBoxManager;
 class CMusicManager;
-struct IEditorParticleManager;
 class CEAXPresetManager;
 class CErrorReport;
 class ICommandManager;
@@ -59,7 +58,6 @@ struct IRenderer;
 struct IErrorReport; // Vladimir@conffx
 struct IFileUtil;  // Vladimir@conffx
 struct IEditorLog;  // Vladimir@conffx
-struct IEditorParticleUtils;  // Leroy@conffx
 
 // Qt
 
@@ -155,7 +153,7 @@ enum EEditorNotifyEvent
 
     eNotify_OnSplatmapImport, // Sent when splatmaps get imported
 
-    eNotify_OnParticleUpdate,          // A particle effect was modified.
+    eNotify_Deprecated00,              //  formerly eNotify_OnParticleUpdate, old particle system
     eNotify_OnAddAWSProfile,           // An AWS profile was added
     eNotify_OnSwitchAWSProfile,        // The AWS profile was switched
     eNotify_OnSwitchAWSDeployment,     // The AWS deployment was switched

@@ -79,8 +79,9 @@ namespace AZ
                 const RHI::DeviceRayTracingBlas &sourceBlas,
                 const RHI::DeviceRayTracingBlas &compactBlas) override;
             void BuildTopLevelAccelerationStructure(
-                const RHI::DeviceRayTracingTlas &rayTracingTlas,
-                const AZStd::vector<const RHI::DeviceRayTracingBlas *> &changedBlasList) override;
+                const RHI::DeviceRayTracingTlas& rayTracingTlas,
+                const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList,
+                const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& changedClusterBlasList) override;
             void SetFragmentShadingRate(
                 [[maybe_unused]] RHI::ShadingRate rate,
                 [[maybe_unused]] const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override {}

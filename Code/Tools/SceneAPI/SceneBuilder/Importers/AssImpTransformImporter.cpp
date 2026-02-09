@@ -13,6 +13,10 @@
 #include <SceneAPI/SceneBuilder/SceneSystem.h>
 #include <SceneAPI/SceneBuilder/Importers/ImporterUtilities.h>
 #include <SceneAPI/SceneBuilder/Importers/Utilities/RenamedNodesMap.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphChildIterator.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
 #include <SceneAPI/SDKWrapper/AssImpTypeConverter.h>
@@ -25,6 +29,24 @@ namespace AZ
 {
     namespace SceneAPI
     {
+        namespace
+        {
+            bool IsMeshNodeAndParentHasTransformChildNode(
+                const Containers::SceneGraph& sceneGraph, const Containers::SceneGraph::NodeIndex& nodeIndex)
+            {
+                auto parentIndex = sceneGraph.GetNodeParent(nodeIndex);
+                auto childView = Containers::Views::MakeSceneGraphChildView<Containers::Views::AcceptEndPointsOnly>(
+                    sceneGraph, parentIndex, sceneGraph.GetContentStorage().begin(), true);
+
+                bool isMeshNode = azrtti_istypeof<DataTypes::IMeshData>(sceneGraph.GetNodeContent(nodeIndex).get());
+                bool isParentBoneNode = azrtti_istypeof<DataTypes::IBoneData>(sceneGraph.GetNodeContent(parentIndex).get());
+                bool parentHasTransformChild =
+                    AZStd::ranges::find_if(childView, Containers::DerivedTypeFilter<DataTypes::ITransform>()) != childView.end();
+
+                return isMeshNode && isParentBoneNode && parentHasTransformChild;
+            }
+        } // namespace
+
         namespace SceneBuilder
         {
             const char* AssImpTransformImporter::s_transformNodeName = "transform";
@@ -75,6 +97,14 @@ namespace AZ
                         AZStd::string nodeName = s_transformNodeName;
                         RenamedNodesMap::SanitizeNodeName(nodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition);
                         AZ_TraceContext("Transform node name", nodeName);
+
+                        // When a transform data is imported for a mesh node, and the immediate parent is a bone node which also contains
+                        // transform data, a separate transform node for the mesh is not added, since its transform is already included via
+                        // the bones transform node when traversing scene graph upwards.
+                        if (IsMeshNodeAndParentHasTransformChildNode(context.m_scene.GetGraph(), context.m_currentGraphPosition))
+                        {
+                            return Events::ProcessingResult::Ignored;
+                        }
 
                         Containers::SceneGraph::NodeIndex newIndex =
                             context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());

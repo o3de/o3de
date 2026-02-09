@@ -938,7 +938,9 @@ namespace AZ
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList)
+            const RHI::DeviceRayTracingTlas& rayTracingTlas,
+            const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList,
+            const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& changedClusterBlasList)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

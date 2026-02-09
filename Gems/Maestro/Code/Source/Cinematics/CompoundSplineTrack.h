@@ -246,12 +246,12 @@ namespace Maestro
         }
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
-        ColorB GetCustomColor() const override
+        AZ::Color GetCustomColor() const override
         {
             return m_customColor;
         }
 
-        void SetCustomColor(ColorB color) override
+        void SetCustomColor(const AZ::Color& color) override
         {
             m_customColor = color;
             m_bCustomColorSet = true;
@@ -314,7 +314,7 @@ namespace Maestro
         AZStd::vector<AZStd::string> m_subTrackNames;
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
-        ColorB m_customColor;
+        AZ::Color m_customColor;
         bool m_bCustomColorSet;
 #endif
 

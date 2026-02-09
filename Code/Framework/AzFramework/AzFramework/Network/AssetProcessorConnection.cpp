@@ -1017,7 +1017,24 @@ namespace AzFramework
                 });
 
             QueueMessageForSend(typeId, serial, dataBuffer, dataLength);
-            wait.acquire();
+            constexpr AZStd::chrono::milliseconds KeepAliveDelayMS(10);
+            SocketConnection::KeepAliveCallback callbackFn = SocketConnection::GetKeepAliveCallback();
+            bool callbackAvailable = (callbackFn != nullptr);
+
+            if (callbackAvailable)
+            {
+                while (!wait.try_acquire_for(KeepAliveDelayMS))
+                {
+                    // emit a keep alive message.  It is crucial that this callback uses no locks, no mutexes, and no waits itself.
+                     (callbackFn)(false); // signal operation in progress.
+                }
+                (callbackFn)(true); // signal end of operation
+            }
+            else
+            {
+                wait.acquire(); // wait for it to arrive, blocking
+            }
+
 
             return responseArrived;
         }
