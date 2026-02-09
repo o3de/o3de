@@ -66,6 +66,8 @@ namespace AzToolsFramework
             "TransformComponent",
             // JSON property data contexts (strings extracted from JSON by Translation.cmake)
             "MaterialInputs",
+            // Reflected property contexts (used by EditContext in ProjectSettingsTool, etc.)
+            "ReflectedPropertyEditor",
         };
         return s_contexts;
     }
