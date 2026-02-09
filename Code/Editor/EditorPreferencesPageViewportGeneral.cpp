@@ -226,12 +226,12 @@ CEditorPreferencesPage_ViewportGeneral::CEditorPreferencesPage_ViewportGeneral()
 
 const char* CEditorPreferencesPage_ViewportGeneral::GetCategory()
 {
-    return "Viewports";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Viewports");
 }
 
 const char* CEditorPreferencesPage_ViewportGeneral::GetTitle()
 {
-    return "Viewport";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Viewport");
 }
 
 QIcon& CEditorPreferencesPage_ViewportGeneral::GetIcon()

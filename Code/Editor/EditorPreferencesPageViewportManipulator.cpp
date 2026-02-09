@@ -139,12 +139,12 @@ CEditorPreferencesPage_ViewportManipulator::CEditorPreferencesPage_ViewportManip
 
 const char* CEditorPreferencesPage_ViewportManipulator::GetCategory()
 {
-    return "Viewports";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Viewports");
 }
 
 const char* CEditorPreferencesPage_ViewportManipulator::GetTitle()
 {
-    return "Manipulators";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Manipulators");
 }
 
 QIcon& CEditorPreferencesPage_ViewportManipulator::GetIcon()

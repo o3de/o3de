@@ -30,8 +30,8 @@ public:
     CEditorPreferencesPage_Files();
     virtual ~CEditorPreferencesPage_Files() = default;
 
-    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "General Settings"); }
-    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesPageFiles", "Files"); }
+    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "General Settings"); }
+    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Files"); }
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
     virtual void OnCancel() override {}

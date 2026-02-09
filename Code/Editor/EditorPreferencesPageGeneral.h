@@ -34,8 +34,8 @@ public:
     CEditorPreferencesPage_General();
     virtual ~CEditorPreferencesPage_General() = default;
 
-    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesPageGeneral", "General Settings"); }
-    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesPageGeneral", "General Settings"); }
+    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "General Settings"); }
+    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "General Settings"); }
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
     virtual void OnCancel() override {}

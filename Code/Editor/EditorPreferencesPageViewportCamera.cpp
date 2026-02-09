@@ -444,12 +444,12 @@ CEditorPreferencesPage_ViewportCamera::CEditorPreferencesPage_ViewportCamera()
 
 const char* CEditorPreferencesPage_ViewportCamera::GetCategory()
 {
-    return "Viewports";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Viewports");
 }
 
 const char* CEditorPreferencesPage_ViewportCamera::GetTitle()
 {
-    return "Camera";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Camera");
 }
 
 QIcon& CEditorPreferencesPage_ViewportCamera::GetIcon()

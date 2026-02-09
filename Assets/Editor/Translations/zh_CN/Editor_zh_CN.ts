@@ -3354,6 +3354,42 @@ Assign and replace?</source>
         <source>Manage</source>
         <translation>管理</translation>
     </message>
+    <message>
+        <source>General Settings</source>
+        <translation>常规设置</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <translation>文件</translation>
+    </message>
+    <message>
+        <source>Viewports</source>
+        <translation>视口</translation>
+    </message>
+    <message>
+        <source>Viewport</source>
+        <translation>视口</translation>
+    </message>
+    <message>
+        <source>Camera</source>
+        <translation>摄像机</translation>
+    </message>
+    <message>
+        <source>Manipulators</source>
+        <translation>操纵器</translation>
+    </message>
+    <message>
+        <source>Debug</source>
+        <translation>调试</translation>
+    </message>
+    <message>
+        <source>AWS</source>
+        <translation>AWS</translation>
+    </message>
+    <message>
+        <source>Cloud</source>
+        <translation>云</translation>
+    </message>
 </context>
 <context>
     <name>EditorPreferencesPageAWS</name>

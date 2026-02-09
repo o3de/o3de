@@ -29,8 +29,8 @@ public:
     CEditorPreferencesPage_ViewportDebug();
     virtual ~CEditorPreferencesPage_ViewportDebug() = default;
 
-    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Viewports"); }
-    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesPageViewportDebug", "Debug"); }
+    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Viewports"); }
+    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Debug"); }
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
     virtual void OnCancel() override {}

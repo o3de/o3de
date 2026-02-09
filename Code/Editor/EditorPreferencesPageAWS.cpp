@@ -64,7 +64,7 @@ CEditorPreferencesPage_AWS::~CEditorPreferencesPage_AWS()
 
 const char* CEditorPreferencesPage_AWS::GetTitle()
 {
-    return "Cloud";
+    return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "Cloud");
 }
 
 QIcon& CEditorPreferencesPage_AWS::GetIcon()

@@ -19,6 +19,7 @@
 #include "IPreferencesPage.h"
 
 #include <AzQtComponents/Components/StyleManager.h>
+#include <QCoreApplication>
 
 EditorPreferencesTreeWidgetItem::EditorPreferencesTreeWidgetItem(IPreferencesPage* page, const QPixmap& selectedImage, QPixmap& unselectedImage)
     : QTreeWidgetItem(EditorPreferencesPage)
@@ -43,7 +44,7 @@ EditorPreferencesTreeWidgetItem::EditorPreferencesTreeWidgetItem(IPreferencesPag
 
 void EditorPreferencesTreeWidgetItem::Setup(IPreferencesPage* page)
 {
-    setData(0, Qt::DisplayRole, m_preferencesPage->GetTitle());
+    setData(0, Qt::DisplayRole, QCoreApplication::translate("EditorPreferencesDialog", m_preferencesPage->GetTitle()));
 
     AZ::SerializeContext* serializeContext = nullptr;
     AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
