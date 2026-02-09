@@ -22,6 +22,7 @@ namespace GraphCanvas
     CutGraphSelectionMenuAction::CutGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Cut", parent)
     {
+        setText(tr("Cut"));
     }
 
     ContextMenuAction::SceneReaction CutGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
@@ -39,6 +40,7 @@ namespace GraphCanvas
     CopyGraphSelectionMenuAction::CopyGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Copy", parent)
     {
+        setText(tr("Copy"));
     }
 
     ContextMenuAction::SceneReaction CopyGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
@@ -56,6 +58,7 @@ namespace GraphCanvas
     PasteGraphSelectionMenuAction::PasteGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Paste", parent)
     {
+        setText(tr("Paste"));
     }
 
     void PasteGraphSelectionMenuAction::RefreshAction()
@@ -84,6 +87,7 @@ namespace GraphCanvas
     DeleteGraphSelectionMenuAction::DeleteGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Delete", parent)
     {
+        setText(tr("Delete"));
     }
 
     ContextMenuAction::SceneReaction DeleteGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
@@ -101,6 +105,7 @@ namespace GraphCanvas
     DuplicateGraphSelectionMenuAction::DuplicateGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Duplicate", parent)
     {
+        setText(tr("Duplicate"));
     }
 
     ContextMenuAction::SceneReaction DuplicateGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& scenePos)

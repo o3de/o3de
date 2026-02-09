@@ -16,6 +16,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Integration/Assets/ActorAsset.h>
 #include <Integration/Editor/Components/EditorSimpleLODComponent.h>
@@ -39,14 +40,16 @@ namespace EMotionFX
                 if (editContext)
                 {
                     editContext->Class<EditorSimpleLODComponent>(
-                        "Simple LOD Distance", "The Simple LOD distance component alters the actor skeleton LOD level based on camera distance.")
+                        QT_TRANSLATE_NOOP("EMotionFX", "Simple LOD Distance"),
+                        QT_TRANSLATE_NOOP("EMotionFX", "The Simple LOD distance component alters the actor skeleton LOD level based on camera distance."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Animation")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleLODDistance.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/SimpleLODDistance.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(0, &EditorSimpleLODComponent::m_configuration, "LOD Configuration", "");
+                        ->DataElement(0, &EditorSimpleLODComponent::m_configuration,
+                            QT_TRANSLATE_NOOP("EMotionFX", "LOD Configuration"), "");
                 }
             }
 

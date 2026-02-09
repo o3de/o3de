@@ -7,6 +7,7 @@
  */
 
 #include <ScriptCanvas/Variable/GraphVariable.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
@@ -26,9 +27,13 @@ namespace ScriptCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ReplicaNetworkProperties>("ReplicaNetworkProperties", "Network Properties")
+                editContext->Class<ReplicaNetworkProperties>(
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "ReplicaNetworkProperties"),
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Network Properties"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ReplicaNetworkProperties::m_isSynchronized, "Is Synchronized", "Controls whether or not this value is reflected across the network.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ReplicaNetworkProperties::m_isSynchronized,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Is Synchronized"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Controls whether or not this value is reflected across the network."))
                     ;
             }
         }
@@ -186,32 +191,44 @@ namespace ScriptCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GraphVariable>("Variable", "Represents a Variable field within a Script Canvas Graph")
+                editContext->Class<GraphVariable>(
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Variable"),
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Represents a Variable field within a Script Canvas Graph"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetVisibility)
                     ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &GraphVariable::GetVariableName)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &GraphVariable::GetVariableName)
                     ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &GraphVariable::GetDescriptionOverride)
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_InitialValueSource, "Initial Value Source", "Variables can get their values from within the graph or through component properties.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_InitialValueSource,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Initial Value Source"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Variables can get their values from within the graph or through component properties."))
                     ->Attribute(AZ::Edit::Attributes::GenericValueList, &GraphVariable::GetPropertyChoices)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnInitialValueSourceChanged)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetInputControlVisibility)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_datum, "Datum", "Datum within Script Canvas Graph")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_datum,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Datum"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Datum within Script Canvas Graph"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnValueChanged)
 
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_scope, "Scope", "Controls the scope of this variable. i.e. If this is exposed as input to this script, or output from this script, or if the variable is just locally scoped.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_scope,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Scope"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Controls the scope of this variable. i.e. If this is exposed as input to this script, or output from this script, or if the variable is just locally scoped."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetScopeControlVisibility)
                     ->Attribute(AZ::Edit::Attributes::GenericValueList, &GraphVariable::GetScopeChoices)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnScopeTypedChanged)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_networkProperties, "Network Properties", "Enables whether or not this value should be network synchronized")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_networkProperties,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Network Properties"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Enables whether or not this value should be network synchronized"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetNetworkSettingsVisibility)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_sortPriority, "Display Order", "Allows for customizable display order. -1 implies it will be at the end of the list.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_sortPriority,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Display Order"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Allows for customizable display order. -1 implies it will be at the end of the list."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetInputControlVisibility)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnSortPriorityChanged)
                     ->Attribute(AZ::Edit::Attributes::Min, -1)

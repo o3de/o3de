@@ -118,7 +118,7 @@ void PropertyAnchorCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::Prop
         else
         {
             // emit a warning!
-            AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'ReadOnly' attribute from property '%s' into string box", debugName);
+            AZ_WarningOnce("LyShine", false, "Failed to read 'ReadOnly' attribute from property '%s' into string box", debugName);
         }
         return;
     }
@@ -174,7 +174,7 @@ void PropertyAnchorCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::Prop
         else
         {
             // emit a warning!
-            AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'LayoutFitterType' attribute from property '%s' into string box", debugName);
+            AZ_WarningOnce("LyShine", false, "Failed to read 'LayoutFitterType' attribute from property '%s' into string box", debugName);
         }
     }
 }

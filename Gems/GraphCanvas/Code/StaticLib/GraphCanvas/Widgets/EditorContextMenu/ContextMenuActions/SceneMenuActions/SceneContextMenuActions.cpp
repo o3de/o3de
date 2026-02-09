@@ -20,7 +20,8 @@ namespace GraphCanvas
     RemoveUnusedElementsMenuAction::RemoveUnusedElementsMenuAction(QObject* parent)
         : SceneContextMenuAction("All", parent)
     {
-        setToolTip("Removes all of the unused elements from the active graph");
+        setText(tr("All"));
+        setToolTip(tr("Removes all of the unused elements from the active graph"));
     }
 
     bool RemoveUnusedElementsMenuAction::IsInSubMenu() const
@@ -30,7 +31,7 @@ namespace GraphCanvas
 
     AZStd::string RemoveUnusedElementsMenuAction::GetSubMenuPath() const
     {
-        return "Remove Unused";
+        return tr("Remove Unused").toUtf8().constData();
     }
 
     ContextMenuAction::SceneReaction RemoveUnusedElementsMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
@@ -48,7 +49,8 @@ namespace GraphCanvas
     RemoveUnusedNodesMenuAction::RemoveUnusedNodesMenuAction(QObject* parent)
         : SceneContextMenuAction("Nodes", parent)
     {
-        setToolTip("Removes all of the unused nodes from the active graph");
+        setText(tr("Nodes"));
+        setToolTip(tr("Removes all of the unused nodes from the active graph"));
     }
 
     bool RemoveUnusedNodesMenuAction::IsInSubMenu() const
@@ -58,7 +60,7 @@ namespace GraphCanvas
 
     AZStd::string RemoveUnusedNodesMenuAction::GetSubMenuPath() const
     {
-        return "Remove Unused";
+        return tr("Remove Unused").toUtf8().constData();
     }
 
     ContextMenuAction::SceneReaction RemoveUnusedNodesMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)

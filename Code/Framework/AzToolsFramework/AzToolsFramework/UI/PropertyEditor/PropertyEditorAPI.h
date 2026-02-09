@@ -410,6 +410,26 @@ namespace AzToolsFramework
     AZTF_API void OnEntityComponentPropertyChanged(AZ::EntityId entityId, AZ::ComponentId componentId);
 
     /**
+     * Attempts to translate a property editor string from EditContext.
+     * Searches all registered translation contexts for internationalization.
+     * Core framework contexts (AzCore, AzFramework, AzToolsFramework, etc.) and
+     * all known Gem contexts are pre-registered. Additional contexts can be added
+     * at runtime via RegisterTranslationContext().
+     * @param sourceText The source text to translate
+     * @param context Optional translation context to try first (fastest path)
+     * @return The translated string, or the original string if no translation was found
+     */
+    AZTF_API AZStd::string TranslatePropertyString(const char* sourceText, const char* context = nullptr);
+
+    /**
+     * Register an additional translation context for TranslatePropertyString.
+     * This allows Gems and modules to make their QT_TRANSLATE_NOOP contexts
+     * discoverable by the property editor translation system.
+     * @param contextName The context name (e.g., "MyGem")
+     */
+    AZTF_API void RegisterTranslationContext(const char* contextName);
+
+    /**
      * A function that evaluates whether a property node is read-only.
      * This can be used to make a property read-only when that can't be
      * accomplished through attributes on the node.

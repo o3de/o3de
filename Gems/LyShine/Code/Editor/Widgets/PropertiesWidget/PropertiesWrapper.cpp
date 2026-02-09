@@ -41,17 +41,17 @@ PropertiesWrapper::PropertiesWrapper(HierarchyWidget* hierarchy, EditorWindow* p
         QHBoxLayout* innerHLayout = new QHBoxLayout();
         {
             QLabel* elementNameLabel = new QLabel(this);
-            elementNameLabel->setText("Name");
+            elementNameLabel->setText(tr("Name"));
             innerHLayout->addWidget(elementNameLabel);
             QLineEdit* elementNameLineEdit = new QLineEdit(this);
             elementNameLineEdit->setObjectName(QStringLiteral("m_elementName"));
-            elementNameLineEdit->setText("No Canvas Loaded");
+            elementNameLineEdit->setText(tr("No Canvas Loaded"));
             innerHLayout->addWidget(elementNameLineEdit);
             m_properties->SetSelectedEntityDisplayNameWidget(elementNameLineEdit);
         }
         innerLayout->addLayout(innerHLayout);
 
-        m_editorOnlyCheckbox = new QCheckBox("Editor Only");
+        m_editorOnlyCheckbox = new QCheckBox(tr("Editor Only"));
         m_editorOnlyCheckbox->setVisible(false);
         innerLayout->addWidget(m_editorOnlyCheckbox, 0, Qt::AlignCenter);
         m_properties->SetEditorOnlyCheckbox(m_editorOnlyCheckbox);

@@ -127,7 +127,7 @@ namespace GraphCanvas
         setCentralWidget(centralWidget);
 
         // Setup our default node palette
-        m_nodePalette = aznew NodePaletteDockWidget(m_config->CreateNodePaletteRoot(), editorId, QObject::tr("Node Palette"), this, m_config->m_mimeType, false, m_config->m_saveIdentifier);
+        m_nodePalette = aznew NodePaletteDockWidget(m_config->CreateNodePaletteRoot(), editorId, tr("Node Palette"), this, m_config->m_mimeType, false, m_config->m_saveIdentifier);
         m_nodePalette->setObjectName("NodePalette");
         m_nodePalette->setWindowTitle(m_config->m_nodePaletteTitle);
 
@@ -325,7 +325,7 @@ namespace GraphCanvas
 
     QMenu* AssetEditorMainWindow::AddFileMenu()
     {
-        QMenu* menu = menuBar()->addMenu(QObject::tr("&File"));
+        QMenu* menu = menuBar()->addMenu(tr("&File"));
 
         AddFileNewAction(menu);
         AddFileOpenAction(menu);
@@ -341,7 +341,7 @@ namespace GraphCanvas
 
     QAction* AssetEditorMainWindow::AddFileNewAction(QMenu* menu)
     {
-        QAction* action = new QAction(QObject::tr("&New Asset"), this);
+        QAction* action = new QAction(tr("&New Asset"), this);
         action->setShortcut(QKeySequence::New);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         addAction(action);
@@ -356,7 +356,7 @@ namespace GraphCanvas
     QAction* AssetEditorMainWindow::AddFileOpenAction(QMenu* menu)
     {
         // Currently unused
-        QAction* action = new QAction(QObject::tr("&Open"), this);
+        QAction* action = new QAction(tr("&Open"), this);
         action->setShortcut(QKeySequence::Open);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         menu->addAction(action);
@@ -367,7 +367,7 @@ namespace GraphCanvas
     QAction* AssetEditorMainWindow::AddFileSaveAction(QMenu* menu)
     {
         // Currently unused
-        QAction* action = new QAction(QObject::tr("&Save"), this);
+        QAction* action = new QAction(tr("&Save"), this);
         action->setShortcut(QKeySequence::Save);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         menu->addAction(action);
@@ -378,8 +378,8 @@ namespace GraphCanvas
     QAction* AssetEditorMainWindow::AddFileSaveAsAction(QMenu* menu)
     {
         // Currently unused
-        QAction* action = new QAction(QObject::tr("&Save As..."), this);
-        action->setShortcut(QKeySequence(QObject::tr("Ctrl+Shift+S")));
+        QAction* action = new QAction(tr("&Save As..."), this);
+        action->setShortcut(QKeySequence(tr("Ctrl+Shift+S")));
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         menu->addAction(action);
 
@@ -388,7 +388,7 @@ namespace GraphCanvas
 
     QAction* AssetEditorMainWindow::AddFileCloseAction(QMenu* menu)
     {
-        QAction* action = new QAction(QObject::tr("Close"), this);
+        QAction* action = new QAction(tr("Close"), this);
         action->setShortcut(QKeySequence::Close);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(action, &QAction::triggered, [this] {
@@ -402,7 +402,7 @@ namespace GraphCanvas
 
     QMenu* AssetEditorMainWindow::AddEditMenu()
     {
-        QMenu* menu = menuBar()->addMenu(QObject::tr("&Edit"));
+        QMenu* menu = menuBar()->addMenu(tr("&Edit"));
 
         AddEditCutAction(menu);
         AddEditCopyAction(menu);
@@ -415,7 +415,7 @@ namespace GraphCanvas
 
     QAction* AssetEditorMainWindow::AddEditCutAction(QMenu* menu)
     {
-        m_cutSelectedAction = new QAction(QObject::tr("Cut"), this);
+        m_cutSelectedAction = new QAction(tr("Cut"), this);
         m_cutSelectedAction->setShortcut(QKeySequence::Cut);
         m_cutSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         addAction(m_cutSelectedAction);
@@ -429,7 +429,7 @@ namespace GraphCanvas
 
     QAction* AssetEditorMainWindow::AddEditCopyAction(QMenu* menu)
     {
-        m_copySelectedAction = new QAction(QObject::tr("Copy"), this);
+        m_copySelectedAction = new QAction(tr("Copy"), this);
         m_copySelectedAction->setShortcut(QKeySequence::Copy);
         m_copySelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         addAction(m_copySelectedAction);
@@ -443,7 +443,7 @@ namespace GraphCanvas
 
     QAction* AssetEditorMainWindow::AddEditPasteAction(QMenu* menu)
     {
-        m_pasteSelectedAction = new QAction(QObject::tr("Paste"), this);
+        m_pasteSelectedAction = new QAction(tr("Paste"), this);
         m_pasteSelectedAction->setShortcut(QKeySequence::Paste);
         m_pasteSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         addAction(m_pasteSelectedAction);
@@ -457,7 +457,7 @@ namespace GraphCanvas
 
     QAction* AssetEditorMainWindow::AddEditDuplicateAction(QMenu* menu)
     {
-        m_duplicateSelectedAction = new QAction(QObject::tr("Duplicate"), this);
+        m_duplicateSelectedAction = new QAction(tr("Duplicate"), this);
         m_duplicateSelectedAction->setShortcut(QKeySequence("Ctrl+D"));
         m_duplicateSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         addAction(m_duplicateSelectedAction);
@@ -471,7 +471,7 @@ namespace GraphCanvas
 
     QAction* AssetEditorMainWindow::AddEditDeleteAction(QMenu* menu)
     {
-        m_deleteSelectedAction = new QAction(QObject::tr("Delete"), this);
+        m_deleteSelectedAction = new QAction(tr("Delete"), this);
         m_deleteSelectedAction->setShortcut(QKeySequence::Delete);
         m_deleteSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         addAction(m_deleteSelectedAction);
@@ -542,7 +542,7 @@ namespace GraphCanvas
 
     QMenu* AssetEditorMainWindow::AddViewMenu()
     {
-        QMenu* menu = menuBar()->addMenu("&View");
+        QMenu* menu = menuBar()->addMenu(tr("&View"));
 
         {
             // Automatically find any dock widgets for our main window and create checkable
@@ -584,7 +584,7 @@ namespace GraphCanvas
         menu->addSeparator();
 
         {
-            QAction* action = new QAction("Restore Default Layout", this);
+            QAction* action = new QAction(tr("Restore Default Layout"), this);
             QObject::connect(action, &QAction::triggered, this, &AssetEditorMainWindow::SetDefaultLayout);
             menu->addAction(action);
         }

@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Terrain
 {
@@ -41,39 +42,44 @@ namespace Terrain
             if (auto edit = serialize->GetEditContext())
             {
                 edit->Class<TerrainPhysicsSurfaceMaterialMapping>(
-                    "Terrain Surface Material Mapping", "Mapping between a surface and a physics material.")
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain Surface Material Mapping"),
+                    QT_TRANSLATE_NOOP("Terrain", "Mapping between a surface and a physics material."))
 
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag, "Surface Tag",
-                        "Surface type to map to a physics material.")
+                        AZ::Edit::UIHandlers::ComboBox, &TerrainPhysicsSurfaceMaterialMapping::m_surfaceTag,
+                        QT_TRANSLATE_NOOP("Terrain", "Surface Tag"),
+                        QT_TRANSLATE_NOOP("Terrain", "Surface type to map to a physics material."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &TerrainPhysicsSurfaceMaterialMapping::BuildSelectableTagList)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsSurfaceMaterialMapping::m_materialAsset, "Material Asset", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsSurfaceMaterialMapping::m_materialAsset,
+                        QT_TRANSLATE_NOOP("Terrain", "Material Asset"), "")
                     ->Attribute(AZ::Edit::Attributes::DefaultAsset, &GetDefaultPhysicsMaterialAssetId)
                     ->Attribute(AZ_CRC_CE("EditButton"), "")
-                    ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Asset Editor")
+                    ->Attribute(AZ_CRC_CE("EditDescription"), QT_TRANSLATE_NOOP("Terrain", "Open in Asset Editor"))
                     ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                     ;
 
                 edit->Class<TerrainPhysicsColliderConfig>(
-                    "Terrain Physics Collider Component",
-                    "Provides terrain data to a physics collider with configurable surface mappings.")
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain Physics Collider Component"),
+                    QT_TRANSLATE_NOOP("Terrain", "Provides terrain data to a physics collider with configurable surface mappings."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainPhysicsColliderConfig::m_defaultMaterialAsset,
-                        "Default Surface Physics Material", "Select a material to be used by unmapped surfaces by default")
+                        QT_TRANSLATE_NOOP("Terrain", "Default Surface Physics Material"),
+                        QT_TRANSLATE_NOOP("Terrain", "Select a material to be used by unmapped surfaces by default"))
                         ->Attribute(AZ::Edit::Attributes::DefaultAsset, &GetDefaultPhysicsMaterialAssetId)
                         ->Attribute(AZ_CRC_CE("EditButton"), "")
-                        ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Asset Editor")
+                        ->Attribute(AZ_CRC_CE("EditDescription"), QT_TRANSLATE_NOOP("Terrain", "Open in Asset Editor"))
                         ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainPhysicsColliderConfig::m_surfaceMaterialMappings,
-                        "Surface to Material Mappings", "Maps surfaces to physics materials")
+                        QT_TRANSLATE_NOOP("Terrain", "Surface to Material Mappings"),
+                        QT_TRANSLATE_NOOP("Terrain", "Maps surfaces to physics materials"))
                     ;
 
                 edit->Class<EditorTerrainPhysicsColliderComponent>(
@@ -88,7 +94,9 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTerrainPhysicsColliderComponent::m_configuration, "Config", "Terrain Physics Collider configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTerrainPhysicsColliderComponent::m_configuration,
+                        QT_TRANSLATE_NOOP("Terrain", "Config"),
+                        QT_TRANSLATE_NOOP("Terrain", "Terrain Physics Collider configuration"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorTerrainPhysicsColliderComponent::ConfigurationChanged);
                     ;

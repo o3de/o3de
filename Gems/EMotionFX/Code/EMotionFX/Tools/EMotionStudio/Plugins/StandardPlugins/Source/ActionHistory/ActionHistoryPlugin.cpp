@@ -37,7 +37,7 @@ namespace EMStudio
 
     const char* ActionHistoryPlugin::GetName() const
     {
-        return "Action History";
+        return tr("Action History").toUtf8().constData();
     }
 
 

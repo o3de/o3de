@@ -23,12 +23,14 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 #include <Document/MaterialGraphCompiler.h>
 #include <GraphModel/Model/DataType.h>
 #include <MaterialCanvasApplication.h>
 #include <Window/MaterialCanvasMainWindow.h>
 
 #include <QLabel>
+#include <QCoreApplication>
 
 #if defined(EXTERNAL_CRASH_REPORTING)
 #include <ToolsCrashHandler.h>
@@ -62,7 +64,7 @@ namespace MaterialCanvas
         InitMaterialCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Material Canvas");
+        QApplication::setApplicationName(QCoreApplication::translate("MaterialCanvasApplication", "O3DE Material Canvas"));
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -107,6 +109,15 @@ namespace MaterialCanvas
     {
         Base::StartCommon(systemEntity);
 
+        // Load AtomToolsFramework translations for menu and UI strings
+        m_atomToolsFrameworkTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("AtomToolsFramework", this);
+
+        // Load GraphCanvas translations for context menu and dialog strings
+        m_graphCanvasTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("GraphCanvas", this);
+
+        // Load MaterialCanvas translations for i18n support
+        m_materialCanvasTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("MaterialCanvas", this);
+
         InitDynamicNodeManager();
         InitDynamicNodeEditData();
         InitSharedGraphContext();
@@ -129,6 +140,30 @@ namespace MaterialCanvas
         m_graphContext.reset();
         m_graphTemplateFileDataCache.reset();
         m_dynamicNodeManager.reset();
+
+        // Clean up MaterialCanvas translator
+        if (m_materialCanvasTranslator)
+        {
+            removeTranslator(m_materialCanvasTranslator);
+            delete m_materialCanvasTranslator;
+            m_materialCanvasTranslator = nullptr;
+        }
+
+        // Clean up GraphCanvas translator
+        if (m_graphCanvasTranslator)
+        {
+            removeTranslator(m_graphCanvasTranslator);
+            delete m_graphCanvasTranslator;
+            m_graphCanvasTranslator = nullptr;
+        }
+
+        // Clean up AtomToolsFramework translator
+        if (m_atomToolsFrameworkTranslator)
+        {
+            removeTranslator(m_atomToolsFrameworkTranslator);
+            delete m_atomToolsFrameworkTranslator;
+            m_atomToolsFrameworkTranslator = nullptr;
+        }
 
         ApplyShaderBuildSettings();
         Base::Destroy();
@@ -221,14 +256,14 @@ namespace MaterialCanvas
 
         editData = {};
         editData.m_elementId = AZ_CRC_CE("StringFilePath");
-        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Template File"));
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string(QCoreApplication::translate("MaterialCanvasApplication", "Template File").toUtf8().constData()));
         AtomToolsFramework::AddEditDataAttribute(
             editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsl", "azsli", "material", "materialtype", "shader" });
         m_dynamicNodeManager->RegisterEditDataForSetting("templatePaths", editData);
 
         editData = {};
         editData.m_elementId = AZ_CRC_CE("StringFilePath");
-        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string("Include File"));
+        AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Title"), AZStd::string(QCoreApplication::translate("MaterialCanvasApplication", "Include File").toUtf8().constData()));
         AtomToolsFramework::AddEditDataAttribute(editData, AZ_CRC_CE("Extensions"), AZStd::vector<AZStd::string>{ "azsli" });
         m_dynamicNodeManager->RegisterEditDataForSetting("includePaths", editData);
     }
@@ -316,7 +351,7 @@ namespace MaterialCanvas
 
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
-            auto viewWidget = new QLabel("Material Graph Node Config properties can be edited in the inspector.", m_window.get());
+            auto viewWidget = new QLabel(QCoreApplication::translate("MaterialCanvasApplication", "Material Graph Node Config properties can be edited in the inspector."), m_window.get());
             viewWidget->setAlignment(Qt::AlignCenter);
             return m_window->AddDocumentTab(documentId, viewWidget);
         };
@@ -338,7 +373,7 @@ namespace MaterialCanvas
 
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
-            auto viewWidget = new QLabel("Shader Source Data properties can be edited in the inspector.", m_window.get());
+            auto viewWidget = new QLabel(QCoreApplication::translate("MaterialCanvasApplication", "Shader Source Data properties can be edited in the inspector."), m_window.get());
             viewWidget->setAlignment(Qt::AlignCenter);
             return m_window->AddDocumentTab(documentId, viewWidget);
         };

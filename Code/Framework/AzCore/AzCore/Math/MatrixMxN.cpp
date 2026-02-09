@@ -10,6 +10,8 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/MathScriptHelpers.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
     void MatrixMxN::Reflect([[maybe_unused]] ReflectContext* context)
@@ -27,11 +29,16 @@ namespace AZ
 
             if (EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<MatrixMxN>("MxN-Dimensional Matrix", "")
+                editContext->Class<MatrixMxN>(
+                    QT_TRANSLATE_NOOP("AzCore", "MxN-Dimensional Matrix"), "")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
-                    ->DataElement(Edit::UIHandlers::Default, &MatrixMxN::m_rowCount, "Total Rows", "The total number of rows in the matrix")
+                    ->DataElement(Edit::UIHandlers::Default, &MatrixMxN::m_rowCount,
+                        QT_TRANSLATE_NOOP("AzCore", "Total Rows"),
+                        QT_TRANSLATE_NOOP("AzCore", "The total number of rows in the matrix"))
                         ->Attribute(Edit::Attributes::ChangeNotify, &MatrixMxN::OnSizeChanged)
-                    ->DataElement(Edit::UIHandlers::Default, &MatrixMxN::m_colCount, "Total Columns", "The total number of columns in the matrix")
+                    ->DataElement(Edit::UIHandlers::Default, &MatrixMxN::m_colCount,
+                        QT_TRANSLATE_NOOP("AzCore", "Total Columns"),
+                        QT_TRANSLATE_NOOP("AzCore", "The total number of columns in the matrix"))
                         ->Attribute(Edit::Attributes::ChangeNotify, &MatrixMxN::OnSizeChanged)
                     ;
             }

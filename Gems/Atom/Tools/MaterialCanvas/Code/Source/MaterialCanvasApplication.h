@@ -18,6 +18,8 @@
 #include <GraphModel/Model/GraphContext.h>
 #include <Window/MaterialCanvasMainWindow.h>
 
+class QTranslator;
+
 namespace MaterialCanvas
 {
     //! The main application class for Material Canvas, setting up top level systems, document types, and the main window.
@@ -70,5 +72,8 @@ namespace MaterialCanvas
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AZStd::shared_ptr<AtomToolsFramework::GraphTemplateFileDataCache> m_graphTemplateFileDataCache;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
+        QTranslator* m_atomToolsFrameworkTranslator = nullptr;
+        QTranslator* m_graphCanvasTranslator = nullptr;
+        QTranslator* m_materialCanvasTranslator = nullptr;
     };
 } // namespace MaterialCanvas

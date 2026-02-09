@@ -16,6 +16,7 @@ AZ_POP_DISABLE_WARNING
 #include <QLabel>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/DHQComboBox.hxx>
 
 namespace
@@ -162,7 +163,9 @@ namespace AzToolsFramework
         if (AZStd::find(m_values.begin(), m_values.end(), genericValue) == m_values.end())
         {
             m_values.push_back(genericValue);
-            m_pComboBox->addItem(genericValue.second.data());
+            // Try to translate the display text of elements
+            AZStd::string translatedText = TranslatePropertyString(genericValue.second.data());
+            m_pComboBox->addItem(translatedText.c_str());
         }
     }
 

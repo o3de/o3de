@@ -25,6 +25,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QCursor>
 #include <QDataStream>
 #include <QMenu>
+ #include <AzFramework/Translation/TranslationDef.h>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
@@ -91,11 +92,11 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorMaterialComponentSlot>(
-                        "EditorMaterialComponentSlot", "")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "EditorMaterialComponentSlot"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponentSlot::m_materialAsset, "Material Asset", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponentSlot::m_materialAsset, QT_TRANSLATE_NOOP("AtomLyIntegration", "Material Asset"), "")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponentSlot::OnMaterialChangedFromRPE)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::DefaultAsset, &EditorMaterialComponentSlot::GetDefaultAssetId)

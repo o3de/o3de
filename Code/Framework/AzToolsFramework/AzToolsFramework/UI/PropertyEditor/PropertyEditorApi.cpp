@@ -7,6 +7,7 @@
  */
 #include "PropertyEditorAPI.h"
 #include <QDoubleSpinBox>
+#include <QCoreApplication>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -20,6 +21,105 @@
 
 namespace AzToolsFramework
 {
+    // Registry of translation contexts for TranslatePropertyString.
+    // Modules/Gems can register additional contexts at startup via RegisterTranslationContext().
+    static AZStd::vector<AZStd::string>& GetRegisteredContexts()
+    {
+        static AZStd::vector<AZStd::string> s_contexts = {
+            // Core framework contexts (always present)
+            "AzCore",
+            "AzFramework",
+            "AzToolsFramework",
+            "AtomToolsFramework",
+            "Editor",
+            // Gem contexts (auto-populated, or registered at runtime)
+            "Achievements", "AssetValidation", "Atom::Asset", "Atom::Bootstrap",
+            "Atom::Feature", "Atom::RHI", "Atom::RPI", "AtomBridge", "AtomFont",
+            "AtomImGuiTools", "AtomLyIntegration", "AtomRenderOptions",
+            "AtomTressFX", "AtomViewportDisplayIcons", "AtomViewportDisplayInfo",
+            "AudioSystem", "AZ::Render", "BarrierInput", "Camera", "CameraFramework",
+            "DebugDraw", "DiffuseProbeGrid", "EditorModeFeedback",
+            "EditorPythonBindings", "EMotionFX", "ExpressionEvaluation",
+            "FastNoiseGem", "GameState", "Gestures", "GradientSignal",
+            "GraphCanvas", "GraphModel", "InAppPurchases", "LandscapeCanvas",
+            "LmbrCentral", "LocalUser", "LyShine", "LyShineExamples",
+            "Maestro", "Meshlets", "MessagePopup", "Microphone", "MiniAudio",
+            "MotionMatching", "Multiplayer", "MultiplayerCompression", "NvCloth",
+            "OpenParticleSystem", "PhysX", "Presence", "Profiler",
+            "RecastNavigation", "RemoteTools", "SaveData",
+            "SceneLoggingExample", "SceneProcessing", "ScriptAutomation",
+            "ScriptCanvas", "ScriptCanvasDeveloper", "ScriptCanvasMultiplayer",
+            "ScriptCanvasPhysics", "ScriptCanvasTesting", "ScriptEvents",
+            "SkyAtmosphere", "StartingPointInput", "Streamer", "SurfaceData",
+            "Terrain", "TextureAtlasNamespace", "TickBusOrderViewer",
+            "Vegetation", "VideoPlaybackFramework", "VirtualGamepad", "WhiteBox",
+            // Editor preferences pages
+            "EditorPreferencesPageAWS", "EditorPreferencesPageFiles",
+            "EditorPreferencesPageGeneral", "EditorPreferencesPageViewportCamera",
+            "EditorPreferencesPageViewportDebug", "EditorPreferencesPageViewportGeneral",
+            "EditorPreferencesPageViewportManipulator",
+            // View pane names
+            "LyViewPane",
+            // Transform selection
+            "EditorTransformComponentSelection",
+            // Component-specific contexts (used in right-click menus, undo labels, etc.)
+            "TransformComponent",
+            // JSON property data contexts (strings extracted from JSON by Translation.cmake)
+            "MaterialInputs",
+        };
+        return s_contexts;
+    }
+
+    void RegisterTranslationContext(const char* contextName)
+    {
+        auto& contexts = GetRegisteredContexts();
+        AZStd::string name(contextName);
+        for (const auto& existing : contexts)
+        {
+            if (existing == name)
+            {
+                return; // Already registered
+            }
+        }
+        contexts.push_back(AZStd::move(name));
+    }
+
+    // Helper function: attempt to translate property editor strings from EditContext.
+    // Searches all registered translation contexts. Qt's QCoreApplication::translate()
+    // queries all installed QTranslator objects for each context, so we try each
+    // registered context until a translation is found.
+    AZStd::string TranslatePropertyString(const char* sourceText, const char* context)
+    {
+        if (!sourceText || sourceText[0] == '\0')
+        {
+            return AZStd::string{};
+        }
+
+        // If a specific context is provided, try it first (fastest path).
+        if (context && context[0] != '\0')
+        {
+            QString translated = QCoreApplication::translate(context, sourceText);
+            if (translated != QString::fromUtf8(sourceText))
+            {
+                return translated.toUtf8().constData();
+            }
+        }
+
+        // Search all registered contexts
+        QString source = QString::fromUtf8(sourceText);
+        for (const auto& ctx : GetRegisteredContexts())
+        {
+            QString translated = QCoreApplication::translate(ctx.c_str(), sourceText);
+            if (translated != source)
+            {
+                return translated.toUtf8().constData();
+            }
+        }
+
+        // No translation found, return the original string.
+        return sourceText;
+    }
+
     PropertyHandlerBase::PropertyHandlerBase()
     {
     }
@@ -207,32 +307,33 @@ namespace AzToolsFramework
             {
                 if (componentWrapper->GetTemplate())
                 {
-                    return componentWrapper->GetDisplayName();
+                    return TranslatePropertyString(componentWrapper->GetDisplayName());
                 }
 
-                return "<empty component>";
+                return TranslatePropertyString(QT_TRANSLATE_NOOP("AzToolsFramework", "<empty component>"));
             }
         }
 
         // Otherwise, search for a valid display name override in the node edit, class, and element metadata.
+        // Try to translate the display name from EditContext
         if (const auto metadata = node.GetElementEditMetadata(); metadata && metadata->m_name)
         {
-            return metadata->m_name;
+            return TranslatePropertyString(metadata->m_name);
         }
 
         if (const auto metadata = node.GetClassMetadata(); metadata && metadata->m_editData && metadata->m_editData->m_name)
         {
-            return metadata->m_editData->m_name;
+            return TranslatePropertyString(metadata->m_editData->m_name);
         }
 
         if (const auto metadata = node.GetElementMetadata(); metadata && metadata->m_name && metadata->m_nameCrc != AZ_CRC_CE("element"))
         {
-            return metadata->m_name;
+            return TranslatePropertyString(metadata->m_name);
         }
 
         if (const auto metadata = node.GetClassMetadata(); metadata && metadata->m_name)
         {
-            return metadata->m_name;
+            return TranslatePropertyString(metadata->m_name);
         }
 
         return AZStd::string{};

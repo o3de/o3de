@@ -9,8 +9,9 @@
 #include <Source/LuaIDEApplication.h>
 
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 
-#include <QCoreApplication>
+#include <QtCore/QCoreApplication>
 
 #if defined(EXTERNAL_CRASH_REPORTING)
 #include <ToolsCrashHandler.h>

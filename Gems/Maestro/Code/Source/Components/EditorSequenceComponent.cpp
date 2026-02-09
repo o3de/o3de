@@ -14,6 +14,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -111,7 +112,8 @@ namespace Maestro
             if (editContext)
             {
                 editContext->Class<EditorSequenceComponent>(
-                    "Sequence", "Plays Cinematic Animations")
+                    QT_TRANSLATE_NOOP("Maestro", "Sequence"),
+                    QT_TRANSLATE_NOOP("Maestro", "Plays Cinematic Animations"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Cinematics")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Sequence.png")

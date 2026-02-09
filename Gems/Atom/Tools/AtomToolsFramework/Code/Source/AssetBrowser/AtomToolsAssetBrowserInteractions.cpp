@@ -28,6 +28,7 @@
 #include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
+#include <QCoreApplication>
 
 namespace AtomToolsFramework
 {
@@ -84,7 +85,7 @@ namespace AtomToolsFramework
     void AtomToolsAssetBrowserInteractions::AddContextMenuActionsForSourceEntries(
         [[maybe_unused]] QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
     {
-        menu->addAction("Duplicate", [entry]()
+        menu->addAction(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Duplicate"), [entry]()
             {
                 const auto& duplicateFilePath = GetUniqueFilePath(entry->GetFullPath());
                 if (QFile::copy(entry->GetFullPath().c_str(), duplicateFilePath.c_str()))
@@ -97,7 +98,7 @@ namespace AtomToolsFramework
                 }
             });
 
-        QMenu* scriptsMenu = menu->addMenu(QObject::tr("Python Scripts"));
+        QMenu* scriptsMenu = menu->addMenu(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Python Scripts"));
         const AZStd::vector<AZStd::string> arguments{ entry->GetFullPath() };
         AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/AtomToolsFramework/AssetBrowser/ContextMenuScripts", arguments);
     }
@@ -105,15 +106,15 @@ namespace AtomToolsFramework
     void AtomToolsAssetBrowserInteractions::AddContextMenuActionsForFolderEntries(
         QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
     {
-        menu->addAction(QObject::tr("Create new sub folder..."), [caller, entry]()
+        menu->addAction(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Create new sub folder..."), [caller, entry]()
             {
                 bool ok = false;
-                QString newFolderName = QInputDialog::getText(caller, "Enter new folder name", "name:", QLineEdit::Normal, "NewFolder", &ok);
+                QString newFolderName = QInputDialog::getText(caller, QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Enter new folder name"), QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "name:"), QLineEdit::Normal, QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "NewFolder"), &ok);
                 if (ok)
                 {
                     if (newFolderName.isEmpty())
                     {
-                        QMessageBox msgBox(QMessageBox::Icon::Critical, "Error", "Folder name can't be empty", QMessageBox::Ok, caller);
+                        QMessageBox msgBox(QMessageBox::Icon::Critical, QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Error"), QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Folder name can't be empty"), QMessageBox::Ok, caller);
                         msgBox.exec();
                     }
                     else
@@ -123,7 +124,7 @@ namespace AtomToolsFramework
                         QDir dir(newFolderPath.c_str());
                         if (dir.exists())
                         {
-                            QMessageBox::critical(caller, "Error", "Folder with this name already exists");
+                            QMessageBox::critical(caller, QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Error"), QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Folder with this name already exists"));
                             return;
                         }
                         auto result = dir.mkdir(newFolderPath.c_str());
@@ -146,11 +147,11 @@ namespace AtomToolsFramework
             });
 
         menu->addSeparator();
-        menu->addAction(QObject::tr("Copy Name To Clipboard"), [=]()
+        menu->addAction(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Copy Name To Clipboard"), [=]()
             {
                 QApplication::clipboard()->setText(entry->GetName().c_str());
             });
-        menu->addAction(QObject::tr("Copy Path To Clipboard"), [=]()
+        menu->addAction(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Copy Path To Clipboard"), [=]()
             {
                 QApplication::clipboard()->setText(entry->GetFullPath().c_str());
             });
@@ -169,7 +170,7 @@ namespace AtomToolsFramework
         {
             menu->addSeparator();
 
-            QMenu* sourceControlMenu = menu->addMenu("Source Control");
+            QMenu* sourceControlMenu = menu->addMenu(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Source Control"));
 
             // Update the enabled state of source control menu actions only if menu is shown
             QMenu::connect(sourceControlMenu, &QMenu::aboutToShow, [this, path]()
@@ -179,7 +180,7 @@ namespace AtomToolsFramework
                 });
 
             // add get latest action
-            m_getLatestAction = sourceControlMenu->addAction("Get Latest", [path]()
+            m_getLatestAction = sourceControlMenu->addAction(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Get Latest"), [path]()
                 {
                     SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestLatest, path.c_str(),
                         [](bool, const SourceControlFileInfo&) {});
@@ -191,7 +192,7 @@ namespace AtomToolsFramework
             m_getLatestAction->setEnabled(false);
 
             // add add action
-            m_addAction = sourceControlMenu->addAction("Add", [path]()
+            m_addAction = sourceControlMenu->addAction(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Add"), [path]()
                 {
                     SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestEdit, path.c_str(), true,
                         [path](bool, const SourceControlFileInfo&)
@@ -206,7 +207,7 @@ namespace AtomToolsFramework
             m_addAction->setEnabled(false);
 
             // add checkout action
-            m_checkOutAction = sourceControlMenu->addAction("Check Out", [path]()
+            m_checkOutAction = sourceControlMenu->addAction(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Check Out"), [path]()
                 {
                     SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestEdit, path.c_str(), true,
                         [path](bool, const SourceControlFileInfo&)
@@ -221,7 +222,7 @@ namespace AtomToolsFramework
             m_checkOutAction->setEnabled(false);
 
             // add undo checkout action
-            m_undoCheckOutAction = sourceControlMenu->addAction("Undo Check Out", [path]()
+            m_undoCheckOutAction = sourceControlMenu->addAction(QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Undo Check Out"), [path]()
                 {
                     SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestRevert, path.c_str(),
                         [path](bool, const SourceControlFileInfo&)
@@ -241,7 +242,7 @@ namespace AtomToolsFramework
     {
         if (!success && m_caller)
         {
-            QMessageBox::critical(m_caller, "Error", "Source control operation failed.");
+            QMessageBox::critical(m_caller, QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Error"), QCoreApplication::translate("AtomToolsAssetBrowserInteractions", "Source control operation failed."));
         }
         if (m_getLatestAction)
         {

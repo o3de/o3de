@@ -73,20 +73,20 @@ namespace EMotionFX
             }
         }
 
-        QMenu* contextMenu = menu->addMenu("Hit detection");
+        QMenu* contextMenu = menu->addMenu(tr("Hit detection"));
 
         if (numSelectedJoints > 0)
         {
-            QMenu* addColliderMenu = contextMenu->addMenu("Add collider");
+            QMenu* addColliderMenu = contextMenu->addMenu(tr("Add collider"));
 
-            QAction* addBoxAction = addColliderMenu->addAction("Add box");
+            QAction* addBoxAction = addColliderMenu->addAction(tr("Add box"));
             addBoxAction->setProperty("typeId", azrtti_typeid<Physics::BoxShapeConfiguration>().ToString<AZStd::string>().c_str());
             connect(addBoxAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnAddCollider);
-            QAction* addCapsuleAction = addColliderMenu->addAction("Add capsule");
+            QAction* addCapsuleAction = addColliderMenu->addAction(tr("Add capsule"));
             addCapsuleAction->setProperty("typeId", azrtti_typeid<Physics::CapsuleShapeConfiguration>().ToString<AZStd::string>().c_str());
             connect(addCapsuleAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnAddCollider);
 
-            QAction* addSphereAction = addColliderMenu->addAction("Add sphere");
+            QAction* addSphereAction = addColliderMenu->addAction(tr("Add sphere"));
             addSphereAction->setProperty("typeId", azrtti_typeid<Physics::SphereShapeConfiguration>().ToString<AZStd::string>().c_str());
             connect(addSphereAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnAddCollider);
 
@@ -96,7 +96,7 @@ namespace EMotionFX
 
         if (numJointsWithColliders > 0)
         {
-            QAction* removeCollidersAction = contextMenu->addAction("Remove colliders");
+            QAction* removeCollidersAction = contextMenu->addAction(tr("Remove colliders"));
             connect(removeCollidersAction, &QAction::triggered, this, &HitDetectionOutlinerNotificationHandler::OnClearColliders);
         }
     }

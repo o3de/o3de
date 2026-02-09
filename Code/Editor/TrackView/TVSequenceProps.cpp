@@ -253,13 +253,13 @@ void CTVSequenceProps::OnOK()
     QString name = ui->NAME->text();
     if (name.isEmpty())
     {
-        QMessageBox::warning(this, "Sequence Properties", "A sequence name cannot be empty!");
+        QMessageBox::warning(this, tr("Sequence Properties"), tr("A sequence name cannot be empty!"));
         return;
     }
 
     if (name.contains('/'))
     {
-        QMessageBox::warning(this, "Sequence Properties", "A sequence name cannot contain a '/' character!");
+        QMessageBox::warning(this, tr("Sequence Properties"), tr("A sequence name cannot contain a '/' character!"));
         return;
     }
 

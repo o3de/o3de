@@ -206,7 +206,7 @@ protected slots:
 private:
     void CheckForEnableUpdateButton();
     void StashActiveViewportResolution();
-    void UpdateSpinnerProgressMessage(const char* description);
+    void UpdateSpinnerProgressMessage(const QString& description);
     void EnterCaptureState(CaptureState captureState);
     void SetEnableEditorIdleProcessing(bool enabled);
 

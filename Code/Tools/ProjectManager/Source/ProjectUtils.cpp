@@ -31,6 +31,7 @@
 #include <QProgressBar>
 #include <QLabel>
 #include <QStandardPaths>
+#include <QCoreApplication>
 
 
 namespace O3DE::ProjectManager
@@ -42,8 +43,8 @@ namespace O3DE::ProjectManager
             if (!QDir(path).isEmpty())
             {
                 QMessageBox::StandardButton warningResult = QMessageBox::warning(
-                    parent, QObject::tr("Overwrite Directory"),
-                    QObject::tr("Directory is not empty! Are you sure you want to overwrite it?"), QMessageBox::No | QMessageBox::Yes);
+                    parent, QCoreApplication::translate("ProjectUtils", "Overwrite Directory"),
+                    QCoreApplication::translate("ProjectUtils", "Directory is not empty! Are you sure you want to overwrite it?"), QMessageBox::No | QMessageBox::Yes);
 
                 if (warningResult != QMessageBox::Yes)
                 {
@@ -201,7 +202,7 @@ namespace O3DE::ProjectManager
 
                     const QString copiedFileSizeString = locale.formattedDataSize(outCopiedFileSize);
                     const QString totalFileSizeString = locale.formattedDataSize(totalSizeToCopy);
-                    progressDialog->setLabelText(QString("Copying file %1 of %2 (%3 of %4) ...").arg(QString::number(outNumCopiedFiles),
+                    progressDialog->setLabelText(QString(QCoreApplication::translate("ProjectUtils", "Copying file %1 of %2 (%3 of %4) ...")).arg(QString::number(outNumCopiedFiles),
                         QString::number(filesToCopyCount),
                         copiedFileSizeString,
                         totalFileSizeString));
@@ -216,14 +217,14 @@ namespace O3DE::ProjectManager
                     if (showIgnoreFileDialog)
                     {
                         QMessageBox ignoreFileMessageBox;
-                        const QString text = QString("Cannot copy <b>%1</b>.<br><br>"
+                        const QString text = QString(QCoreApplication::translate("ProjectUtils", "Cannot copy <b>%1</b>.<br><br>"
                             "Source: %2<br>"
                             "Destination: %3<br><br>"
                             "Press <b>Yes</b> to ignore the file, <b>YesToAll</b> to ignore all upcoming non-copyable files or "
-                            "<b>Cancel</b> to abort duplicating the project.").arg(file, toBeCopiedFilePath, copyToFilePath);
+                            "<b>Cancel</b> to abort duplicating the project.")).arg(file, toBeCopiedFilePath, copyToFilePath);
 
                         ignoreFileMessageBox.setModal(true);
-                        ignoreFileMessageBox.setWindowTitle("Cannot copy file");
+                        ignoreFileMessageBox.setWindowTitle(QCoreApplication::translate("ProjectUtils", "Cannot copy file"));
                         ignoreFileMessageBox.setText(text);
                         ignoreFileMessageBox.setIcon(QMessageBox::Question);
                         ignoreFileMessageBox.setStandardButtons(QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::Cancel);
@@ -264,8 +265,8 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::warning(
                     parent,
-                    QObject::tr("Clear Build Artifacts"),
-                    QObject::tr("Build artifacts failed to delete for moved project. Please manually delete build directory at \"%1\"")
+                    QCoreApplication::translate("ProjectUtils", "Clear Build Artifacts"),
+                    QCoreApplication::translate("ProjectUtils", "Build artifacts failed to delete for moved project. Please manually delete build directory at \"%1\"")
                         .arg(buildDirectory.path()),
                     QMessageBox::Close);
 
@@ -278,8 +279,8 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::warning(
                     parent,
-                    QObject::tr("Clear Asset Cache"),
-                    QObject::tr("Asset cache failed to delete for moved project. Please manually delete cache directory at \"%1\"")
+                    QCoreApplication::translate("ProjectUtils", "Clear Asset Cache"),
+                    QCoreApplication::translate("ProjectUtils", "Asset cache failed to delete for moved project. Please manually delete cache directory at \"%1\"")
                         .arg(cacheDirectory.path()),
                     QMessageBox::Close);
 
@@ -336,7 +337,7 @@ namespace O3DE::ProjectManager
 
             if (auto addProjectResult = PythonBindingsInterface::Get()->AddProject(path, /*force=*/true); !addProjectResult)
             {
-                DisplayDetailedError(QObject::tr("Failed to add project"), addProjectResult, parent);
+                DisplayDetailedError(QCoreApplication::translate("ProjectUtils", "Failed to add project"), addProjectResult, parent);
                 AZ_Error("ProjectManager", false, "Failed to register project at path '%s'", path.toUtf8().constData());
                 return false;
             }
@@ -361,7 +362,7 @@ namespace O3DE::ProjectManager
             QDir parentOrigDir(origPath);
             parentOrigDir.cdUp();
             QString newPath = QDir::toNativeSeparators(
-                QFileDialog::getExistingDirectory(parent, QObject::tr("Select New Project Directory"), parentOrigDir.path()));
+                QFileDialog::getExistingDirectory(parent, QCoreApplication::translate("ProjectUtils", "Select New Project Directory"), parentOrigDir.path()));
             if (!newPath.isEmpty())
             {
                 newProjectInfo.m_path = newPath;
@@ -401,7 +402,7 @@ namespace O3DE::ProjectManager
                 progressDialog->setValue(0);
                 progressDialog->setRange(0, 1000);
                 progressDialog->setModal(true);
-                progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
+                progressDialog->setWindowTitle(QCoreApplication::translate("ProjectUtils", "Copying project ..."));
                 progressDialog->show();
             }
 
@@ -415,11 +416,11 @@ namespace O3DE::ProjectManager
                         const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
 
                         progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
-                            .arg(QObject::tr("Indexing files"))
+                            .arg(QCoreApplication::translate("ProjectUtils", "Indexing files"))
                             .arg(QString::number(fileCount))
-                            .arg(QObject::tr("files found"))
+                            .arg(QCoreApplication::translate("ProjectUtils", "files found"))
                             .arg(fileSizeString)
-                            .arg(QObject::tr("to copy")));
+                            .arg(QCoreApplication::translate("ProjectUtils", "to copy")));
                         qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
                     }
                 });
@@ -442,7 +443,7 @@ namespace O3DE::ProjectManager
             {
                 if (progressDialog)
                 {
-                    progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
+                    progressDialog->setLabelText(QCoreApplication::translate("ProjectUtils", "Duplicating project failed/cancelled, removing already copied files ..."));
                     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
                 }
 
@@ -547,8 +548,8 @@ namespace O3DE::ProjectManager
                 {
                     QMessageBox::StandardButton warningResult = QMessageBox::warning(
                         parent,
-                        QObject::tr("Overwrite File?"),
-                        QObject::tr("Replacing this will overwrite the current file on disk. Are you sure?"),
+                        QCoreApplication::translate("ProjectUtils", "Overwrite File?"),
+                        QCoreApplication::translate("ProjectUtils", "Replacing this will overwrite the current file on disk. Are you sure?"),
                         QMessageBox::No | QMessageBox::Yes);
 
                     if (warningResult == QMessageBox::No)
@@ -580,7 +581,7 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox vsWarningMessage(parent);
                 vsWarningMessage.setIcon(QMessageBox::Warning);
-                vsWarningMessage.setWindowTitle(QObject::tr("Create Project"));
+                vsWarningMessage.setWindowTitle(QCoreApplication::translate("ProjectUtils", "Create Project"));
                 // Makes link clickable
                 vsWarningMessage.setTextFormat(Qt::RichText);
                 vsWarningMessage.setText(messageNotes);
@@ -615,7 +616,7 @@ namespace O3DE::ProjectManager
             QProcess execProcess;
             execProcess.setProcessChannelMode(QProcess::MergedChannels);
 
-            QProgressDialog dialog(title, QObject::tr("Cancel"), /*minimum=*/0, /*maximum=*/0);
+            QProgressDialog dialog(title, QCoreApplication::translate("ProjectUtils", "Cancel"), /*minimum=*/0, /*maximum=*/0);
             dialog.setMinimumWidth(500);
             dialog.setAutoClose(false);
 
@@ -669,7 +670,7 @@ namespace O3DE::ProjectManager
                     else
                     {
                         // keep the dialog open so the user can look at the output
-                        dialog.setCancelButtonText(QObject::tr("Continue"));
+                        dialog.setCancelButtonText(QCoreApplication::translate("ProjectUtils", "Continue"));
                     }
                 });
 
@@ -683,13 +684,13 @@ namespace O3DE::ProjectManager
             if (execProcess.state() == QProcess::Running)
             {
                 execProcess.kill();
-                return AZ::Failure(QObject::tr("Process for command '%1' was canceled").arg(cmd));
+                return AZ::Failure(QCoreApplication::translate("ProjectUtils", "Process for command '%1' was canceled").arg(cmd));
             }
 
             int resultCode = execProcess.exitCode();
             if (resultCode != 0)
             {
-                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
+                return AZ::Failure(QCoreApplication::translate("ProjectUtils", "Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
             }
 
             return AZ::Success(resultOutput);
@@ -705,18 +706,18 @@ namespace O3DE::ProjectManager
             execProcess.start(cmd, arguments);
             if (!execProcess.waitForStarted())
             {
-                return AZ::Failure(QObject::tr("Unable to start process for command '%1'").arg(cmd));
+                return AZ::Failure(QCoreApplication::translate("ProjectUtils", "Unable to start process for command '%1'").arg(cmd));
             }
 
             if (!execProcess.waitForFinished(commandTimeoutSeconds * 1000 /* Milliseconds per second */))
             {
-                return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(commandTimeoutSeconds));
+                return AZ::Failure(QCoreApplication::translate("ProjectUtils", "Process for command '%1' timed out at %2 seconds").arg(cmd).arg(commandTimeoutSeconds));
             }
             int resultCode = execProcess.exitCode();
             QString resultOutput = execProcess.readAllStandardOutput();
             if (resultCode != 0)
             {
-                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2) %3").arg(cmd).arg(resultCode).arg(resultOutput));
+                return AZ::Failure(QCoreApplication::translate("ProjectUtils", "Process for command '%1' failed (result code %2) %3").arg(cmd).arg(resultCode).arg(resultOutput));
             }
             return AZ::Success(resultOutput);
         }
@@ -730,19 +731,19 @@ namespace O3DE::ProjectManager
             projectUserPath /= AZ::SettingsRegistryConstants::DevUserRegistryFolder;
             if (!QDir(projectUserPath.c_str()).exists())
             {
-                return AZ::Failure(QObject::tr("Failed to find the user registry folder %1").arg(projectUserPath.c_str()));
+                return AZ::Failure(QCoreApplication::translate("ProjectUtils", "Failed to find the user registry folder %1").arg(projectUserPath.c_str()));
             }
 
             AZ::SettingsRegistryInterface::Specializations specializations;
             if(!registry->MergeSettingsFolder(projectUserPath.Native(), specializations, AZ_TRAIT_OS_PLATFORM_CODENAME))
             {
-                return AZ::Failure(QObject::tr("Failed to merge registry settings in user registry folder %1").arg(projectUserPath.c_str()));
+                return AZ::Failure(QCoreApplication::translate("ProjectUtils", "Failed to merge registry settings in user registry folder %1").arg(projectUserPath.c_str()));
             }
 
             AZ::IO::FixedMaxPath projectBuildPath;
             if (!registry->Get(projectBuildPath.Native(), AZ::SettingsRegistryMergeUtils::ProjectBuildPath))
             {
-                return AZ::Failure(QObject::tr("No project build path setting was found in the user registry folder %1").arg(projectUserPath.c_str()));
+                return AZ::Failure(QCoreApplication::translate("ProjectUtils", "No project build path setting was found in the user registry folder %1").arg(projectUserPath.c_str()));
             }
 
             return AZ::Success(QString(projectBuildPath.c_str()));
@@ -847,16 +848,16 @@ namespace O3DE::ProjectManager
                     Comparison comparison = bound.GetComparison();
                     if (comparison == Comparison::GreaterThan)
                     {
-                        result.append(QObject::tr(" versions greater than"));
+                        result.append(QCoreApplication::translate("ProjectUtils", " versions greater than"));
                     }
                     else if (comparison == Comparison::LessThan)
                     {
-                        result.append(QObject::tr(" versions less than"));
+                        result.append(QCoreApplication::translate("ProjectUtils", " versions less than"));
                     }
                     else if ((comparison& Comparison::TwiddleWakka) != Comparison::None)
                     {
                         // don't try to explain the twiddle wakka in short form
-                        result.append(QObject::tr(" versions ~="));
+                        result.append(QCoreApplication::translate("ProjectUtils", " versions ~="));
                     }
 
                     result.append(" ");
@@ -866,11 +867,11 @@ namespace O3DE::ProjectManager
                     {
                         if ((comparison & Comparison::GreaterThan) != Comparison::None)
                         {
-                            result.append(QObject::tr(" or higher "));
+                            result.append(QCoreApplication::translate("ProjectUtils", " or higher "));
                         }
                         else if ((comparison & Comparison::LessThan) != Comparison::None)
                         {
-                            result.append(QObject::tr(" or lower "));
+                            result.append(QCoreApplication::translate("ProjectUtils", " or lower "));
                         }
                     }
                 }

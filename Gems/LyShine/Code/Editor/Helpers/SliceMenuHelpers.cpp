@@ -72,7 +72,8 @@ namespace SliceMenuHelpers
         AssetTreeEntry* sliceAssetTree = hierarchy->GetEditorWindow()->GetSliceLibraryTree();
 
         QMenu* sliceLibraryMenu =
-            parent->addMenu(QString("Element%1 from Slice &Library").arg(!addAtRoot && selectedItems.size() > 1 ? "s" : ""));
+            parent->addMenu((!addAtRoot && selectedItems.size() > 1) ? QObject::tr("Elements from Slice &Library")
+                                                     : QObject::tr("Element from Slice &Library"));
 
         CreateMenuActionsAndSubMenus(sliceAssetTree, hierarchy, selectedItems, sliceLibraryMenu, addAtRoot, viewportPosition);
     }

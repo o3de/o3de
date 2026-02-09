@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/std/sort.h>
 #include <Vegetation/Descriptor.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
@@ -73,56 +74,56 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<PositionModifierConfig>(
-                    "Vegetation Position Modifier", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Position Modifier"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PositionModifierConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &PositionModifierConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
 
-                    ->DataElement(0, &PositionModifierConfig::m_autoSnapToSurface, "Auto Snap To Surface", "Automatically snap to the surface closest to the new position using Surface Tags To Snap To plus the initial surface tags.")
-                    ->DataElement(0, &PositionModifierConfig::m_surfaceTagsToSnapTo, "Surface Tags To Snap To", "Additional surface tags to snap to if auto snap is enabled.")
+                    ->DataElement(0, &PositionModifierConfig::m_autoSnapToSurface, QT_TRANSLATE_NOOP("Vegetation", "Auto Snap To Surface"), QT_TRANSLATE_NOOP("Vegetation", "Automatically snap to the surface closest to the new position using Surface Tags To Snap To plus the initial surface tags."))
+                    ->DataElement(0, &PositionModifierConfig::m_surfaceTagsToSnapTo, QT_TRANSLATE_NOOP("Vegetation", "Surface Tags To Snap To"), QT_TRANSLATE_NOOP("Vegetation", "Additional surface tags to snap to if auto snap is enabled."))
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Position X")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Position X"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMinX, "Range Min", "Minimum position offset on X axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMinX, QT_TRANSLATE_NOOP("Vegetation", "Range Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum position offset on X axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMaxX, "Range Max", "Maximum position offset on X axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMaxX, QT_TRANSLATE_NOOP("Vegetation", "Range Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum position offset on X axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerX, "Gradient", "Gradient used as blend factor to lerp between ranges on X axis.")
+                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerX, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on X axis."))
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Position Y")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Position Y"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMinY, "Range Min", "Minimum position offset on Y axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMinY, QT_TRANSLATE_NOOP("Vegetation", "Range Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum position offset on Y axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMaxY, "Range Max", "Maximum position offset on Y axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMaxY, QT_TRANSLATE_NOOP("Vegetation", "Range Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum position offset on Y axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerY, "Gradient", "Gradient used as blend factor to lerp between ranges on Y axis.")
+                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerY, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Y axis."))
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Position Z")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("Vegetation", "Position Z"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMinZ, "Range Min", "Minimum position offset on Z axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMinZ, QT_TRANSLATE_NOOP("Vegetation", "Range Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum position offset on Z axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMaxZ, "Range Max", "Maximum position offset on Z axis.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PositionModifierConfig::m_rangeMaxZ, QT_TRANSLATE_NOOP("Vegetation", "Range Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum position offset on Z axis."))
                     ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<float>::lowest())
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->Attribute(AZ::Edit::Attributes::SoftMin, -2.0f)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
-                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerZ, "Gradient", "Gradient used as blend factor to lerp between ranges on Z axis.")
+                    ->DataElement(0, &PositionModifierConfig::m_gradientSamplerZ, QT_TRANSLATE_NOOP("Vegetation", "Gradient"), QT_TRANSLATE_NOOP("Vegetation", "Gradient used as blend factor to lerp between ranges on Z axis."))
                     ;
             }
         }

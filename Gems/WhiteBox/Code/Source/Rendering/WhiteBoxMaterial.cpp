@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace WhiteBox
 {
@@ -25,17 +26,22 @@ namespace WhiteBox
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<WhiteBoxMaterial>("White Box Material", "White Box material editing")
+                editContext->Class<WhiteBoxMaterial>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "White Box Material"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "White Box material editing"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Color, &WhiteBoxMaterial::m_tint, "Tint",
-                        "The tint colour to use for the material.")
+                        AZ::Edit::UIHandlers::Color, &WhiteBoxMaterial::m_tint,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Tint"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The tint colour to use for the material."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxMaterial::m_useTexture, "Use Texture",
-                        "Use the material's texture.")
+                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxMaterial::m_useTexture,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Use Texture"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Use the material's texture."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxMaterial::m_visible, "Visible",
-                        "Material is visible in game mode.");
+                        AZ::Edit::UIHandlers::CheckBox, &WhiteBoxMaterial::m_visible,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Visible"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Material is visible in game mode."));
             }
         }
     }

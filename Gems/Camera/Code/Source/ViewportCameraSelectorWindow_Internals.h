@@ -103,6 +103,9 @@ namespace Camera
             : public QWidget
         {
             explicit ViewportSelectorHolder(QWidget* parent = nullptr);
+
+        protected:
+            void showEvent(QShowEvent* event) override;
         };
 
         //! Factory method for ViewportSelectorHolder.

@@ -9,6 +9,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Multiplayer/Session/MatchmakingRequests.h>
 
 namespace Multiplayer
@@ -25,15 +26,20 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<AcceptMatchRequest>("AcceptMatchRequest", "The container for AcceptMatch request parameters")
+                editContext->Class<AcceptMatchRequest>(
+                    QT_TRANSLATE_NOOP("Multiplayer", "AcceptMatchRequest"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "The container for AcceptMatch request parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcceptMatchRequest::m_acceptMatch, "AcceptMatch",
-                        "Player response to accept or reject match")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcceptMatchRequest::m_playerIds, "PlayerIds",
-                        "A list of unique identifiers for players delivering the response")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcceptMatchRequest::m_ticketId, "TicketId",
-                        "A unique identifier for a matchmaking ticket");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcceptMatchRequest::m_acceptMatch,
+                        QT_TRANSLATE_NOOP("Multiplayer", "AcceptMatch"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "Player response to accept or reject match"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcceptMatchRequest::m_playerIds,
+                        QT_TRANSLATE_NOOP("Multiplayer", "PlayerIds"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A list of unique identifiers for players delivering the response"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcceptMatchRequest::m_ticketId,
+                        QT_TRANSLATE_NOOP("Multiplayer", "TicketId"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A unique identifier for a matchmaking ticket"));
             }
         }
     }
@@ -48,11 +54,14 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<StartMatchmakingRequest>("StartMatchmakingRequest", "The container for StartMatchmaking request parameters")
+                editContext->Class<StartMatchmakingRequest>(
+                    QT_TRANSLATE_NOOP("Multiplayer", "StartMatchmakingRequest"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "The container for StartMatchmaking request parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StartMatchmakingRequest::m_ticketId, "TicketId",
-                        "A unique identifier for a matchmaking ticket");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StartMatchmakingRequest::m_ticketId,
+                        QT_TRANSLATE_NOOP("Multiplayer", "TicketId"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A unique identifier for a matchmaking ticket"));
             }
         }
     }
@@ -67,11 +76,14 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<StopMatchmakingRequest>("StopMatchmakingRequest", "The container for StopMatchmaking request parameters")
+                editContext->Class<StopMatchmakingRequest>(
+                    QT_TRANSLATE_NOOP("Multiplayer", "StopMatchmakingRequest"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "The container for StopMatchmaking request parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StopMatchmakingRequest::m_ticketId, "TicketId",
-                        "A unique identifier for a matchmaking ticket");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StopMatchmakingRequest::m_ticketId,
+                        QT_TRANSLATE_NOOP("Multiplayer", "TicketId"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "A unique identifier for a matchmaking ticket"));
             }
         }
     }

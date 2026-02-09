@@ -17,6 +17,7 @@
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Asset/GenericAssetHandler.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace StartingPointInput
 {
@@ -132,7 +133,8 @@ namespace StartingPointInput
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<StartingPointInputSystemComponent>(
-                        "Starting point input", "Manages input bindings and events")
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Starting point input"),
+                        QT_TRANSLATE_NOOP("StartingPointInput", "Manages input bindings and events"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
                         ;

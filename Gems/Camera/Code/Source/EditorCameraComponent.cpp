@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
@@ -107,7 +108,9 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<EditorCameraComponent>("Camera", "The Camera component allows an entity to be used as a camera")
+                editContext->Class<EditorCameraComponent>(
+                    QT_TRANSLATE_NOOP("Camera", "Camera"),
+                    QT_TRANSLATE_NOOP("Camera", "The Camera component allows an entity to be used as a camera"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Camera")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Camera.svg")
@@ -115,21 +118,30 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/camera/camera/")
-                    ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets the view to this camera")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("Camera", "Sets the view to this camera"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)
-                    ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets this camera to view")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("Camera", "Sets this camera to view"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnMatchViewportClicked)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText,  "Match Viewport")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText,
+                            QT_TRANSLATE_NOOP("Camera", "Match Viewport"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorCameraComponent::IsActiveCamera)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Debug")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCameraComponent::m_frustumViewPercentLength, "Frustum length", "Frustum length percent .01 to 100")
+                    ->ClassElement(AZ::Edit::ClassElements::Group,
+                        QT_TRANSLATE_NOOP("Camera", "Debug"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCameraComponent::m_frustumViewPercentLength,
+                        QT_TRANSLATE_NOOP("Camera", "Frustum length"),
+                        QT_TRANSLATE_NOOP("Camera", "Frustum length percent .01 to 100"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.f)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " percent")
+                        ->Attribute(AZ::Edit::Attributes::Suffix,
+                            QT_TRANSLATE_NOOP("Camera", " percent"))
                         ->Attribute(AZ::Edit::Attributes::Step, 1.f)
-                    ->DataElement(AZ::Edit::UIHandlers::Color, &EditorCameraComponent::m_frustumDrawColor, "Frustum color", "Frustum draw color RGB")
+                    ->DataElement(AZ::Edit::UIHandlers::Color, &EditorCameraComponent::m_frustumDrawColor,
+                        QT_TRANSLATE_NOOP("Camera", "Frustum color"),
+                        QT_TRANSLATE_NOOP("Camera", "Frustum draw color RGB"))
                 ;
             }
         }

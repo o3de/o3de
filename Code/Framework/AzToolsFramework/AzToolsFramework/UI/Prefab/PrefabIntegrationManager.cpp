@@ -56,6 +56,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QTimer>
+#include <QCoreApplication>
 
 namespace AzToolsFramework
 {
@@ -199,9 +200,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.edit";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Open/Edit Prefab";
-                actionProperties.m_description = "Edit the prefab in focus mode.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Open/Edit Prefab").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Edit the prefab in focus mode.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -251,9 +252,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.procedural.inspect";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Inspect Procedural Prefab";
-                actionProperties.m_description = "See the procedural prefab contents in focus mode.";
-                actionProperties.m_category = "Procedural Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Inspect Procedural Prefab").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "See the procedural prefab contents in focus mode.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Procedural Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -303,9 +304,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.close";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Close Prefab";
-                actionProperties.m_description = "Close focus mode for this prefab and move one level up.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Close Prefab").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Close focus mode for this prefab and move one level up.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -356,9 +357,9 @@ namespace AzToolsFramework
                 {
                     AZStd::string actionIdentifier = "o3de.action.prefabs.openInstance";
                     AzToolsFramework::ActionProperties actionProperties;
-                    actionProperties.m_name = "Open Prefab Instance";
-                    actionProperties.m_description = "Open the prefab instance to apply overrides.";
-                    actionProperties.m_category = "Prefabs";
+                    actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Open Prefab Instance").toUtf8().constData();
+                    actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Open the prefab instance to apply overrides.").toUtf8().constData();
+                    actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                     m_actionManagerInterface->RegisterAction(
                         EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -408,9 +409,9 @@ namespace AzToolsFramework
                 {
                     AZStd::string actionIdentifier = "o3de.action.prefabs.closeInstance";
                     AzToolsFramework::ActionProperties actionProperties;
-                    actionProperties.m_name = "Close Prefab Instance";
-                    actionProperties.m_description = "Close this prefab instance.";
-                    actionProperties.m_category = "Prefabs";
+                    actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Close Prefab Instance").toUtf8().constData();
+                    actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Close this prefab instance.").toUtf8().constData();
+                    actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                     m_actionManagerInterface->RegisterAction(
                         EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -462,9 +463,10 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.create";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Create Prefab...";
-                actionProperties.m_description = "Creates a prefab out of the currently selected entities.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Create Prefab...").toUtf8().constData();
+                actionProperties.m_description =
+                    QCoreApplication::translate("PrefabIntegrationManager", "Creates a prefab out of the currently selected entities.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -507,10 +509,12 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.detach";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Detach Prefab";
-                actionProperties.m_description = "Selected prefab is detached from its prefab file and becomes normal entities instead. "
-                                                 "You can change whether or not this action keeps the container entity in the editor settings panel.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Detach Prefab").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Selected prefab is detached from its prefab file and becomes normal entities instead. "
+                                "You can change whether or not this action keeps the container entity in the editor settings panel.")
+                        .toUtf8()
+                        .constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -552,9 +556,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.instantiate";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Instantiate Prefab...";
-                actionProperties.m_description = "Instantiates a prefab file in the scene.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Instantiate Prefab...").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Instantiates a prefab file in the scene.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -598,9 +602,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.procedural.instantiate";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Instantiate Procedural Prefab...";
-                actionProperties.m_description = "Instantiates a procedural prefab file in a prefab.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Instantiate Procedural Prefab...").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Instantiates a procedural prefab file in a prefab.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -644,9 +648,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.save";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Save Prefab to file";
-                actionProperties.m_description = "Save the changes to the prefab to disk.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Save Prefab to file").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Save the changes to the prefab to disk.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -688,9 +692,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.focusOnLevel";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Focus on top level";
-                actionProperties.m_description = "Move the Prefab Focus to the top level.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Focus on top level").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Move the Prefab Focus to the top level.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -722,9 +726,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.focusUpOneLevel";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Focus up one level";
-                actionProperties.m_description = "Move the Prefab Focus up one level.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Focus up one level").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Move the Prefab Focus up one level.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
                 actionProperties.m_iconPath = ":/Breadcrumb/img/UI20/Breadcrumb/arrow_left-default.svg";
 
                 m_actionManagerInterface->RegisterAction(
@@ -756,9 +760,9 @@ namespace AzToolsFramework
                 {
                     AZStd::string actionIdentifier = "o3de.action.prefabs.revertInstanceOverrides";
                     AzToolsFramework::ActionProperties actionProperties;
-                    actionProperties.m_name = "Revert overrides";
-                    actionProperties.m_description = "Revert all overrides on this entity.";
-                    actionProperties.m_category = "Prefabs";
+                    actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Revert overrides").toUtf8().constData();
+                    actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Revert all overrides on this entity.").toUtf8().constData();
+                    actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                     m_actionManagerInterface->RegisterAction(
                         EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -832,9 +836,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.revertComponentOverrides";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Revert overrides";
-                actionProperties.m_description = "Revert all overrides on this component.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Revert overrides").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Revert all overrides on this component.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -904,9 +908,9 @@ namespace AzToolsFramework
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.applyComponentOverrides";
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Apply overrides";
-                actionProperties.m_description = "Apply all overrides on this component.";
-                actionProperties.m_category = "Prefabs";
+                actionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Apply overrides").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("PrefabIntegrationManager", "Apply all overrides on this component.").toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 m_actionManagerInterface->RegisterAction(
                     EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -978,8 +982,8 @@ namespace AzToolsFramework
             // Prefab Focus Path Widget
             {
                 AzToolsFramework::WidgetActionProperties widgetActionProperties;
-                widgetActionProperties.m_name = "Prefab Focus Path";
-                widgetActionProperties.m_category = "Prefabs";
+                widgetActionProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Prefab Focus Path").toUtf8().constData();
+                widgetActionProperties.m_category = QCoreApplication::translate("PrefabIntegrationManager", "Prefabs").toUtf8().constData();
 
                 auto outcome = m_actionManagerInterface->RegisterWidgetAction(
                     "o3de.widgetAction.prefab.focusPath",
@@ -996,13 +1000,13 @@ namespace AzToolsFramework
         {
             {
                 AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Inspector Entity Component Context Menu";
+                menuProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Inspector Entity Component Context Menu").toUtf8().constData();
                 m_menuManagerInterface->RegisterMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, menuProperties);
             }
 
             {
                 AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Inspector Entity Property Context Menu";
+                menuProperties.m_name = QCoreApplication::translate("PrefabIntegrationManager", "Inspector Entity Property Context Menu").toUtf8().constData();
                 m_menuManagerInterface->RegisterMenu(EditorIdentifiers::InspectorEntityComponentContextMenuIdentifier, menuProperties);
             }
         }
@@ -1700,11 +1704,11 @@ namespace AzToolsFramework
                         includedEntities.c_str(), referencedEntities.c_str());
 
                     QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
-                    msgBox.setWindowTitle("External Entity References");
-                    msgBox.setText("The prefab contains references to external entities that are not selected.");
-                    msgBox.setInformativeText("You can move the referenced entities into this prefab or retain the external references.");
-                    QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton("Move", QMessageBox::YesRole);
-                    QAbstractButton* retainButton = (QAbstractButton*)msgBox.addButton("Retain", QMessageBox::NoRole);
+                    msgBox.setWindowTitle(QCoreApplication::translate("PrefabIntegrationManager", "External Entity References"));
+                    msgBox.setText(QCoreApplication::translate("PrefabIntegrationManager", "The prefab contains references to external entities that are not selected."));
+                    msgBox.setInformativeText(QCoreApplication::translate("PrefabIntegrationManager", "You can move the referenced entities into this prefab or retain the external references."));
+                    QAbstractButton* moveButton = (QAbstractButton*)msgBox.addButton(QCoreApplication::translate("PrefabIntegrationManager", "Move"), QMessageBox::YesRole);
+                    QAbstractButton* retainButton = (QAbstractButton*)msgBox.addButton(QCoreApplication::translate("PrefabIntegrationManager", "Retain"), QMessageBox::NoRole);
                     msgBox.setStandardButtons(QMessageBox::Cancel);
                     msgBox.setDefaultButton(QMessageBox::Yes);
                     msgBox.setDetailedText(message.c_str());

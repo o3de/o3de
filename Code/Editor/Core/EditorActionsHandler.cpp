@@ -54,6 +54,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QWidget>
+#include <QCoreApplication>
 
 static const int maxRecentFiles = 10;
 
@@ -184,7 +185,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
     // Main Window
     {
         AzToolsFramework::ActionContextProperties contextProperties;
-        contextProperties.m_name = "O3DE Editor";
+        contextProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "O3DE Editor").toUtf8().constData();
 
         m_actionManagerInterface->RegisterActionContext(
             EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties);
@@ -195,7 +196,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
     // Editor Asset Browser
     {
         AzToolsFramework::ActionContextProperties contextProperties;
-        contextProperties.m_name = "O3DE Editor - Asset Browser";
+        contextProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "O3DE Editor - Asset Browser").toUtf8().constData();
 
         m_actionManagerInterface->RegisterActionContext(
             EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, contextProperties);
@@ -204,7 +205,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
     // Editor Console
     {
         AzToolsFramework::ActionContextProperties contextProperties;
-        contextProperties.m_name = "O3DE Editor - Console";
+        contextProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "O3DE Editor - Console").toUtf8().constData();
 
         m_actionManagerInterface->RegisterActionContext(
             EditorIdentifiers::EditorConsoleActionContextIdentifier, contextProperties);
@@ -213,7 +214,7 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
     // Editor Entity Property Editor (Entity Inspector)
     {
         AzToolsFramework::ActionContextProperties contextProperties;
-        contextProperties.m_name = "O3DE Editor - Entity Inspector";
+        contextProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "O3DE Editor - Entity Inspector").toUtf8().constData();
 
         m_actionManagerInterface->RegisterActionContext(
             EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, contextProperties);
@@ -243,9 +244,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.new";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "New Level";
-        actionProperties.m_description = "Create a new level";
-        actionProperties.m_category = "Level";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "New Level").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Create a new level").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Level").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -268,9 +269,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.newComponent";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "New Component";
-        actionProperties.m_description = "Create a new C++ component";
-        actionProperties.m_category = "Tools";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "New Component").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Create a new C++ component").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Tools").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -290,9 +291,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.open";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Open Level...";
-        actionProperties.m_description = "Open an existing level";
-        actionProperties.m_category = "Level";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Open Level...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Open an existing level").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Level").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -325,9 +326,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
             }
             else
             {
-                actionProperties.m_name = AZStd::string::format("Recent File #%i", index + 1);
+                actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Recent File #%1").arg(index + 1).toUtf8().constData();
             }
-            actionProperties.m_category = "Level";
+            actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Level").toUtf8().constData();
             actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 
             AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
@@ -361,9 +362,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.recent.clearAll";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Clear All";
-        actionProperties.m_description = "Clear the recent files list.";
-        actionProperties.m_category = "Level";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Clear All").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Clear the recent files list.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Level").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -395,9 +396,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Save
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Save";
-        actionProperties.m_description = "Save the current level";
-        actionProperties.m_category = "Level";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Save").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Save the current level").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Level").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
         
         m_actionManagerInterface->RegisterAction(
@@ -417,9 +418,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Save As...
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Save As...";
-        actionProperties.m_description = "Save the current level";
-        actionProperties.m_category = "Level";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Save As...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Save the current level").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Level").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -439,9 +440,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.saveLevelStatistics";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Save Level Statistics";
-        actionProperties.m_description = "Logs Editor memory usage.";
-        actionProperties.m_category = "Level";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Save Level Statistics").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Logs Editor memory usage.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Level").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -471,9 +472,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.project.editSettings";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Edit Project Settings...";
-        actionProperties.m_description = "Open the Project Settings panel.";
-        actionProperties.m_category = "Project";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Edit Project Settings...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Open the Project Settings panel.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Project").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -494,9 +495,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.platform.editSettings";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Edit Platform Settings...";
-        actionProperties.m_description = "Open the Platform Settings panel.";
-        actionProperties.m_category = "Platform";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Edit Platform Settings...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Open the Platform Settings panel.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Platform").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -513,9 +514,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.project.new";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "New Project...";
-        actionProperties.m_description = "Create a new project in the Project Manager.";
-        actionProperties.m_category = "Project";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "New Project...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Create a new project in the Project Manager.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Project").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -536,9 +537,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.project.open";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Open Project...";
-        actionProperties.m_description = "Open a different project in the Project Manager.";
-        actionProperties.m_category = "Project";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Open Project...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Open a different project in the Project Manager.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Project").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -559,8 +560,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.file.showLog";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Show Log File";
-        actionProperties.m_category = "Project";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Show Log File").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Project").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -580,9 +581,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Editor Exit
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Exit";
-        actionProperties.m_description = "Exit the Editor";
-        actionProperties.m_category = "Editor";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Exit").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Exit the Editor").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Editor").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -600,9 +601,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Undo
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "&Undo";
-        actionProperties.m_description = "Undo last operation";
-        actionProperties.m_category = "Edit";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&Undo").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Undo last operation").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Edit").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -632,9 +633,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Redo
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "&Redo";
-        actionProperties.m_description = "Redo last undo operation";
-        actionProperties.m_category = "Edit";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&Redo").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Redo last undo operation").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Edit").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -665,9 +666,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.toggleAngleSnapping";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Angle snapping";
-        actionProperties.m_description = "Toggle angle snapping";
-        actionProperties.m_category = "Edit";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Angle snapping").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Toggle angle snapping").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Edit").toUtf8().constData();
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Angle.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -696,9 +697,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.toggleGridSnapping";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Grid snapping";
-        actionProperties.m_description = "Toggle grid snapping";
-        actionProperties.m_category = "Edit";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Grid snapping").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Toggle grid snapping").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Edit").toUtf8().constData();
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Grid.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -727,9 +728,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.snap.toggleShowingGrid";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Show Grid";
-        actionProperties.m_description = "Show Grid for entity snapping.";
-        actionProperties.m_category = "Edit";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Show Grid").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Show Grid for entity snapping.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Edit").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -757,8 +758,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.globalPreferences";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Global Preferences...";
-        actionProperties.m_category = "Editor";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Global Preferences...").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Editor").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -778,8 +779,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.edit.editorSettingsManager";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Editor Settings Manager...";
-        actionProperties.m_category = "Editor";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Editor Settings Manager...").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Editor").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -799,9 +800,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         const AZStd::string_view actionIdentifier = "o3de.action.entity.rename";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Rename";
-        actionProperties.m_description = "Rename the current selection.";
-        actionProperties.m_category = "Entity";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Rename").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Rename the current selection.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Entity").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -845,9 +846,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         const AZStd::string_view actionIdentifier = "o3de.action.entityOutliner.findEntity";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Find in Entity Outliner";
-        actionProperties.m_description = "Ensure the current entity is visible in the Entity Outliner.";
-        actionProperties.m_category = "Entity";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Find in Entity Outliner").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Ensure the current entity is visible in the Entity Outliner.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Entity").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -892,9 +893,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.play";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Play Game";
-        actionProperties.m_description = "Activate the game input mode.";
-        actionProperties.m_category = "Game";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Play Game").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Activate the game input mode.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Game").toUtf8().constData();
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Play.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -926,9 +927,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.playMaximized";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Play Game (Maximized)";
-        actionProperties.m_description = "Activate the game input mode (maximized).";
-        actionProperties.m_category = "Game";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Play Game (Maximized)").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Activate the game input mode (maximized).").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Game").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -957,9 +958,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.simulate";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Simulate";
-        actionProperties.m_description = "Enable processing of Physics and AI.";
-        actionProperties.m_category = "Game";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Simulate").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Enable processing of Physics and AI.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Game").toUtf8().constData();
         actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Simulate_Physics.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -991,9 +992,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.movePlayerAndCameraSeparately";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Move Player and Camera Separately";
-        actionProperties.m_description = "Move Player and Camera Separately.";
-        actionProperties.m_category = "Game";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Move Player and Camera Separately").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Move Player and Camera Separately.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Game").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -1018,9 +1019,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.audio.stopAllSounds";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Stop All Sounds";
-        actionProperties.m_description = "Stop All Sounds.";
-        actionProperties.m_category = "Game";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Stop All Sounds").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Stop All Sounds.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Game").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1042,9 +1043,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.audio.refresh";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Refresh";
-        actionProperties.m_description = "Refresh Audio System.";
-        actionProperties.m_category = "Game";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Refresh").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Refresh Audio System.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Game").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1075,9 +1076,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.debugging.errorDialog";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Error Report";
-        actionProperties.m_description = "Open the Error Report dialog.";
-        actionProperties.m_category = "Debugging";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Error Report").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Open the Error Report dialog.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Debugging").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1098,9 +1099,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.debugging.toolboxMacros";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Configure Toolbox Macros...";
-        actionProperties.m_description = "Open the Toolbox Macros dialog.";
-        actionProperties.m_category = "Debugging";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Configure Toolbox Macros...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Open the Toolbox Macros dialog.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Debugging").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1127,8 +1128,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.tools.luaEditor";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Lua Editor";
-        actionProperties.m_category = "Tools";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Lua Editor").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Tools").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1151,8 +1152,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.layout.componentEntityLayout";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Component Entity Layout (Default)";
-        actionProperties.m_category = "Layout";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Component Entity Layout (Default)").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Layout").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1173,9 +1174,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.layout.save";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Save Layout...";
-        actionProperties.m_description = "Save the current layout.";
-        actionProperties.m_category = "Layout";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Save Layout...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Save the current layout.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Layout").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1196,9 +1197,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.layout.restoreDefault";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Restore Default Layout";
-        actionProperties.m_description = "Restored the default layout for the Editor.";
-        actionProperties.m_category = "Layout";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Restore Default Layout").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Restored the default layout for the Editor.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Layout").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1219,9 +1220,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.goToPosition";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Go to Position...";
-        actionProperties.m_description = "Move the editor camera to the position and rotation provided.";
-        actionProperties.m_category = "View";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Go to Position...").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Move the editor camera to the position and rotation provided.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View").toUtf8().constData();
         actionProperties.m_iconPath = ":/Menu/camera.svg";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -1243,9 +1244,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.centerOnSelection";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Find Selected Entities in Viewport";
-        actionProperties.m_description = "Center the viewport to show selected entities.";
-        actionProperties.m_category = "View";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Find Selected Entities in Viewport").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Center the viewport to show selected entities.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1271,9 +1272,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.toggleIcons";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Show Icons";
-        actionProperties.m_description = "Show/Hide Icons.";
-        actionProperties.m_category = "View";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Show Icons").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Show/Hide Icons.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View").toUtf8().constData();
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1299,9 +1300,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.showHelpers";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Show Helpers for all entities";
-        actionProperties.m_description = "Show Helpers.";
-        actionProperties.m_category = "View";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Show Helpers for all entities").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Show Helpers.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View").toUtf8().constData();
         actionProperties.m_iconPath = ":/Menu/helpers.svg";
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -1333,9 +1334,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.showSelectedEntityHelpers";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Show Helpers for selected entities";
-        actionProperties.m_description = "If enabled, shows Helpers for selected entities only.";
-        actionProperties.m_category = "View";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Show Helpers for selected entities").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "If enabled, shows Helpers for selected entities only.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View").toUtf8().constData();
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1363,9 +1364,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.hideHelpers";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Hide Helpers";
-        actionProperties.m_description = "Hide all helpers";
-        actionProperties.m_category = "View";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Hide Helpers").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Hide all helpers").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View").toUtf8().constData();
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1393,9 +1394,9 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.view.refreshEditorStyle";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Refresh Style";
-        actionProperties.m_description = "Refreshes the editor stylesheet.";
-        actionProperties.m_category = "View";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Refresh Style").toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Refreshes the editor stylesheet.").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -1413,8 +1414,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Tutorials
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Tutorials";
-        actionProperties.m_category = "Help";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Tutorials").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Help").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.tutorials", actionProperties,
@@ -1428,8 +1429,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Open 3D Engine Documentation
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Open 3D Engine Documentation";
-        actionProperties.m_category = "Help";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Open 3D Engine Documentation").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Help").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.documentation.o3de", actionProperties,
@@ -1443,8 +1444,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Release Notes
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Release Notes";
-        actionProperties.m_category = "Help";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Release Notes").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Help").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.documentation.releasenotes", actionProperties,
@@ -1458,8 +1459,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // GameDev Blog
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "GameDev Blog";
-        actionProperties.m_category = "Help";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "GameDev Blog").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Help").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.resources.gamedevblog", actionProperties,
@@ -1473,8 +1474,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // Forums
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Forums";
-        actionProperties.m_category = "Help";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Forums").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Help").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.resources.forums", actionProperties,
@@ -1488,8 +1489,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     // About O3DE
     {
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "&About O3DE";
-        actionProperties.m_category = "Help";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&About O3DE").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Help").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.help.abouto3de", actionProperties,
@@ -1504,8 +1505,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.help.welcome";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "&Welcome";
-        actionProperties.m_category = "Help";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&Welcome").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Help").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -1528,8 +1529,8 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Help - Search Documentation Widget
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Search Documentation";
-        widgetActionProperties.m_category = "Help";
+        widgetActionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Search Documentation").toUtf8().constData();
+        widgetActionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Help").toUtf8().constData();
 
         auto outcome = m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.help.searchDocumentation",
@@ -1544,8 +1545,8 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Expander
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Expander";
-        widgetActionProperties.m_category = "Widgets";
+        widgetActionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Expander").toUtf8().constData();
+        widgetActionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Widgets").toUtf8().constData();
 
         m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.expander",
@@ -1560,8 +1561,8 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Play Controls - Label
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Play Controls Label";
-        widgetActionProperties.m_category = "Game";
+        widgetActionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Play Controls Label").toUtf8().constData();
+        widgetActionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Game").toUtf8().constData();
 
         m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.game.playControlsLabel",
@@ -1576,8 +1577,8 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Prefab Edit Visual Mode Selection Widget
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Prefab Edit Visual Mode Selection";
-        widgetActionProperties.m_category = "Prefabs";
+        widgetActionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Prefab Edit Visual Mode Selection").toUtf8().constData();
+        widgetActionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Prefabs").toUtf8().constData();
 
         auto outcome = m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.prefab.editVisualMode",
@@ -1592,8 +1593,8 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Viewport - Field of View Property Widget
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Viewport Field of View";
-        widgetActionProperties.m_category = "Viewport";
+        widgetActionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Viewport Field of View").toUtf8().constData();
+        widgetActionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Viewport").toUtf8().constData();
 
         auto outcome = m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.viewport.fieldOfView",
@@ -1608,8 +1609,8 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Viewport - Camera Speed Scale Property Widget
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Viewport Camera Speed Scale";
-        widgetActionProperties.m_category = "Viewport";
+        widgetActionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Viewport Camera Speed Scale").toUtf8().constData();
+        widgetActionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Viewport").toUtf8().constData();
 
         auto outcome = m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.viewport.cameraSpeedScale",
@@ -1624,8 +1625,8 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Viewport - Grid Size Property Widget
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Viewport Grid Snapping Size";
-        widgetActionProperties.m_category = "Viewport";
+        widgetActionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Viewport Grid Snapping Size").toUtf8().constData();
+        widgetActionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Viewport").toUtf8().constData();
 
         auto outcome = m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.viewport.gridSnappingSize",
@@ -1640,8 +1641,8 @@ void EditorActionsHandler::OnWidgetActionRegistrationHook()
     // Viewport - Angle Size Property Widget
     {
         AzToolsFramework::WidgetActionProperties widgetActionProperties;
-        widgetActionProperties.m_name = "Viewport Angle Snapping Size";
-        widgetActionProperties.m_category = "Viewport";
+        widgetActionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Viewport Angle Snapping Size").toUtf8().constData();
+        widgetActionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Viewport").toUtf8().constData();
 
         auto outcome = m_actionManagerInterface->RegisterWidgetAction(
             "o3de.widgetAction.viewport.angleSnappingSize",
@@ -1665,12 +1666,12 @@ void EditorActionsHandler::OnMenuRegistrationHook()
     // Initialize Menus
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "&File";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&File").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::FileMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Open Recent";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Open Recent").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::RecentFilesMenuIdentifier, menuProperties);
 
             // Legacy - the menu should update when the files list is changed.
@@ -1687,114 +1688,114 @@ void EditorActionsHandler::OnMenuRegistrationHook()
         }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "&Edit";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&Edit").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Modify";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Modify").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditModifyMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Snap";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Snap").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditModifySnapMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Transform Mode";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Transform Mode").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditModifyModesMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Editor Settings";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Editor Settings").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EditSettingsMenuIdentifier, menuProperties);
         }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "&Game";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&Game").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::GameMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Play Game";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Play Game").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::PlayGameMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Audio";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Audio").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::GameAudioMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Debugging";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Debugging").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::GameDebuggingMenuIdentifier, menuProperties);
         }
             {
                 AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "ToolBox Macros";
+                menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "ToolBox Macros").toUtf8().constData();
                 m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ToolBoxMacrosMenuIdentifier, menuProperties);
             }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "&Tools";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&Tools").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ToolsMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "&View";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&View").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Layouts";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Layouts").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::LayoutsMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Viewport";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Viewport").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportMenuIdentifier, menuProperties);
         }
             {
                 AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Go to Location";
+                menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Go to Location").toUtf8().constData();
                 m_menuManagerInterface->RegisterMenu(EditorIdentifiers::GoToLocationMenuIdentifier, menuProperties);
             }
             {
                 AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Save Location";
+                menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Save Location").toUtf8().constData();
                 m_menuManagerInterface->RegisterMenu(EditorIdentifiers::SaveLocationMenuIdentifier, menuProperties);
             }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "&Help";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "&Help").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::HelpMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Documentation";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Documentation").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::HelpDocumentationMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "GameDev Resources";
+            menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "GameDev Resources").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::HelpGameDevResourcesMenuIdentifier, menuProperties);
         }
 
     // Editor Menus
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Entity Outliner Context Menu";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Entity Outliner Context Menu").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Viewport Context Menu";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Viewport Context Menu").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportContextMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Create";
+        menuProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Create").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EntityCreationMenuIdentifier, menuProperties);
     }
 
@@ -2007,12 +2008,12 @@ void EditorActionsHandler::OnToolBarRegistrationHook()
     // Initialize ToolBars
     {
         AzToolsFramework::ToolBarProperties toolBarProperties;
-        toolBarProperties.m_name = "Tools";
+        toolBarProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Tools").toUtf8().constData();
         m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ToolsToolBarIdentifier, toolBarProperties);
     }
     {
         AzToolsFramework::ToolBarProperties toolBarProperties;
-        toolBarProperties.m_name = "Play Controls";
+        toolBarProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Play Controls").toUtf8().constData();
         m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::PlayControlsToolBarIdentifier, toolBarProperties);
     }
 }
@@ -2079,7 +2080,7 @@ QWidget* EditorActionsHandler::CreateExpander()
 QWidget* EditorActionsHandler::CreatePlayControlsLabel()
 {
     QLabel* label = new QLabel(m_mainWindow);
-    label->setText("Play Controls");
+    label->setText(QCoreApplication::translate("EditorActionsHandler", "Play Controls"));
     return label;
 }
 
@@ -2092,7 +2093,7 @@ QWidget* EditorActionsHandler::CreateDocsSearchWidget()
     layout->addWidget(lineEdit);
     containerWidget->setLayout(layout);
     containerWidget->setContentsMargins(2, 0, 2, 0);
-    lineEdit->setPlaceholderText(QObject::tr("Search documentation..."));
+    lineEdit->setPlaceholderText(QCoreApplication::translate("EditorActionsHandler", "Search documentation..."));
 
     auto searchAction = [lineEdit]
     {
@@ -2379,9 +2380,9 @@ void EditorActionsHandler::RefreshLayoutActions()
             {
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.layout[%s].load", layoutName.toUtf8().data());
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Load";
-                actionProperties.m_description = AZStd::string::format("Load the \"%s\" layout.", layoutName.toUtf8().data());
-                actionProperties.m_category = "Layout";
+                actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Load").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Load the \"%1\" layout.").arg(layoutName).toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Layout").toUtf8().constData();
                 actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
@@ -2403,9 +2404,9 @@ void EditorActionsHandler::RefreshLayoutActions()
             {
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.layout[%s].save", layoutName.toUtf8().data());
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Save";
-                actionProperties.m_description = AZStd::string::format("Save the \"%s\" layout.", layoutName.toUtf8().data());
-                actionProperties.m_category = "Layout";
+                actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Save").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Save the \"%1\" layout.").arg(layoutName).toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Layout").toUtf8().constData();
                 actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
@@ -2427,9 +2428,9 @@ void EditorActionsHandler::RefreshLayoutActions()
             {
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.layout[%s].rename", layoutName.toUtf8().data());
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Rename...";
-                actionProperties.m_description = AZStd::string::format("Rename the \"%s\" layout.", layoutName.toUtf8().data());
-                actionProperties.m_category = "Layout";
+                actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Rename...").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Rename the \"%1\" layout.").arg(layoutName).toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Layout").toUtf8().constData();
                 actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
@@ -2451,9 +2452,9 @@ void EditorActionsHandler::RefreshLayoutActions()
             {
                 AZStd::string actionIdentifier = AZStd::string::format("o3de.action.layout[%s].delete", layoutName.toUtf8().data());
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Delete";
-                actionProperties.m_description = AZStd::string::format("Delete the \"%s\" layout.", layoutName.toUtf8().data());
-                actionProperties.m_category = "Layout";
+                actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Delete").toUtf8().constData();
+                actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Delete the \"%1\" layout.").arg(layoutName).toUtf8().constData();
+                actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Layout").toUtf8().constData();
                 actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
                 m_actionManagerInterface->RegisterAction(
@@ -2504,7 +2505,7 @@ void EditorActionsHandler::RefreshToolboxMacroActions()
             {
                 AzToolsFramework::ActionProperties actionProperties;
                 actionProperties.m_name = macro->GetTitle().toStdString().c_str();
-                actionProperties.m_category = "Toolbox Macro";
+                actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Toolbox Macro").toUtf8().constData();
                 actionProperties.m_iconPath = macro->GetIconPath().toStdString().c_str();
                 actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
@@ -2554,8 +2555,8 @@ void EditorActionsHandler::RefreshToolActions()
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = viewpane.m_options.optionalMenuText.length() > 0 ? viewpane.m_options.optionalMenuText.toUtf8().data()
-                                                                                       : viewpane.m_name.toUtf8().data();
-            actionProperties.m_category = "Tool";
+                                                                                       : QCoreApplication::translate("LyViewPane", viewpane.m_name.toUtf8().constData()).toUtf8().constData();
+            actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "Tool").toUtf8().constData();
             actionProperties.m_iconPath = viewpane.m_options.toolbarIcon;
             actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
             actionProperties.m_toolBarVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
@@ -2608,9 +2609,10 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         const AZStd::string actionIdentifier = AZStd::string::format("o3de.action.view.bookmark[%i].goTo", index);
 
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = AZStd::string::format("Go to Location %i", index+1);
-        actionProperties.m_description = AZStd::string::format("Go to Location %i.", index+1);
-        actionProperties.m_category = "View Bookmark";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Go to Location %1").arg(index + 1).toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Go to Location %1.").arg(index + 1).toUtf8().constData();
+
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View Bookmark").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         auto outcome = m_actionManagerInterface->RegisterAction(
@@ -2635,7 +2637,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
                 // Check the bookmark we want to load is not exactly 0.
                 if (bookmark.value().IsZero())
                 {
-                    QString tagConsoleText = QObject::tr("View Bookmark %1 has not been set yet").arg(index + 1);
+                    QString tagConsoleText = QCoreApplication::translate("EditorActionsHandler", "View Bookmark %1 has not been set yet").arg(index + 1);
                     AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
                     return false;
                 }
@@ -2643,7 +2645,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
                 SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(
                     bookmark->m_position, AZ::DegToRad(bookmark->m_rotation.GetX()), AZ::DegToRad(bookmark->m_rotation.GetZ()));
 
-                QString tagConsoleText = QObject::tr("View Bookmark %1 loaded position: x=%2, y=%3, z=%4")
+                QString tagConsoleText = QCoreApplication::translate("EditorActionsHandler", "View Bookmark %1 loaded position: x=%2, y=%3, z=%4")
                                              .arg(index + 1)
                                              .arg(bookmark->m_position.GetX(), 0, 'f', 2)
                                              .arg(bookmark->m_position.GetY(), 0, 'f', 2)
@@ -2666,9 +2668,9 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
         const AZStd::string actionIdentifier = AZStd::string::format("o3de.action.view.bookmark[%i].save", index);
 
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = AZStd::string::format("Save Location %i", index+1);
-        actionProperties.m_description = AZStd::string::format("Save Location %i.", index+1);
-        actionProperties.m_category = "View Bookmark";
+        actionProperties.m_name = QCoreApplication::translate("EditorActionsHandler", "Save Location %1").arg(index + 1).toUtf8().constData();
+        actionProperties.m_description = QCoreApplication::translate("EditorActionsHandler", "Save Location %1.").arg(index + 1).toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("EditorActionsHandler", "View Bookmark").toUtf8().constData();
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
 
         m_actionManagerInterface->RegisterAction(
@@ -2679,7 +2681,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
             {
                 if (auto viewBookmark = AzToolsFramework::StoreViewBookmarkFromActiveCameraAtIndex(index); viewBookmark.has_value())
                 {
-                    const QString tagConsoleText = QObject::tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
+                    const QString tagConsoleText = QCoreApplication::translate("EditorActionsHandler", "View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
                                                        .arg(index + 1)
                                                        .arg(viewBookmark->m_position.GetX(), 0, 'f', 2)
                                                        .arg(viewBookmark->m_position.GetY(), 0, 'f', 2)

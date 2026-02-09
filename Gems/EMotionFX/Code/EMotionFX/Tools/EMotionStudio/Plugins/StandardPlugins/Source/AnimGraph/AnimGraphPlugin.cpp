@@ -377,7 +377,7 @@ namespace EMStudio
         // By default, it's hidden in AnimGraph.layout. Users should mostly use
         // the context menu to add nodes, but we let them show the palette dock
         // if needed
-        m_nodePaletteDock = new AzQtComponents::StyledDockWidget("Node Palette", mainWindow);
+        m_nodePaletteDock = new AzQtComponents::StyledDockWidget(tr("Node Palette"), mainWindow);
         mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_nodePaletteDock);
         features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;
@@ -390,7 +390,7 @@ namespace EMStudio
 
         // create the parameter dock
         QScrollArea* scrollArea = new QScrollArea();
-        m_parameterDock = new AzQtComponents::StyledDockWidget("Parameters", mainWindow);
+        m_parameterDock = new AzQtComponents::StyledDockWidget(tr("Parameters"), mainWindow);
         mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_parameterDock);
         features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;

@@ -515,8 +515,8 @@ void SandboxIntegrationManager::OnActionRegistrationHook()
     {
         const AZStd::string_view actionIdentifier = "o3de.action.sandbox.createEntity";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Create entity";
-        actionProperties.m_description = "Creates an entity under the current selection";
+        actionProperties.m_name = QObject::tr("Create entity").toUtf8().constData();
+        actionProperties.m_description = QObject::tr("Creates an entity under the current selection").toUtf8().constData();
         actionProperties.m_category = "Entity";
         actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::HideWhenDisabled;
 

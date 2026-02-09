@@ -453,7 +453,7 @@ namespace AtomToolsFramework
     void PropertyMultiStringSelectCtrl::EditValue()
     {
         AZStd::vector<AZStd::string> selections = GetValuesVec();
-        if (GetStringListFromDialog(selections, GetOptionsVec(), "Select Options", m_multiSelect))
+        if (GetStringListFromDialog(selections, GetOptionsVec(), tr("Select Options").toUtf8().constData(), m_multiSelect))
         {
             SetValuesVec(selections);
             OnValueChanged();

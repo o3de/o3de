@@ -45,6 +45,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QObject>
 #include <QPixmap>
 #include <QProcessEnvironment>
+ #include <AzFramework/Translation/TranslationDef.h>
 AZ_POP_DISABLE_WARNING
 
 constexpr AZStd::string_view MaterialCanvasActionIdentifier = "o3de.action.tools.material_canvas";
@@ -70,7 +71,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<EditorMaterialSystemComponent>("EditorMaterialSystemComponent", "System component that manages launching and maintaining connections the material editor.")
+                    ec->Class<EditorMaterialSystemComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "EditorMaterialSystemComponent"), QT_TRANSLATE_NOOP("AtomLyIntegration", "System component that manages launching and maintaining connections the material editor."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
@@ -405,7 +406,7 @@ namespace AZ
 
             {
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Material Editor";
+                actionProperties.m_name = QObject::tr("Material Editor").toUtf8().constData();
                 actionProperties.m_iconPath = ":/Menu/material_editor.svg";
 
                 auto outcome = actionManagerInterface->RegisterAction(
@@ -424,7 +425,7 @@ namespace AZ
 
             {
                 AzToolsFramework::ActionProperties actionProperties;
-                actionProperties.m_name = "Material Canvas";
+                actionProperties.m_name = QObject::tr("Material Canvas").toUtf8().constData();
                 actionProperties.m_iconPath = ":/Menu/material_canvas.svg";
 
                 auto outcome = actionManagerInterface->RegisterAction(

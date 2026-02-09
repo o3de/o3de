@@ -90,12 +90,30 @@ namespace Editor
         QSet<int> pressedKeys() const { return m_pressedKeys; }
         int pressedMouseButtons() const { return m_pressedButtons; }
 
+        // Internationalization (i18n) API
+        //! Get the current editor language (e.g., "en_US", "zh_CN")
+        QString GetCurrentLanguage() const;
+
+        //! Set the editor language at runtime and reload translators
+        //! @param languageCode Language code (e.g., "en_US", "zh_CN", "ja_JP")
+        //! @return true if language was successfully changed
+        bool SetLanguage(const QString& languageCode);
+
+        //! Get list of available languages by scanning translation files
+        QStringList GetAvailableLanguages() const;
+
+        //! Register a translator module (allows Gems to add translations)
+        //! @param moduleName Name of the module (e.g., "MyGem")
+        //! @return true if successfully registered
+        bool RegisterTranslatorModule(const QString& moduleName);
+
     public Q_SLOTS:
 
         void setIsMovingOrResizing(bool isMovingOrResizing);
 
     signals:
         void skinChanged();
+        void languageChanged(const QString& languageCode);
 
     protected:
 
@@ -113,11 +131,17 @@ namespace Editor
         // Translators
         void InstallEditorTranslators();
         void UninstallEditorTranslators();
-        QTranslator* CreateAndInitializeTranslator(const QString& filename, const QString& directory);
-        void DeleteTranslator(QTranslator*& translator);
 
-        QTranslator* m_editorTranslator = nullptr;
-        QTranslator* m_assetBrowserTranslator = nullptr;
+        // i18n helper methods
+        void InstallTranslatorWithFallback(const QString& moduleName, const QString& language);
+        QStringList BuildLanguageFallbackChain(const QString& language) const;
+        QStringList GetTranslatorModules() const;
+        QString GetSavedLanguage() const;
+        bool SaveLanguage(const QString& language);
+
+        QVector<QTranslator*> m_translators;
+        QString m_currentLanguage;
+        QStringList m_registeredModules;
 
         AZ::UserSettingsProvider m_localUserSettings;
 

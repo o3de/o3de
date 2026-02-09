@@ -22,37 +22,37 @@ TabWidgetPage::TabWidgetPage(QWidget* parent)
 {
     ui->setupUi(this);
 
-    QAction* action1 = new QAction(QIcon(":/stylesheet/img/table_error.png"), "Action 1", this);
-    QAction* action2 = new QAction(QIcon(":/stylesheet/img/table_error.png"), "Action 2", this);
-    QAction* action3 = new QAction(QIcon(":/stylesheet/img/table_error.png"), "Action 3", this);
+    QAction* action1 = new QAction(QIcon(":/stylesheet/img/table_error.png"), tr("Action 1"), this);
+    QAction* action2 = new QAction(QIcon(":/stylesheet/img/table_error.png"), tr("Action 2"), this);
+    QAction* action3 = new QAction(QIcon(":/stylesheet/img/table_error.png"), tr("Action 3"), this);
     QAction* actionAddTab = new QAction(QIcon(QStringLiteral(":/stylesheet/img/logging/add-filter.svg")), "", this);
-    QAction* actionMenu = new QAction(QIcon(":/stylesheet/img/UI20/menu-centered.svg"), "Action Menu", this);
+    QAction* actionMenu = new QAction(QIcon(":/stylesheet/img/UI20/menu-centered.svg"), tr("Action Menu"), this);
 
     // Menu for the action button, including a no-op action to show without icon as well
     QMenu * menu = new QMenu(this);
     menu->addAction(action1);
     menu->addAction(action2);
     menu->addAction(action3);
-    menu->addAction("Action 4 (No-op)");
+    menu->addAction(tr("Action 4 (No-op)"));
     actionMenu->setMenu(menu);
 
     connect(action1, &QAction::triggered, this, []() {
-        QMessageBox messageBox({}, "Action 1 triggered", "Action 1 has been triggered", QMessageBox::Ok);
+        QMessageBox messageBox({}, tr("Action 1 triggered"), tr("Action 1 has been triggered"), QMessageBox::Ok);
         messageBox.exec();
     });
 
     connect(action2, &QAction::triggered, this, []() {
-        QMessageBox messageBox({}, "Action 2 triggered", "Action 2 has been triggered", QMessageBox::Ok);
+        QMessageBox messageBox({}, tr("Action 2 triggered"), tr("Action 2 has been triggered"), QMessageBox::Ok);
         messageBox.exec();
     });
 
     connect(action3, &QAction::triggered, this, []() {
-        QMessageBox messageBox({}, "Action 3 triggered", "Action 3 has been triggered", QMessageBox::Ok);
+        QMessageBox messageBox({}, tr("Action 3 triggered"), tr("Action 3 has been triggered"), QMessageBox::Ok);
         messageBox.exec();
     });
 
     connect(actionAddTab, &QAction::triggered, this, [this]() {
-        ui->tabWidgetBig->addTab(new QWidget(), "New tab");
+        ui->tabWidgetBig->addTab(new QWidget(), tr("New tab"));
     });
 
     ui->tabWidget->setActionToolBarVisible();
@@ -92,10 +92,10 @@ TabWidgetPage::TabWidgetPage(QWidget* parent)
     ui->tabWidgetSecondaryBorderless->addAction(action3);
     ui->tabWidgetSecondaryBorderless->addAction(actionMenu);
 
-    auto* removeFirstAction = new QPushButton("Remove first action");
-    auto* removeLastAction = new QPushButton("Remove last action");
-    auto* changeActions = new QPushButton("Change actions");
-    auto* toggleActionToolBars = new QPushButton("Toggle action toolbars");
+    auto* removeFirstAction = new QPushButton(tr("Remove first action"));
+    auto* removeLastAction = new QPushButton(tr("Remove last action"));
+    auto* changeActions = new QPushButton(tr("Change actions"));
+    auto* toggleActionToolBars = new QPushButton(tr("Toggle action toolbars"));
     int* changeIdx = new int(0);
 
     connect(ui->tabWidgetBig, &QTabWidget::tabCloseRequested, ui->tabWidgetBig, &QTabWidget::removeTab);
@@ -157,9 +157,9 @@ TabWidgetPage::TabWidgetPage(QWidget* parent)
     connect(changeActions, &QPushButton::clicked, this, [action1, action2, action3, changeIdx]() {
         if (*changeIdx)
         {
-            action1->setText("Action 1");
-            action2->setText("Action 2");
-            action3->setText("Action 3");
+            action1->setText(tr("Action 1"));
+            action2->setText(tr("Action 2"));
+            action3->setText(tr("Action 3"));
 
             action1->setIcon(QIcon(":/stylesheet/img/table_error.png"));
             action2->setIcon(QIcon(":/stylesheet/img/table_error.png"));
@@ -167,9 +167,9 @@ TabWidgetPage::TabWidgetPage(QWidget* parent)
         }
         else
         {
-            action1->setText("Action A");
-            action2->setText("Action B");
-            action3->setText("Action C");
+            action1->setText(tr("Action A"));
+            action2->setText(tr("Action B"));
+            action3->setText(tr("Action C"));
 
             action1->setIcon(QIcon(":/stylesheet/img/table_success.png"));
             action2->setIcon(QIcon(":/stylesheet/img/table_success.png"));

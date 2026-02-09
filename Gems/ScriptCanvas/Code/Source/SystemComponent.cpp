@@ -10,6 +10,7 @@
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
@@ -99,12 +100,18 @@ namespace ScriptCanvas
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<SystemComponent>("Script Canvas", "Script Canvas System Component")
+                ec->Class<SystemComponent>(
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Script Canvas"),
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Script Canvas System Component"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_infiniteLoopDetectionMaxIterations, "Infinite Loop Protection Max Iterations", "Script Canvas will avoid infinite loops by detecting potentially re-entrant conditions that execute up to this number of iterations.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_maxHandlerStackDepth, "Max Handler Stack Depth", "Script Canvas will avoid infinite loops at run-time by detecting sending Ebus Events while handling said Events. This limits the stack depth of the broadcast.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_infiniteLoopDetectionMaxIterations,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Infinite Loop Protection Max Iterations"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Script Canvas will avoid infinite loops by detecting potentially re-entrant conditions that execute up to this number of iterations."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_maxHandlerStackDepth,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Max Handler Stack Depth"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Script Canvas will avoid infinite loops at run-time by detecting sending Ebus Events while handling said Events. This limits the stack depth of the broadcast."))
                     ->Attribute(AZ::Edit::Attributes::Min, 1000) // Safeguard user given value is valid
                     ;
             }

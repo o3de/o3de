@@ -19,6 +19,7 @@ ly_add_target(
             3rdParty::lz4
             AZ::AzNetworking
             AZ::AzCore
+            AZ::AzFramework
 )
 
 ly_add_target(

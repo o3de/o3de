@@ -83,18 +83,18 @@ namespace AtomToolsFramework
         BuildCreateMenu(insertPostion);
         BuildOpenMenu(insertPostion);
 
-        m_menuOpenRecent = new QMenu("Open Recent", menuBar);
+        m_menuOpenRecent = new QMenu(tr("Open Recent"), menuBar);
         connect(m_menuOpenRecent, &QMenu::aboutToShow, menuBar, [this]() {
             UpdateRecentFileMenu();
         });
         m_menuFile->insertMenu(insertPostion, m_menuOpenRecent);
         m_menuFile->insertSeparator(insertPostion);
 
-        m_actionSave = CreateActionAtPosition(m_menuFile, insertPostion, "&Save", [this]() {
+        m_actionSave = CreateActionAtPosition(m_menuFile, insertPostion, tr("&Save"), [this]() {
             SaveDocument(GetCurrentDocumentId());
         }, QKeySequence::Save);
 
-        m_actionSaveAsCopy = CreateActionAtPosition(m_menuFile, insertPostion, "Save &As...", [this]() {
+        m_actionSaveAsCopy = CreateActionAtPosition(m_menuFile, insertPostion, tr("Save &As..."), [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
             if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
@@ -109,7 +109,7 @@ namespace AtomToolsFramework
             }
         }, QKeySequence::SaveAs);
 
-        m_actionSaveAsChild = CreateActionAtPosition(m_menuFile, insertPostion, "Save As &Child...", [this]() {
+        m_actionSaveAsChild = CreateActionAtPosition(m_menuFile, insertPostion, tr("Save As &Child..."), [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
             if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
@@ -124,7 +124,7 @@ namespace AtomToolsFramework
             }
         });
 
-        m_actionSaveAll = CreateActionAtPosition(m_menuFile, insertPostion, "Save A&ll", [this]() {
+        m_actionSaveAll = CreateActionAtPosition(m_menuFile, insertPostion, tr("Save A&ll"), [this]() {
 
             for (const auto& documentId : GetOpenDocumentIds())
             {
@@ -137,15 +137,15 @@ namespace AtomToolsFramework
         });
         m_menuFile->insertSeparator(insertPostion);
 
-        m_actionClose = CreateActionAtPosition(m_menuFile, insertPostion, "&Close", [this]() {
+        m_actionClose = CreateActionAtPosition(m_menuFile, insertPostion, tr("&Close"), [this]() {
             CloseDocuments({GetCurrentDocumentId()});
         }, QKeySequence::Close);
 
-        m_actionCloseAll = CreateActionAtPosition(m_menuFile, insertPostion, "Close All", [this]() {
+        m_actionCloseAll = CreateActionAtPosition(m_menuFile, insertPostion, tr("Close All"), [this]() {
             CloseDocuments(GetOpenDocumentIds());
         });
 
-        m_actionCloseOthers = CreateActionAtPosition(m_menuFile, insertPostion, "Close Others", [this]() {
+        m_actionCloseOthers = CreateActionAtPosition(m_menuFile, insertPostion, tr("Close Others"), [this]() {
             auto documentIds = GetOpenDocumentIds();
             AZStd::erase(documentIds, GetCurrentDocumentId());
             CloseDocuments(documentIds);
@@ -154,7 +154,7 @@ namespace AtomToolsFramework
 
         insertPostion = !m_menuEdit->actions().empty() ? m_menuEdit->actions().front() : nullptr;
 
-        m_actionUndo = CreateActionAtPosition(m_menuEdit, insertPostion, "&Undo", [this]() {
+        m_actionUndo = CreateActionAtPosition(m_menuEdit, insertPostion, tr("&Undo"), [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             bool result = false;
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Undo);
@@ -164,7 +164,7 @@ namespace AtomToolsFramework
             }
         }, QKeySequence::Undo);
 
-        m_actionRedo = CreateActionAtPosition(m_menuEdit, insertPostion, "&Redo", [this]() {
+        m_actionRedo = CreateActionAtPosition(m_menuEdit, insertPostion, tr("&Redo"), [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             bool result = false;
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Redo);
@@ -177,11 +177,11 @@ namespace AtomToolsFramework
 
         insertPostion = !m_menuView->actions().empty() ? m_menuView->actions().front() : nullptr;
 
-        m_actionPreviousTab = CreateActionAtPosition(m_menuView, insertPostion, "&Previous Tab", [this]() {
+        m_actionPreviousTab = CreateActionAtPosition(m_menuView, insertPostion, tr("&Previous Tab"), [this]() {
             SelectPrevDocumentTab();
         }, 0x0 | Qt::CTRL | Qt::SHIFT | Qt::Key_Tab); //QKeySequence::PreviousChild is mapped incorrectly in Qt
 
-        m_actionNextTab = CreateActionAtPosition(m_menuView, insertPostion, "&Next Tab", [this]() {
+        m_actionNextTab = CreateActionAtPosition(m_menuView, insertPostion, tr("&Next Tab"), [this]() {
             SelectNextDocumentTab();
         }, 0x0 | Qt::CTRL | Qt::Key_Tab); //QKeySequence::NextChild works as expected but mirroring Previous
         m_menuView->insertSeparator(insertPostion);
@@ -238,8 +238,8 @@ namespace AtomToolsFramework
         {
             auto selection = QMessageBox::question(
                 GetToolMainWindow(),
-                QObject::tr("Document has unsaved changes"),
-                QObject::tr("Do you want to save changes to\n%1?").arg(documentPath.c_str()),
+                tr("Document has unsaved changes"),
+                tr("Do you want to save changes to\n%1?").arg(documentPath.c_str()),
                 QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
             if (selection == QMessageBox::Cancel)
             {
@@ -250,11 +250,11 @@ namespace AtomToolsFramework
             {
                 if (!SaveDocument(documentId))
                 {
-                    const QString title = QObject::tr("Document could not be closed");
-                    const QString text = QObject::tr("Close document failed because document was not saved: \n%1").arg(documentPath.c_str());
+                    const QString title = tr("Document could not be closed");
+                    const QString text = tr("Close document failed because document was not saved: \n%1").arg(documentPath.c_str());
                     AZ_Error("AtomToolsDocumentMainWindow", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
                     QMessageBox::critical(
-                        GetToolMainWindow(), title, QObject::tr("%1").arg(text));
+                        GetToolMainWindow(), title, tr("%1").arg(text));
                     return false;
                 }
             }
@@ -334,37 +334,37 @@ namespace AtomToolsFramework
         Base::PopulateSettingsInspector(inspector);
 
         m_documentSystemSettingsGroup = CreateSettingsPropertyGroup(
-            "Document System Settings",
-            "Document System Settings",
+            tr("Document System Settings").toUtf8().constData(),
+            tr("Document System Settings").toUtf8().constData(),
             { CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
-                  "Display Warning Message Dialogs",
-                  "Display message boxes for warnings opening documents",
+                  tr("Display Warning Message Dialogs").toUtf8().constData(),
+                  tr("Display message boxes for warnings opening documents").toUtf8().constData(),
                   true),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
-                  "Display Error Message Dialogs",
-                  "Display message boxes for errors opening documents",
+                  tr("Display Error Message Dialogs").toUtf8().constData(),
+                  tr("Display message boxes for errors opening documents").toUtf8().constData(),
                   true),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
-                  "Enable Automatic Reload",
-                  "Automatically reload documents after external modifications",
+                  tr("Enable Automatic Reload").toUtf8().constData(),
+                  tr("Automatically reload documents after external modifications").toUtf8().constData(),
                   true),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
-                  "Enable Automatic Reload Prompts",
-                  "Confirm before automatically reloading modified documents",
+                  tr("Enable Automatic Reload Prompts").toUtf8().constData(),
+                  tr("Confirm before automatically reloading modified documents").toUtf8().constData(),
                   true),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
-                  "Enable Auto Save",
-                  "Automatically save documents after they are modified",
+                  tr("Enable Auto Save").toUtf8().constData(),
+                  tr("Automatically save documents after they are modified").toUtf8().constData(),
                   false),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
-                  "Auto Save Interval",
-                  "How often (in milliseconds) auto save occurs",
+                  tr("Auto Save Interval").toUtf8().constData(),
+                  tr("How often (in milliseconds) auto save occurs").toUtf8().constData(),
                   aznumeric_cast<AZ::s64>(250),
                   aznumeric_cast<AZ::s64>(0),
                   aznumeric_cast<AZ::s64>(1000)) });
@@ -387,7 +387,7 @@ namespace AtomToolsFramework
         auto parentMenu = m_menuFile;
         if (documentTypes.size() > 1)
         {
-            parentMenu = new QMenu("&New", this);
+            parentMenu = new QMenu(tr("&New"), this);
             m_menuFile->insertMenu(insertPostion, parentMenu);
         }
 
@@ -424,7 +424,7 @@ namespace AtomToolsFramework
         auto parentMenu = m_menuFile;
         if (documentTypes.size() > 1)
         {
-            parentMenu = new QMenu("&Open", this);
+            parentMenu = new QMenu(tr("&Open"), this);
             m_menuFile->insertMenu(insertPostion, parentMenu);
         }
 
@@ -630,7 +630,7 @@ namespace AtomToolsFramework
             AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
             if (filename.empty())
             {
-                filename = "(untitled)";
+                filename = tr("(untitled)").toUtf8().constData();
             }
 
             // We use an asterisk prepended to the file name to denote modified document.
@@ -674,13 +674,13 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentMainWindow::PopulateTabContextMenu(const AZ::Uuid& documentId, QMenu& menu)
     {
-        menu.addAction("Select", [this, documentId]() {
+        menu.addAction(tr("Select"), [this, documentId]() {
             AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         });
-        menu.addAction("Close", [this, documentId]() {
+        menu.addAction(tr("Close"), [this, documentId]() {
             CloseDocuments({documentId});
         });
-        menu.addAction("Close Others", [this, documentId]() {
+        menu.addAction(tr("Close Others"), [this, documentId]() {
             auto documentIds = GetOpenDocumentIds();
             AZStd::erase(documentIds, documentId);
             CloseDocuments(documentIds);

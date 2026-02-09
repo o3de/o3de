@@ -66,8 +66,8 @@ static const QString g_jobFilteredSearchWidgetState = QStringLiteral("jobFiltere
 static const qint64 AssetTabFilterUpdateIntervalMs = 5000;
 
 static const int MaxVisiblePopoutMenuRows = 20;
-static const QString productMenuTitle(QObject::tr("View product asset..."));
-static const QString intermediateMenuTitle(QObject::tr("View intermediate asset..."));
+static const QString productMenuTitle(QCoreApplication::translate("MainWindow", "View product asset..."));
+static const QString intermediateMenuTitle(QCoreApplication::translate("MainWindow", "View intermediate asset..."));
 
 struct AssetRightClickMenuResult
 {
@@ -99,12 +99,12 @@ AssetRightClickMenuResult SetupAssetRightClickMenu(QMenu* parentMenu, QString ti
 
 AssetRightClickMenuResult SetupProductAssetRightClickMenu(QMenu* parentMenu)
 {
-    return SetupAssetRightClickMenu(parentMenu, productMenuTitle, QObject::tr("Shows this product asset in the Product Assets tab."));
+    return SetupAssetRightClickMenu(parentMenu, productMenuTitle, QCoreApplication::translate("MainWindow", "Shows this product asset in the Product Assets tab."));
 }
 
 AssetRightClickMenuResult SetupIntermediateAssetRightClickMenu(QMenu* parentMenu)
 {
-    return SetupAssetRightClickMenu(parentMenu, intermediateMenuTitle, QObject::tr("Shows this intermediate asset in the Intermediate Assets tab."));
+    return SetupAssetRightClickMenu(parentMenu, intermediateMenuTitle, QCoreApplication::translate("MainWindow", "Shows this intermediate asset in the Intermediate Assets tab."));
 }
 
 void CreateDisabledAssetRightClickMenu(QMenu* parentMenu, QMenu* existingMenu, QString title, QString tooltip)
@@ -239,15 +239,15 @@ void MainWindow::Activate()
 
     connect(ui->supportButton, &QPushButton::clicked, this, &MainWindow::OnSupportClicked);
 
-    ui->buttonList->addTab(QStringLiteral("Welcome"));
-    ui->buttonList->addTab(QStringLiteral("Jobs"));
-    ui->buttonList->addTab(QStringLiteral("Assets"));
-    ui->buttonList->addTab(QStringLiteral("Logs"));
-    ui->buttonList->addTab(QStringLiteral("Connections"));
-    ui->buttonList->addTab(QStringLiteral("Builders"));
-    ui->buttonList->addTab(QStringLiteral("Settings"));
-    ui->buttonList->addTab(QStringLiteral("Shared Cache"));
-    ui->buttonList->addTab(QStringLiteral("Asset Relocation"));
+    ui->buttonList->addTab(tr("Welcome"));
+    ui->buttonList->addTab(tr("Jobs"));
+    ui->buttonList->addTab(tr("Assets"));
+    ui->buttonList->addTab(tr("Logs"));
+    ui->buttonList->addTab(tr("Connections"));
+    ui->buttonList->addTab(tr("Builders"));
+    ui->buttonList->addTab(tr("Settings"));
+    ui->buttonList->addTab(tr("Shared Cache"));
+    ui->buttonList->addTab(tr("Asset Relocation"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
     const int startIndex = static_cast<int>(DialogStackIndex::Welcome);
@@ -371,7 +371,7 @@ void MainWindow::Activate()
     }
 
     AssetProcessor::CustomJobStatusFilter customFilter{ true };
-    ui->jobFilteredSearchWidget->AddTypeFilter(category, "Completed w/ Warnings", QVariant::fromValue(customFilter));
+    ui->jobFilteredSearchWidget->AddTypeFilter(category, tr("Completed w/ Warnings"), QVariant::fromValue(customFilter));
 
     connect(ui->jobFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged,
         m_jobSortFilterProxy, &AssetProcessor::JobSortFilterProxyModel::OnJobStatusFilterChanged);

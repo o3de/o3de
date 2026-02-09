@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <MessagePopupSystemComponent.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/EBus/EBus.h>
@@ -47,7 +48,9 @@ namespace MessagePopup
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<MessagePopupSystemComponent>("MessagePopup", "[Description of functionality provided by this System Component]")
+                ec->Class<MessagePopupSystemComponent>(
+                    QT_TRANSLATE_NOOP("MessagePopup", "MessagePopup"),
+                    QT_TRANSLATE_NOOP("MessagePopup", "[Description of functionality provided by this System Component]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
@@ -200,11 +203,11 @@ namespace MessagePopup
             return true;
         case MessagePopup::EPopupButtons_YesNo:
         {
-            AZStd::string resultStr;
-            AZ::NativeUI::NativeUIRequestBus::BroadcastResult(resultStr, &AZ::NativeUI::NativeUIRequestBus::Events::DisplayYesNoDialog, "", _message.c_str(), false);
+            AZ::NativeUI::YesNoDialogResult result = AZ::NativeUI::YesNoDialogResult::None;
+            AZ::NativeUI::NativeUIRequestBus::BroadcastResult(result, &AZ::NativeUI::NativeUIRequestBus::Events::DisplayYesNoDialog, "", _message.c_str(), false);
             if (_callback)
             {
-                if (resultStr == "Yes")
+                if (result == AZ::NativeUI::YesNoDialogResult::Yes)
                     _callback(0);
                 else
                     _callback(1);

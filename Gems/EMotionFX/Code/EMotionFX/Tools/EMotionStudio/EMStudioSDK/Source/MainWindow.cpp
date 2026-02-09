@@ -397,22 +397,22 @@ namespace EMStudio
         menu = menuBar->addMenu(tr("&Help"));
         menu->setObjectName("EMFX.MainWindow.HelpMenu");
 
-        menu->addAction("Documentation", this, []
+        menu->addAction(tr("Documentation"), this, []
         {
             QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/user-guide/visualization/animation/"));
         });
 
-        menu->addAction("Forums", this, []
+        menu->addAction(tr("Forums"), this, []
         {
             QDesktopServices::openUrl(QUrl("https://www.o3de.org/community/"));
         });
 
         menu->addSeparator();
 
-        QMenu* folders = menu->addMenu("Folders");
+        QMenu* folders = menu->addMenu(tr("Folders"));
         folders->setObjectName("EMFX.MainWindow.FoldersMenu");
-        folders->addAction("Open autosave folder", this, &MainWindow::OnOpenAutosaveFolder);
-        folders->addAction("Open settings folder", this, &MainWindow::OnOpenSettingsFolder);
+        folders->addAction(tr("Open autosave folder"), this, &MainWindow::OnOpenAutosaveFolder);
+        folders->addAction(tr("Open settings folder"), this, &MainWindow::OnOpenSettingsFolder);
 
         // Reset old workspace and start clean.
         GetManager()->GetWorkspace()->Reset();
@@ -1159,7 +1159,7 @@ namespace EMStudio
             m_preferencesWindow = new PreferencesWindow(this);
             m_preferencesWindow->Init();
 
-            AzToolsFramework::ReflectedPropertyEditor* generalPropertyWidget = m_preferencesWindow->AddCategory("General");
+            AzToolsFramework::ReflectedPropertyEditor* generalPropertyWidget = m_preferencesWindow->AddCategory(tr("General").toUtf8().constData());
             generalPropertyWidget->ClearInstances();
             generalPropertyWidget->InvalidateAll();
 
@@ -1199,7 +1199,7 @@ namespace EMStudio
 
             // Keyboard shortcuts
             KeyboardShortcutsWindow* shortcutsWindow = new KeyboardShortcutsWindow(m_preferencesWindow);
-            m_preferencesWindow->AddCategory(shortcutsWindow, "Keyboard shortcuts");
+            m_preferencesWindow->AddCategory(shortcutsWindow, tr("Keyboard shortcuts").toUtf8().constData());
         }
 
         m_preferencesWindow->exec();
@@ -1840,14 +1840,14 @@ namespace EMStudio
         }
 
         // add the save current menu
-        QAction* saveCurrentAction = m_layoutsMenu->addAction("Save Current");
+        QAction* saveCurrentAction = m_layoutsMenu->addAction(tr("Save Current"));
         connect(saveCurrentAction, &QAction::triggered, this, &MainWindow::OnLayoutSaveAs);
 
         // remove menu is needed only if at least one layout
         if (!m_layoutNames.empty())
         {
             // add the remove menu
-            QMenu* removeMenu = m_layoutsMenu->addMenu("Remove");
+            QMenu* removeMenu = m_layoutsMenu->addMenu(tr("Remove"));
             removeMenu->setObjectName("RemoveMenu");
 
             // add each layout in the remove menu
@@ -2169,8 +2169,8 @@ namespace EMStudio
                 {
                     // create the drop context menu
                     QMenu menu(this);
-                    QAction* openAction = menu.addAction("Open Actor");
-                    QAction* mergeAction = menu.addAction("Merge Actor");
+                    QAction* openAction = menu.addAction(tr("Open Actor"));
+                    QAction* mergeAction = menu.addAction(tr("Merge Actor"));
                     connect(openAction, &QAction::triggered, this, &MainWindow::OnOpenDroppedActor);
                     connect(mergeAction, &QAction::triggered, this, &MainWindow::OnMergeDroppedActor);
 

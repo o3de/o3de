@@ -13,6 +13,7 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Common/PhysXSceneQueryHelpers.h>
 #include <PhysX/Utils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
@@ -39,19 +40,19 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<CharacterControllerConfiguration>(
-                    "PhysX Character Controller Configuration", "PhysX Character Controller Configuration")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Character Controller Configuration"), QT_TRANSLATE_NOOP("PhysX", "PhysX Character Controller Configuration"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CharacterControllerConfiguration::m_slopeBehaviour,
-                        "Slope Behavior", "Behavior of the controller on surfaces that exceed the Maximum Slope Angle.")
+                        QT_TRANSLATE_NOOP("PhysX", "Slope Behavior"), QT_TRANSLATE_NOOP("PhysX", "Behavior of the controller on surfaces that exceed the Maximum Slope Angle."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->EnumAttribute(SlopeBehaviour::PreventClimbing, "Prevent Climbing")
-                    ->EnumAttribute(SlopeBehaviour::ForceSliding, "Force Sliding")
+                    ->EnumAttribute(SlopeBehaviour::PreventClimbing, QT_TRANSLATE_NOOP("PhysX", "Prevent Climbing"))
+                    ->EnumAttribute(SlopeBehaviour::ForceSliding, QT_TRANSLATE_NOOP("PhysX", "Force Sliding"))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_contactOffset,
-                        "Contact Offset", "Distance from the controller boundary where contact with surfaces can be resolved.")
+                        QT_TRANSLATE_NOOP("PhysX", "Contact Offset"), QT_TRANSLATE_NOOP("PhysX", "Distance from the controller boundary where contact with surfaces can be resolved."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_scaleCoefficient,
-                        "Scale", "Scales the controller. Usually less than 1.0 to ensure visual contact between the character and surface.")
+                        QT_TRANSLATE_NOOP("PhysX", "Scale"), QT_TRANSLATE_NOOP("PhysX", "Scales the controller. Usually less than 1.0 to ensure visual contact between the character and surface."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ;

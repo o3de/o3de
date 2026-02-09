@@ -11,6 +11,7 @@
 #include "DockWidgetPlugin.h"
 #include "RemovePluginOnCloseDockWidget.h"
 #include <MCore/Source/LogManager.h>
+#include <QCoreApplication>
 #include <QHBoxLayout>
 
 
@@ -92,7 +93,7 @@ namespace EMStudio
         QMainWindow* mainWindow = GetMainWindow();
 
         // create a window for the plugin
-        m_dock = new RemovePluginOnCloseDockWidget(mainWindow, GetName(), this);
+        m_dock = new RemovePluginOnCloseDockWidget(mainWindow, QCoreApplication::translate("EMotionFX", GetName()), this);
         m_dock->setAllowedAreas(Qt::AllDockWidgetAreas);
 
         QDockWidget::DockWidgetFeatures features = QDockWidget::NoDockWidgetFeatures;

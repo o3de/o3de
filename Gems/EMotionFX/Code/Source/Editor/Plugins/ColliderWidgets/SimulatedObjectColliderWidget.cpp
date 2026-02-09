@@ -52,7 +52,7 @@ namespace EMotionFX
             m_ownershipWidget->setLayout(ownershipLayout);
 
             ownershipLayout->addSpacerItem(new QSpacerItem(s_jointLabelSpacing, 0, QSizePolicy::Fixed));
-            QLabel* tempLabel = new QLabel("Part of Simulated Objects");
+            QLabel* tempLabel = new QLabel(tr("Part of Simulated Objects"));
             tempLabel->setStyleSheet("font-weight: bold;");
             ownershipLayout->addWidget(tempLabel);
 
@@ -74,7 +74,7 @@ namespace EMotionFX
             m_collideWithWidget->setLayout(collideWithLayout);
 
             collideWithLayout->addSpacerItem(new QSpacerItem(s_jointLabelSpacing, 0, QSizePolicy::Fixed));
-            QLabel* tempLabel = new QLabel("Collide with Simulated Objects");
+            QLabel* tempLabel = new QLabel(tr("Collide with Simulated Objects"));
             tempLabel->setStyleSheet("font-weight: bold;");
             collideWithLayout->addWidget(tempLabel);
 
@@ -87,7 +87,7 @@ namespace EMotionFX
         }
 
         // Collider notification
-        m_colliderNotif = new NotificationWidget(result, "Currently, this collider doesn't collide against any simulated object. Select the Simulated Object you want to collide with from the Simulated Object Window, and choose this collider in the \"Collide with\" setting.");
+        m_colliderNotif = new NotificationWidget(result, tr("Currently, this collider doesn't collide against any simulated object. Select the Simulated Object you want to collide with from the Simulated Object Window, and choose this collider in the \"Collide with\" setting."));
         layout->addWidget(m_colliderNotif);
         m_colliderNotif->hide();
 
@@ -322,7 +322,7 @@ namespace EMotionFX
         QMenu* contextMenu = new QMenu(this);
         if (simObjCounts == 0)
         {
-            QAction* action = contextMenu->addAction("0 simulated objects created.");
+            QAction* action = contextMenu->addAction(tr("0 simulated objects created."));
             action->setEnabled(false);
             contextMenu->addSeparator();
         }
@@ -344,7 +344,7 @@ namespace EMotionFX
 
         contextMenu->addSeparator();
         // Add the action to add simulated object, then add the joint to the object.
-        QAction* addObjectAction = contextMenu->addAction("New simulated object...");
+        QAction* addObjectAction = contextMenu->addAction(tr("New simulated object..."));
         connect(addObjectAction, &QAction::triggered, this, &AddToSimulatedObjectButton::OnCreateObjectAndAddJointsActionTriggered);
 
         contextMenu->setFixedWidth(width());

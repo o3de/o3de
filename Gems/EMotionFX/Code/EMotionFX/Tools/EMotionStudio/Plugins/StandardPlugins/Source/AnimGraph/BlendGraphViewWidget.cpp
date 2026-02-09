@@ -238,7 +238,7 @@ namespace EMStudio
 #endif
 
         m_actions[EDIT_CUT] = new QAction(
-            FromStdString(AnimGraphPlugin::s_cutShortcutName),
+            tr(AnimGraphPlugin::s_cutShortcutName.data()),
             this
         );
         m_actions[EDIT_CUT]->setShortcut(0x0 | Qt::Key_X | Qt::ControlModifier);
@@ -249,7 +249,7 @@ namespace EMStudio
         });
 
         m_actions[EDIT_COPY] = new QAction(
-            FromStdString(AnimGraphPlugin::s_copyShortcutName),
+            tr(AnimGraphPlugin::s_copyShortcutName.data()),
             this
         );
         m_actions[EDIT_COPY]->setShortcut(0x0 | Qt::Key_C | Qt::ControlModifier);
@@ -260,7 +260,7 @@ namespace EMStudio
         });
 
         m_actions[EDIT_PASTE] = new QAction(
-            FromStdString(AnimGraphPlugin::s_pasteShortcutName),
+            tr(AnimGraphPlugin::s_pasteShortcutName.data()),
             this
         );
         m_actions[EDIT_PASTE]->setShortcut(0x0 | Qt::Key_V | Qt::ControlModifier);
@@ -280,7 +280,7 @@ namespace EMStudio
         });
 
         m_actions[EDIT_DELETE] = new QAction(
-            FromStdString(AnimGraphPlugin::s_deleteSelectedNodesShortcutName),
+            tr(AnimGraphPlugin::s_deleteSelectedNodesShortcutName.data()),
             this
         );
         m_actions[EDIT_DELETE]->setShortcut(Qt::Key_Delete);

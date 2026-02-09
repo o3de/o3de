@@ -34,7 +34,7 @@ namespace GraphCanvas
     
     AZStd::string AlignSelectionMenuAction::GetSubMenuPath() const
     {
-        return "Align";
+        return tr("Align").toUtf8().constData();
     }
     
     ContextMenuAction::SceneReaction AlignSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)

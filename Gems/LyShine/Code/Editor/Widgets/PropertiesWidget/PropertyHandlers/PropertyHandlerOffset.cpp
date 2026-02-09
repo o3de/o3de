@@ -37,7 +37,7 @@ void PropertyHandlerOffset::ConsumeAttribute(AzQtComponents::VectorInput* GUI, A
         else
         {
             // emit a warning!
-            AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'LayoutFitterType' attribute from property '%s' into string box", debugName);
+            AZ_WarningOnce("LyShine", false, "Failed to read 'LayoutFitterType' attribute from property '%s' into string box", debugName);
         }
     }
 }

@@ -18,6 +18,7 @@ namespace GraphCanvas
     AddBookmarkMenuAction::AddBookmarkMenuAction(QObject* parent)
         : ConstructContextMenuAction("Add bookmark", parent)
     {
+        setText(tr("Add bookmark"));
     }
 
     ContextMenuAction::SceneReaction AddBookmarkMenuAction::TriggerAction(const AZ::Vector2& scenePos)

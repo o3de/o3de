@@ -17,6 +17,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/std/string/conversions.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace LocalUser
@@ -73,7 +74,9 @@ namespace LocalUser
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<LocalUserSystemComponent>("LocalUser", "Provides functionality for mapping local user ids to local player slots and managing local user profiles.")
+                ec->Class<LocalUserSystemComponent>(
+                    QT_TRANSLATE_NOOP("LocalUser", "LocalUser"),
+                    QT_TRANSLATE_NOOP("LocalUser", "Provides functionality for mapping local user ids to local player slots and managing local user profiles."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
@@ -98,11 +99,14 @@ namespace WhiteBox
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorWhiteBoxMeshAsset>("Editor White Box Mesh Asset", "White Box Mesh Asset")
+                editContext->Class<EditorWhiteBoxMeshAsset>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "Editor White Box Mesh Asset"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "White Box Mesh Asset"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxMeshAsset::m_meshAsset, "Mesh Asset",
-                        "Mesh Asset")
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxMeshAsset::m_meshAsset,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Mesh Asset"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Mesh Asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxMeshAsset::AssetChanged)
                     ->Attribute(AZ::Edit::Attributes::ClearNotify, &EditorWhiteBoxMeshAsset::AssetCleared);
             }

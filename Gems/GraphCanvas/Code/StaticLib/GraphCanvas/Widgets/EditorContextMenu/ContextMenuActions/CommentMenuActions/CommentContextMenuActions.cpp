@@ -24,7 +24,8 @@ namespace GraphCanvas
     EditCommentMenuAction::EditCommentMenuAction(QObject* parent)
         : CommentContextMenuAction("Edit comment", parent)
     {
-        setToolTip("Edits the selected comment");
+        setText(tr("Edit comment"));
+        setToolTip(tr("Edits the selected comment"));
     }
 
     void EditCommentMenuAction::RefreshAction()

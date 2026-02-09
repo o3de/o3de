@@ -165,7 +165,9 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath)
     {
-        ReflectionAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);
+        // Translate the label text for i18n support before passing to the base class
+        AZStd::string translatedLabel = AzToolsFramework::TranslatePropertyString(labelText.data());
+        ReflectionAdapter::CreateLabel(adapterBuilder, translatedLabel, serializedPath);
     }
 
     void ComponentAdapter::OnEntityDestruction(const AZ::EntityId& entityId)

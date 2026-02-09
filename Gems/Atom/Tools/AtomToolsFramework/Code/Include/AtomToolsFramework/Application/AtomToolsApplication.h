@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 
 #include <AzCore/IO/FileIO.h>
+#include <QTranslator>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
@@ -86,6 +87,9 @@ namespace AtomToolsFramework
         virtual void ConnectToAssetProcessor();
         virtual void CompileCriticalAssets();
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
+        
+        //! Initialize translations for this tool using TranslationManager
+        virtual void InitializeTranslations();
 
         void PrintAlways(const AZStd::string& output);
         void RedirectStdoutToNull();
@@ -119,5 +123,8 @@ namespace AtomToolsFramework
 
         // Disable warning for dll export since this member won't be used outside this class
         AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
+
+        //! Translator for i18n support
+        QTranslator* m_translator = nullptr;
     };
 } // namespace AtomToolsFramework
