@@ -27,13 +27,13 @@ namespace GraphCanvas
     {
         if (!collapseGroup)
         {
-            setText("Group");
-            setToolTip("Will create a Node Group for the selected nodes.");
+            setText(tr("Group"));
+            setToolTip(tr("Will create a Node Group for the selected nodes."));
         }
         else
         {
-            setText("Group [Collapsed]");
-            setToolTip("Will create a Node Group for the selected nodes, and then collapse the group to a single node.");
+            setText(tr("Group [Collapsed]"));
+            setToolTip(tr("Will create a Node Group for the selected nodes, and then collapse the group to a single node."));
         }
     }
 
@@ -98,7 +98,7 @@ namespace GraphCanvas
     UngroupNodeGroupMenuAction::UngroupNodeGroupMenuAction(QObject* parent)
         : NodeGroupContextMenuAction("Ungroup", parent)
     {
-
+        setText(tr("Ungroup"));
     }
 
     void UngroupNodeGroupMenuAction::RefreshAction()
@@ -130,7 +130,8 @@ namespace GraphCanvas
     CollapseNodeGroupMenuAction::CollapseNodeGroupMenuAction(QObject* parent)
         : NodeGroupContextMenuAction("Collapse", parent)
     {
-        setToolTip("Collapses the selected group");
+        setText(tr("Collapse"));
+        setToolTip(tr("Collapses the selected group"));
     }
 
     void CollapseNodeGroupMenuAction::RefreshAction()
@@ -156,7 +157,8 @@ namespace GraphCanvas
     ExpandNodeGroupMenuAction::ExpandNodeGroupMenuAction(QObject* parent)
         : NodeGroupContextMenuAction("Expand", parent)
     {
-        setToolTip("Expands the selected group");
+        setText(tr("Expand"));
+        setToolTip(tr("Expands the selected group"));
     } 
 
     void ExpandNodeGroupMenuAction::RefreshAction()
@@ -180,7 +182,8 @@ namespace GraphCanvas
     EditGroupTitleMenuAction::EditGroupTitleMenuAction(QObject* parent)
         : NodeGroupContextMenuAction("Edit group title", parent)
     {
-        setToolTip("Edits the selected group title");
+        setText(tr("Edit group title"));
+        setToolTip(tr("Edits the selected group title"));
     }
 
     void EditGroupTitleMenuAction::RefreshAction()

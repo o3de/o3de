@@ -23,7 +23,7 @@ namespace MaterialEditor
 
         m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
         m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/DocumentInspector");
-        AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
+        AddDockWidget(tr("Inspector").toUtf8().constData(), m_documentInspector, Qt::RightDockWidgetArea);
 
         // Set up the toolbar that controls the viewport settings
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
@@ -53,8 +53,8 @@ namespace MaterialEditor
         centralWidget()->layout()->addWidget(m_materialViewport);
 
         m_viewportSettingsInspector = new AtomToolsFramework::EntityPreviewViewportSettingsInspector(m_toolId, this);
-        AddDockWidget("Viewport Settings", m_viewportSettingsInspector, Qt::LeftDockWidgetArea);
-        SetDockWidgetVisible("Viewport Settings", false);
+        AddDockWidget(tr("Viewport Settings").toUtf8().constData(), m_viewportSettingsInspector, Qt::LeftDockWidgetArea);
+        SetDockWidgetVisible(tr("Viewport Settings").toUtf8().constData(), false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }

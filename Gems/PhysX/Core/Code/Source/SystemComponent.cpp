@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Source/Material/PhysXMaterialManager.h>
 #include <Source/Utils.h>
@@ -104,12 +105,12 @@ namespace PhysX
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration.")
+                editContext->Class<SystemComponent>(QT_TRANSLATE_NOOP("PhysX", "PhysX"), QT_TRANSLATE_NOOP("PhysX", "Global PhysX physics configuration."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_enabled,
-                    "Enabled", "Enables the PhysX system component.")
+                    QT_TRANSLATE_NOOP("PhysX", "Enabled"), QT_TRANSLATE_NOOP("PhysX", "Enables the PhysX system component."))
                 ;
             }
         }

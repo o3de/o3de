@@ -9,6 +9,7 @@
 #include <RecastNavigationSystemComponent.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace RecastNavigation
 {
@@ -22,7 +23,9 @@ namespace RecastNavigation
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<RecastNavigationSystemComponent>("RecastNavigation", "[System Component for the Recast Navigation gem]")
+                editContext->Class<RecastNavigationSystemComponent>(
+                    QT_TRANSLATE_NOOP("RecastNavigation", "RecastNavigation"),
+                    QT_TRANSLATE_NOOP("RecastNavigation", "[System Component for the Recast Navigation gem]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

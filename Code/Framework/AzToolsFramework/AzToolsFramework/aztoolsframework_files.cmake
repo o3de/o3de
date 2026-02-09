@@ -452,6 +452,8 @@ set(FILES
     ToolsComponents/EditorNonUniformScaleComponentMode.cpp
     ToolsMessaging/EntityHighlightBus.cpp
     ToolsMessaging/EntityHighlightBus.h
+    Translation/Translation.h
+    Translation/TranslationManager.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.cpp

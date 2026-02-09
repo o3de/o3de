@@ -270,7 +270,7 @@ namespace O3DE::ProjectManager
                     gemInfo.m_name = gemName;
                     gemInfo.m_displayName = gemName;
                     gemInfo.m_version = gemVersion;
-                    gemInfo.m_summary = QString("This project uses %1 but a compatible gem was not found, or has not been registered yet.")
+                    gemInfo.m_summary = QString(tr("This project uses %1 but a compatible gem was not found, or has not been registered yet."))
                                             .arg(gemNameWithSpecifier);
                     gemInfo.m_isAdded = true;
 
@@ -294,7 +294,7 @@ namespace O3DE::ProjectManager
             gemInfo.m_name = gemName;
             gemInfo.m_displayName = gemName;
             gemInfo.m_version = gemVersion;
-            gemInfo.m_summary = QString("This project uses %1 but a compatible gem was not found, or has not been registered yet.").arg(gemNameWithSpecifier);
+            gemInfo.m_summary = QString(tr("This project uses %1 but a compatible gem was not found, or has not been registered yet.")).arg(gemNameWithSpecifier);
             gemInfo.m_isAdded = true;
 
             QStandardItem* gemItem = new QStandardItem();

@@ -1717,46 +1717,46 @@ namespace EMStudio
             TimeTrackElement* element = m_plugin->GetElementAt(m_contextMenuX, m_contextMenuY);
             if (element == nullptr)
             {
-                QAction* action = menu.addAction("Add motion event");
+                QAction* action = menu.addAction(tr("Add motion event"));
                 connect(action, &QAction::triggered, this, &TrackDataWidget::OnAddElement);
 
                 // add action to add a motion event which gets its param and type from the selected preset
                 if (m_plugin->CheckIfMotionEventPresetReadyToDrop())
                 {
-                    QAction* presetAction = menu.addAction("Add preset event");
+                    QAction* presetAction = menu.addAction(tr("Add preset event"));
                     connect(presetAction, &QAction::triggered, this, &TrackDataWidget::OnCreatePresetEvent);
                 }
 
                 if (timeTrack->GetNumElements() > 0)
                 {
-                    action = menu.addAction("Cut all events in track");
+                    action = menu.addAction(tr("Cut all events in track"));
                     connect(action, &QAction::triggered, this, &TrackDataWidget::OnCutTrack);
 
-                    action = menu.addAction("Copy all events in track");
+                    action = menu.addAction(tr("Copy all events in track"));
                     connect(action, &QAction::triggered, this, &TrackDataWidget::OnCopyTrack);
                 }
 
                 if (GetIsReadyForPaste())
                 {
-                    action = menu.addAction("Paste");
+                    action = menu.addAction(tr("Paste"));
                     connect(action, &QAction::triggered, this, &TrackDataWidget::OnPaste);
 
-                    action = menu.addAction("Paste at location");
+                    action = menu.addAction(tr("Paste at location"));
                     connect(action, &QAction::triggered, this, &TrackDataWidget::OnPasteAtLocation);
                 }
             }
             else if (element->GetIsSelected())
             {
-                QAction* action = menu.addAction("Cut");
+                QAction* action = menu.addAction(tr("Cut"));
                 connect(action, &QAction::triggered, this, &TrackDataWidget::OnCutElement);
 
-                action = menu.addAction("Copy");
+                action = menu.addAction(tr("Copy"));
                 connect(action, &QAction::triggered, this, &TrackDataWidget::OnCopyElement);
             }
         }
         else
         {
-            QAction* action = menu.addAction("Add event track");
+            QAction* action = menu.addAction(tr("Add event track"));
             connect(action, &QAction::triggered, this, &TrackDataWidget::OnAddTrack);
         }
 
@@ -1764,28 +1764,24 @@ namespace EMStudio
         if (numSelectedElements > 0)
         {
             // construct the action name
-            AZStd::string actionName = "Remove selected event";
-            if (numSelectedElements > 1)
-            {
-                actionName += "s";
-            }
+            QString actionName = (numSelectedElements > 1) ? tr("Remove selected events") : tr("Remove selected event");
 
             // add the action
-            QAction* action = menu.addAction(actionName.c_str());
+            QAction* action = menu.addAction(actionName);
             connect(action, &QAction::triggered, this, &TrackDataWidget::RemoveSelectedMotionEventsInTrack);
         }
 
         // menu entry for removing all elements
         if (timeTrack && timeTrack->GetNumElements() > 0)
         {
-            QAction* action = menu.addAction("Clear track");
+            QAction* action = menu.addAction(tr("Clear track"));
             connect(action, &QAction::triggered, this, &TrackDataWidget::RemoveAllMotionEventsInTrack);
         }
 
         // Remove track.
         if (timeTrack)
         {
-            QAction* action = menu.addAction("Remove track");
+            QAction* action = menu.addAction(tr("Remove track"));
             action->setEnabled(timeTrack->GetIsDeletable());
             connect(action, &QAction::triggered, this, &TrackDataWidget::OnRemoveEventTrack);
         }
@@ -2339,10 +2335,10 @@ namespace EMStudio
         //---------------------
         // Timeline actions
         //---------------------
-        QAction* action = menu.addAction("Zoom To Fit All");
+        QAction* action = menu.addAction(tr("Zoom To Fit All"));
         connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnZoomAll);
 
-        action = menu.addAction("Reset Timeline");
+        action = menu.addAction(tr("Reset Timeline"));
         connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnResetTimeline);
 
         //---------------------
@@ -2353,7 +2349,7 @@ namespace EMStudio
         {
             menu.addSeparator();
 
-            action = menu.addAction("Show Node In Graph");
+            action = menu.addAction(tr("Show Node In Graph"));
             connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnShowNodeHistoryNodeInGraph);
         }
 

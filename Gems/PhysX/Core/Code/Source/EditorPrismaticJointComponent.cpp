@@ -10,6 +10,7 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 
@@ -33,17 +34,17 @@ namespace PhysX
             {
                 editContext
                     ->Class<EditorPrismaticJointComponent>(
-                        "PhysX Prismatic Joint", "A dynamic joint that constrains a rigid body with linear limits along a single axis.")
+                        QT_TRANSLATE_NOOP("PhysX", "PhysX Prismatic Joint"), QT_TRANSLATE_NOOP("PhysX", "A dynamic joint that constrains a rigid body with linear limits along a single axis."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorPrismaticJointComponent::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
+                    ->DataElement(0, &EditorPrismaticJointComponent::m_motorConfiguration, QT_TRANSLATE_NOOP("PhysX", "Motor Configuration"), QT_TRANSLATE_NOOP("PhysX", "Joint's motor configuration."))
                     ->DataElement(
                         0,
                         &EditorPrismaticJointComponent::m_linearLimit,
-                        "Linear Limit",
-                        "The limit of linear motion along the joint's axis.");
+                        QT_TRANSLATE_NOOP("PhysX", "Linear Limit"),
+                        QT_TRANSLATE_NOOP("PhysX", "The limit of linear motion along the joint's axis."));
             }
         }
     }

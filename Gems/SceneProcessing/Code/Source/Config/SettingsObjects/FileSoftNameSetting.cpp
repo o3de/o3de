@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/Utilities/PatternMatcher.h>
@@ -186,14 +187,18 @@ namespace AZ
                 EditContext* editContext = serialize->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<FileSoftNameSetting>("File name setting", "Applies the pattern to the name of the scene file.")
+                    editContext->Class<FileSoftNameSetting>(
+                            QT_TRANSLATE_NOOP("SceneProcessing", "File name setting"),
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Applies the pattern to the name of the scene file."))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ_CRC_CE("GraphTypeSelector"), &FileSoftNameSetting::m_graphTypes, "Graph type",
-                            "The graph types that are the soft name applies to.")
+                        ->DataElement(AZ_CRC_CE("GraphTypeSelector"), &FileSoftNameSetting::m_graphTypes,
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Graph type"),
+                            QT_TRANSLATE_NOOP("SceneProcessing", "The graph types that are the soft name applies to."))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                        ->DataElement(Edit::UIHandlers::Default, &FileSoftNameSetting::m_inclusiveList, "Inclusive", 
-                            "If true the types in the list will marked as the virtual type, otherwise any types that are NOT in the list.");
+                        ->DataElement(Edit::UIHandlers::Default, &FileSoftNameSetting::m_inclusiveList,
+                            QT_TRANSLATE_NOOP("SceneProcessing", "Inclusive"), 
+                            QT_TRANSLATE_NOOP("SceneProcessing", "If true the types in the list will marked as the virtual type, otherwise any types that are NOT in the list."));
                 }
             }
         }

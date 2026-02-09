@@ -23,6 +23,7 @@
 
 #include <AzFramework/Render/GeometryIntersectionStructures.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Anonymous namespace
@@ -129,7 +130,7 @@ void UiCanvasOnMeshComponent::Reflect(AZ::ReflectContext* context)
         if (editContext)
         {
             auto editInfo = editContext->Class<UiCanvasOnMeshComponent>(
-                    "UI Canvas on Mesh", "The UI Canvas on Mesh component allows you to place a UI Canvas on an entity in the 3D world that a player can interact with via ray casts");
+                    QT_TRANSLATE_NOOP("LyShine", "UI Canvas on Mesh"), QT_TRANSLATE_NOOP("LyShine", "The UI Canvas on Mesh component allows you to place a UI Canvas on an entity in the 3D world that a player can interact with via ray casts"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
@@ -139,9 +140,9 @@ void UiCanvasOnMeshComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
 
             editInfo->DataElement(0, &UiCanvasOnMeshComponent::m_attachmentImageAssetOverride,
-                "Render target override",
-                "If not empty, this asset overrides the render target set on the UI canvas.\n"
-                "This is useful if multiple instances of the same UI canvas are rendered in the level.");
+                QT_TRANSLATE_NOOP("LyShine", "Render target override"),
+                QT_TRANSLATE_NOOP("LyShine", "If not empty, this asset overrides the render target set on the UI canvas.\n"
+                "This is useful if multiple instances of the same UI canvas are rendered in the level."));
         }
     }
 }

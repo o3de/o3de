@@ -608,8 +608,8 @@ void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTER
             "crash are located in %s via error.log and error.dmp",
             path.c_str());
         constexpr bool showCancel = false;
-        AZStd::string res = nativeUI->DisplayYesNoDialog("O3DE unexpected error", msg, showCancel);
-        if (res == "Yes")
+        auto res = nativeUI->DisplayYesNoDialog("O3DE unexpected error", msg, showCancel);
+        if (res == AZ::NativeUI::YesNoDialogResult::Yes)
         {
             AZStd::wstring arg(path.begin(), path.end());
             ShellExecuteW(nullptr, L"open", arg.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -635,11 +635,11 @@ void DebugCallStack::SaveExceptionInfoAndShowUserReportDialogs(EXCEPTION_POINTER
         if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
         {
             constexpr bool showCancel = false;
-            AZStd::string res = nativeUI->DisplayYesNoDialog(
+            auto res = nativeUI->DisplayYesNoDialog(
                 "Save your changes?",
                 "Do you want to try to save your changes?\nAs O3DE is in a panic state, it might corrupt your data",
                 showCancel);
-            if (res == "Yes")
+            if (res == AZ::NativeUI::YesNoDialogResult::Yes)
             {
                 if (SaveCurrentLevel())
                     nativeUI->DisplayOkDialog("Save", "Level has been successfully saved!\r\nPress Ok to proceed.", showCancel);
@@ -799,8 +799,8 @@ DebugCallStack::UserPostExceptionChoice DebugCallStack::AskUserToRecoverOrCrash(
             pDCS->m_excCallstack);
 
         constexpr bool showCancel = false;
-        AZStd::string dialogRes = nativeUI->DisplayYesNoDialog("Try to recover?", msg, showCancel);
-        if (dialogRes == "Yes")
+        auto dialogRes = nativeUI->DisplayYesNoDialog("Try to recover?", msg, showCancel);
+        if (dialogRes == AZ::NativeUI::YesNoDialogResult::Yes)
         {
             res = UserPostExceptionChoice::Recover;
         }

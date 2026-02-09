@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzNetworking/Framework/INetworking.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace Multiplayer
 {
@@ -32,13 +33,21 @@ namespace Multiplayer
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<NetworkDebugPlayerIdComponent>("Network Debug Player ID", "Renders the player id as debug text over network players.")
+                editContext->Class<NetworkDebugPlayerIdComponent>(
+                    QT_TRANSLATE_NOOP("Multiplayer", "Network Debug Player ID"),
+                    QT_TRANSLATE_NOOP("Multiplayer", "Renders the player id as debug text over network players."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &NetworkDebugPlayerIdComponent::m_translationOffset, "Translation Offset", "The world-space offset from the player position to render the debug text.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &NetworkDebugPlayerIdComponent::m_fontScale, "Font Scale", "Apply a scale to the default debug font rendering size.")
-                    ->DataElement(AZ::Edit::UIHandlers::Color, &NetworkDebugPlayerIdComponent::m_fontColor, "Color", "Debug text color.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &NetworkDebugPlayerIdComponent::m_translationOffset,
+                        QT_TRANSLATE_NOOP("Multiplayer", "Translation Offset"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "The world-space offset from the player position to render the debug text."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &NetworkDebugPlayerIdComponent::m_fontScale,
+                        QT_TRANSLATE_NOOP("Multiplayer", "Font Scale"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "Apply a scale to the default debug font rendering size."))
+                    ->DataElement(AZ::Edit::UIHandlers::Color, &NetworkDebugPlayerIdComponent::m_fontColor,
+                        QT_TRANSLATE_NOOP("Multiplayer", "Color"),
+                        QT_TRANSLATE_NOOP("Multiplayer", "Debug text color."))
                 ;
             }
         }

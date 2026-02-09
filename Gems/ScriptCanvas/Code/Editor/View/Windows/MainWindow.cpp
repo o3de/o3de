@@ -486,7 +486,7 @@ namespace ScriptCanvasEditor
         {
             m_assignToSelectedEntity = new QToolButton();
             m_assignToSelectedEntity->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/attach_to_entity.png"));
-            m_assignToSelectedEntity->setToolTip("Assigns the currently active graph to all of the currently selected entities.");
+            m_assignToSelectedEntity->setToolTip(tr("Assigns the currently active graph to all of the currently selected entities."));
 
             m_selectedEntityMenu = new QMenu();
 
@@ -504,7 +504,7 @@ namespace ScriptCanvasEditor
         {
             m_createScriptCanvas = new QToolButton();
             m_createScriptCanvas->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/create_graph.png"));
-            m_createScriptCanvas->setToolTip("Creates a new Script Canvas Graph");
+            m_createScriptCanvas->setToolTip(tr("Creates a new Script Canvas Graph"));
 
             QObject::connect(m_createScriptCanvas, &QToolButton::clicked, this, &MainWindow::OnFileNew);
 
@@ -515,7 +515,7 @@ namespace ScriptCanvasEditor
 
         {
             m_createFunctionInput = new QToolButton();
-            m_createFunctionInput->setToolTip("Creates an Execution Nodeling on the leftmost side of the graph to be used as input for the graph.");
+            m_createFunctionInput->setToolTip(tr("Creates an Execution Nodeling on the leftmost side of the graph to be used as input for the graph."));
             m_createFunctionInput->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/create_function_input.png"));
             m_createFunctionInput->setEnabled(false);
         }
@@ -525,7 +525,7 @@ namespace ScriptCanvasEditor
 
         {
             m_createFunctionOutput = new QToolButton();
-            m_createFunctionOutput->setToolTip("Creates an Execution Nodeling on the rightmost side of the graph to be used as output for the graph.");
+            m_createFunctionOutput->setToolTip(tr("Creates an Execution Nodeling on the rightmost side of the graph to be used as output for the graph."));
             m_createFunctionOutput->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/create_function_output.png"));
             m_createFunctionOutput->setEnabled(false);
         }
@@ -535,7 +535,7 @@ namespace ScriptCanvasEditor
 
         {
             m_validateGraphToolButton = new QToolButton();
-            m_validateGraphToolButton->setToolTip("Will run a validation check on the current graph and report any warnings/errors discovered.");
+            m_validateGraphToolButton->setToolTip(tr("Will run a validation check on the current graph and report any warnings/errors discovered."));
             m_validateGraphToolButton->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/validate_icon.png"));
             m_validateGraphToolButton->setEnabled(false);
         }
@@ -545,7 +545,7 @@ namespace ScriptCanvasEditor
         // Screenshot
         {
             m_takeScreenshot = new QToolButton();
-            m_takeScreenshot->setToolTip("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard");
+            m_takeScreenshot->setToolTip(tr("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard"));
             m_takeScreenshot->setIcon(QIcon(":/ScriptCanvasEditorResources/Resources/scriptcanvas_screenshot.png"));
             m_takeScreenshot->setEnabled(false);
         }
@@ -761,7 +761,7 @@ namespace ScriptCanvasEditor
 
         // List of recent files.
         {
-            QMenu* recentMenu = new QMenu("Open &Recent");
+            QMenu* recentMenu = new QMenu(QCoreApplication::translate("MainWindow", "Open &Recent"));
 
             for (int i = 0; i < m_recentActions.size(); ++i)
             {
@@ -777,7 +777,7 @@ namespace ScriptCanvasEditor
 
             // Clear Recent Files.
             {
-                QAction* action = new QAction("&Clear Recent Files", this);
+                QAction* action = new QAction(QCoreApplication::translate("MainWindow", "&Clear Recent Files"), this);
 
                 QObject::connect(action,
                     &QAction::triggered,
@@ -1384,7 +1384,7 @@ namespace ScriptCanvasEditor
 
         if (!sourceInfoFound)
         {
-            QMessageBox::warning(this, "Invalid Source Asset", QString("'%1' is not a valid asset path.").arg(fullPath), QMessageBox::Ok);
+            QMessageBox::warning(this, tr("Invalid Source Asset"), tr("'%1' is not a valid asset path.").arg(fullPath), QMessageBox::Ok);
             m_errorFilePath = fullPath;
             AZ_Warning("ScriptCanvas", false, "Unable to open file as a ScriptCanvas graph: %s", fullPath);
             return;
@@ -1393,8 +1393,8 @@ namespace ScriptCanvasEditor
         auto result = LoadFromFile(fullPath);
         if (!result)
         {
-            QMessageBox::warning(this, "Invalid Source File"
-                , QString("'%1' failed to load properly.\nFailure: %2").arg(fullPath).arg(result.m_fileReadErrors.c_str()), QMessageBox::Ok);
+            QMessageBox::warning(this, tr("Invalid Source File")
+                , tr("'%1' failed to load properly.\nFailure: %2").arg(fullPath).arg(result.m_fileReadErrors.c_str()), QMessageBox::Ok);
             m_errorFilePath = fullPath;
             AZ_Warning("ScriptCanvas", false, "Unable to open file as a ScriptCanvas graph: %s. Failure: %s"
                 , fullPath, result.m_fileReadErrors.c_str());
@@ -1760,7 +1760,7 @@ namespace ScriptCanvasEditor
 
             QString localSelectedFilter;
             QFileDialog::Options options;
-            QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
+            QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Save As..."), fullPath.c_str(), tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
 
             selectedFile = filePath.toUtf8().toStdString().c_str();
 
@@ -1883,7 +1883,7 @@ namespace ScriptCanvasEditor
         else
         {
             const auto failureMessage = AZStd::string::format("Failed to save %s: %s", tabName.c_str(), result.fileSaveError.c_str());
-            QMessageBox::critical(this, QString(), QObject::tr(failureMessage.data()));
+            QMessageBox::critical(this, QString(), tr(failureMessage.data()));
         }
 
         if (m_tabBar->currentIndex() != saveTabIndex && saveTabIndex >= 0)

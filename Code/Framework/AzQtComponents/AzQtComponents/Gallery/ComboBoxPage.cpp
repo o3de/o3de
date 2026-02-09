@@ -34,23 +34,23 @@ ComboBoxPage::ComboBoxPage(QWidget* parent)
     ui->setupUi(this);
 
     // Add some sample items to the combo box
-    ui->m_data->addItem("Selected value", 0);
+    ui->m_data->addItem(tr("Selected value"), 0);
     for (int i = 1; i < 5; i++)
     {
-        ui->m_data->addItem(QString("Option %1").arg(i), i);
+        ui->m_data->addItem(tr("Option %1").arg(i), i);
     }
     ui->m_data->setCurrentIndex(0);
 
     ui->m_disabled->setDisabled(true);
-    ui->m_disabled->addItem("Disabled dropdown");
+    ui->m_disabled->addItem(tr("Disabled dropdown"));
     ui->m_disabled->setCurrentIndex(0);
 
     // Add a custom validator to the combo box
     auto validator = new FirstIsErrorComboBoxValidator();
     AzQtComponents::ComboBox::setValidator(ui->m_error, validator);
 
-    ui->m_error->addItem(QString("Item 0"));
-    ui->m_error->addItem(QString("Item 1"));
+    ui->m_error->addItem(tr("Item 0"));
+    ui->m_error->addItem(tr("Item 1"));
 
     auto* model = new QStandardItemModel(0, 1, this);
     const auto addItem = [model](const QString& text, Qt::CheckState checkState)
@@ -60,9 +60,9 @@ ComboBoxPage::ComboBoxPage(QWidget* parent)
         item->setCheckState(checkState);
         model->appendRow(item);
     };
-    addItem(QStringLiteral("Orange"), Qt::Unchecked);
-    addItem(QStringLiteral("Apple"), Qt::Checked);
-    addItem(QStringLiteral("Banana"), Qt::PartiallyChecked);
+    addItem(tr("Orange"), Qt::Unchecked);
+    addItem(tr("Apple"), Qt::Checked);
+    addItem(tr("Banana"), Qt::PartiallyChecked);
 
     ui->m_customCheckState->setModel(model);
     AzQtComponents::ComboBox::addCustomCheckStateStyle(ui->m_customCheckState);

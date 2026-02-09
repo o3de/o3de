@@ -8,6 +8,8 @@
 
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
 
@@ -186,7 +188,8 @@ namespace AZ
             if (editContext)
             {
                 editContext->Class<SliceMetadataInfoComponent>(
-                    "Slice Metadata Info", "The Slice Metadata Info Component maintains a list of all of the entities that are associated with a slice metadata entity.")
+                    QT_TRANSLATE_NOOP("AzCore", "Slice Metadata Info"),
+                    QT_TRANSLATE_NOOP("AzCore", "The Slice Metadata Info Component maintains a list of all of the entities that are associated with a slice metadata entity."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                     ->Attribute(AZ::Edit::Attributes::RuntimeExportCallback, &SliceMetadataInfoComponent::ExportComponent)

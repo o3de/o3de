@@ -416,12 +416,12 @@ namespace AZ
                 QSignalBlocker blocker(ui->m_selectAllCheckBox);
                 if (m_selectedCount == m_totalCount)
                 {
-                    ui->m_selectAllCheckBox->setText("Unselect all");
+                    ui->m_selectAllCheckBox->setText(tr("Unselect all"));
                     ui->m_selectAllCheckBox->setCheckState(Qt::CheckState::Checked);
                 }
                 else
                 {
-                    ui->m_selectAllCheckBox->setText("Select all");
+                    ui->m_selectAllCheckBox->setText(tr("Select all"));
                     ui->m_selectAllCheckBox->setCheckState(Qt::CheckState::Unchecked);
                 }
             }

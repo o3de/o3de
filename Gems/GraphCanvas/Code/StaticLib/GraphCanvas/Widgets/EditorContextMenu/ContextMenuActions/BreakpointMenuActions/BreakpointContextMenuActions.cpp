@@ -22,6 +22,7 @@ namespace GraphCanvas
     AddBreakpointMenuAction::AddBreakpointMenuAction(QObject* parent)
         : BreakpointContextMenuAction("Add Breakpoint", parent)
     {
+        setText(tr("Add Breakpoint"));
     }
 
     ContextMenuAction::SceneReaction AddBreakpointMenuAction::TriggerAction(

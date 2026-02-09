@@ -27,7 +27,8 @@ namespace LmbrCentral
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorQuadShapeComponent>(
-                    "Quad Shape", "The Quad Shape component creates a quad around the associated entity")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Quad Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Quad Shape component creates a quad around the associated entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Quad_Shape.svg")
@@ -35,7 +36,9 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/quad-shape/")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorQuadShapeComponent::m_quadShape, "Quad Shape", "Quad Shape Configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorQuadShapeComponent::m_quadShape,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Quad Shape"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Quad Shape Configuration"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorQuadShapeComponent::ConfigurationChanged)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

@@ -7,6 +7,7 @@
  */
 #include "PropertyEnumComboBoxCtrl.hxx"
 #include "PropertyQTConstants.h"
+#include "PropertyEditorAPI.h"
 #include "DHQComboBox.hxx"
 #include <QComboBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
@@ -67,7 +68,9 @@ namespace AzToolsFramework
         if (AZStd::find(m_enumValues.begin(), m_enumValues.end(), val) == m_enumValues.end())
         {
             m_enumValues.push_back(val);
-            m_pComboBox->addItem(val.second.c_str());
+            // Try to translate the display text of enum values
+            AZStd::string translatedText = TranslatePropertyString(val.second.c_str());
+            m_pComboBox->addItem(translatedText.c_str());
         }
         m_pComboBox->blockSignals(false);
     }
@@ -82,7 +85,9 @@ namespace AzToolsFramework
             if (AZStd::find(m_enumValues.begin(), m_enumValues.end(), vals[valIndex]) == m_enumValues.end())
             {
                 m_enumValues.push_back(vals[valIndex]);
-                m_pComboBox->addItem(vals[valIndex].second.c_str());
+                // Try to translate the display text of enum values
+                AZStd::string translatedText = TranslatePropertyString(vals[valIndex].second.c_str());
+                m_pComboBox->addItem(translatedText.c_str());
             }
         }
         m_pComboBox->blockSignals(false);

@@ -32,7 +32,7 @@ namespace GraphCanvas
             */
 
             setEnabled(false);
-            setToolTip("Feature in development. Adding breakpoint works but will freeze the editor when breakpoint is hit.");
+            setToolTip(tr("Feature in development. Adding breakpoint works but will freeze the editor when breakpoint is hit."));
         }
 
     public:

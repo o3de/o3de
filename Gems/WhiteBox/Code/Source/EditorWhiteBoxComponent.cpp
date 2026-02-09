@@ -25,6 +25,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/std/numeric.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
@@ -196,7 +197,9 @@ namespace WhiteBox
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorWhiteBoxComponent>("White Box", "White Box level editing")
+                editContext->Class<EditorWhiteBoxComponent>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "White Box"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "White Box level editing"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/WhiteBox.svg")
@@ -206,42 +209,50 @@ namespace WhiteBox
                         AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/white-box/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_defaultShape, "Default Shape",
-                        "Default shape of the white box mesh.")
-                    ->EnumAttribute(DefaultShapeType::Cube, "Cube")
-                    ->EnumAttribute(DefaultShapeType::Tetrahedron, "Tetrahedron")
-                    ->EnumAttribute(DefaultShapeType::Icosahedron, "Icosahedron")
-                    ->EnumAttribute(DefaultShapeType::Cylinder, "Cylinder")
-                    ->EnumAttribute(DefaultShapeType::Sphere, "Sphere")
-                    ->EnumAttribute(DefaultShapeType::Asset, "Mesh Asset")
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_defaultShape,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Default Shape"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Default shape of the white box mesh."))
+                    ->EnumAttribute(DefaultShapeType::Cube, QT_TRANSLATE_NOOP("WhiteBox", "Cube"))
+                    ->EnumAttribute(DefaultShapeType::Tetrahedron, QT_TRANSLATE_NOOP("WhiteBox", "Tetrahedron"))
+                    ->EnumAttribute(DefaultShapeType::Icosahedron, QT_TRANSLATE_NOOP("WhiteBox", "Icosahedron"))
+                    ->EnumAttribute(DefaultShapeType::Cylinder, QT_TRANSLATE_NOOP("WhiteBox", "Cylinder"))
+                    ->EnumAttribute(DefaultShapeType::Sphere, QT_TRANSLATE_NOOP("WhiteBox", "Sphere"))
+                    ->EnumAttribute(DefaultShapeType::Asset, QT_TRANSLATE_NOOP("WhiteBox", "Mesh Asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset, "Editor Mesh Asset",
-                        "Editor Mesh Asset")
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::AssetVisibility)
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Save as asset", "Save as asset")
+                    ->UIElement(AZ::Edit::UIHandlers::Button,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Save as asset"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Save as asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::SaveAsAsset)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Save As ...")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Save As ..."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_material, "White Box Material",
-                        "The properties of the White Box material.")
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_material,
+                        QT_TRANSLATE_NOOP("WhiteBox", "White Box Material"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "The properties of the White Box material."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnMaterialChange)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_componentModeDelegate,
-                        "Component Mode", "White Box Tool Component Mode")
+                        QT_TRANSLATE_NOOP("WhiteBox", "Component Mode"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "White Box Tool Component Mode"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export to obj")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Export to obj"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportToFile)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export")
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Export all whiteboxes on descendant entities as a single obj (excluding this one)")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export"))
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Export all whiteboxes on descendant entities as a single obj (excluding this one)"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ExportDescendantsToFile)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Export Descendants")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Export Descendants"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorWhiteBoxComponent::m_flipYZForExport,
-                        "Flip Y and Z for Export",
-                        "Flip the Y and Z axes when exportings so they aren't imported sideways into coord systems where the Y-axis goes up.");
+                        QT_TRANSLATE_NOOP("WhiteBox", "Flip Y and Z for Export"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Flip the Y and Z axes when exportings so they aren't imported sideways into coord systems where the Y-axis goes up."));
             }
         }
     }

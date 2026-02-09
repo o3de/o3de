@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <ExpressionEngine/InternalTypes.h>
 #include <ExpressionEngine/MathOperators/MathExpressionOperators.h>
 #include <ExpressionEngine/Utils.h>
@@ -142,7 +143,9 @@ namespace ExpressionEvaluation
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ExpressionEvaluationSystemComponent>("ExpressionEvaluationGem", "[Description of functionality provided by this System Component]")
+                ec->Class<ExpressionEvaluationSystemComponent>(
+                    QT_TRANSLATE_NOOP("ExpressionEvaluation", "ExpressionEvaluationGem"),
+                    QT_TRANSLATE_NOOP("ExpressionEvaluation", "[Description of functionality provided by this System Component]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace MiniAudio
 {
@@ -29,22 +30,26 @@ namespace MiniAudio
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorMiniAudioListenerComponent>("MiniAudio Listener", "")
+                editContext->Class<EditorMiniAudioListenerComponent>(
+                    QT_TRANSLATE_NOOP("MiniAudio", "MiniAudio Listener"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "MiniAudio")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
 
-                editContext->Class<MiniAudioListenerComponentController>("MiniAudioListenerComponentController", "")
+                editContext->Class<MiniAudioListenerComponentController>(
+                    QT_TRANSLATE_NOOP("MiniAudio", "MiniAudioListenerComponentController"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioListenerComponentController::m_config, "Configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MiniAudioListenerComponentController::m_config,
+                        QT_TRANSLATE_NOOP("MiniAudio", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
 
                 editContext
                     ->Class<MiniAudioListenerComponentConfig>(
-                        "MiniAudioListenerComponent Config", "[Configuration for MiniAudioListenerComponent]")
+                        QT_TRANSLATE_NOOP("MiniAudio", "MiniAudioListenerComponent Config"),
+                        QT_TRANSLATE_NOOP("MiniAudio", "[Configuration for MiniAudioListenerComponent]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -52,49 +57,53 @@ namespace MiniAudio
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &MiniAudioListenerComponentConfig::m_followEntity,
-                        "Follow Entity",
-                        "The listener will follow the position and orientation of the specified entity.")
+                        QT_TRANSLATE_NOOP("MiniAudio", "Follow Entity"),
+                        QT_TRANSLATE_NOOP("MiniAudio", "The listener will follow the position and orientation of the specified entity."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &MiniAudioListenerComponentConfig::m_listenerIndex,
-                        "Listener Index",
-                        "MiniAudio listener index to control.")
+                        QT_TRANSLATE_NOOP("MiniAudio", "Listener Index"),
+                        QT_TRANSLATE_NOOP("MiniAudio", "MiniAudio listener index to control."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &MiniAudioListenerComponentConfig::m_globalVolume,
-                        "Global Volume",
-                        "Sets the global volume of the audio engine, as a percentage.")
+                        QT_TRANSLATE_NOOP("MiniAudio", "Global Volume"),
+                        QT_TRANSLATE_NOOP("MiniAudio", "Sets the global volume of the audio engine, as a percentage."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                    ->Attribute(AZ::Edit::Attributes::Suffix,
+                        QT_TRANSLATE_NOOP("MiniAudio", " %"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &MiniAudioListenerComponentConfig::m_innerAngleInDegrees,
-                        "Inner Cone Angle",
-                        "Sets the listener's inner cone angle in Degrees.")
+                        QT_TRANSLATE_NOOP("MiniAudio", "Inner Cone Angle"),
+                        QT_TRANSLATE_NOOP("MiniAudio", "Sets the listener's inner cone angle in Degrees."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    ->Attribute(AZ::Edit::Attributes::Suffix,
+                        QT_TRANSLATE_NOOP("MiniAudio", " degrees"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &MiniAudioListenerComponentConfig::m_outerAngleInDegrees,
-                        "Outer Cone Angle",
-                        "Sets the listener's outer cone angle in Degrees.")
+                        QT_TRANSLATE_NOOP("MiniAudio", "Outer Cone Angle"),
+                        QT_TRANSLATE_NOOP("MiniAudio", "Sets the listener's outer cone angle in Degrees."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                    ->Attribute(AZ::Edit::Attributes::Suffix,
+                        QT_TRANSLATE_NOOP("MiniAudio", " degrees"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &MiniAudioListenerComponentConfig::m_outerVolume,
-                        "Outer Volume",
-                        "Sets the volume of the listener outside of the outer cone, as a percentage.")
+                        QT_TRANSLATE_NOOP("MiniAudio", "Outer Volume"),
+                        QT_TRANSLATE_NOOP("MiniAudio", "Sets the volume of the listener outside of the outer cone, as a percentage."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
-                    ->Attribute(AZ::Edit::Attributes::Suffix, " %");
+                    ->Attribute(AZ::Edit::Attributes::Suffix,
+                        QT_TRANSLATE_NOOP("MiniAudio", " %"));
             }
         }
     }

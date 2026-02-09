@@ -19,6 +19,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Shape/ShapeDisplay.h>
 #include <random>
 
@@ -42,9 +43,13 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<BoxShape>("Box Shape", "Box shape configuration parameters")
+                editContext->Class<BoxShape>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Box Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Box shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BoxShape::m_boxShapeConfig, "Box Configuration", "Box shape configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BoxShape::m_boxShapeConfig,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Box Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Box shape configuration"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

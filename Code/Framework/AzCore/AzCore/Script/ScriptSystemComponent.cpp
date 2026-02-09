@@ -33,6 +33,8 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/conversions.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
 
@@ -876,7 +878,8 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
         if (EditContext* editContext = serializeContext->GetEditContext())
         {
             editContext->Class<ScriptSystemComponent>(
-                "Script System", "Initializes and maintains script contexts")
+                QT_TRANSLATE_NOOP("AzCore", "Script System"),
+                QT_TRANSLATE_NOOP("AzCore", "Initializes and maintains script contexts"))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Engine")
                 ;

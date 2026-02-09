@@ -31,11 +31,11 @@ namespace GraphCanvas
 
             if (m_enableState)
             {
-                setText("Enable");
+                setText(tr("Enable"));
             }
             else
             {
-                setText("Disable");
+                setText(tr("Disable"));
             }
         }
     }

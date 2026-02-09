@@ -166,6 +166,7 @@ namespace GraphCanvas
     CreatePresetFromSelection::CreatePresetFromSelection(QObject* parent)
         : ContextMenuAction("Create Preset From", parent)
     {
+        setText(tr("Create Preset From"));
     }
 
     CreatePresetFromSelection::~CreatePresetFromSelection()
@@ -376,7 +377,7 @@ namespace GraphCanvas
 
     ConstructContextMenuAction* ApplyPresetMenuActionGroup::CreatePresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset)
     {
-        return aznew ApplyPresetMenuAction(contextMenu, preset, "Apply Preset");
+        return aznew ApplyPresetMenuAction(contextMenu, preset, QObject::tr("Apply Preset").toUtf8().constData());
     }
 
     ///////////////////////////////
@@ -384,7 +385,7 @@ namespace GraphCanvas
     ///////////////////////////////
 
     AddCommentPresetMenuAction::AddCommentPresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset)
-        : AddPresetMenuAction(contextMenu, preset, "Add Comment")
+        : AddPresetMenuAction(contextMenu, preset, QObject::tr("Add Comment").toUtf8().constData())
     {
     }
 
@@ -415,7 +416,7 @@ namespace GraphCanvas
         }
         else
         {
-            CommentRequestBus::Event(graphCanvasEntity->GetId(), &CommentRequests::SetComment, "New Comment");
+            CommentRequestBus::Event(graphCanvasEntity->GetId(), &CommentRequests::SetComment, tr("New Comment").toUtf8().constData());
             SceneMemberUIRequestBus::Event(graphCanvasEntity->GetId(), &SceneMemberUIRequests::SetSelected, true);
         }
     }
@@ -440,7 +441,7 @@ namespace GraphCanvas
     /////////////////////////////////
 
     AddNodeGroupPresetMenuAction::AddNodeGroupPresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset)
-        : AddPresetMenuAction(contextMenu, preset, "Group")
+        : AddPresetMenuAction(contextMenu, preset, tr("Group").toUtf8().constData())
     {
     }
 
@@ -570,7 +571,7 @@ namespace GraphCanvas
 
         SceneRequestBus::Event(graphId, &SceneRequests::ClearSelection);
 
-        CommentRequestBus::Event(graphCanvasEntity->GetId(), &CommentRequests::SetComment, "New Group");
+        CommentRequestBus::Event(graphCanvasEntity->GetId(), &CommentRequests::SetComment, tr("New Group").toUtf8().constData());
 
         if (parentGroup.IsValid())
         {

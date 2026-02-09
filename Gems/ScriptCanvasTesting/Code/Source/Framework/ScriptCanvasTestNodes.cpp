@@ -8,6 +8,7 @@
 
 
 #include "ScriptCanvasTestNodes.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Graph.h>
@@ -45,10 +46,13 @@ namespace TestNodes
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<TestResult>("TestResult", "Development node, will be replaced by a Log node")
+                editContext->Class<TestResult>(
+                    QT_TRANSLATE_NOOP("ScriptCanvasTesting", "TestResult"),
+                    QT_TRANSLATE_NOOP("ScriptCanvasTesting", "Development node, will be replaced by a Log node"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/TestResult.png")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TestResult::m_string, "String", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TestResult::m_string,
+                        QT_TRANSLATE_NOOP("ScriptCanvasTesting", "String"), "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

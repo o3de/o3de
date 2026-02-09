@@ -11,6 +11,27 @@ ly_set(PAL_LINKOPTION_MODULE MODULE)
 
 ly_set(PAL_TRAIT_BUILD_HOST_GUI_TOOLS TRUE)
 ly_set(PAL_TRAIT_BUILD_HOST_TOOLS TRUE)
+
+# Internationalization (i18n) default settings for macOS
+# Enable with: -DLY_I18N_BUILD=ON
+# Disabled by default to avoid increasing CMake configuration time for developers
+# who don't need to regenerate translation files.
+if(NOT DEFINED LY_I18N_BUILD)
+    set(LY_I18N_BUILD OFF CACHE BOOL "Enable I18N translation file generation (default: OFF)")
+endif()
+
+if(NOT DEFINED LY_I18N_BUILD_ALL_LANGUAGES)
+    set(LY_I18N_BUILD_ALL_LANGUAGES ON CACHE BOOL "Generate all supported languages (default: ON)")
+endif()
+
+if(NOT DEFINED LY_I18N_LANGUAGE)
+    set(LY_I18N_LANGUAGE "en_US" CACHE STRING "Target language for single language mode (macOS default: en_US)")
+endif()
+
+if(NOT DEFINED LY_I18N_COMPILE_QM)
+    set(LY_I18N_COMPILE_QM ON CACHE BOOL "Compile .ts files to .qm binary files (macOS default: ON)")
+endif()
+
 ly_set(PAL_TRAIT_BUILD_SERVER_SUPPORTED FALSE)
 ly_set(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED FALSE)
 ly_set(PAL_TRAIT_BUILD_UNITY_SUPPORTED TRUE)

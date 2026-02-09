@@ -86,7 +86,9 @@ namespace HierarchyHelpers
         HierarchyWidget* hierarchy, const QTreeWidgetItemRawPtrQList& selectedItems, bool addAtRoot, const QPoint* optionalPos)
     {
         QAction* action = new QAction(
-            QIcon(":/Icons/Eye_Open.png"), QString("&Empty element%1").arg(!addAtRoot && selectedItems.size() > 1 ? "s" : ""), hierarchy);
+            QIcon(":/Icons/Eye_Open.png"),
+            (!addAtRoot && selectedItems.size() > 1) ? QObject::tr("&Empty elements") : QObject::tr("&Empty element"),
+            hierarchy);
         QObject::connect(
             action,
             &QAction::triggered,

@@ -10,6 +10,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace LmbrCentral
 {
@@ -27,7 +28,9 @@ namespace LmbrCentral
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorAudioSwitchComponent>("Audio Switch", "The Audio Switch component provides basic Audio Translation Layer (ATL) switch functionality to specify the state of an entity")
+                editContext->Class<EditorAudioSwitchComponent>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Audio Switch"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "The Audio Switch component provides basic Audio Translation Layer (ATL) switch functionality to specify the state of an entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/AudioSwitch.svg")
@@ -35,8 +38,12 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/audio/switch/")
-                    ->DataElement("AudioControl", &EditorAudioSwitchComponent::m_defaultSwitch, "Default Switch", "The default ATL Switch to use when Activated")
-                    ->DataElement("AudioControl", &EditorAudioSwitchComponent::m_defaultState, "Default State", "The default ATL State to set on the default Switch when Activated")
+                    ->DataElement("AudioControl", &EditorAudioSwitchComponent::m_defaultSwitch,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Default Switch"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The default ATL Switch to use when Activated"))
+                    ->DataElement("AudioControl", &EditorAudioSwitchComponent::m_defaultState,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Default State"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "The default ATL State to set on the default Switch when Activated"))
                     ;
             }
         }

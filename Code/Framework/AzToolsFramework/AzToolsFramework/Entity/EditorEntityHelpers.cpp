@@ -27,6 +27,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 namespace AzToolsFramework
 {
@@ -249,11 +250,11 @@ namespace AzToolsFramework
                 AZStd::string name;
                 AZ::AttributeReader nameReader(const_cast<AZ::Component*>(component), nameAttribute);
                 nameReader.Read<AZStd::string>(name);
-                return name;
+                return TranslatePropertyString(name.c_str());
             }
         }
 
-        return classData->m_editData->m_name;
+        return TranslatePropertyString(classData->m_editData->m_name);
     }
 
     const char* GetFriendlyComponentDescription(const AZ::Component* component)
@@ -263,6 +264,8 @@ namespace AzToolsFramework
         {
             return "";
         }
+        // Note: returning translated description would require returning AZStd::string
+        // instead of const char*. For now, descriptions are translated at display time.
         return classData->m_editData->m_description;
     }
 

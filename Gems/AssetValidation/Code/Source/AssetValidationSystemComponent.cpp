@@ -20,6 +20,7 @@
 #include <AzFramework/FileTag/FileTag.h>
 #include <AzFramework/FileTag/FileTagBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AssetSeedUtil.h>
 
 #include <ISystem.h>
@@ -38,7 +39,9 @@ namespace AssetValidation
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AssetValidationSystemComponent>("AssetValidation", "[Description of functionality provided by this System Component]")
+                ec->Class<AssetValidationSystemComponent>(
+                    QT_TRANSLATE_NOOP("AssetValidation", "AssetValidation"),
+                    QT_TRANSLATE_NOOP("AssetValidation", "[Description of functionality provided by this System Component]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

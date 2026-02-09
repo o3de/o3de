@@ -113,9 +113,9 @@ namespace GraphCanvas
                 switch (section)
                 {
                 case ColumnIndex::Name:
-                    return QString("PresetName");
+                    return tr("PresetName");
                 case ColumnIndex::DefaultPreset:
-                    return QString("Is Default");
+                    return tr("Is Default");
                 default:
                     break;
                 }

@@ -18,7 +18,6 @@ namespace PhysX
 {
     namespace Editor
     {
-        static const char* const s_pvdDocumentationLink = "Learn more about the <a href=%0>PhysX Visual Debugger (PVD).</a>";
         static const char* const s_pvdDocumentationAddress = "configuring/configuration-debugger";
 
         PvdWidget::PvdWidget(QWidget* parent)
@@ -44,7 +43,7 @@ namespace PhysX
             verticalLayout->setContentsMargins(0, 0, 0, 0);
             verticalLayout->setSpacing(0);
 
-            m_documentationLinkWidget = new DocumentationLinkWidget(s_pvdDocumentationLink, (UXNameConstants::GetPhysXDocsRoot() + s_pvdDocumentationAddress).c_str());
+            m_documentationLinkWidget = new DocumentationLinkWidget(tr("Learn more about the <a href=%0>PhysX Visual Debugger (PVD).</a>"), (UXNameConstants::GetPhysXDocsRoot() + s_pvdDocumentationAddress).c_str());
 
             AZ::SerializeContext* m_serializeContext;
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);

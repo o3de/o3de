@@ -815,7 +815,7 @@ namespace O3DE::ProjectManager
 
     QString GemCatalogScreen::GetTabText()
     {
-        return "Gems";
+        return tr("Gems");
     }
 
     bool GemCatalogScreen::IsTab()

@@ -9,6 +9,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
@@ -255,28 +256,28 @@ namespace GradientSignal
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
             {
-                edit->Class<GradientBakerConfig>("Gradient Baker", "")
+                edit->Class<GradientBakerConfig>(QT_TRANSLATE_NOOP("GradientSignal", "Gradient Baker"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_gradientSampler, "Gradient",
-                        "Input gradient to bake the output image from.")
+                        AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "Input gradient to bake the output image from."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_inputBounds, "Input Bounds",
-                        "Input bounds for where to sample the data.")
+                        AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_inputBounds, QT_TRANSLATE_NOOP("GradientSignal", "Input Bounds"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "Input bounds for where to sample the data."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_outputResolution, "Resolution",
-                        "Output resolution of the baked image.")
+                        AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_outputResolution, QT_TRANSLATE_NOOP("GradientSignal", "Resolution"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "Output resolution of the baked image."))
                     ->Attribute(AZ::Edit::Attributes::Decimals, 0)
                     ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &GradientBakerConfig::m_outputFormat, "Output Format",
-                        "Output format of the baked image.")
+                        AZ::Edit::UIHandlers::ComboBox, &GradientBakerConfig::m_outputFormat, QT_TRANSLATE_NOOP("GradientSignal", "Output Format"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "Output format of the baked image."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &ImageCreatorUtils::SupportedOutputFormatOptions)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_outputImagePath, "Output Path",
-                        "Output path to bake the image to.")
+                        AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_outputImagePath, QT_TRANSLATE_NOOP("GradientSignal", "Output Path"),
+                        QT_TRANSLATE_NOOP("GradientSignal", "Output path to bake the image to."))
                     ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, ImageCreatorUtils::GetSupportedImagesFilter())
                     ->Attribute(AZ::Edit::Attributes::DefaultAsset, "baked_output_gsi")
                     ;
@@ -309,15 +310,15 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientBakerComponent::m_previewer, "Previewer", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientBakerComponent::m_previewer, QT_TRANSLATE_NOOP("GradientSignal", "Previewer"), "")
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientBakerComponent::m_configuration, "Configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientBakerComponent::m_configuration, QT_TRANSLATE_NOOP("GradientSignal", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorGradientBakerComponent::OnConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "BakeImage", "Bakes the inbound gradient signal to an image asset")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, QT_TRANSLATE_NOOP("GradientSignal", "BakeImage"), QT_TRANSLATE_NOOP("GradientSignal", "Bakes the inbound gradient signal to an image asset"))
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake image")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("GradientSignal", "Bake image"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorGradientBakerComponent::BakeImage)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorGradientBakerComponent::IsBakeDisabled)
                     ;

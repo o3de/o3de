@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
@@ -40,7 +41,8 @@ namespace Maestro
             if (editContext)
             {
                 editContext->Class<EditorSequenceAgentComponent>(
-                    "SequenceAgent", "Maps Director Component Animations to Behavior Properties on this Entity")
+                    QT_TRANSLATE_NOOP("Maestro", "SequenceAgent"),
+                    QT_TRANSLATE_NOOP("Maestro", "Maps Director Component Animations to Behavior Properties on this Entity"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Cinematics")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SequenceAgent.png")
