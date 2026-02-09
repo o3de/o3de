@@ -637,7 +637,7 @@ is read-only, and needs to be writable to continue.</source>
     <message>
         <location filename="../../../../Code/Editor/GenericSelectItemDialog.cpp" line="247"/>
         <source>&lt;Nothing selected&gt;</source>
-        <translation><未选择任何内容></translation>
+        <translation>&lt;未选择任何内容&gt;</translation>
     </message>
 </context>
 <context>
@@ -3365,7 +3365,7 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/EditorPreferencesPageAWS.cpp" line="22"/>
         <source>Allow &lt;a href=&quot;https://aws.amazon.com/privacy/&quot;&gt;O3DE&lt;/a&gt; to send information about your use of AWS Core Gem to AWS</source>
-        <translation>允许 <a href="https://aws.amazon.com/privacy/">O3DE</a> 向 AWS 发送有关您使用 AWS 核心 Gem 的信息</translation>
+        <translation>允许 &lt;a href=&quot;https://aws.amazon.com/privacy/&quot;&gt;O3DE&lt;/a&gt; 向 AWS 发送有关您使用 AWS 核心 Gem 的信息</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/EditorPreferencesPageAWS.cpp" line="23"/>
@@ -4583,7 +4583,7 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/EditorViewportWidget.cpp" line="1922"/>
         <source>When leaving &quot; Game Mode &quot; the engine will automatically restore your camera position to the default position before you had entered Game mode.&lt;br/&gt;&lt;br/&gt;&lt;small&gt;If you dislike this setting you can always change this anytime in the global preferences.&lt;/small&gt;&lt;br/&gt;&lt;br/&gt;</source>
-        <translation>退出"游戏模式"时，引擎将自动将摄像机位置恢复到进入游戏模式前的默认位置。<br/><br/><small>如果不喜欢此设置，可以随时在全局首选项中更改。</small><br/><br/></translation>
+        <translation>退出 &quot;游戏模式 &quot;时，引擎将自动将摄像机位置恢复到进入游戏模式前的默认位置。&lt;br/&gt;&lt;br/&gt;&lt;small&gt;如果不喜欢此设置，可以随时在全局首选项中更改。&lt;/small&gt;&lt;br/&gt;&lt;br/&gt;</translation>
     </message>
 </context>
 <context>
@@ -5359,12 +5359,12 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/MainWindow.cpp" line="1033"/>
         <source>Asset Processor is not connected. Please try (re)starting the Asset Processor or restarting the Editor.&lt;br&gt;&lt;br&gt;Data may be lost while the Asset Processor is not running!&lt;br&gt;The status of the Asset Processor can be monitored from the editor in the bottom-right corner of the status bar.&lt;br&gt;&lt;br&gt;Would you like to start the asset processor?&lt;br&gt;</source>
-        <translation>资源处理器未连接。请尝试（重新）启动资源处理器或重启编辑器。<br><br>资源处理器未运行时可能会丢失数据！<br>可以从编辑器状态栏右下角监控资源处理器的状态。<br><br>是否要启动资源处理器？<br></translation>
+        <translation>资源处理器未连接。请尝试（重新）启动资源处理器或重启编辑器。&lt;br&gt;&lt;br&gt;资源处理器未运行时可能会丢失数据！&lt;br&gt;可以从编辑器状态栏右下角监控资源处理器的状态。&lt;br&gt;&lt;br&gt;是否要启动资源处理器？&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/MainWindow.cpp" line="1048"/>
         <source>Asset Processor is not connected. Please try (re)starting the asset processor or restarting the Editor.&lt;br&gt;&lt;br&gt;Data may be lost while the asset processor is not running!&lt;br&gt;The status of the asset processor can be monitored from the editor in the bottom-right corner of the status bar.</source>
-        <translation>资源处理器未连接。请尝试（重新）启动资源处理器或重启编辑器。<br><br>资源处理器未运行时可能会丢失数据！<br>可以从编辑器状态栏右下角监控资源处理器的状态。</translation>
+        <translation>资源处理器未连接。请尝试（重新）启动资源处理器或重启编辑器。&lt;br&gt;&lt;br&gt;资源处理器未运行时可能会丢失数据！&lt;br&gt;可以从编辑器状态栏右下角监控资源处理器的状态。</translation>
     </message>
 </context>
 <context>
@@ -5680,7 +5680,7 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/CryEdit.cpp" line="615"/>
         <source>Please follow the instructions &lt;a href=&quot;https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/&quot;&gt;here&lt;/a&gt;, after which the Editor will be re-launched automatically.</source>
-        <translation>请按照<a href="https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/">此处</a>的说明操作，之后编辑器将自动重新启动。</translation>
+        <translation>请按照 &lt;a href=&quot;https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/&quot;&gt;此处&lt;/a&gt; 的说明操作，之后编辑器将自动重新启动。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/CryEdit.cpp" line="618"/>
@@ -6028,7 +6028,7 @@ Press Ok to terminate Editor.</source>
         <location filename="../../../../Code/Editor/TrackView/SequenceKeyUIControls.cpp" line="40"/>
         <location filename="../../../../Code/Editor/TrackView/TrackEventKeyUIControls.cpp" line="167"/>
         <source>&lt;None&gt;</source>
-        <translation><无></translation>
+        <translation>&lt;无&gt;</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Util/FileUtil.cpp" line="86"/>
@@ -6503,7 +6503,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="294"/>
         <source>Path to the RC job XML file used to override the normal PAK files generation used in release builds. Path must be relative to &lt;build dir&gt;.</source>
-        <translation>用于覆盖发布版本中正常 PAK 文件生成的 RC 作业 XML 文件路径。路径必须相对于 <build dir>。</translation>
+        <translation>用于覆盖发布版本中正常 PAK 文件生成的 RC 作业 XML 文件路径。路径必须相对于 &lt;build dir&gt;。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="298"/>
@@ -6513,7 +6513,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="299"/>
         <source>Path to the RC job XML file used to override the normal APK Expansion file(s) generation used in release builds. Path must be relative to &lt;build dir&gt;.</source>
-        <translation>用于覆盖发布版本中正常 APK 扩展文件生成的 RC 作业 XML 文件路径。路径必须相对于 <build dir>。</translation>
+        <translation>用于覆盖发布版本中正常 APK 扩展文件生成的 RC 作业 XML 文件路径。路径必须相对于 &lt;build dir&gt;。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="303"/>
@@ -6523,7 +6523,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="304"/>
         <source>Specify if the &quot;Main&quot; APK Expansion file should be used.</source>
-        <translation>指定是否应使用"主" APK 扩展文件。</translation>
+        <translation>指定是否应使用 &quot;主&quot; APK 扩展文件。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="306"/>
@@ -6533,7 +6533,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="307"/>
         <source>Specify if the &quot;Patch&quot; APK Expansion file should be used.</source>
-        <translation>指定是否应使用"补丁" APK 扩展文件。</translation>
+        <translation>指定是否应使用 &quot;补丁&quot; APK 扩展文件。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="309"/>
@@ -7337,7 +7337,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../../../../Code/Editor/StartupLogoDialog.ui" line="315"/>
         <source>&lt;a href=&quot;https://www.o3debinaries.org/license&quot;&gt;Terms of Use&lt;/a&gt;</source>
-        <translation><a href="https://www.o3debinaries.org/license">使用条款</a></translation>
+        <translation>&lt;a href=&quot;https://www.o3debinaries.org/license&quot;&gt;使用条款&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/StartupLogoDialog.ui" line="365"/>
@@ -7727,7 +7727,7 @@ Still continue?</source>
     <message>
         <location filename="../../../../Code/Editor/WelcomeScreen/WelcomeScreenDialog.ui" line="530"/>
         <source>No recent level file in this project yet. &lt;a href=&quot;Open&quot;&gt;Open an existing level&lt;/a&gt; or &lt;a href=&quot;Create&quot;&gt;create a new level&lt;/a&gt; now.</source>
-        <translation>此项目中还没有最近的关卡文件。立即<a href="Open">打开现有关卡</a>或<a href="Create">创建新关卡</a>。</translation>
+        <translation>此项目中还没有最近的关卡文件。立即 &lt;a href=&quot;Open&quot;&gt;打开现有关卡&lt;/a&gt; 或 &lt;a href=&quot;Create&quot;&gt;创建新关卡&lt;/a&gt; 。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/WelcomeScreen/WelcomeScreenDialog.cpp" line="238"/>
