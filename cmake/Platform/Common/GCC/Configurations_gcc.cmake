@@ -66,7 +66,6 @@ ly_append_configurations_options(
 
         ${LY_GCC_GCOV_FLAGS}
         ${LY_GCC_GPROF_FLAGS}
-
     COMPILATION_CXX
         -fno-exceptions
         -fvisibility=hidden
@@ -103,7 +102,6 @@ ly_append_configurations_options(
         -Wno-switch
         -Wno-uninitialized
         -Wno-unused-result
-
     COMPILATION_DEBUG
         -O0 # No optimization
         -g # debug symbols

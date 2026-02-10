@@ -57,6 +57,7 @@ ly_append_configurations_options(
         _FORTIFY_SOURCE=2
     DEFINES_RELEASE
         _FORTIFY_SOURCE=2
+
     COMPILATION
         -fno-exceptions
         -fvisibility=hidden
@@ -72,32 +73,23 @@ ly_append_configurations_options(
             # was done to fix all hits. Leaving this disabled until there is a matching warning in MSVC.
 
         -Wrange-loop-analysis
-        -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
+        -Wno-dllexport-explicit-instantiation-decl  # explicit instantiation declaration should not be 'dllexport'
         -Wno-parentheses
         -Wno-reorder
         -Wno-switch
         -Wno-undefined-var-template
-        -Wno-dllexport-explicit-instantiation-decl  # explicit instantiation declaration should not be 'dllexport'
-
-        ###################
-        # Enabled warnings (that are disabled by default)
-        ###################
-
+        -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
     COMPILATION_DEBUG
         -O0                         # No optimization
         -g                          # debug symbols
         -fno-inline                 # don't inline functions
-
         -fstack-protector-all       # Enable stack protectors for all functions
         -fstack-check
-
     COMPILATION_PROFILE
         -O2
         -g                          # debug symbols
-
         -fstack-protector-all       # Enable stack protectors for all functions
         -fstack-check
-
     COMPILATION_RELEASE
         -O2
 )
@@ -107,10 +99,11 @@ if(LY_BUILD_WITH_ADDRESS_SANITIZER)
         COMPILATION_DEBUG
             -fsanitize=address
             -fno-omit-frame-pointer
+
         LINK_NON_STATIC_DEBUG
             -shared-libsan
             -fsanitize=address
     )
 endif()
-include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
 
+include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
