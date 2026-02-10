@@ -571,7 +571,7 @@
     <message>
         <location filename="../../../../build/windows/i18n/generated/MaterialInputs_TranslationStrings.cpp" line="125"/>
         <source>Irradiance color that is used when the Irradiance Color Source is set to &apos;Manual&apos;. Color is displayed as sRGB but the values are stored as linear color.</source>
-        <translation>当辐照度颜色来源设置为"手动"时使用的辐照度颜色。颜色以 sRGB 显示，但值以线性颜色存储。</translation>
+        <translation>当辐照度颜色来源设置为&quot;手动&quot;时使用的辐照度颜色。颜色以 sRGB 显示，但值以线性颜色存储。</translation>
     </message>
     <message>
         <location filename="../../../../build/windows/i18n/generated/MaterialInputs_TranslationStrings.cpp" line="126"/>

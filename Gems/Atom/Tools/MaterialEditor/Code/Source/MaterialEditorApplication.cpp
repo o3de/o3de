@@ -82,8 +82,11 @@ namespace MaterialEditor
         // Load AtomToolsFramework translations for menu and UI strings
         m_atomToolsFrameworkTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("AtomToolsFramework", this);
 
+        // Load MaterialEditor translations for editor-specific strings
+        m_materialEditorTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("MaterialEditor", this);
+
         // Load material property translations for i18n support
-        m_materialPropertyTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("MaterialProperty", this);
+        m_materialPropertyTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("MaterialInputs", this);
 
         // Overriding default document type info to provide a custom view
         auto documentTypeInfo = MaterialDocument::BuildDocumentTypeInfo();
@@ -110,6 +113,13 @@ namespace MaterialEditor
             removeTranslator(m_materialPropertyTranslator);
             delete m_materialPropertyTranslator;
             m_materialPropertyTranslator = nullptr;
+        }
+
+        if (m_materialEditorTranslator)
+        {
+            removeTranslator(m_materialEditorTranslator);
+            delete m_materialEditorTranslator;
+            m_materialEditorTranslator = nullptr;
         }
 
         // Clean up AtomToolsFramework translator
