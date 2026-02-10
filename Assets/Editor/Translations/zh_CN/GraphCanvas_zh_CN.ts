@@ -904,68 +904,84 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>GraphCanvas::AssetEditorMainWindow</name>
     <message>
-        <source>&amp;File</source>
-        <translation type="vanished">文件(&amp;F)</translation>
-    </message>
-    <message>
-        <source>&amp;New Asset</source>
-        <translation type="vanished">新建资产(&amp;N)</translation>
-    </message>
-    <message>
-        <source>&amp;Open</source>
-        <translation type="vanished">打开(&amp;O)</translation>
-    </message>
-    <message>
-        <source>&amp;Save</source>
-        <translation type="vanished">保存(&amp;S)</translation>
-    </message>
-    <message>
-        <source>&amp;Save As...</source>
-        <translation type="vanished">另存为(&amp;S)...</translation>
-    </message>
-    <message>
-        <source>Ctrl+Shift+S</source>
-        <translation type="vanished">Ctrl+Shift+S</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">关闭</translation>
-    </message>
-    <message>
-        <source>&amp;Edit</source>
-        <translation type="vanished">编辑(&amp;E)</translation>
-    </message>
-    <message>
-        <source>Cut</source>
-        <translation type="vanished">剪切</translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation type="vanished">复制</translation>
-    </message>
-    <message>
-        <source>Paste</source>
-        <translation type="vanished">粘贴</translation>
-    </message>
-    <message>
-        <source>Duplicate</source>
-        <translation type="vanished">复制副本</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="vanished">删除</translation>
-    </message>
-    <message>
-        <source>&amp;View</source>
-        <translation type="vanished">视图(&amp;V)</translation>
-    </message>
-    <message>
-        <source>Restore Default Layout</source>
-        <translation type="vanished">恢复默认布局</translation>
-    </message>
-    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="130"/>
         <source>Node Palette</source>
-        <translation type="vanished">节点面板</translation>
+        <translation>节点面板</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="328"/>
+        <source>&amp;File</source>
+        <translation>文件(&amp;F)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="344"/>
+        <source>&amp;New Asset</source>
+        <translation>新建资产(&amp;N)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="359"/>
+        <source>&amp;Open</source>
+        <translation>打开(&amp;O)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="370"/>
+        <source>&amp;Save</source>
+        <translation>保存(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="381"/>
+        <source>&amp;Save As...</source>
+        <translation>另存为(&amp;S)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="382"/>
+        <source>Ctrl+Shift+S</source>
+        <translation>Ctrl+Shift+S</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="391"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="405"/>
+        <source>&amp;Edit</source>
+        <translation>编辑(&amp;E)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="418"/>
+        <source>Cut</source>
+        <translation>剪切</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="432"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="446"/>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="460"/>
+        <source>Duplicate</source>
+        <translation>复制副本</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="474"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="545"/>
+        <source>&amp;View</source>
+        <translation>视图(&amp;V)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="587"/>
+        <source>Restore Default Layout</source>
+        <translation>恢复默认布局</translation>
     </message>
 </context>
 <context>

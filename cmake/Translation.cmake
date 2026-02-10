@@ -843,9 +843,33 @@ function(generate_all_gems_translations)
         # Without proper include paths, lupdate extracts context as "ClassName"
         # instead of "Namespace::ClassName", causing translation lookups to fail
         # at runtime because Qt's meta-object system uses fully qualified names.
+        #
+        # Examples of affected Gems:
+        #   - GraphCanvas: headers in Code/StaticLib/GraphCanvas/ are included via
+        #     <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h>
+        #     Without Code/StaticLib as include path, lupdate cannot resolve the
+        #     namespace and extracts "AssetEditorMainWindow" instead of
+        #     "GraphCanvas::AssetEditorMainWindow", causing menu items (File, Edit,
+        #     View, etc.) to remain untranslated in LandscapeCanvas, ScriptCanvas,
+        #     MaterialCanvas and other consumers.
         set(_gem_include_dirs "")
         if(IS_DIRECTORY "${_gem_root}/Code/Include")
             list(APPEND _gem_include_dirs "${_gem_root}/Code/Include")
+        endif()
+
+        # Code/StaticLib/ is used by Gems like GraphCanvas that place shared widget
+        # code (with Q_OBJECT classes in namespaces) in a static library.
+        # Source files include headers via <GemName/Path/To/Header.h>, so the
+        # StaticLib directory itself must be an include root for lupdate.
+        if(IS_DIRECTORY "${_gem_root}/Code/StaticLib")
+            list(APPEND _gem_include_dirs "${_gem_root}/Code/StaticLib")
+        endif()
+
+        # Code/Source/ may also contain headers that define namespaced Q_OBJECT
+        # classes. When a Gem's .cpp files include headers from Code/Source/ via
+        # relative paths, lupdate needs this directory as an include root.
+        if(IS_DIRECTORY "${_gem_root}/Code/Source")
+            list(APPEND _gem_include_dirs "${_gem_root}/Code/Source")
         endif()
 
         # ---- Step 6: Call appropriate translation function ----
