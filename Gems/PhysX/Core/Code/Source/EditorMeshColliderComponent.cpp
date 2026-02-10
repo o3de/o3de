@@ -46,7 +46,7 @@ namespace PhysX
                         QT_TRANSLATE_NOOP("PhysX", "PhysX Mesh"),
                         QT_TRANSLATE_NOOP("PhysX", "Specifies the PhysX mesh collider asset for this PhysX collider component."))
                     ->Attribute(AZ_CRC_CE("EditButton"), "")
-                    ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Scene Settings")
+                    ->Attribute(AZ_CRC_CE("EditDescription"), QT_TRANSLATE_NOOP("PhysX", "Open in Scene Settings"))
                     ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,

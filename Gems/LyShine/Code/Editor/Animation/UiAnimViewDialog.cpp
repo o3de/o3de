@@ -68,7 +68,7 @@ namespace
     const char* s_kFrameSnappingFPSEntry = "FrameSnappingFPS";
     const char* s_kTickDisplayModeEntry = "TickDisplayMode";
 
-    const char* s_kNoSequenceComboBoxEntry = "--- No Sequence ---";
+    const char* s_kNoSequenceComboBoxEntry = QT_TR_NOOP("--- No Sequence ---");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -283,7 +283,7 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     ReadMiscSettings();
     ReadTrackColors();
 
-    QString cursorPosText = QString("0.000(%1fps)").arg(FloatToIntRet(m_wndCurveEditor->GetFPS()));
+    QString cursorPosText = tr("0.000(%1fps)").arg(FloatToIntRet(m_wndCurveEditor->GetFPS()));
     m_cursorPos->setText(cursorPosText);
 
     return TRUE;  // return TRUE unless you set the focus to a control
@@ -942,7 +942,7 @@ void CUiAnimViewDialog::ReloadSequencesComboBox()
 {
     m_sequencesComboBox->blockSignals(true);
     m_sequencesComboBox->clear();
-    m_sequencesComboBox->addItem(QString(s_kNoSequenceComboBoxEntry));
+    m_sequencesComboBox->addItem(tr(s_kNoSequenceComboBoxEntry));
 
     {
         CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
@@ -1616,7 +1616,7 @@ void CUiAnimViewDialog::SetCursorPosText(float fTime)
     int nSecs = int (fTime - float ( nMins ) * 60.0f);
     int nFrames = int(fTime * m_wndCurveEditor->GetFPS()) % fps;
 
-    sText = QString("%1:%2:%3 (%4fps)").arg(nMins).arg(nSecs, 2, 10, QLatin1Char('0')).arg(nFrames, 2, 10, QLatin1Char('0')).arg(fps);
+    sText = tr("%1:%2:%3 (%4fps)").arg(nMins).arg(nSecs, 2, 10, QLatin1Char('0')).arg(nFrames, 2, 10, QLatin1Char('0')).arg(fps);
     m_cursorPos->setText(sText);
 }
 

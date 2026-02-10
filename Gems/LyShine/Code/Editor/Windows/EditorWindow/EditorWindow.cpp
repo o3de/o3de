@@ -256,7 +256,7 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
 
     // Preview animation list pane (only shown in preview mode)
     {
-        m_previewAnimationListDockWidget = new AzQtComponents::StyledDockWidget("Animation List");
+        m_previewAnimationListDockWidget = new AzQtComponents::StyledDockWidget(tr("Animation List"));
         m_previewAnimationListDockWidget->setObjectName("PreviewAnimationList");    // needed to save state
         m_previewAnimationListDockWidget->setWidget(m_previewAnimationList);
         m_previewAnimationList->setFocusPolicy(Qt::StrongFocus);
@@ -831,8 +831,8 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
     }
 
     QMessageBox(QMessageBox::Critical,
-        "Error",
-        tr("Unable to save %1. Is the file read-only?").arg(sourceAssetPathName.empty() ? "file" : sourceAssetPathName.c_str()),
+        tr("Error"),
+        tr("Unable to save %1. Is the file read-only?").arg(sourceAssetPathName.empty() ? tr("file") : sourceAssetPathName.c_str()),
         QMessageBox::Ok, this).exec();
 
     return false;
@@ -846,7 +846,7 @@ bool EditorWindow::SaveSlice(UiCanvasMetadata& canvasMetadata)
     AZ::ComponentApplicationBus::BroadcastResult(sliceEntity, &AZ::ComponentApplicationBus::Events::FindEntity, sliceEntityId);
     if (!sliceEntity)
     {
-        QMessageBox::critical(this, tr("Slice Push Failed"), "Slice entity not found in canvas.");
+        QMessageBox::critical(this, tr("Slice Push Failed"), tr("Slice entity not found in canvas."));
         return false;
     }
 
@@ -857,7 +857,7 @@ bool EditorWindow::SaveSlice(UiCanvasMetadata& canvasMetadata)
     // if false then something is wrong. The user could have done a detach slice for example
     if (!sliceAddress.IsValid() || !sliceAddress.GetReference()->GetSliceAsset())
     {
-        QMessageBox::critical(this, tr("Slice Push Failed"), "Slice entity no longer appears to be a slice instance.");
+        QMessageBox::critical(this, tr("Slice Push Failed"), tr("Slice entity no longer appears to be a slice instance."));
         return false;
     }
 
@@ -1677,7 +1677,7 @@ void EditorWindow::ToggleEditorMode()
             }
             else
             {
-                QMessageBox::critical(this, "Preview Mode Error", GetEntityContext()->GetErrorMessage().c_str());
+                QMessageBox::critical(this, tr("Preview Mode Error"), GetEntityContext()->GetErrorMessage().c_str());
 
                 // A zero-msec timeout will cause the single-shot timer to execute
                 // once all events currently in the queue have processed. This allows
@@ -2064,7 +2064,7 @@ void EditorWindow::OnCanvasTabContextMenuRequested(const QPoint &point)
         menu.addAction(CreateCloseAllOtherCanvasesAction(canvasEntityId, true));
         menu.addSeparator();
 
-        QAction* action = new QAction("Copy Full Path", this);
+        QAction* action = new QAction(tr("Copy Full Path"), this);
         action->setEnabled(canvasMetadata && !canvasMetadata->m_canvasSourceAssetPathname.empty());
         QObject::connect(action,
             &QAction::triggered,

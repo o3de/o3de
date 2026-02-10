@@ -164,7 +164,7 @@ void CanvasSizeToolbarSection::InitWidgets(QToolBar* parent, bool addSeparator)
         m_lineEditCanvasHeight->setValidator(new QIntValidator(1, AZStd::numeric_limits<int>::max(), m_lineEditCanvasHeight));
 
         // Delimit between width x height
-        m_labelCustomSizeDelimiter->setText("x");
+        m_labelCustomSizeDelimiter->setText(QObject::tr("x"));
 
         // Listen for changes to custom canvas size for width and height
         m_lineEditCanvasWidthConnection = QObject::connect(

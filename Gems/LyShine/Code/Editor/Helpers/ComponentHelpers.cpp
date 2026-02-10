@@ -833,7 +833,7 @@ namespace ComponentHelpers
 
     QAction* CreateRemoveComponentsAction(QWidget* parent)
     {
-        QAction* action = new QAction("Delete component", parent);
+        QAction* action = new QAction(QObject::tr("Delete component"), parent);
         action->setShortcut(QKeySequence::Delete);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(action,
@@ -856,7 +856,7 @@ namespace ComponentHelpers
         AZ::Entity::ComponentArrayType componentsToRemove;
         UiEditorInternalRequestBus::BroadcastResult(componentsToRemove, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
 
-        action->setText(componentsToRemove.size() > 1 ? "Delete components" : "Delete component");
+        action->setText(componentsToRemove.size() > 1 ? QObject::tr("Delete components") : QObject::tr("Delete component"));
 
         // Check if we can remove every component from every element
         bool canRemove = true;
@@ -871,7 +871,7 @@ namespace ComponentHelpers
 
     QAction* CreateCutComponentsAction(QWidget* parent)
     {
-        QAction* action = new QAction("Cut component", parent);
+        QAction* action = new QAction(QObject::tr("Cut component"), parent);
         action->setShortcut(QKeySequence::Cut);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(action,
@@ -899,7 +899,7 @@ namespace ComponentHelpers
 
         AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCut);
 
-        action->setText(componentsToCut.size() > 1 ? "Cut components" : "Cut component");
+        action->setText(componentsToCut.size() > 1 ? QObject::tr("Cut components") : QObject::tr("Cut component"));
 
         // Check that all components can be deleted and that all copyable components can be pasted
         bool canCut = true;
@@ -917,7 +917,7 @@ namespace ComponentHelpers
 
     QAction* CreateCopyComponentsAction(QWidget* parent)
     {
-        QAction* action = new QAction("Copy component", parent);
+        QAction* action = new QAction(QObject::tr("Copy component"), parent);
         action->setShortcut(QKeySequence::Copy);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(action,
@@ -944,7 +944,7 @@ namespace ComponentHelpers
         // Get the components of the first selected elements to copy onto the clipboard
         AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCopy);
 
-        action->setText(copyableComponents.size() > 1 ? "Copy components" : "Copy component");
+        action->setText(copyableComponents.size() > 1 ? QObject::tr("Copy components") : QObject::tr("Copy component"));
 
         // Check that all copyable components can be added by the user
         bool canCopy = true;
@@ -959,7 +959,7 @@ namespace ComponentHelpers
 
     QAction* CreatePasteComponentsAction(QWidget* parent)
     {
-        QAction* action = new QAction("Paste component", parent);
+        QAction* action = new QAction(QObject::tr("Paste component"), parent);
         action->setShortcut(QKeySequence::Paste);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         QObject::connect(action,
@@ -1026,7 +1026,7 @@ namespace ComponentHelpers
                     }
 
                     UiEditorInternalNotificationBus::Broadcast(
-                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "paste component");
+                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, QObject::tr("paste component").toUtf8().constData());
 
                     Internal::HandleSelectedEntitiesPropertiesChanged();
                 }
@@ -1042,7 +1042,7 @@ namespace ComponentHelpers
         AzToolsFramework::ComponentTypeMimeData::ClassDataContainer classDataForComponentsToAdd;
         AzToolsFramework::ComponentTypeMimeData::Get(mimeData, classDataForComponentsToAdd);
 
-        action->setText(classDataForComponentsToAdd.size() > 1 ? "Paste components" : "Paste component");
+        action->setText(classDataForComponentsToAdd.size() > 1 ? QObject::tr("Paste components") : QObject::tr("Paste component"));
 
         bool isCanvasSelected = false;
         AzToolsFramework::EntityIdList selectedEntities = Internal::GetSelectedEntities(&isCanvasSelected);

@@ -207,11 +207,11 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled)
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
                         ->Attribute(AZ_CRC_CE("EditButtonVisible"), true)
-                        ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
-                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Simulated")
+                        ->Attribute(AZ_CRC_CE("SetTrueLabel"), QT_TRANSLATE_NOOP("PhysX", "Kinematic"))
+                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), QT_TRANSLATE_NOOP("PhysX", "Simulated"))
                     ->Attribute(
                         AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::GenericEditButtonCallback<bool>(&OnEditButtonClicked))
-                        ->Attribute(AZ_CRC_CE("EditButtonToolTip"), "Open Type dialog for a detailed description on the motion types")
+                        ->Attribute(AZ_CRC_CE("EditButtonToolTip"), QT_TRANSLATE_NOOP("PhysX", "Open Type dialog for a detailed description on the motion types"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                     // Linear axis locking properties

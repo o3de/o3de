@@ -807,7 +807,7 @@ is read-only, and needs to be writable to continue.</source>
     <message>
         <location filename="../../../../Code/Editor/LevelFileDialog.cpp" line="135"/>
         <source>Do you really want to overwrite &apos;%1&apos;?</source>
-        <translation>确定要覆盖 '%1' 吗？</translation>
+        <translation>确定要覆盖 &apos;%1&apos; 吗？</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/LevelFileDialog.cpp" line="281"/>
@@ -1040,7 +1040,7 @@ You cannot save levels inside levels.</source>
     <message>
         <location filename="../../../../Code/Editor/TrackView/SequenceBatchRenderDialog.cpp" line="1133"/>
         <source>Rendering &apos;%1&apos;...(%2%)</source>
-        <translation>正在渲染 '%1'...(%2%)</translation>
+        <translation>正在渲染 &apos;%1&apos;...(%2%)</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/TrackView/SequenceBatchRenderDialog.cpp" line="1226"/>
@@ -1076,7 +1076,7 @@ You cannot save levels inside levels.</source>
     <message>
         <location filename="../../../../Code/Editor/TrackView/SequenceBatchRenderDialog.cpp" line="1545"/>
         <source>A sequence of &apos;%1&apos; not found! This&apos;ll be skipped.</source>
-        <translation>未找到 '%1' 的序列！此项将被跳过。</translation>
+        <translation>未找到 &apos;%1&apos; 的序列！此项将被跳过。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/TrackView/SequenceBatchRenderDialog.cpp" line="1562"/>
@@ -1086,7 +1086,7 @@ You cannot save levels inside levels.</source>
     <message>
         <location filename="../../../../Code/Editor/TrackView/SequenceBatchRenderDialog.cpp" line="1562"/>
         <source>A director node of &apos;%1&apos; not found in the sequence of &apos;%2&apos;! This&apos;ll be skipped.</source>
-        <translation>在序列 '%2' 中未找到 '%1' 的导演节点！此项将被跳过。</translation>
+        <translation>在序列 &apos;%2&apos; 中未找到 &apos;%1&apos; 的导演节点！此项将被跳过。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/TrackView/SequenceBatchRenderDialog.cpp" line="1665"/>
@@ -1550,7 +1550,7 @@ You cannot save levels inside levels.</source>
     <message>
         <location filename="../../../../Code/Editor/TrackView/TVSequenceProps.cpp" line="262"/>
         <source>A sequence name cannot contain a &apos;/&apos; character!</source>
-        <translation>序列名称不能包含 '/' 字符！</translation>
+        <translation>序列名称不能包含 &apos;/&apos; 字符！</translation>
     </message>
 </context>
 <context>
@@ -1935,7 +1935,7 @@ You cannot save levels inside levels.</source>
         <location filename="../../../../Code/Editor/TrackView/TrackViewDopeSheetBase.cpp" line="2156"/>
         <location filename="../../../../Code/Editor/TrackView/TrackViewDopeSheetBase.cpp" line="2194"/>
         <source>Value :								</source>
-        <translation ></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/TrackView/TrackViewDopeSheetBase.cpp" line="3604"/>
@@ -2002,7 +2002,7 @@ You cannot save levels inside levels.</source>
         <source>Entity named &apos;%1&apos; already exists.
 
 Please choose another unique name.</source>
-        <translation>名为 '%1' 的实体已存在。
+        <translation>名为 &apos;%1&apos; 的实体已存在。
 
 请选择其他唯一名称。</translation>
     </message>
@@ -2515,7 +2515,7 @@ Unable to rename entity</source>
         <source>%1 is currently assigned to &apos;%2&apos;.
 
 Assign and replace?</source>
-        <translation>%1 当前已分配给 '%2'。
+        <translation>%1 当前已分配给 &apos;%2&apos;。
 
 是否分配并替换？</translation>
     </message>
@@ -3263,12 +3263,12 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/Core/EditorActionsHandler.cpp" line="2384"/>
         <source>Load the &quot;%1&quot; layout.</source>
-        <translation>加载 "%1" 布局。</translation>
+        <translation>加载 &quot;%1&quot; 布局。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Core/EditorActionsHandler.cpp" line="2408"/>
         <source>Save the &quot;%1&quot; layout.</source>
-        <translation>保存 "%1" 布局。</translation>
+        <translation>保存 &quot;%1&quot; 布局。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Core/EditorActionsHandler.cpp" line="2431"/>
@@ -3278,7 +3278,7 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/Core/EditorActionsHandler.cpp" line="2432"/>
         <source>Rename the &quot;%1&quot; layout.</source>
-        <translation>重命名 "%1" 布局。</translation>
+        <translation>重命名 &quot;%1&quot; 布局。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Core/EditorActionsHandler.cpp" line="2455"/>
@@ -3288,7 +3288,7 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/Core/EditorActionsHandler.cpp" line="2456"/>
         <source>Delete the &quot;%1&quot; layout.</source>
-        <translation>删除 "%1" 布局。</translation>
+        <translation>删除 &quot;%1&quot; 布局。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Core/EditorActionsHandler.cpp" line="2508"/>
@@ -3355,38 +3355,52 @@ Assign and replace?</source>
         <translation>管理</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageFiles.h" line="33"/>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageGeneral.h" line="37"/>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageGeneral.h" line="38"/>
         <source>General Settings</source>
         <translation>常规设置</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageFiles.h" line="34"/>
         <source>Files</source>
         <translation>文件</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportCamera.cpp" line="447"/>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportDebug.h" line="32"/>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportGeneral.cpp" line="229"/>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportManipulator.cpp" line="142"/>
         <source>Viewports</source>
         <translation>视口</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportGeneral.cpp" line="234"/>
         <source>Viewport</source>
         <translation>视口</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportCamera.cpp" line="452"/>
         <source>Camera</source>
         <translation>摄像机</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportManipulator.cpp" line="147"/>
         <source>Manipulators</source>
         <translation>操纵器</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportDebug.h" line="33"/>
         <source>Debug</source>
         <translation>调试</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageAWS.h" line="33"/>
         <source>AWS</source>
         <translation>AWS</translation>
     </message>
     <message>
+        <location filename="../../../../Code/Editor/EditorPreferencesPageAWS.cpp" line="67"/>
         <source>Cloud</source>
         <translation>云</translation>
     </message>
@@ -3418,7 +3432,6 @@ Assign and replace?</source>
     <name>EditorPreferencesPageFiles</name>
     <message>
         <location filename="../../../../Code/Editor/EditorPreferencesPageFiles.cpp" line="24"/>
-        <location filename="../../../../Code/Editor/EditorPreferencesPageFiles.h" line="34"/>
         <source>Files</source>
         <translation>文件</translation>
     </message>
@@ -3579,17 +3592,14 @@ Assign and replace?</source>
         <translation>处理文件首选项的类</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Editor/EditorPreferencesPageFiles.h" line="33"/>
         <source>General Settings</source>
-        <translation>常规设置</translation>
+        <translation type="vanished">常规设置</translation>
     </message>
 </context>
 <context>
     <name>EditorPreferencesPageGeneral</name>
     <message>
         <location filename="../../../../Code/Editor/EditorPreferencesPageGeneral.cpp" line="34"/>
-        <location filename="../../../../Code/Editor/EditorPreferencesPageGeneral.h" line="37"/>
-        <location filename="../../../../Code/Editor/EditorPreferencesPageGeneral.h" line="38"/>
         <source>General Settings</source>
         <translation>常规设置</translation>
     </message>
@@ -4223,14 +4233,12 @@ Assign and replace?</source>
         <translation>视口调试首选项</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportDebug.h" line="32"/>
         <source>Viewports</source>
-        <translation>视口</translation>
+        <translation type="vanished">视口</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Editor/EditorPreferencesPageViewportDebug.h" line="33"/>
         <source>Debug</source>
-        <translation>调试</translation>
+        <translation type="vanished">调试</translation>
     </message>
 </context>
 <context>
@@ -5334,7 +5342,7 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/MainWindow.cpp" line="871"/>
         <source>Are you sure you want to delete the layout &apos;%1&apos;?</source>
-        <translation>确定要删除布局 '%1' 吗？</translation>
+        <translation>确定要删除布局 &apos;%1&apos; 吗？</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/MainWindow.cpp" line="894"/>
@@ -5344,12 +5352,12 @@ Assign and replace?</source>
     <message>
         <location filename="../../../../Code/Editor/MainWindow.cpp" line="898"/>
         <source>The layout name &apos;%1&apos; already exists, please choose a different name</source>
-        <translation>布局名称 '%1' 已存在，请选择其他名称</translation>
+        <translation>布局名称 &apos;%1&apos; 已存在，请选择其他名称</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/MainWindow.cpp" line="933"/>
         <source>Do you want to overwrite the layout &apos;%1&apos; with the current one?</source>
-        <translation>是否要用当前布局覆盖布局 '%1'？</translation>
+        <translation>是否要用当前布局覆盖布局 &apos;%1&apos;？</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/MainWindow.cpp" line="946"/>
@@ -5961,7 +5969,7 @@ Press Ok to terminate Editor.</source>
     <message>
         <location filename="../../../../Code/Editor/MainStatusBar.cpp" line="466"/>
         <source>GameFolder: &apos;%1&apos;</source>
-        <translation>游戏文件夹：'%1'</translation>
+        <translation>游戏文件夹：&apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/MainStatusBar.cpp" line="467"/>
@@ -5971,7 +5979,7 @@ Press Ok to terminate Editor.</source>
     <message>
         <location filename="../../../../Code/Editor/NewLevelDialog.cpp" line="310"/>
         <source>The level name is too long, the maximum is &apos;%1&apos;.</source>
-        <translation>关卡名称太长，最大长度为 '%1'。</translation>
+        <translation>关卡名称太长，最大长度为 &apos;%1&apos;。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/NewLevelDialog.cpp" line="330"/>
@@ -6133,7 +6141,7 @@ Do you want it to be extracted for editing ?</source>
         <location filename="../../../../Code/Editor/Util/FileUtil.cpp" line="1521"/>
         <location filename="../../../../Code/Editor/Util/FileUtil.cpp" line="1697"/>
         <source>There is already a file named &quot;%1&quot; in the target folder. Do you want to move this file anyway replacing the old one?</source>
-        <translation>目标文件夹中已存在名为 "%1" 的文件。是否仍要移动此文件并替换旧文件？</translation>
+        <translation>目标文件夹中已存在名为 &quot;%1&quot; 的文件。是否仍要移动此文件并替换旧文件？</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Util/FileUtil.cpp" line="1408"/>
@@ -6145,7 +6153,7 @@ Do you want it to be extracted for editing ?</source>
         <location filename="../../../../Code/Editor/Util/FileUtil.cpp" line="1409"/>
         <location filename="../../../../Code/Editor/Util/FileUtil.cpp" line="1783"/>
         <source>There is already a folder named &quot;%1&quot; in the target folder. Do you want to move this folder anyway?</source>
-        <translation>目标文件夹中已存在名为 "%1" 的文件夹。是否仍要移动此文件夹？</translation>
+        <translation>目标文件夹中已存在名为 &quot;%1&quot; 的文件夹。是否仍要移动此文件夹？</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Util/FileUtil.cpp" line="1864"/>
@@ -6259,7 +6267,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
     <message>
         <location filename="../../../../Code/Editor/QtViewPaneManager.cpp" line="1427"/>
         <source>Your layout has been automatically updated for the new Component-Entity workflows. Your old layout has been saved as &quot;%1&quot; and can be restored from the View -&gt; Layouts menu.</source>
-        <translation>您的布局已自动更新以适应新的组件实体工作流。旧布局已保存为 "%1"，可从"视图 -> 布局"菜单中恢复。</translation>
+        <translation>您的布局已自动更新以适应新的组件实体工作流。旧布局已保存为 &quot;%1&quot;，可从&quot;视图 -&gt; 布局&quot;菜单中恢复。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/QtViewPaneManager.cpp" line="1427"/>
@@ -6488,7 +6496,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="252"/>
         <source>Human readable version number. Used to set the &quot;android: versionName&quot; tag in the AndroidManifest.xml and ultimately what will be displayed in the App Store.</source>
-        <translation>人类可读的版本号。用于设置 AndroidManifest.xml 中的 "android:versionName" 标签，最终将在应用商店中显示。</translation>
+        <translation>人类可读的版本号。用于设置 AndroidManifest.xml 中的 &quot;android:versionName&quot; 标签，最终将在应用商店中显示。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="257"/>
@@ -6499,7 +6507,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="258"/>
         <source>Internal application version number. Used to set the &quot;android:versionCode&quot; tag in the AndroidManifest.xml.</source>
-        <translation>内部应用程序版本号。用于设置 AndroidManifest.xml 中的 "android:versionCode" 标签。</translation>
+        <translation>内部应用程序版本号。用于设置 AndroidManifest.xml 中的 &quot;android:versionCode&quot; 标签。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="262"/>
@@ -6509,7 +6517,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="263"/>
         <source>Desired orientation of the Android application. Used to set the &quot;android:screenOrientation&quot; tag in the AndroidManifest.xml.</source>
-        <translation>Android 应用程序所需的方向。用于设置 AndroidManifest.xml 中的 "android:screenOrientation" 标签。</translation>
+        <translation>Android 应用程序所需的方向。用于设置 AndroidManifest.xml 中的 &quot;android:screenOrientation&quot; 标签。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/Plugins/ProjectSettingsTool/PlatformSettings_Android.cpp" line="284"/>
@@ -7178,7 +7186,7 @@ Check if Source Control Provider is correctly setup and working directory is cor
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:4.125pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8.25pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation ></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../../../Code/Editor/TrackView/SequenceBatchRenderDialog.ui" line="270"/>
@@ -7448,7 +7456,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../../../../Code/Editor/TrackView/TVEventsDialog.cpp" line="79"/>
         <source>Remove &quot;%1&quot; event might cause some link breakages in Flow Graph.
 Still continue?</source>
-        <translation>移除 "%1" 事件可能会导致流程图中某些链接断开。
+        <translation>移除 &quot;%1&quot; 事件可能会导致流程图中某些链接断开。
 仍然继续吗？</translation>
     </message>
     <message>

@@ -152,7 +152,7 @@ namespace PhysX
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, QT_TRANSLATE_NOOP("PhysX", "Draw collider"),
                             QT_TRANSLATE_NOOP("PhysX", "Display collider geometry in the viewport."))
                             ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
-                                "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use.")
+                                QT_TRANSLATE_NOOP("PhysX", "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use."))
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
@@ -160,9 +160,9 @@ namespace PhysX
                             QT_TRANSLATE_NOOP("PhysX", "Display collider geometry in the viewport."))
                             ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("PhysX", "Global override"))
                             ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
-                                "A global setting is overriding this property (to disable the override, "
+                                QT_TRANSLATE_NOOP("PhysX", "A global setting is overriding this property (to disable the override, "
                                 "set the Global Collision Debug setting to \"Set manually\" in the PhysX Configuration)."
-                                "'Draw Helpers' needs to be enabled to use.")
+                                "'Draw Helpers' needs to be enabled to use."))
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return !IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXSettingsWindow)

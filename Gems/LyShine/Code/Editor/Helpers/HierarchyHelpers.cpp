@@ -185,8 +185,8 @@ namespace HierarchyHelpers
                     // This happens when the serialization version numbers DON'T match.
                     QMessageBox(
                         QMessageBox::Critical,
-                        "Error",
-                        QString("Failed to load elements. The serialization format is incompatible."),
+                        QObject::tr("Error"),
+                        QObject::tr("Failed to load elements. The serialization format is incompatible."),
                         QMessageBox::Ok,
                         widget->GetEditorWindow())
                         .exec();

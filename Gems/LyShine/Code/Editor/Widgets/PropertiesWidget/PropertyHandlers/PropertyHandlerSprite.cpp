@@ -90,8 +90,8 @@ PropertySpriteCtrl::PropertySpriteCtrl(QWidget* parent)
                 else
                 {
                     QMessageBox(QMessageBox::Critical,
-                        "Error",
-                        QString("Failed to load texture. See log for details"),
+                        QObject::tr("Error"),
+                        QObject::tr("Failed to load texture. See log for details"),
                         QMessageBox::Ok, QApplication::activeWindow()).exec();
                 }
 

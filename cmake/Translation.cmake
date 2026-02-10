@@ -805,6 +805,13 @@ function(generate_all_gems_translations)
             list(APPEND _gem_src_dirs "${_gem_root}/Code/Tools")
         endif()
 
+        # Additional: Code/Editor/ (some Gems have editor UI code here, e.g. LyShine, ScriptCanvas, ImGui)
+        # LyShine places its entire editor (menus, dialogs, property handlers, viewport, animation)
+        # in Code/Editor/, separate from the runtime component code in Code/Source/.
+        if(IS_DIRECTORY "${_gem_root}/Code/Editor")
+            list(APPEND _gem_src_dirs "${_gem_root}/Code/Editor")
+        endif()
+
         # Additional: Code/StaticLib/ (some Gems have shared widget code here, e.g. GraphCanvas)
         # GraphCanvas places its AssetEditorMainWindow and many other UI widgets in StaticLib/
         # which are inherited by LandscapeCanvas, ScriptCanvas, MaterialCanvas, etc.

@@ -2,6 +2,1184 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="zh_CN">
 <context>
+    <name>CUiAVCustomizeTrackColorsDlg</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVCustomizeTrackColorsDlg.cpp" line="247"/>
+        <source>Cannot import</source>
+        <translation>无法导入</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVCustomizeTrackColorsDlg.cpp" line="247"/>
+        <source>The file format is invalid!</source>
+        <translation>文件格式无效！</translation>
+    </message>
+</context>
+<context>
+    <name>CUiAVEventsDialog</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.cpp" line="224"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.cpp" line="257"/>
+        <source>Track Event Name</source>
+        <translation>轨迹事件名称</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.cpp" line="243"/>
+        <source>Remove Event</source>
+        <translation>移除事件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.cpp" line="243"/>
+        <source>This removal will remove all uses of this event.
+All listeners will fail to trigger.
+Still continue?</source>
+        <translation>此移除操作将删除此事件的所有引用。
+所有监听器将无法触发。
+是否仍要继续？</translation>
+    </message>
+</context>
+<context>
+    <name>CUiAVNewSequenceDialog</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNewSequenceDialog.cpp" line="24"/>
+        <source>Add New Sequence</source>
+        <translation>添加新序列</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNewSequenceDialog.cpp" line="37"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNewSequenceDialog.cpp" line="42"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNewSequenceDialog.cpp" line="53"/>
+        <source>New Sequence</source>
+        <translation>新序列</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNewSequenceDialog.cpp" line="37"/>
+        <source>A sequence name cannot be empty!</source>
+        <translation>序列名称不能为空！</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNewSequenceDialog.cpp" line="42"/>
+        <source>A sequence name cannot contain a &apos;/&apos; character!</source>
+        <translation>序列名称不能包含&quot;/&quot;字符！</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNewSequenceDialog.cpp" line="53"/>
+        <source>Sequence with this name already exists!</source>
+        <translation>此名称的序列已存在！</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNewSequenceDialog.ui" line="28"/>
+        <source>New sequence name:</source>
+        <translation>新序列名称：</translation>
+    </message>
+</context>
+<context>
+    <name>CUiAVSequenceProps</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.cpp" line="99"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.cpp" line="104"/>
+        <source>Sequence Properties</source>
+        <translation>序列属性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.cpp" line="99"/>
+        <source>A sequence name cannot be empty!</source>
+        <translation>序列名称不能为空！</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.cpp" line="104"/>
+        <source>A sequence name cannot contain a &apos;/&apos; character!</source>
+        <translation>序列名称不能包含&quot;/&quot;字符！</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="14"/>
+        <source>Edit Sequence</source>
+        <translation>编辑序列</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="20"/>
+        <source>Properties</source>
+        <translation>属性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="33"/>
+        <source>Sequence Name</source>
+        <translation>序列名称</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="48"/>
+        <source>Timing</source>
+        <translation>计时</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="56"/>
+        <source>Start Time:</source>
+        <translation>开始时间：</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="77"/>
+        <source>EndTime:</source>
+        <translation>结束时间：</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="96"/>
+        <source>Start/End Time Unit</source>
+        <translation>开始/结束时间单位</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="102"/>
+        <source>Frames</source>
+        <translation>帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="109"/>
+        <source>Seconds</source>
+        <translation>秒</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="122"/>
+        <source>Move/Scale Keys</source>
+        <translation>移动/缩放关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="140"/>
+        <source>Out Of Range</source>
+        <translation>超出范围</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="146"/>
+        <source>Once</source>
+        <translation>一次</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="153"/>
+        <source>Constant</source>
+        <translation>恒定</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVSequenceProps.ui" line="160"/>
+        <source>Loop</source>
+        <translation>循环</translation>
+    </message>
+</context>
+<context>
+    <name>CUiAnimViewDialog</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="256"/>
+        <source>Key</source>
+        <translation>关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="264"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="348"/>
+        <source>Curve Editor</source>
+        <translation>曲线编辑器</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="295"/>
+        <source>Sequence/Node Toolbar</source>
+        <translation>序列/节点工具栏</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="298"/>
+        <source>Sequence/Node:</source>
+        <translation>序列/节点:</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="299"/>
+        <source>Add Sequence</source>
+        <translation>添加序列</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="303"/>
+        <source>Delete Sequence</source>
+        <translation>删除序列</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="307"/>
+        <source>Edit Sequence</source>
+        <translation>编辑序列</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="316"/>
+        <source>Add Selected Node</source>
+        <translation>添加选中的节点</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="321"/>
+        <source>Find</source>
+        <translation>查找</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="326"/>
+        <source>Toggle Disable</source>
+        <translation>切换禁用</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="337"/>
+        <source>View Toolbar</source>
+        <translation>视图工具栏</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="340"/>
+        <source>View:</source>
+        <translation>视图:</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="341"/>
+        <source>Track Editor</source>
+        <translation>轨道编辑器</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="354"/>
+        <source>Both</source>
+        <translation>两者</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="365"/>
+        <source>Play Toolbar</source>
+        <translation>播放工具栏</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="368"/>
+        <source>Play:</source>
+        <translation>播放:</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="369"/>
+        <source>Go to start of sequence</source>
+        <translation>跳转到序列起始处</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="376"/>
+        <source>Play Animation</source>
+        <translation>播放动画</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="414"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="422"/>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="425"/>
+        <source>Stop with Hard Reset</source>
+        <translation>停止并硬重置</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="432"/>
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="437"/>
+        <source>Go to end of sequence</source>
+        <translation>跳转到序列结尾处</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="442"/>
+        <source>Start Animation Recording</source>
+        <translation>开始录制动画</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="449"/>
+        <source>Loop</source>
+        <translation>循环</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="460"/>
+        <source>Undo</source>
+        <translation>撤销</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="467"/>
+        <source>Redo</source>
+        <translation>重做</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="482"/>
+        <source>Keys Toolbar</source>
+        <translation>关键帧工具栏</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="485"/>
+        <source>Keys:</source>
+        <translation>关键帧:</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="486"/>
+        <source>Go to previous key</source>
+        <translation>跳转到上一个关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="490"/>
+        <source>Go to next key</source>
+        <translation>跳转到下一个关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="495"/>
+        <source>Move Keys</source>
+        <translation>移动关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="499"/>
+        <source>Slide Keys</source>
+        <translation>滑动关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="503"/>
+        <source>Scale Keys</source>
+        <translation>缩放关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="507"/>
+        <source>Add Keys</source>
+        <translation>添加关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="511"/>
+        <source>Delete Keys</source>
+        <translation>删除关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="516"/>
+        <source>No Snapping</source>
+        <translation>无吸附</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="520"/>
+        <source>Magnet Snapping</source>
+        <translation>磁性吸附</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="524"/>
+        <source>Frame Snapping</source>
+        <translation>帧吸附</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="528"/>
+        <source>Tick Snapping</source>
+        <translation>刻度吸附</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="568"/>
+        <source>&amp;Sequence</source>
+        <translation>序列(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="569"/>
+        <source>New Sequence...</source>
+        <translation>新建序列...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="574"/>
+        <source>&amp;View</source>
+        <translation>视图(&amp;V)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="579"/>
+        <source>Tick in Seconds</source>
+        <translation>按秒显示刻度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="584"/>
+        <source>Tick in Frames</source>
+        <translation>按帧显示刻度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="1011"/>
+        <source>UI Animation</source>
+        <translation>UI 动画</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="1011"/>
+        <source>Delete current sequence?</source>
+        <translation>是否删除当前序列？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="1447"/>
+        <source>Frame rate for frame snapping</source>
+        <translation>帧吸附的帧率</translation>
+    </message>
+    <message>
+        <source>--- No Sequence ---</source>
+        <translation type="vanished">--- 无序列 ---</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="286"/>
+        <source>0.000(%1fps)</source>
+        <translation>0.000(%1fps)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDialog.cpp" line="1619"/>
+        <source>%1:%2:%3 (%4fps)</source>
+        <translation>%1:%2:%3 (%4fps)</translation>
+    </message>
+</context>
+<context>
+    <name>CUiAnimViewDopeSheetBase</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDopeSheetBase.cpp" line="692"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDopeSheetBase.cpp" line="693"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDopeSheetBase.cpp" line="738"/>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDopeSheetBase.cpp" line="1289"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDopeSheetBase.cpp" line="1293"/>
+        <source>%1, {%2}</source>
+        <translation>%1, {%2}</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDopeSheetBase.cpp" line="1759"/>
+        <source>Select Color</source>
+        <translation>选择颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewDopeSheetBase.cpp" line="2975"/>
+        <source>: Some of the sub-tracks contains obsoleted TCB splines (marked in red), thus cannot be copied or pasted.</source>
+        <translation>：部分子轨迹包含已弃用的 TCB 样条曲线（标记为红色），因此无法复制或粘贴。</translation>
+    </message>
+</context>
+<context>
+    <name>CUiAnimViewNodesCtrl</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.ui" line="14"/>
+        <source>Form</source>
+        <translation>窗体</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.ui" line="39"/>
+        <source>0/0</source>
+        <translation>0/0</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.ui" line="73"/>
+        <source>There are no items to show</source>
+        <translation>没有可显示的项目</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="979"/>
+        <source>Add Selected UI Element(s)</source>
+        <translation>添加选中的UI元素</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="980"/>
+        <source>Add Event Node</source>
+        <translation>添加事件节点</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1021"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1029"/>
+        <source>Copy Keys</source>
+        <translation>复制关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1030"/>
+        <source>Copy Selected Keys</source>
+        <translation>复制选中的关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1031"/>
+        <source>Paste Keys</source>
+        <translation>粘贴关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1042"/>
+        <source>Disabled</source>
+        <translation>已禁用</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1066"/>
+        <source>Edit Events...</source>
+        <translation>编辑事件...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1089"/>
+        <source>%1 Tracks</source>
+        <translation>%1 轨道</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1137"/>
+        <source>Remove Selected Nodes/Tracks</source>
+        <translation>移除选中的节点/轨道</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1142"/>
+        <source>Select In Viewport</source>
+        <translation>在视口中选择</translation>
+    </message>
+</context>
+<context>
+    <name>CUiAnimViewTrackPropsDlg</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewTrackPropsDlg.ui" line="63"/>
+        <source>Time:</source>
+        <translation>时间:</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewTrackPropsDlg.ui" line="76"/>
+        <source>0</source>
+        <translation>0</translation>
+    </message>
+</context>
+<context>
+    <name>ComponentButton</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/ComponentButton.cpp" line="19"/>
+        <source>Add Component...</source>
+        <translation>添加组件...</translation>
+    </message>
+</context>
+<context>
+    <name>CoordinateSystemToolbarSection</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/CoordinateSystemToolbarSection.cpp" line="39"/>
+        <source>Snap to grid</source>
+        <translation>对齐到网格</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/CoordinateSystemToolbarSection.cpp" line="44"/>
+        <source>Reference coordinate system (%1)</source>
+        <translation>参考坐标系 (%1)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/CoordinateSystemToolbarSection.cpp" line="73"/>
+        <source>Toggle snap to grid (%1)</source>
+        <translation>切换对齐到网格 (%1)</translation>
+    </message>
+</context>
+<context>
+    <name>EditorWindow</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="113"/>
+        <source>&amp;File</source>
+        <translation>文件(&amp;F)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="118"/>
+        <source>&amp;New Canvas</source>
+        <translation>新建画布(&amp;N)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="127"/>
+        <source>&amp;Open Canvas...</source>
+        <translation>打开画布(&amp;O)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1112"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1234"/>
+        <source>&amp;Save %1</source>
+        <translation>保存 %1(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1112"/>
+        <source>Canvas</source>
+        <translation>画布</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1162"/>
+        <source>Save Canvas &amp;As...</source>
+        <translation>画布另存为(&amp;A)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1257"/>
+        <source>Save All Canvases</source>
+        <translation>保存所有画布</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1292"/>
+        <source>&amp;Close Canvas</source>
+        <translation>关闭画布(&amp;C)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1328"/>
+        <source>Close All Canvases</source>
+        <translation>关闭所有画布</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1312"/>
+        <source>Close All but Active Canvas</source>
+        <translation>关闭除活动画布外的所有画布</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1312"/>
+        <source>Close All but This Canvas</source>
+        <translation>关闭除此画布外的所有画布</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="211"/>
+        <source>&amp;Recent Files</source>
+        <translation>最近的文件(&amp;R)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="233"/>
+        <source>Clear Recent Files</source>
+        <translation>清除最近的文件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="481"/>
+        <source>&amp;Edit</source>
+        <translation>编辑(&amp;E)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="285"/>
+        <source>Select &amp;All</source>
+        <translation>全选(&amp;A)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="300"/>
+        <source>Cu&amp;t</source>
+        <translation>剪切(&amp;T)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="312"/>
+        <source>&amp;Copy</source>
+        <translation>复制(&amp;C)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="326"/>
+        <source>&amp;Paste as sibling</source>
+        <translation>粘贴为同级(&amp;P)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="326"/>
+        <source>&amp;Paste</source>
+        <translation>粘贴(&amp;P)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="338"/>
+        <source>Paste as c&amp;hild</source>
+        <translation>粘贴为子级(&amp;H)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="383"/>
+        <source>&amp;Find Elements...</source>
+        <translation>查找元素(&amp;F)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="401"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="420"/>
+        <source>Align</source>
+        <translation>对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="428"/>
+        <source>Top Edges</source>
+        <translation>顶部边缘</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="436"/>
+        <source>Vertical Centers</source>
+        <translation>垂直居中</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="444"/>
+        <source>Bottom Edges</source>
+        <translation>底部边缘</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="452"/>
+        <source>Left Edges</source>
+        <translation>左侧边缘</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="460"/>
+        <source>Horizontal Centers</source>
+        <translation>水平居中</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="468"/>
+        <source>Right Edges</source>
+        <translation>右侧边缘</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="489"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="903"/>
+        <source>&amp;View</source>
+        <translation>视图(&amp;V)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="498"/>
+        <source>Zoom &amp;In</source>
+        <translation>放大(&amp;I)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="515"/>
+        <source>Zoom &amp;Out</source>
+        <translation>缩小(&amp;O)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="532"/>
+        <source>&amp;Fit Canvas</source>
+        <translation>适合画布(&amp;F)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="552"/>
+        <source>Actual &amp;Size</source>
+        <translation>实际大小(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="606"/>
+        <source>&amp;Rulers</source>
+        <translation>标尺(&amp;R)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="625"/>
+        <source>&amp;Guides</source>
+        <translation>参考线(&amp;G)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="644"/>
+        <source>Lock Guides</source>
+        <translation>锁定参考线</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="664"/>
+        <source>Clear Guides</source>
+        <translation>清除参考线</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="684"/>
+        <source>Draw &amp;Borders on Unselected Elements</source>
+        <translation>在未选中元素上绘制边框(&amp;B)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="690"/>
+        <source>&amp;Draw Borders</source>
+        <translation>绘制边框(&amp;D)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="709"/>
+        <source>Include &amp;Visual Elements</source>
+        <translation>包含视觉元素(&amp;V)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="727"/>
+        <source>Include &amp;Parent Elements</source>
+        <translation>包含父元素(&amp;P)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="745"/>
+        <source>Include &amp;Hidden Elements</source>
+        <translation>包含隐藏元素(&amp;H)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="785"/>
+        <source>Set Current &amp;Language</source>
+        <translation>设置当前语言(&amp;L)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="766"/>
+        <source>Reload All Fonts</source>
+        <translation>重新加载所有字体</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="877"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="885"/>
+        <source>&amp;Preview</source>
+        <translation>预览(&amp;P)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="889"/>
+        <source>End &amp;Preview</source>
+        <translation>结束预览(&amp;P)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="941"/>
+        <source>&amp;Help</source>
+        <translation>帮助(&amp;H)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="946"/>
+        <source>&amp;Documentation</source>
+        <translation>文档(&amp;D)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="962"/>
+        <source>&amp;Tutorials</source>
+        <translation>教程(&amp;T)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="978"/>
+        <source>&amp;Forum</source>
+        <translation>论坛(&amp;F)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1061"/>
+        <source>Coordinate System Cycle</source>
+        <translation>坐标系循环切换</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1075"/>
+        <source>Snap to Grid Toggle</source>
+        <translation>切换对齐到网格</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1213"/>
+        <source>&amp;Save Slice (slice entity not found)</source>
+        <translation>保存切片（切片实体未找到）(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1227"/>
+        <source>&amp;Save Slice (slice entity is no longer an instance)</source>
+        <translation>保存切片（切片实体不再是实例）(&amp;S)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="259"/>
+        <source>Animation List</source>
+        <translation>动画列表</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="834"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="928"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="939"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="1005"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="835"/>
+        <source>file</source>
+        <translation>文件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="835"/>
+        <source>Unable to save %1. Is the file read-only?</source>
+        <translation>无法保存 %1。文件是否为只读？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="849"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="860"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="881"/>
+        <source>Slice Push Failed</source>
+        <translation>切片推送失败</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="849"/>
+        <source>Slice entity not found in canvas.</source>
+        <translation>画布中未找到切片实体。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="860"/>
+        <source>Slice entity no longer appears to be a slice instance.</source>
+        <translation>切片实体似乎不再是切片实例。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="896"/>
+        <source>Canvas %1 loaded with errors. You may lose work if you save.</source>
+        <translation>画布 %1 加载时出现错误。如果保存，您可能会丢失工作内容。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="897"/>
+        <source>Do you want to save your changes?</source>
+        <translation>是否要保存您的更改？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="1533"/>
+        <source>UI canvas &quot;%1&quot;</source>
+        <translation>UI 画布 &quot;%1&quot;</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="1538"/>
+        <source>Save UI Canvas Changes?</source>
+        <translation>保存 UI 画布更改？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="1539"/>
+        <source>Would you like to save changes to %1 before closing?</source>
+        <translation>是否要在关闭前保存对 %1 的更改？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="1680"/>
+        <source>Preview Mode Error</source>
+        <translation>预览模式错误</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="2031"/>
+        <source>Running Slice Operations</source>
+        <translation>正在执行切片操作</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="2032"/>
+        <source>The current UI canvas is still running slice operations. Please wait until complete before changing tabs.</source>
+        <translation>当前 UI 画布仍在执行切片操作。请等待操作完成后再切换标签页。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="2067"/>
+        <source>Copy Full Path</source>
+        <translation>复制完整路径</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="2355"/>
+        <source>Warning: Orphaned Elements</source>
+        <translation>警告：孤立元素</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="2356"/>
+        <source>This UI canvas has orphaned UI elements that are no longer in the element hierarchy.
+
+They can either be recovered and placed under an element named RecoveredOrphans or they can be deleted.
+
+Do you wish to recover them?</source>
+        <translation>此 UI 画布包含不再属于元素层级的孤立 UI 元素。
+
+这些元素可以被恢复并放置在名为 RecoveredOrphans 的元素下，也可以被删除。
+
+是否要恢复它们？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="698"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="775"/>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="222"/>
+        <source>Hierarchy</source>
+        <translation>层级</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="232"/>
+        <source>Properties</source>
+        <translation>属性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="241"/>
+        <source>Animation Editor</source>
+        <translation>动画编辑器</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="250"/>
+        <source>Action Log</source>
+        <translation>操作日志</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="698"/>
+        <source>Please save with the expected extension: *.%1</source>
+        <translation>请使用预期的扩展名保存：*.%1</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="928"/>
+        <source>Failed to open %1. Please ensure the file resides in a valid source folder for the project and that the Asset Processor is running.</source>
+        <translation>无法打开 %1。请确保文件位于项目的有效源文件夹中，并且资产处理器正在运行。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="939"/>
+        <source>Failed to find the source file for UI canvas %1. Please ensure that the Asset Processor is running and that the source file exists</source>
+        <translation>无法找到 UI 画布 %1 的源文件。请确保资产处理器正在运行且源文件存在</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="1005"/>
+        <source>Failed to load UI canvas %1. See log for details</source>
+        <translation>无法加载 UI 画布 %1。请查看日志获取详细信息</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="354"/>
+        <source>[DEBUG] View undo stack</source>
+        <translation>[调试] 查看撤销堆栈</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="370"/>
+        <source>[DEBUG] Undo stack</source>
+        <translation>[调试] 撤销堆栈</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="2380"/>
+        <source>Find Elements</source>
+        <translation>查找元素</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorWindow.cpp" line="776"/>
+        <source>UI canvas %1 is being saved outside the source folder for the project (or the Asset Processor is not running).
+
+Saving to this location will result in not being able to re-open the UI Canvas in the UI Editor from this location.
+
+Would you still like to save to this location?</source>
+        <translation>UI 画布 %1 正在保存到项目源文件夹之外的位置（或资产处理器未运行）。
+
+保存到此位置将导致无法从此位置重新打开 UI 画布编辑器中的 UI 画布。
+
+您是否仍要保存到此位置？</translation>
+    </message>
+    <message>
+        <source>Save Slice Overrides - Advanced</source>
+        <translation type="vanished">保存切片覆盖 - 高级</translation>
+    </message>
+</context>
+<context>
+    <name>EnterPreviewToolbar</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/EnterPreviewToolbar.cpp" line="17"/>
+        <source>Enter Preview Toolbar</source>
+        <translation>进入预览工具栏</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/EnterPreviewToolbar.cpp" line="28"/>
+        <source>Preview</source>
+        <translation>预览</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/EnterPreviewToolbar.cpp" line="38"/>
+        <source>Switch to Preview mode</source>
+        <translation>切换到预览模式</translation>
+    </message>
+</context>
+<context>
+    <name>FindEntityWidget</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/FindEntityWidget/FindEntityWidget.cpp" line="168"/>
+        <source>Select in Hierarchy</source>
+        <translation>在层级中选择</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/FindEntityWidget/FindEntityWidget.cpp" line="169"/>
+        <source>Select the selected elements in the Hierarchy.</source>
+        <translation>在层级中选择所选元素。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/FindEntityWidget/FindEntityWidget.cpp" line="173"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>HierarchyMenu</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="43"/>
+        <source>&amp;New...</source>
+        <translation>新建(&amp;N)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="103"/>
+        <source>Cut</source>
+        <translation>剪切</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="126"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="151"/>
+        <source>Paste as sibling</source>
+        <translation>粘贴为同级</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="151"/>
+        <source>Paste</source>
+        <translation>粘贴</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="173"/>
+        <source>Paste as child</source>
+        <translation>粘贴为子级</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="243"/>
+        <source>&amp;Push to Slice...</source>
+        <translation>推送到切片(&amp;P)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="256"/>
+        <source>Make Cascaded Slice from Selected Slices &amp;&amp; Entities...</source>
+        <translation>从所选切片和实体创建级联切片...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="266"/>
+        <source>Make Detached Slice from Selected Entities...</source>
+        <translation>从所选实体创建分离切片...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="292"/>
+        <source>Detach slice entity...</source>
+        <translation>分离切片实体...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="296"/>
+        <source>Detach slice entities...</source>
+        <translation>分离切片实体(多个)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="315"/>
+        <source>Detach slice instance...</source>
+        <translation>分离切片实例...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="319"/>
+        <source>Detach slice instances...</source>
+        <translation>分离切片实例(多个)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="335"/>
+        <source>Edit slice in new tab</source>
+        <translation>在新标签页中编辑切片</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="383"/>
+        <source>Make New &amp;Slice from Selection...</source>
+        <translation>从所选内容创建新切片(&amp;S)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="422"/>
+        <source>Element from Slice &amp;Browser...</source>
+        <translation>从切片浏览器中添加元素(&amp;B)...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="452"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="480"/>
+        <source>Find Elements...</source>
+        <translation>查找元素...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyMenu.cpp" line="501"/>
+        <source>Editor Only</source>
+        <translation>仅编辑器</translation>
+    </message>
+</context>
+<context>
+    <name>HierarchyWidget</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyWidget.cpp" line="785"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyWidget.cpp" line="797"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyWidget.cpp" line="844"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyWidget.cpp" line="854"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyWidget.cpp" line="895"/>
+        <source>Asset Drop</source>
+        <translation>资产拖放</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyWidget.cpp" line="844"/>
+        <source>Failed to add components to new element.</source>
+        <translation>无法向新元素添加组件。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/HierarchyWidget/HierarchyWidget.cpp" line="895"/>
+        <source>Failed to create a new element to add components to.</source>
+        <translation>无法创建新元素以添加组件。</translation>
+    </message>
+</context>
+<context>
     <name>LyShine</name>
     <message>
         <location filename="../../../../Gems/LyShine/Code/Source/LyShineSystemComponent.cpp" line="76"/>
@@ -3833,6 +5011,921 @@ This is useful if multiple instances of the same UI canvas are rendered in the l
         <location filename="../../../../Gems/LyShine/Code/Source/World/UiCanvasProxyRefComponent.cpp" line="82"/>
         <source>The entity that holds the UI Canvas Asset Ref component.</source>
         <translation>持有 UI 画布资产引用组件的实体。</translation>
+    </message>
+</context>
+<context>
+    <name>MainToolbar</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/MainToolbar.cpp" line="20"/>
+        <source>Main Toolbar</source>
+        <translation>主工具栏</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/MainToolbar.cpp" line="30"/>
+        <source>Zoom:</source>
+        <translation>缩放：</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/MainToolbar.cpp" line="36"/>
+        <source>Canvas zoom percentage</source>
+        <translation>画布缩放百分比</translation>
+    </message>
+</context>
+<context>
+    <name>ModeToolbar</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/ModeToolbar.cpp" line="24"/>
+        <source>Mode Toolbar</source>
+        <translation>模式工具栏</translation>
+    </message>
+</context>
+<context>
+    <name>PreviewAnimationList</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/PreviewAnimationWindow/PreviewAnimationList.cpp" line="28"/>
+        <source>Play Toolbar</source>
+        <translation>播放工具栏</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/PreviewAnimationWindow/PreviewAnimationList.cpp" line="97"/>
+        <source>&amp;View</source>
+        <translation>视图(&amp;V)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/PreviewAnimationWindow/PreviewAnimationList.cpp" line="33"/>
+        <source>Reset selected animations to start</source>
+        <translation>将选中的动画重置到起始位置</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/PreviewAnimationWindow/PreviewAnimationList.cpp" line="36"/>
+        <source>Play/Resume selected animations</source>
+        <translation>播放/恢复选中的动画</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/PreviewAnimationWindow/PreviewAnimationList.cpp" line="39"/>
+        <source>Pause/Resume selected animations</source>
+        <translation>暂停/恢复选中的动画</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/PreviewAnimationWindow/PreviewAnimationList.cpp" line="42"/>
+        <source>Stop selected animations and set to end</source>
+        <translation>停止选中的动画并设置到结尾</translation>
+    </message>
+</context>
+<context>
+    <name>PreviewToolbar</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/PreviewToolbar.cpp" line="21"/>
+        <source>Preview Toolbar</source>
+        <translation>预览工具栏</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/PreviewToolbar.cpp" line="30"/>
+        <source>The current size of the viewport</source>
+        <translation>视口的当前大小</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/PreviewToolbar.cpp" line="35"/>
+        <source>Preview canvas size: </source>
+        <translation>预览画布大小：</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/PreviewToolbar.cpp" line="41"/>
+        <source>The scale used to fit the canvas in the viewport</source>
+        <translation>用于将画布适配到视口的缩放比例</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/PreviewToolbar.cpp" line="50"/>
+        <source>End Preview</source>
+        <translation>结束预览</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/PreviewToolbar.cpp" line="64"/>
+        <source>Switch back to Edit mode</source>
+        <translation>切换回编辑模式</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/PreviewToolbar.cpp" line="79"/>
+        <source>Viewport size: %1 x %2</source>
+        <translation>视口大小：%1 x %2</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/PreviewToolbar.cpp" line="84"/>
+        <source>Canvas scale: %1%</source>
+        <translation>画布缩放：%1%</translation>
+    </message>
+</context>
+<context>
+    <name>PropertiesContainer</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertiesContainer.cpp" line="690"/>
+        <source>Add component</source>
+        <translation>添加组件</translation>
+    </message>
+</context>
+<context>
+    <name>PropertiesWrapper</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertiesWrapper.cpp" line="44"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertiesWrapper.cpp" line="48"/>
+        <source>No Canvas Loaded</source>
+        <translation>未加载画布</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertiesWrapper.cpp" line="54"/>
+        <source>Editor Only</source>
+        <translation>仅编辑器</translation>
+    </message>
+</context>
+<context>
+    <name>PropertyAnchorCtrl</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerAnchor.cpp" line="38"/>
+        <source>Anchors and Offsets are
+controlled by parent</source>
+        <translation>锚点和偏移量
+由父级控制</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerAnchor.cpp" line="80"/>
+        <source>Left</source>
+        <translation>左</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerAnchor.cpp" line="81"/>
+        <source>Top</source>
+        <translation>上</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerAnchor.cpp" line="82"/>
+        <source>Right</source>
+        <translation>右</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerAnchor.cpp" line="83"/>
+        <source>Bottom</source>
+        <translation>下</translation>
+    </message>
+</context>
+<context>
+    <name>PropertyPivotCtrl</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerPivot.cpp" line="51"/>
+        <source>X</source>
+        <translation>X</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerPivot.cpp" line="52"/>
+        <source>Y</source>
+        <translation>Y</translation>
+    </message>
+</context>
+<context>
+    <name>PropertyUiParticleColorKeyframeCtrl</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="35"/>
+        <source>Time</source>
+        <translation>时间</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="45"/>
+        <source>Time in the range [0,1].</source>
+        <translation>时间范围 [0,1]。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="56"/>
+        <source>Color</source>
+        <translation>颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="72"/>
+        <source>Ease In</source>
+        <translation>缓入</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="75"/>
+        <source>Ease Out</source>
+        <translation>缓出</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="78"/>
+        <source>Linear</source>
+        <translation>线性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="81"/>
+        <source>Step</source>
+        <translation>阶跃</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="84"/>
+        <source>In tangent</source>
+        <translation>入切线</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleColorKeyframe.cpp" line="102"/>
+        <source>Out tangent</source>
+        <translation>出切线</translation>
+    </message>
+</context>
+<context>
+    <name>PropertyUiParticleFloatKeyframeCtrl</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="30"/>
+        <source>Time</source>
+        <translation>时间</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="40"/>
+        <source>Time in the range [0,1].</source>
+        <translation>时间范围 [0,1]。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="51"/>
+        <source>Multiplier</source>
+        <translation>乘数</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="70"/>
+        <source>Ease In</source>
+        <translation>缓入</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="73"/>
+        <source>Ease Out</source>
+        <translation>缓出</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="76"/>
+        <source>Linear</source>
+        <translation>线性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="79"/>
+        <source>Step</source>
+        <translation>阶跃</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="82"/>
+        <source>In tangent</source>
+        <translation>入切线</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerUiParticleFloatKeyframe.cpp" line="100"/>
+        <source>Out tangent</source>
+        <translation>出切线</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/FileHelpers.cpp" line="115"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/FileHelpers.cpp" line="122"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/HierarchyHelpers.cpp" line="188"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/SerializeHelpers.cpp" line="148"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerSprite.cpp" line="93"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1092"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/EditorMenu.cpp" line="1093"/>
+        <source>Unable to save: canvas metadata is null. Please try reopening the canvas.</source>
+        <translation>无法保存：画布元数据为空。请尝试重新打开画布。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="859"/>
+        <source>Delete components</source>
+        <translation>删除组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="836"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="859"/>
+        <source>Delete component</source>
+        <translation>删除组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="902"/>
+        <source>Cut components</source>
+        <translation>剪切组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="874"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="902"/>
+        <source>Cut component</source>
+        <translation>剪切组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="947"/>
+        <source>Copy components</source>
+        <translation>复制组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="920"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="947"/>
+        <source>Copy component</source>
+        <translation>复制组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="1045"/>
+        <source>Paste components</source>
+        <translation>粘贴组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="962"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="1045"/>
+        <source>Paste component</source>
+        <translation>粘贴组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/ComponentHelpers.cpp" line="1029"/>
+        <source>paste component</source>
+        <translation>粘贴组件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/HierarchyHelpers.cpp" line="90"/>
+        <source>&amp;Empty elements</source>
+        <translation>空元素(&amp;E)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/HierarchyHelpers.cpp" line="90"/>
+        <source>&amp;Empty element</source>
+        <translation>空元素(&amp;E)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/HierarchyHelpers.cpp" line="189"/>
+        <source>Failed to load elements. The serialization format is incompatible.</source>
+        <translation>无法加载元素。序列化格式不兼容。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/SerializeHelpers.cpp" line="149"/>
+        <source>Failed to restore elements. The clipboard serialization format is incompatible.</source>
+        <translation>无法恢复元素。剪贴板序列化格式不兼容。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerSprite.cpp" line="94"/>
+        <source>Failed to load texture. See log for details</source>
+        <translation>无法加载纹理。请查看日志获取详细信息</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/FileHelpers.cpp" line="116"/>
+        <source>Source control is down</source>
+        <translation>源代码管理不可用</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/FileHelpers.cpp" line="123"/>
+        <source>Source control system error. Is your session still valid?</source>
+        <translation>源代码管理系统错误。您的会话是否仍然有效？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="73"/>
+        <source>Cannot Instantiate UI Slice</source>
+        <translation>无法实例化 UI 切片</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="74"/>
+        <source>Slice cannot be instantiated. Check that it is a slice containing UI elements.</source>
+        <translation>切片无法实例化。请检查它是否为包含 UI 元素的切片。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="199"/>
+        <source>Some of the selected entities reference entities not contained in the selection and its children.
+UI slices cannot contain references to outside of the slice.
+</source>
+        <translation>部分所选实体引用了不包含在所选内容及其子级中的实体。
+UI 切片不能包含对切片外部的引用。
+</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="203"/>
+        <source>Create Slice</source>
+        <translation>创建切片</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="221"/>
+        <source>Cannot Create UI Slice</source>
+        <translation>无法创建 UI 切片</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="222"/>
+        <source>The slice cannot be created because there is no single element in the selection that is parent to all other elements in the selection.Please make sure your slice contains only one root entity.
+
+You may want to create a new entity, and assign it as the parent of your existing root entities.</source>
+        <translation>无法创建切片，因为所选内容中没有一个元素是所有其他元素的父级。请确保您的切片仅包含一个根实体。
+
+您可能需要创建一个新实体，并将其指定为现有根实体的父级。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="278"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="293"/>
+        <source>Slice Save Failed</source>
+        <translation>切片保存失败</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="609"/>
+        <source>Detach Slice Entity</source>
+        <translation>分离切片实体</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="610"/>
+        <source>A detached entity will no longer receive pushes from its slice. The entity will be converted into a non-slice entity. This action cannot be undone.
+
+Are you sure you want to detach the selected entity?</source>
+        <translation>分离后的实体将不再接收来自其切片的推送。该实体将被转换为非切片实体。此操作无法撤消。
+
+是否确定要分离所选实体？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="615"/>
+        <source>Detach Slice Entities</source>
+        <translation>分离切片实体</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="616"/>
+        <source>Detached entities no longer receive pushes from their slices. The entities will be converted into non-slice entities. This action cannot be undone.
+
+Are you sure you want to detach the selected entities and their descendants?</source>
+        <translation>分离后的实体将不再接收来自其切片的推送。这些实体将被转换为非切片实体。此操作无法撤消。
+
+是否确定要分离所选实体及其后代？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="654"/>
+        <source>Detach Slice Instance</source>
+        <translation>分离切片实例</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="655"/>
+        <source>A detached instance will no longer receive pushes from its slice. All entities in the slice instance will be converted into non-slice entities. This action cannot be undone.
+
+Are you sure you want to detach the selected instance?</source>
+        <translation>分离后的实例将不再接收来自其切片的推送。切片实例中的所有实体都将被转换为非切片实体。此操作无法撤消。
+
+是否确定要分离所选实例？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="660"/>
+        <source>Detach Slice Instances</source>
+        <translation>分离切片实例</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="661"/>
+        <source>Detached instances no longer receive pushes from their slices. All entities in the slice instances will be converted into non-slice entities. This action cannot be undone.
+
+Are you sure you want to detach the selected instances?</source>
+        <translation>分离后的实例将不再接收来自其切片的推送。切片实例中的所有实体都将被转换为非切片实体。此操作无法撤消。
+
+是否确定要分离所选实例？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="1028"/>
+        <source>Detach</source>
+        <translation>分离</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="1029"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerLayoutPadding.cpp" line="17"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerOffset.cpp" line="139"/>
+        <source>Left</source>
+        <translation>左</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerLayoutPadding.cpp" line="18"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerOffset.cpp" line="140"/>
+        <source>Top</source>
+        <translation>上</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerLayoutPadding.cpp" line="19"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerOffset.cpp" line="141"/>
+        <source>Right</source>
+        <translation>右</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerLayoutPadding.cpp" line="20"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerOffset.cpp" line="142"/>
+        <source>Bottom</source>
+        <translation>下</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerOffset.cpp" line="147"/>
+        <source>X Pos</source>
+        <translation>X 位置</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerOffset.cpp" line="154"/>
+        <source>Y Pos</source>
+        <translation>Y 位置</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerOffset.cpp" line="148"/>
+        <source>Width</source>
+        <translation>宽度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/PropertiesWidget/PropertyHandlers/PropertyHandlerOffset.cpp" line="155"/>
+        <source>Height</source>
+        <translation>高度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/CanvasSizeToolbarSection.cpp" line="167"/>
+        <source>x</source>
+        <translation>x</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/CanvasSizeToolbarSection.cpp" line="481"/>
+        <source>Other...</source>
+        <translation>其他...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/CanvasSizeToolbarSection.cpp" line="607"/>
+        <source>Use viewport size</source>
+        <translation>使用视口大小</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/CanvasSizeToolbarSection.cpp" line="536"/>
+        <source>Canvas size is used to determine scaling on larger (or smaller) screens if &apos;scale to device&apos; is used</source>
+        <translation>画布大小用于在使用&quot;缩放至设备&quot;时确定在较大（或较小）屏幕上的缩放比例</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/CanvasSizeToolbarSection.cpp" line="584"/>
+        <source>Preview what the canvas would look like on a screen/window/texture of this size.</source>
+        <translation>预览画布在此大小的屏幕/窗口/纹理上的显示效果。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewNodes.cpp" line="1369"/>
+        <source>Select Color</source>
+        <translation>选择颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVTrackEventKeyUIControls.cpp" line="177"/>
+        <source>&lt;None&gt;</source>
+        <translation>&lt;无&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/SliceMenuHelpers.cpp" line="75"/>
+        <source>Elements from Slice &amp;Library</source>
+        <translation>从切片库中添加元素(&amp;L)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Helpers/SliceMenuHelpers.cpp" line="76"/>
+        <source>Element from Slice &amp;Library</source>
+        <translation>从切片库中添加元素(&amp;L)</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/AlignToolbarSection.cpp" line="44"/>
+        <source>Align Top Edges</source>
+        <translation>顶部边缘对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/AlignToolbarSection.cpp" line="45"/>
+        <source>Align Centers Vertically</source>
+        <translation>垂直居中对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/AlignToolbarSection.cpp" line="46"/>
+        <source>Align Bottom Edges</source>
+        <translation>底部边缘对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/AlignToolbarSection.cpp" line="47"/>
+        <source>Align Left Edges</source>
+        <translation>左侧边缘对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/AlignToolbarSection.cpp" line="48"/>
+        <source>Align Centers Horizontally</source>
+        <translation>水平居中对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/AlignToolbarSection.cpp" line="49"/>
+        <source>Align Right Edges</source>
+        <translation>右侧边缘对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Toolbar/NewElementToolbarSection.cpp" line="23"/>
+        <source>New...</source>
+        <translation>新建...</translation>
+    </message>
+</context>
+<context>
+    <name>SpriteBorderEditor</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="78"/>
+        <source>Sprite Editor</source>
+        <translation>精灵编辑器</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="364"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="787"/>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="797"/>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="361"/>
+        <source>Too many rows and columns have been specified!
+The maximum number of sprite-sheet cells is limited to %1</source>
+        <translation>指定的行数和列数过多！
+精灵表单元格的最大数量限制为 %1</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="773"/>
+        <source>Alias Value Updated</source>
+        <translation>别名值已更新</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="774"/>
+        <source>The cell alias that was entered has been modified to remove additional whitespace characters.</source>
+        <translation>输入的单元格别名已被修改以去除多余的空白字符。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="788"/>
+        <source>Unable to set cell alias value. Only alphanumeric characters are supported.</source>
+        <translation>无法设置单元格别名值。仅支持字母和数字字符。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="798"/>
+        <source>Unable to set cell alias value. The alias is too long.</source>
+        <translation>无法设置单元格别名值。别名过长。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="939"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="940"/>
+        <source>Unable to save file. Is the file read-only?</source>
+        <translation>无法保存文件。文件是否为只读？</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="388"/>
+        <source>Rows</source>
+        <translation>行数</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="392"/>
+        <source>Columns</source>
+        <translation>列数</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="644"/>
+        <source>&lt;h2&gt;Border Properties&lt;/h2&gt;</source>
+        <translation>&lt;h2&gt;边框属性&lt;/h2&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="733"/>
+        <source>Alias</source>
+        <translation>别名</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation type="vanished">上</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation type="vanished">下</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation type="vanished">左</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation type="vanished">右</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="832"/>
+        <source>px</source>
+        <translation>像素</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="869"/>
+        <source>Configure Spritesheet</source>
+        <translation>配置精灵表</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="891"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="949"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="980"/>
+        <source>Texture</source>
+        <translation>纹理</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="980"/>
+        <source>Cell size</source>
+        <translation>单元格大小</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Dialogs/SpriteBorderEditor/SpriteBorderEditor.cpp" line="981"/>
+        <source>%1 is %2 x %3</source>
+        <translation>%1 为 %2 x %3</translation>
+    </message>
+</context>
+<context>
+    <name>UiAVCustomizeTrackColorsDialog</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVCustomizeTrackColorsDialog.ui" line="14"/>
+        <source>Customize Track Colors</source>
+        <translation>自定义轨迹颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVCustomizeTrackColorsDialog.ui" line="36"/>
+        <source>Reset All</source>
+        <translation>全部重置</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVCustomizeTrackColorsDialog.ui" line="43"/>
+        <source>Export</source>
+        <translation>导出</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVCustomizeTrackColorsDialog.ui" line="60"/>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+</context>
+<context>
+    <name>UiAVEventsDialog</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.ui" line="20"/>
+        <source>Ui Editor Events</source>
+        <translation>UI 编辑器事件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.ui" line="39"/>
+        <source>Add</source>
+        <translation>添加</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.ui" line="52"/>
+        <source>Remove</source>
+        <translation>移除</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.ui" line="65"/>
+        <source>Rename</source>
+        <translation>重命名</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.ui" line="78"/>
+        <source>Up</source>
+        <translation>上移</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.ui" line="91"/>
+        <source>Down</source>
+        <translation>下移</translation>
+    </message>
+</context>
+<context>
+    <name>UiAVEventsModel</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.cpp" line="187"/>
+        <source>Event</source>
+        <translation>事件</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.cpp" line="189"/>
+        <source># of use</source>
+        <translation>使用次数</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAVEventsDialog.cpp" line="191"/>
+        <source>Time of first usage</source>
+        <translation>首次使用时间</translation>
+    </message>
+</context>
+<context>
+    <name>UiAnimViewCurveEditor</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="41"/>
+        <source>Set In/Out Tangents to Auto</source>
+        <translation>将入/出切线设为自动</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="70"/>
+        <source>Set In Tangent to Zero</source>
+        <translation>将入切线设为零</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="86"/>
+        <source>Set In Tangent to Step</source>
+        <translation>将入切线设为阶梯</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="102"/>
+        <source>Set In Tangent to Linear</source>
+        <translation>将入切线设为线性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="131"/>
+        <source>Set Out Tangent to Zero</source>
+        <translation>将出切线设为零</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="147"/>
+        <source>Set Out Tangent to Step</source>
+        <translation>将出切线设为阶梯</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="163"/>
+        <source>Set Out Tangent to Linear</source>
+        <translation>将出切线设为线性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="192"/>
+        <source>Fit splines to the visible width</source>
+        <translation>将样条曲线适配到可见宽度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="208"/>
+        <source>Fit splines to the visible height</source>
+        <translation>将样条曲线适配到可见高度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="237"/>
+        <source>Snap to time grid</source>
+        <translation>对齐到时间网格</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="256"/>
+        <source>Snap to value grid</source>
+        <translation>对齐到数值网格</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="288"/>
+        <source>Unify/Break Tangent Handles</source>
+        <translation>统一/断开切线手柄</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="320"/>
+        <source>Freeze/Unfreeze all keys</source>
+        <translation>冻结/解冻所有关键帧</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewCurveEditor.ui" line="339"/>
+        <source>Freeze/Unfreeze all tangent handles</source>
+        <translation>冻结/解冻所有切线手柄</translation>
+    </message>
+</context>
+<context>
+    <name>UiAnimViewFindDlg</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewFindDlg.ui" line="25"/>
+        <source>Enter filter:</source>
+        <translation>输入筛选条件：</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewFindDlg.ui" line="78"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Animation/UiAnimViewFindDlg.ui" line="93"/>
+        <source>Find</source>
+        <translation>查找</translation>
+    </message>
+</context>
+<context>
+    <name>UiSliceManager</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Windows/EditorWindow/UiSliceManager.cpp" line="577"/>
+        <source>Save Slice Overrides - Advanced</source>
+        <translation>保存切片覆盖 - 高级</translation>
+    </message>
+</context>
+<context>
+    <name>ViewportInteractionExpanderWatcher</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/ViewportWidget/Interaction/ViewportInteraction.cpp" line="165"/>
+        <source>Please resize the toolbar to see all the controls.</source>
+        <translation>请调整工具栏大小以查看所有控件。</translation>
+    </message>
+</context>
+<context>
+    <name>ViewportWidget</name>
+    <message>
+        <location filename="../../../../Gems/LyShine/Code/Editor/Widgets/ViewportWidget/ViewportWidget.cpp" line="1252"/>
+        <source>Viewport Focus</source>
+        <translation>视口焦点</translation>
     </message>
 </context>
 </TS>
