@@ -749,8 +749,14 @@ function(generate_all_gems_translations)
     # ---- Step 2: Build exclusion list ----
     # EMotionFX is always excluded because it requires special multi-directory
     # scanning with custom include paths (handled separately in the auto-generation section)
+    # PhysX5/PhysX4/PhysXCommon are excluded because PhysX has a non-standard directory
+    # structure (shared Code/ dir with gem.json files in PhysX4/PhysX5 subdirs).
+    # PhysX is handled separately with multi-directory scanning in the auto-generation section.
     set(_EXCLUDED_GEM_NAMES
         "EMotionFX"
+        "PhysX5"
+        "PhysX4"
+        "PhysXCommon"
     )
 
     # Allow users to add additional exclusions via CMake cache variable
@@ -1431,6 +1437,62 @@ if(LY_I18N_BUILD AND PAL_TRAIT_BUILD_HOST_TOOLS)
         add_editcontext_translations("${_emfx_source_dirs}" "EMotionFX" "EMotionFX_Reflect")
     endif()
     
+    # 6.2 Special handling for PhysX - scan shared Code directory and AzFramework physics config
+    # PhysX has a non-standard directory structure:
+    # - Gems/PhysX/Core/Code/ is SHARED between PhysX4 and PhysX5
+    # - gem.json files are at Gems/PhysX/Core/PhysX4/ and PhysX5/
+    #   (which don't contain the actual Code/Source or Code/Editor directories)
+    # - Auto-discovery fails because it looks for Code/Source relative to gem.json
+    #
+    # Additionally, some PhysX-context strings are in AzFramework:
+    # - Code/Framework/AzFramework/AzFramework/Physics/Configuration/SystemConfiguration.cpp
+    #   (Max Time Step, Fixed Time Step, Raycast Buffer Size, Shapecast Buffer Size, etc.)
+    # - Code/Framework/AzFramework/AzFramework/Physics/Configuration/SceneConfiguration.cpp
+    #   (Scene Configuration, Gravity, Continuous Collision Detection, Enable CCD, etc.)
+    # These files use QT_TRANSLATE_NOOP("PhysX", ...) context.
+    #
+    # Source directories to scan:
+    # - Core/Code/Source/ (PhysXConfiguration, PhysXDebugConfiguration, EditorRigidBodyComponent)
+    # - Core/Code/Editor/ (ConfigurationWidget, CollisionFilteringWidget, PvdWidget, SettingsWidget)
+    # - AzFramework/Physics/Configuration/ (SystemConfiguration, SceneConfiguration)
+    message(STATUS ">>> Generating PhysX Translations (Multi-Directory) <<<")
+    set(_physx_source_dirs "")
+
+    # Core PhysX source files (EditContext strings in Configuration/ and Debug/)
+    if(EXISTS "${LY_ROOT_FOLDER}/Gems/PhysX/Core/Code/Source")
+        list(APPEND _physx_source_dirs "${LY_ROOT_FOLDER}/Gems/PhysX/Core/Code/Source")
+    endif()
+
+    # PhysX Editor widgets (Qt tr() calls in ConfigurationWidget, CollisionFilteringWidget, etc.)
+    if(EXISTS "${LY_ROOT_FOLDER}/Gems/PhysX/Core/Code/Editor")
+        list(APPEND _physx_source_dirs "${LY_ROOT_FOLDER}/Gems/PhysX/Core/Code/Editor")
+    endif()
+
+    # AzFramework physics configuration files that use "PhysX" translation context
+    # (SystemConfiguration.cpp, SceneConfiguration.cpp)
+    if(EXISTS "${LY_ROOT_FOLDER}/Code/Framework/AzFramework/AzFramework/Physics/Configuration")
+        list(APPEND _physx_source_dirs "${LY_ROOT_FOLDER}/Code/Framework/AzFramework/AzFramework/Physics/Configuration")
+    endif()
+
+    # Include paths for lupdate to resolve headers and detect C++ namespaces
+    # These allow lupdate to find:
+    #   #include <Editor/ConfigurationWidget.h>  -> resolves from Core/Code/
+    #   #include <Source/NameConstants.h>         -> resolves from Core/Code/
+    #   #include <PhysX/Configuration/...>        -> resolves from Core/Code/Include/
+    set(_physx_include_dirs "")
+    if(EXISTS "${LY_ROOT_FOLDER}/Gems/PhysX/Core/Code")
+        list(APPEND _physx_include_dirs "${LY_ROOT_FOLDER}/Gems/PhysX/Core/Code")
+    endif()
+    if(EXISTS "${LY_ROOT_FOLDER}/Gems/PhysX/Core/Code/Include")
+        list(APPEND _physx_include_dirs "${LY_ROOT_FOLDER}/Gems/PhysX/Core/Code/Include")
+    endif()
+
+    # Generate translations using multi-directory function with include paths
+    if(_physx_source_dirs)
+        add_gem_translation_multi_dirs("PhysX5" "${_physx_source_dirs}"
+            INCLUDE_DIRS ${_physx_include_dirs})
+    endif()
+
     # 7. Generate translation strings from Material JSON property files
     # Material property definitions store user-visible displayName/description
     # strings in JSON files that lupdate cannot scan. This step extracts those

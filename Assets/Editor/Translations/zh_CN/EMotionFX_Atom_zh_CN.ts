@@ -215,9 +215,8 @@
 <context>
     <name>EMStudio::AtomRenderPlugin</name>
     <message>
-        <location filename="../../../../Gems/AtomLyIntegration/EMotionFXAtom/Code/Tools/EMStudio/AtomRenderPlugin.cpp" line="58"/>
         <source>Atom Render Window</source>
-        <translation>Atom 渲染窗口</translation>
+        <translation type="vanished">Atom 渲染窗口</translation>
     </message>
 </context>
 </TS>
