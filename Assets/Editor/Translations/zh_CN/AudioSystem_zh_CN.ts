@@ -196,7 +196,7 @@ You can always refresh manually at a later time through the Audio menu.</source>
 
 要加载新数据，需要刷新音频系统，这将停止所有当前正在播放的音频。是否要立即执行此操作？
 
-您可以稍后随时通过"音频"菜单手动刷新。</translation>
+您可以稍后随时通过&quot;音频&quot;菜单手动刷新。</translation>
     </message>
 </context>
 <context>

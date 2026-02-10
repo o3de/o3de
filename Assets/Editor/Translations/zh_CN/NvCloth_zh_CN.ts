@@ -738,7 +738,7 @@ When disabled the static particles will keep the same normals as the original me
     <message>
         <location filename="../../../../Gems/NvCloth/Code/Source/Pipeline/SceneAPIExt/ClothRule.cpp" line="292"/>
         <source>Select the &apos;vertex color&apos; stream that contains cloth inverse masses or &apos;Default: 1.0&apos; to use mass 1.0 for all vertices.</source>
-        <translation>选择包含布料逆质量的"顶点颜色"流，或选择"默认：1.0"以对所有顶点使用质量 1.0。</translation>
+        <translation>选择包含布料逆质量的&quot;顶点颜色&quot;流，或选择&quot;默认：1.0&quot;以对所有顶点使用质量 1.0。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/NvCloth/Code/Source/Pipeline/SceneAPIExt/ClothRule.cpp" line="298"/>
@@ -790,7 +790,7 @@ When disabled the static particles will keep the same normals as the original me
     <message>
         <location filename="../../../../Gems/NvCloth/Code/Source/Pipeline/SceneAPIExt/ClothRule.cpp" line="307"/>
         <source>Select the &apos;vertex color&apos; stream that contains cloth motion constraints or &apos;Default: 1.0&apos; to use 1.0 for all vertices.</source>
-        <translation>选择包含布料运动约束的"顶点颜色"流，或选择"默认：1.0"以对所有顶点使用 1.0。</translation>
+        <translation>选择包含布料运动约束的&quot;顶点颜色&quot;流，或选择&quot;默认：1.0&quot;以对所有顶点使用 1.0。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/NvCloth/Code/Source/Pipeline/SceneAPIExt/ClothRule.cpp" line="313"/>
@@ -805,7 +805,7 @@ When disabled the static particles will keep the same normals as the original me
     <message>
         <location filename="../../../../Gems/NvCloth/Code/Source/Pipeline/SceneAPIExt/ClothRule.cpp" line="322"/>
         <source>Select the &apos;vertex color&apos; stream that contains cloth backstop data.</source>
-        <translation>选择包含布料背面限制数据的"顶点颜色"流。</translation>
+        <translation>选择包含布料背面限制数据的&quot;顶点颜色&quot;流。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/NvCloth/Code/Source/Pipeline/SceneAPIExt/ClothRule.cpp" line="328"/>

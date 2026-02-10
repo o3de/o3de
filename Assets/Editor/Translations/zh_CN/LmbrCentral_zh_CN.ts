@@ -101,7 +101,7 @@
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioListenerComponent.cpp" line="45"/>
         <source>The Entity whose rotation the audio listener will adopt.  If none set, will assume &apos;this&apos; Entity</source>
-        <translation>音频监听器将采用其旋转的实体。如果未设置，将使用"此"实体</translation>
+        <translation>音频监听器将采用其旋转的实体。如果未设置，将使用&quot;此&quot;实体</translation>
     </message>
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioListenerComponent.cpp" line="47"/>
@@ -111,7 +111,7 @@
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioListenerComponent.cpp" line="48"/>
         <source>The Entity whose position the audio listener will adopt.  If none set, will assume &apos;this&apos; Entity</source>
-        <translation>音频监听器将采用其位置的实体。如果未设置，将使用"此"实体</translation>
+        <translation>音频监听器将采用其位置的实体。如果未设置，将使用&quot;此&quot;实体</translation>
     </message>
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioListenerComponent.cpp" line="50"/>
@@ -256,22 +256,22 @@
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioTriggerComponent.cpp" line="56"/>
         <source>Default &apos;play&apos; Trigger</source>
-        <translation>默认"播放"触发器</translation>
+        <translation>默认&quot;播放&quot;触发器</translation>
     </message>
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioTriggerComponent.cpp" line="57"/>
         <source>The default ATL Trigger control used by &apos;Play&apos;</source>
-        <translation>"播放"使用的默认 ATL 触发器控件</translation>
+        <translation>&quot;播放&quot;使用的默认 ATL 触发器控件</translation>
     </message>
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioTriggerComponent.cpp" line="59"/>
         <source>Default &apos;stop&apos; Trigger</source>
-        <translation>默认"停止"触发器</translation>
+        <translation>默认&quot;停止&quot;触发器</translation>
     </message>
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioTriggerComponent.cpp" line="60"/>
         <source>The default ATL Trigger control used by &apos;Stop&apos;</source>
-        <translation>"停止"使用的默认 ATL 触发器控件</translation>
+        <translation>&quot;停止&quot;使用的默认 ATL 触发器控件</translation>
     </message>
     <message>
         <location filename="../../../../Gems/LmbrCentral/Code/Source/Audio/EditorAudioTriggerComponent.cpp" line="62"/>

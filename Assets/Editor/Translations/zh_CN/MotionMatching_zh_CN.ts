@@ -267,7 +267,7 @@
     <message>
         <location filename="../../../../Gems/MotionMatching/Code/Source/Feature.cpp" line="201"/>
         <source>Use &apos;Squared&apos; in case minimal differences should be ignored and larger differences should overweight others. Use &apos;Absolute&apos; for linear differences and don&apos;t want the mentioned effect.</source>
-        <translation>如果希望忽略微小差异并让较大差异占更高权重，请使用"平方"。如果需要线性差异且不希望出现上述效果，请使用"绝对值"。</translation>
+        <translation>如果希望忽略微小差异并让较大差异占更高权重，请使用&quot;平方&quot;。如果需要线性差异且不希望出现上述效果，请使用&quot;绝对值&quot;。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/MotionMatching/Code/Source/Feature.cpp" line="203"/>

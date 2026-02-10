@@ -86,7 +86,7 @@
     <message>
         <location filename="../../../../Gems/Gestures/Code/Source/GesturesSystemComponent.cpp" line="85"/>
         <source>Custom gesture name/config pairs that will be used to create additional gesture input channels, in addition to the default gestures that are provided &apos;out of the box&apos;.</source>
-        <translation>自定义手势名称/配置对，用于创建额外的手势输入通道，作为对默认提供的"开箱即用"手势的补充。</translation>
+        <translation>自定义手势名称/配置对，用于创建额外的手势输入通道，作为对默认提供的&quot;开箱即用&quot;手势的补充。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Gestures/Code/Source/InputChannelGestureClickOrTap.cpp" line="29"/>

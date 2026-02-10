@@ -2291,17 +2291,17 @@ Press the button on the right of this slider to reset to the normal speed.</sour
     <message>
         <location filename="../../../../Gems/EMotionFX/Code/Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp" line="350"/>
         <source>To add a joint to this simulated object, right click a joint in the outliner, choose Add to Simulated Object, and select this object.</source>
-        <translation>要向此模拟对象添加关节，请在大纲视图中右键点击一个关节，选择"添加到模拟对象"，然后选择此对象。</translation>
+        <translation>要向此模拟对象添加关节，请在大纲视图中右键点击一个关节，选择&quot;添加到模拟对象&quot;，然后选择此对象。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/EMotionFX/Code/Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp" line="351"/>
         <source>There are no simulated object colliders. To add a collider, right click a joint in the outliner, choose Add Collider, and select a primitive shape. Simulated objects will collide with the primitive shape.</source>
-        <translation>没有模拟对象碰撞体。要添加碰撞体，请在大纲视图中右键点击一个关节，选择"添加碰撞体"，然后选择一个基本形状。模拟对象将与基本形状碰撞。</translation>
+        <translation>没有模拟对象碰撞体。要添加碰撞体，请在大纲视图中右键点击一个关节，选择&quot;添加碰撞体&quot;，然后选择一个基本形状。模拟对象将与基本形状碰撞。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/EMotionFX/Code/Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp" line="364"/>
         <source>To have the selected joints to collider against other primitive shape, set up &apos;collide with&apos; setting in their Simulated Object.</source>
-        <translation>要让所选关节与其他基本形状碰撞，请在其模拟对象中设置"碰撞对象"设置。</translation>
+        <translation>要让所选关节与其他基本形状碰撞，请在其模拟对象中设置&quot;碰撞对象&quot;设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/EMotionFX/Code/Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp" line="390"/>
@@ -2349,7 +2349,7 @@ Press the button on the right of this slider to reset to the normal speed.</sour
     <message>
         <location filename="../../../../Gems/EMotionFX/Code/Source/Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.cpp" line="90"/>
         <source>Currently, this collider doesn&apos;t collide against any simulated object. Select the Simulated Object you want to collide with from the Simulated Object Window, and choose this collider in the &quot;Collide with&quot; setting.</source>
-        <translation>当前，此碰撞体不与任何模拟对象碰撞。请从模拟对象窗口中选择要碰撞的模拟对象，并在"碰撞对象"设置中选择此碰撞体。</translation>
+        <translation>当前，此碰撞体不与任何模拟对象碰撞。请从模拟对象窗口中选择要碰撞的模拟对象，并在&quot;碰撞对象&quot;设置中选择此碰撞体。</translation>
     </message>
 </context>
 <context>
@@ -2378,12 +2378,12 @@ Press the button on the right of this slider to reset to the normal speed.</sour
     <message>
         <location filename="../../../../Gems/EMotionFX/Code/Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.cpp" line="149"/>
         <source>To simulated the selected joint, add it to a Simulated Object by clicking on the &quot;Add to Simulated Object&quot; button above</source>
-        <translation>要模拟所选关节，请点击上方的"添加到模拟对象"按钮将其添加到模拟对象中</translation>
+        <translation>要模拟所选关节，请点击上方的&quot;添加到模拟对象&quot;按钮将其添加到模拟对象中</translation>
     </message>
     <message>
         <location filename="../../../../Gems/EMotionFX/Code/Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.cpp" line="151"/>
         <source>If you want the selected joint to collide against a Simulated Object, add a collider to the selected joint, and then set up the &quot;Collide with&quot; settings under the Simulated Object</source>
-        <translation>如果要使所选关节与模拟对象碰撞，请向所选关节添加碰撞体，然后在模拟对象下设置"碰撞对象"设置</translation>
+        <translation>如果要使所选关节与模拟对象碰撞，请向所选关节添加碰撞体，然后在模拟对象下设置&quot;碰撞对象&quot;设置</translation>
     </message>
     <message>
         <location filename="../../../../Gems/EMotionFX/Code/Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.cpp" line="162"/>

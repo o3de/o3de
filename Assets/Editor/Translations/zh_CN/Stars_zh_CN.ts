@@ -66,7 +66,7 @@
         <translation>在背景中渲染星空</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/Stars/Code/Source/EditorStarsComponent.cpp" line="69"/>
+        <location filename="../../../../Gems/Stars/Code/Source/EditorStarsSystemComponent.cpp" line="27"/>
         <source>Stars system component</source>
         <translation>星空系统组件</translation>
     </message>

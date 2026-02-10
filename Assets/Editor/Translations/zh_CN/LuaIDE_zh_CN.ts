@@ -127,7 +127,7 @@
     <message>
         <location filename="../../../../Code/Tools/LuaIDE/Source/LUA/LUAEditorFindDialog.cpp" line="352"/>
         <source>Could not find &quot;%1&quot; within/further this context.</source>
-        <translation>在此上下文中找不到"%1"。</translation>
+        <translation>在此上下文中找不到&quot;%1&quot;。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Tools/LuaIDE/Source/LUA/LUAEditorFindDialog.cpp" line="423"/>
@@ -153,7 +153,7 @@
     <message>
         <location filename="../../../../Code/Tools/LuaIDE/Source/LUA/LUAEditorFindDialog.cpp" line="847"/>
         <source>Find &quot;%1&quot; (%2 in %3)</source>
-        <translation>查找"%1"（%2 在 %3 中）</translation>
+        <translation>查找&quot;%1&quot;（%2 在 %3 中）</translation>
     </message>
     <message>
         <location filename="../../../../Code/Tools/LuaIDE/Source/LUA/LUAEditorFindDialog.cpp" line="960"/>

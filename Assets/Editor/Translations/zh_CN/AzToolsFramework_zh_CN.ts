@@ -1040,12 +1040,12 @@
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ComponentEditor.cpp" line="354"/>
         <source>This component has been disabled because it is incompatible with &quot;%1&quot;.</source>
-        <translation>此组件已被禁用，因为它与"%1"不兼容。</translation>
+        <translation>此组件已被禁用，因为它与&quot;%1&quot;不兼容。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ComponentEditor.cpp" line="366"/>
         <source>This component is disabled pending &quot;%1&quot;. This component will be enabled when the required component is resolved.</source>
-        <translation>此组件已禁用，等待"%1"。当所需组件解析后，此组件将被启用。</translation>
+        <translation>此组件已禁用，等待&quot;%1&quot;。当所需组件解析后，此组件将被启用。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ComponentEditor.cpp" line="378"/>
@@ -2686,7 +2686,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.cpp" line="554"/>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.cpp" line="627"/>
         <source>More information can be found by pressing &quot;Show Details...&quot;.</source>
-        <translation>按"显示详细信息..."可以找到更多信息。</translation>
+        <translation>按&quot;显示详细信息...&quot;可以找到更多信息。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.cpp" line="213"/>
@@ -2982,7 +2982,7 @@ Do you wish to proceed with this deletion?</source>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="84"/>
         <source>No classes could be found that derive from &quot;%1&quot;.</source>
-        <translation>找不到从"%1"派生的类。</translation>
+        <translation>找不到从&quot;%1&quot;派生的类。</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="99"/>
@@ -3350,22 +3350,22 @@ They have been ignored.</source>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/Slice/SlicePushWidget.cpp" line="1076"/>
         <source>Field &quot;</source>
-        <translation>字段"</translation>
+        <translation>字段&quot;</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/Slice/SlicePushWidget.cpp" line="1076"/>
         <source>&quot; is assigned to asset &quot;</source>
-        <translation>"已分配到资产"</translation>
+        <translation>&quot;已分配到资产&quot;</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/Slice/SlicePushWidget.cpp" line="1260"/>
         <source>Check to save field &quot;</source>
-        <translation>勾选以将字段"</translation>
+        <translation>勾选以将字段&quot;</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/Slice/SlicePushWidget.cpp" line="1260"/>
         <source>&quot; to asset &quot;</source>
-        <translation>"保存到资产"</translation>
+        <translation>&quot;保存到资产&quot;</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/Slice/SlicePushWidget.cpp" line="1283"/>

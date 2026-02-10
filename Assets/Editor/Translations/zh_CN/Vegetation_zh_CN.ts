@@ -522,7 +522,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Components/PositionModifierComponent.cpp" line="83"/>
         <source>Automatically snap to the surface closest to the new position using Surface Tags To Snap To plus the initial surface tags.</source>
-        <translation>使用"要吸附到的表面标签"加上初始表面标签，自动吸附到最接近新位置的表面。</translation>
+        <translation>使用&quot;要吸附到的表面标签&quot;加上初始表面标签，自动吸附到最接近新位置的表面。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Components/PositionModifierComponent.cpp" line="84"/>
@@ -1146,7 +1146,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="169"/>
         <source>Display the per-item override settings that can be used with filter and modifier components when those components have &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>显示逐项覆盖设置，当过滤器和修改器组件启用了"允许逐项覆盖"时可以使用这些设置。</translation>
+        <translation>显示逐项覆盖设置，当过滤器和修改器组件启用了&quot;允许逐项覆盖&quot;时可以使用这些设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="172"/>
@@ -1167,7 +1167,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="175"/>
         <source>Enable per-item override settings for this item when the Position Modifier has &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>当位置修改器启用了"允许逐项覆盖"时，为此项启用逐项覆盖设置。</translation>
+        <translation>当位置修改器启用了&quot;允许逐项覆盖&quot;时，为此项启用逐项覆盖设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="178"/>
@@ -1213,7 +1213,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="224"/>
         <source>Enable per-item override settings for this item when the Rotation Modifier has &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>当旋转修改器启用了"允许逐项覆盖"时，为此项启用逐项覆盖设置。</translation>
+        <translation>当旋转修改器启用了&quot;允许逐项覆盖&quot;时，为此项启用逐项覆盖设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="270"/>
@@ -1223,7 +1223,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="273"/>
         <source>Enable per-item override settings for this item when the Scale Modifier has &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>当缩放修改器启用了"允许逐项覆盖"时，为此项启用逐项覆盖设置。</translation>
+        <translation>当缩放修改器启用了&quot;允许逐项覆盖&quot;时，为此项启用逐项覆盖设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="276"/>
@@ -1249,7 +1249,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="294"/>
         <source>Enable per-item override settings for this item when the Altitude Filter has &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>当海拔过滤器启用了"允许逐项覆盖"时，为此项启用逐项覆盖设置。</translation>
+        <translation>当海拔过滤器启用了&quot;允许逐项覆盖&quot;时，为此项启用逐项覆盖设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="304"/>
@@ -1259,7 +1259,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="307"/>
         <source>Enable per-item override settings for this item when the Distance Between Filter has &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>当间距过滤器启用了"允许逐项覆盖"时，为此项启用逐项覆盖设置。</translation>
+        <translation>当间距过滤器启用了&quot;允许逐项覆盖&quot;时，为此项启用逐项覆盖设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="323"/>
@@ -1269,7 +1269,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="326"/>
         <source>Enable per-item override settings for this item when the Surface Slope Alignment Modifier has &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>当表面坡度对齐修改器启用了"允许逐项覆盖"时，为此项启用逐项覆盖设置。</translation>
+        <translation>当表面坡度对齐修改器启用了&quot;允许逐项覆盖&quot;时，为此项启用逐项覆盖设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="340"/>
@@ -1279,7 +1279,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="343"/>
         <source>Enable per-item override settings for this item when the Slope Filter has &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>当坡度过滤器启用了"允许逐项覆盖"时，为此项启用逐项覆盖设置。</translation>
+        <translation>当坡度过滤器启用了&quot;允许逐项覆盖&quot;时，为此项启用逐项覆盖设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="357"/>
@@ -1294,7 +1294,7 @@
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="360"/>
         <source>Enable per-item override settings for this item when the Surface Mask Filter has &apos;Allow Per-Item Overrides&apos; enabled.</source>
-        <translation>当表面遮罩过滤器启用了"允许逐项覆盖"时，为此项启用逐项覆盖设置。</translation>
+        <translation>当表面遮罩过滤器启用了&quot;允许逐项覆盖&quot;时，为此项启用逐项覆盖设置。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/Vegetation/Code/Source/Descriptor.cpp" line="362"/>

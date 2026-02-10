@@ -185,14 +185,13 @@ Check parameters such as --project-path and --engine-path and make sure they are
         <translation>组件之间的服务依赖存在无限循环：</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Framework/AzCore/AzCore/Debug/Trace.cpp" line="381"/>
         <source>Assert 
  
  %s(%d) 
  %s 
  
  %s</source>
-        <translation>断言 
+        <translation type="vanished">断言 
  
  %s(%d) 
  %s 
@@ -570,6 +569,16 @@ Check parameters such as --project-path and --engine-path and make sure they are
         <location filename="../../../../Code/Framework/AzCore/AzCore/UserSettings/UserSettingsComponent.cpp" line="118"/>
         <source>Global</source>
         <translation>全局</translation>
+    </message>
+    <message>
+        <location filename="../../../../Code/Framework/AzCore/AzCore/Debug/Trace.cpp" line="381"/>
+        <source>Assert 
+
+ %s(%d) 
+ %s 
+
+ %s</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

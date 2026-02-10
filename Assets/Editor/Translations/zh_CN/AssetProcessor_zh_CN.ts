@@ -1547,7 +1547,7 @@ Please check the Asset Processor for more information.</source>
 5) %2</source>
         <translation>在某些注册表设置下，资产处理器将无法正常工作。要修正此问题，请执行以下步骤：
 1) 打开注册表编辑器（RegEdit）
-2) 当 Windows 询问您是否允许该应用对设备进行更改时，点击"是"
+2) 当 Windows 询问您是否允许该应用对设备进行更改时，点击&quot;是&quot;
 3) 打开路径 %0 对应的注册表项
 4) 删除 %1 的键值
 5) %2</translation>

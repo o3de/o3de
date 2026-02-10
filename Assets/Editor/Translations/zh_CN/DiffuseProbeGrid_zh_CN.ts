@@ -175,7 +175,7 @@
     <message>
         <location filename="../../../../Gems/DiffuseProbeGrid/Code/Source/EditorComponents/EditorDiffuseProbeGridComponent.cpp" line="143"/>
         <source>Controls how the DiffuseProbeGrid handles transparent geometry in the Real-Time update, and is a performance/quality tradeoff.  &apos;Full&apos; processes all transparencies found along the probe rays.  &apos;Closest Only&apos; processes only the closest transparency to the probe.  &apos;None&apos; disables transparency handling and treats all geometry as Opaque.</source>
-        <translation>控制 DiffuseProbeGrid 在实时更新中如何处理透明几何体，这是性能与质量之间的权衡。"完全"处理探针光线沿途发现的所有透明体。"仅最近"仅处理距探针最近的透明体。"无"禁用透明度处理，将所有几何体视为不透明。</translation>
+        <translation>控制 DiffuseProbeGrid 在实时更新中如何处理透明几何体，这是性能与质量之间的权衡。&quot;完全&quot;处理探针光线沿途发现的所有透明体。&quot;仅最近&quot;仅处理距探针最近的透明体。&quot;无&quot;禁用透明度处理，将所有几何体视为不透明。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/DiffuseProbeGrid/Code/Source/EditorComponents/EditorDiffuseProbeGridComponent.cpp" line="145"/>

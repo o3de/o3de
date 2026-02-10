@@ -77,7 +77,7 @@
     <message>
         <location filename="../../../../Gems/RecastNavigation/Code/Source/EditorComponents/EditorRecastNavigationMeshComponent.cpp" line="64"/>
         <source>Minimum floor to &apos;ceiling&apos; height that will still allow the floor area to be considered walkable.</source>
-        <translation>仍允许地面区域被视为可行走的最小地板到"天花板"高度。</translation>
+        <translation>仍允许地面区域被视为可行走的最小地板到&quot;天花板&quot;高度。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/RecastNavigation/Code/Source/EditorComponents/EditorRecastNavigationMeshComponent.cpp" line="67"/>
