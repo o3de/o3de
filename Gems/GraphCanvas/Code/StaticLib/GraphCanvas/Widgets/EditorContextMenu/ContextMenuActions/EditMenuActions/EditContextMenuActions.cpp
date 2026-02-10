@@ -7,6 +7,7 @@
  */
 #include <QApplication>
 #include <QClipboard>
+#include <QCoreApplication>
 #include <QMimeData>
 
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.h>
@@ -22,7 +23,7 @@ namespace GraphCanvas
     CutGraphSelectionMenuAction::CutGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Cut", parent)
     {
-        setText(tr("Cut"));
+        setText(QCoreApplication::translate("CutGraphSelectionMenuAction", "Cut"));
     }
 
     ContextMenuAction::SceneReaction CutGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
@@ -40,7 +41,7 @@ namespace GraphCanvas
     CopyGraphSelectionMenuAction::CopyGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Copy", parent)
     {
-        setText(tr("Copy"));
+        setText(QCoreApplication::translate("CopyGraphSelectionMenuAction", "Copy"));
     }
 
     ContextMenuAction::SceneReaction CopyGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
@@ -58,7 +59,7 @@ namespace GraphCanvas
     PasteGraphSelectionMenuAction::PasteGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Paste", parent)
     {
-        setText(tr("Paste"));
+        setText(QCoreApplication::translate("PasteGraphSelectionMenuAction", "Paste"));
     }
 
     void PasteGraphSelectionMenuAction::RefreshAction()
@@ -87,7 +88,7 @@ namespace GraphCanvas
     DeleteGraphSelectionMenuAction::DeleteGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Delete", parent)
     {
-        setText(tr("Delete"));
+        setText(QCoreApplication::translate("DeleteGraphSelectionMenuAction", "Delete"));
     }
 
     ContextMenuAction::SceneReaction DeleteGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)
@@ -105,7 +106,7 @@ namespace GraphCanvas
     DuplicateGraphSelectionMenuAction::DuplicateGraphSelectionMenuAction(QObject* parent)
         : EditContextMenuAction("Duplicate", parent)
     {
-        setText(tr("Duplicate"));
+        setText(QCoreApplication::translate("DuplicateGraphSelectionMenuAction", "Duplicate"));
     }
 
     ContextMenuAction::SceneReaction DuplicateGraphSelectionMenuAction::TriggerAction(const AZ::Vector2& scenePos)

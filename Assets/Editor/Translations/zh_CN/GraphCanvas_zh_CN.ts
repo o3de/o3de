@@ -4,7 +4,7 @@
 <context>
     <name>AddBookmarkMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/BookmarkConstructMenuActions.cpp" line="21"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/BookmarkConstructMenuActions.cpp" line="23"/>
         <source>Add bookmark</source>
         <translation>添加书签</translation>
     </message>
@@ -12,7 +12,7 @@
 <context>
     <name>AddBreakpointMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/BreakpointMenuActions/BreakpointContextMenuActions.cpp" line="25"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/BreakpointMenuActions/BreakpointContextMenuActions.cpp" line="27"/>
         <source>Add Breakpoint</source>
         <translation>添加断点</translation>
     </message>
@@ -20,7 +20,7 @@
 <context>
     <name>AddCommentPresetMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="419"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="420"/>
         <source>New Comment</source>
         <translation>新建注释</translation>
     </message>
@@ -28,12 +28,12 @@
 <context>
     <name>AddNodeGroupPresetMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="444"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="445"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="574"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="575"/>
         <source>New Group</source>
         <translation>新建组</translation>
     </message>
@@ -41,7 +41,7 @@
 <context>
     <name>AlignSelectionMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/AlignmentMenuActions/AlignmentContextMenuActions.cpp" line="37"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/AlignmentMenuActions/AlignmentContextMenuActions.cpp" line="39"/>
         <source>Align</source>
         <translation>对齐</translation>
     </message>
@@ -267,7 +267,7 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>ClearConnectionsMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="111"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="112"/>
         <source>Clear connections</source>
         <translation>清除连接</translation>
     </message>
@@ -275,12 +275,12 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>CollapseNodeGroupMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="133"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="135"/>
         <source>Collapse</source>
         <translation>折叠</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="134"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="136"/>
         <source>Collapses the selected group</source>
         <translation>折叠所选组</translation>
     </message>
@@ -374,7 +374,7 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>CopyGraphSelectionMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="43"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="44"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
@@ -382,22 +382,22 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>CreateNodeGroupMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="30"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="32"/>
         <source>Group</source>
         <translation>分组</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="31"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="33"/>
         <source>Will create a Node Group for the selected nodes.</source>
         <translation>将为所选节点创建节点组。</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="35"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="37"/>
         <source>Group [Collapsed]</source>
         <translation>分组 [折叠]</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="36"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="38"/>
         <source>Will create a Node Group for the selected nodes, and then collapse the group to a single node.</source>
         <translation>将为所选节点创建节点组，然后将组折叠为单个节点。</translation>
     </message>
@@ -405,17 +405,17 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>CreatePresetFromSelection</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="169"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="170"/>
         <source>Create Preset From</source>
         <translation>从选择创建预设</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="197"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="198"/>
         <source>Set Preset Name</source>
         <translation>设置预设名称</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="197"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="198"/>
         <source>Preset Name</source>
         <translation>预设名称</translation>
     </message>
@@ -423,7 +423,7 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>CutGraphSelectionMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="25"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="26"/>
         <source>Cut</source>
         <translation>剪切</translation>
     </message>
@@ -431,7 +431,7 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>DeleteGraphSelectionMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="90"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="91"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
@@ -439,7 +439,7 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>DuplicateGraphSelectionMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="108"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="109"/>
         <source>Duplicate</source>
         <translation>复制副本</translation>
     </message>
@@ -447,12 +447,12 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>EditCommentMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/CommentMenuActions/CommentContextMenuActions.cpp" line="27"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/CommentMenuActions/CommentContextMenuActions.cpp" line="29"/>
         <source>Edit comment</source>
         <translation>编辑注释</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/CommentMenuActions/CommentContextMenuActions.cpp" line="28"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/CommentMenuActions/CommentContextMenuActions.cpp" line="30"/>
         <source>Edits the selected comment</source>
         <translation>编辑所选注释</translation>
     </message>
@@ -460,12 +460,12 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>EditGroupTitleMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="185"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="187"/>
         <source>Edit group title</source>
         <translation>编辑组标题</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="186"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="188"/>
         <source>Edits the selected group title</source>
         <translation>编辑所选组标题</translation>
     </message>
@@ -473,12 +473,12 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>ExpandNodeGroupMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="160"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="162"/>
         <source>Expand</source>
         <translation>展开</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="161"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="163"/>
         <source>Expands the selected group</source>
         <translation>展开所选组</translation>
     </message>
@@ -971,7 +971,7 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>GraphCanvas::BreakpointContextMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/BreakpointMenuActions/BreakpointContextMenuAction.h" line="35"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/BreakpointMenuActions/BreakpointContextMenuAction.h" line="37"/>
         <source>Feature in development. Adding breakpoint works but will freeze the editor when breakpoint is hit.</source>
         <translation>功能开发中。添加断点可以工作，但当断点被触发时编辑器将会冻结。</translation>
     </message>
@@ -1041,7 +1041,7 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>PasteGraphSelectionMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="61"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/EditMenuActions/EditContextMenuActions.cpp" line="62"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
@@ -1049,7 +1049,7 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>PromoteToVariableAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="320"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="321"/>
         <source>Promote to Variable</source>
         <translation>提升为变量</translation>
     </message>
@@ -1114,12 +1114,12 @@ Proceed with action and remove previous bookmark?</source>
         <translation>右对齐</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="380"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="381"/>
         <source>Apply Preset</source>
         <translation>应用预设</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="388"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp" line="389"/>
         <source>Add Comment</source>
         <translation>添加注释</translation>
     </message>
@@ -1127,17 +1127,17 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>RemoveSlotMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="31"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="32"/>
         <source>Remove slot</source>
         <translation>移除插槽</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="87"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="88"/>
         <source>Slot has active connections</source>
         <translation>插槽有活动连接</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="87"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="88"/>
         <source>The selected slot has active connections, are you sure you wish to remove it?</source>
         <translation>所选插槽有活动连接，确定要移除它吗？</translation>
     </message>
@@ -1145,17 +1145,17 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>RemoveUnusedElementsMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="23"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="25"/>
         <source>All</source>
         <translation>全部</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="24"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="26"/>
         <source>Removes all of the unused elements from the active graph</source>
         <translation>从活动图表中移除所有未使用的元素</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="34"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="36"/>
         <source>Remove Unused</source>
         <translation>移除未使用的</translation>
     </message>
@@ -1163,17 +1163,17 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>RemoveUnusedNodesMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="52"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="54"/>
         <source>Nodes</source>
         <translation>节点</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="53"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="55"/>
         <source>Removes all of the unused nodes from the active graph</source>
         <translation>从活动图表中移除所有未使用的节点</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="63"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp" line="65"/>
         <source>Remove Unused</source>
         <translation>移除未使用的</translation>
     </message>
@@ -1181,19 +1181,19 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>ResetToDefaultValueMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="148"/>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="181"/>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="191"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="149"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="182"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="192"/>
         <source>Reset Value</source>
         <translation>重置值</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="177"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="178"/>
         <source>Reset Reference</source>
         <translation>重置引用</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="187"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="188"/>
         <source>Reset Property</source>
         <translation>重置属性</translation>
     </message>
@@ -1201,12 +1201,12 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>SetEnabledStateMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/DisableMenuActions/DisableMenuActions.cpp" line="34"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/DisableMenuActions/DisableMenuActions.cpp" line="36"/>
         <source>Enable</source>
         <translation>启用</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/DisableMenuActions/DisableMenuActions.cpp" line="38"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/DisableMenuActions/DisableMenuActions.cpp" line="40"/>
         <source>Disable</source>
         <translation>禁用</translation>
     </message>
@@ -1214,17 +1214,17 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>ToggleReferenceStateAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="241"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="242"/>
         <source>Toggle Reference</source>
         <translation>切换引用</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="262"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="263"/>
         <source>Convert to Reference</source>
         <translation>转换为引用</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="267"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuActions.cpp" line="268"/>
         <source>Convert to Value</source>
         <translation>转换为值</translation>
     </message>
@@ -1232,7 +1232,7 @@ Proceed with action and remove previous bookmark?</source>
 <context>
     <name>UngroupNodeGroupMenuAction</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="101"/>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.cpp" line="103"/>
         <source>Ungroup</source>
         <translation>取消分组</translation>
     </message>

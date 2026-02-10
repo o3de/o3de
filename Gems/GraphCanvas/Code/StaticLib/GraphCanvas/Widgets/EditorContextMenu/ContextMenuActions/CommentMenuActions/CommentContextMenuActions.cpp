@@ -6,6 +6,8 @@
  *
  */
 
+#include <QCoreApplication>
+
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/CommentMenuActions/CommentContextMenuActions.h>
 
 #include <GraphCanvas/Components/GridBus.h>
@@ -24,8 +26,8 @@ namespace GraphCanvas
     EditCommentMenuAction::EditCommentMenuAction(QObject* parent)
         : CommentContextMenuAction("Edit comment", parent)
     {
-        setText(tr("Edit comment"));
-        setToolTip(tr("Edits the selected comment"));
+        setText(QCoreApplication::translate("EditCommentMenuAction", "Edit comment"));
+        setToolTip(QCoreApplication::translate("EditCommentMenuAction", "Edits the selected comment"));
     }
 
     void EditCommentMenuAction::RefreshAction()

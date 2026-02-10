@@ -6,6 +6,8 @@
  *
  */
 
+#include <QCoreApplication>
+
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeGroupMenuActions/NodeGroupContextMenuActions.h>
 
 #include <GraphCanvas/Components/GridBus.h>
@@ -27,13 +29,13 @@ namespace GraphCanvas
     {
         if (!collapseGroup)
         {
-            setText(tr("Group"));
-            setToolTip(tr("Will create a Node Group for the selected nodes."));
+            setText(QCoreApplication::translate("CreateNodeGroupMenuAction", "Group"));
+            setToolTip(QCoreApplication::translate("CreateNodeGroupMenuAction", "Will create a Node Group for the selected nodes."));
         }
         else
         {
-            setText(tr("Group [Collapsed]"));
-            setToolTip(tr("Will create a Node Group for the selected nodes, and then collapse the group to a single node."));
+            setText(QCoreApplication::translate("CreateNodeGroupMenuAction", "Group [Collapsed]"));
+            setToolTip(QCoreApplication::translate("CreateNodeGroupMenuAction", "Will create a Node Group for the selected nodes, and then collapse the group to a single node."));
         }
     }
 
@@ -98,7 +100,7 @@ namespace GraphCanvas
     UngroupNodeGroupMenuAction::UngroupNodeGroupMenuAction(QObject* parent)
         : NodeGroupContextMenuAction("Ungroup", parent)
     {
-        setText(tr("Ungroup"));
+        setText(QCoreApplication::translate("UngroupNodeGroupMenuAction", "Ungroup"));
     }
 
     void UngroupNodeGroupMenuAction::RefreshAction()
@@ -130,8 +132,8 @@ namespace GraphCanvas
     CollapseNodeGroupMenuAction::CollapseNodeGroupMenuAction(QObject* parent)
         : NodeGroupContextMenuAction("Collapse", parent)
     {
-        setText(tr("Collapse"));
-        setToolTip(tr("Collapses the selected group"));
+        setText(QCoreApplication::translate("CollapseNodeGroupMenuAction", "Collapse"));
+        setToolTip(QCoreApplication::translate("CollapseNodeGroupMenuAction", "Collapses the selected group"));
     }
 
     void CollapseNodeGroupMenuAction::RefreshAction()
@@ -157,8 +159,8 @@ namespace GraphCanvas
     ExpandNodeGroupMenuAction::ExpandNodeGroupMenuAction(QObject* parent)
         : NodeGroupContextMenuAction("Expand", parent)
     {
-        setText(tr("Expand"));
-        setToolTip(tr("Expands the selected group"));
+        setText(QCoreApplication::translate("ExpandNodeGroupMenuAction", "Expand"));
+        setToolTip(QCoreApplication::translate("ExpandNodeGroupMenuAction", "Expands the selected group"));
     } 
 
     void ExpandNodeGroupMenuAction::RefreshAction()
@@ -182,8 +184,8 @@ namespace GraphCanvas
     EditGroupTitleMenuAction::EditGroupTitleMenuAction(QObject* parent)
         : NodeGroupContextMenuAction("Edit group title", parent)
     {
-        setText(tr("Edit group title"));
-        setToolTip(tr("Edits the selected group title"));
+        setText(QCoreApplication::translate("EditGroupTitleMenuAction", "Edit group title"));
+        setToolTip(QCoreApplication::translate("EditGroupTitleMenuAction", "Edits the selected group title"));
     }
 
     void EditGroupTitleMenuAction::RefreshAction()
