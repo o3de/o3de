@@ -130,7 +130,7 @@ namespace EMStudio
         for (uint32 i = 0; i < numGroups; ++i)
         {
             MysticQt::KeyboardShortcutManager::Group* group = shortcutManager->GetGroup(i);
-            m_listWidget->addItem(FromStdString(group->GetName()));
+            m_listWidget->addItem(tr(group->GetName().c_str()));
         }
 
         m_tableWidget->blockSignals(false);

@@ -1507,11 +1507,101 @@ They will be removed from your saved settings. Please re-import them again if yo
     </message>
 </context>
 <context>
+    <name>QDialogButtonBox</name>
+    <message>
+        <source>&amp;OK</source>
+        <translation type="vanished">确定(&amp;O)</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="vanished">确定</translation>
+    </message>
+    <message>
+        <source>&amp;Cancel</source>
+        <translation type="vanished">取消(&amp;C)</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="vanished">取消</translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation type="vanished">是(&amp;Y)</translation>
+    </message>
+    <message>
+        <source>Yes</source>
+        <translation type="vanished">是</translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="vanished">否(&amp;N)</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <translation type="vanished">否</translation>
+    </message>
+    <message>
+        <source>&amp;Retry</source>
+        <translation type="vanished">重试(&amp;R)</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation type="vanished">重试</translation>
+    </message>
+    <message>
+        <source>Ignore</source>
+        <translation type="vanished">忽略</translation>
+    </message>
+    <message>
+        <source>&amp;Abort</source>
+        <translation type="vanished">中止(&amp;A)</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="vanished">中止</translation>
+    </message>
+</context>
+<context>
     <name>QLineEdit</name>
     <message>
         <location filename="../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/Widgets/LineEdit.cpp" line="112"/>
         <source>Invalid input</source>
         <translation>无效输入</translation>
+    </message>
+</context>
+<context>
+    <name>QMessageBox</name>
+    <message>
+        <source>OK</source>
+        <translation type="vanished">确定</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="vanished">取消</translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation type="vanished">是(&amp;Y)</translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="vanished">否(&amp;N)</translation>
+    </message>
+    <message>
+        <source>&amp;Save</source>
+        <translation type="vanished">保存(&amp;S)</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="vanished">保存</translation>
+    </message>
+    <message>
+        <source>&amp;Discard</source>
+        <translation type="vanished">丢弃(&amp;D)</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation type="vanished">丢弃</translation>
     </message>
 </context>
 <context>
@@ -1645,6 +1735,21 @@ They will be removed from your saved settings. Please re-import them again if yo
         <location filename="../../../../Code/Framework/AzQtComponents/Platform/Windows/AzQtComponents/Utilities/DesktopUtilities_Windows.cpp" line="32"/>
         <source>Open in Explorer</source>
         <translation>在资源管理器中打开</translation>
+    </message>
+</context>
+<context>
+    <name>QPlatformTheme</name>
+    <message>
+        <source>Save</source>
+        <translation type="vanished">保存</translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation type="vanished">打开</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="vanished">关闭</translation>
     </message>
 </context>
 <context>

@@ -337,7 +337,7 @@ namespace EMStudio
         DisableSaveSelectedActorsMenu();
 
         // recent actors submenu
-        m_recentActors.Init(menu, m_options.GetMaxRecentFiles(), "Recent Actors", "recentActorFiles");
+        m_recentActors.Init(menu, m_options.GetMaxRecentFiles(), tr("Recent Actors"), "recentActorFiles");
         connect(&m_recentActors, &MysticQt::RecentFiles::OnRecentFile, this, &MainWindow::OnRecentFile);
 
         // workspace file actions
@@ -352,7 +352,7 @@ namespace EMStudio
         saveWorkspaceAsAction->setObjectName("EMFX.MainWindow.SaveWorkspaceAsAction");
 
         // recent workspace submenu
-        m_recentWorkspaces.Init(menu, m_options.GetMaxRecentFiles(), "Recent Workspaces", "recentWorkspaces");
+        m_recentWorkspaces.Init(menu, m_options.GetMaxRecentFiles(), tr("Recent Workspaces"), "recentWorkspaces");
         connect(&m_recentWorkspaces, &MysticQt::RecentFiles::OnRecentFile, this, &MainWindow::OnRecentFile);
 
         // edit menu
@@ -451,7 +451,7 @@ namespace EMStudio
         // add the application mode group
         constexpr AZStd::string_view layoutGroupName = "Layouts";
         QAction* animGraphLayoutAction = new QAction(
-            "AnimGraph",
+            tr("AnimGraph"),
             this);
         animGraphLayoutAction->setShortcut(0x0 | Qt::Key_1 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(animGraphLayoutAction, layoutGroupName, false);
@@ -459,7 +459,7 @@ namespace EMStudio
         addAction(animGraphLayoutAction);
 
         QAction* animationLayoutAction = new QAction(
-            "Animation",
+            tr("Animation"),
             this);
         animationLayoutAction->setShortcut(0x0 | Qt::Key_2 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(animationLayoutAction, layoutGroupName, false);
@@ -467,7 +467,7 @@ namespace EMStudio
         addAction(animationLayoutAction);
 
         QAction* characterLayoutAction = new QAction(
-            "Character",
+            tr("Character"),
             this);
         characterLayoutAction->setShortcut(0x0 | Qt::Key_3 | Qt::AltModifier);
         m_shortcutManager->RegisterKeyboardShortcut(characterLayoutAction, layoutGroupName, false);
@@ -1064,14 +1064,14 @@ namespace EMStudio
             if (plugin->AllowMultipleInstances())
             {
                 // create the menu
-                m_createWindowMenu->addMenu(plugin->GetName());
+                m_createWindowMenu->addMenu(tr(plugin->GetName()));
 
                 // TODO: add each instance inside the submenu
             }
             else
             {
                 // create the action
-                QAction* action = m_createWindowMenu->addAction(plugin->GetName());
+                QAction* action = m_createWindowMenu->addAction(tr(plugin->GetName()));
                 action->setData(plugin->GetName());
 
                 // connect the action to activate the plugin when clicked on it

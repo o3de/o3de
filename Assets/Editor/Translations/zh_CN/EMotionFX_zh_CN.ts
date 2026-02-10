@@ -136,6 +136,7 @@
 <context>
     <name>EMStudio::AnimGraphPlugin</name>
     <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.cpp" line="185"/>
         <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.cpp" line="380"/>
         <source>Node Palette</source>
         <translation>节点面板</translation>
@@ -144,6 +145,11 @@
         <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.cpp" line="393"/>
         <source>Parameters</source>
         <translation>参数</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.cpp" line="183"/>
+        <source>Parameter Window</source>
+        <translation>参数窗口</translation>
     </message>
 </context>
 <context>
@@ -222,6 +228,82 @@
         <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="359"/>
         <source>Visualization</source>
         <translation>可视化</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="52"/>
+        <source>Align Left</source>
+        <translation>左对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="60"/>
+        <source>Align Right</source>
+        <translation>右对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="68"/>
+        <source>Align Top</source>
+        <translation>上对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="76"/>
+        <source>Align Bottom</source>
+        <translation>下对齐</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="83"/>
+        <source>Select All</source>
+        <translation>全选</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="98"/>
+        <source>Unselect All</source>
+        <translation>取消全选</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="136"/>
+        <source>History Forward</source>
+        <translation>历史前进</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="148"/>
+        <source>History Back</source>
+        <translation>历史后退</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="166"/>
+        <source>Open Selected Node</source>
+        <translation>打开选中节点</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="173"/>
+        <source>Open Parent Node</source>
+        <translation>打开父节点</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="181"/>
+        <source>Fit Entire Graph</source>
+        <translation>适应整个图表</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.cpp" line="189"/>
+        <source>Zoom On Selected Nodes</source>
+        <translation>缩放到选中节点</translation>
+    </message>
+    <message>
+        <source>Cut</source>
+        <translation type="vanished">剪切</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="vanished">复制</translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation type="vanished">粘贴</translation>
+    </message>
+    <message>
+        <source>Delete Selected Nodes</source>
+        <translation type="vanished">删除选中节点</translation>
     </message>
 </context>
 <context>
@@ -401,6 +483,14 @@
         <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/KeyboardShortcutsWindow.cpp" line="327"/>
         <source>Assign New Key</source>
         <translation>分配新按键</translation>
+    </message>
+    <message>
+        <source>Layouts</source>
+        <translation type="vanished">布局</translation>
+    </message>
+    <message>
+        <source>Anim Graph Window</source>
+        <translation type="vanished">动画图窗口</translation>
     </message>
 </context>
 <context>
@@ -607,6 +697,75 @@
         <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.cpp" line="2173"/>
         <source>Merge Actor</source>
         <translation>合并角色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.cpp" line="340"/>
+        <source>Recent Actors</source>
+        <translation>最近的角色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.cpp" line="355"/>
+        <source>Recent Workspaces</source>
+        <translation>最近的工作区</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.cpp" line="454"/>
+        <source>AnimGraph</source>
+        <translation>动画图</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.cpp" line="462"/>
+        <source>Animation</source>
+        <translation>动画</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.cpp" line="470"/>
+        <source>Character</source>
+        <translation>角色</translation>
+    </message>
+    <message>
+        <source>Actor Manager</source>
+        <translation type="vanished">角色管理器</translation>
+    </message>
+    <message>
+        <source>Anim Graph</source>
+        <translation type="vanished">动画图</translation>
+    </message>
+    <message>
+        <source>Command Bar</source>
+        <translation type="vanished">命令栏</translation>
+    </message>
+    <message>
+        <source>Inspector</source>
+        <translation type="vanished">检查器</translation>
+    </message>
+    <message>
+        <source>Log Window</source>
+        <translation type="vanished">日志窗口</translation>
+    </message>
+    <message>
+        <source>Morph Targets</source>
+        <translation type="vanished">变形目标</translation>
+    </message>
+    <message>
+        <source>Motion Sets</source>
+        <translation type="vanished">动作集</translation>
+    </message>
+    <message>
+        <source>Simulated Object</source>
+        <translation type="vanished">模拟对象</translation>
+    </message>
+    <message>
+        <source>Skeleton Outliner</source>
+        <translation type="vanished">骨骼大纲</translation>
+    </message>
+    <message>
+        <source>Time View</source>
+        <translation type="vanished">时间视图</translation>
+    </message>
+    <message>
+        <source>Atom Render Window</source>
+        <translation type="vanished">Atom 渲染窗口</translation>
     </message>
 </context>
 <context>
@@ -2054,6 +2213,548 @@ Press the button on the right of this slider to reset to the normal speed.</sour
         <source>Number of threads used internally by EMotion FX</source>
         <translation>EMotion FX 内部使用的线程数</translation>
     </message>
+    <!-- GUIOptions (Preferences > General tab) -->
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="239"/>
+        <source>Maximum recent files</source>
+        <translation>最近文件最大数量</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="240"/>
+        <source>When opening more than the maximum recent files, the oldest opened file won&apos;t be displayed in the recent files menu anymore.</source>
+        <translation>打开文件超过最近文件最大数量时，最早打开的文件将不再显示在最近文件菜单中。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="244"/>
+        <source>Undo history size</source>
+        <translation>撤消历史大小</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="245"/>
+        <source>Maximum number of available undo steps.</source>
+        <translation>可用撤消步骤的最大数量。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="249"/>
+        <source>Notification visible time</source>
+        <translation>通知显示时间</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="250"/>
+        <source>Time in seconds the notification window will show after saving a file.</source>
+        <translation>保存文件后通知窗口显示的时间（秒）。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="254"/>
+        <source>Enable autosave</source>
+        <translation>启用自动保存</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="255"/>
+        <source>Autosave will automatically save in-progress versions of newly created or opened assets.</source>
+        <translation>自动保存将自动保存新创建或已打开资产的进行中版本。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="257"/>
+        <source>Autosave interval (minutes)</source>
+        <translation>自动保存间隔（分钟）</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="258"/>
+        <source>Saves an in-progress version every X minutes if auto-save is enabled.</source>
+        <translation>如果启用了自动保存，每隔 X 分钟保存一次进行中的版本。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="262"/>
+        <source>Autosave number of files</source>
+        <translation>自动保存文件数量</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="263"/>
+        <source>Keep X auto-saved versions before overwriting the oldest.</source>
+        <translation>在覆盖最旧版本之前保留 X 个自动保存的版本。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="267"/>
+        <source>Importer detailed logging</source>
+        <translation>导入器详细日志</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="268"/>
+        <source>Enable to show detailed logging for the importer. (This will affect load time significantly).</source>
+        <translation>启用以显示导入器的详细日志。（这将显著影响加载时间）。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="270"/>
+        <source>Auto load last workspace</source>
+        <translation>自动加载上次工作区</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.cpp" line="271"/>
+        <source>Opens the last workspace when starting the Animation Editor.</source>
+        <translation>启动动画编辑器时打开上次的工作区。</translation>
+    </message>
+    <!-- RenderOptions (Preferences > Render plugin properties section) -->
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="423"/>
+        <source>Render plugin properties</source>
+        <translation>渲染插件属性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="423"/>
+        <source>Render window properties</source>
+        <translation>渲染窗口属性</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="427"/>
+        <source>Grid unit size</source>
+        <translation>网格单位大小</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="428"/>
+        <source>Render a grid line every X units.</source>
+        <translation>每隔 X 个单位渲染一条网格线。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="432"/>
+        <source>Vertex normals scale</source>
+        <translation>顶点法线缩放</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="433"/>
+        <source>Scale factor for vertex normals.</source>
+        <translation>顶点法线的缩放系数。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="437"/>
+        <source>Face normals scale</source>
+        <translation>面法线缩放</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="438"/>
+        <source>Scale factor for face normals.</source>
+        <translation>面法线的缩放系数。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="442"/>
+        <source>Tangents &amp; bitangents scale</source>
+        <translation>切线和副切线缩放</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="443"/>
+        <source>Scale factor for tangents and bitangents.</source>
+        <translation>切线和副切线的缩放系数。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="447"/>
+        <source>Joint transform scale</source>
+        <translation>关节变换缩放</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="448"/>
+        <source>Scale factor for joint transform visualizations.</source>
+        <translation>关节变换可视化的缩放系数。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="452"/>
+        <source>Scale joint transforms on length</source>
+        <translation>按长度缩放关节变换</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="453"/>
+        <source>Scale joint transforms based on the length of the bone. The longer the bone, the bigger the joint transform visualization.</source>
+        <translation>根据骨骼长度缩放关节变换。骨骼越长，关节变换可视化越大。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="455"/>
+        <source>Near clip plane distance</source>
+        <translation>近裁剪面距离</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="456"/>
+        <source>Polygons closer to the camera will not be shown.</source>
+        <translation>距离相机更近的多边形将不会显示。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="460"/>
+        <source>Far clip plane distance</source>
+        <translation>远裁剪面距离</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="461"/>
+        <source>Polygons further away will not be shown.</source>
+        <translation>距离更远的多边形将不会显示。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="465"/>
+        <source>Field of view</source>
+        <translation>视野</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="466"/>
+        <source>Angle in degrees of the field of view.</source>
+        <translation>视野的角度（度）。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="470"/>
+        <source>Main light intensity</source>
+        <translation>主灯光强度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="471"/>
+        <source>Intensity of the main light.</source>
+        <translation>主灯光的强度。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="475"/>
+        <source>Main light angle A</source>
+        <translation>主灯光角度 A</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="476"/>
+        <source>Angle in degrees of the main light.</source>
+        <translation>主灯光的角度（度）。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="480"/>
+        <source>Main light angle B</source>
+        <translation>主灯光角度 B</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="485"/>
+        <source>Specular intensity</source>
+        <translation>高光强度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="486"/>
+        <source>Specular intensity.</source>
+        <translation>高光强度。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="490"/>
+        <source>Rim intensity</source>
+        <translation>边缘光强度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="491"/>
+        <source>Rim light intensity.</source>
+        <translation>边缘光强度。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="495"/>
+        <source>Rim width</source>
+        <translation>边缘光宽度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="496"/>
+        <source>Rim light width.</source>
+        <translation>边缘光宽度。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="500"/>
+        <source>Rim angle</source>
+        <translation>边缘光角度</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="501"/>
+        <source>Rim light angle.</source>
+        <translation>边缘光角度。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="505"/>
+        <source>Show FPS</source>
+        <translation>显示帧率</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="506"/>
+        <source>Show anim graph rendering statistics like render time and average frames per second.</source>
+        <translation>显示动画图渲染统计信息，如渲染时间和平均每秒帧数。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="508"/>
+        <source>Ground light color</source>
+        <translation>地面光颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="509"/>
+        <source>Ground light color.</source>
+        <translation>地面光颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="511"/>
+        <source>Sky light color</source>
+        <translation>天空光颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="512"/>
+        <source>Sky light color.</source>
+        <translation>天空光颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="514"/>
+        <source>Rim light color</source>
+        <translation>边缘光颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="515"/>
+        <source>Rim light color.</source>
+        <translation>边缘光颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="517"/>
+        <source>Background color</source>
+        <translation>背景颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="518"/>
+        <source>Background color.</source>
+        <translation>背景颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="520"/>
+        <source>Gradient background top color</source>
+        <translation>渐变背景顶部颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="521"/>
+        <source>Gradient background top color.</source>
+        <translation>渐变背景顶部颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="523"/>
+        <source>Gradient background bottom color</source>
+        <translation>渐变背景底部颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="524"/>
+        <source>Gradient background bottom color.</source>
+        <translation>渐变背景底部颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="526"/>
+        <source>Wireframe color</source>
+        <translation>线框颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="527"/>
+        <source>Color for rendering the character mesh in wireframe mode.</source>
+        <translation>线框模式下渲染角色网格的颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="529"/>
+        <source>Collision mesh color</source>
+        <translation>碰撞网格颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="530"/>
+        <source>Collision mesh color.</source>
+        <translation>碰撞网格颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="532"/>
+        <source>Vertex normals color</source>
+        <translation>顶点法线颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="533"/>
+        <source>Vertex normals color.</source>
+        <translation>顶点法线颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="535"/>
+        <source>Face normals color</source>
+        <translation>面法线颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="536"/>
+        <source>Face normals color.</source>
+        <translation>面法线颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="538"/>
+        <source>Tangents color</source>
+        <translation>切线颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="539"/>
+        <source>Tangents color.</source>
+        <translation>切线颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="541"/>
+        <source>Mirrored bitangents color</source>
+        <translation>镜像副切线颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="542"/>
+        <source>Mirrored bitangents color.</source>
+        <translation>镜像副切线颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="544"/>
+        <source>Bitangents color</source>
+        <translation>副切线颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="547"/>
+        <source>Joint based AABB color</source>
+        <translation>基于关节的 AABB 颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="548"/>
+        <source>Color for the runtime-updated AABB calculated based on the skeletal pose.</source>
+        <translation>基于骨骼姿态计算的运行时更新 AABB 的颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="550"/>
+        <source>Static based AABB color</source>
+        <translation>基于静态的 AABB 颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="551"/>
+        <source>Color for the pre-calculated, static AABB.</source>
+        <translation>预计算的静态 AABB 的颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="553"/>
+        <source>Mesh based AABB color</source>
+        <translation>基于网格的 AABB 颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="554"/>
+        <source>Color for the runtime-updated AABB calculated based on the deformed meshes.</source>
+        <translation>基于变形网格计算的运行时更新 AABB 的颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="556"/>
+        <source>Line based skeleton color</source>
+        <translation>线条骨骼颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="557"/>
+        <source>Line-based skeleton color.</source>
+        <translation>线条骨骼颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="559"/>
+        <source>Solid skeleton color</source>
+        <translation>实心骨骼颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="560"/>
+        <source>Solid skeleton color.</source>
+        <translation>实心骨骼颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="563"/>
+        <source>Selection gizmo color</source>
+        <translation>选择 Gizmo 颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="566"/>
+        <source>Selected object color</source>
+        <translation>选中对象颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="567"/>
+        <source>Selection gizmo color.</source>
+        <translation>选择 Gizmo 颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="569"/>
+        <source>Joint name color</source>
+        <translation>关节名称颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="570"/>
+        <source>Joint name text color.</source>
+        <translation>关节名称文本颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="572"/>
+        <source>Grid color</source>
+        <translation>网格颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="573"/>
+        <source>Grid color. The grid is tiled and every fifth line uses this color.</source>
+        <translation>网格颜色。网格是平铺的，每第五条线使用此颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="575"/>
+        <source>Grid main axis color</source>
+        <translation>网格主轴颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="576"/>
+        <source>Grid main axis color. (Lines going through the origin)</source>
+        <translation>网格主轴颜色。（通过原点的线条）</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="578"/>
+        <source>Grid substep color</source>
+        <translation>网格子步颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="579"/>
+        <source>Grid substep color. The inner four lines within a tile use this color.</source>
+        <translation>网格子步颜色。一个网格块内的四条内线使用此颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="581"/>
+        <source>Trajectory path color</source>
+        <translation>轨迹路径颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="582"/>
+        <source>Color of the trajectory path the characters creates when using motion extraction.</source>
+        <translation>使用运动提取时角色创建的轨迹路径颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="584"/>
+        <source>Hit detection collider color</source>
+        <translation>命中检测碰撞体颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="585"/>
+        <source>Hit detection collider color.</source>
+        <translation>命中检测碰撞体颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="587"/>
+        <source>Selected hit detection collider color</source>
+        <translation>选中的命中检测碰撞体颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="588"/>
+        <source>Selected hit detection collider color.</source>
+        <translation>选中的命中检测碰撞体颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="590"/>
+        <source>Ragdoll collider color</source>
+        <translation>布娃娃碰撞体颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="591"/>
+        <source>Ragdoll collider color.</source>
+        <translation>布娃娃碰撞体颜色。</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="593"/>
+        <source>Selected ragdoll collider color</source>
+        <translation>选中的布娃娃碰撞体颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="596"/>
+        <source>Cloth collider color</source>
+        <translation>布料碰撞体颜色</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.cpp" line="599"/>
+        <source>Selected cloth collider color</source>
+        <translation>选中的布料碰撞体颜色</translation>
+    </message>
 </context>
 <context>
     <name>EMotionFX::AddColliderButton</name>
@@ -2490,6 +3191,55 @@ Press the button on the right of this slider to reset to the normal speed.</sour
         <location filename="../../../../Gems/EMotionFX/Code/Source/Integration/System/SystemComponent.cpp" line="845"/>
         <source>Animation Editor</source>
         <translation>动画编辑器</translation>
+    </message>
+    <message>
+        <source>Actor Manager</source>
+        <translation>角色管理器</translation>
+    </message>
+    <message>
+        <source>Anim Graph</source>
+        <comment>plugin name</comment>
+        <translation>动画图</translation>
+    </message>
+    <message>
+        <source>Atom Render Window</source>
+        <translation>Atom 渲染窗口</translation>
+    </message>
+    <message>
+        <source>Command Bar</source>
+        <translation>命令栏</translation>
+    </message>
+    <message>
+        <source>Inspector</source>
+        <translation>检查器</translation>
+    </message>
+    <message>
+        <source>Log Window</source>
+        <translation>日志窗口</translation>
+    </message>
+    <message>
+        <source>Morph Targets</source>
+        <translation>变形目标</translation>
+    </message>
+    <message>
+        <source>Motion Sets</source>
+        <translation>动作集</translation>
+    </message>
+    <message>
+        <source>Simulated Object</source>
+        <translation>模拟对象</translation>
+    </message>
+    <message>
+        <source>Skeleton Outliner</source>
+        <translation>骨骼大纲</translation>
+    </message>
+    <message>
+        <source>Time View</source>
+        <translation>时间视图</translation>
+    </message>
+    <message>
+        <source>Action History</source>
+        <translation>操作历史</translation>
     </message>
 </context>
 </TS>

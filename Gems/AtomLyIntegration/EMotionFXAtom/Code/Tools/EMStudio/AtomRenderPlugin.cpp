@@ -55,7 +55,7 @@ namespace EMStudio
 
     const char* AtomRenderPlugin::GetName() const
     {
-        return tr("Atom Render Window").toUtf8().constData();
+        return "Atom Render Window";
     }
 
     uint32 AtomRenderPlugin::GetClassID() const

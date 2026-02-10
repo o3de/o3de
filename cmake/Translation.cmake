@@ -1061,6 +1061,265 @@ function(add_json_property_translations json_dir context_name module_name)
 endfunction()
 
 # ============================================================================
+# EditContext Reflection String Translation Generation
+# ============================================================================
+
+#! add_editcontext_translations
+#
+# Extracts user-visible strings from O3DE EditContext reflection calls
+# in C++ source files and generates Qt translation entries.
+#
+# O3DE's serialization system uses EditContext to define property editor
+# labels and descriptions as plain C string literals:
+#   ->DataElement(handler, &member, "Display Name", "Description")
+#   ->Class<Type>("Display Name", "Description")
+#
+# Since these strings are not wrapped in Qt translation macros (tr(),
+# QT_TRANSLATE_NOOP, etc.), lupdate cannot detect them. This function
+# bridges that gap by:
+#   1. Scanning C++ files for ->DataElement() and ->Class<>() patterns
+#   2. Extracting display name and description strings via regex
+#   3. Generating a lightweight C++ file with QT_TRANSLATE_NOOP() calls
+#   4. Running lupdate on the generated file to merge entries into .ts files
+#   5. Compiling .ts to .qm
+#
+# At runtime, PropertyRowWidget::SetNameLabel() translates these strings
+# through TranslatePropertyString(), which searches all registered Qt
+# translation contexts. The context_name used here must be registered
+# in PropertyEditorApi.cpp's GetRegisteredContexts().
+#
+# \arg:source_dirs   - List of source directories to scan (semicolon-separated)
+# \arg:context_name  - Qt translation context (e.g., "EMotionFX")
+# \arg:module_name   - Output module name for .ts/.qm files (e.g., "EMotionFX_Reflect")
+#
+function(add_editcontext_translations source_dirs context_name module_name)
+    if(NOT LY_I18N_BUILD)
+        return()
+    endif()
+
+    if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+        return()
+    endif()
+
+    # ---- Step 1: Find all C++ files in source directories ----
+    set(_all_cpp_files "")
+    foreach(_dir ${source_dirs})
+        if(IS_DIRECTORY "${_dir}")
+            file(GLOB_RECURSE _dir_cpp_files "${_dir}/*.cpp")
+            list(APPEND _all_cpp_files ${_dir_cpp_files})
+        endif()
+    endforeach()
+
+    if(NOT _all_cpp_files)
+        message(STATUS "  [EditContext] No .cpp files found in: ${source_dirs}")
+        return()
+    endif()
+
+    list(SORT _all_cpp_files)
+    list(LENGTH _all_cpp_files _file_count)
+    message(STATUS "  [EditContext] Scanning ${_file_count} .cpp files for EditContext patterns")
+
+    # ---- Step 2: Extract strings from EditContext reflection patterns ----
+    #
+    # Regex strategy:
+    #   CMake's regex uses POSIX-like syntax where [^"] matches any character
+    #   except a double-quote (including newlines). This naturally handles
+    #   multi-line DataElement/Class calls.
+    #
+    #   For ->DataElement(handler, &member, "Name", "Desc"):
+    #     - The first two arguments (handler, member pointer) never contain quotes
+    #     - [^"]* after \( skips to the first quoted string (display name)
+    #     - [^"]* between the two quoted strings matches the comma + whitespace
+    #
+    #   For ->Class<Type>("Name", "Desc"):
+    #     - [^>]* matches the type name inside angle brackets
+    #     - After >( we match two quoted strings separated by comma + whitespace
+    #
+    # Known limitation: if a matched string contains CMake list separators (;),
+    # it may be split incorrectly during list iteration. EditContext display names
+    # and descriptions in practice do not contain semicolons.
+    #
+    set(_all_strings "")
+    set(_files_with_matches 0)
+
+    foreach(_cpp_file ${_all_cpp_files})
+        file(READ "${_cpp_file}" _content)
+
+        # Fast path: skip files that don't contain EditContext patterns
+        string(FIND "${_content}" "->DataElement(" _de_pos)
+        string(FIND "${_content}" "->Class<" _cl_pos)
+        if(_de_pos EQUAL -1 AND _cl_pos EQUAL -1)
+            continue()
+        endif()
+
+        get_filename_component(_filename "${_cpp_file}" NAME)
+        set(_file_had_matches FALSE)
+
+        # Pattern 1: ->DataElement(handler, &member, "DisplayName", "Description")
+        if(NOT _de_pos EQUAL -1)
+            string(REGEX MATCHALL
+                "->DataElement\\([^\"]*\"([^\"]*)\"[^\"]*\"([^\"]*)\""
+                _de_matches "${_content}")
+            foreach(_match ${_de_matches})
+                string(REGEX REPLACE
+                    "->DataElement\\([^\"]*\"([^\"]*)\"[^\"]*\"([^\"]*)\""
+                    "\\1" _name "${_match}")
+                string(REGEX REPLACE
+                    "->DataElement\\([^\"]*\"([^\"]*)\"[^\"]*\"([^\"]*)\""
+                    "\\2" _desc "${_match}")
+                if(_name AND NOT _name STREQUAL "")
+                    list(APPEND _all_strings "${_name}")
+                    set(_file_had_matches TRUE)
+                endif()
+                if(_desc AND NOT _desc STREQUAL "")
+                    list(APPEND _all_strings "${_desc}")
+                endif()
+            endforeach()
+        endif()
+
+        # Pattern 2: editContext->Class<Type>("DisplayName", "Description")
+        if(NOT _cl_pos EQUAL -1)
+            string(REGEX MATCHALL
+                "->Class<[^>]*>\\([^\"]*\"([^\"]*)\"[^\"]*\"([^\"]*)\""
+                _cl_matches "${_content}")
+            foreach(_match ${_cl_matches})
+                string(REGEX REPLACE
+                    "->Class<[^>]*>\\([^\"]*\"([^\"]*)\"[^\"]*\"([^\"]*)\""
+                    "\\1" _name "${_match}")
+                string(REGEX REPLACE
+                    "->Class<[^>]*>\\([^\"]*\"([^\"]*)\"[^\"]*\"([^\"]*)\""
+                    "\\2" _desc "${_match}")
+                if(_name AND NOT _name STREQUAL "")
+                    list(APPEND _all_strings "${_name}")
+                    set(_file_had_matches TRUE)
+                endif()
+                if(_desc AND NOT _desc STREQUAL "")
+                    list(APPEND _all_strings "${_desc}")
+                endif()
+            endforeach()
+        endif()
+
+        if(_file_had_matches)
+            math(EXPR _files_with_matches "${_files_with_matches} + 1")
+        endif()
+    endforeach()
+
+    # Remove duplicates (many properties share labels like "Configuration", etc.)
+    list(REMOVE_DUPLICATES _all_strings)
+
+    if(NOT _all_strings)
+        message(STATUS "  [EditContext] No translatable strings found in ${_file_count} files")
+        return()
+    endif()
+
+    list(LENGTH _all_strings _string_count)
+    message(STATUS "  [EditContext] Extracted ${_string_count} unique translatable strings from ${_files_with_matches} files")
+
+    # ---- Step 3: Generate C++ file with QT_TRANSLATE_NOOP entries ----
+    # This file is NEVER compiled; it exists solely for lupdate to extract
+    # translatable strings that originate from EditContext reflection calls.
+    set(_gen_dir "${CMAKE_BINARY_DIR}/i18n/generated")
+    file(MAKE_DIRECTORY "${_gen_dir}")
+
+    set(_gen_file "${_gen_dir}/${module_name}_EditContextStrings.cpp")
+
+    set(_file_content "")
+    string(APPEND _file_content "// Auto-generated by Translation.cmake from EditContext reflection patterns.\n")
+    string(APPEND _file_content "// Source directories:\n")
+    foreach(_dir ${source_dirs})
+        string(APPEND _file_content "//   ${_dir}\n")
+    endforeach()
+    string(APPEND _file_content "// DO NOT EDIT - This file is regenerated during CMake configuration.\n")
+    string(APPEND _file_content "//\n")
+    string(APPEND _file_content "// This file is NOT compiled into any binary. It exists only so that\n")
+    string(APPEND _file_content "// Qt lupdate can extract translatable strings from EditContext.\n")
+    string(APPEND _file_content "\n")
+    string(APPEND _file_content "#include <QCoreApplication>\n")
+    string(APPEND _file_content "\n")
+    string(APPEND _file_content "// clang-format off\n")
+    string(APPEND _file_content "static const char* ${module_name}_editContextStrings[] = {\n")
+
+    foreach(_str ${_all_strings})
+        # Escape backslashes and double quotes for C++ string literals
+        string(REPLACE "\\" "\\\\" _str_escaped "${_str}")
+        string(REPLACE "\"" "\\\"" _str_escaped "${_str_escaped}")
+        string(APPEND _file_content "    QT_TRANSLATE_NOOP(\"${context_name}\", \"${_str_escaped}\"),\n")
+    endforeach()
+
+    string(APPEND _file_content "};\n")
+    string(APPEND _file_content "// clang-format on\n")
+
+    file(WRITE "${_gen_file}" "${_file_content}")
+    message(STATUS "  [EditContext] Generated C++ extraction file: ${_gen_file}")
+
+    # ---- Step 4: Run lupdate on the generated file ----
+    find_package(Qt5 COMPONENTS LinguistTools QUIET)
+    find_program(LUPDATE_EXECUTABLE lupdate PATHS "${Qt5_DIR}/../../../bin" NO_DEFAULT_PATH)
+
+    if(NOT LUPDATE_EXECUTABLE)
+        message(WARNING "  [EditContext] lupdate not found. .ts files will not include EditContext strings.")
+        return()
+    endif()
+
+    # Determine target languages
+    if(LY_I18N_BUILD_ALL_LANGUAGES)
+        set(LANGUAGES ${LY_I18N_SUPPORTED_LANGUAGES})
+    else()
+        set(LANGUAGES ${LY_I18N_LANGUAGE})
+    endif()
+
+    foreach(_language ${LANGUAGES})
+        # Skip English variants (source language)
+        if(_language STREQUAL "en" OR _language STREQUAL "en_US")
+            continue()
+        endif()
+
+        # Create language-specific directory
+        set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        file(MAKE_DIRECTORY "${TS_DIR}")
+
+        if(NOT IS_DIRECTORY "${TS_DIR}")
+            message(WARNING "  [EditContext] Could not create directory: ${TS_DIR}")
+            continue()
+        endif()
+
+        # Set output .ts file path (separate from the main tr()-based .ts file)
+        set(TS_FILE "${TS_DIR}/${module_name}_${_language}.ts")
+
+        # Run lupdate on the generated C++ file
+        # lupdate MERGES new entries into existing .ts files, preserving translations.
+        message(STATUS "  [EditContext] ${_language} -> ${TS_FILE}")
+        execute_process(
+            COMMAND "${LUPDATE_EXECUTABLE}" "${_gen_file}" -ts "${TS_FILE}" -silent
+            RESULT_VARIABLE _lupdate_result
+            OUTPUT_VARIABLE _lupdate_output
+            ERROR_VARIABLE _lupdate_error
+        )
+
+        if(NOT _lupdate_result EQUAL 0)
+            message(WARNING "  [EditContext] lupdate failed for ${_language}: ${_lupdate_error}")
+            continue()
+        endif()
+
+        if(NOT EXISTS "${TS_FILE}")
+            message(WARNING "  [EditContext] lupdate returned success but did not create: ${TS_FILE}")
+            continue()
+        endif()
+
+        # Normalize line endings on Windows
+        if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+            file(READ "${TS_FILE}" ts_file_content)
+            file(CONFIGURE OUTPUT "${TS_FILE}" CONTENT "${ts_file_content}" NEWLINE_STYLE CRLF)
+        endif()
+
+        # Compile .ts to .qm
+        compile_ts_to_qm("${TS_FILE}" "${_language}")
+    endforeach()
+
+    message(STATUS "  [EditContext] Finished processing ${module_name} (${_string_count} strings from ${_files_with_matches} files)")
+endfunction()
+
+# ============================================================================
 # Automatic Translation Generation
 # ============================================================================
 # Auto-generate translation files when LY_I18N_BUILD is enabled
@@ -1160,6 +1419,16 @@ if(LY_I18N_BUILD AND PAL_TRAIT_BUILD_HOST_TOOLS)
     if(_emfx_source_dirs)
         add_gem_translation_multi_dirs("EMotionFX" "${_emfx_source_dirs}"
             INCLUDE_DIRS ${_emfx_include_dirs})
+    endif()
+    
+    # 6.1 Extract EMotionFX EditContext reflection strings
+    # GUIOptions.cpp and RenderOptions.cpp define preferences dialog labels
+    # via EditContext (->DataElement, ->Class<>) as plain C strings.
+    # lupdate cannot detect these, so we extract them with regex and
+    # generate a separate .ts/.qm file for translators to work with.
+    message(STATUS ">>> Extracting EMotionFX EditContext Strings <<<")
+    if(_emfx_source_dirs)
+        add_editcontext_translations("${_emfx_source_dirs}" "EMotionFX" "EMotionFX_Reflect")
     endif()
     
     # 7. Generate translation strings from Material JSON property files
