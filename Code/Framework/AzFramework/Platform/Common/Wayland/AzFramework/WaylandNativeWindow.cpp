@@ -137,17 +137,14 @@ namespace AzFramework
         if (self->m_pending.m_fullscreen)
         {
             self->m_flags |= WaylandWindowFlags_InFullscreen;
-            self->ResizeClientArea(self->m_pending.m_size, {});
             self->m_pending.m_fullscreen = false;
-            self->m_pending.m_size = {};
         }
-        else if (self->m_pending.m_resize)
+        else
         {
-            self->ResizeClientArea(self->m_pending.m_size, {});
-            self->m_pending.m_resize = false;
-            self->m_pending.m_size = {};
+            self->m_flags &= ~WaylandWindowFlags_InFullscreen;
         }
-        else if (self->m_pending.m_size != AzFramework::WindowSize())
+
+        if (self->m_pending.m_size != AzFramework::WindowSize())
         {
             // If there is no state like resize or fullscreen then its prob just
             // notifying us of what size we should be, like we just got out of fullscreen, and
@@ -441,7 +438,6 @@ namespace AzFramework
         else
         {
             xdg_toplevel_unset_fullscreen(m_xdgToplevel);
-            m_flags &= ~WaylandWindowFlags_InFullscreen;
         }
 
         WindowNotificationBus::Event(
@@ -455,6 +451,13 @@ namespace AzFramework
             // No access to xdg top level.
             return false;
         }
+
+        if (xdg_toplevel_get_version(m_xdgToplevel) < XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
+        {
+            // Implicitly allowed since the compositor can't tell us if its supported or not, this doesn't mean it will do it.
+            return true;
+        }
+
         return m_flags & WaylandWindowFlags_CanFullscreen;
     }
 
