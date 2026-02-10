@@ -52,6 +52,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -rdynamic            # add ALL symbols to the dynamic symbol table
             -Wl,--no-undefined   # tell the gcc linker to fail if it finds undefined references
             -Wl,--gc-sections    # discards unused sections
+            
+            # Guarantees that the native android activity entry point is present in the final binary
             -u ANativeActivity_onCreate
 
             -landroid            # Android Library
