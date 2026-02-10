@@ -430,6 +430,16 @@ namespace Editor
         AZ_Printf("EditorI18n", "Loading translations for language: %s\n",
             m_currentLanguage.toUtf8().constData());
 
+        // Load Qt's base translations FIRST (for standard button text: OK, Cancel, Save, Discard, Yes, No, etc.)
+        // Qt standard buttons get their text from Qt's own translation files (qtbase_*.qm, qt_*.qm).
+        // Without loading these, standard buttons like Save/Cancel/OK/Yes/No remain in English.
+        QList<QTranslator*> qtBaseTranslators =
+            AzToolsFramework::TranslationManager::LoadQtBaseTranslations(m_currentLanguage, this);
+        for (QTranslator* translator : qtBaseTranslators)
+        {
+            m_translators.append(translator);
+        }
+
         // Get all registered translator modules
         QStringList translatorModules = GetTranslatorModules();
 
@@ -443,8 +453,8 @@ namespace Editor
             loadedCount++;
         }
 
-        AZ_Printf("EditorI18n", "Translation system initialized: %d/%d modules processed\n",
-            loadedCount, totalCount);
+        AZ_Printf("EditorI18n", "Translation system initialized: %d/%d modules processed (+ %d Qt base translators)\n",
+            loadedCount, totalCount, qtBaseTranslators.size());
     }
 
     void EditorQtApplication::UninstallEditorTranslators()
@@ -688,6 +698,14 @@ namespace Editor
 
         // Save to settings
         SaveLanguage(languageCode);
+
+        // Reload Qt base translations first (for standard button text)
+        QList<QTranslator*> qtBaseTranslators =
+            AzToolsFramework::TranslationManager::LoadQtBaseTranslations(m_currentLanguage, this);
+        for (QTranslator* translator : qtBaseTranslators)
+        {
+            m_translators.append(translator);
+        }
 
         // Reload translators for new language
         QStringList translatorModules = GetTranslatorModules();

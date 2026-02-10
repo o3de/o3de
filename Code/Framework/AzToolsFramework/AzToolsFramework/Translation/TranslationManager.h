@@ -20,6 +20,7 @@
 #include <QTranslator>
 #include <QCoreApplication>
 #include <QDebug>
+#include <QLibraryInfo>
 
 namespace AzToolsFramework
 {
@@ -215,6 +216,10 @@ namespace AzToolsFramework
             // Log the language being used
             qDebug() << "[i18n]" << toolName << "using language:" << language;
 
+            // Load Qt's base translations first (for standard button text: OK, Cancel, Save, etc.)
+            // This ensures standard Qt widget text is translated regardless of O3DE module translations.
+            LoadQtBaseTranslations(language, app);
+
             QTranslator* translator = LoadModuleTranslatorForLanguage(toolName, language, app);
 
             if (translator)
@@ -303,6 +308,92 @@ namespace AzToolsFramework
             }
 
             return languages;
+        }
+
+        /**
+         * @brief Load Qt's base translations for standard widget text
+         * @param languageCode Language code (e.g., "zh_CN")
+         * @param app QCoreApplication instance to install translators on
+         * @return List of loaded translators (caller takes ownership)
+         *
+         * Qt standard buttons (OK, Cancel, Save, Discard, Yes, No, Close, etc.)
+         * get their text from Qt's own translation files (qtbase_*.qm, qt_*.qm).
+         * Without loading these files, standard buttons remain in English even
+         * when the application has translations installed.
+         *
+         * This method loads Qt's base translation files from Qt's installation
+         * directory (QLibraryInfo::TranslationsPath).
+         */
+        static QList<QTranslator*> LoadQtBaseTranslations(
+            const QString& languageCode,
+            QCoreApplication* app = nullptr)
+        {
+            QList<QTranslator*> translators;
+
+            // Don't load for English (source language)
+            if (languageCode == "en" || languageCode == "en_US" || languageCode.isEmpty())
+            {
+                return translators;
+            }
+
+            // Get Qt's translations directory
+            #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                const QString qtTranslationsPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+            #else
+                const QString qtTranslationsPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
+            #endif
+
+            // Qt base translation files to load:
+            // - "qtbase": Contains standard widget translations (QMessageBox buttons, QDialogButtonBox, etc.)
+            //   This covers: OK, Cancel, Save, Discard, Yes, No, Close, Apply, Reset, etc.
+            // - "qt": Contains additional Qt module translations
+            const QStringList qtTranslationBases = { "qtbase", "qt" };
+
+            // Build language fallback: "zh_CN" -> try "zh_CN" first, then "zh"
+            QStringList languagesToTry;
+            languagesToTry << languageCode;
+            if (languageCode.contains('_'))
+            {
+                languagesToTry << languageCode.split('_').first();
+            }
+
+            for (const QString& baseName : qtTranslationBases)
+            {
+                bool loaded = false;
+                for (const QString& lang : languagesToTry)
+                {
+                    QTranslator* translator = new QTranslator();
+                    if (translator->load(baseName + "_" + lang, qtTranslationsPath))
+                    {
+                        if (app)
+                        {
+                            app->installTranslator(translator);
+                        }
+                        else if (qApp)
+                        {
+                            qApp->installTranslator(translator);
+                        }
+
+                        translators.append(translator);
+                        qDebug() << "[i18n] Loaded Qt base translation:" << baseName + "_" + lang
+                                 << "from" << qtTranslationsPath;
+                        loaded = true;
+                        break; // Successfully loaded, move to next base name
+                    }
+                    else
+                    {
+                        delete translator;
+                    }
+                }
+
+                if (!loaded)
+                {
+                    qDebug() << "[i18n] Qt base translation not found:" << baseName + "_" + languageCode
+                             << "in" << qtTranslationsPath;
+                }
+            }
+
+            return translators;
         }
 
         /**
