@@ -299,8 +299,8 @@ namespace AzFramework
         m_width = geometry.m_width;
         m_height = geometry.m_height;
 
-        // It's possible we don't have access to XdgShell,
-        // but it's a stable wayland protocol, so any normal desktop compositor will have it
+        // While we guarantee we have xdg_wm_base right now, it's possible that we'll support other shell protocols,
+        // so im leaving the checks here to make it a smooth transition.
         if (m_xdgWmBase != nullptr)
         {
             m_xdgSurface = xdg_wm_base_get_xdg_surface(m_xdgWmBase, m_surface);
@@ -321,7 +321,7 @@ namespace AzFramework
                 InternalSetResizable(true);
                 m_flags |= WaylandWindowFlags_Resizable;
 
-                // If wl_resize is true we should ensure this flag is set.
+                // If wl_resize is true, we should ensure this flag is set.
                 mask |= WindowStyleMasks::WINDOW_STYLE_RESIZEABLE;
             }
             else

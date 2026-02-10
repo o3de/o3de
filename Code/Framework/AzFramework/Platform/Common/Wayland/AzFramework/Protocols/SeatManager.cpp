@@ -39,7 +39,7 @@ namespace AzFramework
             return;
         }
 
-        auto seat = static_cast<wl_seat*>(wl_registry_bind(registry, id, &wl_seat_interface, version));
+        auto seat = static_cast<wl_seat*>(wl_registry_bind(registry, id, &wl_seat_interface, WaylandSeatVersion));
         auto info = new WaylandSeat(seat);
         info->m_registryId = id;
         info->m_playerIdx = GetAvailablePlayerIdx();

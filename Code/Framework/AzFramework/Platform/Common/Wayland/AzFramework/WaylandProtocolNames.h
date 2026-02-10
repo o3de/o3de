@@ -18,4 +18,12 @@ namespace AzFramework
     static constexpr AZ::Crc32 RelativePointerManagerName = AZ_CRC_CE("zwp_relative_pointer_manager_v1");
     static constexpr AZ::Crc32 XdgWmBaseName = AZ_CRC_CE("xdg_wm_base");
     static constexpr AZ::Crc32 XdgDecorationManagerName = AZ_CRC_CE("zxdg_decoration_manager_v1");
+
+    //Minimum versions we require and bind for.
+    static constexpr uint32_t WaylandSeatVersion = 7;
+    static constexpr uint32_t XdgWmBaseVersion = 3;
+    static constexpr uint32_t XdgDecorationManagerVersion = 1;
+    static constexpr uint32_t CursorShapeVersion = 2;
+    static constexpr uint32_t PointerConstraintsVersion = 1;
+    static constexpr uint32_t RelativePointerManagerVersion = 1;
 }

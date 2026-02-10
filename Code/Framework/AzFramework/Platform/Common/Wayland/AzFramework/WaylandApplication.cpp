@@ -22,6 +22,8 @@
 #include <wayland-client.h>
 #include <xkbcommon/xkbcommon.h>
 
+#include "WaylandProtocolNames.h"
+
 AZStd::vector<AZStd::string> g_blockedProtocols;
 
 static void wl_blocklist_updated(const AZStd::string& unseparatedList)
@@ -127,11 +129,13 @@ namespace AzFramework
             return m_xkbContext;
         }
 
-        static void GlobalRegistryHandler(void* data, wl_registry* registry, uint32_t id, const char* interface, uint32_t version)
+        static void GlobalRegistryHandler(void* data, wl_registry* registry, uint32_t id, const char* interface,
+                                          uint32_t version)
         {
             auto self = static_cast<WaylandConnectionManagerImpl*>(data);
 
-            if (AZStd::find(g_blockedProtocols.begin(), g_blockedProtocols.end(), interface) != g_blockedProtocols.end())
+            if (AZStd::find(g_blockedProtocols.begin(), g_blockedProtocols.end(), interface) != g_blockedProtocols.
+                end())
             {
                 AZ_Info("Wayland", "Blocked protocol %s", interface);
                 return;
@@ -139,7 +143,8 @@ namespace AzFramework
 
             if (strcmp(interface, wl_compositor_interface.name) == 0)
             {
-                self->m_compositor = static_cast<wl_compositor*>(wl_registry_bind(registry, id, &wl_compositor_interface, version));
+                self->m_compositor = static_cast<wl_compositor*>(wl_registry_bind(
+                    registry, id, &wl_compositor_interface, version));
             }
             else
             {
@@ -164,7 +169,9 @@ namespace AzFramework
         wl_compositor* m_compositor = nullptr;
         xkb_context* m_xkbContext = nullptr;
 
-        const wl_registry_listener s_registryListener = { .global = GlobalRegistryHandler, .global_remove = GlobalRegistryRemove };
+        const wl_registry_listener s_registryListener = {
+            .global = GlobalRegistryHandler, .global_remove = GlobalRegistryRemove
+        };
     };
 
     WaylandApplication::WaylandApplication()
@@ -185,6 +192,24 @@ namespace AzFramework
 
         WaylandConnectionManagerBus::Broadcast(&WaylandConnectionManagerBus::Events::DoRoundtrip);
         PumpSystemEventLoopOnce();
+
+        //Check requirements
+#define WL_RESTART_MSG ", restart with the WAYLAND_DISPLAY environment variable unset to fall back to X11/XCB"
+        if (m_xdgManager->GetProxy(XdgWmBaseName) == nullptr)
+        {
+            AZ_Fatal("Wayland", "Compositor missing XDG shell v%i" WL_RESTART_MSG, XdgWmBaseVersion);
+            AZ_Crash();
+        }
+        if (m_protocolManger->GetProxy(PointerConstraintsName) == nullptr)
+        {
+            AZ_Fatal("Wayland", "Compositor missing pointer constraints v%i" WL_RESTART_MSG, PointerConstraintsVersion);
+            AZ_Crash();
+        }
+        if (m_protocolManger->GetProxy(RelativePointerManagerName) == nullptr)
+        {
+            AZ_Fatal("Wayland", "Compositor missing relative pointer v%i" WL_RESTART_MSG, RelativePointerManagerVersion);
+            AZ_Crash();
+        }
     }
 
     WaylandApplication::~WaylandApplication()
@@ -205,7 +230,7 @@ namespace AzFramework
     bool WaylandApplication::HasEventsWaiting() const
     {
         int fd = m_waylandConnectionManager->GetDisplayFD();
-        struct pollfd pfd = { fd, POLLIN };
+        struct pollfd pfd = {fd, POLLIN};
 
         return poll(&pfd, 1, 0) > 0;
     }

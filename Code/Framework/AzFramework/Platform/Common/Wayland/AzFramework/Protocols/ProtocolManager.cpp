@@ -38,30 +38,32 @@ namespace AzFramework
 
     void ProtocolManager::OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version)
     {
-        if (interface == CursorShapeManagerName)
+        if (interface == CursorShapeManagerName && version >= CursorShapeVersion)
         {
             m_cursorManager =
                 static_cast<wp_cursor_shape_manager_v1*>(wl_registry_bind(
                     registry,
                     id,
                     &wp_cursor_shape_manager_v1_interface,
-                    version));
+                    CursorShapeVersion));
             WaylandProxyBus::MultiHandler::BusConnect(CursorShapeManagerName);
             return;
         }
 
-        if (interface == PointerConstraintsName)
+        if (interface == PointerConstraintsName && version >= PointerConstraintsVersion)
         {
             m_constraintsManager =
-                static_cast<zwp_pointer_constraints_v1*>(wl_registry_bind(registry, id, &zwp_pointer_constraints_v1_interface, version));
+                static_cast<zwp_pointer_constraints_v1*>(wl_registry_bind(
+                    registry, id, &zwp_pointer_constraints_v1_interface, PointerConstraintsVersion));
             WaylandProxyBus::MultiHandler::BusConnect(PointerConstraintsName);
             return;
         }
 
-        if (interface == RelativePointerManagerName)
+        if (interface == RelativePointerManagerName && version >= RelativePointerManagerVersion)
         {
             m_relativePointerManager =
-                static_cast<zwp_relative_pointer_manager_v1*>(wl_registry_bind(registry, id, &zwp_relative_pointer_manager_v1_interface, version));
+                static_cast<zwp_relative_pointer_manager_v1*>(wl_registry_bind(
+                    registry, id, &zwp_relative_pointer_manager_v1_interface, RelativePointerManagerVersion));
             WaylandProxyBus::MultiHandler::BusConnect(RelativePointerManagerName);
             return;
         }

@@ -15,7 +15,7 @@
 
 namespace AzFramework
 {
-    static xdg_wm_base_listener s_xdgWmListener = { XdgManagerImpl::XdgPing };
+    static xdg_wm_base_listener s_xdgWmListener = {XdgManagerImpl::XdgPing};
 
     XdgManagerImpl::XdgManagerImpl()
     {
@@ -38,23 +38,25 @@ namespace AzFramework
 
     void XdgManagerImpl::OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version)
     {
-        if (interface == XdgWmBaseName)
+        if (interface == XdgWmBaseName && version >= XdgWmBaseVersion)
         {
-            m_xdg = static_cast<xdg_wm_base*>(wl_registry_bind(registry, id, &xdg_wm_base_interface, version));
+            m_xdg = static_cast<xdg_wm_base*>(wl_registry_bind(registry, id, &xdg_wm_base_interface, XdgWmBaseVersion));
             xdg_wm_base_add_listener(m_xdg, &s_xdgWmListener, this);
             WaylandInterfaceNotificationsBus::MultiHandler::BusConnect(id);
             WaylandProxyBus::MultiHandler::BusConnect(XdgWmBaseName);
             return;
         }
-        if (interface == XdgDecorationManagerName)
+        if (interface == XdgDecorationManagerName && version >= XdgDecorationManagerVersion)
         {
             m_decor =
-                static_cast<zxdg_decoration_manager_v1*>(wl_registry_bind(registry, id, &zxdg_decoration_manager_v1_interface, version));
+                static_cast<zxdg_decoration_manager_v1*>(wl_registry_bind(
+                    registry, id, &zxdg_decoration_manager_v1_interface, XdgDecorationManagerVersion));
             WaylandInterfaceNotificationsBus::MultiHandler::BusConnect(id);
             WaylandProxyBus::MultiHandler::BusConnect(XdgDecorationManagerName);
             return;
         }
     }
+
     void XdgManagerImpl::OnUnregister(wl_registry*, uint32_t id)
     {
         if (id == WL_GET_PROXY_ID(m_xdg))
