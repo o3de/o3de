@@ -1474,6 +1474,12 @@ if(LY_I18N_BUILD AND PAL_TRAIT_BUILD_HOST_TOOLS)
         list(APPEND _physx_source_dirs "${LY_ROOT_FOLDER}/Code/Framework/AzFramework/AzFramework/Physics/Configuration")
     endif()
 
+    # AzFramework physics collision files that use "PhysX" translation context
+    # (CollisionLayers.cpp - "Collision Layers", "Layers", etc.)
+    if(EXISTS "${LY_ROOT_FOLDER}/Code/Framework/AzFramework/AzFramework/Physics/Collision")
+        list(APPEND _physx_source_dirs "${LY_ROOT_FOLDER}/Code/Framework/AzFramework/AzFramework/Physics/Collision")
+    endif()
+
     # Include paths for lupdate to resolve headers and detect C++ namespaces
     # These allow lupdate to find:
     #   #include <Editor/ConfigurationWidget.h>  -> resolves from Core/Code/

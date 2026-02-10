@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/i18n/TranslationMacros.h>
 
 #include <AzFramework/Physics/CollisionBus.h>
 
@@ -84,10 +85,14 @@ namespace AzPhysics
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<CollisionLayers>("Collision Layers", "List of defined collision layers")
+                editContext->Class<CollisionLayers>(
+                        QT_TRANSLATE_NOOP("PhysX", "Collision Layers"),
+                        QT_TRANSLATE_NOOP("PhysX", "List of defined collision layers"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CollisionLayers::m_names, "Layers", "Names of each collision layer")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CollisionLayers::m_names,
+                        QT_TRANSLATE_NOOP("PhysX", "Layers"),
+                        QT_TRANSLATE_NOOP("PhysX", "Names of each collision layer"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

@@ -2509,7 +2509,7 @@ Local winds are constrained to a PhysX collider&apos;s boundaries.</source>
     <message>
         <location filename="../../../../Gems/PhysX/Core/Code/Source/Pipeline/MeshGroup.cpp" line="366"/>
         <source>&lt;span&gt;The shape that should be fitted to this mesh. If &quot;Automatic&quot; is selected, the algorithm will determine which of the shapes fits best.&lt;/span&gt;</source>
-        <translation>&lt;span&gt;应拟合到此网格的形状。如果选择"自动"，算法将确定哪种形状最合适。&lt;/span&gt;</translation>
+        <translation>&lt;span&gt;应拟合到此网格的形状。如果选择&quot;自动&quot;，算法将确定哪种形状最合适。&lt;/span&gt;</translation>
     </message>
     <message>
         <location filename="../../../../Gems/PhysX/Core/Code/Source/Pipeline/MeshGroup.cpp" line="368"/>
@@ -2675,7 +2675,7 @@ Local winds are constrained to a PhysX collider&apos;s boundaries.</source>
     <message>
         <location filename="../../../../Gems/PhysX/Core/Code/Source/Pipeline/MeshGroup.cpp" line="585"/>
         <source>&lt;span&gt;The cooking method to be applied to this mesh group. For the asset to be usable as a rigid body, select &quot;Convex&quot; or &quot;Primitive&quot;.&lt;/span&gt;</source>
-        <translation>&lt;span&gt;应用于此网格组的烘焙方法。要使资源可用作刚体，请选择"凸体"或"基元"。&lt;/span&gt;</translation>
+        <translation>&lt;span&gt;应用于此网格组的烘焙方法。要使资源可用作刚体，请选择&quot;凸体&quot;或&quot;基元&quot;。&lt;/span&gt;</translation>
     </message>
     <message>
         <location filename="../../../../Gems/PhysX/Core/Code/Source/Pipeline/MeshGroup.cpp" line="587"/>
@@ -2782,7 +2782,7 @@ Local winds are constrained to a PhysX collider&apos;s boundaries.</source>
     <message>
         <location filename="../../../../Gems/PhysX/Core/Code/Editor/DebugDraw.cpp" line="155"/>
         <source>If set, the geometry of this collider is visible in the viewport. &apos;Draw Helpers&apos; needs to be enabled to use.</source>
-        <translation>如果设置，此碰撞体的几何体在视口中可见。需要启用"绘制辅助工具"才能使用。</translation>
+        <translation>如果设置，此碰撞体的几何体在视口中可见。需要启用&quot;绘制辅助工具&quot;才能使用。</translation>
     </message>
     <message>
         <location filename="../../../../Gems/PhysX/Core/Code/Editor/DebugDraw.cpp" line="161"/>
@@ -3082,7 +3082,7 @@ Local winds are constrained to a PhysX collider&apos;s boundaries.</source>
     <message>
         <location filename="../../../../Code/Framework/AzFramework/AzFramework/Physics/Configuration/SystemConfiguration.cpp" line="55"/>
         <source>Fixed time step in seconds. Limited by &apos;Max Time Step&apos;</source>
-        <translation>固定时间步长（以秒为单位）。受"最大时间步长"限制</translation>
+        <translation>固定时间步长（以秒为单位）。受&quot;最大时间步长&quot;限制</translation>
     </message>
     <message>
         <location filename="../../../../Code/Framework/AzFramework/AzFramework/Physics/Configuration/SystemConfiguration.cpp" line="61"/>
@@ -3113,6 +3113,26 @@ Local winds are constrained to a PhysX collider&apos;s boundaries.</source>
         <location filename="../../../../Code/Framework/AzFramework/AzFramework/Physics/Configuration/SystemConfiguration.cpp" line="67"/>
         <source>Maximum number of hits from a overlap query</source>
         <translation>重叠查询的最大命中次数</translation>
+    </message>
+    <message>
+        <location filename="../../../../Code/Framework/AzFramework/AzFramework/Physics/Collision/CollisionLayers.cpp" line="89"/>
+        <source>Collision Layers</source>
+        <translation>碰撞图层</translation>
+    </message>
+    <message>
+        <location filename="../../../../Code/Framework/AzFramework/AzFramework/Physics/Collision/CollisionLayers.cpp" line="90"/>
+        <source>List of defined collision layers</source>
+        <translation>定义碰撞图层的列表</translation>
+    </message>
+    <message>
+        <location filename="../../../../Code/Framework/AzFramework/AzFramework/Physics/Collision/CollisionLayers.cpp" line="94"/>
+        <source>Layers</source>
+        <translation>图层</translation>
+    </message>
+    <message>
+        <location filename="../../../../Code/Framework/AzFramework/AzFramework/Physics/Collision/CollisionLayers.cpp" line="95"/>
+        <source>Names of each collision layer</source>
+        <translation>每个碰撞图层的名称</translation>
     </message>
 </context>
 <context>
