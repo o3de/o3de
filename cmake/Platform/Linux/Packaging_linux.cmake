@@ -35,7 +35,7 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     # Define all the debian package dependencies needed to build and run
     set(package_dependencies
         # Required Tools
-        "cmake (>=3.24)"                        # Cmake required (minimum version 3.24.0)
+        "cmake (>=3.25)"                        # Cmake required (minimum version 3.25.0)
         "clang (>=12.0)"                        # Clang required (minimum version 12.0)
         ninja-build
         # Build Libraries

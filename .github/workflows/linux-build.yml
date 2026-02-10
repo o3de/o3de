@@ -49,9 +49,6 @@ run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
 jobs:
   Build:
-    strategy:
-      fail-fast: false
-
     runs-on: ${{ inputs.image }}
 
     steps:
@@ -97,8 +94,9 @@ jobs:
       - name: Setup 3p, user, and build folders
         run: |
           mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
+
       - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
+        uses: chocobo1/setup-ccache-action@37c3347f8a7738e82aab7a06f276f7a12e3008fb # v1.5.3
         continue-on-error: true
         if: always()
         with:
@@ -106,9 +104,9 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=10G
-            hash_dir=false
             cache_dir=${{ github.workspace }}/.ccache
+            hash_dir=false
+            max_size=10G
 
       - name: Check for rerun
         id: check-rerun
@@ -137,7 +135,7 @@ jobs:
           check_artifacts: true
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
-                  
+
       - name: Set artifact run ID
         # Set the run ID of the artifact to be used for the download step
         id: set-artifact-run-id
@@ -146,7 +144,7 @@ jobs:
           runId=${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
           echo "artifact_run_id=$runId" >> $GITHUB_OUTPUT
           echo "Using artifacts from previous run: $runId"
-      
+
       - name: Restore artifact cache
         # Restore the artifact from the "Get last run" step or from the current run
         id: restore-artifact-cache
@@ -205,16 +203,17 @@ jobs:
           sudo apt -y autoclean
           sudo apt clean
           df -h
-          
+
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
         timeout-minutes: 330
+        env:
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
+          LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
         run: |
-          export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
-          export LY_PACKAGE_SERVER_URLS="https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
           export EXTRA_CMAKE_OPTIONS="-DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX"
-          export CMAKE_C_COMPILER_LAUNCHER=ccache
-          export CMAKE_CXX_COMPILER_LAUNCHER=ccache
           export DISPLAY=:0
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           if [ "${{ inputs.desktop }}" == "true" ]; then 

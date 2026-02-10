@@ -51,9 +51,9 @@ on:
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
 # Activate compiler cache
-env: 
-  O3DE_ENABLE_COMPILER_CACHE: true
-  O3DE_COMPILER_CACHE_PATH: 'C:\ProgramData\Chocolatey\bin\ccache.exe'
+env:
+  CMAKE_C_COMPILER_LAUNCHER: C:\ProgramData\Chocolatey\bin\ccache.exe
+  CMAKE_CXX_COMPILER_LAUNCHER: C:\ProgramData\Chocolatey\bin\ccache.exe
   NDK_VERSION: ${{ inputs.ndk_version }}
 
 # Note: All 3P Github Actions use the commit hash for security reasons 
@@ -61,11 +61,8 @@ env:
 
 jobs:
   Build:
-    strategy:
-      fail-fast: false
-
     runs-on: ${{ inputs.image }}
-        
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -107,7 +104,7 @@ jobs:
           Get-PSDrive
 
       - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
+        uses: chocobo1/setup-ccache-action@37c3347f8a7738e82aab7a06f276f7a12e3008fb # v1.5.3
         continue-on-error: true
         if: always()
         with:
@@ -116,12 +113,12 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=10G
-            inode_cache=true
-            hash_dir=false
-            temporary_dir=${{ env.DEV_DRIVE }}\temp
             cache_dir=${{ env.DEV_DRIVE_WORKSPACE }}\.ccache
-      
+            hash_dir=false
+            inode_cache=true
+            max_size=10G
+            temporary_dir=${{ env.DEV_DRIVE }}\temp
+
       - name: Check for rerun
         id: check-rerun
         run: |
@@ -158,7 +155,7 @@ jobs:
           $runId = ${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
           echo "artifact_run_id=$runId" >> $env:GITHUB_OUTPUT
           echo "Using artifacts from previous run: $runId"
-      
+
       - name: Restore artifact cache
         # Restore the artifact from the "Get last run" step or from the current run
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
@@ -176,20 +173,20 @@ jobs:
         continue-on-error: true
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
-        run: |        
+        run: |
           if (Test-Path ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar) {          
             tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
             rm ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
-            ${{ env.O3DE_COMPILER_CACHE_PATH }} --zero-stats --cleanup
+            ccache --zero-stats --cleanup
           }
-      
+
       - name: Setup cmake
         # Pin the version of cmake  
         if: ${{ inputs.cmake_version }}
         uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
         with:
           cmakeVersion: "${{ inputs.cmake_version }}"
-          
+
       - name: Configure generator/toolset env for CMake
         # Set the environment variables for the CMake generator and toolset depending on CMake version
         run: |
@@ -254,7 +251,7 @@ jobs:
           echo "JDK_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
           echo "JAVA_HOME=$env:JAVA_HOME_17_X64" >> $env:GITHUB_ENV
           echo "USE_GRADLE_FROM_PATH=1" >> $env:GITHUB_ENV
-          
+
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Android/build_config.json
         # Set temp folders to the workspace drive as the boot drive is slow
@@ -267,7 +264,7 @@ jobs:
           $env:TMP = "${{ env.DEV_DRIVE }}\temp"
           scripts\o3de.bat register --this-engine # Resolves registration issue with gradle build
           python\python.cmd -u scripts\build\ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }} 
-      
+
       - name: Compress artifacts
         # Compress with posix format to preserve permissions and timestamps at nanosecond precision
         # Skip compression and upload if the type is a test to reduce dirty build artifacts from previous runs
@@ -285,7 +282,7 @@ jobs:
           } catch {
             echo "Warning: Error during tar compression"
           }
-  
+
       - name: Save artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
