@@ -49,84 +49,68 @@
 <context>
     <name>AssetEditorMainWindow</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="130"/>
         <source>Node Palette</source>
-        <translation>节点面板</translation>
+        <translation type="vanished">节点面板</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="328"/>
         <source>&amp;File</source>
-        <translation>文件(&amp;F)</translation>
+        <translation type="vanished">文件(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="344"/>
         <source>&amp;New Asset</source>
-        <translation>新建资产(&amp;N)</translation>
+        <translation type="vanished">新建资产(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="359"/>
         <source>&amp;Open</source>
-        <translation>打开(&amp;O)</translation>
+        <translation type="vanished">打开(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="370"/>
         <source>&amp;Save</source>
-        <translation>保存(&amp;S)</translation>
+        <translation type="vanished">保存(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="381"/>
         <source>&amp;Save As...</source>
-        <translation>另存为(&amp;S)...</translation>
+        <translation type="vanished">另存为(&amp;S)...</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="382"/>
         <source>Ctrl+Shift+S</source>
-        <translation>Ctrl+Shift+S</translation>
+        <translation type="vanished">Ctrl+Shift+S</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="391"/>
         <source>Close</source>
-        <translation>关闭</translation>
+        <translation type="vanished">关闭</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="405"/>
         <source>&amp;Edit</source>
-        <translation>编辑(&amp;E)</translation>
+        <translation type="vanished">编辑(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="418"/>
         <source>Cut</source>
-        <translation>剪切</translation>
+        <translation type="vanished">剪切</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="432"/>
         <source>Copy</source>
-        <translation>复制</translation>
+        <translation type="vanished">复制</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="446"/>
         <source>Paste</source>
-        <translation>粘贴</translation>
+        <translation type="vanished">粘贴</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="460"/>
         <source>Duplicate</source>
-        <translation>复制副本</translation>
+        <translation type="vanished">复制副本</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="474"/>
         <source>Delete</source>
-        <translation>删除</translation>
+        <translation type="vanished">删除</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="545"/>
         <source>&amp;View</source>
-        <translation>视图(&amp;V)</translation>
+        <translation type="vanished">视图(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.cpp" line="587"/>
         <source>Restore Default Layout</source>
-        <translation>恢复默认布局</translation>
+        <translation type="vanished">恢复默认布局</translation>
     </message>
 </context>
 <context>
@@ -252,15 +236,13 @@
 <context>
     <name>BookmarkTableSourceModel</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.cpp" line="285"/>
         <source>Bookmarking Conflict</source>
-        <translation>书签冲突</translation>
+        <translation type="vanished">书签冲突</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.cpp" line="285"/>
         <source>Bookmark (%1) already registered with shortcut (%2).
 Proceed with remapping and remove shortcut?</source>
-        <translation>书签 (%1) 已注册快捷键 (%2)。
+        <translation type="vanished">书签 (%1) 已注册快捷键 (%2)。
 是否继续重新映射并移除快捷键？</translation>
     </message>
 </context>
@@ -361,14 +343,12 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>ConstructPresetsTableModel</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.cpp" line="116"/>
         <source>PresetName</source>
-        <translation>预设名称</translation>
+        <translation type="vanished">预设名称</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.cpp" line="118"/>
         <source>Is Default</source>
-        <translation>是否为默认</translation>
+        <translation type="vanished">是否为默认</translation>
     </message>
 </context>
 <context>
@@ -985,11 +965,75 @@ Proceed with remapping and remove shortcut?</source>
     </message>
 </context>
 <context>
+    <name>GraphCanvas::BookmarkTableSourceModel</name>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.cpp" line="285"/>
+        <source>Bookmarking Conflict</source>
+        <translation>书签冲突</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/Bookmarks/BookmarkTableModel.cpp" line="285"/>
+        <source>Bookmark (%1) already registered with shortcut (%2).
+Proceed with remapping and remove shortcut?</source>
+        <translation>书签 (%1) 已注册快捷键 (%2)。
+是否继续重新映射并移除快捷键？</translation>
+    </message>
+</context>
+<context>
     <name>GraphCanvas::BreakpointContextMenuAction</name>
     <message>
         <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/BreakpointMenuActions/BreakpointContextMenuAction.h" line="37"/>
         <source>Feature in development. Adding breakpoint works but will freeze the editor when breakpoint is hit.</source>
         <translation>功能开发中。添加断点可以工作，但当断点被触发时编辑器将会冻结。</translation>
+    </message>
+</context>
+<context>
+    <name>GraphCanvas::ConstructPresetsTableModel</name>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.cpp" line="116"/>
+        <source>PresetName</source>
+        <translation>预设名称</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/ConstructPresetDialog/ConstructPresetDialog.cpp" line="118"/>
+        <source>Is Default</source>
+        <translation>是否为默认</translation>
+    </message>
+</context>
+<context>
+    <name>GraphCanvas::GraphCanvasGraphicsView</name>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.cpp" line="1302"/>
+        <source>Bookmarking Conflict</source>
+        <translation>书签冲突</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.cpp" line="1302"/>
+        <source>Bookmark (%1) already registered with shortcut (%2).
+Proceed with action and remove previous bookmark?</source>
+        <translation>书签 (%1) 已注册快捷键 (%2)。
+是否继续操作并移除之前的书签？</translation>
+    </message>
+</context>
+<context>
+    <name>GraphCanvas::GraphOutlinerDockWidget</name>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.cpp" line="72"/>
+        <source>Input node name...</source>
+        <translation>输入节点名称...</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.cpp" line="93"/>
+        <source>Graph Outliner</source>
+        <translation>图表大纲</translation>
+    </message>
+</context>
+<context>
+    <name>GraphCanvas::MiniMapDockWidget</name>
+    <message>
+        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.cpp" line="340"/>
+        <source>MiniMap</source>
+        <translation>小地图</translation>
     </message>
 </context>
 <context>
@@ -1008,37 +1052,32 @@ Proceed with remapping and remove shortcut?</source>
 <context>
     <name>GraphCanvasGraphicsView</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.cpp" line="1302"/>
         <source>Bookmarking Conflict</source>
-        <translation>书签冲突</translation>
+        <translation type="vanished">书签冲突</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.cpp" line="1302"/>
         <source>Bookmark (%1) already registered with shortcut (%2).
 Proceed with action and remove previous bookmark?</source>
-        <translation>书签 (%1) 已注册快捷键 (%2)。
+        <translation type="vanished">书签 (%1) 已注册快捷键 (%2)。
 是否继续操作并移除之前的书签？</translation>
     </message>
 </context>
 <context>
     <name>GraphOutlinerDockWidget</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.cpp" line="72"/>
         <source>Input node name...</source>
-        <translation>输入节点名称...</translation>
+        <translation type="vanished">输入节点名称...</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/GraphOutliner/GraphOutlinerDockWidget.cpp" line="93"/>
         <source>Graph Outliner</source>
-        <translation>图表大纲</translation>
+        <translation type="vanished">图表大纲</translation>
     </message>
 </context>
 <context>
     <name>MiniMapDockWidget</name>
     <message>
-        <location filename="../../../../Gems/GraphCanvas/Code/StaticLib/GraphCanvas/Widgets/MiniMapGraphicsView/MiniMapGraphicsView.cpp" line="340"/>
         <source>MiniMap</source>
-        <translation>小地图</translation>
+        <translation type="vanished">小地图</translation>
     </message>
 </context>
 <context>

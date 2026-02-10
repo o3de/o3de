@@ -207,5 +207,31 @@ For other platforms, SetLocalUserId must be called at runtime with the id of a l
         <source>Manages input bindings and events</source>
         <translation>管理输入绑定和事件</translation>
     </message>
+    <message>
+        <location filename="../../../../Gems/StartingPointInput/Code/Source/InputEventBindings.h" line="47"/>
+        <source>Input Event Bindings</source>
+        <translation>输入事件绑定</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/StartingPointInput/Code/Source/InputEventBindings.h" line="48"/>
+        <source>Holds InputEventBindings</source>
+        <translation>保存输入事件绑定</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/StartingPointInput/Code/Source/InputEventBindings.h" line="51"/>
+        <location filename="../../../../Gems/StartingPointInput/Code/Source/InputEventBindings.h" line="52"/>
+        <source>Input Event Groups</source>
+        <translation>输入事件组</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/StartingPointInput/Code/Source/InputEventBindings.h" line="119"/>
+        <source>Input to Event Bindings Asset</source>
+        <translation>输入到事件绑定资产</translation>
+    </message>
+    <message>
+        <location filename="../../../../Gems/StartingPointInput/Code/Source/InputEventBindings.h" line="121"/>
+        <source>Bindings</source>
+        <translation>绑定</translation>
+    </message>
 </context>
 </TS>
