@@ -33,6 +33,8 @@
         {
             "file": "Include/${GemName}/${Name}Interface.h",
             "isTemplated": true,
+            "isInterface": true,
+            "cleanup_hint": "interface",
             "condition": "!skip_interface"
         },
         {

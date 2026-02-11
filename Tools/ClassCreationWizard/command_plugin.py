@@ -165,7 +165,8 @@ class CommandContext:
                  build_target: Optional[CMakeTarget],
                  variables: Dict[str, Any],
                  logger: Callable[[str], None],
-                 engine_path: Path):
+                 engine_path: Path,
+                 copy_files: Optional[List] = None):
         self.dest_root = dest_root
         self.namespace = namespace
         self.component_name = component_name
@@ -173,6 +174,9 @@ class CommandContext:
         self.variables = variables
         self.logger = logger
         self.engine_path = engine_path
+        # List of (resolved_path: str, CopyFileDef) for active (condition-passing) files.
+        # Commands use this to derive actual file paths rather than assuming Source/.
+        self.copy_files: List = copy_files or []
 
     def log(self, message: str):
         """Log a message using the provided logger"""

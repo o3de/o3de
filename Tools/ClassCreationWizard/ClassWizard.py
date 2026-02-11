@@ -23,6 +23,7 @@ from command_plugin import (
     CommandContext, WizardCommand, CommandRegistry, CommandPluginLoader,
     CMakeTarget, CMakeAnalyzer
 )
+from commands.exclude_conditional_files import ConditionalFileExcluder
 
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import (
@@ -75,6 +76,7 @@ class InputVarDef:
     description: str = ""
     required: bool = False
     options: List[str] = field(default_factory=list)  # For dropdown type
+    show_if: Optional[str] = None  # Project condition key, e.g. "hasEditor"
 
 
 @dataclass
@@ -90,7 +92,11 @@ class CopyFileDef:
     """Definition of a file to copy with optional condition"""
     file: str
     is_templated: bool = True
+    is_interface: bool = False
     condition: Optional[str] = None
+    cleanup_hint: Optional[str] = None  # "interface" or "editor" -- how to scrub refs when excluded
+    is_editor: bool = False             # file belongs to the editor module cmake target
+    is_test: bool = False               # file belongs to the test cmake target
 
 
 @dataclass
@@ -385,7 +391,8 @@ class WizardTemplateScanner:
                 default_value=var_def.get("default_value", ""),
                 description=var_def.get("description", ""),
                 required=var_def.get("required", False),
-                options=var_def.get("options", [])
+                options=var_def.get("options", []),
+                show_if=var_def.get("show_if")
             ))
 
         # Parse process commands
@@ -400,10 +407,17 @@ class WizardTemplateScanner:
         # Parse copyFiles with conditions
         copy_files = []
         for file_def in data.get("copyFiles", []):
+            is_interface = file_def.get("isInterface", False)
+            # cleanup_hint defaults to "interface" when isInterface is true for backward compatibility
+            default_hint = "interface" if is_interface else None
             copy_files.append(CopyFileDef(
                 file=file_def.get("file", ""),
                 is_templated=file_def.get("isTemplated", True),
-                condition=file_def.get("condition")
+                is_interface=is_interface,
+                condition=file_def.get("condition"),
+                cleanup_hint=file_def.get("cleanup_hint", default_hint),
+                is_editor=file_def.get("isEditor", False),
+                is_test=file_def.get("isTest", False)
             ))
 
         return WizardTemplate(
@@ -616,28 +630,10 @@ class ComponentCreator:
                 self.log("Failed to stage component")
                 return False
 
-            # Filter copyFiles based on conditions
-            files_to_skip = set()
-            for copy_def in template.copy_files:
-                if copy_def.condition and not resolver.evaluate_condition(copy_def.condition):
-                    # Resolve the file path and mark for skipping
-                    resolved_file = resolver.resolve(copy_def.file)
-                    files_to_skip.add(resolved_file)
-                    self.log(f"Skipping file (condition not met): {resolved_file}")
-
-            # Remove skipped files from stage
-            interface_skipped = False
-            for skip_file in files_to_skip:
-                skip_path = stage_dir / skip_file
-                if 'Interface' in skip_file:
-                    interface_skipped = True
-                if skip_path.exists():
-                    skip_path.unlink()
-                    self.log(f"Removed from stage: {skip_file}")
-
-            # Clean interface references from remaining staged files
-            if interface_skipped:
-                self._clean_interface_references(stage_dir, config['component_name'])
+            # Exclude conditional files and scrub references from staging area
+            ConditionalFileExcluder(logger=self.log).process(
+                stage_dir, template.copy_files, resolver
+            )
 
             # Handle setreg file if present
             setreg_path = None
@@ -670,6 +666,14 @@ class ComponentCreator:
             if template.process_commands:
                 self.log("Executing process commands...")
 
+                # Build resolved copy_files list for active (condition-passing) files only.
+                # Commands use this to look up actual file paths rather than assuming Source/.
+                resolved_copy_files = [
+                    (resolver.resolve(cf.file), cf)
+                    for cf in template.copy_files
+                    if resolver.evaluate_condition(cf.condition)
+                ]
+
                 ctx = CommandContext(
                     dest_root=config['dest_dir'],
                     namespace=config['namespace'],
@@ -677,7 +681,8 @@ class ComponentCreator:
                     build_target=config.get('build_target'),
                     variables=resolver.variables,
                     logger=self.log,
-                    engine_path=self.engine_path
+                    engine_path=self.engine_path,
+                    copy_files=resolved_copy_files
                 )
 
                 for cmd_def in template.process_commands:
@@ -779,46 +784,6 @@ class ComponentCreator:
         except Exception as e:
             self.log(f"Error: {e}")
             return False
-
-    def _clean_interface_references(self, stage_dir: Path, component_name: str):
-        """Remove interface-related references from staged .h and .cpp files
-        when the interface file has been skipped."""
-        self.log("Cleaning interface references from staged files...")
-
-        for source_file in stage_dir.rglob("*"):
-            if not source_file.is_file() or source_file.suffix not in ('.h', '.cpp'):
-                continue
-
-            text = source_file.read_text(encoding="utf-8")
-            original = text
-
-            # Remove #include line for the interface header
-            text = re.sub(
-                r'^#include\s+[<"].*?Interface\.h[>"]\s*\n',
-                '', text, flags=re.MULTILINE
-            )
-
-            # Remove RequestBus::Handler inheritance (", public ...RequestBus::Handler")
-            text = re.sub(
-                r'\s*,\s*public\s+\S+RequestBus::Handler',
-                '', text
-            )
-
-            # Remove RequestBus::Handler::BusConnect(...) lines
-            text = re.sub(
-                r'^\s*\S+RequestBus::Handler::BusConnect\(.*?\);\s*\n',
-                '', text, flags=re.MULTILINE
-            )
-
-            # Remove RequestBus::Handler::BusDisconnect(...) lines
-            text = re.sub(
-                r'^\s*\S+RequestBus::Handler::BusDisconnect\(.*?\);\s*\n',
-                '', text, flags=re.MULTILINE
-            )
-
-            if text != original:
-                source_file.write_text(text, encoding="utf-8")
-                self.log(f"Cleaned interface references from: {source_file.name}")
 
     def _merge_stage_into_dest(self, stage: Path, dest: Path,
                             skip_existing: bool, strip_comments: bool,
@@ -1772,14 +1737,15 @@ class ClassWizardWindow(QMainWindow):
         self.project_path = project_path
 
         self.setWindowTitle("O3DE Class Creation Wizard")
-        self.setMinimumSize(600, 700)
-        self.resize(650, 750)
+        self.setMinimumSize(600, 800)
+        self.resize(650, 900)
 
         # Initialize data
         self.gems: List[GemInfo] = []
         self.targets: List[CMakeTarget] = []
         self.selected_gem: Optional[GemInfo] = None
         self.selected_target: Optional[CMakeTarget] = None
+        self.project_conditions: Dict[str, bool] = {}  # e.g. {"hasEditor": True}
 
         # Template scanner for command-driven system
         self.template_scanner = WizardTemplateScanner(logger=lambda msg: None)  # Silent during init
@@ -1816,7 +1782,10 @@ class ClassWizardWindow(QMainWindow):
         
         # Log section
         layout.addWidget(self._create_log_section())
-        
+
+        # Creation status section
+        layout.addWidget(self._create_status_section())
+
         # Buttons
         layout.addWidget(self._create_button_section())
     
@@ -1828,6 +1797,7 @@ class ClassWizardWindow(QMainWindow):
         # Target combo
         self.target_combo = QComboBox()
         self.target_combo.currentTextChanged.connect(self._on_target_changed)
+        self.target_combo.currentTextChanged.connect(self._update_creation_status)
         self._add_form_row(layout, "Target:", self.target_combo)
         
         # Target path with browse
@@ -1848,6 +1818,7 @@ class ClassWizardWindow(QMainWindow):
         self.namespace_edit = QLineEdit()
         if self.project_path:
             self.namespace_edit.setText(self.project_path.stem)
+        self.namespace_edit.textChanged.connect(self._update_creation_status)
         self._add_form_row(layout, "Namespace:", self.namespace_edit)
         
         group.setLayout(layout)
@@ -1857,12 +1828,13 @@ class ClassWizardWindow(QMainWindow):
         """Create the component details section"""
         group = QGroupBox("Component Details")
         layout = QFormLayout()
-        
+
         # Component name
         self.component_name_edit = QLineEdit()
         self.component_name_edit.setPlaceholderText("Enter component name...")
+        self.component_name_edit.textChanged.connect(self._update_creation_status)
         self._add_form_row(layout, "Name:", self.component_name_edit)
-        
+
         # Component type
         self.component_type_combo = QComboBox()
         self.component_type_combo.addItems([
@@ -1870,7 +1842,7 @@ class ClassWizardWindow(QMainWindow):
         ])
         self.component_type_combo.currentTextChanged.connect(self._on_component_type_changed)
         self._add_form_row(layout, "Type:", self.component_type_combo)
-        
+
         # Dynamic fields will be added directly to this layout
         self.dynamic_layout = layout
         self.dynamic_widgets = []  # Track dynamic widgets for cleanup
@@ -1882,27 +1854,23 @@ class ClassWizardWindow(QMainWindow):
         """Create the settings section"""
         group = QGroupBox("Settings")
         layout = QVBoxLayout()
-        
+
         self.auto_register_check = QCheckBox("Register Automatically")
         self.auto_register_check.setChecked(True)
         self.auto_register_check.setToolTip(
             "Automatically add component to CMake and module files"
         )
         layout.addWidget(self.auto_register_check)
-        
+
         self.remove_comments_check = QCheckBox("Remove Comments")
         self.remove_comments_check.setChecked(False)
         self.remove_comments_check.setToolTip("Strip comments from generated files")
         layout.addWidget(self.remove_comments_check)
-        
-        self.editor_adapter_check = QCheckBox("Add Editor Adapter")
-        self.editor_adapter_check.setToolTip("Create editor-specific component variant")
-        layout.addWidget(self.editor_adapter_check)
-        
+
         self.default_license_check = QCheckBox("Default License")
         self.default_license_check.setToolTip("Include license header in source files")
         layout.addWidget(self.default_license_check)
-        
+
         group.setLayout(layout)
         return group
     
@@ -1910,15 +1878,32 @@ class ClassWizardWindow(QMainWindow):
         """Create the log output section"""
         group = QGroupBox("Log")
         layout = QVBoxLayout()
-        
+
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
         self.log_text.setMinimumHeight(100)
         layout.addWidget(self.log_text)
-        
+
         group.setLayout(layout)
         return group
-    
+
+    def _create_status_section(self) -> QWidget:
+        """Create the creation status display section"""
+        widget = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(10, 2, 10, 2)
+
+        self.creation_status_label = QLabel("Creating...")
+        self.creation_status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.creation_status_label.setStyleSheet(
+            "QLabel { color: #808080; font-size: 12pt; font-weight: bold; padding: 3px; }"
+        )
+        self.creation_status_label.setWordWrap(True)
+        layout.addWidget(self.creation_status_label)
+
+        widget.setLayout(layout)
+        return widget
+
     def _create_button_section(self) -> QWidget:
         """Create the button section"""
         widget = QWidget()
@@ -1966,8 +1951,8 @@ class ClassWizardWindow(QMainWindow):
             }
             QLabel[formLabel="true"] {
                 font-size: 9.5pt;
-                min-width: 90px;
-                max-width: 90px;
+                min-width: 110px;
+                max-width: 110px;
             }
             QLineEdit, QComboBox, QTextEdit {
                 background-color: #3c3c3c;
@@ -2056,11 +2041,14 @@ class ClassWizardWindow(QMainWindow):
 
             self.log(f"Loaded {len(self.gems)} gems")
 
-            # Load command plugins
-            tool_dir = Path(__file__).resolve().parent
-            plugin_loader = CommandPluginLoader(logger=self.log)
-            gem_paths = [gem.path for gem in self.gems if hasattr(gem, 'path') and gem.path]
-            plugin_loader.discover_and_load(tool_dir, self.project_path, gem_paths)
+            # Load command plugins (only if not already loaded by main())
+            if not CommandRegistry.list_commands():
+                tool_dir = Path(__file__).resolve().parent
+                plugin_loader = CommandPluginLoader(logger=self.log)
+                gem_paths = [gem.path for gem in self.gems if hasattr(gem, 'path') and gem.path]
+                plugin_loader.discover_and_load(tool_dir, self.project_path, gem_paths)
+            else:
+                self.log(f"Command plugins already loaded ({len(CommandRegistry.list_commands())} commands)")
 
             # Scan for wizard-enabled templates
             self.template_scanner = WizardTemplateScanner(logger=self.log)
@@ -2158,7 +2146,13 @@ class ClassWizardWindow(QMainWindow):
             else:
                 self.package_combo.addItem("<no targets found>")
                 self.log("Warning: No CMake targets found")
-        
+
+            # Detect project conditions for show_if filtering on dynamic inputs
+            self.project_conditions = self._detect_project_conditions(gem_path)
+
+            # Refresh dynamic fields -- some may now appear/disappear based on conditions
+            self._on_component_type_changed(self.component_type_combo.currentText())
+
         except Exception as e:
             self.log(f"Error changing target: {e}")
     
@@ -2176,7 +2170,74 @@ class ClassWizardWindow(QMainWindow):
                 return pref
         
         return names[0] if names else None
-    
+
+    def _detect_project_conditions(self, gem_path: Path) -> Dict[str, bool]:
+        """Detect project-level feature conditions from gem directory structure.
+
+        Results are used to show or hide template dynamic inputs that carry a
+        'show_if' key.  Add new conditions here as the project grows.
+
+        Conditions:
+            hasEditor   -- gem has an Editor source directory or editor cmake files
+            hasTesting  -- gem has a Tests directory or test cmake files
+        """
+        conditions: Dict[str, bool] = {
+            'hasEditor': False,
+            'hasTesting': False,
+        }
+
+        if not gem_path or not gem_path.is_dir():
+            return conditions
+
+        code_dir = gem_path / "Code"
+        search_root = code_dir if code_dir.is_dir() else gem_path
+
+        # hasEditor: Editor source folder OR any *editor*.cmake file
+        if (search_root / "Source" / "Editor").is_dir():
+            conditions['hasEditor'] = True
+        elif any(search_root.rglob("*editor*.cmake")):
+            conditions['hasEditor'] = True
+
+        # hasTesting: Tests source folder OR any *tests*.cmake file
+        if (search_root / "Tests").is_dir():
+            conditions['hasTesting'] = True
+        elif any(search_root.rglob("*tests*.cmake")):
+            conditions['hasTesting'] = True
+
+        return conditions
+
+    def _update_creation_status(self):
+        """Update the creation status display based on current inputs"""
+        component_name = self.component_name_edit.text().strip()
+        template = self.component_type_combo.currentData()
+        namespace = self.namespace_edit.text().strip() if hasattr(self, 'namespace_edit') else ""
+        target = self.target_combo.currentText() if hasattr(self, 'target_combo') else ""
+
+        if not component_name:
+            # Show placeholder in grey
+            self.creation_status_label.setText("Creating...")
+            self.creation_status_label.setStyleSheet(
+                "QLabel { color: #808080; font-size: 12pt; font-weight: bold; padding: 3px; }"
+            )
+            return
+
+        # Build the status text
+        if template and isinstance(template, WizardTemplate):
+            full_name = f"{component_name}{template.component_suffix}"
+        else:
+            full_name = f"{component_name}Component"
+
+        status_parts = ["Creating:", full_name]
+
+        if target:
+            status_parts.append(f"in {target}")
+
+        # Show filled status in off-white
+        self.creation_status_label.setText(" ".join(status_parts))
+        self.creation_status_label.setStyleSheet(
+            "QLabel { color: palette(text); font-size: 12pt; font-weight: bold; padding: 3px; }"
+        )
+
     def _on_component_type_changed(self, comp_type: str):
         """Handle component type selection change"""
         # Clear previous dynamic fields
@@ -2185,12 +2246,18 @@ class ClassWizardWindow(QMainWindow):
             self.dynamic_layout.removeRow(widget)
         self.dynamic_widgets.clear()
 
+        # Update the creation status display with new template's suffix
+        self._update_creation_status()
+
         # Check if we have a WizardTemplate for this type
         template = self.component_type_combo.currentData()
 
         if template and isinstance(template, WizardTemplate):
-            # Build dynamic fields from template.input_vars
+            # Build dynamic fields from template.input_vars, filtered by show_if conditions
+            conditions = getattr(self, 'project_conditions', {})
             for input_def in template.input_vars:
+                if input_def.show_if and not conditions.get(input_def.show_if, False):
+                    continue
                 widget = self._create_input_widget(input_def)
                 if widget:
                     self._add_form_row(self.dynamic_layout, f"{input_def.title}:", widget)
@@ -2429,32 +2496,63 @@ def list_templates(templates: List[WizardTemplate]) -> None:
 
 def print_template_help(template: WizardTemplate) -> None:
     """Print detailed help for a specific template"""
+
+    # ---- Identity ----
     print(f"\nTemplate: {template.display_name}")
-    print(f"  Class Name: {template.class_name}")
+    print(f"  Class Name:  {template.class_name}")
     if template.description:
         print(f"  Description: {template.description}")
-    print(f"  Component Suffix: {template.component_suffix}")
+    print(f"  Suffix:      {template.component_suffix}")
 
+    # ---- Full command example ----
+    print(f"\n  Full Command:")
+    print(f"    python ClassWizard.py \\")
+    print(f"      --engine-path  <engine-path>   (required)")
+    print(f"      --project-path <project-path>  (required)")
+    print(f"      --template     {template.class_name}")
+    print(f"      --component-name <Name>         (required)")
+    print(f"      --namespace      <GemName>       (required)")
+    print(f"      --automatic-register             (optional: register in CMake + modules)")
+    print(f"      --keep-comments                  (optional: preserve template comments)")
+    print(f"      --default-license                (optional: include license header)")
+
+    for var in template.input_vars:
+        arg_name  = f"--{var.var_name.replace('_', '-')}"
+        required_str  = "required" if var.required else "optional"
+        show_if_str   = f", needs {var.show_if}" if var.show_if else ""
+
+        if var.input_type == "toggle":
+            sig = arg_name
+        elif var.input_type == "text":
+            sig = f"{arg_name} <value>"
+        else:
+            choices = "|".join(var.options) if var.options else "value"
+            sig = f"{arg_name} {{{choices}}}"
+
+        print(f"      {sig:<35} ({required_str}{show_if_str})")
+
+    # ---- Template-specific argument details ----
     if template.input_vars:
         print(f"\n  Template-Specific Arguments:")
         for var in template.input_vars:
-            arg_name = f"--{var.var_name.replace('_', '-')}"
-            default_str = f" (default: {var.default_value})" if var.default_value is not None else ""
-            required_str = " [REQUIRED]" if var.required else ""
-            print(f"    {arg_name:<25} {var.title}{default_str}{required_str}")
+            arg_name     = f"--{var.var_name.replace('_', '-')}"
+            default_str  = f"  default: {var.default_value}" if var.default_value is not None else ""
+            required_str = "  [REQUIRED]" if var.required else ""
+            show_if_str  = f"  [show_if: {var.show_if}]" if var.show_if else ""
+            print(f"    {arg_name:<28}{var.title}{default_str}{required_str}{show_if_str}")
             if var.description:
                 print(f"      {var.description}")
 
+    # ---- Commands that will run ----
     if template.process_commands:
-        print(f"\n  Processing Commands ({len(template.process_commands)} commands):")
+        print(f"\n  Commands ({len(template.process_commands)} total):")
         for cmd in template.process_commands:
-            condition_str = f" [if {cmd.condition}]" if cmd.condition else ""
-            # Format command arguments
+            condition_str = f"  [if {cmd.condition}]" if cmd.condition else ""
             if cmd.args:
                 args_str = ", ".join(f"{k}={v}" for k, v in cmd.args.items())
-                print(f"    - {cmd.command}({args_str}){condition_str}")
+                print(f"    {cmd.command}({args_str}){condition_str}")
             else:
-                print(f"    - {cmd.command}{condition_str}")
+                print(f"    {cmd.command}{condition_str}")
     print()
 
 
