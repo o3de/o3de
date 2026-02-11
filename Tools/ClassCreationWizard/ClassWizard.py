@@ -29,9 +29,43 @@ from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QComboBox, QCheckBox,
+    QSpinBox, QDoubleSpinBox,
     QTextEdit, QGroupBox, QFileDialog, QMessageBox, QFormLayout
 )
 from PySide6.QtGui import QIcon
+
+
+# ============================================================================
+# Widgets
+# ============================================================================
+
+class BoundedComboBox(QComboBox):
+    """QComboBox whose dropdown popup is bounded to a maximum pixel height.
+
+    Fusion style calculates QComboBoxPrivateContainer size independently of the
+    view's maximumHeight, so two steps are required:
+      1. Pre-constrain the view -- Qt then positions the popup at the correct
+         screen location (no stale-coordinate problem).
+      2. Post-resize the container with resize() only (no setMaximumHeight, which
+         would persist and confuse future show calls) to clamp the scrollbar and
+         background. Re-anchor with move() only for the above-placement case.
+    """
+    MAX_POPUP_HEIGHT = 400
+
+    def showPopup(self):
+        # Step 1: constrain view before Qt calculates popup geometry/position
+        self.view().setMaximumHeight(self.MAX_POPUP_HEIGHT)
+        super().showPopup()
+
+        # Step 2: clamp the container that Fusion sizes independently of the view,
+        # and force the popup to always open downward below the combo.
+        popup = self.view().window()
+        if popup is self:
+            return
+
+        combo_bottom = self.mapToGlobal(self.rect().bottomLeft())
+        popup.resize(popup.width(), self.MAX_POPUP_HEIGHT)
+        popup.move(combo_bottom)
 
 
 # ============================================================================
@@ -70,13 +104,15 @@ CPP_KEYWORDS = {
 class InputVarDef:
     """Definition of a template input variable"""
     var_name: str
-    input_type: str  # "text", "toggle", "dropdown"
+    input_type: str  # "text", "toggle", "dropdown", "int", "float"
     title: str
     default_value: Any = ""
     description: str = ""
     required: bool = False
     options: List[str] = field(default_factory=list)  # For dropdown type
     show_if: Optional[str] = None  # Project condition key, e.g. "hasEditor"
+    min_value: Optional[float] = None  # For int/float types
+    max_value: Optional[float] = None  # For int/float types
 
 
 @dataclass
@@ -392,7 +428,9 @@ class WizardTemplateScanner:
                 description=var_def.get("description", ""),
                 required=var_def.get("required", False),
                 options=var_def.get("options", []),
-                show_if=var_def.get("show_if")
+                show_if=var_def.get("show_if"),
+                min_value=var_def.get("min_value"),
+                max_value=var_def.get("max_value")
             ))
 
         # Parse process commands
@@ -538,17 +576,54 @@ class GemDiscovery:
                 sys.path.pop(0)
 
         engine_root = engine_path.resolve()
+
+        # Build an allowlist of user-registered gem directories from two sources:
+        #   1. ~/.o3de/o3de_manifest.json external_subdirectories  (custom gems registered by user)
+        #   2. project.json external_subdirectories                 (the project's own Gem folder)
+        # When non-empty this allowlist catches pre-built engine setups where engine-bundled
+        # gems are not under engine_root but are still not owned by the project.
+        # Path comparison uses normcase for case-insensitive matching on Windows.
+        user_gem_roots: set = set()
+
+        manifest_path = Path.home() / ".o3de" / "o3de_manifest.json"
+        if manifest_path.is_file():
+            try:
+                mdata = json.loads(manifest_path.read_text(encoding="utf-8"))
+                for ext in mdata.get("external_subdirectories", []):
+                    resolved = Path(ext).resolve()
+                    if resolved.is_dir():
+                        user_gem_roots.add(os.path.normcase(str(resolved)))
+            except Exception:
+                pass
+
+        project_json = project_path / "project.json"
+        if project_json.is_file():
+            try:
+                pdata = json.loads(project_json.read_text(encoding="utf-8"))
+                for ext in pdata.get("external_subdirectories", []):
+                    resolved = (project_path / ext).resolve()
+                    if resolved.is_dir():
+                        user_gem_roots.add(os.path.normcase(str(resolved)))
+            except Exception:
+                pass
+
         gems = []
 
         for namespec, gem_path_str in mapping.items():
             gem_path = Path(gem_path_str).resolve()
 
-            # Skip engine-internal gems
+            # Filter 1: skip gems that live inside the engine directory
             try:
                 gem_path.relative_to(engine_root)
                 continue
             except ValueError:
                 pass
+
+            # Filter 2: if user_gem_roots is populated, only include gems registered there.
+            # Engine-bundled gems that live outside engine_root (pre-built engine scenario)
+            # will not appear in the manifest and are skipped here.
+            if user_gem_roots and os.path.normcase(str(gem_path)) not in user_gem_roots:
+                continue
 
             # Extract display name from gem.json
             name = namespec
@@ -1795,7 +1870,7 @@ class ClassWizardWindow(QMainWindow):
         layout = QFormLayout()
         
         # Target combo
-        self.target_combo = QComboBox()
+        self.target_combo = BoundedComboBox()
         self.target_combo.currentTextChanged.connect(self._on_target_changed)
         self.target_combo.currentTextChanged.connect(self._update_creation_status)
         self._add_form_row(layout, "Target:", self.target_combo)
@@ -1811,7 +1886,7 @@ class ClassWizardWindow(QMainWindow):
         self._add_form_row(layout, "Path:", path_layout)
         
         # Package (build target)
-        self.package_combo = QComboBox()
+        self.package_combo = BoundedComboBox()
         self._add_form_row(layout, "Package:", self.package_combo)
         
         # Namespace
@@ -1836,7 +1911,7 @@ class ClassWizardWindow(QMainWindow):
         self._add_form_row(layout, "Name:", self.component_name_edit)
 
         # Component type
-        self.component_type_combo = QComboBox()
+        self.component_type_combo = BoundedComboBox()
         self.component_type_combo.addItems([
             "Basic", "System", "Level", "LyShine UI", "Data Asset"
         ])
@@ -2071,12 +2146,13 @@ class ClassWizardWindow(QMainWindow):
         self.component_type_combo.clear()
 
         if self.available_templates:
-            # Use wizard-enabled templates
-            for template in self.available_templates:
-                self.component_type_combo.addItem(
-                    template.display_name,
-                    userData=template
-                )
+            # Pin "Basic Component" first, sort the rest alphabetically
+            def _sort_key(t):
+                return (0, "") if t.display_name == "Basic Component" else (1, t.display_name.lower())
+
+            for template in sorted(self.available_templates, key=_sort_key):
+                self.component_type_combo.addItem(template.display_name, userData=template)
+
             self.log("Using command-driven templates")
         else:
             # Fallback to legacy hardcoded types
@@ -2293,10 +2369,34 @@ class ClassWizardWindow(QMainWindow):
                 widget.setToolTip(input_def.description)
 
         elif input_def.input_type == "dropdown":
-            widget = QComboBox()
+            widget = BoundedComboBox()
             widget.addItems(input_def.options)
             if input_def.default_value and input_def.default_value in input_def.options:
                 widget.setCurrentText(str(input_def.default_value))
+            if input_def.description:
+                widget.setToolTip(input_def.description)
+
+        elif input_def.input_type == "int":
+            widget = QSpinBox()
+            lo = int(input_def.min_value) if input_def.min_value is not None else 0
+            hi = int(input_def.max_value) if input_def.max_value is not None else 2147483647
+            widget.setRange(lo, hi)
+            try:
+                widget.setValue(int(input_def.default_value))
+            except (ValueError, TypeError):
+                widget.setValue(lo)
+            if input_def.description:
+                widget.setToolTip(input_def.description)
+
+        elif input_def.input_type == "float":
+            widget = QDoubleSpinBox()
+            lo = float(input_def.min_value) if input_def.min_value is not None else 0.0
+            hi = float(input_def.max_value) if input_def.max_value is not None else 1e308
+            widget.setRange(lo, hi)
+            try:
+                widget.setValue(float(input_def.default_value))
+            except (ValueError, TypeError):
+                widget.setValue(lo)
             if input_def.description:
                 widget.setToolTip(input_def.description)
 
@@ -2450,6 +2550,10 @@ class ClassWizardWindow(QMainWindow):
                         dynamic_fields[var_name] = field.isChecked()
                     elif isinstance(field, QComboBox):
                         dynamic_fields[var_name] = field.currentText()
+                    elif isinstance(field, QDoubleSpinBox):
+                        dynamic_fields[var_name] = field.value()
+                    elif isinstance(field, QSpinBox):
+                        dynamic_fields[var_name] = field.value()
 
         return dynamic_fields
 
@@ -2688,6 +2792,20 @@ def add_template_specific_args(parser: argparse.ArgumentParser, template: Wizard
                 type=str,
                 choices=var.options,
                 default=var.default_value,
+                help=f"{var.title}" + (f": {var.description}" if var.description else "")
+            )
+        elif var.input_type == "int":
+            parser.add_argument(
+                arg_name,
+                type=int,
+                default=int(var.default_value) if var.default_value not in (None, "") else 0,
+                help=f"{var.title}" + (f": {var.description}" if var.description else "")
+            )
+        elif var.input_type == "float":
+            parser.add_argument(
+                arg_name,
+                type=float,
+                default=float(var.default_value) if var.default_value not in (None, "") else 0.0,
                 help=f"{var.title}" + (f": {var.description}" if var.description else "")
             )
         else:

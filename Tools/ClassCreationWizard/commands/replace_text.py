@@ -39,6 +39,12 @@ class ReplaceTextCommand(WizardCommand):
         else:
             repl_value = self.replacement
 
+        # Coerce to string; booleans become JSON-compatible lowercase (true/false)
+        if isinstance(repl_value, bool):
+            repl_value = "true" if repl_value else "false"
+        elif not isinstance(repl_value, str):
+            repl_value = str(repl_value)
+
         # Locate the target file in dest_root
         target = self._find_file(ctx.dest_root, self.component_name)
         if not target:
