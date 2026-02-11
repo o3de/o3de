@@ -30,14 +30,14 @@
             "condition": "!skip_interface"
         },
         {
-            "file": "Source/Editor${Name}Component.h",
+            "file": "Source/Tools/Editor${Name}Component.h",
             "isTemplated": true,
             "isEditor": true,
             "cleanup_hint": "editor",
             "condition": "include_editor"
         },
         {
-            "file": "Source/Editor${Name}Component.cpp",
+            "file": "Source/Tools/Editor${Name}Component.cpp",
             "isTemplated": true,
             "isEditor": true,
             "cleanup_hint": "editor",
