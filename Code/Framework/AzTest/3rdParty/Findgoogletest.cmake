@@ -107,6 +107,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION
     # Workaround for a googletest bug with char conversions recognized by Clang 21+
     # See https://github.com/google/googletest/issues/4762
     # TODO: remove when googletest is updated
+    target_compile_options(gmock PUBLIC -Wno-character-conversion)
     target_compile_options(gtest PUBLIC -Wno-character-conversion)
 endif()
 
