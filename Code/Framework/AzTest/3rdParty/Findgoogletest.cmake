@@ -72,16 +72,6 @@ set(OLD_CMAKE_VISIBILITY_INLINES_HIDDEN "${CMAKE_VISIBILITY_INLINES_HIDDEN}")
 set(OLD_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL}) # save the old CMAKE_MESSAGE_LOG_LEVEL
 set(CMAKE_MESSAGE_LOG_LEVEL ${O3DE_FETCHCONTENT_MESSAGE_LEVEL})
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "21")
-    # Workaround for a googletest bug with char conversions recognized by Clang 21+
-    # See https://github.com/google/googletest/issues/4762
-    # TODO: remove when googletest is updated
-    ly_append_configurations_options(
-        COMPILATION
-            -Wno-character-conversion
-    )
-endif()
-
 FetchContent_MakeAvailable(googletest)
 
 set(CMAKE_MESSAGE_LOG_LEVEL ${OLD_LOG_LEVEL})
@@ -113,6 +103,12 @@ endforeach()
 unset(CMAKE_POLICY_DEFAULT_CMP0148)
 set(CMAKE_WARN_DEPRECATED ${OLD_CMAKE_WARN_DEPRECATED} CACHE BOOL "" FORCE)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "21")
+    # Workaround for a googletest bug with char conversions recognized by Clang 21+
+    # See https://github.com/google/googletest/issues/4762
+    # TODO: remove when googletest is updated
+    target_compile_options(gtest PUBLIC -Wno-character-conversion)
+endif()
 
 FetchContent_GetProperties(
     googletest
