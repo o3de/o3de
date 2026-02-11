@@ -27,7 +27,7 @@
 
 include_guard(GLOBAL)
 
-block()
+function(_o3de_compiler_launcher)
     set(supported_languages C CXX)
 
     # Resolves Chocolatey shim executables to their real tool paths.
@@ -246,4 +246,8 @@ block()
     # == UNKNOWN == #
     # Leave CMAKE_<LANG>_COMPILER_LAUNCHER as-is
     message(STATUS "CompilerLauncher: Unsupported generator: ${CMAKE_GENERATOR}")
-endblock()
+endfunction()
+
+# TODO: Replace with block() when we use a version of cmake that supports it (3.26+)
+_o3de_compiler_launcher()
+unset(_o3de_compiler_launcher)
