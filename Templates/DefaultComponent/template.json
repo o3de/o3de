@@ -105,8 +105,8 @@
                 "condition": "include_editor",
                 "args": {
                     "component_name": "${Name}${ComponentSuffix}.cpp",
-                    "text_to_replace": "->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE(\"Game\"))\n",
-                    "replacement": ""
+                    "text_to_replace": "AppearsInAddComponentMenu, AZ_CRC_CE(\"Game\"))",
+                    "replacement": "AppearsInAddComponentMenu, AZ_CRC_CE(\"\"))"
                 }
             }
         ]
