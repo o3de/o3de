@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
 #include <OpenParticleSystem/ParticleConfig.h>
+#include <OpenParticleSystem/ParticleTypeIDs.h>
 
 namespace OpenParticle
 {
@@ -55,7 +56,7 @@ namespace OpenParticle
     public:
         friend class ParticleAssetData;
 
-        AZ_RTTI(OpenParticle::ParticleAsset, "{86cf03d6-d1b2-4a5c-a4b8-1d3bdeb5a507}", AZ::Data::AssetData);
+        AZ_RTTI(OpenParticle::ParticleAsset, ParticleAssetTypeID, AZ::Data::AssetData);
         AZ_CLASS_ALLOCATOR(ParticleAsset, AZ::SystemAllocator, 0);
 
         static const char* DisplayName;

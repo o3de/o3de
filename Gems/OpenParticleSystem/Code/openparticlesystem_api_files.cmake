@@ -8,4 +8,5 @@
 
 set(FILES
     Include/OpenParticleSystem/ParticleRequestBus.h
+    Include/OpenParticleSystem/ParticleTypeIDs.h
 )
