@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "../${SanitizedCppName}Component.h"
+#include "../${SanitizedCppName}LevelComponent.h"
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
@@ -18,17 +18,17 @@ namespace ${GemName}
 {
     /*
     * TODO: Register this component in your Gem's Editor AZ::Module interface by inserting the following:
-    *       Editor${SanitizedCppName}Component::CreateDescriptor(),
+    *       Editor${SanitizedCppName}LevelComponent::CreateDescriptor(),
     *
     * Editor components wrap the corresponding runtime component. In the editor, this component
     * is placed on entities. At export/game-mode, BuildGameEntity() instantiates the runtime component.
     */
 
-    class Editor${SanitizedCppName}Component
+    class Editor${SanitizedCppName}LevelComponent
         : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
-        AZ_EDITOR_COMPONENT(Editor${SanitizedCppName}Component, "{${Random_Uuid}}", AzToolsFramework::Components::EditorComponentBase);
+        AZ_EDITOR_COMPONENT(Editor${SanitizedCppName}LevelComponent, "{${Random_Uuid}}", AzToolsFramework::Components::EditorComponentBase);
 
         /*
         * Reflects component data into the reflection contexts.

@@ -28,6 +28,20 @@
             "isInterface": true,
             "cleanup_hint": "interface",
             "condition": "!skip_interface"
+        },
+        {
+            "file": "Source/Tools/Editor${Name}SystemComponent.h",
+            "isTemplated": true,
+            "isEditor": true,
+            "cleanup_hint": "editor",
+            "condition": "include_editor"
+        },
+        {
+            "file": "Source/Tools/Editor${Name}SystemComponent.cpp",
+            "isTemplated": true,
+            "isEditor": true,
+            "cleanup_hint": "editor",
+            "condition": "include_editor"
         }
     ],
     "createDirectories": [
@@ -51,6 +65,14 @@
                 "title": "Skip Interface",
                 "default_value": false,
                 "description": "Do not create the Interface.h file"
+            },
+            {
+                "input_type": "toggle",
+                "var_name": "include_editor",
+                "title": "Add Editor Comp.",
+                "default_value": false,
+                "description": "Generate an EditorComponent wrapper that appears in the Editor Inspector and exports the runtime component at game-mode",
+                "show_if": "hasEditor"
             }
         ],
 
@@ -75,6 +97,25 @@
                 "command": "register_interface_header",
                 "condition": "!skip_interface",
                 "args": { "component_name": "${Name}" }
+            },
+            {
+                "command": "register_file_list",
+                "condition": "include_editor",
+                "args": { "component_name": "Editor${Name}${ComponentSuffix}" }
+            },
+            {
+                "command": "register_module_descriptor",
+                "condition": "include_editor",
+                "args": { "component_name": "Editor${Name}${ComponentSuffix}", "module_kind": "editor" }
+            },
+            {
+                "command": "replace_text",
+                "condition": "include_editor",
+                "args": {
+                    "component_name": "${Name}${ComponentSuffix}.cpp",
+                    "text_to_replace": "AppearsInAddComponentMenu, AZ_CRC_CE(\"Game\"))",
+                    "replacement": "AppearsInAddComponentMenu, AZ_CRC_CE(\"\"))"
+                }
             }
         ]
     }
