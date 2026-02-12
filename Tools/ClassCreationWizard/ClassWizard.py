@@ -6,6 +6,7 @@
 #
 
 import argparse
+import contextlib
 import json
 import os
 import re
@@ -36,6 +37,29 @@ from PySide6.QtGui import QIcon
 
 
 # ============================================================================
+# Utilities
+# ============================================================================
+
+@contextlib.contextmanager
+def o3de_manifest_api(engine_path: Path):
+    """Context manager that temporarily adds the o3de scripts to sys.path
+    and yields the o3de.manifest module.
+
+    Usage:
+        with o3de_manifest_api(engine_path) as manifest:
+            gems = manifest.get_project_enabled_gems(project_path)
+    """
+    pkg_root = engine_path / "scripts" / "o3de"
+    sys.path.insert(0, str(pkg_root))
+    try:
+        from o3de import manifest
+        yield manifest
+    finally:
+        if sys.path and sys.path[0] == str(pkg_root):
+            sys.path.pop(0)
+
+
+# ============================================================================
 # Widgets
 # ============================================================================
 
@@ -53,7 +77,8 @@ class BoundedComboBox(QComboBox):
     MAX_POPUP_HEIGHT = 400
 
     def showPopup(self):
-        # Step 1: constrain view before Qt calculates popup geometry/position
+        # Step 1: pre-constrain the view so Qt positions the popup at the correct
+        # screen location. Qt respects this when choosing popup geometry.
         self.view().setMaximumHeight(self.MAX_POPUP_HEIGHT)
         super().showPopup()
 
@@ -64,7 +89,8 @@ class BoundedComboBox(QComboBox):
             return
 
         combo_bottom = self.mapToGlobal(self.rect().bottomLeft())
-        popup.resize(popup.width(), self.MAX_POPUP_HEIGHT)
+        clamped_height = min(popup.height(), self.MAX_POPUP_HEIGHT)
+        popup.resize(popup.width(), clamped_height)
         popup.move(combo_bottom)
 
 
@@ -94,6 +120,101 @@ CPP_KEYWORDS = {
 
 # Legacy constants removed - now dynamically loaded from template.json class_wizard blocks
 # See WizardTemplateScanner for template discovery
+
+WINDOW_STYLESHEET = """
+    QMainWindow {
+        background-color: #2b2b2b;
+    }
+    QGroupBox {
+        color: #cccccc;
+        border: 1px solid #555555;
+        border-radius: 4px;
+        margin-top: 8px;
+        padding-top: 8px;
+        font-weight: bold;
+    }
+    QGroupBox::title {
+        subcontrol-origin: margin;
+        left: 10px;
+        padding: 0 5px;
+    }
+    QLabel {
+        color: #cccccc;
+    }
+    QLabel[formLabel="true"] {
+        font-size: 9.5pt;
+        min-width: 110px;
+        max-width: 110px;
+    }
+    QLineEdit, QComboBox, QTextEdit {
+        background-color: #3c3c3c;
+        color: #cccccc;
+        border: 1px solid #555555;
+        border-radius: 3px;
+        padding: 5px;
+        font-size: 9.5pt;
+    }
+    QLineEdit:focus, QComboBox:focus {
+        border: 1px solid #0078d4;
+    }
+    QComboBox::drop-down {
+        border: none;
+        width: 20px;
+    }
+    QComboBox::down-arrow {
+        image: url(COMBO_ARROW_URL);
+        width: 10px;
+        height: 10px;
+    }
+    QComboBox::down-arrow:on {
+        image: url(COMBO_ARROW_UP_URL);
+        width: 10px;
+        height: 10px;
+    }
+    QPushButton {
+        background-color: #0078d4;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 8px 20px;
+        font-weight: bold;
+    }
+    QPushButton:hover {
+        background-color: #1084d8;
+    }
+    QPushButton:pressed {
+        background-color: #006cc1;
+    }
+    QPushButton:disabled {
+        background-color: #555555;
+        color: #888888;
+    }
+    QCheckBox {
+        color: #cccccc;
+        spacing: 8px;
+        font-size: 9.5pt;
+    }
+    QCheckBox::indicator {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #555555;
+        border-radius: 3px;
+        background-color: #3c3c3c;
+    }
+    QCheckBox::indicator:checked {
+        background-color: #0078d4;
+        border-color: #0078d4;
+    }
+    QTextEdit {
+        font-family: 'Courier New', monospace;
+        font-size: 9pt;
+    }
+"""
+
+# Status label inline styles (font/padding shared; color varies by state)
+_STATUS_STYLE_BASE = "QLabel {{ font-size: 12pt; font-weight: bold; padding: 3px; color: {color}; }}"
+_STATUS_COLOR_PENDING  = "#808080"   # grey  — placeholder / not yet run
+_STATUS_COLOR_ACTIVE   = "palette(text)"  # theme text — filled summary
 
 
 # ============================================================================
@@ -306,7 +427,7 @@ class WizardTemplateScanner:
 
         # Scan gem templates
         if project_path:
-            gem_dirs = self._resolve_project_gem_paths(project_path)
+            gem_dirs = self._resolve_project_gem_paths(project_path, engine_path)
             for gem_dir in gem_dirs:
                 gem_templates = gem_dir / "Templates"
                 if gem_templates.is_dir() and gem_templates.resolve() not in scanned_dirs:
@@ -318,16 +439,25 @@ class WizardTemplateScanner:
 
         return templates
 
-    def _resolve_project_gem_paths(self, project_path: Path) -> List[Path]:
-        """Resolve gem directory paths for a project using the o3de manifest.
+    def _resolve_project_gem_paths(self, project_path: Path,
+                                   engine_path: Optional[Path] = None) -> List[Path]:
+        """Resolve gem directory paths for a project using the o3de manifest API.
 
-        Reads the project's gem_names from project.json, then resolves each
-        gem name to an actual filesystem path via the o3de manifest's
-        external_subdirectories list.
+        Uses manifest.get_project_enabled_gems() when engine_path is available.
+        Falls back to manual project.json + o3de_manifest.json parsing otherwise.
         """
+        # --- Primary path: use o3de manifest API ---
+        if engine_path:
+            try:
+                with o3de_manifest_api(engine_path) as manifest:
+                    mapping = manifest.get_project_enabled_gems(project_path) or {}
+                    return [Path(p) for p in mapping.values() if Path(p).is_dir()]
+            except Exception as e:
+                self.log(f"Warning: manifest API unavailable ({e}), falling back to manual resolution")
+
+        # --- Fallback: manual resolution via project.json + o3de_manifest.json ---
         gem_paths = []
 
-        # Read project gem names
         project_json = project_path / "project.json"
         if not project_json.is_file():
             return gem_paths
@@ -338,45 +468,37 @@ class WizardTemplateScanner:
             return gem_paths
 
         gem_names_raw = project_data.get("gem_names", [])
-        # Strip version specifiers (e.g. "GS_Cinematics==1.0.0" -> "GS_Cinematics")
         project_gem_names = set()
         for name in gem_names_raw:
             clean = name.split("==")[0].split(">=")[0].split("<=")[0].split("~=")[0].strip()
             project_gem_names.add(clean.lower())
 
-        # Include project-local external_subdirectories (e.g. "Gem")
         for ext_sub in project_data.get("external_subdirectories", []):
             ext_path = (project_path / ext_sub).resolve()
             if ext_path.is_dir():
                 gem_paths.append(ext_path)
 
-        # Read o3de manifest
         manifest_path = Path.home() / ".o3de" / "o3de_manifest.json"
         if not manifest_path.is_file():
             return gem_paths
 
         try:
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            mdata = json.loads(manifest_path.read_text(encoding="utf-8"))
         except Exception:
             return gem_paths
 
-        # Check each external subdirectory in the manifest
         already_resolved = {p.resolve() for p in gem_paths}
-        for ext_dir_str in manifest.get("external_subdirectories", []):
+        for ext_dir_str in mdata.get("external_subdirectories", []):
             ext_dir = Path(ext_dir_str)
             if not ext_dir.is_dir():
                 continue
-
-            # Read gem.json to get the gem's registered name
             gem_json = ext_dir / "gem.json"
             if not gem_json.is_file():
                 continue
-
             try:
                 gem_data = json.loads(gem_json.read_text(encoding="utf-8"))
             except Exception:
                 continue
-
             gem_name = gem_data.get("gem_name", "")
             if gem_name.lower() in project_gem_names:
                 resolved = ext_dir.resolve()
@@ -562,50 +684,28 @@ class GemDiscovery:
         Returns:
             List of GemInfo objects
         """
-        pkg_root = engine_path / "scripts" / "o3de"
-        sys.path.insert(0, str(pkg_root))
-
-        try:
-            from o3de import manifest
+        with o3de_manifest_api(engine_path) as manifest:
             mapping = manifest.get_project_enabled_gems(
                 project_path,
                 include_dependencies=include_dependencies
             ) or {}
-        finally:
-            if sys.path and sys.path[0] == str(pkg_root):
-                sys.path.pop(0)
+
+            # Build an allowlist of user-registered gem roots using the manifest API.
+            # Covers: ~/.o3de/o3de_manifest.json external_subdirectories and
+            #         project.json external_subdirectories.
+            # This allowlist lets us skip engine-bundled gems in pre-built engine setups
+            # where those gems live outside engine_root.
+            user_gem_roots: set = set()
+            for ext in (manifest.get_manifest_external_subdirectories() or []):
+                resolved = Path(ext).resolve()
+                if resolved.is_dir():
+                    user_gem_roots.add(os.path.normcase(str(resolved)))
+            for ext in (manifest.get_project_external_subdirectories(project_path) or []):
+                resolved = Path(ext).resolve()
+                if resolved.is_dir():
+                    user_gem_roots.add(os.path.normcase(str(resolved)))
 
         engine_root = engine_path.resolve()
-
-        # Build an allowlist of user-registered gem directories from two sources:
-        #   1. ~/.o3de/o3de_manifest.json external_subdirectories  (custom gems registered by user)
-        #   2. project.json external_subdirectories                 (the project's own Gem folder)
-        # When non-empty this allowlist catches pre-built engine setups where engine-bundled
-        # gems are not under engine_root but are still not owned by the project.
-        # Path comparison uses normcase for case-insensitive matching on Windows.
-        user_gem_roots: set = set()
-
-        manifest_path = Path.home() / ".o3de" / "o3de_manifest.json"
-        if manifest_path.is_file():
-            try:
-                mdata = json.loads(manifest_path.read_text(encoding="utf-8"))
-                for ext in mdata.get("external_subdirectories", []):
-                    resolved = Path(ext).resolve()
-                    if resolved.is_dir():
-                        user_gem_roots.add(os.path.normcase(str(resolved)))
-            except Exception:
-                pass
-
-        project_json = project_path / "project.json"
-        if project_json.is_file():
-            try:
-                pdata = json.loads(project_json.read_text(encoding="utf-8"))
-                for ext in pdata.get("external_subdirectories", []):
-                    resolved = (project_path / ext).resolve()
-                    if resolved.is_dir():
-                        user_gem_roots.add(os.path.normcase(str(resolved)))
-            except Exception:
-                pass
 
         gems = []
 
@@ -1971,7 +2071,7 @@ class ClassWizardWindow(QMainWindow):
         self.creation_status_label = QLabel("Creating...")
         self.creation_status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.creation_status_label.setStyleSheet(
-            "QLabel { color: #808080; font-size: 12pt; font-weight: bold; padding: 3px; }"
+            _STATUS_STYLE_BASE.format(color=_STATUS_COLOR_PENDING)
         )
         self.creation_status_label.setWordWrap(True)
         layout.addWidget(self.creation_status_label)
@@ -2004,92 +2104,11 @@ class ClassWizardWindow(QMainWindow):
     
     def _apply_styles(self):
         """Apply stylesheet to the window"""
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #2b2b2b;
-            }
-            QGroupBox {
-                color: #cccccc;
-                border: 1px solid #555555;
-                border-radius: 4px;
-                margin-top: 8px;
-                padding-top: 8px;
-                font-weight: bold;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
-            }
-            QLabel {
-                color: #cccccc;
-            }
-            QLabel[formLabel="true"] {
-                font-size: 9.5pt;
-                min-width: 110px;
-                max-width: 110px;
-            }
-            QLineEdit, QComboBox, QTextEdit {
-                background-color: #3c3c3c;
-                color: #cccccc;
-                border: 1px solid #555555;
-                border-radius: 3px;
-                padding: 5px;
-                font-size: 9.5pt;
-            }
-            QLineEdit:focus, QComboBox:focus {
-                border: 1px solid #0078d4;
-            }
-            QComboBox::drop-down {
-                border: none;
-                width: 20px;
-            }
-            QComboBox::down-arrow {
-                image: none;
-                border-left: 4px solid transparent;
-                border-right: 4px solid transparent;
-                border-top: 6px solid #cccccc;
-                margin-right: 5px;
-            }
-            QPushButton {
-                background-color: #0078d4;
-                color: white;
-                border: none;
-                border-radius: 3px;
-                padding: 8px 20px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #1084d8;
-            }
-            QPushButton:pressed {
-                background-color: #006cc1;
-            }
-            QPushButton:disabled {
-                background-color: #555555;
-                color: #888888;
-            }
-            QCheckBox {
-                color: #cccccc;
-                spacing: 8px;
-                font-size: 9.5pt;
-            }
-            QCheckBox::indicator {
-                width: 18px;
-                height: 18px;
-                border: 1px solid #555555;
-                border-radius: 3px;
-                background-color: #3c3c3c;
-            }
-            QCheckBox::indicator:checked {
-                background-color: #0078d4;
-                border-color: #0078d4;
-            }
-            QTextEdit {
-                font-family: 'Courier New', monospace;
-                font-size: 9pt;
-            }
-        """)
+        icons_dir = Path(__file__).resolve().parent / "icons"
+        stylesheet = WINDOW_STYLESHEET \
+            .replace("COMBO_ARROW_URL",    (icons_dir / "combo_arrow.svg").as_posix()) \
+            .replace("COMBO_ARROW_UP_URL", (icons_dir / "combo_arrow_up.svg").as_posix())
+        self.setStyleSheet(stylesheet)
     
     def _load_project_data(self):
         """Load gems, targets, and wizard templates for the current project"""
@@ -2293,7 +2312,7 @@ class ClassWizardWindow(QMainWindow):
             # Show placeholder in grey
             self.creation_status_label.setText("Creating...")
             self.creation_status_label.setStyleSheet(
-                "QLabel { color: #808080; font-size: 12pt; font-weight: bold; padding: 3px; }"
+                _STATUS_STYLE_BASE.format(color=_STATUS_COLOR_PENDING)
             )
             return
 
@@ -2311,7 +2330,7 @@ class ClassWizardWindow(QMainWindow):
         # Show filled status in off-white
         self.creation_status_label.setText(" ".join(status_parts))
         self.creation_status_label.setStyleSheet(
-            "QLabel { color: palette(text); font-size: 12pt; font-weight: bold; padding: 3px; }"
+            _STATUS_STYLE_BASE.format(color=_STATUS_COLOR_ACTIVE)
         )
 
     def _on_component_type_changed(self, comp_type: str):
@@ -3029,14 +3048,14 @@ def main():
             return 0
 
 if __name__ == "__main__":
+    # Running as a standalone script (not embedded in O3DE Editor).
+    # Always propagate the exit code so callers can detect failure.
     try:
         result = main()
-        # Don't call sys.exit when running inside O3DE Editor
-        # The editor manages the lifecycle
-        if QApplication.instance() and QApplication.instance() != QApplication.instance():
-            sys.exit(result)
+        sys.exit(result)
     except SystemExit:
-        pass  # Ignore SystemExit when inside O3DE
+        raise  # Let sys.exit propagate normally
     except Exception as e:
         print(f"Error: {e}")
         traceback.print_exc()
+        sys.exit(1)
