@@ -18,8 +18,19 @@
 namespace ${GemName}
 {
     /*
-    * TODO: Register this component in your Gem's AZ::Module interface by inserting the following into the list of m_descriptors:
-    *       ${GemName}DataAssetSystemComponent::CreateDescriptor(),
+    * ${GemName}DataAssetSystemComponent - Central registration point for all data asset types in ${GemName}.
+    *
+    * A gem or project only needs one of these. Its sole purpose is to own the lifetime of
+    * GenericAssetHandler instances and to forward Reflect() calls to every asset type managed
+    * by this gem. All asset handler registration and unregistration happens here, not in
+    * individual asset classes.
+    *
+    * To add this component to your gem, insert the following into the m_descriptors list in
+    * your gem's AZ::Module constructor:
+    *   ${GemName}DataAssetSystemComponent::CreateDescriptor(),
+    *
+    * You should also add it to your gem's system entity descriptor so it activates at startup:
+    *   GetRequiredSystemComponents() should return AZ::Uuid of this component.
     */
 
     class ${GemName}DataAssetSystemComponent
