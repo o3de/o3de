@@ -16,6 +16,14 @@ if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24")
     cmake_policy(SET CMP0135 NEW) 
 endif()
 
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.30")
+    # CMP0168 - Controls whether fetchcontent uses sub builds (<3.30) or just does the fetch during
+    # configure, which is much faster, especially for subsequent configure.
+    # (OLD) Use a sub build
+    # (NEW) Do the fetch during configure
+    cmake_policy(SET CMP0168 NEW)
+endif()
+
 include(cmake/LySet.cmake)
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
@@ -36,11 +44,13 @@ get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
 if (O3DE_SCRIPT_ONLY)
     message(STATUS  "Basic Configuration Information (Script-only mode):\n" 
                     "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_COMMAND: ${CMAKE_COMMAND}\n"
                     "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}"
             )
 else()
     message(STATUS  "Basic Configuration Information:\n" 
                     "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_COMMAND: ${CMAKE_COMMAND}\n"
                     "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}\n"
                     "   CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}\n"
                     "   CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}\n"
