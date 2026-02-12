@@ -2546,7 +2546,7 @@ class ClassWizardWindow(QMainWindow):
         dynamic_fields = {}
 
         for i in range(self.dynamic_layout.rowCount()):
-            field_item = self.dynamic_layout.itemAt(i, QFormLayout.FieldRole)
+            field_item = self.dynamic_layout.itemAt(i, QFormLayout.ItemRole.FieldRole)
 
             if field_item:
                 field = field_item.widget()
@@ -2556,7 +2556,7 @@ class ClassWizardWindow(QMainWindow):
                 var_name = field.property("var_name")
                 if not var_name:
                     # Fallback to label text for legacy compatibility
-                    label_item = self.dynamic_layout.itemAt(i, QFormLayout.LabelRole)
+                    label_item = self.dynamic_layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
                     if label_item and label_item.widget():
                         label = label_item.widget()
                         if isinstance(label, QLabel):
@@ -3030,7 +3030,7 @@ def main():
             # Use existing QApplication (inside O3DE Editor)
             # Use setAttribute to ensure window is deleted when closed
             window = ClassWizardWindow(engine_path, project_path)
-            window.setAttribute(Qt.WA_DeleteOnClose, True)
+            window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
             window.show()
 
             # Keep window alive - store reference
