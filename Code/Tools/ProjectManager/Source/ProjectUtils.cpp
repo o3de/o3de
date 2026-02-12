@@ -37,6 +37,22 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        bool PrependToPath(QString newPath)
+        {
+            QString pathEnvName = GetPlatformPathEnvVariableName();
+            QString pathEnv = qEnvironmentVariable(pathEnvName.toUtf8().constData());
+            QStringList pathEnvList = pathEnv.split(";");
+            if (!pathEnvList.contains(newPath, Qt::CaseInsensitive))
+            {
+                pathEnv = GetPlatformPathEnvSeparator() + newPath + pathEnv;
+                if (!qputenv(pathEnvName.toUtf8().constData(), pathEnv.toStdString().c_str()))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         static bool WarnDirectoryOverwrite(const QString& path, QWidget* parent)
         {
             if (!QDir(path).isEmpty())
