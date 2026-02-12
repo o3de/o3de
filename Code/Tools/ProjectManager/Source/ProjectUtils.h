@@ -52,7 +52,8 @@ namespace O3DE::ProjectManager
         QString GetPlatformPathEnvVariableName();
 
         //! modify the process environment to prepent the given path to the front of the system environment path
-        bool PrependToPath(QString newPath);
+        //! Prepend it, if prepend is true, otherwise append it.
+        bool AddPathToPathEnv(QString newPath, bool prepend = true);
 
         //! Detect if cmake is installed
         //! Does NOT detect if the version of cmake required to run O3DE

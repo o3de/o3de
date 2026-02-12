@@ -47,17 +47,17 @@ namespace O3DE::ProjectManager
             // with since its the one we know works.
             QDir cmakePath(engineInfo.m_path);
             cmakePath.cd("cmake/runtime/bin");
-            if (!PrependToPath(cmakePath.path()))
+            if (!AddPathToPathEnv(cmakePath.path(), /*prepend=*/true))
             {
-                return AZ::Failure(QObject::tr("Failed to append the path of the CMake binary to the PATH environment variable"));
+                return AZ::Failure(QObject::tr("Failed to add the path of the CMake binary to the PATH environment variable"));
             }
 
             // if we ship with a specific version of ninja, preppend ito the PATH as well,  we prefer to use it.
             QDir ninjaPath(engineInfo.m_path);
             ninjaPath.cd("ninja");
-            if (!PrependToPath(ninjaPath.path()))
+            if (!AddPathToPathEnv(ninjaPath.path(), /*prepend=*/true))
             {
-                return AZ::Failure(QObject::tr("Failed to append the path of the ninja binary to the PATH environment variable"));
+                return AZ::Failure(QObject::tr("Failed to add the path of the ninja binary to the PATH environment variable"));
             }
 
             return AZ::Success();
