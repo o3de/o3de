@@ -213,8 +213,8 @@ WINDOW_STYLESHEET = """
 
 # Status label inline styles (font/padding shared; color varies by state)
 _STATUS_STYLE_BASE = "QLabel {{ font-size: 12pt; font-weight: bold; padding: 3px; color: {color}; }}"
-_STATUS_COLOR_PENDING  = "#808080"   # grey  — placeholder / not yet run
-_STATUS_COLOR_ACTIVE   = "palette(text)"  # theme text — filled summary
+_STATUS_COLOR_PENDING  = "#808080"   # grey - placeholder / not yet run
+_STATUS_COLOR_ACTIVE   = "palette(text)"  # theme text - filled summary
 
 
 # ============================================================================
