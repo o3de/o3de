@@ -324,4 +324,3 @@ namespace AudioControls
 
 } // namespace AudioControls
 
-#include <Source/Editor/moc_QConnectionsWidget.cpp>

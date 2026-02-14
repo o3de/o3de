@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/utils.h>
 
 #include <QValidator>
-#endif
 
 
 namespace ProjectSettingsTool

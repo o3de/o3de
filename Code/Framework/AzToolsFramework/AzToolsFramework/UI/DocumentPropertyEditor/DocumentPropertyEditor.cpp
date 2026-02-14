@@ -423,7 +423,7 @@ namespace AzToolsFramework
         m_expanderWidget = new QCheckBox(parentWidget());
         m_expanderWidget->setCheckState(m_expanded ? Qt::Checked : Qt::Unchecked);
         AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
-        connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
+        connect(m_expanderWidget, &QCheckBox::checkStateChanged, this, &DPELayout::onCheckstateChanged);
     }
 
     void DPELayout::SetAsStartOfNewColumn(size_t widgetIndex)

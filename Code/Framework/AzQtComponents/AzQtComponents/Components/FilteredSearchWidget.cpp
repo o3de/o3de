@@ -20,12 +20,10 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
-#include <QMenu>
 #include <QMenu>
 #include <QPainter>
 #include <QPushButton>
@@ -212,7 +210,7 @@ namespace AzQtComponents
         }
 
         QStyleOption options;
-        options.init(this);
+        options.initFrom(this);
         const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, &options, this);
         const int vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, &options, this);
 
@@ -645,8 +643,9 @@ namespace AzQtComponents
 
     void SearchTypeSelectorFilterModel::setNoResultsMessageRow(int row)
     {
+        beginFilterChange();
         m_noResultsRow = row;
-        invalidateFilter();
+        endFilterChange();
     }
 
 
@@ -849,7 +848,10 @@ namespace AzQtComponents
         m_ui->assetTypeSelector->setMenu(m_selector);
         SetupPaintDelegates();
 
-        connect(m_selector, &SearchTypeSelector::aboutToShow, this, [this]() {m_selector->Setup(m_typeFilters); });
+        connect(m_selector, &SearchTypeSelector::aboutToShow, this, [this]() {
+            m_selector->Setup(m_typeFilters);
+            m_selector->show();
+        });
         connect(m_selector, &SearchTypeSelector::TypeToggled, this, &FilteredSearchWidget::SetFilterStateByIndex);
     }
 
@@ -1582,5 +1584,3 @@ namespace AzQtComponents
         return QStyledItemDelegate::sizeHint(option, index);
     }
 } // namespace AzQtComponents
-
-#include "Components/moc_FilteredSearchWidget.cpp"

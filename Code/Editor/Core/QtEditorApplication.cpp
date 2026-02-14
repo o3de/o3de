@@ -418,7 +418,8 @@ namespace Editor
         Q_ASSERT(QFile::exists(directory + "/" + filename));
 
         QTranslator* translator = new QTranslator();
-        translator->load(filename, directory);
+        [[maybe_unused]] const bool result = translator->load(filename, directory);
+        assert(result);
         installTranslator(translator);
         return translator;
     }
@@ -479,4 +480,3 @@ namespace Editor
     }
 } // end namespace Editor
 
-#include <Core/moc_QtEditorApplication.cpp>

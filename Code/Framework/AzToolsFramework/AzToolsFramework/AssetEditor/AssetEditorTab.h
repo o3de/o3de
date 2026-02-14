@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettings.h>
@@ -19,7 +18,6 @@
 
 #include <QTimer>
 #include <QWidget>
-#endif
 
 namespace AZ
 {

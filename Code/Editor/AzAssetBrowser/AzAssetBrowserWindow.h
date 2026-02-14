@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QWidget>
 #include <QMenu>
-#endif
 
 class QItemSelection;
 

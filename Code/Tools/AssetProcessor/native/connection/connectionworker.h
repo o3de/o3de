@@ -7,14 +7,13 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QTcpSocket>
 #include <QHostAddress>
+
 #include "native/connection/connectionMessages.h"
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#endif
 
 /** This Class is responsible for connecting to the client
  */

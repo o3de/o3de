@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
 #include <AtomToolsFramework/Viewport/ViewportInputBehaviorController/ViewportInputBehaviorController.h>
-#endif
 
 namespace AtomToolsFramework
 {

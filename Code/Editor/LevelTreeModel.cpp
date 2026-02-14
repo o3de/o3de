@@ -68,8 +68,9 @@ void LevelTreeModelFilter::setFilterText(const QString& text)
     QString lowerText = text.toLower();
     if (m_filterText != lowerText)
     {
+        beginFilterChange();
         m_filterText = lowerText;
-        invalidateFilter();
+        endFilterChange();
     }
 }
 
@@ -168,4 +169,3 @@ void LevelTreeModel::AddItem(const QString& name, const QModelIndex& parent)
     }
 }
 
-#include <moc_LevelTreeModel.cpp>

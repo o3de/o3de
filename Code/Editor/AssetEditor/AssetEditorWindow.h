@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <QWidget>
-#endif
 
 namespace Ui
 {

@@ -5,17 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/base.h>
 #include <AzCore/std/functional.h>
 
 #include <QCompleter>
 #include <QPlainTextEdit>
-#endif
 
-#pragma once
 
 namespace LUAEditor
 {

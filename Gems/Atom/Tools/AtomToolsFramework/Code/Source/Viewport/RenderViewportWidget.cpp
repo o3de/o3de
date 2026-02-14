@@ -265,13 +265,12 @@ namespace AtomToolsFramework
     }
 
 
-    void RenderViewportWidget::enterEvent(QEvent* event)
+    void RenderViewportWidget::enterEvent(QEnterEvent* event)
     {
         if (const auto eventType = event->type();
             eventType == QEvent::Type::MouseMove)
         {
-            const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
-            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos() * devicePixelRatioF());
+            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(event->position().toPoint() * devicePixelRatioF());
         }
     }
 

@@ -11,16 +11,13 @@
 #define CRYINCLUDE_EDITOR_UTIL_FILECHANGEMONITOR_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/set.h>
 
 #include <QFileInfoList>
 #include <QFileSystemWatcher>
-
 #include <QObject>
 #include <QQueue>
 #include <QScopedPointer>
-#endif
 
 class CFileChangeMonitorListener;
 

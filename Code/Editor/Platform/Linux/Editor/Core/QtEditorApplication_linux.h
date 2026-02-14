@@ -8,10 +8,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <Editor/Core/QtEditorApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#endif
 
 using xcb_connection_t = struct xcb_connection_t;
 
@@ -21,7 +19,6 @@ namespace Editor
         : public EditorQtApplication
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
-        Q_OBJECT
     public:
         EditorQtApplicationXcb(int& argc, char** argv)
             : EditorQtApplication(argc, argv)
@@ -38,6 +35,6 @@ namespace Editor
         void OnStopPlayInEditor() override;
 
         // QAbstractNativeEventFilter:
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
+        bool nativeEventFilter(const QByteArray& eventType, void* message, qintptr* result) override;
     };
 } // namespace Editor

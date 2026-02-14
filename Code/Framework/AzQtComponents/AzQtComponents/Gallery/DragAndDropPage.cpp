@@ -48,5 +48,3 @@ view->viewport()->setAcceptDrops(true);
 DragAndDropPage::~DragAndDropPage()
 {
 }
-
-#include <Gallery/moc_DragAndDropPage.cpp>

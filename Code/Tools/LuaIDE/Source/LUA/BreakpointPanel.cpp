@@ -9,7 +9,6 @@
 #include "BreakpointPanel.hxx"
 #include <AzCore/Debug/Trace.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <Source/LUA/moc_BreakpointPanel.cpp>
 
 #include <QAction>
 #include <QMenu>

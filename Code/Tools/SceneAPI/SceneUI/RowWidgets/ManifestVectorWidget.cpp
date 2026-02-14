@@ -222,7 +222,7 @@ namespace AZ
 
             void ManifestVectorWidget::UpdatePropertyGrid()
             {
-                QSignalBlocker(this);
+                QSignalBlocker block(this);
                 m_propertyEditor->ClearInstances();
                 for (auto &object : m_manifestVector)
                 {
@@ -317,4 +317,3 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-#include <RowWidgets/moc_ManifestVectorWidget.cpp>

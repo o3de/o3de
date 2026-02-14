@@ -454,5 +454,4 @@ namespace ScriptCanvasEditor
 //         }
     }
 
-#include <Editor/View/Widgets/StatisticsDialog/moc_ScriptCanvasStatisticsDialog.cpp>
 }

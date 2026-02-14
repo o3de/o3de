@@ -23,5 +23,3 @@ void CTrackViewDoubleSpinBox::stepBy(int steps)
     AzQtComponents::DoubleSpinBox::stepBy(steps);
     Q_EMIT stepByFinished();
 }
-
-#include <TrackView/moc_TrackViewDoubleSpinBox.cpp>

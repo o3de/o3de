@@ -8,10 +8,8 @@
 #ifndef COLUMNGROUPTREEVIEW_H
 #define COLUMNGROUPTREEVIEW_H
 
-#if !defined(Q_MOC_RUN)
 #include <QTreeView>
 #include <QPainter>
-#endif
 
 class ColumnGroupProxyModel;
 class ColumnGroupHeaderView;

@@ -15,7 +15,6 @@
 #include <QFileInfo>
 #include "../Include/IFileUtil.h"
 
-class QStringList;
 class QMenu;
 
 class SANDBOX_API CFileUtil

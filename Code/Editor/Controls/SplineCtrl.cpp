@@ -830,5 +830,3 @@ void CSplineCtrl::SetTimelineCtrl(TimelineWidget* pTimelineCtrl)
         m_pTimelineCtrl->setParent(this);
     }
 }
-
-#include <Controls/moc_SplineCtrl.cpp>

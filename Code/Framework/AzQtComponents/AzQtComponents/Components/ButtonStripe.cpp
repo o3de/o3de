@@ -65,5 +65,3 @@ namespace AzQtComponents
         }
     }
 }
-
-#include "Components/moc_ButtonStripe.cpp"

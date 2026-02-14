@@ -95,7 +95,7 @@ namespace AssetProcessor
 
             case Qt::TextAlignmentRole:
             {
-                return Qt::AlignLeft + Qt::AlignVCenter;
+                return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
             }
 
             default:
@@ -248,7 +248,7 @@ namespace AssetProcessor
         }
         case Qt::TextAlignmentRole:
         {
-            return Qt::AlignLeft + Qt::AlignVCenter;
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
         case statusRole:
         {

@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Widgets/HierarchyWidget/HierarchyItem.h"
 
 #include <AzCore/Component/EntityId.h>
@@ -19,7 +18,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 
 #include <QScrollArea>
-#endif
 
 class EditorWindow;
 class PropertiesWidget;

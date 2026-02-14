@@ -14,7 +14,6 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Guid.h>
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -22,7 +21,6 @@
 #include <SceneAPI/SceneUI/CommonWidgets/SceneSettingsCard.h>
 #include <QFileSystemWatcher>
 #include <QMainWindow>
-#endif
 
 
 namespace AzQtComponents

@@ -19,7 +19,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QScreen>
-#include <QDesktopWidget>
 #include <QTimer>
 #include <QDateTime>
 #include <QRegularExpression>
@@ -372,4 +371,3 @@ void WelcomeScreenDialog::previewAreaScrolled()
     m_messageScrollReported = true;
 }
 
-#include <WelcomeScreen/moc_WelcomeScreenDialog.cpp>
