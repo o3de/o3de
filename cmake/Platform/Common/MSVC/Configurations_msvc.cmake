@@ -63,9 +63,9 @@ endif()
 # /ZI - Separate .pdb with Edit and Continue support (debug only, requires incremental linking)
 #
 # The correct flag depends on three factors:
-#   1. Caching compiler launcher active          => requires /Z7 (embedded debug info)
-#   2. Incremental linking enabled (debug only)  => requires /ZI (edit and continue)
-#   3. Debug symbols in Release (optional)       => uses same format as other configurations
+#   1. Caching compiler launcher active         => requires /Z7 (embedded debug info)
+#   2. Incremental linking enabled (debug only) => requires /ZI (edit and continue)
+#   3. Debug symbols in Release (optional)      => uses same format as other configurations
 #
 # Note: Incremental linking (/ZI) and caching compiler launchers (/Z7) are incompatible.
 # If both are requested, incremental linking takes priority for Debug builds.
@@ -187,8 +187,8 @@ set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE CACHE BOOL "Indicates if incre
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)
     if(o3de_caching_compiler_launcher)
         message(WARNING
-            "Incremental linking and caching compiler launchers are incompatible for Debug builds. "
-            "Edit and Continue (/ZI) will be used; the compiler launcher may not cache Debug builds effectively."
+            "Incremental linking and caching compiler launchers are unsupported. "
+            "Edit and Continue (/ZI) may prevent the compiler launcher from caching effectively."
         )
     endif()
     
@@ -205,7 +205,6 @@ else()
         LINK_NON_STATIC_DEBUG
             /DEBUG      # Despite the documentation states /Zi implies /DEBUG, without it, stack traces are not expanded
             /INCREMENTAL:NO
-
     )
 endif()
 
