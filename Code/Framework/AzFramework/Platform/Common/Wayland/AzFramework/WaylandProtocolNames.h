@@ -20,7 +20,7 @@ namespace AzFramework
     static constexpr AZ::Crc32 XdgDecorationManagerName = AZ_CRC_CE("zxdg_decoration_manager_v1");
 
     //Minimum versions we require and bind for.
-    static constexpr uint32_t WaylandSeatVersion = 7;
+    static constexpr uint32_t WaylandSeatVersion = 6;
     static constexpr uint32_t XdgWmBaseVersion = 3;
     static constexpr uint32_t XdgDecorationManagerVersion = 1;
     static constexpr uint32_t CursorShapeVersion = 2;

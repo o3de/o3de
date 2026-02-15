@@ -86,7 +86,7 @@ namespace AzFramework
         void CheckErrors() const override
         {
             int errorCode = wl_display_get_error(m_waylandDisplay.get());
-            if (errorCode != 0)
+            if (errorCode == EPROTO)
             {
                 const wl_interface* anInterface;
                 uint32_t interfaceId;
@@ -97,9 +97,14 @@ namespace AzFramework
                         interfaceId, &WaylandInterfaceNotificationsBus::Events::OnProtocolError, interfaceId, code);
                 }
 
-                // Man page says: Note: Errors are fatal. If this function returns non-zero, the display can no longer be used.
+                // Man page says, "Note: Errors are fatal. If this function returns non-zero, the display can no longer be used."
                 // let's crash
-                AZ_Fatal("Wayland", "Protocol error occurred %d, please check above for more info.", errorCode);
+                AZ_Fatal("Wayland", "Protocol error occurred %d, please check above for more info.", code);
+                AZ_Crash();
+            }
+            else if (errorCode != 0)
+            {
+                AZ_Fatal("Wayland", "Wayland error occurred %d", errorCode);
                 AZ_Crash();
             }
         }
