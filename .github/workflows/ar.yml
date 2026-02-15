@@ -71,8 +71,8 @@ jobs:
             platform: Windows
             type: profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }} # If CLEAN_ARTIFACTS is false, then this returns true
-            msvc_toolset_version: '14.29'
-            msvc_platform_toolset: 'v142'
+            msvc_toolset_version: '14.44'
+            msvc_platform_toolset: 'v143'
             cmake_version: '~3.24'
     
     Windows-Asset:
@@ -85,8 +85,8 @@ jobs:
             image: windows-2022
             platform: Windows
             type: asset_profile
-            msvc_toolset_version: '14.29'
-            msvc_platform_toolset: 'v142'
+            msvc_toolset_version: '14.44'
+            msvc_platform_toolset: 'v143'
             cmake_version: '~3.24'
 
     Windows-Test:
@@ -99,8 +99,8 @@ jobs:
             image: windows-2022
             platform: Windows
             type: test_cpu_profile
-            msvc_toolset_version: '14.29'
-            msvc_platform_toolset: 'v142'
+            msvc_toolset_version: '14.44'
+            msvc_platform_toolset: 'v143'
             cmake_version: '~3.24'
 
     Windows-Release:
@@ -113,8 +113,8 @@ jobs:
             platform: Windows
             type: release
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
-            msvc_toolset_version: '14.29'
-            msvc_platform_toolset: 'v142'
+            msvc_toolset_version: '14.44'
+            msvc_platform_toolset: 'v143'
             cmake_version: '~3.24'
 
 #### Linux Build ####
@@ -183,8 +183,8 @@ jobs:
             platform: Android
             type: asset_profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
-            msvc_toolset_version: '14.29'
-            msvc_platform_toolset: 'v142'
+            msvc_toolset_version: '14.44'
+            msvc_platform_toolset: 'v143'
             ndk_version: '25.1.8937393'
             gradle_version: '8.12'
             cmake_version: '~3.24'
