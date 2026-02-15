@@ -100,7 +100,7 @@ namespace UnitTest
                 EXPECT_TRUE(fileInfo.absoluteDir().mkpath("."));
             }
             QFile tempFile(m_fakeSourceFile);
-            const bool res = tempFile.open(QIODevice::OpenModeFlag::NewOnly);
+            [[maybe_unused]] const bool res = tempFile.open(QIODevice::OpenModeFlag::NewOnly);
             AZ_Assert(res, "Failed to open %s", qPrintable(m_fakeSourceFile));
         }
 
