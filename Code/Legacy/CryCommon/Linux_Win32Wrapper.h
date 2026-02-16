@@ -243,7 +243,7 @@ inline void ZeroMemory(void* pPtr, int nSize)
     memset(pPtr, 0, nSize);
 }
 
-inline BOOL InflateRect(RECT* pRect, int dx, int dy)
+inline AZ::u8 InflateRect(RECT* pRect, int dx, int dy)
 {
     pRect->left -= dx;
     pRect->right += dx;
@@ -253,7 +253,7 @@ inline BOOL InflateRect(RECT* pRect, int dx, int dy)
 }
 
 //////////////////////////////////////////////////////////////////////////
-extern BOOL SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft);
+extern AZ::u8 SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft);
 //Win32API function declarations actually used
 extern bool IsBadReadPtr(void* ptr, unsigned int size);
 
@@ -321,7 +321,7 @@ inline uint32 GetTickCount()
 #define _strlwr_s(BUF, SIZE) strlwr(BUF)
 #define _strups strupr
 
-extern BOOL GetUserName(LPSTR lpBuffer, LPDWORD nSize);
+extern AZ::u8 GetUserName(LPSTR lpBuffer, LPDWORD nSize);
 
 //error code stuff
 //not thread specific, just a coarse implementation for the main thread
@@ -358,9 +358,9 @@ inline void SetLastError(DWORD dwErrCode) { errno = dwErrCode; }
 extern DWORD Sleep(DWORD dwMilliseconds);
 
 //////////////////////////////////////////////////////////////////////////
-extern DWORD SleepEx(DWORD dwMilliseconds, BOOL bAlertable);
+extern DWORD SleepEx(DWORD dwMilliseconds, AZ::u8 bAlertable);
 
-extern BOOL GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize); //required for CryOnline
+extern AZ::u8 GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize); //required for CryOnline
 extern DWORD GetCurrentProcessId(void);
 
 //////////////////////////////////////////////////////////////////////////

@@ -18,11 +18,11 @@
 bool GetPositionFromString(QString er, float* x, float* y, float* z)
 {
     er = er.toLower();
-    int ind = er.indexOf("pos:");
+    int ind = static_cast<int>(er.indexOf("pos:"));
     int shift = 4;
     if (ind < 0)
     {
-        ind = er.indexOf("position:");
+        ind = static_cast<int>(er.indexOf("position:"));
         shift = 9;
     }
     if (ind >= 0)
@@ -33,14 +33,14 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
         {
             er = er.mid(1);
             er.remove(QRegularExpression("^ *"));
-            ind = er.indexOf(")");
+            ind = static_cast<int>(er.indexOf(")"));
             if (ind > 0)
             {
                 er = er.mid(0, ind);
                 er.remove(QRegularExpression(" *$"));
 
-                ind = er.indexOf(" ");
-                int ind2 = er.indexOf(",");
+                ind = static_cast<int>(er.indexOf(" "));
+                int ind2 = static_cast<int>(er.indexOf(","));
                 if (ind < 0 || (ind2 > 0 && ind > ind2))
                 {
                     ind = ind2;
@@ -51,8 +51,8 @@ bool GetPositionFromString(QString er, float* x, float* y, float* z)
                     er = er.mid(ind);
                     er.remove(QRegularExpression("^[ ,]*"));
 
-                    ind = er.indexOf(" ");
-                    ind2 = er.indexOf(",");
+                    ind = static_cast<int>(er.indexOf(" "));
+                    ind2 = static_cast<int>(er.indexOf(","));
                     if (ind < 0 || (ind2 > 0 && ind > ind2))
                     {
                         ind = ind2;

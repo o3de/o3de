@@ -27,7 +27,11 @@ namespace Editor
         return new EditorQtApplicationMac(argc, argv);
     }
 
-    bool EditorQtApplicationMac::nativeEventFilter(const QByteArray& eventType, void* message, long* result)
+    EditorQtApplicationMac::~EditorQtApplicationMac()
+    {
+    }
+
+    bool EditorQtApplicationMac::nativeEventFilter(const QByteArray& eventType, void* message, qintptr* result)
     {
         NSEvent* event = (NSEvent*)message;
         if (GetIEditor()->IsInGameMode())

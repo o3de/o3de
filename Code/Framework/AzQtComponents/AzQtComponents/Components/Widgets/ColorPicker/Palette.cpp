@@ -176,17 +176,17 @@ bool Palette::tryInsertColors(int index, QVector<AZ::Color>::const_iterator firs
 
 bool Palette::tryAppendColor(const AZ::Color& color)
 {
-    return tryInsertColor(m_colors.size(), color);
+    return tryInsertColor(static_cast<int>(m_colors.size()), color);
 }
 
 bool Palette::tryAppendColors(const QVector<AZ::Color>& colors)
 {
-    return tryInsertColors(m_colors.size(), colors.cbegin(), colors.cend());
+    return tryInsertColors(static_cast<int>(m_colors.size()), colors.cbegin(), colors.cend());
 }
 
 bool Palette::tryAppendColors(QVector<AZ::Color>::const_iterator first, QVector<AZ::Color>::const_iterator last)
 {
-    return tryInsertColors(m_colors.size(), first, last);
+    return tryInsertColors(static_cast<int>(m_colors.size()), first, last);
 }
 
 bool Palette::tryRemoveColors(int index, int count)

@@ -1092,7 +1092,7 @@ bool MainWindow::event(QEvent* event)
         auto mouse = static_cast<QHoverEvent*>(event);
         bool result = QMainWindow::event(event);
         void setCocoaMouseCursor(QWidget*);
-        setCocoaMouseCursor(childAt(mouse->pos()));
+        setCocoaMouseCursor(childAt(mouse->position()));
         return result;
     }
 #endif

@@ -794,7 +794,7 @@ namespace AssetBundler
         QByteArray byteArray;
         QFile jsonFile;
         jsonFile.setFileName(filePath.c_str());
-        [[maybe_unused]] const bool res = jsonFile.open(QIODevice::ReadOnly | QIODevice::Text);
+        const bool res = jsonFile.open(QIODevice::ReadOnly | QIODevice::Text);
         AZ_Assert(res, "Failed to open %s", filePath.c_str());
         byteArray = jsonFile.readAll();
         jsonFile.close();
@@ -807,7 +807,7 @@ namespace AssetBundler
         QFile jsonFile(filePath.c_str());
         QJsonDocument JsonDocument;
         JsonDocument.setObject(jsonObject);
-        [[maybe_unused]] const bool res = jsonFile.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
+        const bool res = jsonFile.open(QFile::WriteOnly | QFile::Text | QFile::Truncate);
         AZ_Assert(res, "Failed to open %s", filePath.c_str());
         jsonFile.write(JsonDocument.toJson());
         jsonFile.close();

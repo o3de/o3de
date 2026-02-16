@@ -77,7 +77,7 @@ public:
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override
     {
-        return parent.isValid() ? 0 : m_iconImages.count();
+        return parent.isValid() ? 0 : static_cast<int>(m_iconImages.count());
     }
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override

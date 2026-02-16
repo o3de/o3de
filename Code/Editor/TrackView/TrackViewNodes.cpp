@@ -758,7 +758,7 @@ void CTrackViewNodesCtrl::OnSelectionChanged()
         sequence->ClearSelection();
 
         QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
-        int nCount = items.count();
+        int nCount = static_cast<int>(items.count());
         for (int i = 0; i < nCount; i++)
         {
             CRecord* record = (CRecord*)items.at(i);
@@ -1918,7 +1918,7 @@ void CTrackViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         return;
     }
 
-    UINT count = menu->actions().size();
+    UINT count = static_cast<int>(menu->actions().size());
     for (UINT i = 0; i < count; ++i)
     {
         QAction* a = menu->actions()[i];
@@ -1992,7 +1992,7 @@ void CTrackViewNodesCtrl::OnFilterChange(const QString& text)
 
             CTrackViewAnimNodeBundle animNodes = sequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {
@@ -2041,7 +2041,7 @@ void CTrackViewNodesCtrl::ShowNextResult()
 
             CTrackViewAnimNodeBundle animNodes = sequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {

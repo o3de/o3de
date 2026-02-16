@@ -162,7 +162,7 @@ namespace AssetProcessor
         //! Add AssetProcessor config files from platform specific folders
         bool AddPlatformConfigFilePaths(AZStd::vector<AZ::IO::Path>& configList);
 
-        int MetaDataFileTypesCount() const { return m_metaDataFileTypes.count(); }
+        int MetaDataFileTypesCount() const { return static_cast<int>(m_metaDataFileTypes.count()); }
         // Metadata file types are (meta file extension, original file extension - or blank if its tacked on the end instead of replacing).
         // so for example if its
         // blah.tif + blah.tif.metadata, then its ("metadata", "")

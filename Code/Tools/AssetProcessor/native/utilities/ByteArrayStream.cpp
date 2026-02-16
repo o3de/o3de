@@ -25,7 +25,7 @@ namespace AssetProcessor
     {
         m_activeArray = other;
         m_usingOwnArray = false;
-        m_currentPos = m_activeArray->size();
+        m_currentPos = static_cast<int>(m_activeArray->size());
         m_readOnly = false;
     }
 
@@ -66,7 +66,7 @@ namespace AssetProcessor
         //   ^   <-- pos, currently 2
         // we have 3 bytes available .. 5 - 2.
 
-        int actualAvailableBytes = m_activeArray->size() - m_currentPos;
+        int actualAvailableBytes = static_cast<int>(m_activeArray->size()) - m_currentPos;
         if (actualAvailableBytes <= 0)
         {
             return aznumeric_cast<SizeType>(0);

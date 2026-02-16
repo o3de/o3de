@@ -66,7 +66,7 @@ QString AssetRequestHandler::AssetRequestLine::GetDisplayString() const
 
 int AssetRequestHandler::GetNumOutstandingAssetRequests() const
 {
-    return m_pendingAssetRequests.size();
+    return static_cast<int>(m_pendingAssetRequests.size());
 }
 
 namespace

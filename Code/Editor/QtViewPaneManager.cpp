@@ -223,7 +223,7 @@ bool QtViewPane::CloseInstance(QDockWidget* dockWidget, CloseModes closeModes)
         // are often constructed on stack and will not finish properly when the view
         // pane is destroyed.
         QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
-        const int numTopLevel = topLevelWidgets.size();
+        const int numTopLevel = static_cast<int>(topLevelWidgets.size());
         for (size_t i = 0; i < numTopLevel; ++i)
         {
             QWidget* widget = topLevelWidgets[static_cast<int>(i)];
@@ -1264,7 +1264,7 @@ QDockWidget* QtViewPaneManager::ShowFakeNonDockableDockWidget(AzQtComponents::St
     dockWidget->customTitleBar()->setButtons({});
     dockWidget->customTitleBar()->setContextMenuPolicy(Qt::NoContextMenu);
     dockWidget->customTitleBar()->installEventFilter(new MouseEatingEventFilter(dockWidget));
-    auto fakeDockWidget = new AzQtComponents::StyledDockWidget(QString(), false, nullptr);
+    auto fakeDockWidget = new AzQtComponents::StyledDockWidget(QString(), nullptr);
     connect(dockWidget, &QObject::destroyed, fakeDockWidget, &QObject::deleteLater);
     fakeDockWidget->setAllowedAreas(Qt::NoDockWidgetArea);
     auto titleBar = fakeDockWidget->customTitleBar();

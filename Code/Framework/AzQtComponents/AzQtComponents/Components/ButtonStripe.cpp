@@ -49,7 +49,7 @@ namespace AzQtComponents
             m_buttons.append(pushButton);
 
             connect(pushButton, &QPushButton::clicked, this, [this, pushButton] {
-                    emit buttonClicked(m_buttons.indexOf(pushButton));
+                    emit buttonClicked(static_cast<int>(m_buttons.indexOf(pushButton)));
                 });
         }
 
@@ -58,7 +58,7 @@ namespace AzQtComponents
 
     void ButtonStripe::setCurrent(int index)
     {
-        const int numButtons = m_buttons.size();
+        const int numButtons = static_cast<int>(m_buttons.size());
         if (index < numButtons && index >= 0)
         {
             m_buttons.at(index)->setChecked(true);

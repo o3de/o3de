@@ -312,7 +312,7 @@ void CTVEventsDialog::UpdateButtons()
 {
     bool bRemove = false, bRename = false, bUp = false, bDown = false;
 
-    int nSelected = m_ui->m_List->selectionModel()->selectedRows().count();
+    int nSelected = static_cast<int>(m_ui->m_List->selectionModel()->selectedRows().count());
     if (nSelected > 1)
     {
         bRemove = true;

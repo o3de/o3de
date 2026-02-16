@@ -70,7 +70,7 @@ void CGameResourcesExporter::Save(const QString& outputDirectory)
 {
     CMemoryBlock data;
 
-    int numFiles = m_files.size();
+    int numFiles = static_cast<int>(m_files.size());
 
     CLogFile::WriteLine("===========================================================================");
     CLogFile::FormatLine("Exporting Level %s resources, %d files", GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().data(), numFiles);

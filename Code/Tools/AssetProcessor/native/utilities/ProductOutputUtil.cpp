@@ -155,7 +155,7 @@ namespace AssetProcessor
     {
         QString filename = AZ::IO::PathView(product.m_productFileName).Filename().FixedMaxPathString().c_str();
 
-        int prefixPos = filename.indexOf(currentPrefix.c_str());
+        int prefixPos = static_cast<int>(filename.indexOf(currentPrefix.c_str()));
 
         if (prefixPos < 0)
         {

@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
     void FormLineEditTagsWidget::setupCompletionTags()
     {
         QFile completionTagFile(":/ProjectManager/text/ProjectManagerCompletionTags.txt");
-        [[maybe_unused]] const bool res = completionTagFile.open(QFile::ReadOnly);
+        const bool res = completionTagFile.open(QFile::ReadOnly);
         AZ_Assert(res, "Failed to open completion tags file");
 
         while(!completionTagFile.atEnd())
@@ -75,7 +75,7 @@ namespace O3DE::ProjectManager
          * stylesheet proved very difficult, so a stop-gap measure of hard-coding the stylesheet was used.
          */
         QFile popupStyleSheetFile(":/ProjectManager/style/ProjectManagerCompleterPopup.qss");
-        [[maybe_unused]] const bool res = popupStyleSheetFile.open(QFile::ReadOnly);
+        const bool res = popupStyleSheetFile.open(QFile::ReadOnly);
         AZ_Assert(res, "Failed to open project manager style");
         QString popupStyleSheet = QLatin1String(popupStyleSheetFile.readAll());
 

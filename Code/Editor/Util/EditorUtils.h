@@ -387,7 +387,7 @@ public:
         while (totalBytesLeftToWrite > 0)
         {
             uint bytesToWrite = AZ::GetMin(blockSize, totalBytesLeftToWrite);
-            uint bytesWritten = QDataStream::writeRawData(reinterpret_cast<char*>(buffer) + totalBytesWritten, bytesToWrite);
+            uint bytesWritten = static_cast<uint>(QDataStream::writeRawData(reinterpret_cast<char*>(buffer) + totalBytesWritten, bytesToWrite));
 
             totalBytesLeftToWrite -= bytesWritten;
             totalBytesWritten += bytesWritten;
@@ -507,7 +507,7 @@ inline CArchive& operator<<(CArchive& ar, const QString& str)
     // box and is much less ambiguous on other platforms.
 
     QByteArray data = str.toUtf8();
-    int length = data.length();
+    int length = static_cast<int>(data.length());
 
     if (length < 255)
     {

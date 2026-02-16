@@ -189,7 +189,7 @@ void RecentFileList::Add(const QString& f)
 
 int RecentFileList::GetSize()
 {
-    return m_arrNames.count();
+    return static_cast<int>(m_arrNames.count());
 }
 
 void RecentFileList::GetDisplayName(QString& name, int index, const QString& curDir)
@@ -1744,7 +1744,7 @@ void CCryEditApp::LoadFile([[maybe_unused]] QString fileName)
 inline void ExtractMenuName(QString& str)
 {
     // eliminate &
-    int pos = str.indexOf('&');
+    int pos = static_cast<int>(str.indexOf('&'));
     if (pos >= 0)
     {
         str = str.left(pos) + str.right(str.length() - pos - 1);

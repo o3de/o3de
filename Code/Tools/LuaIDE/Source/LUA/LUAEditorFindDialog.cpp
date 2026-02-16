@@ -614,11 +614,11 @@ namespace LUAEditor
                     int index = 0;
                     if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                     {
-                        index = entry.m_lineText.indexOf(regex, index);
+                        index = static_cast<int>(entry.m_lineText.indexOf(regex, index));
                     }
                     else
                     {
-                        index = entry.m_lineText.indexOf(m_FIFData.m_SearchText, index, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                        index = static_cast<int>(entry.m_lineText.indexOf(m_FIFData.m_SearchText, index, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive));
                     }
 
                     if (index > -1)
@@ -637,26 +637,26 @@ namespace LUAEditor
                         if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                         {
                             QRegularExpressionMatch match = regex.match(entry.m_lineText);
-                            index = match.capturedStart();
+                            index = static_cast<int>(match.capturedStart());
                             while (match.hasMatch())
                             {
-                                const int length = match.capturedLength();
+                                const int length = static_cast<int>(match.capturedLength());
                                 entry.m_matches.push_back(AZStd::make_pair(index, length));
 
                                 match = regex.match(entry.m_lineText, index + length);
-                                index = match.capturedStart();
+                                index = static_cast<int>(match.capturedStart());
                             }
                         }
                         else
                         {
                             while (index > -1)
                             {
-                                entry.m_matches.push_back(AZStd::make_pair(index, m_FIFData.m_SearchText.length()));
+                                entry.m_matches.push_back(AZStd::make_pair(index, static_cast<int>(m_FIFData.m_SearchText.length())));
                                 index++;
-                                index = entry.m_lineText.indexOf(
+                                index = static_cast<int>(entry.m_lineText.indexOf(
                                     m_FIFData.m_SearchText,
                                     index,
-                                    m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                                    m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive));
                             }
                         }
 
@@ -1306,7 +1306,7 @@ namespace LUAEditor
 
         int count = 0;
         pLUAViewWidget->SetCursorPosition(0, 0);
-        const int advance = m_gui->txtReplaceWith->text().size();
+        const int advance = static_cast<int>(m_gui->txtReplaceWith->text().size());
         int firstFoundLine = 0;
         int firstFoundIndex = 0;
         if (pLUAViewWidget->FindFirst(m_gui->txtFind->text(),

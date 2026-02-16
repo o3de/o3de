@@ -627,7 +627,7 @@ static bool TimeFieldsToTime(PTIME_FIELDS tfTimeFields, PLARGE_INTEGER Time)
     return true;
 }
 
-BOOL SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft)
+AZ::u8 SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft)
 {
     TIME_FIELDS tf;
     LARGE_INTEGER t;
@@ -703,7 +703,7 @@ DWORD Sleep(DWORD dwMilliseconds)
 }
 
 #if defined(LINUX) || defined(APPLE)
-BOOL GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize)
+AZ::u8 GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize)
 {
     if (!lpBuffer || !lpnSize)
     {

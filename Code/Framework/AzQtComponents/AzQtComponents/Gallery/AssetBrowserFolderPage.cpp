@@ -90,14 +90,14 @@ namespace
         {
             if (!parent.isValid())
             {
-                return m_data.count();
+                return static_cast<int>(m_data.count());
             }
             else
             {
                 if (parent.internalPointer() == nullptr)
                 {
                     const auto& parentItem = m_data[parent.row()];
-                    return parentItem.children.count();
+                    return static_cast<int>(parentItem.children.count());
                 }
             }
             return 0;
