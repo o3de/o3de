@@ -1667,14 +1667,19 @@ namespace AzToolsFramework
         (void)index;
         (void)node;
 
+        // Preserve the desired load behavior
+        AZ::Data::AssetLoadBehavior oldBehavior = instance.GetAutoLoadBehavior();
         if (!GUI->GetSelectedAssetID().IsValid())
         {
+            
             instance = property_t(AZ::Data::AssetId(), GUI->GetCurrentAssetType(), "");
         }
         else
         {
             instance = property_t(GUI->GetSelectedAssetID(), GUI->GetCurrentAssetType(), GUI->GetCurrentAssetHint());
         }
+        instance.SetAutoLoadBehavior(oldBehavior);
+
     }
 
     void AssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)

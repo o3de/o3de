@@ -21,6 +21,17 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessor
     )
 
+    
+    ly_add_pytest(
+        NAME APTests.ap_builder_test
+        PATH  ${CMAKE_CURRENT_LIST_DIR}/ap_builder_test.py
+        TEST_SUITE main
+        PYTEST_MARKS "not SUITE_sandbox" # don't run sandbox tests in this file
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessorBatch
+            AZ::AssetProcessor
+    )
+
     ly_add_pytest(
         NAME APTests.ScriptCanvas_Main
         PATH ${CMAKE_CURRENT_LIST_DIR}/ScriptCanvasAssetProcessorTests.py

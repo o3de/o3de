@@ -13,4 +13,6 @@ set(FILES
     Source/Builder/TestIntermediateAssetBuilderComponent.cpp
     Source/Builder/TestDependencyBuilderComponent.h
     Source/Builder/TestDependencyBuilderComponent.cpp
+    Source/Builder/TestGenericAssetBuilderComponent.h
+    Source/Builder/TestGenericAssetBuilderComponent.cpp
 )
