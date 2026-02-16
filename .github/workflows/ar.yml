@@ -73,7 +73,7 @@ jobs:
     with:
       compiler: clang
       config: profile
-      image: windows-2022
+      image: ubuntu-22.04
       platform: Android
       type: profile
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
@@ -83,30 +83,29 @@ jobs:
 
   Android-Asset:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
+    needs: Android-Profile
     uses: ./.github/workflows/android-build.yml
     with:
-      compiler: msvc
-      config: asset_profile
-      image: windows-2022
+      compiler: clang
+      config: profile
+      image: ubuntu-22.04
       platform: Android
       type: asset_profile
-      last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
-      msvc_toolset_version: "14.29"
-      msvc_platform_toolset: "v142"
+      clang_version: "14"
       ndk_version: "25.1.8937393"
       gradle_version: "8.12"
       cmake_version: *cmake_version
 
   Android-Gradle:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
+    needs: Android-Asset
     uses: ./.github/workflows/android-build.yml
     with:
       compiler: clang
-      config: gradle
-      image: windows-2022
+      config: profile
+      image: ubuntu-22.04
       platform: Android
       type: gradle
-      last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
       ndk_version: "25.1.8937393"
       gradle_version: "8.12"
       cmake_version: *cmake_version
