@@ -9,14 +9,14 @@
 # Cmake version 3.24 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.24)
 
-if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24") 
+if(POLICY CMP0135)
     # CMP0135 - controls whether, when unpacking an archive file, it should:
     # (OLD) set the file timestamps to what they are in the archive (not recommended)
     # (NEW) set the file timestamps to the time of extraction (recommended)
     cmake_policy(SET CMP0135 NEW) 
 endif()
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.30")
+if(POLICY CMP0168)
     # CMP0168 - Controls whether fetchcontent uses sub builds (<3.30) or just does the fetch during
     # configure, which is much faster, especially for subsequent configure.
     # (OLD) Use a sub build
