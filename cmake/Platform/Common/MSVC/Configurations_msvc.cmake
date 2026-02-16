@@ -57,6 +57,26 @@ if(CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE AND NOT CMAKE_VS_PLATFORM_TOOLSET
     message(FATAL_ERROR "${CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE} host toolset is not supported, it must be 'x64'")
 endif()
 
+# == DEBUG INFORMATION FORMAT == #
+# /Z7 - Embedded in .obj files (required when using caching compiler launchers like ccache/sccache)
+# /Zi - Separate .pdb files (default, better IDE integration)
+# /ZI - Separate .pdb with Edit and Continue support (debug only, requires incremental linking)
+#
+# The correct flag depends on three factors:
+#   1. Caching compiler launcher active         => requires /Z7 (embedded debug info)
+#   2. Incremental linking enabled (debug only) => requires /ZI (edit and continue)
+#   3. Debug symbols in Release (optional)      => uses same format as other configurations
+#
+# Note: Incremental linking (/ZI) and caching compiler launchers (/Z7) are incompatible.
+# If both are requested, incremental linking takes priority for Debug builds.
+
+get_property(o3de_caching_compiler_launcher GLOBAL PROPERTY O3DE_CACHING_COMPILER_LAUNCHER_ENABLED)
+if(o3de_caching_compiler_launcher)
+    set(O3DE_MSVC_DEBUG_INFORMATION_FORMAT /Z7)
+else()
+    set(O3DE_MSVC_DEBUG_INFORMATION_FORMAT /Zi)
+endif()
+
 ly_append_configurations_options(
     DEFINES
         _ENABLE_EXTENDED_ALIGNED_STORAGE # Enables support for extended alignment for the MSVC std::aligned_storage class
@@ -119,6 +139,9 @@ ly_append_configurations_options(
         /O2             # Maximinize speed, equivalent to /Og /Oi /Ot /Oy /Ob2 /GF /Gy
         /Zc:inline      # Removes unreferenced functions or data that are COMDATs or only have internal linkage
         /Zc:wchar_t     # Use compiler native wchar_t
+        
+        # Profile always needs debug information 
+        ${O3DE_MSVC_DEBUG_INFORMATION_FORMAT}
     COMPILATION_RELEASE
         /Ox             # Full optimization
         /Ob2            # Inline any suitable function
@@ -162,6 +185,13 @@ endif()
 
 set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = FALSE)")
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)
+    if(o3de_caching_compiler_launcher)
+        message(WARNING
+            "Incremental linking and caching compiler launchers are unsupported. "
+            "Edit and Continue (/ZI) may prevent the compiler launcher from caching effectively."
+        )
+    endif()
+    
     ly_append_configurations_options(
         COMPILATION_DEBUG
             /ZI         # Enable Edit/Continue
@@ -170,12 +200,11 @@ else()
     # Disable incremental linking
     ly_append_configurations_options(
         COMPILATION_DEBUG
-            /Zi         # Generate debugging information (no Edit/Continue). Edit/Continue requires incremental linking
+            ${O3DE_MSVC_DEBUG_INFORMATION_FORMAT}
 
         LINK_NON_STATIC_DEBUG
             /DEBUG      # Despite the documentation states /Zi implies /DEBUG, without it, stack traces are not expanded
             /INCREMENTAL:NO
-
     )
 endif()
 
@@ -183,8 +212,8 @@ set(O3DE_BUILD_WITH_DEBUG_SYMBOLS_RELEASE FALSE CACHE BOOL "Add debug symbols wh
 if(O3DE_BUILD_WITH_DEBUG_SYMBOLS_RELEASE)
     ly_append_configurations_options(
         COMPILATION_RELEASE
-            /Od             # Enable debug symbols
-            /Zi             # Generate debugging information (no Edit/Continue)
+            /Od             # Disable optimizations for debugging
+            ${O3DE_MSVC_DEBUG_INFORMATION_FORMAT}
 
         LINK_NON_STATIC_RELEASE
             /DEBUG          # Generate pdbs

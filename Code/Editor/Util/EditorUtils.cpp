@@ -143,7 +143,7 @@ QCursor CMFCUtils::LoadCursor(unsigned int nIDResource, int hotX, int hotY)
     if (!pm.isNull() && (hotX < 0 || hotY < 0))
     {
         QFile f(path);
-        const bool res = f.open(QFile::ReadOnly);
+        [[maybe_unused]] const bool res = f.open(QFile::ReadOnly);
         AZ_Assert(res, "Failed to open %s", qPrintable(path));
         QDataStream stream(&f);
         stream.setByteOrder(QDataStream::LittleEndian);

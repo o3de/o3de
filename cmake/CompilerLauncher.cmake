@@ -29,6 +29,7 @@ include_guard(GLOBAL)
 
 function(_o3de_compiler_launcher)
     set(supported_languages C CXX)
+    set(caching_launchers ccache sccache)
 
     # Resolves Chocolatey shim executables to their real tool paths.
     # Chocolatey commonly places shims in <ChocolateyInstall>/bin. The real tool
@@ -130,6 +131,23 @@ function(_o3de_compiler_launcher)
         return()
     endif ()
 
+    # Signal to downstream platform configuration files that a compiler launcher is active.
+    set_property(GLOBAL PROPERTY O3DE_COMPILER_LAUNCHER_ENABLED TRUE)
+
+    # Detect whether the launcher is a known caching compiler (ccache, sccache).
+    # Caching compilers require embedded debug info (/Z7) instead of separate PDBs (/Zi)
+    # because they hash the .obj content and PDB writes are non-deterministic.
+    foreach (cl_lang IN ITEMS ${supported_languages})
+        if (cl_${cl_lang}_resolved)
+            get_filename_component(cl_launcher_name "${cl_${cl_lang}_resolved}" NAME_WE)
+            string(TOLOWER "${cl_launcher_name}" cl_launcher_name)
+            if (cl_launcher_name IN_LIST caching_launchers)
+                set_property(GLOBAL PROPERTY O3DE_CACHING_COMPILER_LAUNCHER_ENABLED TRUE)
+                break()
+            endif ()
+        endif ()
+    endforeach ()
+
     # == MAKEFILE / NINJA == #
     if (CMAKE_GENERATOR MATCHES "Makefiles|Ninja|Ninja Multi-Config")
         foreach (cl_lang IN ITEMS ${supported_languages})
@@ -209,9 +227,6 @@ function(_o3de_compiler_launcher)
             "UseMultiToolTask=true"
         )
         set(CMAKE_VS_GLOBALS "${CMAKE_VS_GLOBALS}" PARENT_SCOPE)
-
-        # Embedded debug info is required for compiler launcher compatibility
-        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded" CACHE STRING "" FORCE)
 
         message(STATUS "CompilerLauncher: Configured for Visual Studio via cl.exe wrapper")
         return()
