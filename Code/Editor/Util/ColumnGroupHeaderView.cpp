@@ -132,7 +132,7 @@ int ColumnGroupHeaderView::GroupViewHeight() const
     {
         return 0;
     }
-    int groupCount = m_groupModel->Groups().size();
+    int groupCount = static_cast<int>(m_groupModel->Groups().size());
     return QHeaderView::sizeHint().height() + qMax(0, groupCount - 1) * 10 + 20;
 }
 

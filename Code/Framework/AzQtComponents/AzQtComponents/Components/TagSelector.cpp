@@ -92,7 +92,7 @@ namespace AzQtComponents
 
         QHBoxLayout* hLayout = nullptr;
         int usedSpaceInRow = 0;
-        const int numTags = m_tags.count();
+        const int numTags = static_cast<int>(m_tags.count());
         for (int i = 0; i < numTags; ++i)
         {
             // Create the new tag widget.
@@ -138,7 +138,7 @@ namespace AzQtComponents
 
     int TagWidgetContainer::GetNumTags() const
     {
-        return m_tags.count();
+        return static_cast<int>(m_tags.count());
     }
 
 

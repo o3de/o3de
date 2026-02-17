@@ -10,6 +10,8 @@
 #define CRYINCLUDE_EDITOR_LEVEL_ITEM_MODEL_H
 #pragma once
 
+#include "Editor/LevelRoots.h"
+
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 

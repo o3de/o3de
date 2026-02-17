@@ -213,6 +213,7 @@ public Q_SLOTS:
     void OnActiveJobsCountChanged(unsigned int count);
 protected Q_SLOTS:
     void CheckForIdle();
+    void OnAsyncAssetCatalogStatusResponse(AssetProcessor::AssetCatalogStatus status);
 
 protected:
     int m_processedAssetCount = 0;

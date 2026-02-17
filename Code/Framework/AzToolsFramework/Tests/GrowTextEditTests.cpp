@@ -32,7 +32,7 @@ namespace UnitTest
         {
             m_dummyWidget = AZStd::make_unique<QWidget>();
             m_dummyWidget->winId();
-            QApplication::setActiveWindow(m_dummyWidget.get());
+            m_dummyWidget->activateWindow();
 
             m_textEdit = AZStd::make_unique<GrowTextEdit>(m_dummyWidget.get());
             m_textEdit->setFocusPolicy(Qt::StrongFocus);
@@ -40,7 +40,6 @@ namespace UnitTest
 
         void TearDownEditorFixtureImpl() override
         {
-            QApplication::setActiveWindow(nullptr);
             m_textEdit.reset();
             m_dummyWidget.reset();
         }

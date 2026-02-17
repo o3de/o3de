@@ -63,7 +63,7 @@ namespace AzQtComponents
         if (numDecimals > 0)
         {
             // Truncate the extra digits now, if they're still there
-            int decimalPointIndex = retValue.lastIndexOf(decimalPoint);
+            int decimalPointIndex = static_cast<int>(retValue.lastIndexOf(decimalPoint));
             if ((decimalPointIndex > 0) && (retValue.size() - (decimalPointIndex + 1)) == numToStringDecimals)
             {
                 retValue.resize(retValue.size() - (numToStringDecimals - numDecimals));

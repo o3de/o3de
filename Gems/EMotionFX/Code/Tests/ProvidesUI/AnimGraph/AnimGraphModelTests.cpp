@@ -138,7 +138,12 @@ namespace EMotionFX
             case QtWarningMsg:
             case QtCriticalMsg:
             case QtFatalMsg:
-                if (msg.contains("has active key-value observers (KVO)! These will stop working now that the window is recreated, and will result in exceptions when the observers are removed"))
+                if (msg.contains(
+                        "has active key-value observers (KVO)! These will stop working now that the window is recreated, and will result "
+                        "in exceptions when the observers are removed") ||
+                    msg.contains(
+                        "QApplication::regClass: Registering window class 'Qt6102ThemeChangeObserverWindow' failed. (Class already "
+                        "exists.)"))
                 {
                     break;
                 }
@@ -310,13 +315,14 @@ namespace EMotionFX
             auto* parameterNode = static_cast<BlendTreeParameterNode*>(referenceAnimGraph->GetRootStateMachine()->GetChildNode(0)->GetChildNode(0));
             EXPECT_TRUE(parameterNode);
 
-            // #QT6_TODO
-            /*
             const QModelIndexList modelIndexes = GetModel()->FindModelIndexes(parameterNode);
             QList<QPersistentModelIndex> modelIndexesForParameterNode;
-            AZStd::copy(modelIndexes.begin(), modelIndexes.end(), AZStd::back_inserter(modelIndexesForParameterNode));
+            for (const QModelIndex& index : modelIndexes)
+            {
+                modelIndexesForParameterNode.push_back(index);
+            }
+
             EXPECT_THAT(modelIndexesForParameterNode.size(), Eq(2));
-            
 
             const auto modelIndexIsValid = testing::Truly([](const QPersistentModelIndex& i) { return i.isValid(); });
             const auto eachModelIndexIsValid = testing::Each(modelIndexIsValid);
@@ -325,7 +331,6 @@ namespace EMotionFX
             EXPECT_THAT(modelIndexesForParameterNode, eachModelIndexIsValid);
             CommandSystem::DeleteNodes(referenceAnimGraph, {parameterNode->GetNameString()});
             EXPECT_THAT(modelIndexesForParameterNode, eachModelIndexIsInvalid);
-            */
         }
 
         QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);

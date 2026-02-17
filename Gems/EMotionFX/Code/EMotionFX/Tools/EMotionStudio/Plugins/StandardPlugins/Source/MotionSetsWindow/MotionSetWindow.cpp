@@ -617,7 +617,7 @@ namespace EMStudio
     {
         // Get the previously selected items.
         const QList<QTableWidgetItem*> selectedItems = tableWidget->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // Store the previously selected motion ids.
         AZStd::vector<AZStd::string> selectedMotionIds;
@@ -1015,7 +1015,7 @@ namespace EMStudio
         {
             // read out the dropped file names
             QList<QUrl> urls = mimeData->urls();
-            const int numUrls = urls.count();
+            const int numUrls = static_cast<int>(urls.count());
 
             AZStd::vector<AZStd::string> filenames;
             filenames.reserve(numUrls);
@@ -1108,7 +1108,7 @@ namespace EMStudio
 
         // Get the selected items and return in case nothing is selected.
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
         if (numSelectedItems == 0)
         {
             return;
@@ -1958,7 +1958,7 @@ namespace EMStudio
 
         // Remember the selected motion IDs so we can restore selection after swapping the table items.
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const int numSelectedItems = selectedItems.size();
+        const int numSelectedItems = static_cast<int>(selectedItems.size());
         QVector<QString> selectedMotionIds(numSelectedItems);
         for (int i = 0; i < numSelectedItems; ++i)
         {
@@ -2223,7 +2223,7 @@ namespace EMStudio
 
     void MotionSetWindow::GetRowIndices(const QList<QTableWidgetItem*>& items, AZStd::vector<int>& outRowIndices)
     {
-        const int numItems = items.size();
+        const int numItems = static_cast<int>(items.size());
         outRowIndices.reserve(numItems);
 
         for (const QTableWidgetItem* item : items)

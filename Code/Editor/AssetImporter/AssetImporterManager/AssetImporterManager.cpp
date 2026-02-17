@@ -291,7 +291,7 @@ bool AssetImporterManager::OnKeepBothFiles(QString relativePath, QString oldAbso
     QString fileName = info.baseName(); //file name without extension
 
     int number = 1;
-    int index = destinationAbsolutePath.indexOf(extension);
+    int index = static_cast<int>(destinationAbsolutePath.indexOf(extension));
 
     QString newFileName = CreateFileNameWithNumber(number, fileName, index, extension);
     QString newDestinationAbsolutePath = subPath + '/' + newFileName;
@@ -432,7 +432,7 @@ bool AssetImporterManager::ProcessFileMethod(ProcessFilesMethod processMethod, Q
 
 void AssetImporterManager::ProcessCopyFiles()
 {
-    int numberOfFiles = m_pathMap.size();
+    int numberOfFiles = static_cast<int>(m_pathMap.size());
     int numberOfProcessedFiles = 0;
 
     ProcessFilesMethod processMethod = ProcessFilesMethod::Default;
@@ -487,7 +487,7 @@ void AssetImporterManager::ProcessCopyFiles()
 
 void AssetImporterManager::ProcessMoveFiles()
 {
-    int numberOfFiles = m_pathMap.size();
+    int numberOfFiles = static_cast<int>(m_pathMap.size());
     int numberOfProcessedFiles = 0;
 
     ProcessFilesMethod processMethod = ProcessFilesMethod::Default;
@@ -683,7 +683,7 @@ bool AssetImporterManager::Overwrite(QString relativePath, QString oldAbsolutePa
 
     while (!dataStream.atEnd())
     {
-        int bytesRead = dataStream.readRawData(buffer, bufferSize);
+        int bytesRead = static_cast<int>(dataStream.readRawData(buffer, bufferSize));
         out.writeRawData(buffer, bytesRead);
     }
 
@@ -740,7 +740,7 @@ bool AssetImporterManager::GetAndCheckAllFilesInFolder(QString path)
 
     // Get the index of the last sub folder name in the path
     QStringList directoryNameList = formattedPath.split('/');
-    int lastFolderIndex = directoryNameList.size() - 1;
+    int lastFolderIndex = static_cast<int>(directoryNameList.size()) - 1;
 
     QString pathToBeRelativeTo = directoryNameList.mid(0, lastFolderIndex).join('/');
 

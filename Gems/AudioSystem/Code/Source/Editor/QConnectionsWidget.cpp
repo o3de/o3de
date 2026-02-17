@@ -217,7 +217,7 @@ namespace AudioControls
             messageBox.setDefaultButton(QMessageBox::Yes);
             messageBox.setWindowTitle("Audio Controls Editor");
             QList<QListWidgetItem*> selected = m_connectionList->selectedItems();
-            const int size = selected.length();
+            const int size = static_cast<int>(selected.length());
             if (size > 0)
             {
                 if (size == 1)

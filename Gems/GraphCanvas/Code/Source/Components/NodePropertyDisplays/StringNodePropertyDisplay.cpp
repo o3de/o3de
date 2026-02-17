@@ -133,7 +133,7 @@ namespace GraphCanvas
             AZStd::string value = m_lineEdit->text().toUtf8().data();
             m_dataInterface->SetString(value);
 
-            m_lineEdit->setCursorPosition(m_lineEdit->text().size());
+            m_lineEdit->setCursorPosition(static_cast<int>(m_lineEdit->text().size()));
             m_lineEdit->selectAll();
         }
         else

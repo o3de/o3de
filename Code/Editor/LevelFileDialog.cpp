@@ -568,7 +568,7 @@ bool CLevelFileDialog::ValidateLevelPath(const QString& levelPath) const
             ? m_selectedRoot
             : QString::fromUtf8((Path::GetEditingGameDataFolder() + "/" + kLevelsFolder).c_str());
 
-        for (size_t i = 0; i < splittedPath.size() - 1; ++i)
+        for (size_t i = 0; i < aznumeric_cast<int>(splittedPath.size()) - 1; ++i)
         {
             currentPath += "/" + splittedPath[static_cast<int>(i)];
 

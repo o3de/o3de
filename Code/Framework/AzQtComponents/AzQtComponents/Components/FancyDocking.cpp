@@ -261,7 +261,7 @@ namespace AzQtComponents
      */
     void FancyDocking::updateDockingGeometry()
     {
-        int numScreens = QApplication::screens().count();
+        int numScreens = static_cast<int>(QApplication::screens().count());
 
 #ifdef AZ_PLATFORM_WINDOWS
         for (QWidget* w : m_perScreenFullScreenWidgets) {
@@ -3029,7 +3029,7 @@ namespace AzQtComponents
 
         // Raise any current active drop zone widgets that should still be active
         // and stop any that should no longer be active
-        int numActiveDropZoneWidgets = m_activeDropZoneWidgets.size();
+        int numActiveDropZoneWidgets = static_cast<int>(m_activeDropZoneWidgets.size());
         for (int i = 0; i < numActiveDropZoneWidgets; ++i)
         {
             FancyDockingDropZoneWidget* dropZoneWidget = m_activeDropZoneWidgets.takeFirst();

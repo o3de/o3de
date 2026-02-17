@@ -577,7 +577,7 @@ namespace AssetProcessor
         bool statusSucceeded = (state == AzToolsFramework::AssetSystem::JobStatus::Completed);
 
         // start at the end so that we can actually erase the compile groups and not skip any:
-        for (int groupIdx = m_activeCompileGroups.size() - 1; groupIdx >= 0; --groupIdx)
+        for (int groupIdx = static_cast<int>(m_activeCompileGroups.size()) - 1; groupIdx >= 0; --groupIdx)
         {
             AssetCompileGroup& compileGroup = m_activeCompileGroups[groupIdx];
             auto it = compileGroup.m_groupMembers.find(jobQueueId);

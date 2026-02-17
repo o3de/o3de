@@ -355,7 +355,7 @@ namespace EMStudio
     {
         // Get the selected items in the motion set tree widget..
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.size();
+        const int numSelectedItems = static_cast<int>(selectedItems.size());
 
         // Create and fill an array containing ids of all selected motion sets.
         AZStd::vector<uint32> selectedMotionSetIDs;
@@ -480,7 +480,7 @@ namespace EMStudio
 
         // get the selected items
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // add remove if at least one item selected
         if (numSelectedItems > 0)
@@ -519,7 +519,7 @@ namespace EMStudio
     void MotionSetManagementWindow::OnCreateMotionSet()
     {
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // only add the motion set as child if at least one item selected
         // if nothing is selected, add the new motion set as root
@@ -860,7 +860,7 @@ namespace EMStudio
     void MotionSetManagementWindow::UpdateInterface()
     {
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // remove and save buttons are valid if at least one item is selected
         const bool atLeastOneItemSelected = numSelectedItems > 0;
@@ -902,7 +902,7 @@ namespace EMStudio
     {
         // get the selected items and the number of selected items
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // at leat one item must be selected
         if (numSelectedItems == 0)
@@ -976,7 +976,7 @@ namespace EMStudio
     {
         // get the selected items and the number of selected items
         const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
-        const int numSelectedItems = selectedItems.count();
+        const int numSelectedItems = static_cast<int>(selectedItems.count());
 
         // filter to only keep the root motion sets from the selected items
         AZStd::vector<EMotionFX::MotionSet*> selectedRootMotionSets;

@@ -436,15 +436,7 @@ void CLogFile::AboutSystem()
     // TODO: Add more detail about the current Linux Distro
     CryLog("Linux");
 #elif AZ_TRAIT_OS_PLATFORM_APPLE
-    QString operatingSystemName;
-    if (QSysInfo::MacintoshVersion >= Q_MV_OSX(10, 12))
-    {
-        operatingSystemName = "macOS ";
-    }
-    else
-    {
-        operatingSystemName = "OS X ";
-    }
+    QString operatingSystemName ="macOS ";
 
     int majorVersion = 0;
     int minorVersion = 0;
@@ -667,7 +659,7 @@ void CLogFile::OnWriteToConsole(AZStd::string_view sText, bool bNewLine)
             }
 
             // remember selection and the top row
-            int len = m_hWndEditBox->document()->toPlainText().length();
+            int len = static_cast<int>(m_hWndEditBox->document()->toPlainText().length());
             int top = 0;
             int from = m_hWndEditBox->textCursor().selectionStart();
             int to = from + m_hWndEditBox->textCursor().selectionEnd();

@@ -133,7 +133,7 @@ namespace MysticQt
         AzFramework::StringFunc::Strip(cacheFolder, AZ_CORRECT_FILESYSTEM_SEPARATOR, true, false, true);
 
         int recentFilesAdded = 0;
-        const int recentFileCount = m_recentFiles.size();
+        const int recentFileCount = static_cast<int>(m_recentFiles.size());
         for (int i = 0; i < recentFileCount; ++i)
         {
             const QString recentFilePath = m_recentFiles[i];

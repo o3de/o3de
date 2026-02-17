@@ -220,7 +220,7 @@ void CUiAnimViewDialog::OnAddEntityNodeMenu()
 }
 
 //////////////////////////////////////////////////////////////////////////
-BOOL CUiAnimViewDialog::OnInitDialog()
+bool CUiAnimViewDialog::OnInitDialog()
 {
     InitToolbar();
     InitMenu();

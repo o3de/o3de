@@ -290,7 +290,7 @@ namespace EMStudio
         const QList<QTableWidgetItem*> items = selectedItems();
 
         // get the number of selected items
-        const int numSelectedItems = items.count();
+        const int numSelectedItems = static_cast<int>(items.count());
 
         // check if nothing needed to be copied
         if (numSelectedItems == 0)

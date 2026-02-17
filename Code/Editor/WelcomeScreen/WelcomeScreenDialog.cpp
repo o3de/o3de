@@ -196,7 +196,7 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
     gamePath = Path::AddSlash(gamePath);
 
     QString sCurDir = (Path::GetEditingGameDataFolder() + QDir::separator().toLatin1()).c_str();
-    int nCurDir = sCurDir.length();
+    int nCurDir = static_cast<int>(sCurDir.length());
 
     int recentListSize = pList->GetSize();
     int currentRow = 0;

@@ -158,7 +158,7 @@ void CNewLevelDialog::InitTemplateListWidget() const
         {
             if (fileName.compare(QString::fromUtf8(DefaultTemplate), Qt::CaseInsensitive) == 0)
             {
-                defaultItem = allTemplateFiles.size();
+                defaultItem = static_cast<int>(allTemplateFiles.size());
             }
             allTemplateFiles.push_back(projectTemplateDirectory.filePath(fileName));
         }
