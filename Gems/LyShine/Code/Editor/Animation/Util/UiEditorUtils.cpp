@@ -79,7 +79,7 @@ QString TrimTrailingZeros(QString str)
 {
     if (str.contains('.'))
     {
-        for (int p = str.size() - 1; p >= 0; --p)
+        for (int p = static_cast<int>(str.size()) - 1; p >= 0; --p)
         {
             if (str.at(p) == '.')
             {

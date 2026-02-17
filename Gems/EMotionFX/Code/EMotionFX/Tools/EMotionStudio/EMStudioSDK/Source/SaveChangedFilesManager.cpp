@@ -104,7 +104,7 @@ namespace EMStudio
         QString compareString = callback->GetExtension();
         QStringList childGroups = settings.childGroups();
         QString fileExtension;
-        const uint32 numGroups = childGroups.count();
+        const uint32 numGroups = static_cast<uint32>(childGroups.count());
         for (uint32 i = 0; i < numGroups; ++i)
         {
             settings.beginGroup(childGroups[i]);

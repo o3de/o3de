@@ -1040,7 +1040,7 @@ namespace EMStudio
 
         // make sure we only have exactly one selected item
         QList<QTreeWidgetItem*> selectedItems = m_treeWidget->selectedItems();
-        int32 numSelectedItems = selectedItems.count();
+        int32 numSelectedItems = static_cast<uint32>(selectedItems.count());
 
         for (int32 i = 0; i < numSelectedItems; ++i)
         {

@@ -158,7 +158,7 @@ void CFileChangeMonitor::OnDirectoryChange(const QString &path)
 
     for (const auto &fi : prev)
     {
-        int eindex = entries.indexOf(fi);
+        int eindex = static_cast<int>(entries.indexOf(fi));
         if (eindex >= 0)
         {
             if (fi.lastModified() != entries.at(eindex).lastModified())

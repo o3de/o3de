@@ -62,7 +62,7 @@ namespace AzToolsFramework
                             AzQtComponents::SearchTypeFilter stFilter;
 
                             // Split "GS/Core" into category="GS", displayName="Core"
-                            int lastSlash = group.lastIndexOf('/');
+                            int lastSlash = aznumeric_cast<int>(group.lastIndexOf('/'));
                             if (lastSlash >= 0)
                             {
                                 stFilter.category = group.left(lastSlash);

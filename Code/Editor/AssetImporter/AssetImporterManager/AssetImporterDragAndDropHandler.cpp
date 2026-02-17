@@ -104,7 +104,7 @@ void AssetImporterDragAndDropHandler::ProcessDragEnter(QDragEnterEvent* event)
     }
 
     QList<QUrl> urlList = mimeData->urls();
-    int urlListSize = urlList.size();
+    int urlListSize = static_cast<int>(urlList.size());
 
     // runs through the file list first and checks for any "crate" files - if it finds ANY, return (and don't accept the event)
     for (int i = 0; i < urlListSize; ++i)

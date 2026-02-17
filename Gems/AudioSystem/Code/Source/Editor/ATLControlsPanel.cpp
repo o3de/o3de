@@ -332,7 +332,7 @@ namespace AudioControls
     {
         ControlList controls;
         QModelIndexList indexes = m_pATLControlsTree->selectionModel()->selectedIndexes();
-        const int size = indexes.size();
+        const int size = static_cast<int>(indexes.size());
         for (int i = 0; i < size; ++i)
         {
             if (indexes[i].isValid())
@@ -623,7 +623,7 @@ namespace AudioControls
     {
         QMessageBox messageBox(this);
         QModelIndexList indexList = m_pATLControlsTree->selectionModel()->selectedIndexes();
-        const int size = indexList.length();
+        const int size = static_cast<int>(indexList.length());
         if (size > 0)
         {
             if (size == 1)

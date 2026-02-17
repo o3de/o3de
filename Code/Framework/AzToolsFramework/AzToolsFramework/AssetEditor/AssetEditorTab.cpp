@@ -914,7 +914,7 @@ namespace AzToolsFramework
             {
                 // Add the asset location to the right of the header. Location is relative to the Project directory.
                 QString pathAndAsset = assetPath.c_str();
-                int seperatorPos = pathAndAsset.lastIndexOf('/');
+                int seperatorPos = static_cast<int>(pathAndAsset.lastIndexOf('/'));
                 if (seperatorPos >= 0)
                 {
                     headerText.append(pathAndAsset.left(seperatorPos));

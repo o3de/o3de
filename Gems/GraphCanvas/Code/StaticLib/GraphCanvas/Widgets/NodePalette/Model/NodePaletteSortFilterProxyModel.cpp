@@ -152,7 +152,7 @@ namespace GraphCanvas
         {
             showRow = true;
             
-            AZStd::pair<int, int> highlight(match.capturedStart(), match.capturedLength());
+            AZStd::pair<int, int> highlight(static_cast<int>(match.capturedStart()), static_cast<int>(match.capturedLength()));
             currentItem->SetHighlight(highlight);
         }
         else
@@ -240,7 +240,7 @@ namespace GraphCanvas
         // If name contains filter or filter regex, assuming shorter name has stronger relevance
         if (sourceString.contains(m_filter) || sourceString.contains(m_filterRegex))
         {
-            result = AZStd::min<int>(result, sourceString.size());
+            result = AZStd::min<int>(result, static_cast<int>(sourceString.size()));
         }
         return result;
     }

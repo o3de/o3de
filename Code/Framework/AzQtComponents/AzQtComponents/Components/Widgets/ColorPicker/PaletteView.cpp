@@ -140,7 +140,7 @@ private:
 
         void PaletteModelInsertionCommand::undo()
         {
-            m_target.tryRemove(m_index, m_colors.size(), true);
+            m_target.tryRemove(m_index, static_cast<int>(m_colors.size()), true);
         }
 
         void PaletteModelInsertionCommand::redo()
@@ -193,7 +193,7 @@ private:
 
         void PaletteModelRemovalCommand::redo()
         {
-            m_target.tryRemove(m_index, m_colors.count(), true);
+            m_target.tryRemove(m_index, static_cast<int>(m_colors.count()), true);
         }
 
         class PaletteModelSetColorCommand : public QUndoCommand
@@ -284,7 +284,7 @@ Palette PaletteModel::paletteFromIndices(const QModelIndexList& indices) const
 
 int PaletteModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : m_palette->colors().size();
+    return parent.isValid() ? 0 : static_cast<int>(m_palette->colors().size());
 }
 
 QVariant PaletteModel::data(const QModelIndex& index, int role) const
@@ -347,7 +347,7 @@ bool PaletteModel::tryAppend(const AZ::Color& color)
 
 bool PaletteModel::tryAppend(const QVector<AZ::Color>& colors)
 {
-    return tryInsert(m_palette->colors().size(), colors.cbegin(), colors.cend());
+    return tryInsert(static_cast<int>(m_palette->colors().size()), colors.cbegin(), colors.cend());
 }
 
 bool PaletteModel::tryInsert(int row, QVector<AZ::Color>::const_iterator first, QVector<AZ::Color>::const_iterator last, bool isUndoRedo)

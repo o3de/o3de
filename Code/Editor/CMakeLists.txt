@@ -52,9 +52,6 @@ ly_add_target(
             Include
             .
             ..
-    BUILD_DEPENDENCIES
-        INTERFACE
-            Legacy::EditorCommon.Headers
 )
 
 ################################################################################
@@ -180,12 +177,13 @@ set_property(SOURCE
         COMPILE_DEFINITIONS LY_CMAKE_TARGET="Editor"
 )
 
-ly_add_translations(
-    TARGET EditorCore
-    FILES
-        Translations/editor_en-us.ts 
-        Translations/assetbrowser_en-us.ts 
-)
+# Fails on linux and superseeded by https://github.com/o3de/o3de/pull/19554
+# ly_add_translations(
+#     TARGET EditorCore
+#     FILES
+#         Translations/editor_en-us.ts 
+#         Translations/assetbrowser_en-us.ts 
+# )
 
 ly_add_dependencies(Editor AssetProcessor)
 

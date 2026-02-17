@@ -444,7 +444,7 @@ void SceneSettingsCard::ShowLogContextMenu(const QPoint& pos)
         return;
     }
 
-    int additionalLogCount = m_additionalLogDetails[logRow].count();
+    int additionalLogCount = static_cast<int>(m_additionalLogDetails[logRow].count());
 
     if (additionalLogCount <= 0)
     {

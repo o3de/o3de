@@ -1299,17 +1299,7 @@ void ApplicationManagerBase::CheckForIdle()
 
             // Checking the status of the asset catalog here using qt's signal slot mechanism
             // to ensure that we do not have any pending events in the event loop that can make the catalog dirty again
-            QObject::connect(m_assetCatalog, &AssetProcessor::AssetCatalog::AsyncAssetCatalogStatusResponse, this, [&](AssetProcessor::AssetCatalogStatus status)
-                {
-                    if (status == AssetProcessor::AssetCatalogStatus::RequiresSaving)
-                    {
-                        AssetProcessor::AssetRegistryRequestBus::Broadcast(&AssetProcessor::AssetRegistryRequests::SaveRegistry);
-                    }
-
-                    AssetProcessor::AssetRegistryRequestBus::Broadcast(&AssetProcessor::AssetRegistryRequests::ValidatePreLoadDependency);
-
-                    QuitRequested();
-                }, Qt::UniqueConnection);
+            QObject::connect(m_assetCatalog, &AssetProcessor::AssetCatalog::AsyncAssetCatalogStatusResponse, this, &ApplicationManagerBase::OnAsyncAssetCatalogStatusResponse, Qt::UniqueConnection);
 
             QMetaObject::invokeMethod(m_assetCatalog, "AsyncAssetCatalogStatusRequest", Qt::QueuedConnection);
         }
@@ -1320,6 +1310,18 @@ void ApplicationManagerBase::CheckForIdle()
             AssetProcessor::AssetRegistryRequestBus::Broadcast(&AssetProcessor::AssetRegistryRequests::ValidatePreLoadDependency);
         }
     }
+}
+
+void ApplicationManagerBase::OnAsyncAssetCatalogStatusResponse(AssetProcessor::AssetCatalogStatus status)
+{
+    if (status == AssetProcessor::AssetCatalogStatus::RequiresSaving)
+    {
+        AssetProcessor::AssetRegistryRequestBus::Broadcast(&AssetProcessor::AssetRegistryRequests::SaveRegistry);
+    }
+
+    AssetProcessor::AssetRegistryRequestBus::Broadcast(&AssetProcessor::AssetRegistryRequests::ValidatePreLoadDependency);
+
+    QuitRequested();
 }
 
 WId ApplicationManagerBase::GetWindowId() const

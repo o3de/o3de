@@ -189,7 +189,7 @@ void RecentFileList::Add(const QString& f)
 
 int RecentFileList::GetSize()
 {
-    return m_arrNames.count();
+    return static_cast<int>(m_arrNames.count());
 }
 
 void RecentFileList::GetDisplayName(QString& name, int index, const QString& curDir)
@@ -1540,6 +1540,11 @@ bool CCryEditApp::InitInstance()
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
 #endif
     mainWindowWrapper->setGuest(mainWindow);
+
+    // Note: we should use getNativeHandle to get the HWND from the widget, but
+    // it returns an invalid handle unless the widget has been shown and polished and even then
+    // it sometimes returns an invalid handle.
+    // So instead, we use winId(), which does consistently work
     HWND mainWindowWrapperHwnd = (HWND)mainWindowWrapper->winId();
 
     AZ::IO::FixedMaxPath engineRootPath;
@@ -1743,7 +1748,7 @@ void CCryEditApp::LoadFile([[maybe_unused]] QString fileName)
 inline void ExtractMenuName(QString& str)
 {
     // eliminate &
-    int pos = str.indexOf('&');
+    int pos = static_cast<int>(str.indexOf('&'));
     if (pos >= 0)
     {
         str = str.left(pos) + str.right(str.length() - pos - 1);

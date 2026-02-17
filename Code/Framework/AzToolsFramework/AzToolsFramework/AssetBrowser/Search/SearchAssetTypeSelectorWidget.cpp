@@ -57,7 +57,7 @@ namespace AzToolsFramework
 
                 // Determine which menu to add the checkbox to
                 QMenu* targetMenu = menu;
-                int lastSlash = group.lastIndexOf('/');
+                int lastSlash = aznumeric_cast<int>(group.lastIndexOf('/'));
                 if (lastSlash >= 0)
                 {
                     QString parentPath = group.left(lastSlash);
@@ -141,7 +141,7 @@ namespace AzToolsFramework
             if (!results.values.empty())
             {
                 // Show only the leaf segment as the checkbox label (e.g. "Core" from "GS/Core")
-                int lastSlash = group.lastIndexOf('/');
+                int lastSlash = aznumeric_cast<int>(group.lastIndexOf('/'));
                 QString displayLabel = (lastSlash >= 0) ? group.mid(lastSlash + 1) : group;
                 QCheckBox* checkbox = new QCheckBox(displayLabel, menu);
                 QWidgetAction* action = new QWidgetAction(menu);

@@ -6,6 +6,9 @@
 #
 #
 
-set(lrelease_files
-    ${QT_LRELEASE_EXECUTABLE}
+set(FILES
+    EditorCommon.h
+    EditorCommonAPI.h
+    ActionOutput.h
+    SaveUtilities/AsyncSaveRunner.h
 )

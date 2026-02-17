@@ -35,7 +35,7 @@ namespace UnitTest
             // Must have an active top-level window for focus events to fire.
             m_dummyWidget = AZStd::make_unique<QWidget>();
             m_dummyWidget->winId();
-            QApplication::setActiveWindow(m_dummyWidget.get());
+            m_dummyWidget->activateWindow();
 
             m_lineEdit = new QLineEdit(m_dummyWidget.get());
             m_lineEdit->setFocusPolicy(Qt::StrongFocus);
@@ -49,7 +49,6 @@ namespace UnitTest
 
         void TearDownEditorFixtureImpl() override
         {
-            QApplication::setActiveWindow(nullptr);
             m_lineEdit = nullptr; // owned by m_dummyWidget
             m_dummyWidget.reset();
         }

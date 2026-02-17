@@ -83,7 +83,7 @@ void DHBreakpointsWidget::DeleteSelected()
 
     QList<QTableWidgetItem*> list = selectedItems();
 
-    for (int i = list.size() - 1; i >= 0; i -= 2) // magic number 2 is the column count, will be 3 if the empty first column ever gets contents
+    for (int i = static_cast<int>(list.size()) - 1; i >= 0; i -= 2) // magic number 2 is the column count, will be 3 if the empty first column ever gets contents
     {
         RemoveRow(list.at(i)->row());
     }
@@ -133,7 +133,7 @@ void DHBreakpointsWidget::BreakpointHit(const LUAEditor::Breakpoint& bp)
     QString q;
     q.setNum(bp.m_documentLine + 1); // +1 offset to match editor numbering
 
-    for (int i = list.size() - 1; i >= 0; --i)
+    for (int i = static_cast<int>(list.size()) - 1; i >= 0; --i)
     {
         // magic number column #0 is the line number, 1 is the script file name
         QTableWidgetItem* line = item(list.at(i)->row(), 0);
@@ -181,7 +181,7 @@ void DHBreakpointsWidget::RemoveBreakpoint(const AZStd::string& debugName, int l
     QString q;
     q.setNum(lineNumber + 1); // +1 offset to match editor numbering
 
-    for (int i = list.size() - 1; i >= 0; --i)
+    for (int i = static_cast<int>(list.size()) - 1; i >= 0; --i)
     {
         // magic number column #0 is the line number, 1 is the script file name
         QTableWidgetItem* line = item(list.at(i)->row(), 0);

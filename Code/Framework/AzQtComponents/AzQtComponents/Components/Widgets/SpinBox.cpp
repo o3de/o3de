@@ -1765,7 +1765,7 @@ namespace internal
         QAbstractSpinBox* abstractSpinBox = qobject_cast<QAbstractSpinBox*>(parent());
         QSpinBox* spinBox = reinterpret_cast<QSpinBox*>(abstractSpinBox);
         bool fixLeftAlignment = !spinBox->property(g_hoveredPropertyName).toBool() && !hasFocus();
-        int suffixSize = spinBox->suffix().size();
+        int suffixSize = static_cast<int>(spinBox->suffix().size());
         QString beforeText;
         int cursorPos = 0;
         if (fixLeftAlignment)
@@ -1777,7 +1777,7 @@ namespace internal
         if (suffixSize)
         {
             QList<QTextLayout::FormatRange> formats;
-            int size = text().size();
+            int size = static_cast<int>(text().size());
 
             QTextCharFormat f;
             f.setForeground(QColor(0x888888));

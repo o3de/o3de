@@ -125,7 +125,12 @@ namespace
                         QWidget* target = qApp->widgetAt(QCursor::pos());
                         if (target)
                         {
-                            QMouseEvent ev(me->type(), target->mapFromGlobal(QCursor::pos()), me->button(), me->buttons(), me->modifiers());
+                            QMouseEvent ev(me->type(),
+                                           target->mapFromGlobal(QCursor::pos()),
+                                           QCursor::pos(),
+                                           me->button(),
+                                           me->buttons(),
+                                           me->modifiers());
                             qApp->notify(target, &ev);
                             return true;
                         }
@@ -426,8 +431,9 @@ namespace Editor
 
     void EditorQtApplication::InstallEditorTranslators()
     {
-        m_editorTranslator =        CreateAndInitializeTranslator("editor_en-us.qm", ":/Translations");
-        m_assetBrowserTranslator =  CreateAndInitializeTranslator("assetbrowser_en-us.qm", ":/Translations");
+        // Superseeded by https://github.com/o3de/o3de/pull/19554
+        // m_editorTranslator =        CreateAndInitializeTranslator("editor_en-us.qm", ":/Translations");
+        // m_assetBrowserTranslator =  CreateAndInitializeTranslator("assetbrowser_en-us.qm", ":/Translations");
     }
 
     void EditorQtApplication::DeleteTranslator(QTranslator*& translator)

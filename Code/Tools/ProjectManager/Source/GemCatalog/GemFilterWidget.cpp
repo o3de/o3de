@@ -142,7 +142,7 @@ namespace O3DE::ProjectManager
     int FilterCategoryWidget::RemoveUnusedElements(uint32_t usedCount)
     {
         const auto& elements = GetElements();
-        const int numToDelete = elements.size() - usedCount;
+        const int numToDelete = static_cast<int>(elements.size()) - usedCount;
         if (numToDelete > 0)
         {
             qDeleteAll(elements.cend() - numToDelete, elements.cend());
@@ -153,13 +153,13 @@ namespace O3DE::ProjectManager
     void FilterCategoryWidget::SetElements(const QMap<QString, int>& elementNamesAndCounts)
     {
         int i = 0;
-        const int numChildren = GetElements().size();
+        const int numChildren = static_cast<int>(GetElements().size());
         for (auto iter = elementNamesAndCounts.begin(); iter != elementNamesAndCounts.end(); iter++)
         {
             SetElement(i, iter.key(), iter.value());
             i++;
         }
-        RemoveUnusedElements(elementNamesAndCounts.size());
+        RemoveUnusedElements(static_cast<int>(elementNamesAndCounts.size()));
 
         // if the number of elements changed we need to update the collapsed state
         if(numChildren != GetElements().size())
@@ -171,12 +171,12 @@ namespace O3DE::ProjectManager
 
     void FilterCategoryWidget::SetElements(const QVector<QString>& elementNames, const QVector<int>& elementCounts)
     {
-        const int numChildren = GetElements().size();
+        const int numChildren = static_cast<int>(GetElements().size());
         for (int i = 0; i < elementNames.size(); ++i)
         {
             SetElement(i, elementNames[i], elementCounts[i]);
         }
-        RemoveUnusedElements(elementNames.size());
+        RemoveUnusedElements(static_cast<int>(elementNames.size()));
 
         // if the number of elements changed we need to update the collapsed state
         if(numChildren != GetElements().size())
@@ -222,8 +222,8 @@ namespace O3DE::ProjectManager
         m_seeAllLessLabel->show();
         m_seeAllLessLabel->setText(m_seeAll ? tr("See less") : tr("See all"));
 
-        int showCount = m_seeAll ? elements.size() : m_defaultShowCount;
-        showCount = AZ::GetMin<int>(showCount, elements.size());
+        int showCount = m_seeAll ? static_cast<int>(elements.size()) : m_defaultShowCount;
+        showCount = AZ::GetMin<int>(showCount, static_cast<int>(elements.size()));
         for (int i = 0; i < showCount; ++i)
         {
             elements[i]->show();
@@ -484,8 +484,8 @@ namespace O3DE::ProjectManager
         QVector<QString> elementNames;
         QVector<int> elementCounts;
         const int totalGems = m_gemModel->rowCount();
-        const int selectedGemTotal = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true).size();
-        const int unselectedGemTotal = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true).size();
+        const int selectedGemTotal = static_cast<int>(m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true).size());
+        const int unselectedGemTotal = static_cast<int>(m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true).size());
         const int enabledGemTotal = m_gemModel->TotalAddedGems(/*includeDependencies=*/true);
 
         if (selectedGemTotal == 0 && enabledGemTotal == 0 && unselectedGemTotal == 0 && totalGems > 0)

@@ -185,7 +185,7 @@ AZ::Data::AssetType AssetCatalogModel::GetAssetType(const QString &filename) con
 {
 
     //  Compare file extensions with the map created from the asset database.
-    int dotIndex = filename.lastIndexOf('.');
+    int dotIndex = static_cast<int>(filename.lastIndexOf('.'));
     if (dotIndex < 0)
     {
         return AZ::Uuid::CreateNull();
@@ -244,7 +244,7 @@ QStandardItem* AssetCatalogModel::GetPath(QString& path, bool createIfNeeded, QS
     QString currentFolder;
     QString restOfPath;
 
-    int slashIdx = cleanPath.indexOf('/', 1);
+    int slashIdx = static_cast<int>(cleanPath.indexOf('/', 1));
     if (slashIdx < 0)
     {
         currentFolder = cleanPath;
@@ -312,7 +312,7 @@ AssetCatalogEntry* AssetCatalogModel::FindAsset(QString assetPath)
     QString asset;
 
     //  Separate file name and folder name.
-    int slashIdx = assetPath.lastIndexOf('/');
+    int slashIdx = static_cast<int>(assetPath.lastIndexOf('/'));
     if (slashIdx < 0)
     {
         asset = assetPath;
@@ -348,7 +348,7 @@ AssetCatalogEntry* AssetCatalogModel::AddAsset(QString assetPath, AZ::Data::Asse
     QString asset;
 
     //  Separate file name and folder name.
-    int slashIdx = assetPath.lastIndexOf('/');
+    int slashIdx = static_cast<int>(assetPath.lastIndexOf('/'));
     if (slashIdx < 0)
     {
         asset = assetPath;

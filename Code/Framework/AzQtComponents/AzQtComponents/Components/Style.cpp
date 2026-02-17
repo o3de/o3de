@@ -1409,7 +1409,7 @@ namespace AzQtComponents
             const QString classText = buttonClassVariant.toString();
             QStringList classList = classText.split(QRegularExpression("\\s+"));
             bool changed = false;
-            for (int i = classList.count() -1; i >= 0; --i)
+            for (int i = static_cast<int>(classList.count()) -1; i >= 0; --i)
             {
                 if (classList[i].compare(className, Qt::CaseInsensitive) == 0)
                 {

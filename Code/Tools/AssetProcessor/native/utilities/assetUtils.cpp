@@ -748,7 +748,7 @@ namespace AssetUtilities
         QString normalizedPath = NormalizeFilePath(path);
         if (normalizedPath.startsWith("@"))
         {
-            int aliasEndIndex = normalizedPath.indexOf("@/", Qt::CaseInsensitive);
+            int aliasEndIndex = static_cast<int>(normalizedPath.indexOf("@/", Qt::CaseInsensitive));
             if (aliasEndIndex != -1)
             {
                 normalizedPath.remove(0, aliasEndIndex + 2);// adding two to remove both the percentage sign and the native separator
@@ -756,7 +756,7 @@ namespace AssetUtilities
             else
             {
                 //try finding the second % index than,maybe the path is like @SomeAlias@somefolder/somefile.ext
-                aliasEndIndex = normalizedPath.indexOf("@", 1, Qt::CaseInsensitive);
+                aliasEndIndex = static_cast<int>(normalizedPath.indexOf("@", 1, Qt::CaseInsensitive));
                 if (aliasEndIndex != -1)
                 {
                     normalizedPath.remove(0, aliasEndIndex + 1); //adding one to remove the percentage sign only

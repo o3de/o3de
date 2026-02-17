@@ -456,7 +456,7 @@ namespace LUAEditor
                 if (m_useSpaces)
                 {
                     // Replace tabs with spaces and adjust position
-                    int tabs = text.count("\t");
+                    int tabs = static_cast<int>(text.count("\t"));
                     text.replace("\t", tabString);
                     position += tabs * (m_tabSize - 1);
                 }
@@ -527,9 +527,9 @@ namespace LUAEditor
                         }
                         else if (columnNumber > 0 && text.mid(columnNumber - m_tabSize, m_tabSize) == tabString)
                         {
-                            columnNumber -= tabString.length();
-                            position -= tabString.length();
-                            removeCount = tabString.length();
+                            columnNumber -= static_cast<int>(tabString.length());
+                            position -= static_cast<int>(tabString.length());
+                            removeCount = static_cast<int>(tabString.length());
                         }
                         else
                         {
@@ -606,8 +606,8 @@ namespace LUAEditor
 
         // lastIndexOf will return -1 if not found, so subtracting index of lastPeriod + 1, 
         // the math will always work regardless of whether the prefix contains a . or not
-        int lastPeriod = prefix.lastIndexOf('.');
-        int charactersToReplace = prefix.length() - (lastPeriod + 1);
+        int lastPeriod = static_cast<int>(prefix.lastIndexOf('.'));
+        int charactersToReplace = static_cast<int>(prefix.length()) - (lastPeriod + 1);
 
         cursor.setPosition(cursor.position() - charactersToReplace, QTextCursor::KeepAnchor);
         cursor.insertText(text);
