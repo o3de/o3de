@@ -355,9 +355,9 @@ namespace LUAEditor
     void LongCommentParserState::StartState(LUASyntaxHighlighter::StateMachine& machine)
     {
         auto token = machine.CurrentString();
-        int start = token.indexOf('[');
+        int start = static_cast<int>(token.indexOf('['));
         AZ_Assert(start != -1, "Shouldn't have been able to get to this state without opening long bracket");
-        int finish = token.indexOf('[', start + 1);
+        int finish = static_cast<int>(token.indexOf('[', start + 1));
         AZ_Assert(finish != -1 && finish != start, "Shouldn't have been able to get to this state without opening long bracket");
         m_bracketLevel = static_cast<AZ::u16>(finish - start - 1);
 
@@ -688,14 +688,14 @@ namespace LUAEditor
 
         QRegularExpression tabsAndSpaces("( |\t)+");
         QRegularExpressionMatch match = tabsAndSpaces.match(text);
-        int index = match.capturedStart();
+        int index = static_cast<int>(match.capturedStart());
         while (match.hasMatch())
         {
-            const int length = match.capturedLength();
+            const int length = static_cast<int>(match.capturedLength());
             setFormat(index, length, spaceFormat);
 
             match = tabsAndSpaces.match(text, index + length);
-            index = match.capturedStart();
+            index = static_cast<int>(match.capturedStart());
         }
 
         QTBlockState prevState;
@@ -762,7 +762,7 @@ namespace LUAEditor
                         hasMatch = true;
                         QRegularExpressionMatch match = i.next();
                         textFormat.setForeground(rule.colorCB());
-                        setFormat(position + match.capturedStart(), match.capturedLength(), textFormat);
+                        setFormat(position + static_cast<int>(match.capturedStart()), static_cast<int>(match.capturedLength()), textFormat);
                     }
 
                     if (hasMatch && rule.stopProcessingMoreRulesAfterThis)

@@ -98,7 +98,7 @@ namespace ScriptCanvasEditor
             {
                 const QString& name = treeItem->GetName();
 
-                int regexIndex = name.lastIndexOf(m_regex);
+                int regexIndex = static_cast<int>(name.lastIndexOf(m_regex));
 
                 showRow = regexIndex >= 0;
 
@@ -118,7 +118,7 @@ namespace ScriptCanvasEditor
 
                         const QString& parentName = parentItem->GetName();
 
-                        int regexIndex2 = parentName.lastIndexOf(m_regex);
+                        int regexIndex2 = static_cast<int>(parentName.lastIndexOf(m_regex));
 
                         if (regexIndex2 >= 0)
                         {

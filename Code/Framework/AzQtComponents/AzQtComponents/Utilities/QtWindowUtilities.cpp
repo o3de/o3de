@@ -24,7 +24,7 @@ namespace AzQtComponents
     QRect GetTotalScreenGeometry()
     {
         QRect totalScreenRect;
-        int numScreens = QApplication::screens().count();
+        int numScreens = static_cast<int>(QApplication::screens().count());
         for (int i = 0; i < numScreens; ++i)
         {
             totalScreenRect = totalScreenRect.united(QApplication::screens().at(i)->geometry());

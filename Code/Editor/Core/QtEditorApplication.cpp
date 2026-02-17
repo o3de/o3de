@@ -125,7 +125,12 @@ namespace
                         QWidget* target = qApp->widgetAt(QCursor::pos());
                         if (target)
                         {
-                            QMouseEvent ev(me->type(), target->mapFromGlobal(QCursor::pos()), me->button(), me->buttons(), me->modifiers());
+                            QMouseEvent ev(me->type(),
+                                           target->mapFromGlobal(QCursor::pos()),
+                                           QCursor::pos(),
+                                           me->button(),
+                                           me->buttons(),
+                                           me->modifiers());
                             qApp->notify(target, &ev);
                             return true;
                         }

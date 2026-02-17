@@ -163,7 +163,7 @@ namespace AssetBundler
         }
         else
         {
-            int firstInputIndex = m_inputTokenNameList.indexOf(RemoveTokenCharFromString(comparisonData.m_firstInput));
+            int firstInputIndex = static_cast<int>(m_inputTokenNameList.indexOf(RemoveTokenCharFromString(comparisonData.m_firstInput)));
             if (firstInputIndex != -1)
             {
                 m_ui->firstInputComboBox->setCurrentIndex(firstInputIndex);

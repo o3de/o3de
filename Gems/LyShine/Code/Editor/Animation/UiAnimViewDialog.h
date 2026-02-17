@@ -161,7 +161,7 @@ private:
     void OnAddEntityNodeMenu();
 
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
-    BOOL OnInitDialog();
+    bool OnInitDialog();
 
     void SaveLayouts();
     void SaveMiscSettings() const;

@@ -279,7 +279,7 @@ namespace AudioControls
     {
         ControlList ids;
         QList<QTreeWidgetItem*> selected = selectedItems();
-        int size = selected.length();
+        int size = static_cast<int>(selected.length());
         for (int i = 0; i < size; ++i)
         {
             ids.push_back(GetItemId(selected[i]));

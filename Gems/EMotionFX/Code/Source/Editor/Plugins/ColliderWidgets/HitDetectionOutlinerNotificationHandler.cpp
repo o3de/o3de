@@ -62,7 +62,7 @@ namespace EMotionFX
             return;
         }
 
-        const int numSelectedJoints = selectedRowIndices.count();
+        const int numSelectedJoints = static_cast<int>(selectedRowIndices.count());
         int numJointsWithColliders = 0;
         for (const QModelIndex& modelIndex : selectedRowIndices)
         {

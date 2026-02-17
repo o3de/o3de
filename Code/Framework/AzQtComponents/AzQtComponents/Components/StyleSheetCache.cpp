@@ -312,7 +312,7 @@ int MiniLessParser::parseForImportStatement(const QString& line)
     if (match.hasMatch())
     {
         importName = match.captured(1);
-        ret = match.captured(0).size();
+        ret = static_cast<int>(match.captured(0).size());
 
         if (!importName.isEmpty())
         {

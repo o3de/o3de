@@ -1806,7 +1806,7 @@ namespace EMStudio
         m_layoutNames.clear();
         AZStd::string filename;
         const QFileInfoList list = dir.entryInfoList();
-        const int listSize = list.size();
+        const int listSize = static_cast<int>(list.size());
         for (int i = 0; i < listSize; ++i)
         {
             // get the filename
@@ -2645,7 +2645,7 @@ namespace EMStudio
             // generate the autosave file list
             int maxAutosaveFileNumber = 0;
             QList<QString> autosaveFileList;
-            const int numEntry = entryList.size();
+            const int numEntry = static_cast<int>(entryList.size());
             for (int j = 0; j < numEntry; ++j)
             {
                 // get the file info
@@ -2682,7 +2682,7 @@ namespace EMStudio
             {
                 // number of files to delete
                 // one is added because one space needs to be free for the new file
-                const int numFilesToDelete = m_options.GetAutoSaveNumberOfFiles() ? (autosaveFileList.size() - m_options.GetAutoSaveNumberOfFiles() + 1) : autosaveFileList.size();
+                const int numFilesToDelete = m_options.GetAutoSaveNumberOfFiles() ? (static_cast<int>(autosaveFileList.size()) - m_options.GetAutoSaveNumberOfFiles() + 1) : static_cast<int>(autosaveFileList.size());
 
                 // delete each file
                 for (int j = 0; j < numFilesToDelete; ++j)

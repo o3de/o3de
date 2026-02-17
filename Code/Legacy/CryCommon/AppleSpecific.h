@@ -170,8 +170,6 @@ typedef DWORD COLORREF;
 
 #if defined(IOS)
 typedef bool BOOL;
-#else
-typedef signed char BOOL;
 #endif
 
 typedef int32_t LONG;
@@ -336,6 +334,7 @@ enum
 
 #define _msize malloc_size
 
+#include <AzCore/base.h>
 
 struct _OVERLAPPED;
 
@@ -362,7 +361,7 @@ typedef struct _SECURITY_ATTRIBUTES
 {
     DWORD nLength;
     LPVOID lpSecurityDescriptor;
-    BOOL bInheritHandle;
+    AZ::u8 bInheritHandle;
 } SECURITY_ATTRIBUTES, * PSECURITY_ATTRIBUTES, * LPSECURITY_ATTRIBUTES;
 
 #ifdef __cplusplus

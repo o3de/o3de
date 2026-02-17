@@ -52,9 +52,6 @@ ly_add_target(
             Include
             .
             ..
-    BUILD_DEPENDENCIES
-        INTERFACE
-            Legacy::EditorCommon.Headers
 )
 
 ################################################################################

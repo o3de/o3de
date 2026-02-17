@@ -171,7 +171,7 @@ namespace EMStudio
         QList<QTreeWidgetItem*> selectedItems = m_treeWidget->selectedItems();
 
         m_selectedParameters.clear();
-        const uint32 numSelectedItems = selectedItems.count();
+        const uint32 numSelectedItems = static_cast<uint32>(selectedItems.count());
         m_selectedParameters.reserve(numSelectedItems);
 
         // Iterate through the selected items in the tree widget.

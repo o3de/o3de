@@ -193,7 +193,7 @@ namespace AzToolsFramework
                 do
                 {
                     // Find filter term within the text.
-                    highlightTextIndex = label.lastIndexOf(m_selector->GetFilterString(), highlightTextIndex - 1, Qt::CaseInsensitive);
+                    highlightTextIndex = static_cast<int>(label.lastIndexOf(m_selector->GetFilterString(), highlightTextIndex - 1, Qt::CaseInsensitive));
                     if (highlightTextIndex >= 0)
                     {
                         // Insert background-color terminator at appropriate place to return to normal text.

@@ -632,7 +632,7 @@ void CUiAnimViewNodesCtrl::OnSelectionChanged()
         pSequence->ClearSelection();
 
         QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
-        int nCount = items.count();
+        int nCount = static_cast<int>(items.count());
         for (int i = 0; i < nCount; i++)
         {
             CRecord* pRecord = (CRecord*)items.at(i);
@@ -1190,7 +1190,7 @@ void CUiAnimViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         return;
     }
 
-    UINT count = menu->actions().size();
+    UINT count = static_cast<int>(menu->actions().size());
     for (UINT i = 0; i < count; ++i)
     {
         QAction* a = menu->actions().at(i);
@@ -1272,7 +1272,7 @@ void CUiAnimViewNodesCtrl::OnFilterChange(const QString& text)
 
             CUiAnimViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {
@@ -1324,7 +1324,7 @@ void CUiAnimViewNodesCtrl::ShowNextResult()
 
             CUiAnimViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {

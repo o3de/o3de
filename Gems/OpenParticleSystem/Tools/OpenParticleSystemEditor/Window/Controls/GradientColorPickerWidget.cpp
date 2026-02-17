@@ -46,7 +46,7 @@ namespace OpenParticleSystemEditor
     unsigned int GradientColorPickerWidget::AddKey(float stop, QColor color)
     {
         m_gradientWidget->AddKey((unsigned int)Gradients::HUE_RANGE, stop, color);
-        unsigned int index = m_keys.count();
+        unsigned int index = static_cast<unsigned int>(m_keys.count());
         m_keys.push_back(GradientKey(QGradientStop(stop, color), GetRegion(), m_gradientSize));
         // set the stop to the selected
         for (int i = 0; i < m_keys.count(); i++)

@@ -284,7 +284,7 @@ namespace AudioControls
             QModelIndexList indexes = m_pTreeModel->match(m_pTreeModel->index(0, 0, QModelIndex()), Qt::DisplayRole, QString(sControlName.data()), -1, Qt::MatchRecursive);
             if (!indexes.empty())
             {
-                const int size = indexes.size();
+                const int size = static_cast<int>(indexes.size());
                 for (int i = 0; i < size; ++i)
                 {
                     QModelIndex index = indexes[i];

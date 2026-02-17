@@ -206,7 +206,7 @@ namespace AzToolsFramework
         {
             return 0;
         }
-        return m_items.size();
+        return static_cast<int>(m_items.size());
     }
 
     int ScriptHelpModel::columnCount(const QModelIndex& parent) const

@@ -10,13 +10,3 @@ find_library(FOUNDATION_LIBRARY Foundation)
 find_library(OPENGL_LIBRARY OpenGL)
 find_library(CORE_GRAPHICS_LIBRARY CoreGraphics)
 find_library(CORE_SERVICES_LIBRARY CoreServices)
-
-set(LY_BUILD_DEPENDENCIES
-    PUBLIC
-        3rdParty::Qt::MacExtras
-    PRIVATE
-        ${FOUNDATION_LIBRARY}
-        ${OPENGL_LIBRARY}
-        ${CORE_SERVICES_LIBRARY}
-        ${CORE_GRAPHICS_LIBRARY}
-)

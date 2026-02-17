@@ -202,16 +202,16 @@ namespace LUAEditor
     {
         if (!parent.isValid())
         {
-            return m_root.m_children.size();
+            return static_cast<int>(m_root.m_children.size());
         }
 
         LUAName* name = static_cast<LUAName*>(parent.internalPointer());
         if (!name)
         {
-            return m_root.m_children.size();
+            return static_cast<int>(m_root.m_children.size());
         }
 
-        return name->m_children.size();
+        return static_cast<int>(name->m_children.size());
     }
 
     int CompletionModel::columnCount(const QModelIndex&) const
