@@ -16,10 +16,11 @@
 namespace TestAssetBuilder
 {
     // An asset that has just an int as its data and is referenced by other assets.
+    constexpr const char* const s_TestGenericAssetTypeId = "{B0CAA8CE-EEE0-4EEE-BAD5-AC88B2C8F3B8}";
     class TestGenericAssetRef : public AZ::Data::AssetData
     {
     public:
-        AZ_RTTI(TestGenericAssetRef, "{B0CAA8CE-EEE0-4EEE-BAD5-AC88B2C8F3B8}", AZ::Data::AssetData);
+        AZ_RTTI(TestGenericAssetRef, s_TestGenericAssetTypeId, AZ::Data::AssetData);
         AZ_CLASS_ALLOCATOR(TestGenericAssetRef, AZ::SystemAllocator);
 
         TestGenericAssetRef() = default;
@@ -27,6 +28,7 @@ namespace TestAssetBuilder
 
         int m_someField = 0;
     };
+
     // A generic asset that references other assets.
     class TestGenericAsset : public AZ::Data::AssetData
     {
@@ -41,6 +43,7 @@ namespace TestAssetBuilder
 
         AZ::Data::Asset<TestGenericAssetRef> m_referencedAsset_Preload{ AZ::Data::AssetLoadBehavior::PreLoad };
         AZ::Data::Asset<TestGenericAssetRef> m_referencedAsset_NoLoad{ AZ::Data::AssetLoadBehavior::NoLoad };
+        AZ::Data::AssetId m_referencedAssetId; // an assetId that is used instead of an asset ref.
     };
 
     //! TestGenericAssetBuilderComponent handles the lifecycle of the generic asset registration.

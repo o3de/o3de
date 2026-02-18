@@ -151,19 +151,22 @@ class TestsAssetProcessorGUI(object):
                 guid, flags = extractProductDependencyInfo(elem)
                 found_dependencies.append((guid, flags))
 
-        num_expected = 2
+        # we expect to find 3 dependencies, two from the asset<t> fields, and one from the loose assetid field.
+        num_expected = 3
         num_found = 0
         for found_dependency in found_dependencies:
             guid, flags = found_dependency
             if guid == "{4CACAE2C-C361-57BE-A8D5-647F07660A3F}":
                 num_found += 1
-                assert flags == "0000000000000000", f"Flags for dependency with guid {expected_guid} were expected to be 0000000000000000 but were {flags}" 
+                assert flags == "0000000000000000", f"Flags for dependency with guid {guid} were expected to be 0000000000000000 but were {flags}"
             elif guid == "{6677FA47-391A-591A-BC9E-279A03F75974}":
                 num_found += 1
-                assert flags == "0200000000000000", f"Flags for dependency with guid {expected_guid} were expected to be 0200000000000000 but were {flags}" 
+                assert flags == "0200000000000000", f"Flags for dependency with guid {guid} were expected to be 0200000000000000 but were {flags}"
+            elif guid == "{4D07F6E7-3D4E-59FA-840D-2757B523650C}":
+                num_found += 1
+                assert flags == "0200000000000000", f"Flags for dependency with guid {guid} were expected to be 0200000000000000 but were {flags}"
             else:
                 pytest.fail(f"Found a dependency with guid {guid} which was not expected.")
-        expected_guid = "4CACAE2C-C361-57BE-A8D5-647F07660A3F"
         
         assert num_found == num_expected, f"Expected to find {num_expected} dependencies but found {num_found}."
 

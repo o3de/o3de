@@ -7,11 +7,14 @@
  */
 
 #include <Builders/GenericAssetBuilder/GenericAssetBuilderWorker.h>
-#include <AzCore/std/string/wildcard.h>
-#include <AzCore/StringFunc/StringFunc.h>
+
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/std/string/wildcard.h>
+#include <AzCore/StringFunc/StringFunc.h>
+
+#include <AssetBuilderSDK/SerializationDependencies.h>
 
 namespace LmbrCentral::GenericAssetBuilder
 {
@@ -105,14 +108,6 @@ namespace LmbrCentral::GenericAssetBuilder
         }
 
         AssetBuilderSDK::JobProduct jobProduct;
-        jobProduct.m_dependenciesHandled = true;
-
-        // Note that emitting the entire full path to source file as a product file is an actual
-        // supported operation, and causes the AP to just copy the source file to the cache directly, without us having to
-        // compile anything.
-        jobProduct.m_productFileName = request.m_fullPath;
-        jobProduct.m_productSubID = 0;
-        jobProduct.m_productAssetType = whichReg->m_outputAssetTypeId;
 
         // populate dependencies:
         AZ::SerializeContext* serializeContext = nullptr;
@@ -125,6 +120,50 @@ namespace LmbrCentral::GenericAssetBuilder
             return;
         }
 
+        AZ::ObjectStream::FilterDescriptor dontLoadAnyAssets(&AZ::Data::AssetFilterNoAssetLoading, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
+        // load and convert the object so we can extract dependencies from it.
+        void* resultData = AZ::Utils::LoadObjectFromFile(request.m_fullPath, whichReg->m_outputAssetTypeId, serializeContext, dontLoadAnyAssets);
+        if (!resultData)
+        {
+            AZ_Error(
+                "GenericAssetBuilderWorker",
+                false,
+                "Failed to load asset file [%s] during generic asset building. Make sure the file is a valid AZ serialized file and that the type is reflected.",
+                request.m_fullPath.c_str());
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+            return;
+        }
+        AZStd::string destFileName;
+        AZStd::string destFullPath;
+        AZ::StringFunc::Path::GetFullFileName(request.m_fullPath.c_str(), destFileName);
+        AZ::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), destFileName.c_str(), destFullPath, true);
+
+        // Save the asset to binary format for production
+        if (!AZ::Utils::SaveObjectToFile(
+                destFullPath, AZ::DataStream::ST_BINARY, resultData, whichReg->m_outputAssetTypeId, serializeContext))
+        {
+			AZ_Error(
+				"GenericAssetBuilderWorker",
+				false,
+				"Failed to save asset file [%s] during generic asset building.",
+				destFullPath.c_str());
+			response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+			return;
+		}
+
+		if (!AssetBuilderSDK::OutputObject(resultData, whichReg->m_outputAssetTypeId, destFullPath, whichReg->m_outputAssetTypeId, 0, jobProduct))
+        {
+			AZ_Error(
+				"GenericAssetBuilderWorker",
+				false,
+				"Failed to output asset file [%s] during generic asset building.",
+				destFullPath.c_str());
+			response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+            return;
+        }
+
+		response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
+
         const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(whichReg->m_outputAssetTypeId);
 
         if (!classData)
@@ -136,33 +175,14 @@ namespace LmbrCentral::GenericAssetBuilder
                 "If you want this file to automatically emit dependencies, make sure you have a reflection function for it. "
                 "If you have a reflection function, make sure that the reflection function is actually being called, ie, it "
                 "is in a module that is loaded during asset processing.",
-                    request.m_fullPath.c_str(),
-                    whichReg->m_outputAssetTypeId.ToString<AZStd::string>().c_str());
+                request.m_fullPath.c_str(),
+                whichReg->m_outputAssetTypeId.ToString<AZStd::string>().c_str());
         }
         else
         {
-            // A filter function gets called by the serializer whenever it encounters an asset reference.
-            // it contains the details about the asset, and also allows you to return true or false,
-            // depending on whether you want it to go ahead and load the asset, or just leave it at 0 refcount unloaded.
-            auto filterFn = [&jobProduct](const AZ::Data::AssetFilterInfo& assetInfo) -> bool
-            {
-                jobProduct.m_dependencies.emplace_back(AssetBuilderSDK::ProductDependency(assetInfo.m_assetId, assetInfo.m_loadBehavior));
-                return false; // return false since we dont actually want to load this asset, just know about it.
-            };
-
-            AZ::ObjectStream::FilterDescriptor filterDesc(filterFn, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES);
-
-            void* data = AZ::Utils::LoadObjectFromFile(request.m_fullPath, whichReg->m_outputAssetTypeId, serializeContext, filterDesc);
-            if (data)
-            {
-                // we need to delete the data using the serializer, too, since we can't cast to it here.
-                // it may seem strange that we create it and destroy it but the purpose is so that the serializer,
-                // during reading, will call the filter function whenever it encounters an asset reference.
-                classData->m_factory->Destroy(data);
-            }
+            classData->m_factory->Destroy(resultData);
         }
 
-        response.m_outputProducts.push_back(jobProduct);
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
     }
 

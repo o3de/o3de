@@ -6,12 +6,14 @@
  *
  */
 
-#include <AzFramework/Asset/GenericAssetHandler.h>
 #include <Builder/TestGenericAssetBuilderComponent.h>
+
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h> // needed if you use field<T> on an asset.  The VCI linter lies.
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Asset/GenericAssetHandler.h>
 
 AZ::ComponentDescriptor* TestGenericAssetBuilderComponent_CreateDescriptor()
 {
@@ -76,10 +78,11 @@ namespace TestAssetBuilder
         if (serialize)
         {
             serialize->Class<TestGenericAsset, AZ::Data::AssetData>()
-                ->Version(1)
+                ->Version(2)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("ReferencedAssets_Preload", &TestGenericAsset::m_referencedAsset_Preload)
-                ->Field("ReferencedAssets_NoLoad", &TestGenericAsset::m_referencedAsset_NoLoad);
+                ->Field("ReferencedAssets_NoLoad", &TestGenericAsset::m_referencedAsset_NoLoad)
+                ->Field("ReferencedAssetId", &TestGenericAsset::m_referencedAssetId);
 
             serialize->Class<TestGenericAssetRef, AZ::Data::AssetData>()
                 ->Version(1)
@@ -90,8 +93,15 @@ namespace TestAssetBuilder
             {
                 edit->Class<TestGenericAsset>("Test Generic Asset", "A generic asset used for testing asset references")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TestGenericAsset::m_referencedAsset_Preload, "Preload Asset Reference", "This asset reference will be set to PreLoad")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TestGenericAsset::m_referencedAsset_NoLoad, "NoLoad Asset Reference", "This asset reference will be set to NoLoad");
-                 edit->Class<TestGenericAssetRef>("Test Generic Asset Ref", "A generic asset used for testing asset references (The ref)")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TestGenericAsset::m_referencedAsset_NoLoad, "NoLoad Asset Reference", "This asset reference will be set to NoLoad")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TestGenericAsset::m_referencedAssetId, "AssetIdRef", "This asset reference is purely by ID and will be set to NoLoad")
+                        ->Attribute(AZ_CRC_CE("SupportedAssetTypes"), []() {
+                                AZStd::vector<AZ::Data::AssetType> supportedAssetTypes;
+                                supportedAssetTypes.push_back(AZ::Data::AssetType(s_TestGenericAssetTypeId));
+                                return supportedAssetTypes;
+                            });
+
+                edit->Class<TestGenericAssetRef>("Test Generic Asset Ref", "A generic asset used for testing asset references (The ref)")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TestGenericAssetRef::m_someField, "Just some field", "This is just some field to make sure the asset isn't empty");
             }
         }
