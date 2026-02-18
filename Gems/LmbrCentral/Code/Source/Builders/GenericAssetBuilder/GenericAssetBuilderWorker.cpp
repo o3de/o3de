@@ -142,27 +142,27 @@ namespace LmbrCentral::GenericAssetBuilder
         if (!AZ::Utils::SaveObjectToFile(
                 destFullPath, AZ::DataStream::ST_BINARY, resultData, whichReg->m_outputAssetTypeId, serializeContext))
         {
-			AZ_Error(
-				"GenericAssetBuilderWorker",
-				false,
-				"Failed to save asset file [%s] during generic asset building.",
-				destFullPath.c_str());
-			response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-			return;
-		}
-
-		if (!AssetBuilderSDK::OutputObject(resultData, whichReg->m_outputAssetTypeId, destFullPath, whichReg->m_outputAssetTypeId, 0, jobProduct))
-        {
-			AZ_Error(
-				"GenericAssetBuilderWorker",
-				false,
-				"Failed to output asset file [%s] during generic asset building.",
-				destFullPath.c_str());
-			response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+            AZ_Error(
+                "GenericAssetBuilderWorker",
+                false,
+                "Failed to save asset file [%s] during generic asset building.",
+                destFullPath.c_str());
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
             return;
         }
 
-		response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
+        if (!AssetBuilderSDK::OutputObject(resultData, whichReg->m_outputAssetTypeId, destFullPath, whichReg->m_outputAssetTypeId, 0, jobProduct))
+        {
+            AZ_Error(
+                "GenericAssetBuilderWorker",
+                false,
+                "Failed to output asset file [%s] during generic asset building.",
+                destFullPath.c_str());
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+            return;
+        }
+
+        response.m_outputProducts.emplace_back(AZStd::move(jobProduct));
 
         const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(whichReg->m_outputAssetTypeId);
 
