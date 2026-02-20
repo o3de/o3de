@@ -21,7 +21,7 @@ namespace ${GemName}
     * ${GemName}DataAssetSystemComponent - Central registration point for all data asset types in ${GemName}.
     *
     * A gem or project only needs one of these. Its sole purpose is to own the lifetime of
-    * GenericAssetHandler instances and to forward Reflect() calls to every asset type managed
+    * GenericAssetHandler (DataAsset) instances and to forward Reflect() calls to every asset type managed
     * by this gem. All asset handler registration and unregistration happens here, not in
     * individual asset classes.
     *

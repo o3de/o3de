@@ -81,6 +81,7 @@ class RegisterGenericAssetCommand(WizardCommand):
                 registration_block = (
                     f'{base_indent}// Register {self.asset_name}\n'
                     f'{base_indent}auto* {self.asset_name}Handler = aznew AzFramework::GenericAssetHandler<{self.asset_name}>("{self.asset_name}", "{self.asset_group}", "{self.asset_ext}");\n'
+                    f'{base_indent}{self.asset_name}Handler->SetAutoBuildAssetToCache(true);\n'
                     f'{base_indent}{self.asset_name}Handler->Register();\n'
                     f'{base_indent}m_assetHandlers.emplace_back({self.asset_name}Handler);{suffix}'
                 )

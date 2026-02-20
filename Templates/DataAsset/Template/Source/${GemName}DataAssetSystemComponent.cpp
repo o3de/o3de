@@ -47,6 +47,7 @@ namespace ${GemName}
     {
         // Register Generic Assets
         //auto* ${AssetName}Handler = aznew AzFramework::GenericAssetHandler<${AssetName}>("${AssetName}", "${AssetGroup}", "${FileExtension}");
+        //${AssetName}Handler->SetAutoBuildAssetToCache(true);
         //${AssetName}Handler->Register();
         //m_assetHandlers.emplace_back(${AssetName}Handler);
     }
