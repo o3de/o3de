@@ -21,7 +21,8 @@ set(FILES
 
     AzFramework/Protocols/ProtocolManager.cpp
     AzFramework/Protocols/ProtocolManager.h
-
+    AzFramework/Protocols/CursorShapeManager.h
+    AzFramework/Protocols/CursorShapeManager.cpp
     AzFramework/Protocols/OutputManager.h
     AzFramework/Protocols/OutputManager.cpp
     AzFramework/Protocols/SeatManager.h

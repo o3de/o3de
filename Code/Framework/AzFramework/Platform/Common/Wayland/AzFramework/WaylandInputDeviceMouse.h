@@ -92,7 +92,6 @@ namespace AzFramework
         uint32_t m_playerIdx = 0;
         wl_pointer* m_pointer = nullptr;
         zwp_relative_pointer_v1* m_relPointer = nullptr;
-        wp_cursor_shape_device_v1* m_shapeDevice = nullptr;
         zwp_locked_pointer_v1* m_lockedPointer = nullptr;
 
         wl_region* m_confinedRegion = nullptr;

@@ -50,6 +50,7 @@ namespace AzFramework
 
         virtual void OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version) = 0;
         virtual void OnUnregister(wl_registry* registry, uint32_t id) = 0;
+        virtual void OnRegistryFinished() {}
     };
 
     class WaylandRegistryEventsBusTraits : public AZ::EBusTraits

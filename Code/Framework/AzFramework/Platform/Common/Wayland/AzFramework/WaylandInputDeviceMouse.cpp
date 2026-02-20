@@ -265,10 +265,9 @@ namespace AzFramework
 
         if (m_pointer != nullptr)
         {
-            if (m_shapeDevice != nullptr)
+            if (auto cursorManager = CursorShapeInterface::Get())
             {
-                wp_cursor_shape_device_v1_destroy(m_shapeDevice);
-                m_shapeDevice = nullptr;
+                cursorManager->UnregisterPointer(m_pointer);
             }
             if (m_relPointer != nullptr)
             {
@@ -285,7 +284,7 @@ namespace AzFramework
 
             if (auto cursorManager = CursorShapeInterface::Get())
             {
-                m_shapeDevice = cursorManager->GetCursorShapeDevice(m_pointer);
+                cursorManager->RegisterPointer(m_pointer);
             }
             if (auto relManager = RelativePointerInterface::Get())
             {
@@ -370,7 +369,7 @@ namespace AzFramework
         switch (m_cursorState)
         {
         case SystemCursorState::ConstrainedAndHidden:
-            InternalSetShape(WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, true);
+            InternalSetShape(WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, false);
             InternalConstrainMouse(true);
             break;
 
@@ -385,7 +384,7 @@ namespace AzFramework
             break;
 
         case SystemCursorState::UnconstrainedAndHidden:
-            InternalSetShape(WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, true);
+            InternalSetShape(WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, false);
             InternalConstrainMouse(false);
             break;
         default:
@@ -409,12 +408,10 @@ namespace AzFramework
             return;
         }
 
-        if (m_shapeDevice == nullptr)
+        if (auto cursorManager = CursorShapeInterface::Get())
         {
-            return;
+            cursorManager->SetCursorShape(m_pointer, m_currentSerial, shape);
         }
-
-        wp_cursor_shape_device_v1_set_shape(m_shapeDevice, m_currentSerial, shape);
     }
 
     void WaylandInputDeviceMouse::InternalConstrainMouse(bool wantConstraints)

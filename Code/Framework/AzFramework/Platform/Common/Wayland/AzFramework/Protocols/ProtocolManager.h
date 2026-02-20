@@ -14,7 +14,6 @@
 #include "OutputManager.h"
 #include "RelativePointerInterface.h"
 
-struct wp_cursor_shape_manager_v1;
 struct zwp_pointer_constraints_v1;
 struct zwp_relative_pointer_manager_v1;
 
@@ -24,7 +23,6 @@ namespace AzFramework
     class ProtocolManager final
         : protected WaylandRegistryEventsBus::Handler
         , protected WaylandProxyBus::MultiHandler
-        , protected CursorShapeInterface::Registrar
         , protected RelativePointerInterface::Registrar
     {
     public:
@@ -39,14 +37,10 @@ namespace AzFramework
         // WaylandProxyBus
         wl_proxy* GetProxy(AZ::Crc32 interface) override;
 
-        //CursorShapeInterface
-        wp_cursor_shape_device_v1* GetCursorShapeDevice(wl_pointer* pointer) override;
-
         //RelativePointerInterface
         zwp_relative_pointer_v1* GetRelativePointer(wl_pointer* pointer) override;
 
     private:
-        wp_cursor_shape_manager_v1* m_cursorManager = nullptr;
         zwp_pointer_constraints_v1* m_constraintsManager = nullptr;
         zwp_relative_pointer_manager_v1* m_relativePointerManager = nullptr;
     };

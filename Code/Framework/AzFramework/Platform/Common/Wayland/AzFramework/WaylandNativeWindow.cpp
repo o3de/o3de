@@ -218,7 +218,7 @@ namespace AzFramework
         , m_surface(nullptr)
         , m_xdgSurface(nullptr)
     {
-        if (auto connectionManager = AzFramework::WaylandConnectionManagerInterface::Get(); connectionManager != nullptr)
+        if (auto connectionManager = AzFramework::WaylandConnectionManagerInterface::Get())
         {
             m_display = connectionManager->GetWaylandDisplay();
             m_compositor = connectionManager->GetWaylandCompositor();

@@ -95,5 +95,6 @@ if(PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND)
         PRIVATE
             3rdParty::X11::xkbcommon
             wayland-client
+            wayland-cursor
     )
 endif()

@@ -8,7 +8,6 @@
 
 #include <AzFramework/Protocols/ProtocolManager.h>
 #include <AzFramework/WaylandProtocolNames.h>
-#include <cursor-shape-v1-client-protocol.h>
 #include <pointer-constraints-unstable-v1-client-protocol.h>
 
 namespace AzFramework
@@ -21,11 +20,6 @@ namespace AzFramework
     ProtocolManager::~ProtocolManager()
     {
         WaylandRegistryEventsBus::Handler::BusDisconnect();
-
-        if (m_cursorManager != nullptr)
-        {
-            wp_cursor_shape_manager_v1_destroy(m_cursorManager);
-        }
         if (m_constraintsManager != nullptr)
         {
             zwp_pointer_constraints_v1_destroy(m_constraintsManager);
@@ -38,18 +32,6 @@ namespace AzFramework
 
     void ProtocolManager::OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version)
     {
-        if (interface == CursorShapeManagerName && version >= CursorShapeVersion)
-        {
-            m_cursorManager =
-                static_cast<wp_cursor_shape_manager_v1*>(wl_registry_bind(
-                    registry,
-                    id,
-                    &wp_cursor_shape_manager_v1_interface,
-                    CursorShapeVersion));
-            WaylandProxyBus::MultiHandler::BusConnect(CursorShapeManagerName);
-            return;
-        }
-
         if (interface == PointerConstraintsName && version >= PointerConstraintsVersion)
         {
             m_constraintsManager =
@@ -71,14 +53,6 @@ namespace AzFramework
 
     void ProtocolManager::OnUnregister(wl_registry* registry, uint32_t id)
     {
-        if (id == WL_GET_PROXY_ID(m_cursorManager))
-        {
-            wp_cursor_shape_manager_v1_destroy(m_cursorManager);
-            m_cursorManager = nullptr;
-            WaylandProxyBus::MultiHandler::BusDisconnect(CursorShapeManagerName);
-            return;
-        }
-
         if (id == WL_GET_PROXY_ID(m_constraintsManager))
         {
             zwp_pointer_constraints_v1_destroy(m_constraintsManager);
@@ -98,11 +72,6 @@ namespace AzFramework
 
     wl_proxy* ProtocolManager::GetProxy(AZ::Crc32 interface)
     {
-        if (interface == CursorShapeManagerName)
-        {
-            return reinterpret_cast<wl_proxy*>(m_cursorManager);
-        }
-
         if (interface == PointerConstraintsName)
         {
             return reinterpret_cast<wl_proxy*>(m_constraintsManager);
@@ -114,16 +83,6 @@ namespace AzFramework
         }
 
         return nullptr;
-    }
-
-    wp_cursor_shape_device_v1* ProtocolManager::GetCursorShapeDevice(wl_pointer* pointer)
-    {
-        if (m_cursorManager == nullptr || pointer == nullptr)
-        {
-            return nullptr;
-        }
-
-        return wp_cursor_shape_manager_v1_get_pointer(m_cursorManager, pointer);
     }
 
     zwp_relative_pointer_v1* ProtocolManager::GetRelativePointer(wl_pointer* pointer)

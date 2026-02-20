@@ -57,14 +57,14 @@ namespace AzFramework
         WaylandConnectionManagerImpl()
             : m_waylandDisplay(wl_display_connect(nullptr))
         {
-            AZ_Error("Application", m_waylandDisplay != nullptr, "Unable to connect to Wayland Display.");
+            AZ_Error("Application", m_waylandDisplay != nullptr, "Failed to connect to Wayland Display.");
             m_fd = wl_display_get_fd(m_waylandDisplay.get());
 
             m_registry = wl_display_get_registry(m_waylandDisplay.get());
-            AZ_Error("Application", m_registry != nullptr, "Unable to get Wayland Registry.");
+            AZ_Error("Application", m_registry != nullptr, "Failed to get Wayland Registry.");
 
             m_xkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-            AZ_Error("Application", m_xkbContext != nullptr, "Unable to get XKB context.");
+            AZ_Error("Application", m_xkbContext != nullptr, "Failed to get XKB context.");
 
             wl_registry_add_listener(m_registry, &s_registryListener, this);
 
@@ -193,6 +193,7 @@ namespace AzFramework
         m_seatManager = AZStd::make_unique<SeatManager>();
         m_outputManager = AZStd::make_unique<OutputManager>();
         m_protocolManger = AZStd::make_unique<ProtocolManager>();
+        m_cursorShapeManger = AZStd::make_unique<CursorShapeManager>();
         m_xdgManager = AZStd::make_unique<XdgManagerImpl>();
 
         WaylandConnectionManagerBus::Broadcast(&WaylandConnectionManagerBus::Events::DoRoundtrip);
@@ -215,6 +216,8 @@ namespace AzFramework
             AZ_Fatal("Wayland", "Compositor missing relative pointer v%i" WL_RESTART_MSG, RelativePointerManagerVersion);
             AZ_Crash();
         }
+
+        WaylandRegistryEventsBus::Broadcast(&WaylandRegistryEventsBus::Events::OnRegistryFinished);
     }
 
     WaylandApplication::~WaylandApplication()
@@ -223,6 +226,7 @@ namespace AzFramework
         m_outputManager.reset();
         m_protocolManger.reset();
         m_xdgManager.reset();
+        m_cursorShapeManger.reset();
 
         if (WaylandConnectionManagerInterface::Get() == m_waylandConnectionManager.get())
         {

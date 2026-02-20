@@ -19,13 +19,17 @@
 
 namespace AzFramework
 {
+    //Provides a generic way to set the shape of a pointing device.
     class CursorShapeInterfaceRequests
     {
     public:
         AZ_RTTI(CursorShapeInterfaceRequests, "{569EF165-AB9D-4F81-8E79-CE0E69600B8F}");
         virtual ~CursorShapeInterfaceRequests() = default;
 
-        virtual wp_cursor_shape_device_v1* GetCursorShapeDevice(wl_pointer* pointer) = 0;
+        virtual void RegisterPointer(wl_pointer* pointer) = 0;
+        virtual void UnregisterPointer(wl_pointer* pointer) = 0;
+
+        virtual void SetCursorShape(wl_pointer* pointer, uint serial, wp_cursor_shape_device_v1_shape shape) = 0;
     };
 
     using CursorShapeInterface = AZ::Interface<CursorShapeInterfaceRequests>;
