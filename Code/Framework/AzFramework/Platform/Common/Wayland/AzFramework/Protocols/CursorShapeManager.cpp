@@ -17,9 +17,9 @@
 namespace AzFramework
 {
     AZ_CVAR(
-       uint16_t,
+       int,
        wl_cursorSize,
-       24,
+       12,
        nullptr,
        AZ::ConsoleFunctorFlags::Null,
        "WAYLAND ONLY: The cursor size used when cursor shape isn't supported by the compositor. Needs to be set at startup.");
