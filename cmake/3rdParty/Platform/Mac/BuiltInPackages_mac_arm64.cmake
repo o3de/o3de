@@ -26,7 +26,7 @@ ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-mac-arm64                  
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-mac-arm64                    TARGETS freetype                    PACKAGE_HASH eae257c78c2da47ca02ca17e949c665c28a59215d756c137c87220c85a7f8488)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.11.361-rev1-mac-arm64              TARGETS AWSNativeSDK                PACKAGE_HASH 88fb6ac72314b5993e2c24d90bd409016657658711996f416875ea3a0118a521)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-mac-arm64                          TARGETS Lua                         PACKAGE_HASH b44daae6bfdf092c7935e4aebafded6772853250c6f0a209866a1ac599857d58)
-ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-mac-arm64                    TARGETS mcpp                        PACKAGE_HASH 7826e3cdb70940c3efa788ab28ba02133ad494a123ae5c71ff38732ba1dabfef)
+ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev3-mac-arm64                    TARGETS mcpp                        PACKAGE_HASH 2c1e7d4154ebf26a35dea1cf9f9cc001aa68f82cbcba8f02f0cb877a07757d36)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac-arm64                       TARGETS mikkelsen                   PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-mac-arm64              TARGETS GoogleBenchmark             PACKAGE_HASH a1c8793eb1760905290065929b45600a4b4457345fcc129fce253d1a8980bbce)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev3-mac-arm64     TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH bc322f9e28d519ab5959a638b38ee3b773fefb868802823fad2396ab4f7bcbc8)
