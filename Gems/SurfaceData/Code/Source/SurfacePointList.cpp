@@ -61,7 +61,7 @@ namespace SurfaceData
         // Construct the list with the set of passed-in surface points but don't finalize it.
         // This is primarily a convenience for unit tests that want to test surface modifiers with specific inputs.
 
-        surfacePoints.begin();
+        AZ_UNUSED(surfacePoints.begin());
         StartListConstruction(AZStd::span<const AZ::Vector3>(&(surfacePoints.begin()->m_position), 1), surfacePoints.size(), {});
 
         for (auto& point : surfacePoints)

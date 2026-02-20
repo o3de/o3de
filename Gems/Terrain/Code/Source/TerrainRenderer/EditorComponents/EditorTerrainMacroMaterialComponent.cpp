@@ -430,7 +430,7 @@ namespace Terrain
         const float uint8Max = static_cast<float>(AZStd::numeric_limits<uint8_t>::max());
 
         // Build up a color conversion array.
-        for (size_t i = 0; i < linearToSrgbGamma.array_size; ++i)
+        for (size_t i = 0; i < linearToSrgbGamma.size(); ++i)
         {
             float linearValue = i / uint8Max;
             linearToSrgbGamma[i] = aznumeric_cast<uint8_t>(AZ::Color::ConvertSrgbLinearToGamma(linearValue) * uint8Max);

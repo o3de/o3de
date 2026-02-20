@@ -43,8 +43,6 @@ namespace AZStd
     struct pair;
     template< class T, class Allocator/* = AZStd::allocator*/ >
     class vector;
-    template< class T, AZStd::size_t N >
-    class array;
     template< class T, class Allocator/* = AZStd::allocator*/ >
     class list;
     template< class T, class Allocator/* = AZStd::allocator*/ >
@@ -499,7 +497,6 @@ namespace AZStd
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::fixed_vector, "AZStd::fixed_vector", "{74044B6F-E922-4FD7-915D-EFC5D1DC59AE}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::fixed_list, "AZStd::fixed_list", "{508B9687-8410-4A73-AE0C-0BA15CF3F773}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::fixed_forward_list, "AZStd::fixed_forward_list", "{0D9D2AB2-F0CC-4E30-A209-A33D78717649}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::array, "AZStd::array", "{911B2EA8-CCB1-4F0C-A535-540AD00173AE}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::bitset, "AZStd::bitset", "{6BAE9836-EC49-466A-85F2-F4B1B70839FB}", AZ_TYPE_INFO_INTERNAL_AUTO);
 
     static constexpr const char* s_variantTypeId{ "{1E8BB1E5-410A-4367-8FAA-D43A4DE14D4B}" };
@@ -517,8 +514,10 @@ namespace AZStd
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL_API(AZCORE_API, AZStd::basic_fixed_string, AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO, AZ_TYPE_INFO_INTERNAL_TYPENAME);
 }
 
-namespace AZStd
+namespace std
 {
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::array, "AZStd::array", "{911B2EA8-CCB1-4F0C-A535-540AD00173AE}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
+
     // GetO3deTypeName/GetO3deTypeId overload for AZStd::span<T, Extent>
     // Note the type ID only takes the type T template parameter into account, not the Extent template parameter.
     // An `AZStd::span<AZ::Component*, 50>` and `AZStd::span<AZ::Component*, 100>` will have the same type ID, as the second template argument is not aggregated to the AZStd::span template ID.
@@ -599,11 +598,8 @@ namespace AZStd
         {
             return AZ::TemplateId{};
         }
-    };
-}
+    }
 
-namespace std
-{
     // AZStd::optional is std::optional brought into the AZStd:: namespace
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::optional, "AZStd::optional", "{AB8C50C0-23A7-4333-81CD-46F648938B1C}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
 

@@ -32,8 +32,6 @@ namespace AZStd
     class forward_list;
     template< class T, size_t Capacity >
     class fixed_vector;
-    template< class T, size_t N >
-    class array;
     template<class Key, class MappedType, class Hasher /*= AZStd::hash<Key>*/, class EqualKey /*= AZStd::equal_to<Key>*/, class Allocator /*= AZStd::allocator*/ >
     class unordered_map;
     template<class Key, class Hasher /*= AZStd::hash<Key>*/, class EqualKey /*= AZStd::equal_to<Key>*/, class Allocator /*= AZStd::allocator*/>
@@ -841,7 +839,7 @@ namespace AZ
                         ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, CheckedOperationInfo("contains", {}, "Out", "Key Not Found"))
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Get Element", "Containers"))
                     ->Method("BucketCount", static_cast<typename ContainerType::size_type(ContainerType::*)() const>(&ContainerType::bucket_count))
-                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty), { { { "Container", "The container to check if it is empty", nullptr, {} } } })
+                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty))
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Is Empty", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, emptyBranchInfo)
                     ->Method("Erase", &ErasePost_VM)
@@ -992,7 +990,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Category, ScriptCanvasOnDemandReflection::OnDemandCategoryName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::ScriptOwn)
                     ->Method("BucketCount", static_cast<typename ContainerType::size_type(ContainerType::*)() const>(&ContainerType::bucket_count))
-                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty), { { { "Container", "The container to check if it is empty", nullptr, {} } } })
+                    ->Method("Empty", static_cast<bool(ContainerType::*)() const>(&ContainerType::empty))
                         ->Attribute(AZ::ScriptCanvasAttributes::ExplicitOverloadCrc, ExplicitOverloadInfo("Is Empty", "Containers"))
                         ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, emptyBranchInfo)
                     ->Method("EraseCheck_VM", &EraseCheck_VM)

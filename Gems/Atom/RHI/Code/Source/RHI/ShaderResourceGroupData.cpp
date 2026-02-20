@@ -84,7 +84,7 @@ namespace AZ::RHI
         ShaderInputImageIndex inputIndex, const ImageView* imageView, uint32_t arrayIndex)
     {
         AZStd::array<const ImageView* const, 1> imageViews = { { imageView } };
-        return SetImageViewArray(inputIndex, imageViews, arrayIndex);
+        return SetImageViewArray(inputIndex, AZStd::span(imageViews.data(), imageViews.size()), arrayIndex);
     }
 
     bool ShaderResourceGroupData::SetImageViewArray(
@@ -175,7 +175,7 @@ namespace AZ::RHI
         ShaderInputBufferIndex inputIndex, const BufferView* bufferView, uint32_t arrayIndex)
     {
         AZStd::array<const BufferView* const, 1> bufferViews = { { bufferView } };
-        return SetBufferViewArray(inputIndex, bufferViews, arrayIndex);
+        return SetBufferViewArray(inputIndex, AZStd::span(bufferViews.data(), bufferViews.size()), arrayIndex);
     }
 
     bool ShaderResourceGroupData::SetBufferViewArray(
