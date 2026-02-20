@@ -176,7 +176,7 @@ jobs:
       - name: Setup cmake
         # Pin the version of cmake
         if: ${{ inputs.cmake_version }}
-        uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
+        uses: lukka/get-cmake@f176ccd3f28bda569c43aae4894f06b2435a3375 # v4.2.3
         with:
           cmakeVersion: "${{ inputs.cmake_version }}"
 
