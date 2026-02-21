@@ -1015,7 +1015,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
 
 void CSequenceBatchRenderDialog::OnUpdateWarmingUpAfterResChange()
 {
-    UpdateSpinnerProgressMessage(tr("Warming up"));
+    UpdateSpinnerProgressMessage(qPrintable(tr("Warming up")));
 
     // Spend the given frames warming up after frame buffer resolution change
     if (m_renderContext.framesSpentInCurrentPhase++ >= TrackView::tv_SkipFramesCount)
@@ -1031,7 +1031,7 @@ void CSequenceBatchRenderDialog::OnUpdateWarmingUpAfterResChange()
 
 void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
 {
-    UpdateSpinnerProgressMessage(tr("Entering game mode"));
+    UpdateSpinnerProgressMessage(qPrintable(tr("Entering game mode")));
 
     GetIEditor()->GetGameEngine()->Update();
 
@@ -1053,7 +1053,7 @@ void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
 
 void CSequenceBatchRenderDialog::OnUpdateBeginPlayingSequence()
 {
-    UpdateSpinnerProgressMessage(tr("Begin Playing Sequence"));
+    UpdateSpinnerProgressMessage(qPrintable(tr("Begin Playing Sequence")));
 
     SRenderItem& renderItem = m_renderItems[m_renderContext.currentItemIndex];
     const AZStd::string seqName = renderItem.seqName.toUtf8().data();
@@ -1131,7 +1131,7 @@ void CSequenceBatchRenderDialog::OnUpdateCapturing()
     // Progress message
     const QString itemText = m_ui->m_renderList->model()->index(m_renderContext.currentItemIndex, 0).data().toString();
     const QString msg = tr("Rendering '%1'...(%2%)").arg(itemText).arg(static_cast<int>(100.0f * elapsedTime / (rng.end - rng.start)));
-    UpdateSpinnerProgressMessage(msg);
+    UpdateSpinnerProgressMessage(qPrintable(msg));
 
     m_renderContext.framesSpentInCurrentPhase++;
 }
@@ -1223,7 +1223,7 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
 
 void CSequenceBatchRenderDialog::OnUpdateFFMPEGProcessing()
 {
-    UpdateSpinnerProgressMessage(tr("FFMPEG processing"));
+    UpdateSpinnerProgressMessage(qPrintable(tr("FFMPEG processing")));
 
     if (!m_renderContext.processingFFMPEG)
     {
@@ -1751,7 +1751,7 @@ QString CSequenceBatchRenderDialog::GetCaptureItemString(const SRenderItem& item
                .arg(item.bCreateVideo ? "[v]" : "");
 }
 
-void CSequenceBatchRenderDialog::UpdateSpinnerProgressMessage(const QString& description)
+void CSequenceBatchRenderDialog::UpdateSpinnerProgressMessage(const char* description)
 {
     static int count = 0;
     const char* rotatingCursor[] = { "|", "/", "-", "\\" };
