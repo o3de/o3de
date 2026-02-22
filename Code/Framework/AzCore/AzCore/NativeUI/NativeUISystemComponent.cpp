@@ -40,7 +40,7 @@ namespace AZ::NativeUI
 
         // Button names for the assert dialog. These are self-contained: the same
         // array is used for both display and comparison, so translation is safe.
-        static const char* buttonNames[3] = {
+        static constexpr const char* buttonNames[3] = {
             QT_TRANSLATE_NOOP("AzCore", "Ignore"),
             QT_TRANSLATE_NOOP("AzCore", "Ignore All"),
             QT_TRANSLATE_NOOP("AzCore", "Break")
@@ -80,8 +80,8 @@ namespace AZ::NativeUI
 
         // Button names are kept in local variables so the same strings are used
         // for both display and result comparison, making runtime translation safe.
-        static const char* okButton = QT_TRANSLATE_NOOP("AzCore", "OK");
-        static const char* cancelButton = QT_TRANSLATE_NOOP("AzCore", "Cancel");
+        static constexpr const char* okButton = QT_TRANSLATE_NOOP("AzCore", "OK");
+        static constexpr const char* cancelButton = QT_TRANSLATE_NOOP("AzCore", "Cancel");
 
         AZStd::vector<AZStd::string> options{ okButton };
 
@@ -113,9 +113,9 @@ namespace AZ::NativeUI
 
         // Button names are kept in local variables so the same strings are used
         // for both display and result comparison, making runtime translation safe.
-        static const char* yesButton = QT_TRANSLATE_NOOP("AzCore", "Yes");
-        static const char* noButton = QT_TRANSLATE_NOOP("AzCore", "No");
-        static const char* cancelButton = QT_TRANSLATE_NOOP("AzCore", "Cancel");
+        static constexpr const char* yesButton = QT_TRANSLATE_NOOP("AzCore", "Yes");
+        static constexpr const char* noButton = QT_TRANSLATE_NOOP("AzCore", "No");
+        static constexpr const char* cancelButton = QT_TRANSLATE_NOOP("AzCore", "Cancel");
 
         AZStd::vector<AZStd::string> options{ yesButton, noButton };
 
