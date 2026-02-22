@@ -30,16 +30,16 @@ PreviewAnimationList::PreviewAnimationList(EditorWindow* editorWindow)
     AddMenuItems();
 
     // Add the Reset button
-    AddToolBarButton(QIcon(":/Trackview/play/tvplay-00.png"), Action::Reset, tr("Reset selected animations to start"));
+    AddToolBarButton(QIcon(":/Trackview/play/tvplay-00.png"), Action::Reset, qPrintable(tr("Reset selected animations to start")));
 
     // Add the Play button
-    AddToolBarButton(QIcon(":/Trackview/play/tvplay-01.png"), Action::Play, tr("Play/Resume selected animations"));
+    AddToolBarButton(QIcon(":/Trackview/play/tvplay-01.png"), Action::Play, qPrintable(tr("Play/Resume selected animations")));
 
     // Add the Pause button
-    AddToolBarButton(QIcon(":/Trackview/play/tvplay-03.png"), Action::Pause, tr("Pause/Resume selected animations"));
+    AddToolBarButton(QIcon(":/Trackview/play/tvplay-03.png"), Action::Pause, qPrintable(tr("Pause/Resume selected animations")));
 
     // Add the Stop button
-    AddToolBarButton(QIcon(":/Trackview/play/tvplay-04.png"), Action::Stop, tr("Stop selected animations and set to end"));
+    AddToolBarButton(QIcon(":/Trackview/play/tvplay-04.png"), Action::Stop, qPrintable(tr("Stop selected animations and set to end")));
 
     m_toolBar->setFloatable(false);
 
@@ -107,7 +107,7 @@ void PreviewAnimationList::AddMenuItems()
     }
 }
 
-void PreviewAnimationList::AddToolBarButton(const QIcon& icon, Action action, const QString& tooltip)
+void PreviewAnimationList::AddToolBarButton(const QIcon& icon, Action action, const char* tooltip)
 {
     QPushButton* button = new QPushButton(icon, "", this);
     QObject::connect(

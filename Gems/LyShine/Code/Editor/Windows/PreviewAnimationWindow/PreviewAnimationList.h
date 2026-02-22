@@ -46,7 +46,7 @@ private:
     QSize sizeHint() const override;
 
     void AddMenuItems();
-    void AddToolBarButton(const QIcon& icon, Action action, const QString& tooltip);
+    void AddToolBarButton(const QIcon& icon, Action action, const char* tooltip);
     void DoActionOnSelectedAnimations(Action action);
 
 private:
