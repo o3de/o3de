@@ -16,7 +16,7 @@
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
-#include <AzFramework/Translation/TranslationDef.h>
+#include <AzCore/i18n/TranslationMacros.h>
 
 #if defined(IMGUI_ENABLED)
 #include <imgui/imgui.h>

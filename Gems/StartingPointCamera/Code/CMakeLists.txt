@@ -19,7 +19,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            AZ::AzFramework
             Gem::CameraFramework.Static
             Gem::LmbrCentral
             Legacy::CryCommon
