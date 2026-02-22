@@ -44,7 +44,7 @@
         "NvCloth",
         "OpenParticleSystem",
         "PhysX5",
-        "PhysXDebug",
+        "PhysX5Debug",
         "PrefabBuilder",
         "PrimitiveAssets",
         "Profiler",

@@ -7,7 +7,7 @@
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "type": "Tool",
-    "summary": "The PhysX4 Debug Gem, in conjunction with the PhysX4 Gem, provides debugging functionality and visualizations for NVIDIA PhysX in Open 3D Engine.",
+    "summary": "Deprecation Notice: The PhysX4 Debug Gem, along with the PhysX4 Gem will be deprecated in a future release and no longer supported. Please migrate to the PhysX5 Debug Gem.",
     "canonical_tags": [
         "Gem"
     ],
