@@ -22,6 +22,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Application/Application.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
@@ -45,7 +46,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QObject>
 #include <QPixmap>
 #include <QProcessEnvironment>
- #include <AzFramework/Translation/TranslationDef.h>
 AZ_POP_DISABLE_WARNING
 
 constexpr AZStd::string_view MaterialCanvasActionIdentifier = "o3de.action.tools.material_canvas";

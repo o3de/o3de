@@ -8,6 +8,7 @@
 
 #include <ReflectionProbe/EditorReflectionProbeComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -20,7 +21,6 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
- #include <AzFramework/Translation/TranslationDef.h>
 #include <QMessageBox>
 #include <QProgressDialog>
 AZ_POP_DISABLE_WARNING
