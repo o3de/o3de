@@ -13,6 +13,7 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/string.h>
+
 #include <QString>
 #include <QStringList>
 #include <QDir>
