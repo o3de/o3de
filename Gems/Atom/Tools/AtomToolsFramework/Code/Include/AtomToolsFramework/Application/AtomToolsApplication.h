@@ -12,7 +12,6 @@
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
 
 #include <AzCore/IO/FileIO.h>
-#include <QTranslator>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
@@ -27,6 +26,7 @@
 #include <AzToolsFramework/Logger/TraceLogger.h>
 
 #include <QTimer>
+#include <QTranslator>
 
 namespace AtomToolsFramework
 {
