@@ -34,11 +34,11 @@ AZ_POP_DISABLE_WARNING
 // Returns a QString to avoid dangling-pointer issues with temporary buffers.
 // The caller should convert to QByteArray/const char* only when needed and
 // keep ownership of the QByteArray alive for the duration of use.
-static QString TranslateGroupName(const char* sourceText)
+static AZStd::string TranslateGroupName(const char* sourceText)
 {
     if (!sourceText || sourceText[0] == '\0')
     {
-        return QString();
+        return "";
     }
 
     // Use TranslatePropertyString which already searches well-known framework
@@ -47,10 +47,10 @@ static QString TranslateGroupName(const char* sourceText)
     AZStd::string translated = AzToolsFramework::TranslatePropertyString(sourceText);
     if (translated != sourceText)
     {
-        return QString::fromUtf8(translated.c_str(), static_cast<int>(translated.size()));
+        return translated;
     }
 
-    return QString::fromUtf8(sourceText);
+    return sourceText;
 }
 
 namespace AzToolsFramework
@@ -534,7 +534,7 @@ namespace AzToolsFramework
                 bool isToggleGroup = false;
                 // Translate group name. Keep QByteArray alive to ensure the
                 // const char* obtained from it remains valid for the entire scope.
-                QString groupNameTranslated = TranslateGroupName(groupElementData->m_description);
+                QString groupNameTranslated = TranslateGroupName(groupElementData->m_description).c_str();
                 QByteArray groupNameUtf8 = groupNameTranslated.toUtf8();
                 const char* groupName = groupNameUtf8.constData();
                 PropertyRowWidget*& widgetEntry = m_groupWidgets[{parent, groupName}];
