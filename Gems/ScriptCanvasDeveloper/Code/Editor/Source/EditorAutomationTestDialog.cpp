@@ -194,8 +194,8 @@ namespace ScriptCanvas::Developer
         for (QObject* object : objectList)
         {
             QMenu* menu = qobject_cast<QMenu*>(object);
-
-            if (menu && menu->objectName() == "DeveloperMenu")
+            
+            if (menu && menu->objectName() == "Developer")
             {
                 targetMenu = menu;
             }
