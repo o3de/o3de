@@ -570,7 +570,7 @@ namespace Editor
     QString EditorQtApplication::GetSavedLanguage() const
     {
         // Use TranslationManager for cross-process language synchronization
-        QString language = AzToolsFramework::TranslationManager::GetCurrentLanguage();
+        QString language = AzToolsFramework::TranslationManager::GetCurrentLanguage().c_str();
 
         AZ_TracePrintf("EditorI18n", "Loaded language from TranslationManager: %s\n",
             language.toUtf8().constData());

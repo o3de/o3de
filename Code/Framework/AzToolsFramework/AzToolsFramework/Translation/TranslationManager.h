@@ -60,7 +60,7 @@ namespace AzToolsFramework
          *
          * Reads from Settings Registry if available, otherwise uses system locale.
          */
-        static QString GetCurrentLanguage()
+        static AZStd::string GetCurrentLanguage()
         {
             AZStd::string savedLanguage;
 
@@ -74,10 +74,10 @@ namespace AzToolsFramework
             if (savedLanguage.empty())
             {
                 QString systemLocale = QLocale::system().name();
-                return systemLocale;
+                return qPrintable(systemLocale);
             }
 
-            return QString::fromUtf8(savedLanguage.c_str());
+            return savedLanguage;
         }
 
         /**
@@ -106,7 +106,7 @@ namespace AzToolsFramework
          */
         static QTranslator* LoadModuleTranslator(const QString& moduleName, QCoreApplication* app = nullptr)
         {
-            QString language = GetCurrentLanguage();
+            QString language = GetCurrentLanguage().c_str();
             return LoadModuleTranslatorForLanguage(moduleName, language, app);
         }
 
@@ -212,7 +212,7 @@ namespace AzToolsFramework
          */
         static QTranslator* InitializeToolTranslations(const QString& toolName, QCoreApplication* app)
         {
-            QString language = GetCurrentLanguage();
+            QString language = GetCurrentLanguage().c_str();
 
             // Log the language being used
             qDebug() << "[i18n]" << toolName << "using language:" << language;
