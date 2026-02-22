@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Material/EditorMaterialComponentExporter.h>
 #include <Material/EditorMaterialComponentInspector.h>
@@ -25,7 +26,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QCursor>
 #include <QDataStream>
 #include <QMenu>
- #include <AzFramework/Translation/TranslationDef.h>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
