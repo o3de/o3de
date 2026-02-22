@@ -29,7 +29,7 @@ namespace MysticQt
         RecentFiles();
         ~RecentFiles() = default;
 
-        void Init(QMenu* parentMenu, size_t numRecentFiles, const QString& subMenuName, const char* configStringName);
+        void Init(QMenu* parentMenu, size_t numRecentFiles, const char* subMenuName, const char* configStringName);
         void SetMaxRecentFiles(size_t numRecentFiles);
         void AddRecentFile(AZStd::string filename);
         AZStd::string GetLastRecentFileName() const;

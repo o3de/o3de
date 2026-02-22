@@ -337,7 +337,7 @@ namespace EMStudio
         DisableSaveSelectedActorsMenu();
 
         // recent actors submenu
-        m_recentActors.Init(menu, m_options.GetMaxRecentFiles(), tr("Recent Actors"), "recentActorFiles");
+        m_recentActors.Init(menu, m_options.GetMaxRecentFiles(), qPrintable(tr("Recent Actors")), "recentActorFiles");
         connect(&m_recentActors, &MysticQt::RecentFiles::OnRecentFile, this, &MainWindow::OnRecentFile);
 
         // workspace file actions
@@ -352,7 +352,7 @@ namespace EMStudio
         saveWorkspaceAsAction->setObjectName("EMFX.MainWindow.SaveWorkspaceAsAction");
 
         // recent workspace submenu
-        m_recentWorkspaces.Init(menu, m_options.GetMaxRecentFiles(), tr("Recent Workspaces"), "recentWorkspaces");
+        m_recentWorkspaces.Init(menu, m_options.GetMaxRecentFiles(), qPrintable(tr("Recent Workspaces")), "recentWorkspaces");
         connect(&m_recentWorkspaces, &MysticQt::RecentFiles::OnRecentFile, this, &MainWindow::OnRecentFile);
 
         // edit menu

@@ -63,7 +63,7 @@ namespace MysticQt
     }
 
 
-    void RecentFiles::Init(QMenu* parentMenu, size_t numRecentFiles, const QString& subMenuName, const char* configStringName)
+    void RecentFiles::Init(QMenu* parentMenu, size_t numRecentFiles, const char* subMenuName, const char* configStringName)
     {
         m_configStringName   = configStringName;
         m_maxNumRecentFiles  = numRecentFiles;
