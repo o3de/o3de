@@ -14,6 +14,7 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
@@ -26,7 +27,6 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QAction>
 #include <QApplication>
- #include <AzFramework/Translation/TranslationDef.h>
 #include <QCursor>
 #include <QMenu>
 #include <QProgressDialog>
