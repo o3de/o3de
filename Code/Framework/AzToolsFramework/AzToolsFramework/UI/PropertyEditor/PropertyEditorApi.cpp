@@ -23,9 +23,9 @@ namespace AzToolsFramework
 {
     // Registry of translation contexts for TranslatePropertyString.
     // Modules/Gems can register additional contexts at startup via RegisterTranslationContext().
-    static AZStd::vector<AZStd::string>& GetRegisteredContexts()
+    static AZStd::vector<const char*>& GetRegisteredContexts()
     {
-        static AZStd::vector<AZStd::string> s_contexts = {
+        static AZStd::vector<const char*> s_contexts = {
             // Core framework contexts (always present)
             "AzCore",
             "AzFramework",
@@ -75,15 +75,14 @@ namespace AzToolsFramework
     void RegisterTranslationContext(const char* contextName)
     {
         auto& contexts = GetRegisteredContexts();
-        AZStd::string name(contextName);
         for (const auto& existing : contexts)
         {
-            if (existing == name)
+            if (existing == contextName)
             {
                 return; // Already registered
             }
         }
-        contexts.push_back(AZStd::move(name));
+        contexts.push_back(AZStd::move(contextName));
     }
 
     // Helper function: attempt to translate property editor strings from EditContext.
@@ -111,7 +110,7 @@ namespace AzToolsFramework
         QString source = QString::fromUtf8(sourceText);
         for (const auto& ctx : GetRegisteredContexts())
         {
-            QString translated = QCoreApplication::translate(ctx.c_str(), sourceText);
+            QString translated = QCoreApplication::translate(ctx, sourceText);
             if (translated != source)
             {
                 return translated.toUtf8().constData();
