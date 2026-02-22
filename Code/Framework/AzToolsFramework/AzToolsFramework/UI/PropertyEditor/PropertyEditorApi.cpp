@@ -77,7 +77,7 @@ namespace AzToolsFramework
         auto& contexts = GetRegisteredContexts();
         for (const auto& existing : contexts)
         {
-            if (existing == contextName)
+            if (strcmp(existing, contextName) == 0)
             {
                 return; // Already registered
             }
