@@ -214,7 +214,9 @@ void CEditorPreferencesPage_General::OnApply()
 
     // Apply language change.
     // m_editorLanguage stores a pure language code (e.g., "zh_CN"), so no parsing is needed.
-    if (auto* app = Editor::EditorQtApplication::instance())
+    auto* app = Editor::EditorQtApplication::instance();
+    AZ_Assert(app, "EditorQtApplication instance is null. Cannot apply language change.");
+    if (app != nullptr)
     {
         QString currentLang = app->GetCurrentLanguage();
         QString newLang = QString::fromUtf8(m_generalSettings.m_editorLanguage.c_str()).trimmed();
