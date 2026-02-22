@@ -76,7 +76,7 @@ namespace AzToolsFramework::Prefab
         AZStd::string translatedLabel = AzToolsFramework::TranslatePropertyString(labelText.data());
 
         adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
-        adapterBuilder->Attribute(PrefabOverrideLabel::Value, AZStd::string_view(translatedLabel));
+        adapterBuilder->Attribute(PrefabOverrideLabel::Value, translatedLabel);
 
         AZ::Dom::Path relativePathFromEntity;
         if (!m_componentAlias.empty() && !serializedPath.empty())
