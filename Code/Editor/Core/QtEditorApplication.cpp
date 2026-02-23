@@ -24,6 +24,9 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/set.h>
 
 // AzQtComponents
 #include <AzQtComponents/Components/GlobalEventFilter.h>
@@ -428,33 +431,32 @@ namespace Editor
         // Load saved language or detect system language
         m_currentLanguage = GetSavedLanguage();
         AZ_Printf("EditorI18n", "Loading translations for language: %s\n",
-            m_currentLanguage.toUtf8().constData());
+            m_currentLanguage.c_str());
 
         // Load Qt's base translations FIRST (for standard button text: OK, Cancel, Save, Discard, Yes, No, etc.)
         // Qt standard buttons get their text from Qt's own translation files (qtbase_*.qm, qt_*.qm).
         // Without loading these, standard buttons like Save/Cancel/OK/Yes/No remain in English.
         QList<QTranslator*> qtBaseTranslators =
-            AzToolsFramework::TranslationManager::LoadQtBaseTranslations(m_currentLanguage, this);
+            AzToolsFramework::TranslationManager::LoadQtBaseTranslations(m_currentLanguage.c_str(), this);
         for (QTranslator* translator : qtBaseTranslators)
         {
             m_translators.append(translator);
         }
 
         // Get all registered translator modules
-        QStringList translatorModules = GetTranslatorModules();
+        AZStd::vector<AZStd::string> translatorModules = GetTranslatorModules();
 
         int loadedCount = 0;
-        int totalCount = translatorModules.size();
 
         // Load translators with fallback support
-        for (const QString& moduleName : translatorModules)
+        for (const AZStd::string& moduleName : translatorModules)
         {
             InstallTranslatorWithFallback(moduleName, m_currentLanguage);
             loadedCount++;
         }
 
-        AZ_Printf("EditorI18n", "Translation system initialized: %d/%d modules processed (+ %d Qt base translators)\n",
-            loadedCount, totalCount, qtBaseTranslators.size());
+        AZ_Printf("EditorI18n", "Translation system initialized: %d/%zu modules processed (+ %d Qt base translators)\n",
+            loadedCount, translatorModules.size(), qtBaseTranslators.size());
     }
 
     void EditorQtApplication::UninstallEditorTranslators()
@@ -471,9 +473,9 @@ namespace Editor
 
     // ========== i18n Helper Methods ==========
 
-    QStringList EditorQtApplication::GetTranslatorModules() const
+    AZStd::vector<AZStd::string> EditorQtApplication::GetTranslatorModules() const
     {
-        QStringList modules;
+        AZStd::vector<AZStd::string> modules;
 
         // ========== Auto-discover translation modules from .qm files ==========
         // Instead of maintaining a hardcoded list, scan the translation directory
@@ -484,11 +486,11 @@ namespace Editor
         // This ensures ALL Gems and modules with generated translations are
         // automatically loaded without manual list maintenance.
 
-        if (!m_currentLanguage.isEmpty() && m_currentLanguage != "en" && m_currentLanguage != "en_US")
+        if (!m_currentLanguage.empty() && m_currentLanguage != "en" && m_currentLanguage != "en_US")
         {
             // Build fallback chain to search multiple language directories
             // e.g., for "zh_CN" -> ["zh_CN", "zh", "en_US", "en"]
-            QStringList languagesToScan = BuildLanguageFallbackChain(m_currentLanguage);
+            AZStd::vector<AZStd::string> languagesToScan = BuildLanguageFallbackChain(m_currentLanguage);
 
             // Resolve the translations root directory
             AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath;
@@ -503,7 +505,7 @@ namespace Editor
 
                 QSet<QString> discoveredModules;
 
-                for (const QString& lang : languagesToScan)
+                for (const AZStd::string& lang : languagesToScan)
                 {
                     // Skip English directories (source language, no .qm files)
                     if (lang == "en" || lang == "en_US")
@@ -511,21 +513,21 @@ namespace Editor
                         continue;
                     }
 
-                    QDir langDir(translationsRoot.filePath(lang));
+                    QDir langDir(translationsRoot.filePath(lang.c_str()));
                     if (!langDir.exists())
                     {
                         continue;
                     }
 
                     // List all .qm files matching the pattern *_<language>.qm
-                    const QString qmPattern = QString("*_%1.qm").arg(lang);
+                    const QString qmPattern = QString("*_%1.qm").arg(lang.c_str());
                     const QStringList qmFiles = langDir.entryList(
                         QStringList() << qmPattern,
                         QDir::Files,
                         QDir::Name);
 
                     // Extract module names from filenames
-                    const QString suffix = QString("_%1.qm").arg(lang);
+                    const QString suffix = QString("_%1.qm").arg(lang.c_str());
                     for (const QString& qmFile : qmFiles)
                     {
                         QString moduleName = qmFile;
@@ -533,124 +535,142 @@ namespace Editor
 
                         if (!moduleName.isEmpty())
                         {
-                            discoveredModules.insert(moduleName);
+                            discoveredModules.insert(moduleName.toUtf8().constData());
                         }
                     }
                 }
 
-                // Convert to sorted list for deterministic loading order
-                modules = discoveredModules.values();
-                modules.sort();
+                // Convert to sorted vector for deterministic loading order
+                modules.reserve(discoveredModules.size());
+                for (const auto& module : discoveredModules)
+                {
+                    modules.push_back(module.toUtf8().constData());
+                }
+                std::sort(modules.begin(), modules.end());
 
                 AZ_TracePrintf("EditorI18n",
-                    "Auto-discovered %d translation module(s) for language '%s'\n",
-                    modules.size(), m_currentLanguage.toUtf8().constData());
+                    "Auto-discovered %zu translation module(s) for language '%s'\n",
+                    modules.size(), m_currentLanguage.c_str());
             }
             else
             {
                 AZ_Warning("EditorI18n", false,
                     "Could not resolve translations directory: %s",
-                    baseDirPath.toUtf8().constData());
+                    baseDirPathUtf8.constData());
             }
         }
 
         // ========== Dynamically Registered Modules ==========
         // Add any modules registered at runtime from Gems
-        for (const QString& registeredModule : m_registeredModules)
+        for (const AZStd::string& registeredModule : m_registeredModules)
         {
-            if (!modules.contains(registeredModule))
+            if (AZStd::find(modules.begin(), modules.end(), registeredModule) == modules.end())
             {
-                modules.append(registeredModule);
+                modules.push_back(registeredModule);
             }
         }
 
         return modules;
     }
 
-    QString EditorQtApplication::GetSavedLanguage() const
+    AZStd::string EditorQtApplication::GetSavedLanguage() const
     {
         // Use TranslationManager for cross-process language synchronization
-        QString language = AzToolsFramework::TranslationManager::GetCurrentLanguage().c_str();
+        AZStd::string language = AzToolsFramework::TranslationManager::GetCurrentLanguage();
 
         AZ_TracePrintf("EditorI18n", "Loaded language from TranslationManager: %s\n",
-            language.toUtf8().constData());
+            language.c_str());
 
         return language;
     }
 
-    bool EditorQtApplication::SaveLanguage(const QString& language)
+    bool EditorQtApplication::SaveLanguage(const AZStd::string& language)
     {
         // Use TranslationManager for cross-process language synchronization
-        bool success = AzToolsFramework::TranslationManager::SetLanguage(language);
+        bool success = AzToolsFramework::TranslationManager::SetLanguage(language.c_str());
 
         if (success)
         {
             AZ_TracePrintf("EditorI18n", "Saved language preference via TranslationManager: %s\n",
-                language.toUtf8().constData());
+                language.c_str());
         }
         else
         {
             AZ_Warning("EditorI18n", false, "Failed to save language preference via TranslationManager: %s",
-                language.toUtf8().constData());
+                language.c_str());
         }
 
         return success;
     }
 
-    QStringList EditorQtApplication::BuildLanguageFallbackChain(const QString& language) const
+    AZStd::vector<AZStd::string> EditorQtApplication::BuildLanguageFallbackChain(const AZStd::string& language) const
     {
-        QStringList fallbackChain;
+        AZStd::vector<AZStd::string> fallbackChain;
 
         // First: exact match (e.g., "zh_CN")
-        fallbackChain << language;
+        fallbackChain.push_back(language);
 
         // Second: language without region (e.g., "zh")
-        if (language.contains('_'))
+        size_t underscorePos = language.find('_');
+        if (underscorePos != AZStd::string::npos)
         {
-            QString baseLanguage = language.split('_').first();
-            if (!fallbackChain.contains(baseLanguage))
+            AZStd::string baseLanguage = language.substr(0, underscorePos);
+            if (AZStd::find(fallbackChain.begin(), fallbackChain.end(), baseLanguage) == fallbackChain.end())
             {
-                fallbackChain << baseLanguage;
+                fallbackChain.push_back(baseLanguage);
             }
         }
 
         // Third: English as universal fallback
         if (language != "en" && language != "en_US")
         {
-            if (!fallbackChain.contains("en_US"))
+            if (AZStd::find(fallbackChain.begin(), fallbackChain.end(), AZStd::string("en_US")) == fallbackChain.end())
             {
-                fallbackChain << "en_US";
+                fallbackChain.push_back("en_US");
             }
-            if (!fallbackChain.contains("en"))
+            if (AZStd::find(fallbackChain.begin(), fallbackChain.end(), AZStd::string("en")) == fallbackChain.end())
             {
-                fallbackChain << "en";
+                fallbackChain.push_back("en");
             }
         }
 
         return fallbackChain;
     }
 
-    void EditorQtApplication::InstallTranslatorWithFallback(const QString& moduleName, const QString& language)
+    void EditorQtApplication::InstallTranslatorWithFallback(const AZStd::string& moduleName, const AZStd::string& language)
     {
-        QStringList fallbackChain = BuildLanguageFallbackChain(language);
+        AZStd::vector<AZStd::string> fallbackChain = BuildLanguageFallbackChain(language);
+
+        // Build fallback chain string for logging
+        AZStd::string fallbackChainStr;
+        for (size_t i = 0; i < fallbackChain.size(); ++i)
+        {
+            if (i > 0)
+            {
+                fallbackChainStr += " -> ";
+            }
+            fallbackChainStr += fallbackChain[i];
+        }
 
         AZ_TracePrintf("EditorI18n", "Loading translator '%s' with fallback chain: %s\n",
-            moduleName.toUtf8().constData(),
-            fallbackChain.join(" -> ").toUtf8().constData());
+            moduleName.c_str(),
+            fallbackChainStr.c_str());
 
         // Try each language in the fallback chain
         // Note: We use AzToolsFramework::CreateAndLoadTranslatorForLanguage here for Editor-specific needs
         // Standalone tools can use TranslationManager::LoadModuleTranslatorForLanguage directly
-        for (const QString& fallbackLang : fallbackChain)
+        for (const AZStd::string& fallbackLang : fallbackChain)
         {
-            QTranslator* translator = AzToolsFramework::CreateAndLoadTranslatorForLanguage(moduleName, fallbackLang);
+            QTranslator* translator = AzToolsFramework::CreateAndLoadTranslatorForLanguage(
+                QString::fromUtf8(moduleName.c_str()),
+                QString::fromUtf8(fallbackLang.c_str()));
 
             if (translator)
             {
                 m_translators.append(translator);
                 AZ_TracePrintf("EditorI18n", "  [OK] Loaded '%s' for language '%s'\n",
-                    moduleName.toUtf8().constData(),
-                    fallbackLang.toUtf8().constData());
+                    moduleName.c_str(),
+                    fallbackLang.c_str());
                 return; // Success, stop trying
             }
         }
@@ -659,36 +679,47 @@ namespace Editor
         if (language == "en" || language == "en_US")
         {
             AZ_TracePrintf("EditorI18n", "  [INFO] '%s' using source language (no translation needed)\n",
-                moduleName.toUtf8().constData());
+                moduleName.c_str());
         }
         else
         {
+            // Build comma-separated list of tried languages
+            AZStd::string triedLanguages;
+            for (size_t i = 0; i < fallbackChain.size(); ++i)
+            {
+                if (i > 0)
+                {
+                    triedLanguages += ", ";
+                }
+                triedLanguages += fallbackChain[i];
+            }
+
             AZ_Warning("EditorI18n", false,
                 "  [MISS] No translation found for '%s' (tried: %s)",
-                moduleName.toUtf8().constData(),
-                fallbackChain.join(", ").toUtf8().constData());
+                moduleName.c_str(),
+                triedLanguages.c_str());
         }
     }
 
     // ========== Public i18n API ==========
 
-    QString EditorQtApplication::GetCurrentLanguage() const
+    AZStd::string EditorQtApplication::GetCurrentLanguage() const
     {
         return m_currentLanguage;
     }
 
-    bool EditorQtApplication::SetLanguage(const QString& languageCode)
+    bool EditorQtApplication::SetLanguage(const AZStd::string& languageCode)
     {
         if (languageCode == m_currentLanguage)
         {
             AZ_TracePrintf("EditorI18n", "Language already set to: %s\n",
-                languageCode.toUtf8().constData());
+                languageCode.c_str());
             return true;
         }
 
         AZ_Printf("EditorI18n", "Changing language from '%s' to '%s'...\n",
-            m_currentLanguage.toUtf8().constData(),
-            languageCode.toUtf8().constData());
+            m_currentLanguage.c_str(),
+            languageCode.c_str());
 
         // Unload current translators
         UninstallEditorTranslators();
@@ -701,15 +732,15 @@ namespace Editor
 
         // Reload Qt base translations first (for standard button text)
         QList<QTranslator*> qtBaseTranslators =
-            AzToolsFramework::TranslationManager::LoadQtBaseTranslations(m_currentLanguage, this);
+            AzToolsFramework::TranslationManager::LoadQtBaseTranslations(m_currentLanguage.c_str(), this);
         for (QTranslator* translator : qtBaseTranslators)
         {
             m_translators.append(translator);
         }
 
         // Reload translators for new language
-        QStringList translatorModules = GetTranslatorModules();
-        for (const QString& moduleName : translatorModules)
+        AZStd::vector<AZStd::string> translatorModules = GetTranslatorModules();
+        for (const AZStd::string& moduleName : translatorModules)
         {
             InstallTranslatorWithFallback(moduleName, m_currentLanguage);
         }
@@ -718,30 +749,39 @@ namespace Editor
         emit languageChanged(languageCode);
 
         AZ_Printf("EditorI18n", "Language changed successfully to: %s\n",
-            languageCode.toUtf8().constData());
+            languageCode.c_str());
 
         return true;
     }
 
-    QStringList EditorQtApplication::GetAvailableLanguages() const
+    AZStd::vector<AZStd::string> EditorQtApplication::GetAvailableLanguages() const
     {
         // Use TranslationManager's centralized language list
-        return AzToolsFramework::TranslationManager::GetAvailableLanguages();
+        QStringList languages = AzToolsFramework::TranslationManager::GetAvailableLanguages();
+        
+        AZStd::vector<AZStd::string> result;
+        result.reserve(languages.size());
+        for (const QString& lang : languages)
+        {
+            result.push_back(lang.toUtf8().constData());
+        }
+        
+        return result;
     }
 
-    bool EditorQtApplication::RegisterTranslatorModule(const QString& moduleName)
+    bool EditorQtApplication::RegisterTranslatorModule(const AZStd::string& moduleName)
     {
-        if (m_registeredModules.contains(moduleName))
+        if (AZStd::find(m_registeredModules.begin(), m_registeredModules.end(), moduleName) != m_registeredModules.end())
         {
             AZ_TracePrintf("EditorI18n", "Module '%s' already registered\n",
-                moduleName.toUtf8().constData());
+                moduleName.c_str());
             return true;
         }
 
-        m_registeredModules.append(moduleName);
+        m_registeredModules.push_back(moduleName);
 
         AZ_Printf("EditorI18n", "Registered translator module: %s\n",
-            moduleName.toUtf8().constData());
+            moduleName.c_str());
 
         // Load translator for current language
         InstallTranslatorWithFallback(moduleName, m_currentLanguage);

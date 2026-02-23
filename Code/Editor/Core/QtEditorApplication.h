@@ -92,20 +92,20 @@ namespace Editor
 
         // Internationalization (i18n) API
         //! Get the current editor language (e.g., "en_US", "zh_CN")
-        QString GetCurrentLanguage() const;
+        AZStd::string GetCurrentLanguage() const;
 
         //! Set the editor language at runtime and reload translators
         //! @param languageCode Language code (e.g., "en_US", "zh_CN", "ja_JP")
         //! @return true if language was successfully changed
-        bool SetLanguage(const QString& languageCode);
+        bool SetLanguage(const AZStd::string& languageCode);
 
         //! Get list of available languages by scanning translation files
-        QStringList GetAvailableLanguages() const;
+        AZStd::vector<AZStd::string> GetAvailableLanguages() const;
 
         //! Register a translator module (allows Gems to add translations)
         //! @param moduleName Name of the module (e.g., "MyGem")
         //! @return true if successfully registered
-        bool RegisterTranslatorModule(const QString& moduleName);
+        bool RegisterTranslatorModule(const AZStd::string& moduleName);
 
     public Q_SLOTS:
 
@@ -113,7 +113,7 @@ namespace Editor
 
     signals:
         void skinChanged();
-        void languageChanged(const QString& languageCode);
+        void languageChanged(const AZStd::string& languageCode);
 
     protected:
 
@@ -133,15 +133,15 @@ namespace Editor
         void UninstallEditorTranslators();
 
         // i18n helper methods
-        void InstallTranslatorWithFallback(const QString& moduleName, const QString& language);
-        QStringList BuildLanguageFallbackChain(const QString& language) const;
-        QStringList GetTranslatorModules() const;
-        QString GetSavedLanguage() const;
-        bool SaveLanguage(const QString& language);
+        void InstallTranslatorWithFallback(const AZStd::string& moduleName, const AZStd::string& language);
+        AZStd::vector<AZStd::string> BuildLanguageFallbackChain(const AZStd::string& language) const;
+        AZStd::vector<AZStd::string> GetTranslatorModules() const;
+        AZStd::string GetSavedLanguage() const;
+        bool SaveLanguage(const AZStd::string& language);
 
         QVector<QTranslator*> m_translators;
-        QString m_currentLanguage;
-        QStringList m_registeredModules;
+        AZStd::string m_currentLanguage;
+        AZStd::vector<AZStd::string> m_registeredModules;
 
         AZ::UserSettingsProvider m_localUserSettings;
 

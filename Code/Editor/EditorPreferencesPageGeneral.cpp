@@ -218,10 +218,10 @@ void CEditorPreferencesPage_General::OnApply()
     AZ_Assert(app, "EditorQtApplication instance is null. Cannot apply language change.");
     if (app != nullptr)
     {
-        QString currentLang = app->GetCurrentLanguage();
-        QString newLang = QString::fromUtf8(m_generalSettings.m_editorLanguage.c_str()).trimmed();
+        AZStd::string currentLang = app->GetCurrentLanguage();
+        AZStd::string newLang = m_generalSettings.m_editorLanguage.c_str();
 
-        if (currentLang != newLang && !newLang.isEmpty())
+        if (currentLang != newLang && newLang.length() != 0)
         {
             if (app->SetLanguage(newLang))
             {
@@ -260,8 +260,8 @@ void CEditorPreferencesPage_General::InitializeSettings()
     // The ComboBox StringList also uses pure codes, so they will match correctly.
     if (auto* app = Editor::EditorQtApplication::instance())
     {
-        QString currentLang = app->GetCurrentLanguage();
-        m_generalSettings.m_editorLanguage = currentLang.toUtf8().constData();
+        AZStd::string currentLang = app->GetCurrentLanguage();
+        m_generalSettings.m_editorLanguage = currentLang;
     }
 
     //prefabs
