@@ -57,7 +57,7 @@ function(Getminiaudio)
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
     set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-    # the below line is what actualy runs its CMakeList.txt file, recurses into its subfolder, defines targets and so on:
+    # the below line is what actually runs its CMakeList.txt file, recurses into its subfolder, defines targets and so on:
     FetchContent_MakeAvailable(miniaudio)
 
     set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
@@ -89,6 +89,18 @@ FetchContent_GetProperties(miniaudio SOURCE_DIR miniaudio_source_dir)
 ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/Findminiaudio.cmake DESTINATION cmake/3rdParty)
 ly_install(FILES ${miniaudio_source_dir}/miniaudio.h DESTINATION include/miniaudio COMPONENT CORE)
 ly_install(FILES ${miniaudio_source_dir}/LICENSE DESTINATION include/miniaudio COMPONENT CORE)
+
+# On Apple platforms, miniaudio.c uses Objective-C API like CoreAudio and AVFoundation.
+# Because the file has a .c extension, it by default compiles as plain C.
+# Enable the OBJC language and force miniaudio.c to compile as Objective-C.
+if(APPLE)
+    enable_language(OBJC)
+    set_source_files_properties(
+        "${miniaudio_source_dir}/miniaudio.c"
+        TARGET_DIRECTORY miniaudio
+        PROPERTIES LANGUAGE OBJC
+    )
+endif()
 
 # plugin headers
 foreach(node_plugin ma_channel_combiner_node ma_channel_separator_node ma_ltrim_node ma_reverb_node ma_vocoder_node)
