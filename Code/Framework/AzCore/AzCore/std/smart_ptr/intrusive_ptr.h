@@ -142,7 +142,7 @@ namespace AZStd
         template<class U>
         enable_if_t<is_convertible<U*, T*>::value, intrusive_ptr&> operator=(intrusive_ptr<U>&& rhs)
         {
-            this_type(move(rhs)).swap(*this);
+            this_type(AZStd::move(rhs)).swap(*this);
             return *this;
         }
         intrusive_ptr& operator=(intrusive_ptr&& rhs)

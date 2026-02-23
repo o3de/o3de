@@ -166,7 +166,7 @@ namespace AZ::Data
 
         // Add waiting assets ahead of time to hear signals for any which may already be loading
         AddWaitingAssets(waitingList);
-        SetupPreloadLists(move(preloadDependencies), rootAssetId);
+        SetupPreloadLists(AZStd::move(preloadDependencies), rootAssetId);
 
         auto loadParamsCopyWithNoLoadingFilter = loadParams;
 
@@ -195,7 +195,7 @@ namespace AZ::Data
             AZ_UNUSED(handledAssetDependencyList); // Prevent unused warning in release builds
 
             // Note that when in tools builds, this could just be because the asset catalog is not up to date, we are still compiling
-            // assets, so it should not be an assert. 
+            // assets, so it should not be an assert.
             AZ_Warning("Asset", AZStd::find(handledAssetDependencyList.begin(), handledAssetDependencyList.end(), filterInfo.m_assetId) !=
                 handledAssetDependencyList.end(),
                 "Dependent Asset ID (%s) is expected to load, but the Asset Catalog has no dependency recorded. "
@@ -208,7 +208,7 @@ namespace AZ::Data
             if (!Data::AssetManager::Instance().FindAsset(filterInfo.m_assetId, AZ::Data::AssetLoadBehavior::Default))
             {
                 // Note that when in tools builds, this could just be because the asset catalog is not up to date, we are still compiling
-                // assets, so it should not be an assert. 
+                // assets, so it should not be an assert.
                 AZ_Warning("Asset", !Data::AssetManager::Instance().FindAsset(filterInfo.m_assetId, AZ::Data::AssetLoadBehavior::Default),
                     "Dependent Asset ID (%s) can't be found in the AssetManager, which means the asset referencing it has probably "
                     "started loading before the dependent asset has been queued to load.  Verify that the asset dependencies have "
@@ -447,7 +447,7 @@ namespace AZ::Data
             auto waitingList = m_preloadWaitList.find(thisId);
             if (waitingList != m_preloadWaitList.end())
             {
-                checkList = move(waitingList->second);
+                checkList = AZStd::move(waitingList->second);
                 m_preloadWaitList.erase(waitingList);
             }
         }

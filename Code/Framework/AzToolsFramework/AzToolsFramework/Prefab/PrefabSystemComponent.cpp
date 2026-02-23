@@ -177,7 +177,7 @@ namespace AzToolsFramework
                     AZ_Assert(false, "Template with id %llu is not found", templateId);
                     continue;
                 }
-                
+
                 const AZ::IO::Path& loadedTemplateFilePathName = loadedTemplate->get().GetFilePath();
                 AZ::IO::Path unchangedPathSegment(loadedTemplateFilePathName.Native().substr(fromRelativePath.Native().size()));
                 AZ::IO::Path updatedTemplateFilePathName(toRelativePath.Native(), AZ::IO::PosixPathSeparator);
@@ -352,7 +352,7 @@ namespace AzToolsFramework
             }
         }
 
-      
+
         void PrefabSystemComponent::UpdateLinkedInstance(const LinkId linkIdToUpdate,
             TargetTemplateIdToLinkIdMap& targetTemplateIdToLinkIdMap, AZStd::queue<LinkIds>& linkIdsQueue)
         {
@@ -361,7 +361,7 @@ namespace AzToolsFramework
             PrefabDomValue& linkedInstanceDom = linkToUpdate.GetLinkedInstanceDom();
 
             // create an empty Dom to hold the temp allocations so they are cleared when we leave this scope:
-            PrefabDom linkedDomBeforeUpdate; 
+            PrefabDom linkedDomBeforeUpdate;
             linkedDomBeforeUpdate.CopyFrom(linkedInstanceDom, linkedDomBeforeUpdate.GetAllocator());
 
             // the following call modifies the linkedInstanceDom to have the updated changes.
@@ -379,7 +379,7 @@ namespace AzToolsFramework
             // from before in targetTemplateIdToLinkIdMap[targetTemplateId].second.  This also means that if
             // targetTemplateIdToLinkIdMap[targetTemplateId].second is true, there is no need to compare it again, as it will have
             // already added its links to the queue.
-            
+
             bool isTemplateUpdated = targetTemplateIdToLinkIdMap[targetTemplateId].second;
             if (!isTemplateUpdated || AZ::JsonSerialization::Compare(linkedDomBeforeUpdate, linkedInstanceDom) != AZ::JsonSerializerCompareResult::Equal)
             {
@@ -559,7 +559,7 @@ namespace AzToolsFramework
         {
             TemplateId newTemplateId = CreateUniqueTemplateId();
             Template& newTemplate = m_templateIdMap.emplace(
-                AZStd::make_pair(newTemplateId, AZStd::move(Template(filePath, AZStd::move(prefabDom))))).first->second;
+                AZStd::make_pair(newTemplateId, Template(filePath, AZStd::move(prefabDom)))).first->second;
 
             if (!newTemplate.IsValid())
             {
@@ -1029,7 +1029,7 @@ namespace AzToolsFramework
             GetDirtyTemplatePathsHelper(rootTemplateId, dirtyTemplatePathVector);
             AZStd::set<AZ::IO::PathView> dirtyTemplatePaths;
             dirtyTemplatePaths.insert(dirtyTemplatePathVector.begin(), dirtyTemplatePathVector.end());
-            return AZStd::move(dirtyTemplatePaths);
+            return dirtyTemplatePaths;
         }
 
         void PrefabSystemComponent::GetDirtyTemplatePathsHelper(

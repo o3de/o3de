@@ -150,7 +150,7 @@ namespace Multiplayer
                 // Create a new input if we don't have one or the types do not match
                 if ((m_componentInputs[i] == nullptr) || (componentId != m_componentInputs[i]->GetNetComponentId()))
                 {
-                    m_componentInputs[i] = AZStd::move(GetMultiplayerComponentRegistry()->AllocateComponentInput(componentId));
+                    m_componentInputs[i] = GetMultiplayerComponentRegistry()->AllocateComponentInput(componentId);
                 }
                 if (!m_componentInputs[i])
                 {
@@ -207,7 +207,7 @@ namespace Multiplayer
             const NetComponentId rhsComponentId = rhs.m_componentInputs[i]->GetNetComponentId();
             if (m_componentInputs[i] == nullptr || m_componentInputs[i]->GetNetComponentId() != rhsComponentId)
             {
-                m_componentInputs[i] = AZStd::move(GetMultiplayerComponentRegistry()->AllocateComponentInput(rhsComponentId));
+                m_componentInputs[i] = GetMultiplayerComponentRegistry()->AllocateComponentInput(rhsComponentId);
             }
             *(m_componentInputs[i]) = *(rhs.m_componentInputs[i]);
         }

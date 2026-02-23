@@ -21,7 +21,7 @@ namespace AZ
         RPI::Ptr<ReflectionScreenSpaceCompositePass> ReflectionScreenSpaceCompositePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<ReflectionScreenSpaceCompositePass> pass = aznew ReflectionScreenSpaceCompositePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         ReflectionScreenSpaceCompositePass::ReflectionScreenSpaceCompositePass(const RPI::PassDescriptor& descriptor)

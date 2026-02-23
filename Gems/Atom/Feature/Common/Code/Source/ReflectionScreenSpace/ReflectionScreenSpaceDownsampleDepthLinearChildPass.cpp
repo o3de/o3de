@@ -18,7 +18,7 @@ namespace AZ
         RPI::Ptr<ReflectionScreenSpaceDownsampleDepthLinearChildPass> ReflectionScreenSpaceDownsampleDepthLinearChildPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<ReflectionScreenSpaceDownsampleDepthLinearChildPass> pass = aznew ReflectionScreenSpaceDownsampleDepthLinearChildPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         ReflectionScreenSpaceDownsampleDepthLinearChildPass::ReflectionScreenSpaceDownsampleDepthLinearChildPass(const RPI::PassDescriptor& descriptor)

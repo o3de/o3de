@@ -174,7 +174,7 @@ namespace PhysX::Benchmarks
                 joints.emplace_back(AZStd::move(newJoint));
             }
 
-            return AZStd::move(joints);
+            return joints;
         }
     } // namespace Utils
 

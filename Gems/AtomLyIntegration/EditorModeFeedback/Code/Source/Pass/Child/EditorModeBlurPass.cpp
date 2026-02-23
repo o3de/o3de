@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
 #include <Pass/Child/EditorModeBlurPass.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -23,20 +23,20 @@ namespace AZ
         RPI::Ptr<EditorModeBlurPass> EditorModeBlurPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<EditorModeBlurPass> pass = aznew EditorModeBlurPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
-        
+
         EditorModeBlurPass::EditorModeBlurPass(const RPI::PassDescriptor& descriptor)
             : EditorModeFeedbackChildPassBase(descriptor, { 0.0f, 0.0f, 20.0f }, 1.0f)
         {
         }
-        
+
         void EditorModeBlurPass::InitializeInternal()
         {
             EditorModeFeedbackChildPassBase::InitializeInternal();
             m_kernelHalfWidthIndex.Reset();
         }
-        
+
         void EditorModeBlurPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();

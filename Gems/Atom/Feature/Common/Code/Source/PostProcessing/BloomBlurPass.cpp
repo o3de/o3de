@@ -52,7 +52,7 @@ namespace AZ
         RPI::Ptr<BloomBlurPass> BloomBlurPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<BloomBlurPass> pass = aznew BloomBlurPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         BloomBlurPass::BloomBlurPass(const RPI::PassDescriptor& descriptor)
@@ -324,7 +324,7 @@ namespace AZ
             // Gaussian kernel is radially symmetric, so we only store one wing of the 1d kernel
             AZStd::vector<float> weights;
             AZStd::vector<float> offsets;
-            
+
             // Center pixel
             weight = Gaussian1D(0, sigma);
             weights.push_back(weight);
@@ -410,7 +410,7 @@ namespace AZ
         RPI::Ptr<BloomBlurChildPass> BloomBlurChildPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<BloomBlurChildPass> pass = aznew BloomBlurChildPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         BloomBlurChildPass::BloomBlurChildPass(const RPI::PassDescriptor& descriptor)

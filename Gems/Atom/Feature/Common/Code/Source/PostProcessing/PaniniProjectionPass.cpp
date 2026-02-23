@@ -18,7 +18,7 @@ namespace AZ
         RPI::Ptr<PaniniProjectionPass> PaniniProjectionPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<PaniniProjectionPass> pass = aznew PaniniProjectionPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         PaniniProjectionPass::PaniniProjectionPass(const RPI::PassDescriptor& descriptor)

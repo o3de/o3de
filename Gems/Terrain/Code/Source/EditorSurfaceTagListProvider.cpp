@@ -21,7 +21,7 @@ namespace Terrain
 
         if (tagListProvider)
         {
-            tagsInUse = AZStd::move(tagListProvider->GetSurfaceTagsInUse());
+            tagsInUse = tagListProvider->GetSurfaceTagsInUse();
 
             // Filter out all tags in use from the list of registered tags
             AZStd::erase_if(availableTags, [&tagsInUse](const auto& tag)-> bool
@@ -36,6 +36,6 @@ namespace Terrain
         // Sorting for consistency
         AZStd::sort(availableTags.begin(), availableTags.end(), [](const auto& lhs, const auto& rhs) {return lhs.second < rhs.second; });
 
-        return AZStd::move(availableTags);
+        return availableTags;
     }
 }

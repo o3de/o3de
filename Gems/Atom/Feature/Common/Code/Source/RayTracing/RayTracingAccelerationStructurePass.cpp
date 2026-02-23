@@ -29,7 +29,7 @@ namespace AZ
         {
             RPI::Ptr<RayTracingAccelerationStructurePass> rayTracingAccelerationStructurePass =
                 aznew RayTracingAccelerationStructurePass(descriptor);
-            return AZStd::move(rayTracingAccelerationStructurePass);
+            return rayTracingAccelerationStructurePass;
         }
 
         RayTracingAccelerationStructurePass::RayTracingAccelerationStructurePass(const RPI::PassDescriptor& descriptor)
