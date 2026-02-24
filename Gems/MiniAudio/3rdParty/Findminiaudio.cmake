@@ -90,15 +90,14 @@ ly_install(FILES ${CMAKE_CURRENT_LIST_DIR}/Installer/Findminiaudio.cmake DESTINA
 ly_install(FILES ${miniaudio_source_dir}/miniaudio.h DESTINATION include/miniaudio COMPONENT CORE)
 ly_install(FILES ${miniaudio_source_dir}/LICENSE DESTINATION include/miniaudio COMPONENT CORE)
 
-# On Apple platforms, miniaudio.c uses Objective-C API like CoreAudio and AVFoundation.
-# Because the file has a .c extension, it by default compiles as plain C.
-# Enable the OBJC language and force miniaudio.c to compile as Objective-C.
+# On Apple platforms, miniaudio.c uses Objective-C APIs like CoreAudio and AVFoundation.
+# Because the file has a .c extension, it compiles as plain C by default.
+# So we explicitly set the compile option to treat it as an Objective-C source.
 if(APPLE)
-    enable_language(OBJC)
     set_source_files_properties(
         "${miniaudio_source_dir}/miniaudio.c"
         TARGET_DIRECTORY miniaudio
-        PROPERTIES LANGUAGE OBJC
+        PROPERTIES COMPILE_OPTIONS -xobjective-c
     )
 endif()
 
