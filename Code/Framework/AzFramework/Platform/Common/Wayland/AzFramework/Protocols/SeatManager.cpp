@@ -34,7 +34,7 @@ namespace AzFramework
 
     void SeatManager::OnRegister(wl_registry* registry, uint32_t id, AZ::Crc32 interface, uint32_t version)
     {
-        if (interface != WaylandSeatName)
+        if (interface != WaylandSeatName || version < WaylandSeatVersion)
         {
             return;
         }
