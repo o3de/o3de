@@ -1,0 +1,179 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+name: iOS Build
+
+# These jobs are to be triggered by ar.yml
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      image:
+        type: string
+        default: macos-15-intel
+      config:
+        type: string
+        required: true
+      type:
+        type: string
+        required: true
+      last_artifact:
+        type: boolean
+        required: false
+      cmake_version:
+        type: string
+        required: false
+
+run-name: iOS - ${{ inputs.type }}
+
+# Note: All 3P Github Actions use the commit hash for security reasons
+# Avoid using the tag version, which is vulnerable to supply chain attacks
+
+jobs:
+  Build:
+    runs-on: ${{ inputs.image }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          show-progress: false
+
+      - name: Git LFS pull
+        run: |
+          git lfs install
+          git lfs pull
+
+      - name: Setup 3p, user, and build folders
+        run: |
+          mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
+
+      - name: Setup ccache
+        uses: chocobo1/setup-ccache-action@37c3347f8a7738e82aab7a06f276f7a12e3008fb # v1.5.3
+        continue-on-error: true
+        if: always()
+        with:
+          prepend_symlinks_to_path: false
+          store_cache: false
+          restore_cache: false
+          ccache_options: |
+            cache_dir=${{ github.workspace }}/.ccache
+            hash_dir=false
+            max_size=10G
+
+      - name: Check for rerun
+        id: check-rerun
+        run: |
+          # GitHub sets GITHUB_RUN_ATTEMPT to track reruns
+          if [ "$GITHUB_RUN_ATTEMPT" -gt 1 ]; then
+            echo "is_rerun=true" >> $GITHUB_OUTPUT
+            echo "This is rerun attempt #$GITHUB_RUN_ATTEMPT"
+          else
+            echo "is_rerun=false" >> $GITHUB_OUTPUT
+            echo "This is the first run attempt"
+          fi
+
+      - name: Get last run
+        # Get the last runid of the target branch of a PR or the current branch
+        # Skip if this is a rerun to either freshly build or get artifacts from existing run
+        uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
+        id: last-run-id
+        if: ${{ inputs.last_artifact && steps.check-rerun.outputs.is_rerun != 'true' }}
+        continue-on-error: true
+        with:
+          workflow_search: true
+          workflow_conclusion: ""
+          branch: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+          search_artifacts: true
+          check_artifacts: true
+          name: O3DE-iOS-${{ inputs.config }}-build
+          dry_run: true
+
+      - name: Set artifact run ID
+        # Set the run ID of the artifact to be used for the download step
+        id: set-artifact-run-id
+        if: steps.last-run-id.outcome == 'success' && inputs.last_artifact == true
+        run: |
+          runId=${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
+          echo "artifact_run_id=$runId" >> $GITHUB_OUTPUT
+          echo "Using artifacts from previous run: $runId"
+
+      - name: Restore artifact cache
+        # Restore the artifact from the "Get last run" step or from the current run
+        id: restore-artifact-cache
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        continue-on-error: true
+        with:
+          name: O3DE-iOS-${{ inputs.config }}-build
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ steps.set-artifact-run-id.outputs.artifact_run_id || github.run_id }}
+
+      - name: Extract artifact
+        # Extract the tar file from the artifact
+        id: extract-artifact
+        continue-on-error: true
+        if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
+        run: |
+          if [ -f ${{ github.workspace }}/cache.tar ]; then
+            gtar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read
+            rm ${{ github.workspace }}/cache.tar
+            ccache --zero-stats --cleanup
+          fi
+
+      - name: Setup cmake
+        # Pin the version of cmake
+        if: ${{ inputs.cmake_version }}
+        uses: lukka/get-cmake@f176ccd3f28bda569c43aae4894f06b2435a3375 # v4.2.3
+        with:
+          cmakeVersion: "${{ inputs.cmake_version }}"
+
+      - name: Configure environment
+        continue-on-error: true
+        run: |
+          echo "Installing dependencies"
+          brew install --quiet xcbeautify
+          echo "Getting python..."
+          ./python/get_python.sh
+          echo "Installing additional python dependencies..."
+          ./python/pip.sh install tempfile2 PyGithub
+          df -h
+
+      - name: Build ${{ inputs.type }}
+        # Builds with presets in ../scripts/build/Platform/iOS/build_config.json
+        timeout-minutes: 330
+        env:
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
+          LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
+        run: python/python.sh -u scripts/build/ci_build.py --platform iOS --type ${{ inputs.type }}
+
+      - name: Compress artifacts
+        # Compress with posix format to preserve permissions and timestamps at nanosecond precision
+        # Skip compression and upload if the type is a test to reduce dirty build artifacts from previous runs
+        id: compress-artifacts
+        if: ${{ (steps.extract-artifact.outcome == 'success' || steps.extract-artifact.outcome == 'skipped') && !cancelled() && !contains(inputs.type, 'test') }}
+        continue-on-error: true
+        run: |
+          gtar --format=posix -cvpf ${{ github.workspace }}/cache.tar --ignore-failed-read \
+            .ccache \
+            .o3de/python/downloaded_packages \
+            3rdParty/downloaded_packages \
+            AutomatedTesting/Cache
+
+      - name: Save artifacts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: ${{ steps.compress-artifacts.conclusion == 'success' && !cancelled() && !contains(inputs.type, 'test') }}
+        continue-on-error: true
+        with:
+          name: O3DE-iOS-${{ inputs.config }}-build
+          compression-level: 1
+          overwrite: true
+          path: |
+            ${{ github.workspace }}/cache.tar
