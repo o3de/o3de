@@ -62,14 +62,108 @@ def replace_exact_word(text: str, old: str, new: str) -> str:
     pattern = rf"\b{re.escape(old)}\b"
     return re.sub(pattern, new, text)
 
+def upgrade_physx_gem_in_gem(gem_path: pathlib.Path = None,
+                             dry_run: bool = False) -> int:
+    """
+    Upgrade PhysX(4) references for a gem
+    :param gem_path: path to the gem to upgrade any PhysX references
+    :param dry_run: check version compatibility without modifying anything
+    :return: 0 for success or non 0 failure code
+    """
+    # we need either a project name or path
+    assert gem_path, "Gem path required"
+
+    if not gem_path.is_dir():
+        logger.error(f'Gem path {gem_path} is not a folder.')
+        return 1
+
+    gem_json_file = gem_path / 'gem.json'
+    if not gem_json_file.is_file():
+        logger.error(f'Unable to locate gem.json file in gem path {gem_path}.')
+        return 1
+
+    logger.info(f'Upgrading PhysX in Gem {gem_path}...')
+
+    # Locate any setreg files
+    physx_setreg_files = []
+    setreg_files = list(gem_path.glob('**/*.setreg'))
+    for setreg_file in setreg_files:
+        logger.info(f'Checking setreg file {setreg_file} for PhysX references...')
+        with open(setreg_file, 'r') as f:
+            setreg_contents = f.read()
+            if contains_exact_word(setreg_contents, 'PhysX') or contains_exact_word(setreg_contents, 'PhysX.Debug'):
+                physx_setreg_files.append(setreg_file)
+
+    # Locate in all CmakeLists.txt files
+    physx_cmakelists_files = []
+    cmakelists_files = list(gem_path.glob('**/CMakeLists.txt'))
+    for cmakelists_file in cmakelists_files:
+        logger.info(f'Checking CMakeLists.txt file {cmakelists_file} for PhysX references...')
+        with open(cmakelists_file, 'r') as f:
+            cmakelists_contents = f.read()
+            # look only for the original PhysX gem references, not already upgraded names
+            if contains_exact_word(cmakelists_contents, 'Gem::PhysX') or contains_exact_word(cmakelists_contents, 'Gem::PhysX.Debug'):
+                physx_cmakelists_files.append(cmakelists_file)
+
+    # Process the setreg files
+    for setreg_file in physx_setreg_files:
+        logger.info(f'Processing setreg file {setreg_file}...')
+
+        with open(setreg_file, 'r') as f:
+            setreg_contents = f.read()
+        setreg_contents = replace_exact_word(setreg_contents, 'PhysX.Debug', 'PhysX5.Debug')
+        setreg_contents = replace_exact_word(setreg_contents, 'PhysX', 'PhysX5')
+        if dry_run:
+            logger.info(f'Would update setreg file {setreg_file} with contents:\n{setreg_contents}')
+        else:
+            with open(setreg_file, 'w') as f:
+                f.write(setreg_contents)
+
+    # Process the CMakeLists.txt files
+    for cmakelists_file in physx_cmakelists_files:
+        logger.info(f'Processing CMakeLists.txt file {cmakelists_file}...')
+        with open(cmakelists_file, 'r') as f:
+            cmakelists_contents = f.read()
+        cmakelists_contents = replace_exact_word(cmakelists_contents,'Gem::PhysX', 'Gem::PhysX5')
+        cmakelists_contents = replace_exact_word(cmakelists_contents,'Gem::PhysX.Static', 'Gem::PhysX5.Static')
+        cmakelists_contents = replace_exact_word(cmakelists_contents,'Gem::PhysX.Debug', 'Gem::PhysX5.Debug')
+        if dry_run:
+            logger.info(f'Would update CMakeLists.txt file {cmakelists_file} with contents:\n{cmakelists_contents}')
+        else:
+            with open(cmakelists_file, 'w') as f:
+                f.write(cmakelists_contents)
+
+    # Update gems.json
+    with open(gem_json_file, 'r') as f:
+        gem_json_contents = json.load(f)
+        gem_names = gem_json_contents.get('dependencies', [])
+        updated_gem_names = []
+        updated = False
+        for gem_name in gem_names:
+            if gem_name == 'PhysX':
+                updated_gem_names.append('PhysX5')
+                updated = True
+            elif gem_name == 'PhysXDebug':
+                updated_gem_names.append('PhysX5Debug')
+                updated = True
+            else:
+                updated_gem_names.append(gem_name)
+        if updated:
+            gem_json_contents['dependencies'] = updated_gem_names
+            updated_json = json.dumps(gem_json_contents, indent=4)
+            if dry_run:
+                logger.info(f'Would update gem.json file {gem_json_file} with contents:\n{updated_json}')
+            else:
+                with open(gem_json_file, 'w') as f:
+                    f.write(updated_json)
 
 def upgrade_physx_gem_in_project(project_name: str = None,
                                  project_path: pathlib.Path = None,
                                  dry_run: bool = False) -> int:
     """
-    enable a gem in a projects project.json file
-    :param project_name: name of to the project to add the gem to
-    :param project_path: path to the project to add the gem to
+    Upgrade PhysX(4) references for a project
+    :param project_name: name of to the project to upgrade any PhysX references
+    :param project_path: path to the project to upgrade any PhysX references
     :param dry_run: check version compatibility without modifying anything
     :return: 0 for success or non 0 failure code
     """
@@ -79,12 +173,20 @@ def upgrade_physx_gem_in_project(project_name: str = None,
         return 1
 
     # if project name resolve it into a path
-    if project_name and not project_path:
-        project_path = manifest.get_registered(project_name=project_name)
-    if not project_path:
-        logger.error(f'Unable to locate project path from the registered manifest.json files:'
-                     f' {str(pathlib.Path.home() / ".o3de/manifest.json")}, engine.json')
+    if project_name or project_path:
+        if project_name and not project_path:
+            project_path = manifest.get_registered(project_name=project_name)
+        if not project_path:
+            logger.error(f'Unable to locate project path from the registered manifest.json files:'
+                        f' {str(pathlib.Path.home() / ".o3de/manifest.json")}, engine.json')
+            return 1
+    elif gem_path:
+        if not gem_path.is_dir():
+            logger.error(f'Gem path {gem_path} is not a folder.')
+    else:
+        logger.error(f'Must either specify a Project path or Project Name, or a Gem path or Gem name.')
         return 1
+
 
     project_path = pathlib.Path(project_path).resolve()
     if not project_path.is_dir():
@@ -116,8 +218,19 @@ def upgrade_physx_gem_in_project(project_name: str = None,
         with open(cmakelists_file, 'r') as f:
             cmakelists_contents = f.read()
             # look only for the original PhysX gem references, not already upgraded names
-            if contains_exact_word(cmakelists_contents, 'Gem::PhysX') or contains_exact_word(cmakelists_contents, 'Gem::PhysX.Debug'):
+            if contains_exact_word(cmakelists_contents, 'Gem::PhysX') or contains_exact_word(cmakelists_contents, 'Gem::PhysX.Static') or contains_exact_word(cmakelists_contents, 'Gem::PhysX.Debug'):
                 physx_cmakelists_files.append(cmakelists_file)
+
+    # Locate in all enabled_gems.cmake files
+    physx_enabled_gems_files = []
+    enabled_gems_files = list(project_path.glob('**/enabled_gems.cmake'))
+    for enabled_gems_file in enabled_gems_files:
+        logger.debug(f'Checking enabled_gems.cmake file {enabled_gems_file} for PhysX references...')
+        with open(enabled_gems_file, 'r') as f:
+            enabled_gems_contents = f.read()
+            # look only for the original PhysX gem references, not already upgraded names
+            if contains_exact_word(enabled_gems_contents, 'PhysX') or contains_exact_word(enabled_gems_contents, 'PhysX.Debug'):
+                physx_enabled_gems_files.append(enabled_gems_file)
 
     # Locate the project.json file
     project_json_file = project_path / 'project.json'
@@ -145,12 +258,26 @@ def upgrade_physx_gem_in_project(project_name: str = None,
         with open(cmakelists_file, 'r') as f:
             cmakelists_contents = f.read()
         cmakelists_contents = replace_exact_word(cmakelists_contents,'Gem::PhysX', 'Gem::PhysX5')
+        cmakelists_contents = replace_exact_word(cmakelists_contents,'Gem::PhysX.Static', 'Gem::PhysX5.Static')
         cmakelists_contents = replace_exact_word(cmakelists_contents,'Gem::PhysX.Debug', 'Gem::PhysX5.Debug')
         if dry_run:
             logger.info(f'Would update CMakeLists.txt file {cmakelists_file} with contents:\n{cmakelists_contents}')
         else:
             with open(cmakelists_file, 'w') as f:
                 f.write(cmakelists_contents)
+
+    # Process the CMakeLists.txt files
+    for physx_enabled_gems_file in physx_enabled_gems_files:
+        logger.info(f'Processing enabled_gems.cmake file {physx_enabled_gems_file}...')
+        with open(physx_enabled_gems_file, 'r') as f:
+            enabled_gems_contents = f.read()
+        enabled_gems_contents = replace_exact_word(enabled_gems_contents,'PhysX', 'PhysX5')
+        enabled_gems_contents = replace_exact_word(enabled_gems_contents,'PhysX.Debug', 'PhysX5.Debug')
+        if dry_run:
+            logger.info(f'Would update enabled_gems.cmake file {physx_enabled_gems_file} with contents:\n{enabled_gems_contents}')
+        else:
+            with open(physx_enabled_gems_file, 'w') as f:
+                f.write(enabled_gems_contents)
 
     # Update project.json
     with open(project_json_file, 'r') as f:
@@ -178,9 +305,20 @@ def upgrade_physx_gem_in_project(project_name: str = None,
 
 
 def _run_upgrade_physx_gem_in_project(args: argparse) -> int:
-    return upgrade_physx_gem_in_project(project_name=args.project_name,
+    if args.project_name or args.project_path:
+        ret = upgrade_physx_gem_in_project(project_name=args.project_name,
                                         project_path=args.project_path,
                                         dry_run=args.dry_run)
+        if ret != 0:
+            return ret
+
+    if args.gem_path:
+        ret = upgrade_physx_gem_in_gem(gem_path=args.gem_path,
+                                       dry_run=args.dry_run)
+        if ret != 0:
+            return ret
+
+    return 0
 
 
 def add_parser_args(parser):
@@ -196,10 +334,12 @@ def add_parser_args(parser):
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
-                       help='The path to the project.')
+                       help='The path to the project to upgrade physx.')
     group.add_argument('-pn', '--project-name', type=str, required=False,
-                       help='The name of the project.')
-    group = parser.add_mutually_exclusive_group(required=False)
+                       help='The name of the project to upgrade physx.')
+    group.add_argument('-gp', '--gem-path', type=pathlib.Path, required=False,
+                       help='The path to the gem to upgrade physx.')
+    group = parser.add_argument_group()
     group.add_argument('-dry', '--dry-run', required=False, action='store_true', default=False,
                        help='Performs a dry run, reporting the result without changing anything.')
 
