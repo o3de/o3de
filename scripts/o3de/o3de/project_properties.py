@@ -106,6 +106,7 @@ def edit_project_props(proj_path: pathlib.Path = None,
                        user: bool = False,
                        new_engine_path: pathlib.Path = None,
                        new_engine_finder_cmake_path: pathlib.Path = None,
+                       update_physx: bool = False
                        ) -> int:
     """
     Edits and modifies the project properties for the project located at 'proj_path' or with the name 'proj_name'.
@@ -236,7 +237,8 @@ def _edit_project_props(args: argparse) -> int:
                               replace_engine_api_dependencies=args.replace_engine_api_dependencies,
                               user=args.user,
                               new_engine_path=args.engine_path,
-                              new_engine_finder_cmake_path=args.engine_finder_cmake_path
+                              new_engine_finder_cmake_path=args.engine_finder_cmake_path,
+                              update_physx=args.update_physx
                               )
 
 
@@ -297,6 +299,8 @@ def add_parser_args(parser):
                        help='Removes engine api dependencies from the compatible_engines property. Can be specified multiple times.')
     group.add_argument('-rav', '--replace-engine-api-dependencies', type=str, nargs='*', required=False,
                        help='Replace engine api dependencies in the compatible_engines property. Can be specified multiple times.')
+    group.add_argument('--update-physx', action='store_true', required=False, default=False,
+                       help='Update the a project that is configured for PhysX4 to PhysX5.')
     parser.set_defaults(func=_edit_project_props)
 
 
