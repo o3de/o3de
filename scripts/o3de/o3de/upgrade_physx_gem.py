@@ -28,9 +28,9 @@ def contains_exact_word(text: str, word: str) -> bool:
     """
     Determine whether *word* occurs as a whole word within *text*.
 
-    This will not match substrings.  For example ``"PhysX"`` will be found
-    in ``"Gem::PhysX"`` but **not** in ``"PhysX5"`` or ``"SuperPhysXGem"``.
-    The check is case‑sensitive and uses ``\b`` word boundaries, escaping the
+    This will not match substrings.  For example ``PhysX`` will be found
+    in ``Gem::PhysX`` but **not** in ``PhysX5`` or ``SuperPhysXGem``.
+    The check is case sensitive and uses ``\b`` word boundaries, escaping the
     search term so that regular expression metacharacters in *word* are
     treated literally.
 
@@ -48,7 +48,7 @@ def replace_exact_word(text: str, old: str, new: str) -> str:
 
     This behaves like ``str.replace`` but avoids touching substrings.  For
     example, ``replace_exact_word("PhysX5 and PhysX", "PhysX", "PX")``
-    will return ``"PhysX5 and PX"`` — the ``PhysX`` inside ``PhysX5`` is
+    will return ``"PhysX5 and PX"`` the ``PhysX`` inside ``PhysX5`` is
     untouched.
 
     The function is case-sensitive and escapes the search term for use in a
@@ -115,7 +115,7 @@ def upgrade_physx_gem_in_project(project_name: str = None,
         logger.debug(f'Checking CMakeLists.txt file {cmakelists_file} for PhysX references...')
         with open(cmakelists_file, 'r') as f:
             cmakelists_contents = f.read()
-            # look only for the original PhysX gem references, not already‑upgraded names
+            # look only for the original PhysX gem references, not already upgraded names
             if contains_exact_word(cmakelists_contents, 'Gem::PhysX') or contains_exact_word(cmakelists_contents, 'Gem::PhysX.Debug'):
                 physx_cmakelists_files.append(cmakelists_file)
 
