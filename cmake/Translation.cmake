@@ -38,8 +38,8 @@ set(LY_I18N_SUPPORTED_LANGUAGES
 # Validation
 # ============================================================================
 
-# Not all platforms support I18N generators
-if(LY_I18N_BUILD AND NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+# We only support I18N Generators in tools, so turn it off unless the platform supports tools.
+if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     set(LY_I18N_BUILD OFF)
     return()
 endif()
