@@ -29,7 +29,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CVAR(bool, mm_debugDraw, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+    AZ_CVAR(bool, mm_debugDraw, false, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Global flag for motion matching debug drawing. Feature-wise debug drawing can be enabled or disabled in the anim graph itself.");
 
     AZ_CVAR(float, mm_debugDrawVelocityScale, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null,
