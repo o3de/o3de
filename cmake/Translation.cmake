@@ -26,10 +26,10 @@ set(LY_I18N_COMPILE_QM ON CACHE BOOL "Compile .ts translation files to .qm binar
 # EMotionFX is always excluded because it requires special multi-directory handling
 set(LY_I18N_EXCLUDE_GEMS "" CACHE STRING "Gems to exclude from automatic translation discovery")
 
-# Define all supported languages
+# Define all supported languages (excluding default/source language en_US)
 # Format: language_code (matches Translation.h Language enum)
+# Note: en_US is the default source language and does not need translation files generated
 set(LY_I18N_SUPPORTED_LANGUAGES
-    "en_US"        # English (US)
     "zh_CN"        # Simplified Chinese
     CACHE STRING "List of all supported languages"
 )
