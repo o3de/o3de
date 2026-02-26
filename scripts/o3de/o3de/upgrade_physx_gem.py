@@ -210,6 +210,18 @@ def upgrade_physx_gem_in_project(project_name: str = None,
             if contains_exact_word(setreg_contents, 'PhysX') or contains_exact_word(setreg_contents, 'PhysX.Debug'):
                 physx_setreg_files.append(setreg_file)
 
+    # Locate any prefab files with physx asset hints
+    physx_prefab_files = []
+    prefab_files = list(project_path.glob('**/*.prefab'))
+    for prefab_file in prefab_files:
+        if str(prefab_file.absolute()).startswith(str(cache_skip.absolute())):
+            continue
+        logger.info(f'Checking prefab file {prefab_file} for physx asset hints ...')
+        with open(prefab_file, 'r') as f:
+            prefab_contents = f.read()
+            if contains_exact_word(prefab_contents, 'physx'):
+                physx_prefab_files.append(prefab_file)
+
     # Locate in all CmakeLists.txt files
     physx_cmakelists_files = []
     cmakelists_files = list(project_path.glob('**/CMakeLists.txt')) 
@@ -252,6 +264,19 @@ def upgrade_physx_gem_in_project(project_name: str = None,
             with open(setreg_file, 'w') as f:
                 f.write(setreg_contents)
 
+    # Process the prefab files
+    for prefab_file in physx_prefab_files:
+        logger.info(f'Processing prefab file {prefab_file}...')
+
+        with open(prefab_file, 'r') as f:
+            prefab_contents = f.read()
+        prefab_contents = replace_exact_word(prefab_contents, 'physx', 'physx5')
+        if dry_run:
+            logger.info(f'Would update prefab file {prefab_file} with contents:\n{prefab_contents}')
+        else:
+            with open(prefab_file, 'w') as f:
+                f.write(prefab_contents)
+
     # Process the CMakeLists.txt files
     for cmakelists_file in physx_cmakelists_files:
         logger.info(f'Processing CMakeLists.txt file {cmakelists_file}...')
@@ -272,7 +297,7 @@ def upgrade_physx_gem_in_project(project_name: str = None,
         with open(physx_enabled_gems_file, 'r') as f:
             enabled_gems_contents = f.read()
         enabled_gems_contents = replace_exact_word(enabled_gems_contents,'PhysX', 'PhysX5')
-        enabled_gems_contents = replace_exact_word(enabled_gems_contents,'PhysX.Debug', 'PhysX5.Debug')
+        enabled_gems_contents = replace_exact_word(enabled_gems_contents,'PhysXDebug', 'PhysX5Debug')
         if dry_run:
             logger.info(f'Would update enabled_gems.cmake file {physx_enabled_gems_file} with contents:\n{enabled_gems_contents}')
         else:
