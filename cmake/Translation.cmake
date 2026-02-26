@@ -11,13 +11,13 @@
 # ============================================================================
 
 # Enable/disable translation file generation
-set(LY_I18N_BUILD CACHE BOOL "Enable I18N translation file generation")
+set(LY_I18N_BUILD ON CACHE BOOL "Enable I18N translation file generation")
 
 # Target language for generation (single language mode)
-set(LY_I18N_LANGUAGE "en_US" CACHE STRING "I18N target language for single language generation")
+set(LY_I18N_LANGUAGE "zh_CN" CACHE STRING "I18N target language for single language generation")
 
 # Generate all supported languages at once
-set(LY_I18N_BUILD_ALL_LANGUAGES CACHE BOOL "Generate translation files for all supported languages")
+set(LY_I18N_BUILD_ALL_LANGUAGES ON CACHE BOOL "Generate translation files for all supported languages")
 
 # Compile .ts files to .qm files
 set(LY_I18N_COMPILE_QM ON CACHE BOOL "Compile .ts translation files to .qm binary files")
