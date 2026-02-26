@@ -84,6 +84,8 @@ namespace PhysX
         float m_sleepMinEnergy = 0.005f; // Relevant to the root link only
         float m_maxAngularVelocity = 100.0f;
 
+        float m_offset = 0.f;
+
         bool m_startAsleep = false;
         bool m_gravityEnabled = true;
 
