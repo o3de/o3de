@@ -62,7 +62,7 @@ namespace AzToolsFramework
     inline QTranslator* CreateAndLoadTranslatorForLanguage(const QString& modulename, const QString& languageCode)
     {
         // Don't load translation for English (source language)
-        if (languageCode == "en" || languageCode == "en_US" || languageCode.isEmpty())
+        if (languageCode == "en_US" || languageCode.isEmpty())
         {
             return nullptr;
         }

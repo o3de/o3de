@@ -29,7 +29,6 @@ set(LY_I18N_EXCLUDE_GEMS "" CACHE STRING "Gems to exclude from automatic transla
 # Define all supported languages
 # Format: language_code (matches Translation.h Language enum)
 set(LY_I18N_SUPPORTED_LANGUAGES
-    "en"           # English
     "en_US"        # English (US)
     "zh_CN"        # Simplified Chinese
     CACHE STRING "List of all supported languages"
@@ -200,7 +199,7 @@ function(add_translation_module target_source_dir module_name)
         # Generate translation files for each language
         foreach(_language ${LANGUAGES})
             # Skip English variants (source language)
-            if(_language STREQUAL "en" OR _language STREQUAL "en_US")
+            if(_language STREQUAL "en_US")
                 message(STATUS "  [SKIP] ${_language} - Source language, no translation needed")
                 math(EXPR _skipped_count "${_skipped_count} + 1")
                 continue()
@@ -345,14 +344,14 @@ function(add_tool_translation tool_name)
     else()
         set(LANGUAGES ${LY_I18N_LANGUAGE})
     endif()    
-   
+    
     set(_generated_count 0)
     set(_skipped_count 0)
     
     # Generate translation files for each language
     foreach(_language ${LANGUAGES})
         # Skip English variants (source language)
-        if(_language STREQUAL "en" OR _language STREQUAL "en_US")
+        if(_language STREQUAL "en_US")
             math(EXPR _skipped_count "${_skipped_count} + 1")
             continue()
         endif()
@@ -529,7 +528,7 @@ function(add_gem_translation_multi_dirs gem_name source_dirs)
     # Generate translation files for each language
     foreach(_language ${LANGUAGES})
         # Skip English variants (source language)
-        if(_language STREQUAL "en" OR _language STREQUAL "en_US")
+        if(_language STREQUAL "en_US")
             continue()
         endif()
         
@@ -663,7 +662,7 @@ function(add_gem_translation gem_name)
     # Generate translation files for each language
     foreach(_language ${LANGUAGES})
         # Skip English variants (source language)
-        if(_language STREQUAL "en" OR _language STREQUAL "en_US")
+        if(_language STREQUAL "en_US")
             math(EXPR _skipped_count "${_skipped_count} + 1")
             continue()
         endif()
@@ -1042,7 +1041,7 @@ function(add_json_property_translations json_dir context_name module_name)
 
     foreach(_language ${LANGUAGES})
         # Skip English variants (source language)
-        if(_language STREQUAL "en" OR _language STREQUAL "en_US")
+        if(_language STREQUAL "en_US")
             continue()
         endif()
 
@@ -1057,6 +1056,8 @@ function(add_json_property_translations json_dir context_name module_name)
 
         # Set output .ts file path (separate file for JSON-sourced strings)
         set(TS_FILE "${TS_DIR}/${module_name}_${_language}.ts")
+
+        # Run lupdate on the generated C++ file
 
         # Run lupdate on the generated C++ file
         message(STATUS "  [JSON] ${_language} -> ${TS_FILE}")
@@ -1300,7 +1301,7 @@ function(add_editcontext_translations source_dirs context_name module_name)
 
     foreach(_language ${LANGUAGES})
         # Skip English variants (source language)
-        if(_language STREQUAL "en" OR _language STREQUAL "en_US")
+        if(_language STREQUAL "en_US")
             continue()
         endif()
 

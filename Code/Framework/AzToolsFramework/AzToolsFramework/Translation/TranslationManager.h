@@ -123,7 +123,7 @@ namespace AzToolsFramework
             QCoreApplication* app = nullptr)
         {
             // Don't load for English (source language)
-            if (languageCode == "en" || languageCode == "en_US" || languageCode.isEmpty())
+            if (languageCode == "en_US" || languageCode.isEmpty())
             {
                 return nullptr;
             }
@@ -227,7 +227,7 @@ namespace AzToolsFramework
             {
                 qDebug() << "[i18n] Loaded translation for" << toolName << "(" << language << ")";
             }
-            else if (language != "en" && language != "en_US")
+            else if (language != "en_US")
             {
                 qDebug() << "[i18n] No translation file found for" << toolName << "(" << language << "), using English";
             }
@@ -291,7 +291,7 @@ namespace AzToolsFramework
                     for (const QString& subdir : subdirs)
                     {
                         // Skip English directories (already added above)
-                        if (subdir == "en" || subdir == "en_US")
+                        if (subdir == "en_US")
                         {
                             continue;
                         }
@@ -332,7 +332,7 @@ namespace AzToolsFramework
             QList<QTranslator*> translators;
 
             // Don't load for English (source language)
-            if (languageCode == "en" || languageCode == "en_US" || languageCode.isEmpty())
+            if (languageCode == "en_US" || languageCode.isEmpty())
             {
                 return translators;
             }
@@ -405,7 +405,6 @@ namespace AzToolsFramework
         static QString GetLanguageName(const QString& languageCode)
         {
             static QMap<QString, QString> languageNames = {
-                {"en", "English"},
                 {"en_US", "English (US)"},
                 {"zh_CN", "简体中文"}
             };
