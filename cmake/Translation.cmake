@@ -54,6 +54,8 @@ if(LY_I18N_BUILD AND NOT LY_I18N_BUILD_ALL_LANGUAGES)
     list(FIND LY_I18N_SUPPORTED_LANGUAGES "${LY_I18N_LANGUAGE}" _lang_index)
     if(_lang_index EQUAL -1)
         message(WARNING "Language '${LY_I18N_LANGUAGE}' is not in the supported languages list. Supported: ${LY_I18N_SUPPORTED_LANGUAGES}")
+        set(LY_I18N_BUILD OFF)
+        return()
     endif()
 endif()
 
