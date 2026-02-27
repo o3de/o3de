@@ -24,6 +24,15 @@ if(POLICY CMP0168)
     cmake_policy(SET CMP0168 NEW)
 endif()
 
+# Visual Studio 2026 (VS 18.x) requires CMake 4.2 or later.
+if(CMAKE_GENERATOR MATCHES "Visual Studio 18" AND CMAKE_VERSION VERSION_LESS "4.2")
+    message(WARNING
+        "Visual Studio 2026 detected with CMake ${CMAKE_VERSION}"
+        "CMake 4.2 or later is required for Visual Studio 2026 support"
+        "We test with CMake 4.2.3. If you experience issues, consider upgrading to this version or later"
+    )
+endif()
+
 include(cmake/LySet.cmake)
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
@@ -35,6 +44,15 @@ if(NOT PROJECT_NAME)
     project(O3DE
         LANGUAGES C CXX
         VERSION ${O3DE_INSTALL_VERSION_STRING}
+    )
+endif()
+
+# Xcode 26.x requires CMake 4.2 or later. XCODE_VERSION is only available after project().
+if(CMAKE_GENERATOR STREQUAL "Xcode" AND XCODE_VERSION VERSION_GREATER_EQUAL "26.0" AND CMAKE_VERSION VERSION_LESS "4.2")
+    message(WARNING
+        "Xcode ${XCODE_VERSION} detected with CMake ${CMAKE_VERSION}"
+        "CMake 4.2 or later is required for Xcode 26.x support"
+        "We test with CMake 4.2.3. If you experience issues, consider upgrading to this version or later"
     )
 endif()
 
