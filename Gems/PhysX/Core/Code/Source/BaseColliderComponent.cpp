@@ -70,12 +70,7 @@ namespace PhysX
             auto pxShape = static_cast<physx::PxShape*>(shapes[0]->GetNativePointer());
             physx::PxTransform pxWorldTransform = PxMathConvert(m_worldTransform);
 
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
             const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry();
-#else
-            const auto pxGeometryHolder = pxShape->getGeometry();
-            const physx::PxGeometry& pxShapeGeom = pxGeometryHolder.any();
-#endif
 
             physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,
                 pxWorldTransform * pxShape->getLocalPose(), 1.0f);

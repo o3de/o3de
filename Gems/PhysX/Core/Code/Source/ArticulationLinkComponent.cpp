@@ -100,7 +100,6 @@ namespace PhysX
     {
         return m_articulationLinks;
     }
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
     void ArticulationLinkComponent::Activate()
     {
         m_offsetInCorrectUnits = m_config.HingePropertiesVisible() ? AZ::DegToRad(m_config.m_offset) : m_config.m_offset;
@@ -213,12 +212,10 @@ namespace PhysX
         Physics::RigidBodyNotificationBus::Event(
             GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled, GetEntityId());
     }
-#endif
 
     void ArticulationLinkComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
     {
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
         if (m_enabled)
         {
             return;
@@ -231,10 +228,8 @@ namespace PhysX
             m_articulation->setRootGlobalPose(PxMathConvert(world));
             m_articulation->updateKinematic(kinematicFlag);
         }
-#endif
     }
 
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
     void ArticulationLinkComponent::CreateArticulation()
     {
         AzPhysics::SceneInterface* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
@@ -1042,22 +1037,4 @@ namespace PhysX
     {
         return GetSimulatedBody()->RayCast(request);
     }
-
-#else
-    void ArticulationLinkComponent::Activate()
-    {
-    }
-    void ArticulationLinkComponent::Deactivate()
-    {
-    }
-    void ArticulationLinkComponent::CreateArticulation()
-    {
-    }
-    void ArticulationLinkComponent::DestroyArticulation()
-    {
-    }
-    void ArticulationLinkComponent::InitPhysicsTickHandler()
-    {
-    }
-#endif
 } // namespace PhysX

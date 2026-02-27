@@ -36,11 +36,9 @@ namespace PhysX
     class ArticulationLinkComponent final
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
         , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public PhysX::ArticulationJointRequestBus::Handler
         , public PhysX::ArticulationSensorRequestBus::Handler
-#endif
     {
     public:
         AZ_COMPONENT(ArticulationLinkComponent, ArticulationLinkComponentTypeId);
@@ -56,7 +54,6 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
         // ArticulationJointRequestBus overrides ...
         void SetMotion(ArticulationJointAxis jointAxis, ArticulationJointMotionType jointMotionType) override;
         ArticulationJointMotionType GetMotion(ArticulationJointAxis jointAxis) const override;
@@ -97,7 +94,6 @@ namespace PhysX
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
-#endif
 
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
         const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
@@ -113,7 +109,6 @@ namespace PhysX
         void CreateArticulation();
         void DestroyArticulation();
         void InitPhysicsTickHandler();
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
 
         const physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex) const;
         physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex);
@@ -125,7 +120,6 @@ namespace PhysX
         void AddCollisionShape(const ArticulationLinkData& thisLinkData, ArticulationLink* articulationLink);
 
         void PostPhysicsTick(float fixedDeltaTime);
-#endif
 
         // AZ::Component overrides ...
         void Activate() override;
