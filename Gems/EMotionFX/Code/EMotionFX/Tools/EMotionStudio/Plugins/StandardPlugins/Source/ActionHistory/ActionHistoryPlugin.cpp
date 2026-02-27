@@ -12,6 +12,8 @@
 #include <QListWidget>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 
+#include <string>
+
 
 namespace EMStudio
 {
