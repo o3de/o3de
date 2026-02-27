@@ -39,7 +39,7 @@ namespace AtomToolsFramework
         QT_TRANSLATE_NOOP("AtomToolsMainWindow", "Python Terminal"),
         QT_TRANSLATE_NOOP("AtomToolsMainWindow", "Logging"),
     };
-    // Suppress unused variable warning — these exist solely for lupdate extraction.
+    // Suppress unused variable warning - these exist solely for lupdate extraction.
     [[maybe_unused]] static const auto* s_dockWidgetNamesRef = s_dockWidgetNames;
 
     AtomToolsMainWindow::AtomToolsMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent)

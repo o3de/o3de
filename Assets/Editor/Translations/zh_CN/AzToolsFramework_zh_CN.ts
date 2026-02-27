@@ -838,7 +838,7 @@
         <translation>音频控件</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/PropertyEditorApi.cpp" line="315"/>
+        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/PropertyEditorApi.cpp" line="314"/>
         <source>&lt;empty component&gt;</source>
         <translation>&lt;空组件&gt;</translation>
     </message>

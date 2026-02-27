@@ -35,8 +35,8 @@ namespace AzToolsFramework
      * - Each tool is a SEPARATE PROCESS (independent .exe files)
      * - Language preference is stored in Settings Registry (file-based, persistent)
      * - Settings Registry is shared across all processes via the filesystem
-     * - When Editor changes language → saved to Settings Registry file
-     * - When tools start → read language from Settings Registry file
+     * - When Editor changes language -> saved to Settings Registry file
+     * - When tools start -> read language from Settings Registry file
      *
      * CROSS-PROCESS FLOW:
      * 1. User sets language in Editor Preferences
@@ -400,13 +400,13 @@ namespace AzToolsFramework
         /**
          * @brief Get friendly name for a language code
          * @param languageCode Language code
-         * @return Friendly name (e.g., "简体中文" for "zh_CN")
+         * @return Friendly name (e.g., "Simplified Chinese" for "zh_CN")
          */
         static QString GetLanguageName(const QString& languageCode)
         {
             static QMap<QString, QString> languageNames = {
                 {"en_US", "English (US)"},
-                {"zh_CN", "简体中文"}
+                {"zh_CN", "Simplified Chinese"}
             };
 
             return languageNames.value(languageCode, languageCode);

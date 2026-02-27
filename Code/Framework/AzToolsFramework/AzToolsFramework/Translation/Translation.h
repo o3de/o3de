@@ -40,7 +40,7 @@ namespace AzToolsFramework
             AZ_Warning("Translation", false, "Error loading translation file %s", unresolvedPath.data());
         }
 
-        // Failed to load or install — clean up and return nullptr
+        // Failed to load or install - clean up and return nullptr
         delete translator;
         return nullptr;
     }
