@@ -39,7 +39,11 @@ namespace EMStudio
 
     const char* ActionHistoryPlugin::GetName() const
     {
+    #ifdef _WIN32
         return _strdup(tr("Action History").toUtf8().constData());
+    #else
+        return strdup(tr("Action History").toUtf8().constData());
+    #endif
     }
 
 
