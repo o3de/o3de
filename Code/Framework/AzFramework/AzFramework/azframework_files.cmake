@@ -63,6 +63,7 @@ set(FILES
     Asset/AssetSystemComponent.cpp
     Asset/AssetSystemComponent.h
     Asset/GenericAssetHandler.h
+    Asset/GenericAssetHandler.cpp
     Asset/AssetBundleManifest.cpp
     Asset/AssetBundleManifest.h
     Asset/AssetCatalogBus.cpp

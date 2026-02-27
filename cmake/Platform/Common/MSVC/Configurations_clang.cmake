@@ -27,7 +27,7 @@ set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
 
 # C++20 no longer allows to implicitly convert between enum values of different types or enum values and integral types.
 # This is problematic if 3rd-party libraries use such operations in header files.
-set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18)
+set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18 -Wno-deprecated-enum-enum-conversion)
 
 # If (USE_FAST_MATH) is set, then enable fast math optimizations.
 # Some targets might need to disable fast math individually (likely 3rd Party libraries)
@@ -44,36 +44,34 @@ ly_append_configurations_options(
         _FORTIFY_SOURCE=2
     DEFINES_RELEASE
         _FORTIFY_SOURCE=2
+
     COMPILATION
-        -Wno-reorder-ctor
-        -Wno-logical-not-parentheses
-        -Wno-logical-op-parentheses
-        -Wno-switch
-        -Wno-undefined-var-template
-        -Wno-inconsistent-missing-override
-        -Wno-parentheses
-        -Wno-unused-parameter
-        -Wno-sign-compare
-        -Wno-ignored-qualifiers
-        -Wno-missing-field-initializers
-
-        # disable warning introduced by -fsized-deallocation, pybind11 used.
-        -Wno-unknown-argument
-
-        
-        /Gd             # Use _cdecl calling convention for all functions
-        /MP             # Multicore compilation in Visual Studio
         /nologo         # Suppress Copyright and version number message
+        /Gd             # Use _cdecl calling convention for all functions
         /W4             # Warning level 4
         /WX             # Warnings as errors
         /permissive-    # Conformance with standard
-        /Zc:preprocessor # Forces preprocessor into conformance mode:  https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-170
-        /Zc:forScope    # Force Conformance in for Loop Scope
-        /diagnostics:caret # Compiler diagnostic options: includes the column where the issue was found and places a caret (^) under the location in the line of code where the issue was detected.
-        /Zc:__cplusplus       
-        /bigobj         # Increase number of sections in obj files. Profiling has shown no meaningful impact in memory nore build times
         /GS             # Enable Buffer security check
-        /sdl
+        /sdl            # Enable additional security checks
+
+        -Wno-cast-function-type-mismatch
+        -Wno-deprecated-copy
+        -Wno-dllexport-explicit-instantiation-decl
+        -Wno-ignored-qualifiers
+        -Wno-inconsistent-missing-override
+        -Wno-logical-not-parentheses
+        -Wno-logical-op-parentheses
+        -Wno-macro-redefined
+        -Wno-missing-field-initializers
+        -Wno-parentheses
+        -Wno-reorder-ctor
+        -Wno-sign-compare
+        -Wno-switch
+        -Wno-undefined-var-template
+        -Wno-unknown-argument # disable warning introduced by -fsized-deallocation, pybind11 used.
+        -Wno-unknown-warning-option
+        -Wno-unnecessary-virtual-specifier
+        -Wno-unused-parameter
     COMPILATION_DEBUG
         /MDd            # defines _DEBUG, _MT, and _DLL and causes the application to use the debug multithread-specific and DLL-specific version of the run-time library.
                         # It also causes the compiler to place the library name MSVCRTD.lib into the .obj file.
@@ -94,18 +92,19 @@ ly_append_configurations_options(
         /Ot             # Favor fast code over small code
         /Oi             # Use Intrinsic Functions
         /Oy             # Omit the frame pointer
+
     LINK
-        /NOLOGO             # Suppress Copyright and version number message
-        /IGNORE:4099        # 3rdParty linking produces noise with LNK4099
+        /nologo             # Suppress Copyright and version number message
+        /ignore:4099        # 3rdParty linking produces noise with LNK4099
     LINK_NON_STATIC_PROFILE
-        /OPT:REF            # Eliminates functions and data that are never referenced
-        /OPT:ICF            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
-        /INCREMENTAL:NO
-        /DEBUG              # Generate pdbs
+        /opt:ref            # Eliminates functions and data that are never referenced
+        /opt:icf            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
+        /incremental:no
+        /debug              # Generate pdbs
     LINK_NON_STATIC_RELEASE
-        /OPT:REF # Eliminates functions and data that are never referenced
-        /OPT:ICF # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
-        /INCREMENTAL:NO
+        /opt:ref            # Eliminates functions and data that are never referenced
+        /opt:icf            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
+        /incremental:no
 )
 
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)
@@ -113,10 +112,11 @@ if(LY_BUILD_WITH_ADDRESS_SANITIZER)
         COMPILATION_DEBUG
             -fsanitize=address
             -fno-omit-frame-pointer
+
         LINK_NON_STATIC_DEBUG
             -shared-libsan
             -fsanitize=address
     )
 endif()
-include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
 
+include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)

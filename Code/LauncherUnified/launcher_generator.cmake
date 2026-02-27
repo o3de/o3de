@@ -75,11 +75,11 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME launcher_gener
                 COMMENT "Processing ${project_name} assets..."
                 USES_TERMINAL # Do not buffer output of run command
                 COMMAND "${CMAKE_COMMAND}"
-                    -DLY_LOCK_FILE=${project_real_path}/user/AssetProcessorTemp/project_assets.lock
+                    -DLY_LOCK_FILE="${project_real_path}/user/AssetProcessorTemp/project_assets.lock"
                     -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
                         EXEC_COMMAND $<GENEX_EVAL:$<TARGET_FILE:AZ::AssetProcessorBatch>>
                             --zeroAnalysisMode
-                            --project-path=${project_real_path}
+                            --project-path="${project_real_path}"
                             --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
             )
             set_target_properties(${project_name}.Assets

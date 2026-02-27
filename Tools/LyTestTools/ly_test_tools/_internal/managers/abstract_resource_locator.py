@@ -171,6 +171,15 @@ class AbstractResourceLocator(object):
         """
         return os.path.join(self.build_directory(), 'AssetProcessorBatch')
 
+    def asset_builder(self):
+        """
+        Return path for the AssetBuilder compatible with this build platform and configuration
+        ex. engine_root/dev/mac/bin/profile/AssetBuilder
+        :return: path to AssetBuilder
+        """
+        return os.path.join(self.build_directory(), 'AssetBuilder')
+
+
     def ap_job_logs(self):
         """
         Return path to the Asset Processor JobLogs directory.

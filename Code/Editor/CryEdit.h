@@ -30,6 +30,11 @@ class QAction;
 class MainWindow;
 class QSharedMemory;
 
+namespace AzToolsFramework
+{
+    class ProgressShield;
+}
+
 class SANDBOX_API RecentFileList
 {
 public:
@@ -347,6 +352,10 @@ private:
 
     // @param files: A list of file paths, separated by '|';
     void OpenExternalLuaDebugger(AZStd::string_view luaDebuggerUri, AZStd::string_view enginePath, AZStd::string_view projectPath, const char * files);
+
+    // Generic progress indicator for socket connection blocks.
+    static AzToolsFramework::ProgressShield* s_progressShield;
+    static void SocketConnectionKeepAliveCallback(bool operationComplete);
 };
 
 //////////////////////////////////////////////////////////////////////////

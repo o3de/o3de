@@ -349,6 +349,13 @@ function(get_all_external_subdirectories_for_o3de_object output_subdirs object_t
     o3de_read_json_array(initial_gem_names ${object_path}/${object_json_filename} "gem_names")
     set(gem_names "")
 
+    # allow additional gems to be specified for an object through the O3DE_${object_type}_${object_name}_GEMS GLOBAL property
+    # for example O3DE_PROJECT_MyProject_GEMS
+    get_property(additional_gems GLOBAL PROPERTY "O3DE_${object_type}_${object_name}_GEMS")
+    if (additional_gems)
+        list(APPEND initial_gem_names ${additional_gems})
+    endif()
+
     # Gem dependency resolution can be disabled to speed up configuration 
     # for projects where it is not needed
     if(initial_gem_names AND NOT O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION)

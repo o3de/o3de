@@ -236,6 +236,7 @@ if (USE_FAST_MATH)
             # append our definition, even though __FAST_MATH__ is already defined
             # it gets undefined if any other flag that affects the fast math is used
             O3DE_USING_FAST_MATH 
+
         COMPILATION
             ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH}
     )
@@ -245,4 +246,3 @@ else()
             ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH}
     )
 endif()
-

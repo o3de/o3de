@@ -12,13 +12,14 @@ if (TARGET 3rdParty::${MESHOPTIMIZER_TARGET})
 endif()
 
 set(MESHOPTIMIZER_GIT_REPO "https://github.com/zeux/meshoptimizer.git")
-set(MESHOPTIMIZER_GIT_TAG "v0.25")
+set(MESHOPTIMIZER_GIT_TAG "6daea4695c48338363b08022d2fb15deaef6ac09")   # v0.25
 
 include(FetchContent)
 FetchContent_Declare(
         ${MESHOPTIMIZER_TARGET}
         GIT_REPOSITORY ${MESHOPTIMIZER_GIT_REPO}
         GIT_TAG ${MESHOPTIMIZER_GIT_TAG}
+        GIT_SHALLOW TRUE
 )
 set(MESHOPT_INSTALL OFF)
 FetchContent_MakeAvailable(meshoptimizer)

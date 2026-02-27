@@ -1,0 +1,12 @@
+<ObjectStream version="3">
+	<Class name="TestGenericAsset" version="2" type="{63B3EA1F-8AFC-4C40-8F59-0B2E6A9CA191}">
+		<Class name="AssetData" field="BaseClass1" version="1" type="{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}"/>
+		<Class name="Asset&lt;TestGenericAssetRef&gt;" field="ReferencedAssets_Preload" value="id={4CACAE2C-C361-57BE-A8D5-647F07660A3F}:0,type={B0CAA8CE-EEE0-4EEE-BAD5-AC88B2C8F3B8},hint={genericassetbuilderassets/asset_to_refer_to.auto_test_refasset},loadBehavior=0" version="3" type="{BEAAEFF2-2D9C-5BB5-BD50-BC99385BC17B}"/>
+		<Class name="Asset&lt;TestGenericAssetRef&gt;" field="ReferencedAssets_NoLoad" value="id={6677FA47-391A-591A-BC9E-279A03F75974}:0,type={B0CAA8CE-EEE0-4EEE-BAD5-AC88B2C8F3B8},hint={genericassetbuilderassets/asset_to_refer_to_via_noload.refasset.auto_test_refasset},loadBehavior=2" version="3" type="{BEAAEFF2-2D9C-5BB5-BD50-BC99385BC17B}"/>
+		<Class name="AssetId" field="ReferencedAssetId" version="1" type="{652ED536-3402-439B-AEBE-4A5DBC554085}">
+			<Class name="AZ::Uuid" field="guid" value="{4D07F6E7-3D4E-59FA-840D-2757B523650C}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+			<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+		</Class>
+	</Class>
+</ObjectStream>
+

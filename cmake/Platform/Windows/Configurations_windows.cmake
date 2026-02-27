@@ -18,6 +18,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
             _WIN64
             WIN64
             NOMINMAX
+
         LINK
             /MACHINE:X64
     )
@@ -38,6 +39,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             _WIN64
             WIN64
             NOMINMAX
+
         COMPILATION
             -msse3
             -mf16c

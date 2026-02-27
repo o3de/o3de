@@ -9,11 +9,19 @@
 # Cmake version 3.24 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.24)
 
-if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24") 
+if(POLICY CMP0135)
     # CMP0135 - controls whether, when unpacking an archive file, it should:
     # (OLD) set the file timestamps to what they are in the archive (not recommended)
     # (NEW) set the file timestamps to the time of extraction (recommended)
     cmake_policy(SET CMP0135 NEW) 
+endif()
+
+if(POLICY CMP0168)
+    # CMP0168 - Controls whether fetchcontent uses sub builds (<3.30) or just does the fetch during
+    # configure, which is much faster, especially for subsequent configure.
+    # (OLD) Use a sub build
+    # (NEW) Do the fetch during configure
+    cmake_policy(SET CMP0168 NEW)
 endif()
 
 include(cmake/LySet.cmake)
@@ -36,11 +44,13 @@ get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
 if (O3DE_SCRIPT_ONLY)
     message(STATUS  "Basic Configuration Information (Script-only mode):\n" 
                     "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_COMMAND: ${CMAKE_COMMAND}\n"
                     "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}"
             )
 else()
     message(STATUS  "Basic Configuration Information:\n" 
                     "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_COMMAND: ${CMAKE_COMMAND}\n"
                     "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}\n"
                     "   CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}\n"
                     "   CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}\n"
@@ -55,6 +65,7 @@ endif()
 message(STATUS "Initializing O3DE CMake system...")
 list(APPEND CMAKE_MESSAGE_INDENT "  ")
 include(CTest)
+include(cmake/CompilerLauncher.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
 include(cmake/RuntimeDependencies.cmake)
