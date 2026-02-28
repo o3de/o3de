@@ -73,7 +73,7 @@ jobs:
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }} # If CLEAN_ARTIFACTS is false, then this returns true
             msvc_toolset_version: '14.29'
             msvc_platform_toolset: 'v142'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
     
     Windows-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -87,7 +87,7 @@ jobs:
             type: asset_profile
             msvc_toolset_version: '14.29'
             msvc_platform_toolset: 'v142'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
 
     Windows-Test:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -101,7 +101,7 @@ jobs:
             type: test_cpu_profile
             msvc_toolset_version: '14.29'
             msvc_platform_toolset: 'v142'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
 
     Windows-Release:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -115,7 +115,7 @@ jobs:
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
             msvc_toolset_version: '14.29'
             msvc_platform_toolset: 'v142'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
 
 #### Linux Build ####
     Linux-Profile:
@@ -129,7 +129,7 @@ jobs:
             type: profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
             clang_version: '14'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
 
     Linux-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
@@ -142,7 +142,7 @@ jobs:
             platform: Linux
             type: asset_profile
             clang_version: '14'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
 
     Linux-Test:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
@@ -156,7 +156,7 @@ jobs:
             type: test_profile
             desktop: true
             clang_version: '14'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
 
 #### Android Build ####
     Android-Profile:
@@ -171,7 +171,7 @@ jobs:
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
             ndk_version: '25.1.8937393'
             gradle_version: '8.12'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
 
     Android-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
@@ -187,7 +187,7 @@ jobs:
             msvc_platform_toolset: 'v142'
             ndk_version: '25.1.8937393'
             gradle_version: '8.12'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
             
     Android-Gradle:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
@@ -201,4 +201,4 @@ jobs:
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
             ndk_version: '25.1.8937393'
             gradle_version: '8.12'
-            cmake_version: '~3.24'
+            cmake_version: '4.2.3'
