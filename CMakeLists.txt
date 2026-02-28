@@ -24,12 +24,15 @@ if(POLICY CMP0168)
     cmake_policy(SET CMP0168 NEW)
 endif()
 
+# The desired CMake version to ship with installers and recommend to users.
+set(CPACK_DESIRED_CMAKE_VERSION 4.2.3)
+
 # Visual Studio 2026 (VS 18.x) requires CMake 4.2 or later.
 if(CMAKE_GENERATOR MATCHES "Visual Studio 18" AND CMAKE_VERSION VERSION_LESS "4.2")
     message(WARNING
-        "Visual Studio 2026 detected with CMake ${CMAKE_VERSION}"
-        "CMake 4.2 or later is required for Visual Studio 2026 support"
-        "We test with CMake 4.2.3. If you experience issues, consider upgrading to this version or later"
+        "Visual Studio 2026 detected with CMake ${CMAKE_VERSION}. "
+        "CMake 4.2 or later is required for Visual Studio 2026 support. "
+        "We test with CMake ${CPACK_DESIRED_CMAKE_VERSION}. If you experience issues, consider upgrading to this version or later."
     )
 endif()
 
@@ -50,9 +53,9 @@ endif()
 # Xcode 26.x requires CMake 4.2 or later. XCODE_VERSION is only available after project().
 if(CMAKE_GENERATOR STREQUAL "Xcode" AND XCODE_VERSION VERSION_GREATER_EQUAL "26.0" AND CMAKE_VERSION VERSION_LESS "4.2")
     message(WARNING
-        "Xcode ${XCODE_VERSION} detected with CMake ${CMAKE_VERSION}"
-        "CMake 4.2 or later is required for Xcode 26.x support"
-        "We test with CMake 4.2.3. If you experience issues, consider upgrading to this version or later"
+        "Xcode ${XCODE_VERSION} detected with CMake ${CMAKE_VERSION}. "
+        "CMake 4.2 or later is required for Xcode 26.x support. "
+        "We test with CMake ${CPACK_DESIRED_CMAKE_VERSION}. If you experience issues, consider upgrading to this version or later."
     )
 endif()
 

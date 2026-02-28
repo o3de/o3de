@@ -39,7 +39,7 @@ set(CPACK_SNAP_DISTRO "" CACHE STRING
 )
 
 set(CPACK_THREADS 0)
-set(CPACK_DESIRED_CMAKE_VERSION 4.2.3)
+# CPACK_DESIRED_CMAKE_VERSION is defined in the root CMakeLists.txt
 if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
     message(FATAL_ERROR
         "The desired version of CMake to be included in the package is "
