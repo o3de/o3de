@@ -6,23 +6,15 @@
 #
 #
 
-# Cmake version 3.24 is the minimum version needed for all of Open 3D Engine's supported platforms
+# CMake version 3.24 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.24)
 
-if(POLICY CMP0135)
-    # CMP0135 - controls whether, when unpacking an archive file, it should:
-    # (OLD) set the file timestamps to what they are in the archive (not recommended)
-    # (NEW) set the file timestamps to the time of extraction (recommended)
-    cmake_policy(SET CMP0135 NEW) 
-endif()
-
-if(POLICY CMP0168)
-    # CMP0168 - Controls whether fetchcontent uses sub builds (<3.30) or just does the fetch during
-    # configure, which is much faster, especially for subsequent configure.
-    # (OLD) Use a sub build
-    # (NEW) Do the fetch during configure
-    cmake_policy(SET CMP0168 NEW)
-endif()
+include(cmake/Policy.cmake NO_POLICY_SCOPE)
+include(cmake/LySet.cmake)
+include(cmake/GeneralSettings.cmake)
+include(cmake/FileUtil.cmake)
+include(cmake/Version.cmake)
+include(cmake/OutputDirectory.cmake)
 
 # The desired CMake version to ship with installers and recommend to users.
 set(CPACK_DESIRED_CMAKE_VERSION 4.2.3)
@@ -35,12 +27,6 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio 18" AND CMAKE_VERSION VERSION_LESS "4.
         "We test with CMake ${CPACK_DESIRED_CMAKE_VERSION}. If you experience issues, consider upgrading to this version or later."
     )
 endif()
-
-include(cmake/LySet.cmake)
-include(cmake/GeneralSettings.cmake)
-include(cmake/FileUtil.cmake)
-include(cmake/Version.cmake)
-include(cmake/OutputDirectory.cmake)
 
 if(NOT PROJECT_NAME)
     include(cmake/CompilerSettings.cmake)
