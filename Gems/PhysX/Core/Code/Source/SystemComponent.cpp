@@ -433,12 +433,6 @@ namespace PhysX
         return PhysX::Collision::CreateFilterData(layer, group);
     }
 
-    physx::PxCooking* SystemComponent::GetCooking()
-    {
-        //TEMP until this in moved over
-        return m_physXSystem->GetPxCooking();
-    }
-
     void SystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         if (m_physXSystem)

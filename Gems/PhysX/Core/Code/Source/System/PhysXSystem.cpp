@@ -452,8 +452,8 @@ namespace PhysX
         m_physXSdk.m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_physXSdk.m_foundation, physx::PxTolerancesScale(), physXTrackOutstandingAllocations, pvd);
         PxInitExtensions(*m_physXSdk.m_physics, pvd);
 
-        // set up cooking for height fields, meshes etc.
-        m_physXSdk.m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_physXSdk.m_foundation, cookingParams);
+        // set up cooking parameters for height fields, meshes etc.
+        m_physXSdk.m_cookingParams = const_cast<physx::PxCookingParams*>(&cookingParams); // TODO: maybe not ideal to const_cast
 
         // Set up CPU dispatcher
         m_cpuDispatcher = PhysXCpuDispatcherCreate();
@@ -466,8 +466,8 @@ namespace PhysX
         delete m_cpuDispatcher;
         m_cpuDispatcher = nullptr;
 
-        m_physXSdk.m_cooking->release();
-        m_physXSdk.m_cooking = nullptr;
+        // m_physXSdk.m_cooking->release();
+        // m_physXSdk.m_cooking = nullptr;
 
         PxCloseExtensions();
 

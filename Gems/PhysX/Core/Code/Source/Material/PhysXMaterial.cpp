@@ -314,16 +314,11 @@ namespace PhysX
 
     bool Material::IsCompliantContactModeEnabled() const
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         return m_pxMaterial->getFlags().isSet(physx::PxMaterialFlag::eCOMPLIANT_CONTACT);
-#else
-        return false;
-#endif
     }
 
     void Material::EnableCompliantContactMode([[maybe_unused]] bool enabled)
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         m_pxMaterial->setFlag(physx::PxMaterialFlag::eCOMPLIANT_CONTACT, enabled);
         if (enabled)
         {
@@ -337,7 +332,6 @@ namespace PhysX
             // Restores restitution value when Compliant Contact Modde is disabled
             m_pxMaterial->setRestitution(m_restitution);
         }
-#endif
     }
 
     float Material::GetCompliantContactModeDamping() const
@@ -345,9 +339,9 @@ namespace PhysX
         return m_compliantContactModeDamping;
     }
 
+    // TODO: Remove CompliantContectMode
     void Material::SetCompliantContactModeDamping([[maybe_unused]] float damping)
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         AZ_Warning("PhysX Material", damping >= 0.0f, "Compliant Contact Mode Damping value %f is out of range, 0 will be used.", damping);
 
         m_compliantContactModeDamping = AZ::GetMax(0.0f, damping);
@@ -356,7 +350,6 @@ namespace PhysX
         {
             m_pxMaterial->setDamping(m_compliantContactModeDamping);
         }
-#endif
     }
 
     float Material::GetCompliantContactModeStiffness() const
@@ -366,7 +359,6 @@ namespace PhysX
 
     void Material::SetCompliantContactModeStiffness([[maybe_unused]] float stiffness)
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         AZ_Warning(
             "PhysX Material", stiffness >= 0.0f, "Compliant Contact Mode Stiffness value %f is out of range, 0 will be used.", stiffness);
 
@@ -377,7 +369,6 @@ namespace PhysX
             // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
             m_pxMaterial->setRestitution(-m_compliantContactModeStiffness);
         }
-#endif
     }
 
     const AZ::Color& Material::GetDebugColor() const

@@ -248,8 +248,7 @@ namespace UnitTest
         EXPECT_EQ(material->GetRestitutionCombineMode(), PhysX::CombineMode::Minimum);
     }
 
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
-    TEST_F(PhysXMaterialFixture, Material_GetSet_CompliantContactMode_Enabled)
+    TEST_F(PhysXMaterialFixture, Material_GetSet_CompliantContactMode_Enabled) // TODO: Remove CompliantContactMode
     {
         PhysX::MaterialConfiguration materialConfiguration;
 
@@ -351,7 +350,6 @@ namespace UnitTest
         material->SetCompliantContactModeStiffness(0.0f);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 0.0f, Tolerance);
     }
-#endif // (PX_PHYSICS_VERSION_MAJOR >= 5)
 
     TEST_F(PhysXMaterialFixture, Material_GetSet_DebugColor)
     {

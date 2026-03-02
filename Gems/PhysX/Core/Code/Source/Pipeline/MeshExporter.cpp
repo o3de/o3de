@@ -405,14 +405,16 @@ namespace PhysX
             // Use by default 3.4 since 3.3 is being deprecated (despite being default)
             physx::PxMeshMidPhase::Enum ret = physx::PxMeshMidPhase::eBVH34;
 
-#if (PX_PHYSICS_VERSION_MAJOR < 5)
-            // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
-            // Also fall back to 3.3 for Linux, since linux may support both x86 and arm64, and ARM64 does not support SSE2. 
-            if (platformIdentifier == "android" || platformIdentifier == "ios" || platformIdentifier == "linux")
-            {
-                ret = physx::PxMeshMidPhase::eBVH33;
-            }
-#endif
+// TODO: remove
+// #if (PX_PHYSICS_VERSION_MAJOR < 5)
+//             // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
+//             // Also fall back to 3.3 for Linux, since linux may support both x86 and arm64, and ARM64 does not support SSE2.
+//             if (platformIdentifier == "android" || platformIdentifier == "ios" || platformIdentifier == "linux")
+//             {
+//                 ret = physx::PxMeshMidPhase::eBVH33;
+//             }
+// #endif
+
             return ret;
         }
 
@@ -480,8 +482,8 @@ namespace PhysX
                 }
             }
 
-            physx::PxCooking* pxCooking = PxCreateCooking(PX_PHYSICS_VERSION, PxGetFoundation(), pxCookingParams);
-            AZ_Assert(pxCooking, "Failed to create PxCooking");
+            // physx::PxCooking* pxCooking = PxCreateCooking(PX_PHYSICS_VERSION, PxGetFoundation(), pxCookingParams);
+            // AZ_Assert(pxCooking, "Failed to create PxCooking"); // TODO: remove GetCooking bus call
 
             physx::PxBoundedData strideData;
             strideData.count = static_cast<physx::PxU32>(vertices.size());
@@ -500,13 +502,13 @@ namespace PhysX
                 SET_BITS(convexDesc.flags, convexAssetParams.GetCheckZeroAreaTriangles(), physx::PxConvexFlag::eCHECK_ZERO_AREA_TRIANGLES);
                 SET_BITS(convexDesc.flags, convexAssetParams.GetQuantizeInput(), physx::PxConvexFlag::eQUANTIZE_INPUT);
                 SET_BITS(convexDesc.flags, convexAssetParams.GetUsePlaneShifting(), physx::PxConvexFlag::ePLANE_SHIFTING);
-                SET_BITS(convexDesc.flags, convexAssetParams.GetBuildGpuData(), physx::PxConvexFlag::eGPU_COMPATIBLE);
+                // SET_BITS(convexDesc.flags, convexAssetParams.GetBuildGpuData(), physx::PxConvexFlag::eGPU_COMPATIBLE); // TODO: not a flag
                 SET_BITS(convexDesc.flags, convexAssetParams.GetShiftVertices(), physx::PxConvexFlag::eSHIFT_VERTICES);
 
                 physx::PxConvexMeshCookingResult::Enum convexCookingResultCode = physx::PxConvexMeshCookingResult::eSUCCESS;
 
                 cookingSuccessful =
-                    pxCooking->cookConvexMesh(convexDesc, cookedMeshData, &convexCookingResultCode)
+                    PxCookConvexMesh(pxCookingParams, convexDesc, cookedMeshData, &convexCookingResultCode) // PhysX 5.6.1 change
                     && Utils::ValidateCookedConvexMesh(cookedMeshData.getData(), cookedMeshData.getSize());
 
                 cookingResultErrorCodeString = PhysX::Utils::ConvexCookingResultToString(convexCookingResultCode);
@@ -530,7 +532,7 @@ namespace PhysX
                 physx::PxTriangleMeshCookingResult::Enum trimeshCookingResultCode = physx::PxTriangleMeshCookingResult::eSUCCESS;
 
                 cookingSuccessful =
-                    pxCooking->cookTriangleMesh(meshDesc, cookedMeshData, &trimeshCookingResultCode)
+                    PxCookTriangleMesh(pxCookingParams, meshDesc, cookedMeshData, &trimeshCookingResultCode)
                     && Utils::ValidateCookedTriangleMesh(cookedMeshData.getData(), cookedMeshData.getSize());
 
                 cookingResultErrorCodeString = PhysX::Utils::TriMeshCookingResultToString(trimeshCookingResultCode);
@@ -545,7 +547,7 @@ namespace PhysX
                 AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", cookingResultErrorCodeString.c_str());
             }
 
-            pxCooking->release();
+            // pxCooking->release();
             return cookingSuccessful;
         }
 

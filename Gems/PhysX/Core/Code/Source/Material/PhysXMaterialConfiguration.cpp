@@ -128,7 +128,7 @@ namespace PhysX
             {MaterialConstants::DensityName, m_density},
             {MaterialConstants::RestitutionCombineModeName, static_cast<AZ::u32>(m_restitutionCombine)},
             {MaterialConstants::FrictionCombineModeName, static_cast<AZ::u32>(m_frictionCombine)},
-            {MaterialConstants::CompliantContactModeEnabledName, m_compliantContactMode.m_enabled},
+            {MaterialConstants::CompliantContactModeEnabledName, m_compliantContactMode.m_enabled}, // TODO: Remove CompliantContactMode
             {MaterialConstants::CompliantContactModeDampingName, m_compliantContactMode.m_damping},
             {MaterialConstants::CompliantContactModeStiffnessName, m_compliantContactMode.m_stiffness},
             {MaterialConstants::DebugColorName, m_debugColor}
@@ -218,19 +218,11 @@ namespace PhysX
 
     bool MaterialConfiguration::IsRestitutionReadOnly() const
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         return m_compliantContactMode.m_enabled;
-#else
-        return false;
-#endif
     }
 
     AZ::Crc32 MaterialConfiguration::GetCompliantConstantModeVisibility() const
     {
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
         return AZ::Edit::PropertyVisibility::Show;
-#else
-        return AZ::Edit::PropertyVisibility::Hide;
-#endif
     }
 } // namespace PhysX

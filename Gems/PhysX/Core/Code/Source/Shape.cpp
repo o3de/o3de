@@ -258,7 +258,7 @@ namespace PhysX
 
         physx::PxTransform pxShapeTransform = PxMathConvert(offset, rotation);
         AZ_Warning("Physics::Shape", m_pxShape->isExclusive(), "Non-exclusive shapes are not mutable after they're attached to a body.");
-        if (m_pxShape->getGeometryType() == physx::PxGeometryType::eCAPSULE)
+        if (m_pxShape->getGeometry().getType() == physx::PxGeometryType::eCAPSULE)
         {
             physx::PxQuat lyToPxRotation(AZ::Constants::HalfPi, physx::PxVec3(0.0f, 1.0f, 0.0f));
             pxShapeTransform.q *= lyToPxRotation;
@@ -271,7 +271,7 @@ namespace PhysX
         PHYSX_SCENE_READ_LOCK(GetScene());
 
         physx::PxTransform pose = m_pxShape->getLocalPose();
-        if (m_pxShape->getGeometryType() == physx::PxGeometryType::eCAPSULE)
+        if (m_pxShape->getGeometry().getType() == physx::PxGeometryType::eCAPSULE)
         {
             physx::PxQuat PxTolyRotation(-AZ::Constants::HalfPi, physx::PxVec3(0.0f, 1.0f, 0.0f));
             pose.q *= PxTolyRotation;
@@ -411,13 +411,17 @@ namespace PhysX
     AZ::Aabb Shape::GetAabb(const AZ::Transform& worldTransform) const
     {
         PHYSX_SCENE_READ_LOCK(GetScene());
-        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
+        physx::PxBounds3 bounds;
+        physx::PxGeometryQuery::computeGeomBounds(bounds, m_pxShape->getGeometry(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f);
+        return PxMathConvert(bounds);
     }
 
     AZ::Aabb Shape::GetAabbLocal() const
     {
         PHYSX_SCENE_READ_LOCK(GetScene());
-        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), m_pxShape->getLocalPose(), 1.0f));
+        physx::PxBounds3 bounds;
+        physx::PxGeometryQuery::computeGeomBounds(bounds, m_pxShape->getGeometry(), m_pxShape->getLocalPose(), 1.0f);
+        return PxMathConvert(bounds);
     }
 
     physx::PxScene* Shape::GetScene() const
@@ -443,57 +447,60 @@ namespace PhysX
 
         PHYSX_SCENE_READ_LOCK(GetScene());
 
-        if (m_pxShape->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH)
+        // PhysX 5.6.1 change, only need to get this reference once
+        const physx::PxGeometry& baseGeometry = m_pxShape->getGeometry();
+
+        if (baseGeometry.getType() == physx::PxGeometryType::eTRIANGLEMESH)
         {
-            physx::PxTriangleMeshGeometry geometry{};
-            if (m_pxShape->getTriangleMeshGeometry(geometry) && geometry.triangleMesh && geometry.isValid())
+            const auto& geometry = static_cast<const physx::PxTriangleMeshGeometry&>(baseGeometry);
+            if (geometry.triangleMesh && geometry.isValid())
             {
                 Utils::Geometry::GetTriangleMeshGeometry(geometry, vertices, indices);
             }
         }
-        else if (m_pxShape->getGeometryType() == physx::PxGeometryType::eCONVEXMESH)
+        else if (baseGeometry.getType() == physx::PxGeometryType::eCONVEXMESH)
         {
-            physx::PxConvexMeshGeometry geometry{};
-            if (m_pxShape->getConvexMeshGeometry(geometry) && geometry.convexMesh && geometry.isValid())
+            const auto& geometry = static_cast<const physx::PxConvexMeshGeometry&>(baseGeometry);
+            if (geometry.convexMesh && geometry.isValid())
             {
                 Utils::Geometry::GetConvexMeshGeometry(geometry, vertices, indices);
             }
         }
-        else if (m_pxShape->getGeometryType() == physx::PxGeometryType::eHEIGHTFIELD)
-        { 
-            physx::PxHeightFieldGeometry geometry{};
-            if (m_pxShape->getHeightFieldGeometry(geometry) && geometry.heightField && geometry.isValid())
+        else if (baseGeometry.getType() == physx::PxGeometryType::eHEIGHTFIELD)
+        {
+            const auto& geometry = static_cast<const physx::PxHeightFieldGeometry&>(baseGeometry);
+            if (geometry.heightField && geometry.isValid())
             {
                 Utils::Geometry::GetHeightFieldGeometry(geometry, vertices, indices, optionalBounds);
             }
         }
-        else if (m_pxShape->getGeometryType() == physx::PxGeometryType::eBOX)
+        else if (baseGeometry.getType() == physx::PxGeometryType::eBOX)
         {
-            physx::PxBoxGeometry geometry{};
-            if (m_pxShape->getBoxGeometry(geometry) && geometry.isValid())
+            const auto& geometry = static_cast<const physx::PxBoxGeometry&>(baseGeometry);
+            if (geometry.isValid())
             {
                 Utils::Geometry::GetBoxGeometry(geometry, vertices, indices);
             }
         }
-        else if (m_pxShape->getGeometryType() == physx::PxGeometryType::eSPHERE)
+        else if (baseGeometry.getType() == physx::PxGeometryType::eSPHERE)
         {
-            physx::PxSphereGeometry geometry{};
-            if (m_pxShape->getSphereGeometry(geometry) && geometry.isValid())
+            const auto& geometry = static_cast<const physx::PxSphereGeometry&>(baseGeometry);
+            if (geometry.isValid())
             {
                 Utils::Geometry::GetSphereGeometry(geometry, vertices, indices, ShapeConstants::NumStacks, ShapeConstants::NumSlices);
             }
         }
-        else if (m_pxShape->getGeometryType() == physx::PxGeometryType::eCAPSULE)
+        else if (baseGeometry.getType() == physx::PxGeometryType::eCAPSULE)
         {
-            physx::PxCapsuleGeometry geometry{};
-            if (m_pxShape->getCapsuleGeometry(geometry) && geometry.isValid())
+            const auto& geometry = static_cast<const physx::PxCapsuleGeometry&>(baseGeometry);
+            if (geometry.isValid())
             {
                 Utils::Geometry::GetCapsuleGeometry(geometry, vertices, indices, ShapeConstants::NumStacks, ShapeConstants::NumSlices);
             }
         }
         else
         {
-            AZ_TracePrintf("Shape", "GetGeometry for PxGeometryType %d is not supported", static_cast<int>(m_pxShape->getGeometryType()));
+            AZ_TracePrintf("Shape", "GetGeometry for PxGeometryType %d is not supported", static_cast<int>(m_pxShape->getGeometry().getType()));
         }
     }
 }

@@ -81,7 +81,7 @@ namespace PhysXEditorTests
             return physx::PxGeometryType::eINVALID;
         }
 
-        return shape->getGeometryType();
+        return shape->getGeometry().getType();
     }
 
     TEST_F(PhysXEditorFixture, EditorMeshColliderComponent_RigidBodyDependencySatisfied_EntityIsValid)

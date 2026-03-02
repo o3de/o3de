@@ -166,7 +166,7 @@ namespace PhysXEditorTests
         {
             physx::PxShape* shape = nullptr;
             pxRigidStatic->getShapes(&shape, 1, 0);
-            EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eBOX);
+            EXPECT_EQ(shape->getGeometry().getType(), physx::PxGeometryType::eBOX);
         }
 
         // the bounding box of the rigid body should reflect the dimensions of the box set above
@@ -417,7 +417,7 @@ namespace PhysXEditorTests
         {
             physx::PxShape* shape = nullptr;
             pxRigidStatic->getShapes(&shape, 1, shapeIndex);
-            EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
+            EXPECT_EQ(shape->getGeometry().getType(), physx::PxGeometryType::eCONVEXMESH);
         }
 
         // the vertices of the input polygon prism ranged from (0, 0) to (3, 3) and the height was set to 2
@@ -512,7 +512,7 @@ namespace PhysXEditorTests
         {
             physx::PxShape* shape = nullptr;
             pxRigidStatic->getShapes(&shape, 1, 0);
-            EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
+            EXPECT_EQ(shape->getGeometry().getType(), physx::PxGeometryType::eCONVEXMESH);
         }
         
         // the bounding box of the rigid body should reflect the dimensions of the cylinder set above
@@ -639,7 +639,7 @@ namespace PhysXEditorTests
         {
             physx::PxShape* shape = nullptr;
             pxRigidDynamic->getShapes(&shape, 1, 0);
-            EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eBOX);
+            EXPECT_EQ(shape->getGeometry().getType(), physx::PxGeometryType::eBOX);
         }
 
         // the bounding box of the rigid body should reflect the dimensions of the box set above

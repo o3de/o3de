@@ -458,7 +458,6 @@ namespace PhysX
         material->SetRestitution(prevRestitution);
     }
 
-#if (PX_PHYSICS_VERSION_MAJOR >= 5)
     TEST_F(GenericPhysicsInterfaceTest, Materials_BoxWithCompliantContactModeDisabled_DoesNotPenetrateFloor)
     {
         AzPhysics::SceneHandle sceneHandle = CreateTestScene();
@@ -510,7 +509,6 @@ namespace PhysX
         // The box should settle near to the floor
         EXPECT_THAT(box->GetPosition().GetZ(), ::testing::FloatNear(0.5f, 0.0001f));
     }
-#endif // (PX_PHYSICS_VERSION_MAJOR >= 5)
 
     TEST_F(GenericPhysicsInterfaceTest, Collider_ColliderTag_IsSetFromConfiguration)
     {

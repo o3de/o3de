@@ -170,8 +170,6 @@ namespace PhysX::Pipeline
         }
 
         HeightFieldAssetHeader header;
-        physx::PxCooking* cooking = nullptr;
-        SystemRequestsBus::BroadcastResult(cooking, &SystemRequests::GetCooking);
 
         // Read samples from heightfield
         AZStd::vector<physx::PxHeightFieldSample> samples;
@@ -188,7 +186,7 @@ namespace PhysX::Pipeline
 
         // Cook description to file
         physx::PxDefaultMemoryOutputStream writer;
-        bool success = cooking->cookHeightField(heightFieldDesc, writer);
+        bool success = PxCookHeightField(heightFieldDesc, writer);
         header.m_assetDataSize = writer.getSize() + 2 * sizeof(float);
 
         PhysX::StreamWrapper writerStream(stream);

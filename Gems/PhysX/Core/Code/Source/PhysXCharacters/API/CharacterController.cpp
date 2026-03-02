@@ -126,7 +126,9 @@ namespace PhysX
         [[maybe_unused]] const physx::PxShape* shape,
         [[maybe_unused]] const physx::PxRigidActor* actor)
     {
-        return postFilter(filterData, hit);
+        return m_objectPostFilter
+            ? m_objectPostFilter(filterData, hit)
+            : physx::PxQueryHitType::Enum::eBLOCK;
     }
 
     physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(

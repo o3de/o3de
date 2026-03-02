@@ -142,7 +142,7 @@ namespace PhysX
             ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::AnyHit, physx::PxHitFlag::eANY_HIT);
             ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::AssumeNoInitialOverlap, physx::PxHitFlag::eASSUME_NO_INITIAL_OVERLAP);
             ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshMultiple, physx::PxHitFlag::eMESH_MULTIPLE);
-            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshAny, physx::PxHitFlag::eMESH_ANY);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshAny, physx::PxHitFlag::eANY_HIT); // Changed in PhysX 5.6.1
             ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshBothSides, physx::PxHitFlag::eMESH_BOTH_SIDES);
             ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::PreciseSweep, physx::PxHitFlag::ePRECISE_SWEEP);
             ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MTD, physx::PxHitFlag::eMTD);
@@ -282,14 +282,6 @@ namespace PhysX
                 }
                 return m_hitType;
             }
-            return physx::PxQueryHitType::eNONE;
-        }
-
-        // Unused, we're only pre-filtering at this time
-        physx::PxQueryHitType::Enum PhysXQueryFilterCallback::postFilter(
-            [[maybe_unused]] const physx::PxFilterData& filterData, 
-            [[maybe_unused]] const physx::PxQueryHit& hit)
-        {
             return physx::PxQueryHitType::eNONE;
         }
 
