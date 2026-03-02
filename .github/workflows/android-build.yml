@@ -224,10 +224,12 @@ jobs:
           toolset: ${{ inputs.msvc_toolset_version }}
 
       - name: Setup gradle
-        uses: gradle/actions/setup-gradle@017a9effdb900e5b5b2fddfb590a105619dca3c3 #v4.4.2
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: ${{ inputs.gradle_version }}
         with:
           gradle-version: '${{ inputs.gradle_version }}'
+          add-job-summary: on-failure
+
       - name: Configure environment
         # Install dependencies for gradle and clang builds from the NDK
         continue-on-error: true
