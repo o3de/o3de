@@ -16,6 +16,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QSet>
 #include <QDir>
 #include <QLocale>
 #include <QTranslator>
@@ -218,9 +219,9 @@ namespace AzToolsFramework
             qDebug() << "[i18n]" << toolName << "using language:" << language;
 
             // Load Qt's base translations first (for standard button text: OK, Cancel, Save, etc.)
-            // This ensures standard Qt widget text is translated regardless of O3DE module translations.
             LoadQtBaseTranslations(language, app);
 
+            // Load centralized translations (framework modules like Editor, AzToolsFramework, etc.)
             QTranslator* translator = LoadModuleTranslatorForLanguage(toolName, language, app);
 
             if (translator)
@@ -232,7 +233,94 @@ namespace AzToolsFramework
                 qDebug() << "[i18n] No translation file found for" << toolName << "(" << language << "), using English";
             }
 
+            // Load translations from all active Gems (gem-local .qm files)
+            LoadAllActiveGemTranslations(language, app);
+
             return translator;
+        }
+
+        /**
+         * @brief Load translations from all active Gems' local directories
+         * @param languageCode Language code (e.g., "zh_CN")
+         * @param app QCoreApplication instance to install translators on
+         * @return Number of .qm files loaded
+         *
+         * Each Gem can have its own translations stored in:
+         *   {gem_root}/Editor/Translations/{language}/{gem_name}_{language}.qm
+         *
+         * This method uses SettingsRegistry's VisitActiveGems to discover all
+         * active Gems and their paths, then loads any .qm files found in each
+         * Gem's translations directory.
+         *
+         * Supports all three Gem types:
+         *   1. Engine built-in Gems (under engine_root/Gems/)
+         *   2. External Gems (registered in o3de_manifest.json)
+         *   3. Game project Gems (referenced in project.json)
+         */
+        static int LoadAllActiveGemTranslations(
+            const QString& languageCode,
+            QCoreApplication* app = nullptr)
+        {
+            if (languageCode == "en_US" || languageCode.isEmpty())
+            {
+                return 0;
+            }
+
+            auto* registry = AZ::SettingsRegistry::Get();
+            if (!registry)
+            {
+                return 0;
+            }
+
+            int loadedCount = 0;
+
+            AZ::SettingsRegistryMergeUtils::VisitActiveGems(*registry,
+                [&](AZStd::string_view gemName, AZStd::string_view gemPath)
+                {
+                    QString qGemPath = QString::fromUtf8(gemPath.data(), static_cast<int>(gemPath.size()));
+
+                    // Check for .qm files in {gemPath}/Editor/Translations/{language}/
+                    QString translationsDir = qGemPath
+                        + QString("/Editor/Translations/%1").arg(languageCode);
+                    QDir dir(translationsDir);
+                    if (!dir.exists())
+                    {
+                        return;
+                    }
+
+                    const QStringList qmFiles = dir.entryList(
+                        QStringList() << "*.qm", QDir::Files);
+                    for (const QString& qmFile : qmFiles)
+                    {
+                        QTranslator* translator = new QTranslator();
+                        QString fullPath = dir.filePath(qmFile);
+                        if (translator->load(fullPath))
+                        {
+                            if (app)
+                            {
+                                app->installTranslator(translator);
+                            }
+                            else if (qApp)
+                            {
+                                qApp->installTranslator(translator);
+                            }
+                            loadedCount++;
+                        }
+                        else
+                        {
+                            delete translator;
+                        }
+                    }
+
+                    if (!qmFiles.isEmpty())
+                    {
+                        qDebug() << "[i18n] Loaded" << qmFiles.size() << "translation(s) from gem"
+                                 << QString::fromUtf8(gemName.data(), static_cast<int>(gemName.size()));
+                    }
+                });
+
+            qDebug() << "[i18n] Loaded" << loadedCount << "gem translation file(s) total";
+            return loadedCount;
         }
 
         /**
@@ -247,10 +335,11 @@ namespace AzToolsFramework
         static QStringList GetAvailableLanguages()
         {
             QStringList languages;
-            // English is always available as the source language
             languages << "en_US";
 
-            // Resolve the translations root directory
+            QSet<QString> discoveredLanguages;
+
+            // 1. Scan centralized translations directory (framework modules)
             QString translationsRoot;
             auto* fileIO = AZ::IO::FileIOBase::GetInstance();
             if (fileIO)
@@ -263,7 +352,6 @@ namespace AzToolsFramework
                 }
             }
 
-            // Fallback: resolve engine root from SettingsRegistry
             if (translationsRoot.isEmpty())
             {
                 if (auto registry = AZ::SettingsRegistry::Get())
@@ -280,7 +368,6 @@ namespace AzToolsFramework
                 }
             }
 
-            // Scan for subdirectories that contain .qm files
             if (!translationsRoot.isEmpty())
             {
                 QDir rootDir(translationsRoot);
@@ -290,23 +377,57 @@ namespace AzToolsFramework
                         QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
                     for (const QString& subdir : subdirs)
                     {
-                        // Skip English directories (already added above)
                         if (subdir == "en_US")
                         {
                             continue;
                         }
-
-                        // Check if the directory contains at least one .qm file
                         QDir langDir(rootDir.filePath(subdir));
                         QStringList qmFiles = langDir.entryList(
                             QStringList() << "*.qm", QDir::Files);
                         if (!qmFiles.isEmpty())
                         {
-                            languages << subdir;
+                            discoveredLanguages.insert(subdir);
                         }
                     }
                 }
             }
+
+            // 2. Scan gem-local translations directories
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                AZ::SettingsRegistryMergeUtils::VisitActiveGems(*registry,
+                    [&](AZStd::string_view /*gemName*/, AZStd::string_view gemPath)
+                    {
+                        QString gemTransDir = QString::fromUtf8(gemPath.data(), static_cast<int>(gemPath.size()))
+                            + "/Editor/Translations";
+                        QDir transDir(gemTransDir);
+                        if (!transDir.exists())
+                        {
+                            return;
+                        }
+                        const QStringList subdirs = transDir.entryList(
+                            QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+                        for (const QString& subdir : subdirs)
+                        {
+                            if (subdir == "en_US" || discoveredLanguages.contains(subdir))
+                            {
+                                continue;
+                            }
+                            QDir langDir(transDir.filePath(subdir));
+                            QStringList qmFiles = langDir.entryList(
+                                QStringList() << "*.qm", QDir::Files);
+                            if (!qmFiles.isEmpty())
+                            {
+                                discoveredLanguages.insert(subdir);
+                            }
+                        }
+                    });
+            }
+
+            // Sort and append discovered languages
+            QStringList sortedLangs = discoveredLanguages.values();
+            sortedLangs.sort();
+            languages.append(sortedLangs);
 
             return languages;
         }

@@ -485,7 +485,9 @@ function(add_gem_translation_multi_dirs gem_name source_dirs)
     endif()
 
     # Parse optional arguments
-    cmake_parse_arguments(ARG "" "" "INCLUDE_DIRS" ${ARGN})
+    # OUTPUT_ROOT: when set, .ts/.qm files go to {OUTPUT_ROOT}/{language}/ (gem-local mode)
+    #              when not set, files go to the centralized Assets/Editor/Translations/{language}/
+    cmake_parse_arguments(ARG "" "OUTPUT_ROOT" "INCLUDE_DIRS" ${ARGN})
 
     # Find Qt5 Linguist Tools
     find_package(Qt5 COMPONENTS LinguistTools REQUIRED)
@@ -535,7 +537,12 @@ function(add_gem_translation_multi_dirs gem_name source_dirs)
         endif()
         
         # Create language-specific directory
-        set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        # When OUTPUT_ROOT is set, output to gem-local directory; otherwise use centralized location
+        if(ARG_OUTPUT_ROOT)
+            set(TS_DIR "${ARG_OUTPUT_ROOT}/${_language}")
+        else()
+            set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        endif()
         file(MAKE_DIRECTORY "${TS_DIR}")
         
         # Verify directory was created
@@ -597,8 +604,9 @@ function(add_gem_translation gem_name)
 
     # Parse arguments:
     #   First unparsed positional argument = source directory (optional)
+    #   OUTPUT_ROOT = when set, .ts/.qm go to {OUTPUT_ROOT}/{language}/ (gem-local mode)
     #   INCLUDE_DIRS = additional include directories for namespace resolution (optional)
-    cmake_parse_arguments(ARG "" "" "INCLUDE_DIRS" ${ARGN})
+    cmake_parse_arguments(ARG "" "OUTPUT_ROOT" "INCLUDE_DIRS" ${ARGN})
     
     set(_gem_src_dir "")
     if(ARG_UNPARSED_ARGUMENTS)
@@ -670,7 +678,12 @@ function(add_gem_translation gem_name)
         endif()
         
         # Create language-specific directory
-        set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        # When OUTPUT_ROOT is set, output to gem-local directory; otherwise use centralized location
+        if(ARG_OUTPUT_ROOT)
+            set(TS_DIR "${ARG_OUTPUT_ROOT}/${_language}")
+        else()
+            set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        endif()
         file(MAKE_DIRECTORY "${TS_DIR}")
         
         # Verify directory was created
@@ -715,23 +728,80 @@ function(add_gem_translation gem_name)
     
 endfunction()
 
+#! _i18n_collect_gem_jsons_from_json_subdirs
+#
+# Helper: reads "external_subdirectories" from a JSON manifest file and
+# appends any gem.json files found to the output list.
+#
+# \arg:output_var  - Variable name to append results to (in PARENT_SCOPE)
+# \arg:json_path   - Path to the JSON file (e.g., o3de_manifest.json, project.json)
+# \arg:base_dir    - Base directory for resolving relative paths in external_subdirectories
+#
+function(_i18n_collect_gem_jsons_from_json_subdirs output_var json_path base_dir)
+    if(NOT EXISTS "${json_path}")
+        return()
+    endif()
+
+    file(READ "${json_path}" _json_content)
+
+    string(JSON _ext_count ERROR_VARIABLE _err LENGTH "${_json_content}" "external_subdirectories")
+    if(_err OR _ext_count EQUAL 0)
+        return()
+    endif()
+
+    set(_collected "")
+    math(EXPR _last "${_ext_count} - 1")
+    foreach(_idx RANGE ${_last})
+        string(JSON _ext_subdir ERROR_VARIABLE _item_err GET "${_json_content}" "external_subdirectories" ${_idx})
+        if(_item_err)
+            continue()
+        endif()
+
+        # Resolve relative paths against the base directory
+        if(NOT IS_ABSOLUTE "${_ext_subdir}")
+            set(_ext_subdir "${base_dir}/${_ext_subdir}")
+        endif()
+
+        # Normalize the path
+        cmake_path(NORMAL_PATH _ext_subdir)
+
+        if(IS_DIRECTORY "${_ext_subdir}")
+            if(EXISTS "${_ext_subdir}/gem.json")
+                list(APPEND _collected "${_ext_subdir}/gem.json")
+            endif()
+            # Also check for nested gems (sub-gems within this external subdirectory)
+            file(GLOB_RECURSE _nested_gem_jsons "${_ext_subdir}/*/gem.json")
+            if(_nested_gem_jsons)
+                list(APPEND _collected ${_nested_gem_jsons})
+            endif()
+        endif()
+    endforeach()
+
+    set(${output_var} ${${output_var}} ${_collected} PARENT_SCOPE)
+endfunction()
+
 #! generate_all_gems_translations
 #
-# Auto-discover and generate translations for ALL Gems with source code.
+# Auto-discover and generate translations for ALL Gems with source code,
+# from three sources:
+#   1. Engine built-in Gems (under ${LY_ROOT_FOLDER}/Gems/)
+#   2. External Gems registered in ~/.o3de/o3de_manifest.json (external_subdirectories)
+#   3. Game project Gems (external_subdirectories in project.json + Gems/ under project)
 #
-# This function automatically discovers Gems by scanning for gem.json files
-# under ${LY_ROOT_FOLDER}/Gems/. It extracts gem_name and type from each
-# gem.json, skips Asset-only Gems, and generates translation files for all
-# Gems that contain translatable source code.
+# Translation files (.ts/.qm) are placed in each Gem's own directory:
+#   {gem_root}/Editor/Translations/{language}/{gem_name}_{language}.ts
+#
+# This makes each Gem self-contained with its own translations, supporting
+# engine Gems, external/downloaded Gems, and project-local Gems equally.
 #
 # Auto-discovery features:
-#   - Finds ALL Gems regardless of nesting depth (Atom/Tools/*, AtomLyIntegration/*, etc.)
+#   - Finds ALL Gems regardless of nesting depth
 #   - Reads gem_name from gem.json (requires CMake 3.19+ for string(JSON))
 #   - Skips Asset-only Gems (type = "Asset")
 #   - Skips Gems without source directories
 #   - Auto-detects Include/ directories for namespace resolution
-#   - Auto-detects Code/Tools/ directories for multi-directory scanning
-#   - EMotionFX is excluded (handled separately with multi-directory scanning)
+#   - Auto-detects Code/Tools/, Code/Editor/, Code/StaticLib/ directories
+#   - EMotionFX/PhysX excluded (handled separately with multi-directory scanning)
 #   - Additional exclusions via LY_I18N_EXCLUDE_GEMS CMake variable
 #
 function(generate_all_gems_translations)
@@ -739,28 +809,124 @@ function(generate_all_gems_translations)
         return()
     endif()
 
-    message(STATUS "  Auto-discovering Gems via gem.json files...")
+    message(STATUS "  Auto-discovering Gems from all sources (engine, external, project)...")
 
-    # ---- Step 1: Find all gem.json files under Gems/ ----
-    file(GLOB_RECURSE _all_gem_json_files "${LY_ROOT_FOLDER}/Gems/*/gem.json")
+    # ---- Step 1: Collect gem.json files from all three sources ----
+    set(_all_gem_json_files "")
 
-    # Sort for deterministic processing order
+    # Source 1: Engine built-in Gems
+    file(GLOB_RECURSE _engine_gem_jsons "${LY_ROOT_FOLDER}/Gems/*/gem.json")
+    list(APPEND _all_gem_json_files ${_engine_gem_jsons})
+    list(LENGTH _engine_gem_jsons _engine_gem_count)
+    message(STATUS "  [SOURCE] Engine Gems: ${_engine_gem_count} gem.json files found")
+
+    # Source 2: External Gems from o3de_manifest.json (external_subdirectories)
+    o3de_get_manifest_path(_manifest_path)
+    if(EXISTS "${_manifest_path}")
+        get_filename_component(_manifest_dir "${_manifest_path}" DIRECTORY)
+        set(_external_gem_jsons_before ${_all_gem_json_files})
+        _i18n_collect_gem_jsons_from_json_subdirs(_all_gem_json_files "${_manifest_path}" "${_manifest_dir}")
+        list(LENGTH _all_gem_json_files _after_external)
+        list(LENGTH _external_gem_jsons_before _before_external)
+        math(EXPR _external_count "${_after_external} - ${_before_external}")
+        message(STATUS "  [SOURCE] External Gems (o3de_manifest.json): ${_external_count} gem.json files found")
+
+        # Source 2b: Gems from default_gems_folder (safety net for gems not in external_subdirectories)
+        file(READ "${_manifest_path}" _manifest_json_content)
+        string(JSON _default_gems_folder ERROR_VARIABLE _dgf_err GET "${_manifest_json_content}" "default_gems_folder")
+        if(NOT _dgf_err AND IS_DIRECTORY "${_default_gems_folder}")
+            set(_before_dgf ${_all_gem_json_files})
+            if(EXISTS "${_default_gems_folder}/gem.json")
+                list(APPEND _all_gem_json_files "${_default_gems_folder}/gem.json")
+            endif()
+            file(GLOB_RECURSE _dgf_gem_jsons "${_default_gems_folder}/*/gem.json")
+            list(APPEND _all_gem_json_files ${_dgf_gem_jsons})
+            list(LENGTH _all_gem_json_files _after_dgf)
+            list(LENGTH _before_dgf _before_dgf_count)
+            math(EXPR _dgf_count "${_after_dgf} - ${_before_dgf_count}")
+            if(_dgf_count GREATER 0)
+                message(STATUS "  [SOURCE] default_gems_folder: ${_dgf_count} additional gem.json files found")
+            endif()
+        endif()
+    else()
+        message(STATUS "  [SOURCE] External Gems: o3de_manifest.json not found, skipping")
+        set(_manifest_json_content "")
+    endif()
+
+    # Source 3: Game project Gems
+    # Collect project paths from LY_PROJECTS (if available) and from o3de_manifest.json "projects" array
+    set(_project_paths "")
+
+    # Primary: LY_PROJECTS cache variable (set via -D flag or CMakePresets.json)
+    if(LY_PROJECTS)
+        list(APPEND _project_paths ${LY_PROJECTS})
+    endif()
+
+    # Fallback: read "projects" array from o3de_manifest.json
+    # This covers project-centric builds where LY_PROJECTS may not yet be set
+    # when Translation.cmake runs (Translation.cmake is included before Projects.cmake)
+    if(_manifest_json_content)
+        string(JSON _proj_count ERROR_VARIABLE _proj_err LENGTH "${_manifest_json_content}" "projects")
+        if(NOT _proj_err AND _proj_count GREATER 0)
+            math(EXPR _proj_last "${_proj_count} - 1")
+            foreach(_idx RANGE ${_proj_last})
+                string(JSON _proj_path ERROR_VARIABLE _item_err GET "${_manifest_json_content}" "projects" ${_idx})
+                if(NOT _item_err AND IS_DIRECTORY "${_proj_path}")
+                    list(APPEND _project_paths "${_proj_path}")
+                endif()
+            endforeach()
+        endif()
+    endif()
+
+    # Deduplicate project paths
+    if(_project_paths)
+        list(REMOVE_DUPLICATES _project_paths)
+    endif()
+
+    set(_project_gem_count 0)
+    foreach(_project_path ${_project_paths})
+        # Resolve relative paths against engine root
+        if(NOT IS_ABSOLUTE "${_project_path}")
+            set(_project_path "${LY_ROOT_FOLDER}/${_project_path}")
+        endif()
+
+        if(NOT IS_DIRECTORY "${_project_path}")
+            continue()
+        endif()
+
+        # Read external_subdirectories from project.json
+        set(_before_project ${_all_gem_json_files})
+        if(EXISTS "${_project_path}/project.json")
+            _i18n_collect_gem_jsons_from_json_subdirs(_all_gem_json_files "${_project_path}/project.json" "${_project_path}")
+        endif()
+
+        # Also scan {project}/Gems/ directory for project-local gems
+        if(IS_DIRECTORY "${_project_path}/Gems")
+            file(GLOB_RECURSE _proj_local_gems "${_project_path}/Gems/*/gem.json")
+            list(APPEND _all_gem_json_files ${_proj_local_gems})
+        endif()
+
+        list(LENGTH _all_gem_json_files _after_project)
+        list(LENGTH _before_project _bp)
+        math(EXPR _this_project_count "${_after_project} - ${_bp}")
+        math(EXPR _project_gem_count "${_project_gem_count} + ${_this_project_count}")
+    endforeach()
+    list(LENGTH _project_paths _project_count)
+    message(STATUS "  [SOURCE] Project Gems (${_project_count} projects): ${_project_gem_count} gem.json files found")
+
+    # Deduplicate and sort for deterministic processing order
+    list(REMOVE_DUPLICATES _all_gem_json_files)
     list(SORT _all_gem_json_files)
+    list(LENGTH _all_gem_json_files _total_gem_count)
+    message(STATUS "  [TOTAL]  ${_total_gem_count} unique gem.json files to process")
 
     # ---- Step 2: Build exclusion list ----
-    # EMotionFX is always excluded because it requires special multi-directory
-    # scanning with custom include paths (handled separately in the auto-generation section)
-    # PhysX5/PhysX4/PhysXCommon are excluded because PhysX has a non-standard directory
-    # structure (shared Code/ dir with gem.json files in PhysX4/PhysX5 subdirs).
-    # PhysX is handled separately with multi-directory scanning in the auto-generation section.
     set(_EXCLUDED_GEM_NAMES
         "EMotionFX"
         "PhysX5"
         "PhysX4"
         "PhysXCommon"
     )
-
-    # Allow users to add additional exclusions via CMake cache variable
     if(LY_I18N_EXCLUDE_GEMS)
         list(APPEND _EXCLUDED_GEM_NAMES ${LY_I18N_EXCLUDE_GEMS})
     endif()
@@ -799,39 +965,24 @@ function(generate_all_gems_translations)
         endif()
 
         # ---- Step 4: Collect source directories ----
-        # Look for standard source locations within the Gem
         set(_gem_src_dirs "")
 
-        # Primary: Code/Source/ (most common location for Gem source code)
         if(IS_DIRECTORY "${_gem_root}/Code/Source")
             list(APPEND _gem_src_dirs "${_gem_root}/Code/Source")
         endif()
-
-        # Additional: Code/Tools/ (some Gems have extra UI code here, e.g. EMotionFXAtom)
         if(IS_DIRECTORY "${_gem_root}/Code/Tools")
             list(APPEND _gem_src_dirs "${_gem_root}/Code/Tools")
         endif()
-
-        # Additional: Code/Editor/ (some Gems have editor UI code here, e.g. LyShine, ScriptCanvas, ImGui)
-        # LyShine places its entire editor (menus, dialogs, property handlers, viewport, animation)
-        # in Code/Editor/, separate from the runtime component code in Code/Source/.
         if(IS_DIRECTORY "${_gem_root}/Code/Editor")
             list(APPEND _gem_src_dirs "${_gem_root}/Code/Editor")
         endif()
-
-        # Additional: Code/StaticLib/ (some Gems have shared widget code here, e.g. GraphCanvas)
-        # GraphCanvas places its AssetEditorMainWindow and many other UI widgets in StaticLib/
-        # which are inherited by LandscapeCanvas, ScriptCanvas, MaterialCanvas, etc.
         if(IS_DIRECTORY "${_gem_root}/Code/StaticLib")
             list(APPEND _gem_src_dirs "${_gem_root}/Code/StaticLib")
         endif()
-
-        # Fallback: if neither Source/ nor Tools/ found, try Code/ directly
         if(NOT _gem_src_dirs AND IS_DIRECTORY "${_gem_root}/Code")
             list(APPEND _gem_src_dirs "${_gem_root}/Code")
         endif()
 
-        # Skip if no source directories found
         if(NOT _gem_src_dirs)
             message(STATUS "  [SKIP] ${_gem_name} - no source directory found")
             math(EXPR _skipped_count "${_skipped_count} + 1")
@@ -839,61 +990,43 @@ function(generate_all_gems_translations)
         endif()
 
         # ---- Step 5: Auto-detect Include directories for namespace resolution ----
-        # IMPORTANT: When lupdate scans only Source/ directories, it may not find
-        # header files containing Q_OBJECT macros and C++ namespace declarations.
-        # Without proper include paths, lupdate extracts context as "ClassName"
-        # instead of "Namespace::ClassName", causing translation lookups to fail
-        # at runtime because Qt's meta-object system uses fully qualified names.
-        #
-        # Examples of affected Gems:
-        #   - GraphCanvas: headers in Code/StaticLib/GraphCanvas/ are included via
-        #     <GraphCanvas/Widgets/GraphCanvasEditor/GraphCanvasAssetEditorMainWindow.h>
-        #     Without Code/StaticLib as include path, lupdate cannot resolve the
-        #     namespace and extracts "AssetEditorMainWindow" instead of
-        #     "GraphCanvas::AssetEditorMainWindow", causing menu items (File, Edit,
-        #     View, etc.) to remain untranslated in LandscapeCanvas, ScriptCanvas,
-        #     MaterialCanvas and other consumers.
         set(_gem_include_dirs "")
         if(IS_DIRECTORY "${_gem_root}/Code/Include")
             list(APPEND _gem_include_dirs "${_gem_root}/Code/Include")
         endif()
-
-        # Code/StaticLib/ is used by Gems like GraphCanvas that place shared widget
-        # code (with Q_OBJECT classes in namespaces) in a static library.
-        # Source files include headers via <GemName/Path/To/Header.h>, so the
-        # StaticLib directory itself must be an include root for lupdate.
         if(IS_DIRECTORY "${_gem_root}/Code/StaticLib")
             list(APPEND _gem_include_dirs "${_gem_root}/Code/StaticLib")
         endif()
-
-        # Code/Source/ may also contain headers that define namespaced Q_OBJECT
-        # classes. When a Gem's .cpp files include headers from Code/Source/ via
-        # relative paths, lupdate needs this directory as an include root.
         if(IS_DIRECTORY "${_gem_root}/Code/Source")
             list(APPEND _gem_include_dirs "${_gem_root}/Code/Source")
         endif()
 
-        # ---- Step 6: Call appropriate translation function ----
+        # ---- Step 6: Call translation function with gem-local output ----
+        # Output to {gem_root}/Editor/Translations/ instead of centralized location
+        set(_output_root "${_gem_root}/Editor/Translations")
+
         list(LENGTH _gem_src_dirs _src_count)
 
         if(_src_count GREATER 1)
-            # Multi-directory scanning (e.g., Code/Source + Code/Tools)
             if(_gem_include_dirs)
                 message(STATUS "  [INCL] ${_gem_name}: Multi-dir scan with Include path(s)")
                 add_gem_translation_multi_dirs("${_gem_name}" "${_gem_src_dirs}"
+                    OUTPUT_ROOT "${_output_root}"
                     INCLUDE_DIRS ${_gem_include_dirs})
             else()
-                add_gem_translation_multi_dirs("${_gem_name}" "${_gem_src_dirs}")
+                add_gem_translation_multi_dirs("${_gem_name}" "${_gem_src_dirs}"
+                    OUTPUT_ROOT "${_output_root}")
             endif()
         else()
-            # Single-directory scanning
             list(GET _gem_src_dirs 0 _single_src_dir)
             if(_gem_include_dirs)
                 message(STATUS "  [INCL] ${_gem_name}: Adding Include dir(s) for namespace resolution")
                 add_gem_translation("${_gem_name}" "${_single_src_dir}"
+                    OUTPUT_ROOT "${_output_root}"
                     INCLUDE_DIRS ${_gem_include_dirs})
             else()
-                add_gem_translation("${_gem_name}" "${_single_src_dir}")
+                add_gem_translation("${_gem_name}" "${_single_src_dir}"
+                    OUTPUT_ROOT "${_output_root}")
             endif()
         endif()
 
@@ -901,7 +1034,7 @@ function(generate_all_gems_translations)
     endforeach()
 
     message(STATUS "")
-    message(STATUS "  [SUMMARY] Auto-discovered Gems: processed=${_processed_count}, skipped=${_skipped_count}")
+    message(STATUS "  [SUMMARY] All sources: processed=${_processed_count}, skipped=${_skipped_count}")
 
 endfunction()
 
@@ -941,6 +1074,10 @@ function(add_json_property_translations json_dir context_name module_name)
     if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
         return()
     endif()
+
+    # Parse optional arguments
+    # OUTPUT_ROOT: when set, .ts/.qm files go to {OUTPUT_ROOT}/{language}/ (gem-local mode)
+    cmake_parse_arguments(ARG "" "OUTPUT_ROOT" "" ${ARGN})
 
     # ---- Step 1: Find all JSON files ----
     file(GLOB _json_files "${json_dir}/*.json")
@@ -1048,7 +1185,11 @@ function(add_json_property_translations json_dir context_name module_name)
         endif()
 
         # Create language-specific directory
-        set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        if(ARG_OUTPUT_ROOT)
+            set(TS_DIR "${ARG_OUTPUT_ROOT}/${_language}")
+        else()
+            set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        endif()
         file(MAKE_DIRECTORY "${TS_DIR}")
 
         if(NOT IS_DIRECTORY "${TS_DIR}")
@@ -1133,6 +1274,10 @@ function(add_editcontext_translations source_dirs context_name module_name)
     if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
         return()
     endif()
+
+    # Parse optional arguments
+    # OUTPUT_ROOT: when set, .ts/.qm files go to {OUTPUT_ROOT}/{language}/ (gem-local mode)
+    cmake_parse_arguments(ARG "" "OUTPUT_ROOT" "" ${ARGN})
 
     # ---- Step 1: Find all C++ files in source directories ----
     set(_all_cpp_files "")
@@ -1308,7 +1453,11 @@ function(add_editcontext_translations source_dirs context_name module_name)
         endif()
 
         # Create language-specific directory
-        set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        if(ARG_OUTPUT_ROOT)
+            set(TS_DIR "${ARG_OUTPUT_ROOT}/${_language}")
+        else()
+            set(TS_DIR "${LY_ROOT_FOLDER}/Assets/Editor/Translations/${_language}")
+        endif()
         file(MAKE_DIRECTORY "${TS_DIR}")
 
         if(NOT IS_DIRECTORY "${TS_DIR}")
@@ -1454,8 +1603,11 @@ if(LY_I18N_BUILD AND PAL_TRAIT_BUILD_HOST_TOOLS)
     endif()
     
     # Generate translations using multi-directory function with include paths
+    # Output to EMotionFX gem's own Editor/Translations/ directory
+    set(_emfx_output_root "${LY_ROOT_FOLDER}/Gems/EMotionFX/Editor/Translations")
     if(_emfx_source_dirs)
         add_gem_translation_multi_dirs("EMotionFX" "${_emfx_source_dirs}"
+            OUTPUT_ROOT "${_emfx_output_root}"
             INCLUDE_DIRS ${_emfx_include_dirs})
     endif()
     
@@ -1466,7 +1618,8 @@ if(LY_I18N_BUILD AND PAL_TRAIT_BUILD_HOST_TOOLS)
     # generate a separate .ts/.qm file for translators to work with.
     message(STATUS ">>> Extracting EMotionFX EditContext Strings <<<")
     if(_emfx_source_dirs)
-        add_editcontext_translations("${_emfx_source_dirs}" "EMotionFX" "EMotionFX_Reflect")
+        add_editcontext_translations("${_emfx_source_dirs}" "EMotionFX" "EMotionFX_Reflect"
+            OUTPUT_ROOT "${_emfx_output_root}")
     endif()
     
     # 6.2 Special handling for PhysX - scan shared Code directory and AzFramework physics config
@@ -1526,8 +1679,11 @@ if(LY_I18N_BUILD AND PAL_TRAIT_BUILD_HOST_TOOLS)
     endif()
 
     # Generate translations using multi-directory function with include paths
+    # Output to PhysX gem's own Editor/Translations/ directory
+    set(_physx_output_root "${LY_ROOT_FOLDER}/Gems/PhysX/Editor/Translations")
     if(_physx_source_dirs)
         add_gem_translation_multi_dirs("PhysX5" "${_physx_source_dirs}"
+            OUTPUT_ROOT "${_physx_output_root}"
             INCLUDE_DIRS ${_physx_include_dirs})
     endif()
 
@@ -1537,19 +1693,22 @@ if(LY_I18N_BUILD AND PAL_TRAIT_BUILD_HOST_TOOLS)
     # strings and generates translation entries so InspectorWidget and
     # PropertyRowWidget can translate them at runtime via TranslatePropertyString().
     message(STATUS ">>> Generating Material JSON Property Translations <<<")
+    set(_material_output_root "${LY_ROOT_FOLDER}/Gems/Atom/Feature/Common/Editor/Translations")
     if(EXISTS "${LY_ROOT_FOLDER}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs")
         add_json_property_translations(
             "${LY_ROOT_FOLDER}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs"
             "MaterialInputs"
             "MaterialInputs"
+            OUTPUT_ROOT "${_material_output_root}"
         )
     endif()
     
     message(STATUS "")
     message(STATUS "========================================================")
     message(STATUS "Automatic Translation File Generation Complete!")
-    message(STATUS "Translation files (.ts) location:")
-    message(STATUS "  ${LY_ROOT_FOLDER}/Assets/Editor/Translations/<language>/")
+    message(STATUS "Translation files (.ts/.qm) locations:")
+    message(STATUS "  Framework modules: ${LY_ROOT_FOLDER}/Assets/Editor/Translations/<language>/")
+    message(STATUS "  Gem translations:  <gem_root>/Editor/Translations/<language>/")
     message(STATUS "========================================================")
     message(STATUS "")
 endif()

@@ -10,8 +10,12 @@
 
 #include <QApplication>
 #include <QTranslator>
+#include <QDir>
+
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 namespace AzToolsFramework
 {
@@ -55,7 +59,47 @@ namespace AzToolsFramework
         }
     }
 
+    // Try to load a .qm file from a Gem's local Editor/Translations/ directory.
+    // Uses SettingsRegistry to look up the gem path by name from the manifest gems registry.
+    // @param moduleName Gem/module name (e.g., "ScriptCanvas")
+    // @param languageCode Language code (e.g., "zh_CN")
+    // @return Loaded and installed QTranslator, or nullptr on failure
+    inline QTranslator* LoadGemLocalTranslator(const QString& moduleName, const QString& languageCode)
+    {
+        auto* registry = AZ::SettingsRegistry::Get();
+        if (!registry)
+        {
+            return nullptr;
+        }
+
+        // Look up the gem's path from the manifest gems registry
+        AZStd::string gemPathStr;
+        auto gemPathKey = AZStd::fixed_string<256>::format(
+            "%s/%s/Path", AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey, moduleName.toUtf8().constData());
+        if (!registry->Get(gemPathStr, gemPathKey.c_str()))
+        {
+            return nullptr;
+        }
+
+        // Build path: {gemPath}/Editor/Translations/{language}/{moduleName}_{language}.qm
+        QString qmPath = QString::fromUtf8(gemPathStr.c_str(), static_cast<int>(gemPathStr.size()))
+            + QString("/Editor/Translations/%1/%2_%1.qm").arg(languageCode, moduleName);
+
+        QTranslator* translator = new QTranslator();
+        if (translator->load(qmPath))
+        {
+            if (qApp && qApp->installTranslator(translator))
+            {
+                return translator;
+            }
+        }
+        delete translator;
+        return nullptr;
+    }
+
     // Load a translator for a specific module and language code.
+    // Searches both centralized (Assets/Editor/Translations/) and gem-local
+    // ({gem_root}/Editor/Translations/) directories.
     // @param modulename Module name (e.g., "Editor", "ScriptCanvas")
     // @param languageCode Language code (e.g., "zh_CN")
     // @return Loaded and installed QTranslator, or nullptr for English / on failure
@@ -67,7 +111,15 @@ namespace AzToolsFramework
             return nullptr;
         }
 
+        // Try centralized location first (framework modules)
         QString filename = languageCode + "/" + modulename + "_" + languageCode + ".qm";
-        return LoadTranslator(filename);
+        QTranslator* translator = LoadTranslator(filename);
+        if (translator)
+        {
+            return translator;
+        }
+
+        // Fallback: try gem-local path via SettingsRegistry
+        return LoadGemLocalTranslator(modulename, languageCode);
     }
 } // namespace AzToolsFramework
