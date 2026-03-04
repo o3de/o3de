@@ -4,12 +4,12 @@
 <context>
     <name>Atom::Bootstrap</name>
     <message>
-        <location filename="../../../../Gems/Atom/Bootstrap/Code/Source/BootstrapSystemComponent.cpp" line="160"/>
+        <location filename="../../../Code/Source/BootstrapSystemComponent.cpp" line="160"/>
         <source>Atom RPI</source>
         <translation>Atom 渲染管线接口</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/Atom/Bootstrap/Code/Source/BootstrapSystemComponent.cpp" line="160"/>
+        <location filename="../../../Code/Source/BootstrapSystemComponent.cpp" line="160"/>
         <source>Atom Renderer</source>
         <translation>Atom 渲染器</translation>
     </message>

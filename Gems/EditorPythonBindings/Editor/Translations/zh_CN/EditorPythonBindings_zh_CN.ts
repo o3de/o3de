@@ -4,12 +4,12 @@
 <context>
     <name>EditorPythonBindings</name>
     <message>
-        <location filename="../../../../Gems/EditorPythonBindings/Code/Source/PythonSystemComponent.cpp" line="348"/>
+        <location filename="../../../Code/Source/PythonSystemComponent.cpp" line="348"/>
         <source>PythonSystemComponent</source>
         <translation>Python 系统组件</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/EditorPythonBindings/Code/Source/PythonSystemComponent.cpp" line="349"/>
+        <location filename="../../../Code/Source/PythonSystemComponent.cpp" line="349"/>
         <source>The Python interpreter</source>
         <translation>Python 解释器</translation>
     </message>

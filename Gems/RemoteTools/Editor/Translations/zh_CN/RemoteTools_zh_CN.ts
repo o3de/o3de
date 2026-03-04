@@ -4,12 +4,12 @@
 <context>
     <name>RemoteTools</name>
     <message>
-        <location filename="../../../../Gems/RemoteTools/Code/Source/RemoteToolsSystemComponent.cpp" line="45"/>
+        <location filename="../../../Code/Source/RemoteToolsSystemComponent.cpp" line="45"/>
         <source>RemoteTools</source>
         <translation>远程工具</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/RemoteTools/Code/Source/RemoteToolsSystemComponent.cpp" line="46"/>
+        <location filename="../../../Code/Source/RemoteToolsSystemComponent.cpp" line="46"/>
         <source>[Description of functionality provided by this System Component]</source>
         <translation>[此系统组件提供的功能描述]</translation>
     </message>

@@ -4,12 +4,12 @@
 <context>
     <name>ScriptCanvasPhysics</name>
     <message>
-        <location filename="../../../../Gems/ScriptCanvasPhysics/Code/Source/ScriptCanvasPhysicsSystemComponent.cpp" line="30"/>
+        <location filename="../../../Code/Source/ScriptCanvasPhysicsSystemComponent.cpp" line="30"/>
         <source>ScriptCanvasPhysics</source>
         <translation>脚本画布物理</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/ScriptCanvasPhysics/Code/Source/ScriptCanvasPhysicsSystemComponent.cpp" line="31"/>
+        <location filename="../../../Code/Source/ScriptCanvasPhysicsSystemComponent.cpp" line="31"/>
         <source>Exposes legacy physics features to scripting through the Behavior Context to Lua and Script Canvas.</source>
         <translation>通过行为上下文将旧版物理功能暴露给 Lua 和脚本画布的脚本编写。</translation>
     </message>

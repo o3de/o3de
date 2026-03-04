@@ -4,12 +4,12 @@
 <context>
     <name>ScriptCanvasMultiplayer</name>
     <message>
-        <location filename="../../../../Gems/Multiplayer/Multiplayer_ScriptCanvas/Code/Source/ScriptCanvasMultiplayerSystemComponent.cpp" line="28"/>
+        <location filename="../../../Code/Source/ScriptCanvasMultiplayerSystemComponent.cpp" line="28"/>
         <source>ScriptCanvasMultiplayer</source>
         <translation>ScriptCanvas多人游戏</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/Multiplayer/Multiplayer_ScriptCanvas/Code/Source/ScriptCanvasMultiplayerSystemComponent.cpp" line="29"/>
+        <location filename="../../../Code/Source/ScriptCanvasMultiplayerSystemComponent.cpp" line="29"/>
         <source>Provides various Script Canvas nodes for multiplayer.</source>
         <translation>提供各种用于多人游戏的Script Canvas节点。</translation>
     </message>

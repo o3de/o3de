@@ -4,12 +4,12 @@
 <context>
     <name>GameState</name>
     <message>
-        <location filename="../../../../Gems/GameState/Code/Source/GameStateSystemComponent.cpp" line="32"/>
+        <location filename="../../../Code/Source/GameStateSystemComponent.cpp" line="32"/>
         <source>GameState</source>
         <translation>游戏状态</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/GameState/Code/Source/GameStateSystemComponent.cpp" line="33"/>
+        <location filename="../../../Code/Source/GameStateSystemComponent.cpp" line="33"/>
         <source>A generic framework for managing game states and the transitions between them.</source>
         <translation>用于管理游戏状态及其之间转换的通用框架。</translation>
     </message>

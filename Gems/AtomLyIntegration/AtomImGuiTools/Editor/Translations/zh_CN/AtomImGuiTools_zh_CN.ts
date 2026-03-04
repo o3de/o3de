@@ -4,12 +4,12 @@
 <context>
     <name>AtomImGuiTools</name>
     <message>
-        <location filename="../../../../Gems/AtomLyIntegration/AtomImGuiTools/Code/Source/AtomImGuiToolsSystemComponent.cpp" line="34"/>
+        <location filename="../../../Code/Source/AtomImGuiToolsSystemComponent.cpp" line="34"/>
         <source>AtomImGuiTools</source>
         <translation>Atom ImGui 工具</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/AtomLyIntegration/AtomImGuiTools/Code/Source/AtomImGuiToolsSystemComponent.cpp" line="34"/>
+        <location filename="../../../Code/Source/AtomImGuiToolsSystemComponent.cpp" line="34"/>
         <source>[Manager of various Atom ImGui tools.]</source>
         <translation>[各种 Atom ImGui 工具的管理器。]</translation>
     </message>

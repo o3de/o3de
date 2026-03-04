@@ -4,12 +4,12 @@
 <context>
     <name>TickBusOrderViewer</name>
     <message>
-        <location filename="../../../../Gems/TickBusOrderViewer/Code/Source/TickBusOrderViewerSystemComponent.cpp" line="27"/>
+        <location filename="../../../Code/Source/TickBusOrderViewerSystemComponent.cpp" line="27"/>
         <source>TickBusOrderViewer</source>
         <translation>Tick总线顺序查看器</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/TickBusOrderViewer/Code/Source/TickBusOrderViewerSystemComponent.cpp" line="28"/>
+        <location filename="../../../Code/Source/TickBusOrderViewerSystemComponent.cpp" line="28"/>
         <source>Provides a console command for viewing tick bus order, print_tickbus_handlers.</source>
         <translation>提供用于查看 Tick 总线顺序的控制台命令 print_tickbus_handlers。</translation>
     </message>

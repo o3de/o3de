@@ -4,12 +4,12 @@
 <context>
     <name>VideoPlaybackFramework</name>
     <message>
-        <location filename="../../../../Gems/VideoPlaybackFramework/Code/Source/VideoPlaybackFrameworkSystemComponent.cpp" line="79"/>
+        <location filename="../../../Code/Source/VideoPlaybackFrameworkSystemComponent.cpp" line="79"/>
         <source>VideoPlaybackFramework</source>
         <translation>视频回放框架</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/VideoPlaybackFramework/Code/Source/VideoPlaybackFrameworkSystemComponent.cpp" line="80"/>
+        <location filename="../../../Code/Source/VideoPlaybackFrameworkSystemComponent.cpp" line="80"/>
         <source>Interface framework to play back video during gameplay.</source>
         <translation>用于在游戏运行期间回放视频的接口框架。</translation>
     </message>

@@ -4,12 +4,12 @@
 <context>
     <name>ExpressionEvaluation</name>
     <message>
-        <location filename="../../../../Gems/ExpressionEvaluation/Code/Source/ExpressionEvaluationSystemComponent.cpp" line="147"/>
+        <location filename="../../../Code/Source/ExpressionEvaluationSystemComponent.cpp" line="147"/>
         <source>ExpressionEvaluationGem</source>
         <translation>表达式求值Gem</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/ExpressionEvaluation/Code/Source/ExpressionEvaluationSystemComponent.cpp" line="148"/>
+        <location filename="../../../Code/Source/ExpressionEvaluationSystemComponent.cpp" line="148"/>
         <source>[Description of functionality provided by this System Component]</source>
         <translation>[此系统组件提供的功能描述]</translation>
     </message>

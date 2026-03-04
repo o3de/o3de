@@ -4,12 +4,12 @@
 <context>
     <name>InAppPurchases</name>
     <message>
-        <location filename="../../../../Gems/InAppPurchases/Code/Source/InAppPurchasesSystemComponent.cpp" line="56"/>
+        <location filename="../../../Code/Source/InAppPurchasesSystemComponent.cpp" line="56"/>
         <source>InAppPurchases</source>
         <translation>应用内购买</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/InAppPurchases/Code/Source/InAppPurchasesSystemComponent.cpp" line="57"/>
+        <location filename="../../../Code/Source/InAppPurchasesSystemComponent.cpp" line="57"/>
         <source>Adds support for in app purchases on iOS and Android</source>
         <translation>添加对 iOS 和 Android 平台应用内购买的支持</translation>
     </message>

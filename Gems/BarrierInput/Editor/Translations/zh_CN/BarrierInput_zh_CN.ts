@@ -4,12 +4,12 @@
 <context>
     <name>BarrierInput</name>
     <message>
-        <location filename="../../../../Gems/BarrierInput/Code/Source/BarrierInputSystemComponent.cpp" line="65"/>
+        <location filename="../../../Code/Source/BarrierInputSystemComponent.cpp" line="65"/>
         <source>BarrierInput</source>
         <translation>Barrier 输入</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/BarrierInput/Code/Source/BarrierInputSystemComponent.cpp" line="66"/>
+        <location filename="../../../Code/Source/BarrierInputSystemComponent.cpp" line="66"/>
         <source>Provides functionality related to Barrier input.</source>
         <translation>提供与 Barrier 输入相关的功能。</translation>
     </message>

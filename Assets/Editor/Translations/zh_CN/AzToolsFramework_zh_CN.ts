@@ -838,7 +838,7 @@
         <translation>音频控件</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/PropertyEditorApi.cpp" line="314"/>
+        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/PropertyEditorApi.cpp" line="320"/>
         <source>&lt;empty component&gt;</source>
         <translation>&lt;空组件&gt;</translation>
     </message>
@@ -2975,22 +2975,22 @@ Do you wish to proceed with this deletion?</source>
         <translation>打开/保存文件</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="83"/>
+        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="88"/>
         <source>Select Class</source>
         <translation>选择类</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="84"/>
+        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="89"/>
         <source>No classes could be found that derive from &quot;%1&quot;.</source>
         <translation>找不到从&quot;%1&quot;派生的类。</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="99"/>
+        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="104"/>
         <source>Class to create</source>
         <translation>要创建的类</translation>
     </message>
     <message>
-        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="100"/>
+        <location filename="../../../../Code/Framework/AzToolsFramework/AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.cpp" line="105"/>
         <source>Classes</source>
         <translation>类</translation>
     </message>

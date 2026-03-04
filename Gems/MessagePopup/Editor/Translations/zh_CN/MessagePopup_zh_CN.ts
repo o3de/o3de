@@ -4,14 +4,14 @@
 <context>
     <name>MessagePopup</name>
     <message>
-        <location filename="../../../../Gems/MessagePopup/Code/Source/LyShineMessagePopup.cpp" line="39"/>
-        <location filename="../../../../Gems/MessagePopup/Code/Source/MessagePopupSystemComponent.cpp" line="52"/>
+        <location filename="../../../Code/Source/LyShineMessagePopup.cpp" line="39"/>
+        <location filename="../../../Code/Source/MessagePopupSystemComponent.cpp" line="52"/>
         <source>MessagePopup</source>
         <translation>消息弹窗</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/MessagePopup/Code/Source/LyShineMessagePopup.cpp" line="40"/>
-        <location filename="../../../../Gems/MessagePopup/Code/Source/MessagePopupSystemComponent.cpp" line="53"/>
+        <location filename="../../../Code/Source/LyShineMessagePopup.cpp" line="40"/>
+        <location filename="../../../Code/Source/MessagePopupSystemComponent.cpp" line="53"/>
         <source>[Description of functionality provided by this System Component]</source>
         <translation>[此系统组件提供的功能描述]</translation>
     </message>

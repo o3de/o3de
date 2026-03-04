@@ -4,12 +4,12 @@
 <context>
     <name>TextureAtlasNamespace</name>
     <message>
-        <location filename="../../../../Gems/TextureAtlas/Code/Source/TextureAtlasSystemComponent.cpp" line="54"/>
+        <location filename="../../../Code/Source/TextureAtlasSystemComponent.cpp" line="54"/>
         <source>TextureAtlas</source>
         <translation>纹理图集</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/TextureAtlas/Code/Source/TextureAtlasSystemComponent.cpp" line="55"/>
+        <location filename="../../../Code/Source/TextureAtlasSystemComponent.cpp" line="55"/>
         <source>This component loads and manages TextureAtlases</source>
         <translation>此组件用于加载和管理纹理图集</translation>
     </message>

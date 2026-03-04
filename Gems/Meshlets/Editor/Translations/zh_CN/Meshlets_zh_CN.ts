@@ -4,12 +4,12 @@
 <context>
     <name>Meshlets</name>
     <message>
-        <location filename="../../../../Gems/Meshlets/Code/Source/MeshletsSystemComponent.cpp" line="39"/>
+        <location filename="../../../Code/Source/MeshletsSystemComponent.cpp" line="39"/>
         <source>Meshlets</source>
         <translation>微网格</translation>
     </message>
     <message>
-        <location filename="../../../../Gems/Meshlets/Code/Source/MeshletsSystemComponent.cpp" line="40"/>
+        <location filename="../../../Code/Source/MeshletsSystemComponent.cpp" line="40"/>
         <source>[Description of functionality provided by this System Component]</source>
         <translation>[此系统组件提供的功能描述]</translation>
     </message>
