@@ -376,12 +376,12 @@ namespace PhysX
             {
                 if (articulationLinkConfiguration.m_articulationJointType == ArticulationJointType::Hinge)
                 {
-                    AZ_Printf("PhysX", "Applying offset of %f deg to joint between %s and its parent link", articulationLinkConfiguration.m_offset, thisPxLink->getName());
+                    AZ_TracePrintf("PhysX", "Applying offset of %f deg to joint between %s and its parent link", articulationLinkConfiguration.m_offset, thisPxLink->getName());
                     offsetTransform.SetFromEulerDegrees(AZ::Vector3(articulationLinkConfiguration.m_offset,0,0));
                 }
                 else if (articulationLinkConfiguration.m_articulationJointType == ArticulationJointType::Prismatic)
                 {
-                    AZ_Printf("PhysX", "Applying offset of %f meters to joint between %s and its parent link",  articulationLinkConfiguration.m_offset, thisPxLink->getName());
+                    AZ_TracePrintf("PhysX", "Applying offset of %f meters to joint between %s and its parent link",  articulationLinkConfiguration.m_offset, thisPxLink->getName());
                     offsetTransform.SetTranslation(AZ::Vector3(articulationLinkConfiguration.m_offset,0,0));
                 }
             }
