@@ -951,7 +951,6 @@ namespace UnitTest
         AZStd::array<int, 0> myArr2;
         EXPECT_EQ(myArr, myArr2);
 
-        AZ_UNUSED(myArr.data());
         myArr.fill(33);
         myArr.swap(myArr2);
         EXPECT_EQ(myArr.begin(), myArr.end());
