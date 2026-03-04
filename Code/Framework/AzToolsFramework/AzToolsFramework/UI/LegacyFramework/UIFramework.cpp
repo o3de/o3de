@@ -387,7 +387,7 @@ namespace AzToolsFramework
     void Framework::RegisterHotkey(const HotkeyDescription& desc)
     {
         // it is acceptable to multi-register the same hotkey.
-        HotkeyDescriptorContainerType::pair_iter_bool newInsertion = m_hotkeyDescriptors.insert(desc.m_HotKeyIDCRC);
+        HotkeyDescriptorContainerType::pair_iter_bool newInsertion = m_hotkeyDescriptors.try_emplace(desc.m_HotKeyIDCRC);
         if (newInsertion.second)
         {
             newInsertion.first->second = HotkeyData(desc);

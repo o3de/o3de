@@ -38,17 +38,17 @@ namespace AZStd
         };
 
         /**
-         * Used when we want to insert entry with a key only, default construct for the
-         * value. This rely on that AZStd::pair (map value type) can be constructed with a key only (first element).
+         * Used when we want to insert an entry with a key only,
+         * constructing a value_type (pair) from the key and a value-initialized mapped type.
          */
-        template<class KeyType>
+        template<class KeyType, class ValueType>
         struct ConvertKeyType
         {
             using key_type = KeyType;
+            using value_type = ValueType;
 
-            AZ_FORCE_INLINE const KeyType& to_key(const KeyType& key) const { return key; }
-            // We return key as the value so the pair is constructed using Pair(first) ctor.
-            AZ_FORCE_INLINE const KeyType& to_value(const KeyType& key) const { return key; }
+            AZ_FORCE_INLINE static const KeyType& to_key(const KeyType& key) { return key; }
+            AZ_FORCE_INLINE static ValueType to_value(const KeyType& key) { return ValueType(key, typename ValueType::second_type()); }
         };
     }
 
@@ -310,7 +310,7 @@ namespace AZStd
          */
         AZ_FORCE_INLINE pair_iter_bool insert_key(const key_type& key)
         {
-            Internal::ConvertKeyType<key_type> converter;
+            Internal::ConvertKeyType<key_type, value_type> converter;
             return base_type::insert_from(key, converter, base_type::m_hasher, base_type::m_keyEqual);
         }
         /// @}
@@ -625,7 +625,7 @@ namespace AZStd
         */
         AZ_FORCE_INLINE pair_iter_bool insert_key(const key_type& key)
         {
-            Internal::ConvertKeyType<key_type> converter;
+            Internal::ConvertKeyType<key_type, value_type> converter;
             return base_type::insert_from(key, converter, base_type::m_hasher, base_type::m_keyEqual);
         }
     };

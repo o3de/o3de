@@ -212,8 +212,8 @@ namespace ScriptCanvasEditor
         else
         {
             m_liveDataAggregator.GetTreeRoot()->SetUpdatePolicy(DebugLogRootItem::UpdatePolicy::RealTime);
-        }        
-        
+        }
+
         // Despite being apart of the base menu for now, the LiveLoggingWindow is the only one that needs to utilize these buttons.
         // Going to control them from here.
         m_ui->liveUpdatesToggle->setChecked(m_userSettings->IsLiveUpdating());
@@ -285,7 +285,7 @@ namespace ScriptCanvasEditor
             {
                 SetIsCapturing(false);
             }
-            
+
             if (useFallback)
             {
 
@@ -427,7 +427,7 @@ namespace ScriptCanvasEditor
             {
                 bool gotResult = false;
                 AZ::EntityId runtimeId;
-                
+
                 AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(gotResult, &AzToolsFramework::EditorEntityContextRequests::MapEditorIdToRuntimeId, registrationPair.first, runtimeId);
 
                 if (runtimeId.IsValid())
@@ -446,12 +446,12 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    auto insertResult = captureInfo.m_staticEntities.insert(registrationPair.first);
+                    auto insertResult = captureInfo.m_staticEntities.try_emplace(registrationPair.first);
                     insertResult.first->second.insert(registrationPair.second);
                 }
             }
         }
-        
+
         const LoggingEntityMap& registrationMap = m_liveDataAggregator.GetLoggingEntityMap();
 
         for (const auto& registrationPair : registrationMap)

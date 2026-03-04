@@ -272,7 +272,6 @@ set(FILES
     utility/move.h
     utility/pair_fwd.h
     utility/pair.h
-    utility/pair.inl
     utility/to_underlying.h
     utility/tuple_concepts.h
     utility/tuple_fwd.h
