@@ -39,8 +39,7 @@ namespace EMStudio
 
     const char* ActionHistoryPlugin::GetName() const
     {
-        AZStd::string pluginName = tr("Action History").toUtf8().constData();
-        return pluginName.c_str();
+        return tr("Action History");
     }
 
 
