@@ -30,16 +30,16 @@ PreviewAnimationList::PreviewAnimationList(EditorWindow* editorWindow)
     AddMenuItems();
 
     // Add the Reset button
-    AddToolBarButton(QIcon(":/Trackview/play/tvplay-00.png"), Action::Reset, qPrintable(tr("Reset selected animations to start")));
+    AddToolBarButton(QIcon(":/Trackview/play/tvplay-00.png"), Action::Reset, qUtf8Printable(tr("Reset selected animations to start")));
 
     // Add the Play button
-    AddToolBarButton(QIcon(":/Trackview/play/tvplay-01.png"), Action::Play, qPrintable(tr("Play/Resume selected animations")));
+    AddToolBarButton(QIcon(":/Trackview/play/tvplay-01.png"), Action::Play, qUtf8Printable(tr("Play/Resume selected animations")));
 
     // Add the Pause button
-    AddToolBarButton(QIcon(":/Trackview/play/tvplay-03.png"), Action::Pause, qPrintable(tr("Pause/Resume selected animations")));
+    AddToolBarButton(QIcon(":/Trackview/play/tvplay-03.png"), Action::Pause, qUtf8Printable(tr("Pause/Resume selected animations")));
 
     // Add the Stop button
-    AddToolBarButton(QIcon(":/Trackview/play/tvplay-04.png"), Action::Stop, qPrintable(tr("Stop selected animations and set to end")));
+    AddToolBarButton(QIcon(":/Trackview/play/tvplay-04.png"), Action::Stop, qUtf8Printable(tr("Stop selected animations and set to end")));
 
     m_toolBar->setFloatable(false);
 

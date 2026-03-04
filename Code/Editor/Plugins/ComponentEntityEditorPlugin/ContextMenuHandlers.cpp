@@ -59,9 +59,9 @@ void EditorContextMenuHandler::OnActionRegistrationHook()
     {
         const AZStd::string_view actionIdentifier = "o3de.action.entity.openPinnedInspector";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = qPrintable(QObject::tr("Open Pinned Inspector"));
+        actionProperties.m_name = qUtf8Printable(QObject::tr("Open Pinned Inspector"));
         actionProperties.m_description =
-            qPrintable(QObject::tr("Open a new instance of the Entity Inspector for the current selection."));
+            qUtf8Printable(QObject::tr("Open a new instance of the Entity Inspector for the current selection."));
         actionProperties.m_category = "Edit";
 
         actionManagerInterface->RegisterAction(

@@ -244,7 +244,7 @@ void CFolderTreeCtrl::AddItem(const QString& path)
     AZ::IO::FixedMaxPath fileNameWithoutExtension = folder.Stem();
     folder = folder.ParentPath();
 
-    if (AZStd::wildcard_match(qPrintable(m_fileNameSpec), qPrintable(path)))
+    if (AZStd::wildcard_match(qUtf8Printable(m_fileNameSpec), qUtf8Printable(path)))
     {
         CTreeItem* folderTreeItem = CreateFolderItems(QString::fromUtf8(folder.c_str(), static_cast<int>(folder.Native().size())));
         if(folderTreeItem)

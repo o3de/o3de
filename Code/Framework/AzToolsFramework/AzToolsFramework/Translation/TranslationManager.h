@@ -74,8 +74,8 @@ namespace AzToolsFramework
             // If no saved language, use system locale
             if (savedLanguage.empty())
             {
-                QString systemLocale = QLocale::system().name();
-                return qPrintable(systemLocale);
+                QByteArray systemLocale = QLocale::system().name().toUtf8();
+                return AZStd::string(systemLocale.constData(), systemLocale.size());
             }
 
             return savedLanguage;
