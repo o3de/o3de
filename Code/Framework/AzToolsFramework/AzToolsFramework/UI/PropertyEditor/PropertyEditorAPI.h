@@ -11,6 +11,7 @@
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/base.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Uuid.h>
@@ -419,7 +420,7 @@ namespace AzToolsFramework
      * @param context Optional translation context to try first (fastest path)
      * @return The translated string, or the original string if no translation was found
      */
-    AZTF_API AZStd::string TranslatePropertyString(const char* sourceText, const char* context = nullptr);
+    AZTF_API AZStd::string TranslatePropertyString(AZStd::string_view sourceText, AZStd::string_view context = {});
 
     /**
      * Register an additional translation context for TranslatePropertyString.
@@ -427,7 +428,7 @@ namespace AzToolsFramework
      * discoverable by the property editor translation system.
      * @param contextName The context name (e.g., "MyGem")
      */
-    AZTF_API void RegisterTranslationContext(const char* contextName);
+    AZTF_API void RegisterTranslationContext(const AZStd::string& contextName);
 
     /**
      * A function that evaluates whether a property node is read-only.

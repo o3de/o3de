@@ -72,46 +72,51 @@ namespace AzToolsFramework
         return s_contexts;
     }
 
-    void RegisterTranslationContext(const char* contextName)
+    void RegisterTranslationContext(const AZStd::string& contextName)
     {
         auto& contexts = GetRegisteredContexts();
-        AZStd::string name(contextName);
         for (const auto& existing : contexts)
         {
-            if (existing == name)
+            if (existing == contextName)
             {
                 return; // Already registered
             }
         }
-        contexts.push_back(AZStd::move(name));
+        contexts.push_back(contextName);
     }
 
     // Helper function: attempt to translate property editor strings from EditContext.
     // Searches all registered translation contexts. Qt's QCoreApplication::translate()
     // queries all installed QTranslator objects for each context, so we try each
     // registered context until a translation is found.
-    AZStd::string TranslatePropertyString(const char* sourceText, const char* context)
+    AZStd::string TranslatePropertyString(AZStd::string_view sourceText, AZStd::string_view context)
     {
-        if (!sourceText || sourceText[0] == '\0')
+        if (sourceText.empty())
         {
             return AZStd::string{};
         }
 
+        // QCoreApplication::translate requires null-terminated strings.
+        // string_view from string literals and .c_str()/.data() is already null-terminated,
+        // but we use QByteArray to guarantee it for the general case.
+        QByteArray sourceUtf8(sourceText.data(), static_cast<int>(sourceText.size()));
+
         // If a specific context is provided, try it first (fastest path).
-        if (context && context[0] != '\0')
+        if (!context.empty())
         {
-            QString translated = QCoreApplication::translate(context, sourceText);
-            if (translated != QString::fromUtf8(sourceText))
+            QByteArray ctxUtf8(context.data(), static_cast<int>(context.size()));
+            QString translated = QCoreApplication::translate(ctxUtf8.constData(), sourceUtf8.constData());
+            if (translated != QString::fromUtf8(sourceUtf8))
             {
                 return translated.toUtf8().constData();
             }
         }
 
         // Search all registered contexts
-        QString source = QString::fromUtf8(sourceText);
+        QString source = QString::fromUtf8(sourceUtf8);
         for (const auto& ctx : GetRegisteredContexts())
         {
-            QString translated = QCoreApplication::translate(ctx.c_str(), sourceText);
+            QString translated = QCoreApplication::translate(ctx.c_str(), sourceUtf8.constData());
             if (translated != source)
             {
                 return translated.toUtf8().constData();
@@ -119,7 +124,7 @@ namespace AzToolsFramework
         }
 
         // No translation found, return the original string.
-        return sourceText;
+        return AZStd::string(sourceText);
     }
 
     PropertyHandlerBase::PropertyHandlerBase()
