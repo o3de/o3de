@@ -91,6 +91,16 @@ namespace ${GemName}
     {
         // Reflect the asset types managed by this system component.
         //${AssetName}::Reflect(context);
+
+        // Setting the SystemComponentTags enables the SetAutoBuildAssetToCache method to call during Asset Builder.
+        // This is a necessary process to make the asset appear in Editor.
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<${GemName}DataAssetsSystemComponent, AZ::Component>()
+                ->Version(0)
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
+                ;
+        }
     }
 
     /*
@@ -102,6 +112,7 @@ namespace ${GemName}
     void ${GemName}DataAssetSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("${GemName}DataAssetSystemComponentService"));
+        provided.push_back(AzFramework::s_GenericAssetRegistrar); // Activate me before things that need these registrations.
     }
 
     /*

@@ -38,6 +38,14 @@ namespace ${GemName}
     {
     public:
         AZ_COMPONENT_DECL(${GemName}DataAssetSystemComponent);
+        
+        /*
+        * Enables the construction and destruction of this component without conflicting with the AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers unique pointer.
+        */
+        ${GemName}DataAssetsSystemComponent() = default;
+        ~${GemName}DataAssetsSystemComponent() override = default;
+        ${GemName}DataAssetsSystemComponent(const ${GemName}DataAssetsSystemComponent&) = delete;
+        ${GemName}DataAssetsSystemComponent& operator=(const ${GemName}DataAssetsSystemComponent&) = delete;
 
         /*
         * Reflects component data into the reflection contexts, including the serialization, edit, and behavior contexts.
