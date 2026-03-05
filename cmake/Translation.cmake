@@ -80,6 +80,46 @@ if(LY_I18N_BUILD)
 endif()
 
 # ============================================================================
+# Qt Linguist Tools Detection (Qt6-first with Qt5 fallback)
+# ============================================================================
+# Detect Qt LinguistTools once and cache the results for all functions below.
+# Prefers Qt6; falls back to Qt5 if Qt6 is not available.
+
+set(_LY_I18N_QT_TOOLS_FOUND FALSE)
+
+find_package(Qt6 COMPONENTS LinguistTools QUIET)
+if(Qt6_FOUND)
+    set(_LY_I18N_QT_VERSION "6")
+    set(_LY_I18N_QT_DIR "${Qt6_DIR}")
+else()
+    find_package(Qt5 COMPONENTS LinguistTools QUIET)
+    if(Qt5_FOUND)
+        set(_LY_I18N_QT_VERSION "5")
+        set(_LY_I18N_QT_DIR "${Qt5_DIR}")
+    endif()
+endif()
+
+if(_LY_I18N_QT_DIR)
+    find_program(LUPDATE_EXECUTABLE lupdate PATHS "${_LY_I18N_QT_DIR}/../../../bin" NO_DEFAULT_PATH)
+    find_program(LRELEASE_EXECUTABLE lrelease PATHS "${_LY_I18N_QT_DIR}/../../../bin" NO_DEFAULT_PATH)
+endif()
+
+if(LUPDATE_EXECUTABLE AND LRELEASE_EXECUTABLE)
+    set(_LY_I18N_QT_TOOLS_FOUND TRUE)
+    if(LY_I18N_BUILD)
+        message(STATUS "  Qt Version: ${_LY_I18N_QT_VERSION}")
+        message(STATUS "  lupdate:    ${LUPDATE_EXECUTABLE}")
+        message(STATUS "  lrelease:   ${LRELEASE_EXECUTABLE}")
+    endif()
+else()
+    if(LY_I18N_BUILD)
+        message(WARNING "Qt Linguist tools (lupdate/lrelease) not found. "
+            "Install Qt6 or Qt5 LinguistTools. Translation generation disabled.")
+        set(LY_I18N_BUILD OFF)
+    endif()
+endif()
+
+# ============================================================================
 # QM Compilation Helper Function
 # ============================================================================
 
@@ -107,12 +147,8 @@ function(compile_ts_to_qm ts_file language)
         return()
     endif()
     
-    # Find Qt5 lrelease tool
-    find_package(Qt5 COMPONENTS LinguistTools QUIET)
-    find_program(LRELEASE_EXECUTABLE lrelease PATHS "${Qt5_DIR}/../../../bin" NO_DEFAULT_PATH)
-    
-    if(NOT LRELEASE_EXECUTABLE)
-        message(WARNING "  [QM] lrelease not found. .qm files will not be generated. Install Qt5 Linguist Tools.")
+    if(NOT _LY_I18N_QT_TOOLS_FOUND)
+        message(WARNING "  [QM] lrelease not found. .qm files will not be generated. Install Qt6 or Qt5 Linguist Tools.")
         return()
     endif()
     
@@ -166,11 +202,7 @@ function(add_translation_module target_source_dir module_name)
     cmake_parse_arguments(ARG "" "" "INCLUDE_DIRS" ${ARGN})
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
-        # Find Qt5 Linguist Tools
-        find_package(Qt5 COMPONENTS LinguistTools REQUIRED)
-        find_program(LUPDATE_EXECUTABLE lupdate PATHS "${Qt5_DIR}/../../../bin" REQUIRED)
-        
-        if(NOT LUPDATE_EXECUTABLE)
+        if(NOT _LY_I18N_QT_TOOLS_FOUND)
             message(WARNING "lupdate not found. Translation files will not be generated.")
             return()
         endif()
@@ -331,11 +363,7 @@ function(add_tool_translation tool_name)
         return()
     endif()
 
-    # Find Qt5 Linguist Tools
-    find_package(Qt5 COMPONENTS LinguistTools REQUIRED)
-    find_program(LUPDATE_EXECUTABLE lupdate PATHS "${Qt5_DIR}/../../../bin" REQUIRED)
-    
-    if(NOT LUPDATE_EXECUTABLE)
+    if(NOT _LY_I18N_QT_TOOLS_FOUND)
         message(WARNING "lupdate not found. Translation files will not be generated for tool '${tool_name}'.")
         return()
     endif()
@@ -489,11 +517,7 @@ function(add_gem_translation_multi_dirs gem_name source_dirs)
     #              when not set, files go to the centralized Assets/Editor/Translations/{language}/
     cmake_parse_arguments(ARG "" "OUTPUT_ROOT" "INCLUDE_DIRS" ${ARGN})
 
-    # Find Qt5 Linguist Tools
-    find_package(Qt5 COMPONENTS LinguistTools REQUIRED)
-    find_program(LUPDATE_EXECUTABLE lupdate PATHS "${Qt5_DIR}/../../../bin" REQUIRED)
-    
-    if(NOT LUPDATE_EXECUTABLE)
+    if(NOT _LY_I18N_QT_TOOLS_FOUND)
         message(WARNING "lupdate not found. Translation files will not be generated for Gem '${gem_name}'.")
         return()
     endif()
@@ -640,11 +664,7 @@ function(add_gem_translation gem_name)
         return()
     endif()
 
-    # Find Qt5 Linguist Tools
-    find_package(Qt5 COMPONENTS LinguistTools REQUIRED)
-    find_program(LUPDATE_EXECUTABLE lupdate PATHS "${Qt5_DIR}/../../../bin" REQUIRED)
-    
-    if(NOT LUPDATE_EXECUTABLE)
+    if(NOT _LY_I18N_QT_TOOLS_FOUND)
         message(WARNING "lupdate not found. Translation files will not be generated for Gem '${gem_name}'.")
         return()
     endif()
@@ -1163,10 +1183,7 @@ function(add_json_property_translations json_dir context_name module_name)
     message(STATUS "  [JSON] Generated C++ extraction file: ${_gen_file}")
 
     # ---- Step 4: Run lupdate on the generated file ----
-    find_package(Qt5 COMPONENTS LinguistTools QUIET)
-    find_program(LUPDATE_EXECUTABLE lupdate PATHS "${Qt5_DIR}/../../../bin" NO_DEFAULT_PATH)
-
-    if(NOT LUPDATE_EXECUTABLE)
+    if(NOT _LY_I18N_QT_TOOLS_FOUND)
         message(WARNING "  [JSON] lupdate not found. .ts files will not include JSON property strings.")
         return()
     endif()
@@ -1431,10 +1448,7 @@ function(add_editcontext_translations source_dirs context_name module_name)
     message(STATUS "  [EditContext] Generated C++ extraction file: ${_gen_file}")
 
     # ---- Step 4: Run lupdate on the generated file ----
-    find_package(Qt5 COMPONENTS LinguistTools QUIET)
-    find_program(LUPDATE_EXECUTABLE lupdate PATHS "${Qt5_DIR}/../../../bin" NO_DEFAULT_PATH)
-
-    if(NOT LUPDATE_EXECUTABLE)
+    if(NOT _LY_I18N_QT_TOOLS_FOUND)
         message(WARNING "  [EditContext] lupdate not found. .ts files will not include EditContext strings.")
         return()
     endif()
