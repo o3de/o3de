@@ -290,6 +290,7 @@ namespace AzToolsFramework
 
                     const QStringList qmFiles = dir.entryList(
                         QStringList() << "*.qm", QDir::Files);
+                    int gemLoadedCount = 0;
                     for (const QString& qmFile : qmFiles)
                     {
                         QTranslator* translator = new QTranslator();
@@ -304,17 +305,19 @@ namespace AzToolsFramework
                             {
                                 qApp->installTranslator(translator);
                             }
+                            gemLoadedCount++;
                             loadedCount++;
                         }
                         else
                         {
+                            qDebug() << "[i18n] Failed to load" << fullPath;
                             delete translator;
                         }
                     }
 
-                    if (!qmFiles.isEmpty())
+                    if (gemLoadedCount > 0)
                     {
-                        qDebug() << "[i18n] Loaded" << qmFiles.size() << "translation(s) from gem"
+                        qDebug() << "[i18n] Loaded" << gemLoadedCount << "translation(s) from gem"
                                  << QString::fromUtf8(gemName.data(), static_cast<int>(gemName.size()));
                     }
                 });

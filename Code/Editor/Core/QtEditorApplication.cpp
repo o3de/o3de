@@ -560,6 +560,73 @@ namespace Editor
             }
         }
 
+        // ========== Scan Gem-local translation directories ==========
+        // Gems can ship their own .qm files under {gem_root}/Editor/Translations/{language}/
+        // These are not present in the centralized Assets/Editor/Translations/ directory,
+        // so we must discover them separately via VisitActiveGems.
+        if (!m_currentLanguage.empty() && m_currentLanguage != "en" && m_currentLanguage != "en_US")
+        {
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                AZStd::vector<AZStd::string> languagesToScan = BuildLanguageFallbackChain(m_currentLanguage);
+                QSet<QString> gemDiscoveredModules;
+
+                AZ::SettingsRegistryMergeUtils::VisitActiveGems(*registry,
+                    [&](AZStd::string_view /*gemName*/, AZStd::string_view gemPath)
+                    {
+                        QString qGemPath = QString::fromUtf8(gemPath.data(), static_cast<int>(gemPath.size()));
+
+                        for (const AZStd::string& lang : languagesToScan)
+                        {
+                            if (lang == "en" || lang == "en_US")
+                            {
+                                continue;
+                            }
+
+                            QDir langDir(qGemPath + QString("/Editor/Translations/%1").arg(lang.c_str()));
+                            if (!langDir.exists())
+                            {
+                                continue;
+                            }
+
+                            const QString qmPattern = QString("*_%1.qm").arg(lang.c_str());
+                            const QStringList qmFiles = langDir.entryList(
+                                QStringList() << qmPattern, QDir::Files);
+
+                            const QString suffix = QString("_%1.qm").arg(lang.c_str());
+                            for (const QString& qmFile : qmFiles)
+                            {
+                                QString moduleName = qmFile;
+                                moduleName.chop(suffix.length());
+                                if (!moduleName.isEmpty())
+                                {
+                                    gemDiscoveredModules.insert(moduleName);
+                                }
+                            }
+                        }
+                    });
+
+                int gemModuleCount = 0;
+                for (const QString& mod : gemDiscoveredModules)
+                {
+                    AZStd::string modStr(mod.toUtf8().constData());
+                    if (AZStd::find(modules.begin(), modules.end(), modStr) == modules.end())
+                    {
+                        modules.push_back(modStr);
+                        gemModuleCount++;
+                    }
+                }
+                std::sort(modules.begin(), modules.end());
+
+                if (gemModuleCount > 0)
+                {
+                    AZ_TracePrintf("EditorI18n",
+                        "Discovered %d additional translation module(s) from active Gems\n",
+                        gemModuleCount);
+                }
+            }
+        }
+
         // ========== Dynamically Registered Modules ==========
         // Add any modules registered at runtime from Gems
         for (const AZStd::string& registeredModule : m_registeredModules)
