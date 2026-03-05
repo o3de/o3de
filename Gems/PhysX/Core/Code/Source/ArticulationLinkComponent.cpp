@@ -100,10 +100,10 @@ namespace PhysX
     {
         return m_articulationLinks;
     }
-
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
     void ArticulationLinkComponent::Activate()
     {
+        m_offsetInCorrectUnits = m_config.HingePropertiesVisible() ? AZ::DegToRad(m_config.m_offset) : m_config.m_offset;
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         if (!sceneInterface)
         {
@@ -367,12 +367,29 @@ namespace PhysX
 
         if (parentLink)
         {
+
             physx::PxArticulationJointReducedCoordinate* inboundJoint =
                 thisPxLink->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
-            // Sets the joint pose in the lead link actor frame.
-            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_jointLeadLocalFrame));
+            AZ::Transform offsetTransform {AZ::Transform::Identity()};
             // Sets the joint pose in the follower link actor frame.
-            inboundJoint->setChildPose(PxMathConvert(thisLinkData.m_jointFollowerLocalFrame));
+            if (!AZ::IsClose(articulationLinkConfiguration.m_offset , 0.f))
+            {
+                if (articulationLinkConfiguration.m_articulationJointType == ArticulationJointType::Hinge)
+                {
+                    AZ_TracePrintf("PhysX", "Applying offset of %f deg to joint between %s and its parent link", articulationLinkConfiguration.m_offset, thisPxLink->getName());
+                    offsetTransform.SetFromEulerDegrees(AZ::Vector3(articulationLinkConfiguration.m_offset,0,0));
+                }
+                else if (articulationLinkConfiguration.m_articulationJointType == ArticulationJointType::Prismatic)
+                {
+                    AZ_TracePrintf("PhysX", "Applying offset of %f meters to joint between %s and its parent link",  articulationLinkConfiguration.m_offset, thisPxLink->getName());
+                    offsetTransform.SetTranslation(AZ::Vector3(articulationLinkConfiguration.m_offset,0,0));
+                }
+            }
+
+            // Sets the joint pose in the lead link actor frame.
+            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_jointLeadLocalFrame* offsetTransform));
+
+            inboundJoint->setChildPose(PxMathConvert(thisLinkData.m_jointFollowerLocalFrame ) );
             // Sets the joint type and limits.
             switch (articulationLinkConfiguration.m_articulationJointType)
             {
@@ -385,9 +402,10 @@ namespace PhysX
                 {
                     // The lower limit should be strictly smaller than the higher limit.
                     physx::PxArticulationLimit limits;
-                    limits.low = AZ::DegToRad(AZStd::min(
+
+                    limits.low = AZ::DegToRad( -articulationLinkConfiguration.m_offset + AZStd::min(
                         articulationLinkConfiguration.m_angularLimitNegative, articulationLinkConfiguration.m_angularLimitPositive));
-                    limits.high = AZ::DegToRad(AZStd::max(
+                    limits.high = AZ::DegToRad( -articulationLinkConfiguration.m_offset +  AZStd::max(
                         articulationLinkConfiguration.m_angularLimitNegative, articulationLinkConfiguration.m_angularLimitPositive));
 
                     // From PhysX documentation: If the limits should be equal, use PxArticulationMotion::eLOCKED
@@ -451,9 +469,9 @@ namespace PhysX
                 {
                     // The lower limit should be strictly smaller than the higher limit.
                     physx::PxArticulationLimit limits;
-                    limits.low =
+                    limits.low = -articulationLinkConfiguration.m_offset +
                         AZStd::min(articulationLinkConfiguration.m_linearLimitLower, articulationLinkConfiguration.m_linearLimitUpper);
-                    limits.high =
+                    limits.high = -articulationLinkConfiguration.m_offset +
                         AZStd::max(articulationLinkConfiguration.m_linearLimitLower, articulationLinkConfiguration.m_linearLimitUpper);
 
                     // From PhysX documentation: If the limits should be equal, use PxArticulationMotion::eLOCKED
@@ -649,7 +667,7 @@ namespace PhysX
         if (auto* joint = GetDriveJoint())
         {
             PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
-            const physx::PxArticulationLimit limit(limitPair.first, limitPair.second);
+            const physx::PxArticulationLimit limit(limitPair.first - m_offsetInCorrectUnits, limitPair.second  - m_offsetInCorrectUnits);
             joint->setLimitParams(GetPxArticulationAxis(jointAxis), limit);
         }
     }
@@ -660,7 +678,7 @@ namespace PhysX
         {
             PHYSX_SCENE_READ_LOCK(m_link->getScene());
             const auto limit = joint->getLimitParams(GetPxArticulationAxis(jointAxis));
-            return { limit.low, limit.high };
+            return { limit.low + m_offsetInCorrectUnits, limit.high + m_offsetInCorrectUnits };
         }
         return { -AZ::Constants::FloatMax, AZ::Constants::FloatMax };
     }
@@ -763,7 +781,7 @@ namespace PhysX
         if (auto* joint = GetDriveJoint())
         {
             PHYSX_SCENE_WRITE_LOCK(m_link->getScene());
-            joint->setDriveTarget(GetPxArticulationAxis(jointAxis), target);
+            joint->setDriveTarget(GetPxArticulationAxis(jointAxis), target - m_offsetInCorrectUnits);
         }
     }
 
@@ -772,7 +790,7 @@ namespace PhysX
         if (auto* joint = GetDriveJoint())
         {
             PHYSX_SCENE_READ_LOCK(m_link->getScene());
-            return joint->getDriveTarget(GetPxArticulationAxis(jointAxis));
+            return joint->getDriveTarget(GetPxArticulationAxis(jointAxis) ) + m_offsetInCorrectUnits;
         }
         return 0.0f;
     }
@@ -801,7 +819,7 @@ namespace PhysX
         if (auto* joint = GetDriveJoint())
         {
             PHYSX_SCENE_READ_LOCK(m_link->getScene());
-            return joint->getJointPosition(GetPxArticulationAxis(jointAxis));
+            return joint->getJointPosition(GetPxArticulationAxis(jointAxis)) + m_offsetInCorrectUnits ;
         }
         return 0.0f;
     }
