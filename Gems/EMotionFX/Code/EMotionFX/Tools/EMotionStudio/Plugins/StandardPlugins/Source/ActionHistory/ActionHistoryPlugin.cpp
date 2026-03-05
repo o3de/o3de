@@ -12,6 +12,8 @@
 #include <QListWidget>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 #include <string>
 
 
@@ -39,7 +41,7 @@ namespace EMStudio
 
     const char* ActionHistoryPlugin::GetName() const
     {
-        return tr("Action History").toUtf8().constData();
+        return QT_TRANSLATE_NOOP("ActionHistoryPlugin", "Action History");
     }
 
 
