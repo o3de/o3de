@@ -10,9 +10,9 @@
     </message>
 </context>
 <context>
-    <name>EMStudio::ActionHistoryPlugin</name>
+    <name>ActionHistoryPlugin</name>
     <message>
-        <location filename="../../../Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/ActionHistory/ActionHistoryPlugin.cpp" line="42"/>
+        <location filename="../../../Code/EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/ActionHistory/ActionHistoryPlugin.cpp" line="44"/>
         <source>Action History</source>
         <translation>操作历史</translation>
     </message>
