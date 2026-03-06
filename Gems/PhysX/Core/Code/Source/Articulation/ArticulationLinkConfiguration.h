@@ -25,20 +25,31 @@ namespace AZ
 
 namespace PhysX
 {
-    //! Configuration used to describe force/torque sensors attached to articulation links.
-    struct ArticulationSensorConfiguration
+    //! Configuration used to configure data collection from an Articulation system.
+    struct ArticulationCacheConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_TYPE_INFO(ArticulationSensorConfiguration, "{83960469-C92D-405D-B12E-EB235BCFFECA}");
+        AZ_TYPE_INFO(ArticulationCacheConfiguration, "{83960469-C92D-405D-B12E-EB235BCFFECA}");
         static void Reflect(AZ::ReflectContext* context);
 
-        ArticulationSensorConfiguration() = default;
+        ArticulationCacheConfiguration() = default;
 
-        AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero(); //!< Position of the sensor relative to its link.
-        AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); //!< Euler angle rotation of the sensor relative to its link.
-        bool m_includeForwardDynamicsForces = true; //!< Whether the output reported by the sensor should include forward dynamics forces.
-        bool m_includeConstraintSolverForces = true; //!< Whether the output reported by the sensor should include constraint solver forces.
-        bool m_useWorldFrame = false; //!< If true, the output will be reported in world space, otherwise in the local space of the sensor.
+        bool m_jointVelocities = false; //!< The joint velocities, see PxArticulationCache::jointVelocity.
+        bool m_jointAccelerations = false; //!< The joint accelerations, see PxArticulationCache::jointAcceleration.
+        bool m_jointPositions = false; //!< The joint positions, see PxArticulationCache::jointPosition.
+        bool m_jointForces = false; //!< The joint forces, see PxArticulationCache::jointForce.
+        bool m_linkVelocities = false; //!< The link velocities, see PxArticulationCache::linkVelocity. Link velocities cannot be set except for the root link velocity via  PxArticulationCache::rootLinkData.
+        bool m_linkAccelerations = false; //!< The link accelerations, see PxArticulationCache::linkAcceleration.
+        bool m_rootLinkTransform = false; //!< The root link transform, see PxArticulationCache::rootLinkData.
+        bool m_rootLinkVelocities = false; //!< The root link velocities (read/write) and accelerations (read), see PxArticulationCache::rootLinkData.
+        bool m_linkIncomingJointForces = true; //!< The link incoming joint forces, see PxArticulationCache::linkIncomingJointForce.
+        bool m_jointTargetPositions = false; //!< The joint target positions, see PxArticulationCache::jointTargetPositions.
+        bool m_jointTargetVelocities = false; //!< The joint target velocities, see PxArticulationCache::jointTargetVelocities.
+        bool m_linkForces = true; //!< The link forces, see PxArticulationCache::linkForce.
+        bool m_linkTorques = true; //!< The link torques, see PxArticulationCache::linkTorque.
+
+        //! Converts config into equivalent set of cache flags.
+        physx::PxArticulationCacheFlags GetPxCacheFlags() const;
     };
 
     //! Configuration of the articulation joint motor
@@ -120,7 +131,7 @@ namespace PhysX
         AZ::Vector3 m_LeadLocalRotation =
             AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
 
-        AZStd::vector<ArticulationSensorConfiguration> m_sensorConfigs;
+        ArticulationCacheConfiguration m_articulationCacheConfig;
 
         enum class DisplaySetupState : AZ::u8
         {

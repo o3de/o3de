@@ -15,7 +15,7 @@
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <PhysX/ArticulationJointBus.h>
-#include <PhysX/ArticulationSensorBus.h>
+#include <PhysX/ArticulationCacheBus.h>
 #include <PhysX/ComponentTypeIds.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/UserDataTypes.h>
@@ -38,7 +38,7 @@ namespace PhysX
         , private AZ::TransformNotificationBus::Handler
         , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public PhysX::ArticulationJointRequestBus::Handler
-        , public PhysX::ArticulationSensorRequestBus::Handler
+        , public PhysX::ArticulationCacheRequestBus::Handler
     {
     public:
         AZ_COMPONENT(ArticulationLinkComponent, ArticulationLinkComponentTypeId);
@@ -78,11 +78,10 @@ namespace PhysX
         float GetJointPosition(ArticulationJointAxis jointAxis) const override;
         float GetJointVelocity(ArticulationJointAxis jointAxis) const override;
         bool IsRootArticulation() const override;
-        // ArticulationSensorRequestBus overrides ...
-        AZ::Transform GetSensorTransform(AZ::u32 sensorIndex) const override;
-        void SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform) override;
-        AZ::Vector3 GetForce(AZ::u32 sensorIndex) const override;
-        AZ::Vector3 GetTorque(AZ::u32 sensorIndex) const override;
+
+        // ArticulationCacheRequestBus overrides ...
+        AZ::Vector3 GetForce(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetTorque(AZ::u32 linkIndex) const override;
         const AzPhysics::SimulatedBody* GetSimulatedBodyConst() const;
         void FillSimulatedBodyHandle();
 
@@ -96,7 +95,7 @@ namespace PhysX
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
-        const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
+        const AZStd::vector<AZ::u32> GetLinkIndices(const AZ::EntityId entityId);
         const physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
         physx::PxArticulationJointReducedCoordinate* GetDriveJoint();
         AZStd::vector<AzPhysics::SimulatedBodyHandle> GetSimulatedBodyHandles() const;
@@ -110,8 +109,10 @@ namespace PhysX
         void DestroyArticulation();
         void InitPhysicsTickHandler();
 
-        const physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex) const;
-        physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex);
+        // const physx::PxArticulationSensor* GetSensor(AZ::u32 linkIndex) const;
+        // physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex);
+
+        AZ::u32 GetInternalLinkIndex(AZ::u32 linkIndex);
 
         void SetRootSpecificProperties(const ArticulationLinkConfiguration& rootLinkConfiguration);
 
@@ -129,10 +130,13 @@ namespace PhysX
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
         physx::PxArticulationReducedCoordinate* m_articulation = nullptr;
 
+        //! A copy of the internal state of the entire articulation, members are indexed by linkIndex
+        //! Data that is copied is set via configuration flags. Cache is updated upon simulation completion
+        physx::PxArticulationCache* m_articulationCache = nullptr;
         physx::PxArticulationLink* m_link = nullptr;
         physx::PxArticulationJointReducedCoordinate* m_driveJoint = nullptr;
 
-        AZStd::vector<AZ::u32> m_sensorIndices;
+        AZStd::vector<AZ::u32> m_linkIndices;
 
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AZStd::vector<AzPhysics::SimulatedBodyHandle> m_articulationLinks;
@@ -142,8 +146,8 @@ namespace PhysX
 
         using EntityIdArticulationLinkPair = AZStd::pair<AZ::EntityId, physx::PxArticulationLink*>;
         AZStd::unordered_map<AZ::EntityId, physx::PxArticulationLink*> m_articulationLinksByEntityId;
-        using EntityIdSensorIndexListPair = AZStd::pair<AZ::EntityId, AZStd::vector<AZ::u32>>;
-        AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::u32>> m_sensorIndicesByEntityId;
+        using EntityIdLinkIndexListPair = AZStd::pair<AZ::EntityId, AZStd::vector<AZ::u32>>;
+        AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::u32>> m_linkIndicesByEntityId;
         bool m_enabled = true;
         float m_offsetInCorrectUnits = 0.0f;
     };

@@ -140,7 +140,7 @@ namespace PhysX
 
                 CreateArticulation();
                 m_link = GetArticulationLink(GetEntityId());
-                m_sensorIndices = GetSensorIndices(GetEntityId());
+                m_linkIndices = GetLinkIndices(GetEntityId());
             }
         }
         else
@@ -167,14 +167,14 @@ namespace PhysX
                     m_driveJoint = m_link->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
                 }
 
-                m_sensorIndices = rootArticulationLinkComponent->GetSensorIndices(GetEntityId());
+                m_linkIndices = rootArticulationLinkComponent->GetLinkIndices(GetEntityId());
             }
         }
 
         FillSimulatedBodyHandle();
 
         ArticulationJointRequestBus::Handler::BusConnect(GetEntityId());
-        ArticulationSensorRequestBus::Handler::BusConnect(GetEntityId());
+        ArticulationCacheRequestBus::Handler::BusConnect(GetEntityId());
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
 
         Physics::RigidBodyNotificationBus::Event(
@@ -184,7 +184,7 @@ namespace PhysX
     void ArticulationLinkComponent::Deactivate()
     {
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
-        ArticulationSensorRequestBus::Handler::BusDisconnect();
+        ArticulationCacheRequestBus::Handler::BusDisconnect();
         ArticulationJointRequestBus::Handler::BusDisconnect();
 
         if (IsRootArticulation())
@@ -204,7 +204,7 @@ namespace PhysX
         }
 
         m_link = nullptr;
-        m_sensorIndices.clear();
+        m_linkIndices.clear();
 
         // set the behavior when the parent's transform changes back to default, since physics is no longer controlling the transform
         GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::Update);
@@ -245,31 +245,38 @@ namespace PhysX
         const auto& rootLinkConfiguration = m_articulationLinkData->m_articulationLinkConfiguration;
         SetRootSpecificProperties(rootLinkConfiguration);
 
-        CreateChildArticulationLinks(nullptr, *m_articulationLinkData.get());
+
+        CreateChildArticulationLinks(nullptr, *m_articulationLinkData);
+
+        // Caches need to be released and recreated if a link is added or removed
+        m_articulationCache->release();
 
         // Add articulation to the scene
         AzPhysics::Scene* scene = sceneInterface->GetScene(m_attachedSceneHandle);
-        physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+        auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
 
         PHYSX_SCENE_WRITE_LOCK(pxScene);
         pxScene->addArticulation(*m_articulation);
 
-        const AZ::u32 numSensors = m_articulation->getNbSensors();
-        for (AZ::u32 sensorIndex = 0; sensorIndex < numSensors; sensorIndex++)
+        // Articulation needs to be in a scene before we can copy it's state
+        m_articulation->copyInternalStateToCache(*m_articulationCache, rootLinkConfiguration.m_articulationCacheConfig.GetPxCacheFlags());
+
+        const AZ::u32 numLinks = m_articulation->getNbLinks();
+        for (AZ::u32 linkIndex = 0; linkIndex < numLinks; linkIndex++)
         {
-            physx::PxArticulationSensor* sensor = nullptr;
-            m_articulation->getSensors(&sensor, 1, sensorIndex);
-            ActorData* linkActorData = Utils::GetUserData(sensor->getLink());
-            if (linkActorData)
+            physx::PxArticulationLink* link = nullptr;
+            m_articulation->getLinks(&link, 1, linkIndex);
+
+            if (const ActorData* linkActorData = Utils::GetUserData(link))
             {
                 const auto entityId = linkActorData->GetEntityId();
-                if (auto iterator = m_sensorIndicesByEntityId.find(entityId); iterator != m_sensorIndicesByEntityId.end())
+                if (auto iterator = m_linkIndicesByEntityId.find(entityId); iterator != m_linkIndicesByEntityId.end())
                 {
-                    iterator->second.push_back(sensor->getIndex());
+                    iterator->second.push_back(link->getLinkIndex()); // The low-level index does not necessarily follow order of creation
                 }
                 else
                 {
-                    m_sensorIndicesByEntityId.insert(EntityIdSensorIndexListPair({ entityId, { sensor->getIndex() } }));
+                    m_linkIndicesByEntityId.insert(EntityIdLinkIndexListPair({ entityId, { link->getLinkIndex() } }));
                 }
             }
         }
@@ -300,7 +307,7 @@ namespace PhysX
 
         m_articulation->setSolverIterationCounts(
             rootLinkConfiguration.m_solverPositionIterations, rootLinkConfiguration.m_solverVelocityIterations);
-        // TODO: Expose these in the configuration
+        // TODO: Expose these in the configuration (This may be solved with PxArticulationCache change)
         //      eDRIVE_LIMITS_ARE_FORCES //!< Limits for drive effort are forces and torques rather than impulses
         //      eCOMPUTE_JOINT_FORCES //!< Enable in order to be able to query joint solver .
     }
@@ -515,16 +522,16 @@ namespace PhysX
             }
         }
 
-        // set up sensors
-        for (const auto& sensorConfig : articulationLinkConfiguration.m_sensorConfigs)
-        {
-            const AZ::Transform sensorTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(sensorConfig.m_localRotation), sensorConfig.m_localPosition);
-            auto* sensor = thisPxLink->getArticulation().createSensor(thisPxLink, PxMathConvert(sensorTransform));
-            sensor->setFlag(physx::PxArticulationSensorFlag::eFORWARD_DYNAMICS_FORCES, sensorConfig.m_includeForwardDynamicsForces);
-            sensor->setFlag(physx::PxArticulationSensorFlag::eCONSTRAINT_SOLVER_FORCES, sensorConfig.m_includeConstraintSolverForces);
-            sensor->setFlag(physx::PxArticulationSensorFlag::eWORLD_FRAME, sensorConfig.m_useWorldFrame);
-        }
+        // // set up sensors
+        // for (const auto& sensorConfig : articulationLinkConfiguration.m_sensorConfigs)
+        // {
+        //     const AZ::Transform sensorTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+        //         AZ::Quaternion::CreateFromEulerAnglesDegrees(sensorConfig.m_localRotation), sensorConfig.m_localPosition);
+        //     auto* sensor = thisPxLink->getArticulation().createSensor(thisPxLink, PxMathConvert(sensorTransform));
+        //     sensor->setFlag(physx::PxArticulationSensorFlag::eFORWARD_DYNAMICS_FORCES, sensorConfig.m_includeForwardDynamicsForces);
+        //     sensor->setFlag(physx::PxArticulationSensorFlag::eCONSTRAINT_SOLVER_FORCES, sensorConfig.m_includeConstraintSolverForces);
+        //     sensor->setFlag(physx::PxArticulationSensorFlag::eWORLD_FRAME, sensorConfig.m_useWorldFrame);
+        // }
 
         m_articulationLinksByEntityId.insert(EntityIdArticulationLinkPair{ articulationLinkConfiguration.m_entityId, thisPxLink });
 
@@ -550,7 +557,7 @@ namespace PhysX
         PHYSX_SCENE_WRITE_LOCK(pxScene);
         m_articulation->release();
         m_articulation = nullptr;
-        m_sensorIndicesByEntityId.clear();
+        m_linkIndicesByEntityId.clear();
     }
 
     void ArticulationLinkComponent::InitPhysicsTickHandler()
@@ -575,6 +582,10 @@ namespace PhysX
             return;
         }
 
+        // It's safe to update the cache here now that the simulation is finished. Cache can always be accessed because it's a copy.
+        const auto& rootLinkConfiguration = m_articulationLinkData->m_articulationLinkConfiguration;
+        m_articulation->copyInternalStateToCache(*m_articulationCache, rootLinkConfiguration.m_articulationCacheConfig.GetPxCacheFlags());
+
         physx::PxArticulationLink* links[MaxArticulationLinks] = { 0 };
         m_articulation->getLinks(links, MaxArticulationLinks);
 
@@ -587,6 +598,7 @@ namespace PhysX
 
         for (physx::PxU32 linkIndex = 0; linkIndex < linksNum; ++linkIndex)
         {
+
             physx::PxArticulationLink* link = links[linkIndex];
             physx::PxTransform pxGlobalPose = link->getGlobalPose();
             AZ::Transform globalTransform = PxMathConvert(pxGlobalPose);
@@ -611,9 +623,10 @@ namespace PhysX
         }
     }
 
-    const AZStd::vector<AZ::u32> ArticulationLinkComponent::GetSensorIndices(const AZ::EntityId entityId)
+    // TODO: refactor
+    const AZStd::vector<AZ::u32> ArticulationLinkComponent::GetLinkIndices(const AZ::EntityId entityId)
     {
-        if (const auto iterator = m_sensorIndicesByEntityId.find(entityId); iterator != m_sensorIndicesByEntityId.end())
+        if (const auto iterator = m_linkIndicesByEntityId.find(entityId); iterator != m_linkIndicesByEntityId.end())
         {
             return iterator->second;
         }
@@ -872,74 +885,91 @@ namespace PhysX
         return IsRootArticulationEntity<ArticulationLinkComponent>(GetEntity());
     }
 
-    const physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 sensorIndex) const
+    // // TODO: Refactor to return internal index for convenience
+    // const physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 linkIndex) const
+    // {
+    //     if (linkIndex >= m_linkIndices.size())
+    //     {
+    //         AZ_ErrorOnce(
+    //             "Articulation Link Component",
+    //             false,
+    //             "Invalid link index (%i) for entity %s",
+    //             linkIndex,
+    //             GetEntity()->GetName().c_str());
+    //         return nullptr;
+    //     }
+    //
+    //     if (!m_link)
+    //     {
+    //         AZ_ErrorOnce("Articulation Link Component", false, "Invalid link pointer for entity %s", GetEntity()->GetName().c_str());
+    //         return nullptr;
+    //     }
+    //
+    //     AZ::u32 internalIndex = m_linkIndices[linkIndex];
+    //     auto& articulation = m_link->getArticulation();
+    //     const auto numLinks = articulation.getNbLinks();
+    //     if (internalIndex >= numLinks)
+    //     {
+    //         AZ_ErrorOnce(
+    //             "Articulation Link Component",
+    //             false,
+    //             "Invalid internal link index (%i) for entity %s",
+    //             linkIndex,
+    //             GetEntity()->GetName().c_str());
+    //         return nullptr;
+    //     }
+    //
+    //     physx::PxArticulationSensor* sensor;
+    //     articulation.getSensors(&sensor, 1, internalIndex);
+    //     return sensor;
+    // }
+    //
+    // physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 sensorIndex)
+    // {
+    //     return const_cast<physx::PxArticulationSensor*>(static_cast<const ArticulationLinkComponent&>(*this).GetSensor(sensorIndex));
+    // }
+
+    AZ::u32 ArticulationLinkComponent::GetInternalLinkIndex(AZ::u32 linkIndex)
     {
-        if (sensorIndex >= m_sensorIndices.size())
+        if (linkIndex >= m_linkIndices.size())
         {
             AZ_ErrorOnce(
                 "Articulation Link Component",
                 false,
-                "Invalid sensor index (%i) for entity %s",
-                sensorIndex,
+                "Invalid link index (%i) for entity %s",
+                linkIndex,
                 GetEntity()->GetName().c_str());
-            return nullptr;
+            return 0;
         }
 
         if (!m_link)
         {
             AZ_ErrorOnce("Articulation Link Component", false, "Invalid link pointer for entity %s", GetEntity()->GetName().c_str());
-            return nullptr;
+            return 0;
         }
 
-        AZ::u32 internalIndex = m_sensorIndices[sensorIndex];
+        AZ::u32 internalIndex = m_linkIndices[linkIndex];
         auto& articulation = m_link->getArticulation();
-        const auto numSensors = articulation.getNbSensors();
-        if (internalIndex >= numSensors)
+        const auto numLinks = articulation.getNbLinks();
+        if (internalIndex >= numLinks)
         {
             AZ_ErrorOnce(
                 "Articulation Link Component",
                 false,
-                "Invalid internal sensor index (%i) for entity %s",
-                sensorIndex,
+                "Invalid internal link index (%i) for entity %s",
+                linkIndex,
                 GetEntity()->GetName().c_str());
-            return nullptr;
+            return false;
         }
 
-        physx::PxArticulationSensor* sensor;
-        articulation.getSensors(&sensor, 1, internalIndex);
-        return sensor;
-    }
-
-    physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 sensorIndex)
-    {
-        return const_cast<physx::PxArticulationSensor*>(static_cast<const ArticulationLinkComponent&>(*this).GetSensor(sensorIndex));
-    }
-
-    AZ::Transform ArticulationLinkComponent::GetSensorTransform(AZ::u32 sensorIndex) const
-    {
-        if (auto* sensor = GetSensor(sensorIndex))
-        {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
-            return PxMathConvert(sensor->getRelativePose());
-        }
-        return AZ::Transform::CreateIdentity();
-    }
-
-    void ArticulationLinkComponent::SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform)
-    {
-        if (auto* sensor = GetSensor(sensorIndex))
-        {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
-            sensor->setRelativePose(PxMathConvert(sensorTransform));
-        }
+        return internalIndex;
     }
 
     AZ::Vector3 ArticulationLinkComponent::GetForce(AZ::u32 sensorIndex) const
     {
-        if (auto* sensor = GetSensor(sensorIndex))
+        if (m_articulationCache)
         {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
-            return PxMathConvert(sensor->getForces().force);
+            return PxMathConvert(m_articulationCache->linkForce[GetInternalLinkIndex(sensorIndex)]);
         }
         return AZ::Vector3::CreateZero();
     }

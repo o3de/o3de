@@ -31,7 +31,7 @@ set(FILES
     Include/PhysX/Material/PhysXMaterialConfiguration.h
     Include/PhysX/ArticulationTypes.h
     Include/PhysX/ArticulationJointBus.h
-    Include/PhysX/ArticulationSensorBus.h
+        Include/PhysX/ArticulationCacheBus.h
     Source/Articulation/ArticulationLinkConfiguration.h
     Source/Articulation/ArticulationLinkConfiguration.cpp
     Source/ArticulationLinkComponent.cpp

@@ -19,16 +19,10 @@ namespace AZ
 namespace PhysX
 {
     //! Interface to communicate with a sensor in a PhysX reduced co-ordinate articulation.
-    class ArticulationSensorRequests : public AZ::ComponentBus
+    class ArticulationCacheRequests : public AZ::ComponentBus
     {
     public:
-        //! Get the transform of the sensor relative to the body frame of the link it is attached to.
-        //! The sensor index is per-link, and differs from the per-actuation indices used internally by PhysX.
-        virtual AZ::Transform GetSensorTransform(AZ::u32 sensorIndex) const = 0;
-
-        //! Set the transform of the sensor relative to the body frame of the link it is attached to.
-        //! The sensor index is per-link, and differs from the per-actuation indices used internally by PhysX.
-        virtual void SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform) = 0;
+        // TODO: Add additional setters and getters
 
         //! Get the force reported by the sensor.
         //! The sensor index is per-link, and differs from the per-actuation indices used internally by PhysX.
@@ -39,5 +33,5 @@ namespace PhysX
         virtual AZ::Vector3 GetTorque(AZ::u32 sensorIndex) const = 0;
     };
 
-    using ArticulationSensorRequestBus = AZ::EBus<ArticulationSensorRequests>;
+    using ArticulationCacheRequestBus = AZ::EBus<ArticulationCacheRequests>;
 } // namespace PhysX
