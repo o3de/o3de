@@ -8,8 +8,6 @@
 
 o3de_gem_setup("PhysXDebug")
 
-ly_add_external_target_path(${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
-
 # This gem relies on the PhysX gem
 o3de_find_gem("PhysX" physx_gem_path)
 set(physx_gem_json ${physx_gem_path}/gem.json)

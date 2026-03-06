@@ -49,13 +49,22 @@ endif()
 # this cannot be done until project() is called.
 get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
 if (O3DE_SCRIPT_ONLY)
-    message(STATUS  "Basic Configuration Information (Script-only mode):\n" 
+    message(STATUS  "Basic Configuration Information (Script-only mode):\n"
+                    "   CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}\n"
                     "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
                     "   CMAKE_COMMAND: ${CMAKE_COMMAND}\n"
                     "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}"
             )
+    # On windows, Visual Studio Generator completely ignores any compiler options you set,
+    # including our attempts to use "no compiler" in script only mode.  On other platforms, makefiles
+    # and ninja and other generators honor these settings, so this problem is MSBuild specific.
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+        message(FATAL_ERROR "Script-only mode only works with 'Ninja Multi-Config' generator. \
+                        Please use the -G \"Ninja Multi-Config\" option when generating the project files.")
+    endif()
 else()
-    message(STATUS  "Basic Configuration Information:\n" 
+    message(STATUS  "Basic Configuration Information:\n"
+                    "   CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}\n"
                     "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
                     "   CMAKE_COMMAND: ${CMAKE_COMMAND}\n"
                     "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}\n"
