@@ -1541,6 +1541,11 @@ bool CCryEditApp::InitInstance()
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
 #endif
     mainWindowWrapper->setGuest(mainWindow);
+
+    // Note: we should use getNativeHandle to get the HWND from the widget, but
+    // it returns an invalid handle unless the widget has been shown and polished and even then
+    // it sometimes returns an invalid handle.
+    // So instead, we use winId(), which does consistently work
     HWND mainWindowWrapperHwnd = (HWND)mainWindowWrapper->winId();
 
     AZ::IO::FixedMaxPath engineRootPath;

@@ -6,16 +6,6 @@
 #
 #
 
-# QT6_TODO
-#add_custom_command(TARGET LmbrCentral.Editor POST_BUILD
-#    COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Linux/RPathChange.cmake"
-#            "$<TARGET_FILE_DIR:LmbrCentral.Editor>/lrelease"
-#            "$ORIGIN/../bin"
-#            "$ORIGIN"
-#    COMMENT "Patching lrelease..."
-#    VERBATIM
-#)
-
 set(lrelease_files
     ${QT_LRELEASE_EXECUTABLE}
 )

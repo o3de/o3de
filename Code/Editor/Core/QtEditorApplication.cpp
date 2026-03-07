@@ -431,8 +431,9 @@ namespace Editor
 
     void EditorQtApplication::InstallEditorTranslators()
     {
-        m_editorTranslator =        CreateAndInitializeTranslator("editor_en-us.qm", ":/Translations");
-        m_assetBrowserTranslator =  CreateAndInitializeTranslator("assetbrowser_en-us.qm", ":/Translations");
+        // Superseeded by https://github.com/o3de/o3de/pull/19554
+        // m_editorTranslator =        CreateAndInitializeTranslator("editor_en-us.qm", ":/Translations");
+        // m_assetBrowserTranslator =  CreateAndInitializeTranslator("assetbrowser_en-us.qm", ":/Translations");
     }
 
     void EditorQtApplication::DeleteTranslator(QTranslator*& translator)

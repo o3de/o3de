@@ -88,7 +88,7 @@ namespace AzQtComponents
         {
             // Grab references to each button for use later
             QString name = button->objectName();
-            if (name == TabBar::tr("ScrollLeftButton"))
+            if (name == "ScrollLeftButton")
             {
                 m_leftButton = button;
             }
