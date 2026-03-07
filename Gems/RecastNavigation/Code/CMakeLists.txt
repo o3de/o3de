@@ -19,103 +19,6 @@ o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-function(GetRecastNavigation)
-    # Variables inside a local function are scoped to the function body.
-    # Putting all of this inside a function lets us basically ensure that any variables set by us before invoking the
-    # external 3rdParty CMake file do not have any effect on the outside world, and allows us not to have to save and restore anything
-    # except for cache changes.
-
-    include(FetchContent)
-    # If you change these, please change the copy of them below in the installer 
-    # section.  That installer section is the ONLY part of the file that is shipped in the installer
-    # (SDK) version of the package, the rest of this file is not, so it must be duplicated there.
-    set(RECAST_GIT_REPO "https://github.com/recastnavigation/recastnavigation.git")
-    set(RECAST_GIT_TAG 5a870d4)
-    set(RECAST_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/recast-o3de.patch")
-
-    # Add RecastNavigation dependency using FetchContent
-    # Note: RecastNavigation::Detour requires lowering of the warning level to compile.
-    include(FetchContent)
-    FetchContent_Declare(
-            RecastNavigation
-            GIT_REPOSITORY ${RECAST_GIT_REPO}
-            GIT_TAG ${RECAST_GIT_TAG} # main branch as of March 17, 2022
-            PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${RECAST_GIT_PATCH}
-    )
-
-    # please always be really clear about what third parties your gem uses.
-    message(STATUS "RecastNavigation Gem uses ${RECAST_GIT_REPO} commit 5a870d4 (License: Zlib)")
-
-    set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-    set(RECASTNAVIGATION_DEMO OFF)
-    set(RECASTNAVIGATION_TESTS OFF)
-    set(RECASTNAVIGATION_EXAMPLES OFF)
-    set(BUILD_SHARED_LIBS OFF)
-    set(BUILD_FRAMEWORK OFF)
-    get_property(
-        compile_options
-        DIRECTORY
-        PROPERTY COMPILE_OPTIONS
-    )
-    include(${pal_dir}/PAL_recast_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-
-    # Temporarily disable CMake deprecation warnings from Recast library having a lower
-    # minimum required CMake version than us.
-    set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
-
-    # Include compiler settings for Recast libraries
-    set(common_platform_dir "${CMAKE_CURRENT_LIST_DIR}/Platform/Common")
-    include(${common_platform_dir}/${PAL_TRAIT_COMPILER_ID}/PAL_recast_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
-
-    FetchContent_MakeAvailable(RecastNavigation)
-    # Enable CMake deprecation warnings 
-    set(CMAKE_WARN_DEPRECATED ON CACHE BOOL "" FORCE)
-endfunction()
-
-GetRecastNavigation()
-
-# Place external recast libraries under RecastNavigation gem.
-get_property(recastnavigation_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
-ly_get_engine_relative_source_dir(${recastnavigation_gem_root} relative_recastnavigation_gem_root)
-set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
-
-# update targets location and add DT_POLYREF to each.
-foreach(recastLibrary ${recastLibraries})
-    set_property(TARGET ${recastLibrary} PROPERTY FOLDER "${relative_recastnavigation_gem_root}/External")
-    target_compile_definitions(${recastLibrary} 
-            PUBLIC 
-                DT_POLYREF64)
-endforeach()
-
-# Export external recast navigation targets for installers.
-# Note that the following property in the square brackets is the only part of this entire file
-# that gets included in installers.  This is why we need to duplicate the github repo from above
-# and cannot reuse the variables above.  The rest of this file won't be there to refer to.
-set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
-    set(RECAST_GIT_REPO "https://github.com/recastnavigation/recastnavigation.git")
-    set(RECAST_GIT_TAG 5a870d4)
-    message(STATUS "RecastNavigation Gem uses ${RECAST_GIT_REPO} commit 5a870d4 (License: Zlib)")
-    
-    set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
-    foreach(recastLibrary ${recastLibraries})
-        add_library(RecastNavigation::${recastLibrary} STATIC IMPORTED GLOBAL)
-
-        set_target_properties(RecastNavigation::${recastLibrary} 
-            PROPERTIES 
-                IMPORTED_LOCATION 
-                    "${LY_ROOT_FOLDER}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${recastLibrary}${CMAKE_STATIC_LIBRARY_SUFFIX}")
-
-        target_compile_definitions(RecastNavigation::${recastLibrary} 
-            INTERFACE 
-                DT_POLYREF64)
-
-        ly_target_include_system_directories(TARGET RecastNavigation::${recastLibrary} 
-            INTERFACE 
-                "${LY_ROOT_FOLDER}/include/recastnavigation")
-    endforeach()
-]]
-)
-
 # The ${gem_name}.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME ${gem_name}.API INTERFACE
@@ -129,8 +32,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
             AZ::AzCore
-            RecastNavigation::Detour
-            RecastNavigation::Recast
+            3rdParty::RecastNavigation::Recast
+            3rdParty::RecastNavigation::Detour
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -151,9 +54,9 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            RecastNavigation::DebugUtils
-            RecastNavigation::Detour
-            RecastNavigation::Recast
+            3rdParty::RecastNavigation::DebugUtils
+            3rdParty::RecastNavigation::Detour
+            3rdParty::RecastNavigation::Recast
             Gem::LmbrCentral.Static
             Gem::DebugDraw.API
 )
