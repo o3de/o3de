@@ -6,21 +6,15 @@
 #
 #
 
-if (TARGET 3rdParty::OpenMesh)
+if (TARGET 3rdParty::RecastNavigation::Recast)
     return()
 endif()
 
-# This file is used in the INSTALLER version of O3DE.  
+# This file is used in the INSTALLER version of O3DE.
 # This file is included in cmake/3rdParty, which is already part of the search path for Findxxxxx.cmake files.
-
-# The OpenMesh library is used privately inside the WhiteBox gem, so neither its headers nor its static library needs
-# to actually be distributed here.  It is not expected for people to link to it, but rather use it via the WhiteBox Gem's
-# public API.
 
 # It is still worth notifying people that they are accepting a 3rd Party Library here, and what license it uses, and
 # where to get it.
-# By providing both an "OpenMesh" and a "3rdParty::OpenMesh target, we stop O3DE from doing anything automatically
-# itself, such as attempting to invoke some other install script or find script or complaining about a missing target.
 set(RECAST_GIT_REPO "https://github.com/recastnavigation/recastnavigation.git")
 set(RECAST_GIT_TAG 5a870d4)
 message(STATUS "RecastNavigation Gem uses ${RECAST_GIT_REPO} commit 5a870d4 (License: Zlib)")
