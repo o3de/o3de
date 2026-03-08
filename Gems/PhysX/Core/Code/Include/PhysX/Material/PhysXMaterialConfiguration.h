@@ -23,9 +23,8 @@ namespace PhysX
 
         static void Reflect(AZ::ReflectContext* context);
 
-        bool m_enabled = false;
         float m_damping = 1.0f;
-        float m_stiffness = 1e+5f;
+        float m_stiffness = 0.0f;
 
     private:
         bool ReadOnlyProperties() const;

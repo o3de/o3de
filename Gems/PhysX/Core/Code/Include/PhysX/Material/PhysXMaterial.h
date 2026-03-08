@@ -113,7 +113,7 @@ namespace PhysX
         void SetDensity(float density);
 
         bool IsCompliantContactModeEnabled() const;
-        void EnableCompliantContactMode(bool enabled);
+        // void EnableCompliantContactMode(bool enabled);
 
         float GetCompliantContactModeDamping() const;
         void SetCompliantContactModeDamping(float damping);

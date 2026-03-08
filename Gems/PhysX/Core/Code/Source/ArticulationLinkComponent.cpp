@@ -885,51 +885,8 @@ namespace PhysX
         return IsRootArticulationEntity<ArticulationLinkComponent>(GetEntity());
     }
 
-    // // TODO: Refactor to return internal index for convenience
-    // const physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 linkIndex) const
-    // {
-    //     if (linkIndex >= m_linkIndices.size())
-    //     {
-    //         AZ_ErrorOnce(
-    //             "Articulation Link Component",
-    //             false,
-    //             "Invalid link index (%i) for entity %s",
-    //             linkIndex,
-    //             GetEntity()->GetName().c_str());
-    //         return nullptr;
-    //     }
-    //
-    //     if (!m_link)
-    //     {
-    //         AZ_ErrorOnce("Articulation Link Component", false, "Invalid link pointer for entity %s", GetEntity()->GetName().c_str());
-    //         return nullptr;
-    //     }
-    //
-    //     AZ::u32 internalIndex = m_linkIndices[linkIndex];
-    //     auto& articulation = m_link->getArticulation();
-    //     const auto numLinks = articulation.getNbLinks();
-    //     if (internalIndex >= numLinks)
-    //     {
-    //         AZ_ErrorOnce(
-    //             "Articulation Link Component",
-    //             false,
-    //             "Invalid internal link index (%i) for entity %s",
-    //             linkIndex,
-    //             GetEntity()->GetName().c_str());
-    //         return nullptr;
-    //     }
-    //
-    //     physx::PxArticulationSensor* sensor;
-    //     articulation.getSensors(&sensor, 1, internalIndex);
-    //     return sensor;
-    // }
-    //
-    // physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 sensorIndex)
-    // {
-    //     return const_cast<physx::PxArticulationSensor*>(static_cast<const ArticulationLinkComponent&>(*this).GetSensor(sensorIndex));
-    // }
 
-    AZ::u32 ArticulationLinkComponent::GetInternalLinkIndex(AZ::u32 linkIndex)
+    const AZ::u32 ArticulationLinkComponent::GetInternalLinkIndex(AZ::u32 linkIndex) const
     {
         if (linkIndex >= m_linkIndices.size())
         {
@@ -939,13 +896,13 @@ namespace PhysX
                 "Invalid link index (%i) for entity %s",
                 linkIndex,
                 GetEntity()->GetName().c_str());
-            return 0;
+            return AZStd::numeric_limits<AZ::u32>::max();
         }
 
         if (!m_link)
         {
             AZ_ErrorOnce("Articulation Link Component", false, "Invalid link pointer for entity %s", GetEntity()->GetName().c_str());
-            return 0;
+            return AZStd::numeric_limits<AZ::u32>::max();
         }
 
         AZ::u32 internalIndex = m_linkIndices[linkIndex];
@@ -959,27 +916,31 @@ namespace PhysX
                 "Invalid internal link index (%i) for entity %s",
                 linkIndex,
                 GetEntity()->GetName().c_str());
-            return false;
+            return AZStd::numeric_limits<AZ::u32>::max();
         }
 
         return internalIndex;
     }
 
-    AZ::Vector3 ArticulationLinkComponent::GetForce(AZ::u32 sensorIndex) const
+    AZ::u32 ArticulationLinkComponent::GetInternalLinkIndex(AZ::u32 linkIndex)
+    {
+        return static_cast<const ArticulationLinkComponent&>(*this).GetInternalLinkIndex(linkIndex);
+    }
+
+    AZ::Vector3 ArticulationLinkComponent::GetForce(AZ::u32 linkIndex) const
     {
         if (m_articulationCache)
         {
-            return PxMathConvert(m_articulationCache->linkForce[GetInternalLinkIndex(sensorIndex)]);
+            return PxMathConvert(m_articulationCache->linkForce[GetInternalLinkIndex(linkIndex)]);
         }
         return AZ::Vector3::CreateZero();
     }
 
-    AZ::Vector3 ArticulationLinkComponent::GetTorque(AZ::u32 sensorIndex) const
+    AZ::Vector3 ArticulationLinkComponent::GetTorque(AZ::u32 linkIndex) const
     {
-        if (auto* sensor = GetSensor(sensorIndex))
+        if (m_articulationCache)
         {
-            PHYSX_SCENE_READ_LOCK(m_link->getScene());
-            return PxMathConvert(sensor->getForces().torque);
+            return PxMathConvert(m_articulationCache->linkTorque[GetInternalLinkIndex(linkIndex)]);
         }
         return AZ::Vector3::CreateZero();
     }

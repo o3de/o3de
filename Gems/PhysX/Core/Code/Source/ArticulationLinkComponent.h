@@ -109,9 +109,7 @@ namespace PhysX
         void DestroyArticulation();
         void InitPhysicsTickHandler();
 
-        // const physx::PxArticulationSensor* GetSensor(AZ::u32 linkIndex) const;
-        // physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex);
-
+        const AZ::u32 GetInternalLinkIndex(AZ::u32 linkIndex) const;
         AZ::u32 GetInternalLinkIndex(AZ::u32 linkIndex);
 
         void SetRootSpecificProperties(const ArticulationLinkConfiguration& rootLinkConfiguration);
