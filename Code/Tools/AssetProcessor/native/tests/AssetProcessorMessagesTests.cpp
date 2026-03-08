@@ -104,7 +104,7 @@ namespace AssetProcessorMessagesTests
             };
             NetworkRequestID key(connId, serial);
             int fenceFileId = 0;
-            m_pendingFenceRequestMap[fenceFileId] = AZStd::move(AssetRequestHandler::RequestInfo(key, AZStd::move(message), platform));
+            m_pendingFenceRequestMap[fenceFileId] = AssetRequestHandler::RequestInfo(key, AZStd::move(message), platform);
 
             OnFenceFileDetected(fenceFileId);
         }

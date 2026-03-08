@@ -1404,20 +1404,20 @@ namespace AzToolsFramework
         {
         case PerforceJobRequest::PJR_Stat:
         {
-            resp.m_fileInfo = AZStd::move(GetFileInfo(request.m_requestPath.c_str()));
+            resp.m_fileInfo = GetFileInfo(request.m_requestPath.c_str());
             resp.m_succeeded = resp.m_fileInfo.m_status == SCS_OpSuccess;
         }
         break;
         case PerforceJobRequest::PJR_StatBulk:
         {
-            resp.m_bulkFileInfo = AZStd::move(GetBulkFileInfo(request.m_bulkFilePaths));
+            resp.m_bulkFileInfo = GetBulkFileInfo(request.m_bulkFilePaths);
             resp.m_succeeded = !resp.m_bulkFileInfo.empty();
         }
         break;
         case PerforceJobRequest::PJR_Edit:
         {
             resp.m_succeeded = RequestEdit(request.m_requestPath.c_str(), request.m_allowMultiCheckout);
-            resp.m_fileInfo = AZStd::move(GetFileInfo(request.m_requestPath.c_str()));
+            resp.m_fileInfo = GetFileInfo(request.m_requestPath.c_str());
         }
         break;
         case PerforceJobRequest::PJR_EditBulk:

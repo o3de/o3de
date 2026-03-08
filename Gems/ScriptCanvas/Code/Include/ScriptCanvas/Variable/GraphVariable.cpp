@@ -283,7 +283,7 @@ namespace ScriptCanvas
     GraphVariable::GraphVariable(Deprecated::VariableNameValuePair&& valuePair)
         : GraphVariable(AZStd::move(valuePair.m_varDatum.GetData()))
     {
-        SetVariableName(AZStd::move(valuePair.GetVariableName()));
+        SetVariableName(valuePair.GetVariableName());
         m_variableId = valuePair.m_varDatum.GetId();
 
         if (valuePair.m_varDatum.ExposeAsComponentInput())

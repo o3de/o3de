@@ -934,7 +934,7 @@ namespace AZ::Data
         if(!asset || (!loadParams.m_reloadMissingDependencies && asset.IsReady()))
         {
             // If the asset is already ready, just return it and skip the container
-            return AZStd::move(asset);
+            return asset;
         }
 
         auto container = GetAssetContainer(asset, loadParams);
@@ -1216,7 +1216,7 @@ namespace AZ::Data
     {
         if (!assetId.IsValid())
         {
-            // The null Asset has an invalid asset ID, but uses the asset type and asset load behavior supplied to this method 
+            // The null Asset has an invalid asset ID, but uses the asset type and asset load behavior supplied to this method
             Asset<AssetData> nullAsset(assetId, assetType);
             nullAsset.SetAutoLoadBehavior(assetReferenceLoadBehavior);
             return nullAsset;
@@ -1257,7 +1257,7 @@ namespace AZ::Data
         {
             AZ_Error("AssetDatabase", false, R"(Cannot create Asset with the InvalidAssetId: %s)", assetId.ToFixedString().c_str());
 
-            // The null Asset has an invalid asset ID, but uses the asset type and asset load behavior supplied to this method 
+            // The null Asset has an invalid asset ID, but uses the asset type and asset load behavior supplied to this method
             Asset<AssetData> nullAsset(assetId, assetType);
             nullAsset.SetAutoLoadBehavior(assetReferenceLoadBehavior);
             return nullAsset;
@@ -2411,7 +2411,7 @@ namespace AZ::Data
 
         AZStd::lock_guard<AZStd::recursive_mutex> assetLock(m_assetMutex);
 
-        // we need to cache the AssetStreamInfo since json objects are referencing the names in it. 
+        // we need to cache the AssetStreamInfo since json objects are referencing the names in it.
         AZStd::vector<AssetStreamInfo> cachedStreamInfos;
         cachedStreamInfos.reserve(m_assets.size());
 
@@ -2433,7 +2433,7 @@ namespace AZ::Data
             assetInfoObject.AddMember("RefCount", static_cast<uint64_t>(assetEntry.second->GetUseCount()), doc.GetAllocator());
             infoArray.PushBack(assetInfoObject, doc.GetAllocator());
         }
-                
+
         rapidjson::Value typeSizeArray(rapidjson::kArrayType);
         for (const auto& [typeName, typeInfo] : assetTypeInfos)
         {
@@ -2480,7 +2480,7 @@ namespace AZ::Data
             AZ_Error("AssetManager", false, AZStd::string::format("Failed to open file %s for writing", filename.c_str()).c_str());
             return;
         }
-        
+
         outputFile.Write(jsonStringBuffer.GetString(), jsonStringBuffer.GetSize());
         outputFile.Close();
 

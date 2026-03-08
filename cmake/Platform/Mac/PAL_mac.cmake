@@ -36,11 +36,27 @@ ly_set(PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED TRUE)
 ly_set(PAL_TRAIT_TEST_PYTEST_SUPPORTED FALSE)
 ly_set(PAL_TRAIT_TEST_TARGET_TYPE MODULE)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     ly_set(PAL_TRAIT_COMPILER_ID Clang)
     ly_set(PAL_TRAIT_COMPILER_ID_LOWERCASE clang)
 else()
     message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
+endif()
+
+# Non-AppleClang compilers do not automatically discover the macOS SDK sysroot.
+# Detect it via xcrun so that system headers are found.
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND NOT CMAKE_OSX_SYSROOT)
+    execute_process(
+        COMMAND xcrun --sdk macosx --show-sdk-path
+        OUTPUT_VARIABLE xcrun_sdk_path
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    if(xcrun_sdk_path)
+        set(CMAKE_OSX_SYSROOT "${xcrun_sdk_path}" CACHE PATH "" FORCE)
+    else()
+        message(WARNING "Could not detect macOS SDK sysroot via xcrun. System headers may not be found.")
+    endif()
 endif()
 
 # Set the default asset type for deployment

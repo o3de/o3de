@@ -10,7 +10,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <Core/SlotConfigurationDefaults.h> 
+#include <Core/SlotConfigurationDefaults.h>
 #include <Core/SlotExecutionMap.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -66,7 +66,7 @@ namespace ScriptCanvas
                     ? *argumentNamePtr
                     : (AZStd::string::format("%s:%2zu", argumentTypeName.data(), argIndex));
 
-                signature.m_inputs.emplace_back(AZStd::make_shared<Grammar::Variable>(AZStd::move(Datum(*argument, Datum::eOriginality::Original, nullptr)), AZStd::move(argName), Grammar::TraitsFlags()));
+                signature.m_inputs.emplace_back(AZStd::make_shared<Grammar::Variable>(Datum(*argument, Datum::eOriginality::Original, nullptr), AZStd::move(argName), Grammar::TraitsFlags()));
             }
         }
 
@@ -78,7 +78,7 @@ namespace ScriptCanvas
 
                 for (auto& type : unpackedTypes)
                 {
-                    signature.m_outputs.push_back(AZStd::make_shared<Grammar::Variable>(AZStd::move(Datum(Data::FromAZType(type), Datum::eOriginality::Original))));
+                    signature.m_outputs.push_back(AZStd::make_shared<Grammar::Variable>(Datum(Data::FromAZType(type), Datum::eOriginality::Original)));
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace ScriptCanvas
                             }
                         }
                     }
-                }                    
+                }
 
                 return true;
             }
@@ -689,7 +689,7 @@ namespace ScriptCanvas
                             outType = eventType;
                             return true;
                         }
-                        
+
                         AZ_Warning("Script Canvas"
                             , !m_warnOnMissingFunction
                             , "Could not find event: %s, in bus: %s, anywhere in BehaviorContext"
@@ -740,7 +740,7 @@ namespace ScriptCanvas
                     }
                     break;
 
-                    default:    
+                    default:
                         break;
                     }
                 }
@@ -757,7 +757,7 @@ namespace ScriptCanvas
             AZStd::tuple<const AZ::BehaviorMethod*, MethodType, EventType, const AZ::BehaviorClass*> Method::LookupMethod() const
             {
                 using TupleType = AZStd::tuple<const AZ::BehaviorMethod*, MethodType, EventType, const AZ::BehaviorClass*>;
-                
+
                 AZStd::string prettyClassName;
 
                 const AZ::BehaviorClass* bcClass{};

@@ -29,7 +29,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridRelocationPass> DiffuseProbeGridRelocationPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridRelocationPass> pass = aznew DiffuseProbeGridRelocationPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridRelocationPass::DiffuseProbeGridRelocationPass(const RPI::PassDescriptor& descriptor)
@@ -108,7 +108,7 @@ namespace AZ
                 return true;
             }
 
-            // check to see if any grids need relocation           
+            // check to see if any grids need relocation
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
                 if (diffuseProbeGrid->GetRemainingRelocationIterations() > 0)
@@ -116,7 +116,7 @@ namespace AZ
                     return true;
                 }
             }
-           
+
             return false;
         }
 

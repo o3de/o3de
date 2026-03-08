@@ -841,7 +841,7 @@ namespace AzToolsFramework
                 actionContextIdentifier.c_str()));
         }
 
-        return AZ::Success(AZStd::move(actionContextIterator->second->GetActiveMode()));
+        return AZ::Success(actionContextIterator->second->GetActiveMode());
     }
 
     QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)

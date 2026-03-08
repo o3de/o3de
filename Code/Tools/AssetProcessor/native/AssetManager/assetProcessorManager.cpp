@@ -902,7 +902,7 @@ namespace AssetProcessor
             AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to retrieve the registered setting registry.");
         }
 
-        return AZStd::move(scanDirectories);
+        return scanDirectories;
     }
 
     AssetProcessorManager::ConflictResult AssetProcessorManager::CheckIntermediateProductConflict(const char* searchSourcePath)
@@ -1892,7 +1892,7 @@ namespace AssetProcessor
                     // its already been picked up by a file monitoring / scanning step.
                     continue;
                 }
-                
+
                 if (source.m_fromDependencyChain.contains(absolutePath))
                 {
                     AZ_Trace(AssetProcessor::DebugChannel, "Ignoring dependant file: " AZ_STRING_FORMAT " - cyclic dependency detected\n", AZ_STRING_ARG(absolutePath));

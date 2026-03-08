@@ -738,7 +738,7 @@ namespace AzToolsFramework
                 // Create temporary one with the type id then we can get its type info to construct a new AZStd::any with new data
                 auto tempAny = m_serializeContext->CreateAny(data.value().m_valueElement->m_typeId);
                 AZStd::any::type_info typeInfo = tempAny.get_type_info();
-                return { PropertyAccessOutcome::ValueType(AZStd::move(AZStd::any(value, typeInfo))) };
+                return { PropertyAccessOutcome::ValueType(AZStd::any(value, typeInfo)) };
             }
         }
         else if (data.value().m_dataContainer->GetAssociativeContainerInterface())
@@ -756,7 +756,7 @@ namespace AzToolsFramework
                 auto tempAny = m_serializeContext->CreateAny(keyPairInfo.value().m_valueElement->m_typeId);
                 AZStd::any::type_info typeInfo = tempAny.get_type_info();
                 void* value = keyPairInfo.value().m_pairClass->m_container->GetElementByIndex(keyPairValue, keyPairInfo.value().m_valueElement, 1);
-                return { PropertyAccessOutcome::ValueType(AZStd::move(AZStd::any(value, typeInfo))) };
+                return { PropertyAccessOutcome::ValueType(AZStd::any(value, typeInfo)) };
             }
         }
         return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("GetContainerItem - keyed value could not be returned") };

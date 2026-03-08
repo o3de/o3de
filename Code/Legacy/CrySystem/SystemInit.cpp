@@ -443,8 +443,8 @@ void CSystem::OpenPlatformPaks()
     const char* const assetsDir = "@products@";
     // Load Android Obb files if available
     const char* obbStorage = AZ::Android::Utils::GetObbStoragePath();
-    AZStd::string mainObbPath = AZStd::move(AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(true)));
-    AZStd::string patchObbPath = AZStd::move(AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(false)));
+    AZStd::string mainObbPath = AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(true));
+    AZStd::string patchObbPath = AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(false));
     m_env.pCryPak->OpenPack(assetsDir, mainObbPath.c_str());
     m_env.pCryPak->OpenPack(assetsDir, patchObbPath.c_str());
 #endif // AZ_PLATFORM_ANDROID
@@ -1101,7 +1101,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     InlineInitializationProcessing("CSystem::Init End");
 
     // All CVARs should now be registered, load and apply quality settings for the default quality group
-    // using device rules to auto-detected the correct quality level 
+    // using device rules to auto-detected the correct quality level
     AzFramework::QualitySystemEvents::Bus::Broadcast(
         &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
         AzFramework::QualityLevel::LevelFromDeviceRules);

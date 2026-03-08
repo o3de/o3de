@@ -140,7 +140,7 @@ namespace AzToolsFramework
                 entityAliasPath += "/";
                 entityAliasPath += entityAliasRef->get();
             }
-            return AZStd::move(entityAliasPath);
+            return entityAliasPath;
         }
 
         AZ::Dom::Path InstanceToTemplatePropagator::GenerateEntityPathFromFocusedPrefab(AZ::EntityId entityId)
@@ -166,14 +166,14 @@ namespace AzToolsFramework
                 AZ_Error("Prefab", false, "Focused prefab instance is null.");
                 return AZ::Dom::Path();
             }
-            
+
             auto relativePathBetweenInstances =
                 PrefabInstanceUtils::GetRelativePathBetweenInstances(focusedInstance->get(), owningInstance->get());
 
             AZ::Dom::Path fullPathBetweenInstances(relativePathBetweenInstances);
             AZStd::string entityPath = GenerateEntityAliasPath(entityId);
             fullPathBetweenInstances = fullPathBetweenInstances / AZ::Dom::Path(entityPath);
-            return AZStd::move(fullPathBetweenInstances);
+            return fullPathBetweenInstances;
         }
 
         void InstanceToTemplatePropagator::PrependEntityAliasPathToPatchPaths(
@@ -219,7 +219,7 @@ namespace AzToolsFramework
             if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
             {
                 AZ_Error("Prefab", false, "Patch was not successfully applied.");
-                return false; 
+                return false;
             }
             else
             {

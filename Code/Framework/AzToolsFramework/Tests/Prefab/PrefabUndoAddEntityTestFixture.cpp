@@ -74,13 +74,13 @@ namespace UnitTest
         const EntityAlias& parentEntityAlias)
     {
         AZ::Entity& parentEntity = parentEntityAlias.empty()?
-            focusedInstance.GetContainerEntity()->get() : 
+            focusedInstance.GetContainerEntity()->get() :
             GetEntityFromOwningInstance(parentEntityAlias, focusedInstance);
         AZ::Entity& newEntity = GetEntityFromOwningInstance(newEntityAlias, focusedInstance);
 
         PrefabUndoAddEntity undoAddEntityNode(undoAddEntityOperationName);
         undoAddEntityNode.Capture(parentEntity, newEntity, focusedInstance);
-        return AZStd::move(undoAddEntityNode);
+        return undoAddEntityNode;
     }
 
     PrefabUndoAddEntityAsOverride PrefabUndoAddEntityTestFixture::CreatePrefabUndoAddEntityAsOverrideNode(
@@ -97,7 +97,7 @@ namespace UnitTest
 
         PrefabUndoAddEntityAsOverride undoAddEntityNode(undoAddEntityOperationName);
         undoAddEntityNode.Capture(parentEntity, newEntity, owningInstance, focusedInstance);
-        return AZStd::move(undoAddEntityNode);
+        return undoAddEntityNode;
     }
 
     void PrefabUndoAddEntityTestFixture::ValidateNewEntityUnderInstance(
