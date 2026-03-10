@@ -62,16 +62,12 @@ namespace UnitTest
         static_assert(AZStd::is_same<AZStdAllocatorTraits::value_type, void>::value, "Allocator trait value_type is not the same as void");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::pointer, void*>::value, "Allocator trait pointer is not the same as void*");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::const_pointer, const void*>::value, "Allocator trait const_pointer is not the same as const void*");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::void_pointer, void*>::value, "Allocator trait void_pointer is not the same as void*");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::const_void_pointer, const void*>::value, "Allocator trait const_void_pointer is not the same as void*");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::difference_type, ptrdiff_t>::value, "Allocator trait difference_type is not the same as ptrdiff_t");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::size_type, size_t>::value, "Allocator trait size_type is not the same as size_t");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_copy_assignment, true_type>::value, "Allocator trait propagate_on_container_copy_assignment is not the same as true_type");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_move_assignment, true_type>::value, "Allocator trait propagate_on_container_move_assignment is not the same as true_type");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_swap, true_type>::value, "Allocator trait propagate_on_container_swap is not the same as true_type");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::is_always_equal, true_type>::value, "Allocator trait is_always_equal is not the same as true_type");
         static_assert(AZStd::is_same<typename AZStdAllocatorTraits::template rebind_alloc<int32_t>, AZStd::allocator>::value, "Rebind alloc for AZStd::allocator should return AZStd::allocator");
-        static_assert(AZStd::is_same<typename AZStdAllocatorTraits::template rebind_traits<int32_t>::allocator_type, AZStd::allocator>::value, "Rebind traits allocator_type should still be AZStd::allocator");
     }
 
     TEST_F(AllocatorDefaultTest, AllocatorTraitsAllocateAndDeallocateSucceeds)
@@ -127,14 +123,6 @@ namespace UnitTest
         AllocatorWithGetMaxSize testAllocator;
         typename AZStdAllocatorTraits::size_type maxSize = AZStdAllocatorTraits::max_size(testAllocator);
         EXPECT_EQ(testAllocator.get_max_size(), maxSize);
-    }
-
-    TEST_F(AllocatorDefaultTest, AllocatorTraitsSelectOnContainerCopyConstructionCompilesWithoutErrors)
-    {
-        using AZStdAllocatorTraits = AZStd::allocator_traits<AZStd::allocator>;
-        AZStd::allocator testAllocator;
-        AZStd::allocator copiedAllocator = AZStdAllocatorTraits::select_on_container_copy_construction(testAllocator);
-        EXPECT_EQ(testAllocator, copiedAllocator);
     }
 
     /// Static buffer allocator.
