@@ -11,7 +11,8 @@ import asyncio
 import re
 from shiboken6 import wrapInstance, getCppPointer
 from PySide6 import QtCore, QtWidgets, QtGui, QtTest
-from PySide6.QtWidgets import QAction, QWidget
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
 import traceback
