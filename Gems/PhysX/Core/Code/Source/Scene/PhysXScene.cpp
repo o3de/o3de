@@ -115,10 +115,10 @@ namespace PhysX
 
             sceneDesc.filterCallback = filterCallback;
             sceneDesc.simulationEventCallback = simEventCallback;
-            #ifdef ENABLE_TGS_SOLVER
-                // Use Temporal Gauss-Seidel solver by default
-                sceneDesc.solverType = physx::PxSolverType::eTGS;
-            #endif
+            
+            // Use Temporal Gauss-Seidel solver by default
+            sceneDesc.solverType = physx::PxSolverType::eTGS;
+
             #ifdef PHYSX_ENABLE_MULTI_THREADING
                 sceneDesc.flags |= physx::PxSceneFlag::eREQUIRE_RW_LOCK;
             #endif
