@@ -12,7 +12,7 @@ namespace PhysX
     namespace PxCooking
     {
         //! Return PxCookingParams better suited for use at run-time, these parameters will improve cooking time.
-        //! Reference: https://docs.nvidia.com/gameworks/content/gameworkslibrary/physx/guide/Manual/Geometry.html#triangle-meshes
+        //! Reference: https://nvidia-omniverse.github.io/PhysX/physx/5.6.1/docs/Geometry.html#triangle-meshes
         physx::PxCookingParams GetRealTimeCookingParams()
         {
             physx::PxCookingParams params{ physx::PxTolerancesScale() };
