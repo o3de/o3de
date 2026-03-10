@@ -73,7 +73,9 @@ namespace AzFramework
         if (auto seat = GetSeatFromPlayerIdx(playerIdx))
         {
             if (!seat->m_supportsPointer)
+            {
                 return nullptr;
+            }
             return wl_seat_get_pointer(seat->m_seat);
         }
         return nullptr;
@@ -84,7 +86,9 @@ namespace AzFramework
         if (auto seat = GetSeatFromPlayerIdx(playerIdx))
         {
             if (!seat->m_supportsKeyboard)
+            {
                 return nullptr;
+            }
             return wl_seat_get_keyboard(seat->m_seat);
         }
         return nullptr;
@@ -95,7 +99,9 @@ namespace AzFramework
         if (auto seat = GetSeatFromPlayerIdx(playerIdx))
         {
             if (!seat->m_supportsTouch)
+            {
                 return nullptr;
+            }
             return wl_seat_get_touch(seat->m_seat);
         }
         return nullptr;

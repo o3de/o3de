@@ -68,7 +68,9 @@ namespace AzFramework
     {
         OutputInfo* info = static_cast<OutputInfo*>(wl_output_get_user_data(output));
         if (info == nullptr)
+        {
             return 0;
+        }
 
         return info->m_refreshRateMhz;
     }
@@ -77,7 +79,9 @@ namespace AzFramework
     {
         OutputInfo* info = static_cast<OutputInfo*>(wl_output_get_user_data(output));
         if (info == nullptr)
+        {
             return {};
+        }
 
         return info->m_name;
     }
@@ -86,7 +90,9 @@ namespace AzFramework
     {
         OutputInfo* info = static_cast<OutputInfo*>(wl_output_get_user_data(output));
         if (info == nullptr)
+        {
             return {};
+        }
 
         return info->m_desc;
     }
