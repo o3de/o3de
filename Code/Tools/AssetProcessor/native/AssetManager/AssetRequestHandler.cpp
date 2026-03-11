@@ -88,14 +88,14 @@ namespace
     }
 
     // generic version of BuildFailure, generally assumes that the failure type is a string.
-    template<typename T> 
+    template<typename T>
     void BuildFailure(const T& failure,  AZStd::vector<AZStd::string>& lines)
     {
        ParseToLines(lines, failure);
     }
 
     // specialized version of BuildFailure, for when the failure type is a MoveFailure, the string will be in m_reason
-    template<> 
+    template<>
     void BuildFailure(const MoveFailure& failure,  AZStd::vector<AZStd::string>& lines)
     {
         ParseToLines(lines, failure.m_reason);
@@ -302,7 +302,7 @@ namespace
             AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Could not acquire a list of scan folders from the database.");
         }
 
-        return GetScanFoldersResponse(move(scanFolders));
+        return GetScanFoldersResponse(AZStd::move(scanFolders));
     }
 
     GetAssetSafeFoldersResponse HandleGetAssetSafeFoldersRequest([[maybe_unused]] MessageData<GetAssetSafeFoldersRequest> messageData)
@@ -317,7 +317,7 @@ namespace
             AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Could not acquire a list of asset safe folders from the database.");
         }
 
-        return GetAssetSafeFoldersResponse(move(assetSafeFolders));
+        return GetAssetSafeFoldersResponse(AZStd::move(assetSafeFolders));
     }
 
     void HandleRegisterSourceAssetRequest(MessageData<RegisterSourceAssetRequest> messageData)
@@ -611,7 +611,7 @@ void AssetRequestHandler::DeleteFenceFile_Retry(unsigned int fenceId, QString fe
         // add an entry in map
         // We have successfully created and deleted the fence file, insert an entry for it in the pendingFenceRequest map
         // and return, we will only process this request once the APM indicates that it has detected the fence file
-        m_pendingFenceRequestMap[fenceId] = AZStd::move(RequestInfo(key, AZStd::move(message), platform));
+        m_pendingFenceRequestMap[fenceId] = RequestInfo(key, AZStd::move(message), platform);
         return;
     }
 

@@ -124,7 +124,7 @@ namespace AzToolsFramework
                         else
                         {
                             AZStd::string error =
-                                AZStd::move(AZStd::string::format("Could not check out asset file: %s.", assetFullPath.c_str()));
+                                AZStd::string::format("Could not check out asset file: %s.", assetFullPath.c_str());
                             assetCheckoutAndSaveCallback(false, error, assetFullPath);
                         }
                         opComplete = true;
@@ -153,7 +153,7 @@ namespace AzToolsFramework
             else
             {
                 AZStd::string error =
-                    AZStd::move(AZStd::string::format("Could not resolve path name for asset {%s}.", id.ToString<AZStd::string>().c_str()));
+                    AZStd::string::format("Could not resolve path name for asset {%s}.", id.ToString<AZStd::string>().c_str());
                 assetCheckoutAndSaveCallback(false, error, AZStd::string{});
             }
         }
@@ -349,7 +349,7 @@ namespace AzToolsFramework
 
                         if (checkoutSuccess)
                         {
-                            saveError = AZStd::move(AZStd::string::format("Could not write asset file: %s.", assetFullPath.c_str()));
+                            saveError = AZStd::string::format("Could not write asset file: %s.", assetFullPath.c_str());
                             if (!m_saveData.empty())
                             {
                                 if (AZ::Utils::SaveStreamToFile(assetFullPath, m_saveData))
@@ -363,7 +363,7 @@ namespace AzToolsFramework
                         if (saveSuccessful)
                         {
                             Q_EMIT OnAssetSavedSignal();
-                                            
+
                             m_parentEditorWidget->AddRecentPath(m_inMemoryAsset->GetType(), assetFullPath);
                             if (!m_useDPE)
                             {
@@ -404,7 +404,7 @@ namespace AzToolsFramework
             {
                 return;
             }
-            
+
             SaveAssetImpl(nullptr);
         }
 
@@ -572,7 +572,7 @@ namespace AzToolsFramework
 
 
         void AssetEditorTab::UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset)
-        {           
+        {
             if (m_useDPE)
             {
                 m_adapter->SetValue(asset.Get(), asset.GetType());
@@ -678,7 +678,7 @@ namespace AzToolsFramework
             auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
             asset.BlockUntilLoadComplete();
-            
+
             if (asset.IsReady())
             {
                 OnAssetReady(asset);
@@ -755,7 +755,7 @@ namespace AzToolsFramework
                 // given a chance to fix the errors and try again.
                 m_sourceAssetId.SetInvalid();
                 m_currentAsset = "New Asset";
-                
+
                 if (!m_useDPE)
                 {
                     m_propertyEditor->setEnabled(true);
@@ -801,7 +801,7 @@ namespace AzToolsFramework
         {
             DirtyAsset();
         }
-        
+
         void AssetEditorTab::OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
         {
             if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)

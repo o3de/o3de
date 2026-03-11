@@ -1930,7 +1930,7 @@ namespace Multiplayer
     {
         // Try finding the game launcher from the executable folder where this server was launched from.
         AZ::IO::FixedMaxPath gameLauncherPath = AZ::Utils::GetExecutableDirectory();
-        gameLauncherPath /= AZStd::string_view(AZ::Utils::GetProjectName() + ".GameLauncher" + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+        gameLauncherPath /= AZ::Utils::GetProjectName() + ".GameLauncher" AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
         if (!AZ::IO::SystemFile::Exists(gameLauncherPath.c_str()))
         {
             AZLOG_ERROR("Could not find GameLauncher executable (%s)", gameLauncherPath.c_str());

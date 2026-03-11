@@ -47,6 +47,8 @@
 #include <Builders/TranslationBuilder/TranslationBuilderComponent.h>
 #include "Builders/CopyDependencyBuilder/CopyDependencyBuilderComponent.h"
 
+extern AZ::ComponentDescriptor* GenericAssetBuilderComponent_CreateDescriptor();
+
 namespace LmbrCentral
 {
     LmbrCentralEditorModule::LmbrCentralEditorModule()
@@ -80,6 +82,7 @@ namespace LmbrCentral
             SliceBuilder::BuilderPluginComponent::CreateDescriptor(),
             TranslationBuilder::BuilderPluginComponent::CreateDescriptor(),
             LuaBuilder::BuilderPluginComponent::CreateDescriptor(),
+            GenericAssetBuilderComponent_CreateDescriptor(),
 
             BenchmarkAssetBuilder::BenchmarkAssetBuilderComponent::CreateDescriptor(),
         });

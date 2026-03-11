@@ -5,15 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
+
+#include <utility>
 
 namespace AZStd
 {
-    // rvalue
-    // rvalue move
-    template<class T>
-    constexpr AZStd::remove_reference_t<T>&& move(T&& t)
-    {
-        return static_cast<AZStd::remove_reference_t<T>&&>(t);
-    }
+    using std::move;
+    using std::move_if_noexcept;
 }

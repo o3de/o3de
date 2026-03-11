@@ -287,7 +287,7 @@ namespace AZ
                 //       valueAddress = *reinterpret_cast<void**>(valueAddress); // pointer to a pointer
                 //    }
                 // Notice the it expects it to be a void** (double reference) and dereferences it to get the address of the object.
-                // 
+                //
                 // That means that when TR_POINTER is set, not only does the object pointed to have to survive until used
                 // but the memory storing that pointer also has to survive until used.
                 // for example, this would be a scope use-after-free bug:
@@ -295,7 +295,7 @@ namespace AZ
                 //    AZ::Entity entity;
                 //    AZ::BehaviorArgument arg;
                 //    arg.m_traits = BehaviorParameter::TR_POINTER;
-                // 
+                //
                 //    {
                 //       const void* objectPtr = &entity;   // this is a 64-bit object living in the stack, holding the addr of entity.
                 //       arg.m_value = const_cast<void*>(&objectPtr); // notice, we are referencing objectPtr again with & since its TR_POINTER
@@ -397,7 +397,7 @@ namespace AZ
 
                 // Create temporary any to get its type info to construct a new AZStd::any with new data
                 AZStd::any tempAny = serializeContext->CreateAny(returnBehaviorValue.m_typeId);
-                return AZStd::move(AZStd::any(returnBehaviorValue.m_value, tempAny.get_type_info()));
+                return AZStd::any(returnBehaviorValue.m_value, tempAny.get_type_info());
             }
 
             AZStd::any GraphObjectProxy::Invoke(AZStd::string_view method, AZStd::vector<AZStd::any> argList)

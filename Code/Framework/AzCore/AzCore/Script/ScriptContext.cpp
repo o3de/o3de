@@ -5484,7 +5484,7 @@ LUA_API const Node* lua_getDummyNode()
                 // Lua: ExposedEvent, lambda
                 lua_pushvalue(lua, -1);
                 // Lua: ExposedEvent, lambda, lambda
-                auto handlerAndType = AZStd::invoke(holder.m_function, userData->value, AZStd::move(ExposedLambda(lua)));
+                auto handlerAndType = AZStd::invoke(holder.m_function, userData->value, ExposedLambda(lua));
                 // Lua: ExposedEvent, lambda
                 Internal::RegisteredObjectToLua(lua, handlerAndType.m_address, handlerAndType.m_typeId, ObjectToLua::ByReference, AcquisitionOnPush::ScriptAcquire);
                 // Lua: ExposedEvent, lambda, handler

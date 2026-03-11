@@ -106,7 +106,7 @@ namespace ScriptCanvas
             AZStd::string OrderedSequencer::GenerateOutputName(int counter) const
             {
                 AZStd::string slotName = AZStd::string::format("Out %i", counter);
-                return AZStd::move(slotName);
+                return slotName;
             }
 
             void OrderedSequencer::FixupStateNames()

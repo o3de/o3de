@@ -112,7 +112,7 @@ namespace
                 return AZ::StringFunc::Equal(inputChannel.GetName(), inputChannelName.c_str());
         });
 
-        return it != keys.cend() ? it : nullptr;
+        return it != keys.cend() ? &*it : nullptr;
     }
 }
 

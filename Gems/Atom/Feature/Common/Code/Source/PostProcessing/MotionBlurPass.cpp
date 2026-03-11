@@ -18,7 +18,7 @@ namespace AZ
         RPI::Ptr<MotionBlurPass> MotionBlurPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<MotionBlurPass> pass = aznew MotionBlurPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         MotionBlurPass::MotionBlurPass(const RPI::PassDescriptor& descriptor)

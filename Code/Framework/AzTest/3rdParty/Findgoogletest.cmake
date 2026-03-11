@@ -98,11 +98,17 @@ foreach(targetname gtest gmock gtest_main gmock_main)
     set_target_properties(${targetname} PROPERTIES FOLDER "3rdParty Dependencies")
     # fast math is incompatible with google test / google mock / etc.
     target_compile_options(${targetname} ${O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH})
+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "21")
+        # Workaround for a googletest bug with char conversions recognized by Clang 21+
+        # See https://github.com/google/googletest/issues/4762
+        # TODO: remove when googletest is updated
+        target_compile_options(${targetname} PUBLIC -Wno-character-conversion)
+    endif()
 endforeach()
 
 unset(CMAKE_POLICY_DEFAULT_CMP0148)
 set(CMAKE_WARN_DEPRECATED ${OLD_CMAKE_WARN_DEPRECATED} CACHE BOOL "" FORCE)
-
 
 FetchContent_GetProperties(
     googletest
@@ -157,5 +163,3 @@ add_library(3rdParty::googletest::GTest ALIAS gtest)
 add_library(3rdParty::googletest::GMock ALIAS gmock)
 
 set(googletest_FOUND TRUE)
-
-

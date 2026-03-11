@@ -164,7 +164,7 @@ namespace Terrain
             tagsInUse.insert(mapping.m_surfaceTag);
         }
 
-        return AZStd::move(tagsInUse);
+        return tagsInUse;
     }
 
     AZ::u32 EditorTerrainPhysicsColliderComponent::ConfigurationChanged()
@@ -184,7 +184,7 @@ namespace Terrain
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> TerrainPhysicsSurfaceMaterialMapping::BuildSelectableTagList() const
     {
-        return AZStd::move(Terrain::BuildSelectableTagList(m_tagListProvider, m_surfaceTag));
+        return Terrain::BuildSelectableTagList(m_tagListProvider, m_surfaceTag);
     }
 
     void TerrainPhysicsSurfaceMaterialMapping::SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider)

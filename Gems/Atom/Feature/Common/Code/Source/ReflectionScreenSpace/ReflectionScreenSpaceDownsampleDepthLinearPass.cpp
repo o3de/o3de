@@ -17,7 +17,7 @@ namespace AZ
         RPI::Ptr<ReflectionScreenSpaceDownsampleDepthLinearPass> ReflectionScreenSpaceDownsampleDepthLinearPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<ReflectionScreenSpaceDownsampleDepthLinearPass> pass = aznew ReflectionScreenSpaceDownsampleDepthLinearPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         ReflectionScreenSpaceDownsampleDepthLinearPass::ReflectionScreenSpaceDownsampleDepthLinearPass(const RPI::PassDescriptor& descriptor)
@@ -85,7 +85,7 @@ namespace AZ
                 // passes read from the previous mip level of DownsampledDepthLinear and write to the current mip level
                 uint32_t currentMipLevel = attachmentIndex;
                 uint32_t previousMipLevel = AZStd::max(0, aznumeric_cast<int32_t>(currentMipLevel) - 1);
-                
+
                 RPI::PassAttachmentBinding& inputAttachmentBinding = childPass->GetInputBinding(0);
                 RPI::PassAttachment* inputAttachment = nullptr;
 
@@ -104,7 +104,7 @@ namespace AZ
 
                 inputAttachmentBinding.m_unifiedScopeDesc.SetAsImage(inputViewDesc);
                 inputAttachmentBinding.SetAttachment(inputAttachment);
-                
+
                 // downsampled linear depth output (writing to current mip)
                 RHI::ImageViewDescriptor outputViewDesc;
                 RPI::PassAttachmentBinding& downsampledDepthOutputAttachmentBinding = childPass->GetOutputBinding(0);
@@ -112,9 +112,9 @@ namespace AZ
                 outputViewDesc.m_mipSliceMax = static_cast<int16_t>(currentMipLevel);
                 downsampledDepthOutputAttachmentBinding.m_unifiedScopeDesc.SetAsImage(outputViewDesc);
                 downsampledDepthOutputAttachmentBinding.SetAttachment(downsampledDepthLinearImageAttachment);
-                
+
                 childPass->UpdateConnectedBindings();
-                
+
                 attachmentIndex++;
             }
         }

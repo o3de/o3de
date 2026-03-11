@@ -171,7 +171,7 @@ namespace AzToolsFramework
                     {
                         // Only track the instance that was passed in
                         return (&instance == entityIdMapper.GetLoadingInstance());
-                    }; 
+                    };
 
                     if ((flags & LoadFlags::ReportDeprecatedComponents) == LoadFlags::ReportDeprecatedComponents)
                     {
@@ -444,7 +444,7 @@ namespace AzToolsFramework
                     {
                         continue;
                     }
-                
+
                     AZStd::string_view patchPath = patchEntryIterator->value.GetString();
 
                     // Entities
@@ -522,7 +522,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                return AZStd::move(patchesMetadata);
+                return patchesMetadata;
             }
 
             void PrintPrefabDomValue(
@@ -661,7 +661,7 @@ namespace AzToolsFramework
                                 path.c_str(), entityAlias.c_str(), entityName.c_str());
                             continue;
                         }
-                        
+
                         AZStd::string componentAlias(componentsTypeIt->value.GetString());
 
 
@@ -685,7 +685,7 @@ namespace AzToolsFramework
                             // Re-link this entity under the ContainerEntity using its Alias
                             parentIt->value.SetString(rapidjson::StringRef(containerEntityAlias.c_str()), templateDomRef.GetAllocator());
 
-                            result = false; // report that changes were needed and made 
+                            result = false; // report that changes were needed and made
                             AZ_Error("Prefab", false,
                                 "'%s' lacks 'Parent Entity' value in TransformComponent of Entity (%s, '%s')"
                                 "\nEntity re-linked under the root container '%s'.",

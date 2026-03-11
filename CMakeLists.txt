@@ -6,21 +6,27 @@
 #
 #
 
-# Cmake version 3.24 is the minimum version needed for all of Open 3D Engine's supported platforms
+# CMake version 3.24 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.24)
 
-if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24") 
-    # CMP0135 - controls whether, when unpacking an archive file, it should:
-    # (OLD) set the file timestamps to what they are in the archive (not recommended)
-    # (NEW) set the file timestamps to the time of extraction (recommended)
-    cmake_policy(SET CMP0135 NEW) 
-endif()
-
+include(cmake/Policy.cmake NO_POLICY_SCOPE)
 include(cmake/LySet.cmake)
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
+
+# The desired CMake version to ship with installers and recommend to users.
+set(CPACK_DESIRED_CMAKE_VERSION 4.2.3)
+
+# Visual Studio 2026 (VS 18.x) requires CMake 4.2 or later.
+if(CMAKE_GENERATOR MATCHES "Visual Studio 18" AND CMAKE_VERSION VERSION_LESS "4.2")
+    message(WARNING
+        "Visual Studio 2026 detected with CMake ${CMAKE_VERSION}. "
+        "CMake 4.2 or later is required for Visual Studio 2026 support. "
+        "We test with CMake ${CPACK_DESIRED_CMAKE_VERSION}. If you experience issues, consider upgrading to this version or later."
+    )
+endif()
 
 if(NOT PROJECT_NAME)
     include(cmake/CompilerSettings.cmake)
@@ -30,17 +36,37 @@ if(NOT PROJECT_NAME)
     )
 endif()
 
+# Xcode 26.x requires CMake 4.2 or later. XCODE_VERSION is only available after project().
+if(CMAKE_GENERATOR STREQUAL "Xcode" AND XCODE_VERSION VERSION_GREATER_EQUAL "26.0" AND CMAKE_VERSION VERSION_LESS "4.2")
+    message(WARNING
+        "Xcode ${XCODE_VERSION} detected with CMake ${CMAKE_VERSION}. "
+        "CMake 4.2 or later is required for Xcode 26.x support. "
+        "We test with CMake ${CPACK_DESIRED_CMAKE_VERSION}. If you experience issues, consider upgrading to this version or later."
+    )
+endif()
+
 # Output some useful-for-debugging information in case something goes wrong and the user sends a log.
 # this cannot be done until project() is called.
 get_property(O3DE_SCRIPT_ONLY GLOBAL PROPERTY "O3DE_SCRIPT_ONLY")
 if (O3DE_SCRIPT_ONLY)
-    message(STATUS  "Basic Configuration Information (Script-only mode):\n" 
+    message(STATUS  "Basic Configuration Information (Script-only mode):\n"
+                    "   CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}\n"
                     "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_COMMAND: ${CMAKE_COMMAND}\n"
                     "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}"
             )
+    # On windows, Visual Studio Generator completely ignores any compiler options you set,
+    # including our attempts to use "no compiler" in script only mode.  On other platforms, makefiles
+    # and ninja and other generators honor these settings, so this problem is MSBuild specific.
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+        message(FATAL_ERROR "Script-only mode only works with 'Ninja Multi-Config' generator. \
+                        Please use the -G \"Ninja Multi-Config\" option when generating the project files.")
+    endif()
 else()
-    message(STATUS  "Basic Configuration Information:\n" 
+    message(STATUS  "Basic Configuration Information:\n"
+                    "   CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}\n"
                     "   CMAKE_VERSION: ${CMAKE_VERSION}\n"
+                    "   CMAKE_COMMAND: ${CMAKE_COMMAND}\n"
                     "   CMAKE_GENERATOR: ${CMAKE_GENERATOR}\n"
                     "   CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}\n"
                     "   CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}\n"
@@ -55,6 +81,7 @@ endif()
 message(STATUS "Initializing O3DE CMake system...")
 list(APPEND CMAKE_MESSAGE_INDENT "  ")
 include(CTest)
+include(cmake/CompilerLauncher.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
 include(cmake/RuntimeDependencies.cmake)

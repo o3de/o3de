@@ -39,7 +39,7 @@ set(CPACK_SNAP_DISTRO "" CACHE STRING
 )
 
 set(CPACK_THREADS 0)
-set(CPACK_DESIRED_CMAKE_VERSION 3.24.0)
+# CPACK_DESIRED_CMAKE_VERSION is defined in the root CMakeLists.txt
 if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
     message(FATAL_ERROR
         "The desired version of CMake to be included in the package is "
@@ -146,7 +146,7 @@ set(CPACK_PACKAGE_CHECKSUM SHA256) # Generate checksum file
 set(CPACK_PRE_BUILD_SCRIPTS ${pal_dir}/PackagingPreBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_POST_BUILD_SCRIPTS ${pal_dir}/PackagingPostBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_CODESIGN_SCRIPT ${pal_dir}/PackagingCodeSign_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
-set(CPACK_LY_PYTHON_CMD ${LY_PYTHON_CMD})
+set(CPACK_LY_PYTHON_CMD "${PYTHON_VENV_PATH}/${LY_PYTHON_VENV_PYTHON}" "-s")
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)

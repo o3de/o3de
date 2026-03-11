@@ -547,7 +547,7 @@ namespace AzToolsFramework
 
     AssetFileInfoList AssetSeedManager::GetDependencyList(AzFramework::PlatformId platformIndex, const AZStd::unordered_set<AZ::Data::AssetId>& exclusionList, AssetFileDebugInfoList* optionalDebugList, const AZStd::vector<AZStd::string>& wildcardPatternExclusionList) const
     {
-        AssetSeedManager::AssetsInfoList  assetInfoList = AZStd::move(GetDependenciesInfo(platformIndex, exclusionList, optionalDebugList, wildcardPatternExclusionList));
+        AssetSeedManager::AssetsInfoList  assetInfoList = GetDependenciesInfo(platformIndex, exclusionList, optionalDebugList, wildcardPatternExclusionList);
 
         AssetFileInfoList assetFileInfoList;
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();

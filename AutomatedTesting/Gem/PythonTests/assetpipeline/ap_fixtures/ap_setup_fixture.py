@@ -44,6 +44,7 @@ def ap_setup_fixture(request, workspace) -> Dict:
         "project_dir": workspace.paths.project(),
         # Path to AP Batch file
         "ap_batch_file": workspace.paths.asset_processor_batch(),
+        "ap_builder_file": workspace.paths.asset_builder(),
         # Path to shared TestAssets folder
         "shared_TestAssets": os.path.join(workspace.paths.project(), "TestAssets"),
         # Path to the asset cache folder

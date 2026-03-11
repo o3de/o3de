@@ -24,10 +24,49 @@ namespace O3DE::ProjectManager
         // so a empty string entry is added to the end
         const QStringList SupportedClangVersions = {"-13", "-12", "-11", "-10", "-9", "-8", "-7", "-6.0", ""};
 
+        QChar GetPlatformPathEnvSeparator()
+        {
+            return QChar(':');
+        }
+
+        QString GetPlatformPathEnvVariableName()
+        {
+            // Qt: do not translate this string, it is the name of an environment variable not a user facing view
+            return QString("PATH"); 
+        }
+
+        // this is currently the same implementation as windows, but this is not necessarily going to remain
+        // the case.
         AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
+            // Use the engine path to insert a path for cmake
+            auto engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+            if (!engineInfoResult.IsSuccess())
+            {
+                return AZ::Failure(QObject::tr("Failed to get engine info"));
+            }
+            auto engineInfo = engineInfoResult.GetValue();
+
+            // prepend cmake path to the current environment PATH - we prefer to use the one we ship O3DE
+            // with since its the one we know works.
+            QDir cmakePath(engineInfo.m_path);
+            cmakePath.cd("cmake/runtime/bin");
+            if (!AddPathToPathEnv(cmakePath.path(), /*prepend=*/true))
+            {
+                return AZ::Failure(QObject::tr("Failed to add the path of the CMake binary to the PATH environment variable"));
+            }
+
+            // if we ship with a specific version of ninja, preppend ito the PATH as well,  we prefer to use it.
+            QDir ninjaPath(engineInfo.m_path);
+            ninjaPath.cd("ninja");
+            if (!AddPathToPathEnv(ninjaPath.path(), /*prepend=*/true))
+            {
+                return AZ::Failure(QObject::tr("Failed to add the path of the ninja binary to the PATH environment variable"));
+            }
+
             return AZ::Success();
         }
+
 
         AZ::Outcome<QString, QString> FindSupportedCMake()
         {

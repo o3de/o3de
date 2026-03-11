@@ -470,6 +470,12 @@ class AssetProcessor(object):
         return self.run_ap_process_command(command, timeout=timeout, capture_output=capture_output, decode=decode,
                                            expect_failure=expect_failure)
 
+    # You can run the AssetBuilder executable standalone using this function
+    def run_builder(self, timeout=DEFAULT_TIMEOUT_SECONDS, extra_params=None, platforms=None):
+        builder_path = self._workspace.paths.asset_builder()
+        command = self.build_ap_command(ap_path=builder_path, platforms=platforms, extra_params=extra_params)
+        return self.run_ap_process_command(command, timeout=timeout, capture_output=False, decode=True, expect_failure=False)
+
     # Start AP gui and run until idle.  Useful for asset processing tests where the assets should be seen and processed
     # by AP on startup and in the test you do not wish to continue execution until you know AP has gone idle.
     def gui_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,

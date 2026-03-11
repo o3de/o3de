@@ -221,7 +221,7 @@ namespace AzFramework::Scripts
                     {
                         SpawnableScriptNotificationsBus::Event(
                             command.m_spawnTicket.GetId(), &SpawnableScriptNotifications::OnSpawn, command.m_spawnTicket,
-                            move(command.m_entityList));
+                            AZStd::move(command.m_entityList));
                     }
                 }
                 if constexpr (AZStd::is_same_v<CommandType, DespawnResult>)

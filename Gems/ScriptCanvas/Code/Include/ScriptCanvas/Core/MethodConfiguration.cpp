@@ -213,7 +213,7 @@ namespace ScriptCanvas
 
                     if (datumView.IsValid() && Data::IsValueType(datumView.GetDataType()))
                     {
-                        datumView.AssignToDatum(AZStd::move(Datum(defaultValue->m_value)));
+                        datumView.AssignToDatum(Datum(defaultValue->m_value));
                     }
                 }
             }

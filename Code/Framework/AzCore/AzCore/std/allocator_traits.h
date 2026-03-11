@@ -71,18 +71,6 @@ namespace AZStd
             using type = typename Allocator::const_pointer;
         };
 
-        //! void_pointer
-        template <typename Allocator, typename PointerType, typename = void>
-        struct get_void_pointer_type
-        {
-            using type = typename std::pointer_traits<PointerType>::template rebind<void>;
-        };
-        template <typename Allocator, typename PointerType>
-        struct get_void_pointer_type<Allocator, PointerType, void_t<typename Allocator::void_pointer>>
-        {
-            using type = typename Allocator::void_pointer;
-        };
-
         //! const_void_pointer
         template <typename Allocator, typename PointerType, typename = void>
         struct get_const_void_pointer_type
@@ -131,18 +119,6 @@ namespace AZStd
             using type = typename Allocator::size_type;
         };
 
-        //! propagate_on_container_copy_assignment
-        template <typename Allocator, typename = void>
-        struct get_propagate_on_container_copy_assignment_type
-        {
-            using type = AZStd::true_type;
-        };
-        template <typename Allocator>
-        struct get_propagate_on_container_copy_assignment_type<Allocator, void_t<typename Allocator::propagate_on_container_copy_assignment>>
-        {
-            using type = typename Allocator::propagate_on_container_copy_assignment;
-        };
-
         //! propagate_on_container_move_assignment
         template <typename Allocator, typename = void>
         struct get_propagate_on_container_move_assignment_type
@@ -165,18 +141,6 @@ namespace AZStd
         struct get_propagate_on_container_swap_type<Allocator, void_t<typename Allocator::propagate_on_container_swap>>
         {
             using type = typename Allocator::propagate_on_container_swap;
-        };
-
-        //! is_always_equal
-        template <typename Allocator, typename = void>
-        struct get_is_always_equal_type
-        {
-            using type = typename std::is_empty<Allocator>::type;
-        };
-        template <typename Allocator>
-        struct get_is_always_equal_type<Allocator, void_t<typename Allocator::is_always_equal>>
-        {
-            using type = typename Allocator::is_always_equal;
         };
 
         //! rebind
@@ -247,30 +211,6 @@ namespace AZStd
             }
         };
 
-        //! select_on_container_copy_construction
-        template <class Allocator>
-        static auto has_select_on_container_copy_construction_test(Allocator&& alloc) -> decltype(alloc.select_on_container_copy_construction(), true_type());
-        template <class Allocator>
-        static auto has_select_on_container_copy_construction_test(const volatile Allocator&) -> false_type;
-        template <typename Allocator, typename = void>
-        static constexpr bool has_select_on_container_copy_construction = integral_constant<bool, is_same<decltype(has_select_on_container_copy_construction_test(declval<Allocator&>())), true_type>::value>::value;
-
-        template <typename Allocator, bool select_on_container_copy_construction_callable>
-        struct call_select_on_container_copy_construction
-        {
-            static Allocator invoke(const Allocator& alloc)
-            {
-                return alloc;
-            }
-        };
-        template <typename Allocator>
-        struct call_select_on_container_copy_construction<Allocator, true>
-        {
-            static Allocator invoke(const Allocator& alloc)
-            {
-                return alloc.select_on_container_copy_construction();
-            }
-        };
     }
     /*
     The allocator_traits class template provides the standardized way to access various properties of AZStd allocators
@@ -282,18 +222,14 @@ namespace AZStd
         using value_type = typename get_value_type<allocator_type>::type;
         using pointer = typename get_pointer_type<allocator_type, value_type>::type;
         using const_pointer = typename get_const_pointer_type<allocator_type, pointer, value_type>::type;
-        using void_pointer = typename get_void_pointer_type<allocator_type, pointer>::type;
         using const_void_pointer = typename get_const_void_pointer_type<allocator_type, pointer>::type;
         using difference_type = typename get_difference_type<allocator_type, pointer>::type;
         using align_type = typename get_align_type<allocator_type, difference_type>::type;
         using size_type = typename get_size_type<allocator_type, difference_type>::type;
         using propagate_on_container_move_assignment = typename get_propagate_on_container_move_assignment_type<allocator_type>::type;
-        using propagate_on_container_copy_assignment = typename get_propagate_on_container_copy_assignment_type<allocator_type>::type;
         using propagate_on_container_swap = typename get_propagate_on_container_swap_type<allocator_type>::type;
-        using is_always_equal = typename get_is_always_equal_type<allocator_type>::type;
 
         template <class T> using rebind_alloc = typename get_rebind_type<allocator_type, T>::type;
-        template <class T> using rebind_traits = allocator_traits<rebind_alloc<T>>;
 
         // static allocator_trait functions
         static pointer allocate(allocator_type& alloc, size_type size)
@@ -338,9 +274,5 @@ namespace AZStd
             return call_max_size<allocator_type, value_type, size_type, has_max_size<allocator_type>, has_get_max_size<allocator_type>>::invoke(alloc);
         }
 
-        static allocator_type select_on_container_copy_construction(const allocator_type& alloc)
-        {
-            return call_select_on_container_copy_construction<allocator_type, has_select_on_container_copy_construction<allocator_type>>::invoke(alloc);
-        }
     };
 }

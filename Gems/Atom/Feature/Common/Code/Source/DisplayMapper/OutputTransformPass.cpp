@@ -24,7 +24,7 @@ namespace AZ
         RPI::Ptr<OutputTransformPass> OutputTransformPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<OutputTransformPass> pass = aznew OutputTransformPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         OutputTransformPass::OutputTransformPass(const RPI::PassDescriptor& descriptor)
@@ -245,7 +245,7 @@ namespace AZ
                 break;
             }
 
-            shaderOption.SetValue(m_ldrGradingLutShaderVariantOptionName, GetLutAssetId().IsValid() ? AZ::Name("true") : AZ::Name("false")); 
+            shaderOption.SetValue(m_ldrGradingLutShaderVariantOptionName, GetLutAssetId().IsValid() ? AZ::Name("true") : AZ::Name("false"));
 
             UpdateShaderVariant(shaderOption);
             m_needToUpdateShaderVariant = false;

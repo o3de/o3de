@@ -107,7 +107,7 @@ namespace ScriptCanvas
             AZStd::string Cycle::GenerateOutputName(int counter)
             {
                 AZStd::string slotName = AZStd::string::format("Out %i", counter);
-                return AZStd::move(slotName);
+                return slotName;
             }
 
             void Cycle::FixupStateNames()
