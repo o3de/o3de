@@ -102,8 +102,8 @@ namespace PhysX
             }
 
             EditorProxyAssetShapeConfig newProxyAssetShapeConfig;
-            newProxyAssetShapeConfig.m_physicsAsset.m_configuration = proxyShapeConfig.m_legacyPhysicsAsset.m_configuration;
-            newProxyAssetShapeConfig.m_physicsAsset.m_pxAsset = proxyShapeConfig.m_legacyPhysicsAsset.m_pxAsset;
+            // newProxyAssetShapeConfig.m_physicsAsset.m_configuration = proxyShapeConfig.m_legacyPhysicsAsset.m_configuration;
+            // newProxyAssetShapeConfig.m_physicsAsset.m_pxAsset = proxyShapeConfig.m_legacyPhysicsAsset.m_pxAsset;
             newProxyAssetShapeConfig.m_hasNonUniformScale = proxyShapeConfig.m_hasNonUniformScale;
             newProxyAssetShapeConfig.m_subdivisionLevel = proxyShapeConfig.m_subdivisionLevel;
 
@@ -190,11 +190,12 @@ namespace PhysX
                 }
             }
 
+            // TODO: Cleanup legacy asset code before PR
             // Converts all EditorColliderComponent that use physics assets to EditorMeshColliderComponent.
-            if (ConvertCollidersUsingAssetsToMeshCollidersInPrefabEntity(prefabInfo, *entity))
-            {
-                prefabModified = true;
-            }
+            // if (ConvertCollidersUsingAssetsToMeshCollidersInPrefabEntity(prefabInfo, *entity))
+            // {
+            //     prefabModified = true;
+            // }
         }
 
         if (prefabModified)

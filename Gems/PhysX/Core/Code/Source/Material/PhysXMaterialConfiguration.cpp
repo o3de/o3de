@@ -169,7 +169,7 @@ namespace PhysX
                 AZ_Error(
                     "MaterialConfiguration",
                     materialProperties.find(materialPropertyName) != materialProperties.end(),
-                    "Material asset '%s' does not have property '%.*s'.",
+                    "Material asset '%s' does not have property '%.*s'.", // TODO Material asset 'assets/bouncy.physicsmaterial' does not have property 'CompliantContactModeEnabled'.
                     materialAsset.GetHint().c_str(),
                     AZ_STRING_ARG(materialPropertyName));
             }
