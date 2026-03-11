@@ -55,7 +55,7 @@ def setup_temp_dir() -> str:
 @pytest.mark.usefixtures("asset_processor")
 @pytest.mark.usefixtures("ap_setup_fixture")
 @pytest.mark.parametrize("project", targetProjects)
-@pytest.mark.SUITE_main
+@pytest.mark.SUITE_sandbox
 class TestsAssetProcessorGUI(object):
     """
     Specific Tests for Asset Processor GUI
