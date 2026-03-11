@@ -453,7 +453,7 @@ namespace PhysX
         PxInitExtensions(*m_physXSdk.m_physics, pvd);
 
         // set up cooking parameters for height fields, meshes etc.
-        m_physXSdk.m_cookingParams = const_cast<physx::PxCookingParams*>(&cookingParams); // TODO: maybe not ideal to const_cast
+        m_physXSdk.m_cookingParams = AZStd::make_unique<physx::PxCookingParams>(cookingParams);
 
         // Set up CPU dispatcher
         m_cpuDispatcher = PhysXCpuDispatcherCreate();
@@ -466,18 +466,18 @@ namespace PhysX
         delete m_cpuDispatcher;
         m_cpuDispatcher = nullptr;
 
-        // m_physXSdk.m_cooking->release();
-        // m_physXSdk.m_cooking = nullptr;
-
         PxCloseExtensions();
 
         m_physXSdk.m_physics->release();
         m_physXSdk.m_physics = nullptr;
 
+        m_physXSdk.m_cookingParams.reset();
+
         m_physXDebug.ShutdownPhysXPvd();
 
         m_physXSdk.m_foundation->release();
         m_physXSdk.m_foundation = nullptr;
+
     }
 
     const PhysXSystemConfiguration& PhysXSystem::GetPhysXConfiguration() const

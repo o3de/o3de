@@ -482,9 +482,6 @@ namespace PhysX
                 }
             }
 
-            // physx::PxCooking* pxCooking = PxCreateCooking(PX_PHYSICS_VERSION, PxGetFoundation(), pxCookingParams);
-            // AZ_Assert(pxCooking, "Failed to create PxCooking"); // TODO: remove GetCooking bus call
-
             physx::PxBoundedData strideData;
             strideData.count = static_cast<physx::PxU32>(vertices.size());
             strideData.stride = sizeof(AZ::Vector3);
@@ -502,7 +499,7 @@ namespace PhysX
                 SET_BITS(convexDesc.flags, convexAssetParams.GetCheckZeroAreaTriangles(), physx::PxConvexFlag::eCHECK_ZERO_AREA_TRIANGLES);
                 SET_BITS(convexDesc.flags, convexAssetParams.GetQuantizeInput(), physx::PxConvexFlag::eQUANTIZE_INPUT);
                 SET_BITS(convexDesc.flags, convexAssetParams.GetUsePlaneShifting(), physx::PxConvexFlag::ePLANE_SHIFTING);
-                // SET_BITS(convexDesc.flags, convexAssetParams.GetBuildGpuData(), physx::PxConvexFlag::eGPU_COMPATIBLE); // TODO: not a flag
+                // SET_BITS(convexDesc.flags, convexAssetParams.GetBuildGpuData(), physx::PxConvexFlag::eGPU_COMPATIBLE); // TODO: No longer a flag
                 SET_BITS(convexDesc.flags, convexAssetParams.GetShiftVertices(), physx::PxConvexFlag::eSHIFT_VERTICES);
 
                 physx::PxConvexMeshCookingResult::Enum convexCookingResultCode = physx::PxConvexMeshCookingResult::eSUCCESS;
@@ -547,7 +544,6 @@ namespace PhysX
                 AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "Cooking Mesh failed: %s", cookingResultErrorCodeString.c_str());
             }
 
-            // pxCooking->release();
             return cookingSuccessful;
         }
 

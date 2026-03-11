@@ -31,7 +31,7 @@ namespace physx
 {
     class PxFoundation;
     class PxPhysics;
-    class PxCooking;
+    // class PxCooking;
     class PxCpuDispatcher;
 }
 
@@ -75,7 +75,7 @@ namespace PhysX
 
         //TEMP -- until these are fully moved over here
         physx::PxPhysics* GetPxPhysics() { return m_physXSdk.m_physics; }
-        physx::PxCookingParams* GetPxCookingParams() { return m_physXSdk.m_cookingParams; }
+        physx::PxCookingParams* GetPxCookingParams() { return m_physXSdk.m_cookingParams.get(); }
         physx::PxCpuDispatcher* GetPxCpuDispathcher()
         {
             AZ_Assert(m_cpuDispatcher, "PhysX CPU dispatcher was not created");
@@ -107,7 +107,7 @@ namespace PhysX
         {
             physx::PxFoundation* m_foundation = nullptr;
             physx::PxPhysics* m_physics = nullptr;
-            physx::PxCookingParams* m_cookingParams = nullptr;
+            AZStd::unique_ptr<physx::PxCookingParams> m_cookingParams;
         };
         PhysXSdk m_physXSdk;
         PxAzAllocatorCallback m_physXAllocatorCallback;
