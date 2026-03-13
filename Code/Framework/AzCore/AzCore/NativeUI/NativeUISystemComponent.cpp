@@ -11,6 +11,14 @@
 
 #include <AzCore/NativeUI/NativeUISystemComponent.h>
 
+// QT_TRANSLATE_NOOP marks strings for extraction by Qt lupdate tool.
+// AzCore does not depend on Qt, so we define the macro as a no-op passthrough
+// if it is not already provided by Qt headers. The marked strings can be
+// extracted into .ts translation files and translated offline. Actual runtime
+// translation requires a higher-level integration (e.g. AzToolsFramework or
+// platform-specific translation lookup).
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ::NativeUI
 {
     NativeUISystem::NativeUISystem()
@@ -30,7 +38,13 @@ namespace AZ::NativeUI
             return AssertAction::NONE;
         }
 
-        static const char* buttonNames[3] = { "Ignore", "Ignore All", "Break" };
+        // Button names for the assert dialog. These are self-contained: the same
+        // array is used for both display and comparison, so translation is safe.
+        static constexpr const char* buttonNames[3] = {
+            QT_TRANSLATE_NOOP("AzCore", "Ignore"),
+            QT_TRANSLATE_NOOP("AzCore", "Ignore All"),
+            QT_TRANSLATE_NOOP("AzCore", "Break")
+        };
         AZStd::vector<AZStd::string> options;
         options.push_back(buttonNames[0]);
 #if AZ_TRAIT_SHOW_IGNORE_ALL_ASSERTS_OPTION
@@ -38,7 +52,8 @@ namespace AZ::NativeUI
 #endif
         options.push_back(buttonNames[2]);
 
-        AZStd::string result = DisplayBlockingDialog("Assert Failed!", message, options);
+        AZStd::string result = DisplayBlockingDialog(
+            QT_TRANSLATE_NOOP("AzCore", "Assert Failed!"), message, options);
 
         if (result.compare(buttonNames[0]) == 0)
         {
@@ -56,37 +71,74 @@ namespace AZ::NativeUI
         return AssertAction::NONE;
     }
 
-    AZStd::string NativeUISystem::DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
+    OkDialogResult NativeUISystem::DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
     {
         if (m_mode == NativeUI::Mode::DISABLED)
         {
-            return {};
+            return OkDialogResult::None;
         }
 
-        AZStd::vector<AZStd::string> options{ "OK" };
+        // Button names are kept in local variables so the same strings are used
+        // for both display and result comparison, making runtime translation safe.
+        static constexpr const char* okButton = QT_TRANSLATE_NOOP("AzCore", "OK");
+        static constexpr const char* cancelButton = QT_TRANSLATE_NOOP("AzCore", "Cancel");
+
+        AZStd::vector<AZStd::string> options{ okButton };
 
         if (showCancel)
         {
-            options.push_back("Cancel");
+            options.push_back(cancelButton);
         }
 
-        return DisplayBlockingDialog(title, message, options);
+        AZStd::string result = DisplayBlockingDialog(title, message, options);
+
+        if (result == okButton)
+        {
+            return OkDialogResult::OK;
+        }
+        else if (result == cancelButton)
+        {
+            return OkDialogResult::Cancel;
+        }
+
+        return OkDialogResult::None;
     }
 
-    AZStd::string NativeUISystem::DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
+    YesNoDialogResult NativeUISystem::DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
     {
         if (m_mode == NativeUI::Mode::DISABLED)
         {
-            return {};
+            return YesNoDialogResult::None;
         }
 
-        AZStd::vector<AZStd::string> options{ "Yes", "No" };
+        // Button names are kept in local variables so the same strings are used
+        // for both display and result comparison, making runtime translation safe.
+        static constexpr const char* yesButton = QT_TRANSLATE_NOOP("AzCore", "Yes");
+        static constexpr const char* noButton = QT_TRANSLATE_NOOP("AzCore", "No");
+        static constexpr const char* cancelButton = QT_TRANSLATE_NOOP("AzCore", "Cancel");
+
+        AZStd::vector<AZStd::string> options{ yesButton, noButton };
 
         if (showCancel)
         {
-            options.push_back("Cancel");
+            options.push_back(cancelButton);
         }
 
-        return DisplayBlockingDialog(title, message, options);
+        AZStd::string result = DisplayBlockingDialog(title, message, options);
+
+        if (result == yesButton)
+        {
+            return YesNoDialogResult::Yes;
+        }
+        else if (result == noButton)
+        {
+            return YesNoDialogResult::No;
+        }
+        else if (result == cancelButton)
+        {
+            return YesNoDialogResult::Cancel;
+        }
+
+        return YesNoDialogResult::None;
     }
 } // namespace AZ::NativeUI

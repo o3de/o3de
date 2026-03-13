@@ -51,6 +51,10 @@ if(PAL_TRAIT_BUILD_EXTERNAL_CRASH_HANDLER_SUPPORTED)
     ly_target_link_libraries(ProjectManager.Static PRIVATE AZ::ToolsCrashHandler)
 endif()
 
+# NOTE: Translation file generation and compilation for ProjectManager is handled
+# centrally by cmake/Translation.cmake (via generate_all_tools_translations()).
+# No per-tool translation logic is needed here. Enable with: -DLY_I18N_BUILD=ON
+
 ly_add_target(
     NAME ProjectManager APPLICATION
     OUTPUT_NAME o3de

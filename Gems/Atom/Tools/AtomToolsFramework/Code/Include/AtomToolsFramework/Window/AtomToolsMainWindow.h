@@ -8,6 +8,7 @@
 
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
@@ -21,6 +22,7 @@
 
 #include <QLabel>
 #include <QTimer>
+#endif
 
 namespace AtomToolsFramework
 {
@@ -29,6 +31,7 @@ namespace AtomToolsFramework
         , protected AtomToolsMainWindowRequestBus::Handler
         , protected AtomToolsMainMenuRequestBus::Handler
     {
+        Q_OBJECT
     public:
         using Base = AzQtComponents::DockMainWindow;
 

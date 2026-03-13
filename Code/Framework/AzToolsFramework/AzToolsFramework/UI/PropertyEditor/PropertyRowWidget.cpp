@@ -10,9 +10,11 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 
+#include <QCoreApplication>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyCheckBoxCtrl.hxx>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: class '...' needs to have dll-interface to be used by clients of class 'QInputEvent'
@@ -29,7 +31,7 @@ AZ_POP_DISABLE_WARNING
 
 static const int LabelColumnStretch = 2;
 static const int ValueColumnStretch = 3;
- 
+
 namespace AzToolsFramework
 {
     PropertyRowWidget::PropertyRowWidget(QWidget* pParent)
@@ -446,7 +448,12 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::SetNameLabel(const char* text)
     {
-        QString label{ text };
+        // Attempt to translate reflected property labels for i18n support.
+        // Translate property names from EditContext using TranslatePropertyString,
+        // which searches all registered framework contexts (AzCore, AzFramework,
+        // AzToolsFramework, etc.) to find the correct translation.
+        AZStd::string translated = AzToolsFramework::TranslatePropertyString(text);
+        QString label = QString::fromUtf8(translated.c_str(), static_cast<int>(translated.size()));
         m_nameLabel->setText(label);
         m_nameLabel->setOpenExternalLinks(true);
         m_nameLabel->setVisible(!label.isEmpty());
@@ -542,7 +549,7 @@ namespace AzToolsFramework
                     m_defaultLabel->show();
                     if (m_isMultiSizeContainer)
                     {
-                        m_defaultLabel->setText("(DIFFERING SIZES)");
+                        m_defaultLabel->setText(tr("(DIFFERING SIZES)"));
                     }
                     else if (dataNode->GetClassMetadata()->m_container->IsSmartPointer())
                     {
@@ -573,21 +580,22 @@ namespace AzToolsFramework
 
                             auto elementClassData = dataNode->GetSerializeContext()->FindClassData(pointeeType);
                             AZ_Assert(elementClassData, "No class data found for type %s", pointeeType.ToString<AZStd::string>().c_str());
-                            QString displayName = elementClassData->m_editData ? elementClassData->m_editData->m_name : elementClassData->m_name;
+                            const char* rawName = elementClassData->m_editData ? elementClassData->m_editData->m_name : elementClassData->m_name;
+                            QString displayName = QString::fromUtf8(TranslatePropertyString(rawName).c_str());
                             if (!ptrValue)
                             {
-                                displayName += " (empty)";
+                                displayName += tr(" (empty)");
                             }
                             m_defaultLabel->setText(displayName);
                         }
                         else
                         {
-                            m_defaultLabel->setText(QString("%1 element%2").arg(m_containerSize).arg(m_containerSize > 1 ? "s" : ""));
+                            m_defaultLabel->setText(tr("%n element(s)", "", m_containerSize));
                         }
                     }
                     else
                     {
-                        m_defaultLabel->setText(QString("%1 element%2").arg(m_containerSize).arg(m_containerSize > 1 ? "s" : ""));
+                        m_defaultLabel->setText(tr("%n element(s)", "", m_containerSize));
                     }
                 }
                 else
@@ -840,16 +848,22 @@ namespace AzToolsFramework
             m_handler->ModifyTooltip(m_childWidget, newToolTip);
         }
 
+        // Translate the base tooltip description BEFORE appending status suffixes.
+        // TranslatePropertyString only finds translations for strings that were registered
+        // via QT_TRANSLATE_NOOP at their source; the composed string would never match.
+        AZStd::string translated = AzToolsFramework::TranslatePropertyString(newToolTip.toUtf8().constData());
+        QString translatedToolTip = QString::fromUtf8(translated.c_str(), static_cast<int>(translated.size()));
+
         if (m_sourceNode->IsDifferentVersusComparison())
         {
-            newToolTip.append(tr(" (differs from source)"));
+            translatedToolTip.append(tr(" (differs from source)"));
         }
         else if (m_sourceNode->IsNewVersusComparison())
         {
-            newToolTip.append(tr(" (new versus source)"));
+            translatedToolTip.append(tr(" (new versus source)"));
         }
 
-        SetDescription(newToolTip);
+        SetDescription(translatedToolTip);
     }
 
     void PropertyRowWidget::ConsumeChildWidget(QWidget* pChild)
@@ -1442,7 +1456,7 @@ namespace AzToolsFramework
 
         // Move the number of elements text to after the name.
         m_defaultLabel->hide();
-        m_nameLabel->setText(QString("%1 (%2)").arg(GetNodeDisplayName(*m_sourceNode).c_str()).arg(QString("%1 elements").arg(m_containerSize)));
+        m_nameLabel->setText(QString("%1 (%2)").arg(GetNodeDisplayName(*m_sourceNode).c_str()).arg(tr("%n element(s)", "", m_containerSize)));
 
         // Give the name more room to prevent elision.
         m_defaultLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);

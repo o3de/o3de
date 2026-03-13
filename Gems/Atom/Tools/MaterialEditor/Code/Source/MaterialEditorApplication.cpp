@@ -8,10 +8,12 @@
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 #include <MaterialEditorApplication.h>
 
 #include <Document/MaterialDocument.h>
 #include <Window/MaterialEditorMainWindow.h>
+#include <QCoreApplication>
 
 #if defined(EXTERNAL_CRASH_REPORTING)
 #include <ToolsCrashHandler.h>
@@ -44,7 +46,7 @@ namespace MaterialEditor
         InitMaterialEditorResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Material Editor");
+        QApplication::setApplicationName(QCoreApplication::translate("MaterialEditorApplication", "O3DE Material Editor"));
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -77,6 +79,15 @@ namespace MaterialEditor
     {
         Base::StartCommon(systemEntity);
 
+        // Load AtomToolsFramework translations for menu and UI strings
+        m_atomToolsFrameworkTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("AtomToolsFramework", this);
+
+        // Load MaterialEditor translations for editor-specific strings
+        m_materialEditorTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("MaterialEditor", this);
+
+        // Load material property translations for i18n support
+        m_materialPropertyTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("MaterialInputs", this);
+
         // Overriding default document type info to provide a custom view
         auto documentTypeInfo = MaterialDocument::BuildDocumentTypeInfo();
         documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
@@ -96,6 +107,29 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::Destroy()
     {
+        // Clean up material property translator
+        if (m_materialPropertyTranslator)
+        {
+            removeTranslator(m_materialPropertyTranslator);
+            delete m_materialPropertyTranslator;
+            m_materialPropertyTranslator = nullptr;
+        }
+
+        if (m_materialEditorTranslator)
+        {
+            removeTranslator(m_materialEditorTranslator);
+            delete m_materialEditorTranslator;
+            m_materialEditorTranslator = nullptr;
+        }
+
+        // Clean up AtomToolsFramework translator
+        if (m_atomToolsFrameworkTranslator)
+        {
+            removeTranslator(m_atomToolsFrameworkTranslator);
+            delete m_atomToolsFrameworkTranslator;
+            m_atomToolsFrameworkTranslator = nullptr;
+        }
+
         m_window.reset();
         m_viewportSettingsSystem.reset();
         Base::Destroy();

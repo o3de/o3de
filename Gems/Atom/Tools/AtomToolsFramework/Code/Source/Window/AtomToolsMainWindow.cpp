@@ -30,6 +30,18 @@
 
 namespace AtomToolsFramework
 {
+    // Register dock widget names for lupdate extraction.
+    // These strings are used as stable English identifiers at AddDockWidget() call sites,
+    // and translated at runtime via tr(name.c_str()) inside AddDockWidget().
+    // lupdate cannot collect from tr(variable), so we register them here.
+    static const char* const s_dockWidgetNames[] = {
+        QT_TRANSLATE_NOOP("AtomToolsMainWindow", "Asset Browser"),
+        QT_TRANSLATE_NOOP("AtomToolsMainWindow", "Python Terminal"),
+        QT_TRANSLATE_NOOP("AtomToolsMainWindow", "Logging"),
+    };
+    // Suppress unused variable warning - these exist solely for lupdate extraction.
+    [[maybe_unused]] static const auto* s_dockWidgetNamesRef = s_dockWidgetNames;
+
     AtomToolsMainWindow::AtomToolsMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent)
         : Base(parent)
         , m_toolId(toolId)
@@ -60,7 +72,7 @@ namespace AtomToolsFramework
         SetDockWidgetVisible("Python Terminal", false);
 
         m_logPanel = new AzToolsFramework::LogPanel::StyledTracePrintFLogPanel(this);
-        m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Log", "", ""));
+        m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings(tr("Log").toUtf8().constData(), "", ""));
         AddDockWidget("Logging", m_logPanel, Qt::BottomDockWidgetArea);
         SetDockWidgetVisible("Logging", false);
 
@@ -95,21 +107,26 @@ namespace AtomToolsFramework
 
     bool AtomToolsMainWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area)
     {
+        // The 'name' parameter is used as a stable English identifier for serialization
+        // (objectName) and as a key for lookup. The windowTitle is translated for display.
+        QString translatedTitle = tr(name.c_str());
+
         auto dockWidget = qobject_cast<QDockWidget*>(widget);
         if (!dockWidget)
         {
             // If the widget being added is not already dockable then add a container dock widget for it
-            dockWidget = new AzQtComponents::StyledDockWidget(name.c_str(), this);
+            dockWidget = new AzQtComponents::StyledDockWidget(translatedTitle, this);
             dockWidget->setWidget(widget);
-            widget->setWindowTitle(name.c_str());
+            widget->setWindowTitle(translatedTitle);
             widget->setObjectName(QString("%1_Widget").arg(name.c_str()));
             widget->setMinimumSize(QSize(300, 300));
             widget->setParent(dockWidget);
             widget->setVisible(true);
         }
 
-        // Rename, resize, and reparent the dock widget for this main window
-        dockWidget->setWindowTitle(name.c_str());
+        // objectName uses the stable English identifier for layout serialization.
+        // windowTitle uses the translated name for display.
+        dockWidget->setWindowTitle(translatedTitle);
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
         dockWidget->setMinimumSize(QSize(300, 300));
@@ -234,15 +251,15 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::CreateMenus(QMenuBar* menuBar)
     {
-        m_menuFile = menuBar->addMenu("&File");
+        m_menuFile = menuBar->addMenu(tr("&File"));
         m_menuFile->setObjectName("menuFile");
-        m_menuEdit = menuBar->addMenu("&Edit");
+        m_menuEdit = menuBar->addMenu(tr("&Edit"));
         m_menuEdit->setObjectName("menuEdit");
-        m_menuView = menuBar->addMenu("&View");
+        m_menuView = menuBar->addMenu(tr("&View"));
         m_menuView->setObjectName("menuView");
-        m_menuTools = menuBar->addMenu("&Tools");
+        m_menuTools = menuBar->addMenu(tr("&Tools"));
         m_menuTools->setObjectName("menuTools");
-        m_menuHelp = menuBar->addMenu("&Help");
+        m_menuHelp = menuBar->addMenu(tr("&Help"));
         m_menuHelp->setObjectName("menuHelp");
 
         BuildScriptsMenu();
@@ -286,42 +303,42 @@ namespace AtomToolsFramework
     void AtomToolsMainWindow::PopulateSettingsInspector(InspectorWidget* inspector) const
     {
         m_applicationSettingsGroup = CreateSettingsPropertyGroup(
-            "Application Settings",
-            "Application Settings",
+            tr("Application Settings").toUtf8().constData(),
+            tr("Application Settings").toUtf8().constData(),
             { CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/ClearLogOnStart",
-                  "Clear Log On Start",
-                  "Clear the application log on startup",
+                  tr("Clear Log On Start").toUtf8().constData(),
+                  tr("Clear the application log on startup").toUtf8().constData(),
                   false),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/EnableSourceControl",
-                  "Enable Source Control",
-                  "Enable source control for the application if it is available",
+                  tr("Enable Source Control").toUtf8().constData(),
+                  tr("Enable source control for the application if it is available").toUtf8().constData(),
                   false),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/IgnoreCacheFolder",
-                  "Ignore Files In Cache Folder",
-                  "This toggles whether or not files located in the cache folder appear in the asset browser, file selection dialogs, and "
-                  "during file enumeration. Changing this setting may require restarting the application to take effect in some areas.",
+                  tr("Ignore Files In Cache Folder").toUtf8().constData(),
+                  tr("This toggles whether or not files located in the cache folder appear in the asset browser, file selection dialogs, and "
+                  "during file enumeration. Changing this setting may require restarting the application to take effect in some areas.").toUtf8().constData(),
                   true),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
-                  "Update Interval When Active",
-                  "Minimum delay between ticks (in milliseconds) when the application has focus",
+                  tr("Update Interval When Active").toUtf8().constData(),
+                  tr("Minimum delay between ticks (in milliseconds) when the application has focus").toUtf8().constData(),
                   aznumeric_cast<AZ::s64>(1),
                   aznumeric_cast<AZ::s64>(1),
                   aznumeric_cast<AZ::s64>(1000)),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive",
-                  "Update Interval When Not Active",
-                  "Minimum delay between ticks (in milliseconds) when the application does not have focus",
+                  tr("Update Interval When Not Active").toUtf8().constData(),
+                  tr("Minimum delay between ticks (in milliseconds) when the application does not have focus").toUtf8().constData(),
                   aznumeric_cast<AZ::s64>(250),
                   aznumeric_cast<AZ::s64>(1),
                   aznumeric_cast<AZ::s64>(1000)),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/AllowMultipleInstances",
-                  "Allow Multiple Instances",
-                  "Allow multiple instances of the application to run",
+                  tr("Allow Multiple Instances").toUtf8().constData(),
+                  tr("Allow multiple instances of the application to run").toUtf8().constData(),
                   false) });
 
         inspector->AddGroup(
@@ -332,17 +349,17 @@ namespace AtomToolsFramework
                 m_applicationSettingsGroup.get(), m_applicationSettingsGroup.get(), azrtti_typeid<DynamicPropertyGroup>()));
 
         m_assetBrowserSettingsGroup = CreateSettingsPropertyGroup(
-            "Asset Browser Settings",
-            "Asset Browser Settings",
+            tr("Asset Browser Settings").toUtf8().constData(),
+            tr("Asset Browser Settings").toUtf8().constData(),
             { CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles",
-                  "Prompt To Open Multiple Files",
-                  "Confirm before opening multiple files",
+                  tr("Prompt To Open Multiple Files").toUtf8().constData(),
+                  tr("Confirm before opening multiple files").toUtf8().constData(),
                   true),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold",
-                  "Prompt To Open Multiple Files Threshold",
-                  "Maximum number of files that can be selected before prompting for confirmation",
+                  tr("Prompt To Open Multiple Files Threshold").toUtf8().constData(),
+                  tr("Maximum number of files that can be selected before prompting for confirmation").toUtf8().constData(),
                   aznumeric_cast<AZ::s64>(10),
                   aznumeric_cast<AZ::s64>(1),
                   aznumeric_cast<AZ::s64>(100)) });
@@ -389,9 +406,10 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::OpenAboutDialog()
     {
-        const QString text = tr("<html><head/><body><p><b><u>%1</u></b></p><p><a href=\"%2\">Terms of Use</a></p></body></html>")
+        const QString text = tr("<html><head/><body><p><b><u>%1</u></b></p><p><a href=\"%2\">%3</a></p></body></html>")
                                  .arg(QApplication::applicationName())
-                                 .arg("https://www.o3debinaries.org/license");
+                                 .arg("https://www.o3debinaries.org/license")
+                                 .arg(tr("Terms of Use"));
         QMessageBox::about(this, windowTitle(), text);
     }
 

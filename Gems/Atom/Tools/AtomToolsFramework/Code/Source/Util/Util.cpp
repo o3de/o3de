@@ -48,6 +48,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QRegularExpression>
+#include <QCoreApplication>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
@@ -240,7 +241,7 @@ namespace AtomToolsFramework
             if (!extensionPair.second.empty())
             {
                 // Sift all of the extensions into display name groups. If no display name was provided then we will use a default one.
-                const auto& group = !extensionPair.first.empty() ? extensionPair.first : "Supported";
+                const auto& group = !extensionPair.first.empty() ? extensionPair.first : QCoreApplication::translate("AtomToolsFramework", "Supported").toUtf8().constData();
 
                 // Convert the extension into a wild card.
                 orderedExtensions[group].insert("*." + extensionPair.second);
@@ -300,7 +301,7 @@ namespace AtomToolsFramework
         // If no valid extensions were provided then return immediately.
         if (combinedFilters.empty())
         {
-            QMessageBox::critical(GetToolMainWindow(), "Error", QString("No supported extensions were specified."));
+            QMessageBox::critical(GetToolMainWindow(), QCoreApplication::translate("AtomToolsFramework", "Error"), QCoreApplication::translate("AtomToolsFramework", "No supported extensions were specified."));
             return AZStd::string();
         }
 
@@ -315,7 +316,7 @@ namespace AtomToolsFramework
 
         // Prompt the user to select a save file name using the input path and the list of filtered extensions.
         const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
-            GetToolMainWindow(), QObject::tr("Save %1").arg(title.c_str()), displayedPath.c_str(), combinedFilters.c_str()));
+            GetToolMainWindow(), QCoreApplication::translate("AtomToolsFramework", "Save %1").arg(title.c_str()), displayedPath.c_str(), combinedFilters.c_str()));
 
         // If the returned path is empty this means that the user cancelled or escaped from the dialog and is canceling the operation.
         if (selectedFileInfo.absoluteFilePath().isEmpty())
@@ -330,7 +331,7 @@ namespace AtomToolsFramework
         // If the selected path does not match any of the supported extensions consider it invalid and return. 
         if (selectedExtension.empty())
         {
-            QMessageBox::critical(GetToolMainWindow(), "Error", QString("File name does not match supported extension."));
+            QMessageBox::critical(GetToolMainWindow(), QCoreApplication::translate("AtomToolsFramework", "Error"), QCoreApplication::translate("AtomToolsFramework", "File name does not match supported extension."));
             return AZStd::string();
         }
 
@@ -994,9 +995,9 @@ namespace AtomToolsFramework
         }
 
         // Create menu action for running arbitrary Python script.
-        menu->addAction(QObject::tr("&Run Python Script..."), [arguments]() {
+        menu->addAction(QCoreApplication::translate("AtomToolsFramework", "&Run Python Script..."), [arguments]() {
             const QString scriptPath = QFileDialog::getOpenFileName(
-                GetToolMainWindow(), QObject::tr("Run Python Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
+                GetToolMainWindow(), QCoreApplication::translate("AtomToolsFramework", "Run Python Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
             if (!scriptPath.isEmpty())
             {
                 // Delay execution of the script until the next frame.

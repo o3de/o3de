@@ -20,6 +20,7 @@ namespace O3DE::ProjectManager
     class GemsGemRepoScreen
         : public ScreenWidget
     {
+        Q_OBJECT
     public:
         explicit GemsGemRepoScreen(QWidget* parent = nullptr);
         ~GemsGemRepoScreen() = default;

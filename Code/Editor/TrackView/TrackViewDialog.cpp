@@ -1195,7 +1195,7 @@ void CTrackViewDialog::OnDelSequence()
         return;
     }
 
-    if (QMessageBox::question(this, LyViewPane::TrackView, tr("Delete current sequence?")) == QMessageBox::Yes)
+    if (QMessageBox::question(this, QCoreApplication::translate("LyViewPane", LyViewPane::TrackView), tr("Delete current sequence?")) == QMessageBox::Yes)
     {
         int sel = m_sequencesComboBox->currentIndex();
         if (sel != -1)

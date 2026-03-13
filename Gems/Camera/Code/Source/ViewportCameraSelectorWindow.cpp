@@ -12,6 +12,7 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+#include <QDockWidget>
 #include <QLabel>
 #include <QListView>
 #include <QScopedValueRollback>
@@ -47,7 +48,7 @@ namespace Camera
             }
             else
             {
-                m_cameraName = "Editor camera";
+                m_cameraName = QObject::tr("Editor camera").toUtf8().constData();
             }
         }
 
@@ -360,12 +361,34 @@ namespace Camera
         {
             setLayout(new QVBoxLayout(this));
             auto label = new QLabel(
+                QCoreApplication::translate(
+                "Camera::Internal::ViewportSelectorHolder",
                 "Select the camera you wish to view and navigate through.  Closing this window will return you to the default editor "
-                "camera.",
+                "camera."),
                 this);
             label->setWordWrap(true);
             layout()->addWidget(label);
             layout()->addWidget(new ViewportCameraSelectorWindow(this));
+        }
+
+        void ViewportSelectorHolder::showEvent(QShowEvent* event)
+        {
+            QWidget::showEvent(event);
+
+            // Translate the dock widget title.
+            // RegisterViewPane uses the English name as both identifier and title.
+            // We translate the display title here to avoid breaking pane lookup by name.
+            QWidget* ancestor = parentWidget();
+            while (ancestor)
+            {
+                if (auto* dockWidget = qobject_cast<QDockWidget*>(ancestor))
+                {
+                    dockWidget->setWindowTitle(
+                        QCoreApplication::translate("Camera", s_viewportCameraSelectorName));
+                    break;
+                }
+                ancestor = ancestor->parentWidget();
+            }
         }
 
         // simple factory method
@@ -380,6 +403,7 @@ namespace Camera
         AzToolsFramework::ViewPaneOptions viewOptions;
         viewOptions.isPreview = true;
         viewOptions.showInMenu = true;
+        viewOptions.optionalMenuText = QCoreApplication::translate("Camera", s_viewportCameraSelectorName);
         viewOptions.preferedDockingArea = Qt::DockWidgetArea::LeftDockWidgetArea;
         AzToolsFramework::EditorRequestBus::Broadcast(
             &AzToolsFramework::EditorRequestBus::Events::RegisterViewPane,

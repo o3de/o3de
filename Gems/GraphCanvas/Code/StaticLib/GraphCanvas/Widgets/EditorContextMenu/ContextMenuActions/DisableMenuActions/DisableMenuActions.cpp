@@ -6,6 +6,8 @@
  *
  */
 
+#include <QCoreApplication>
+
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/DisableMenuActions/DisableMenuActions.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
@@ -31,11 +33,11 @@ namespace GraphCanvas
 
             if (m_enableState)
             {
-                setText("Enable");
+                setText(QCoreApplication::translate("SetEnabledStateMenuAction", "Enable"));
             }
             else
             {
-                setText("Disable");
+                setText(QCoreApplication::translate("SetEnabledStateMenuAction", "Disable"));
             }
         }
     }

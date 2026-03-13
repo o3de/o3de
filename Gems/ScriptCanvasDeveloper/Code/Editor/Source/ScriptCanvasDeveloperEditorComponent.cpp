@@ -79,7 +79,8 @@ namespace ScriptCanvasDeveloperEditor
     {
         QMenuBar* menuBar = mainWindow->menuBar();
 
-        QMenu* developerMenu = menuBar->addMenu("Developer");
+        QMenu* developerMenu = menuBar->addMenu(QObject::tr("Developer"));
+        developerMenu->setObjectName("DeveloperMenu");
 
         VariablePaletteFullCreation::CreateVariablePaletteFullCreationAction(developerMenu);
 
@@ -96,7 +97,7 @@ namespace ScriptCanvasDeveloperEditor
 
         TranslationDatabaseFileAction(developerMenu, mainWindow);
 
-        QAction* action = developerMenu->addAction("Open Menu Test");
+        QAction* action = developerMenu->addAction(QObject::tr("Open Menu Test"));
 
         QObject::connect(action, &QAction::triggered, [mainWindow]()
         {

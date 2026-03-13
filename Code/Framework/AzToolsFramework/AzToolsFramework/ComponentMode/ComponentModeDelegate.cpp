@@ -11,7 +11,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzFramework/Translation/TranslationDef.h>
-
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>

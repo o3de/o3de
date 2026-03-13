@@ -194,8 +194,8 @@ namespace ScriptCanvas::Developer
         for (QObject* object : objectList)
         {
             QMenu* menu = qobject_cast<QMenu*>(object);
-
-            if (menu && menu->title() == "Developer")
+            
+            if (menu && menu->objectName() == "Developer")
             {
                 targetMenu = menu;
             }
@@ -344,7 +344,7 @@ namespace ScriptCanvas::Developer
         m_tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
 
         QPushButton* button = new QPushButton();
-        button->setText("Run All Tests");
+        button->setText(tr("Run All Tests"));
         layout->addWidget(button);
 
         m_runLabel = new QLabel();
@@ -359,7 +359,7 @@ namespace ScriptCanvas::Developer
 
         setLayout(layout);
 
-        setWindowTitle("Editor Automated Testing");
+        setWindowTitle(tr("Editor Automated Testing"));
 
         QObject::connect(button, &QPushButton::clicked, this, &EditorAutomationTestDialog::RunAllTests);
 
@@ -500,14 +500,14 @@ namespace ScriptCanvas::Developer
     {
         AZ::SystemTickBus::Handler::BusDisconnect();
 
-        m_runLabel->setText(QString("%1 of %2 Test rans successfully").arg(m_successCount).arg(m_runCount));
+        m_runLabel->setText(tr("%1 of %2 tests ran successfully").arg(m_successCount).arg(m_runCount));
 
         ShowTestDialog();
     }
 
     void EditorAutomationTestDialog::UpdateRunLabel()
     {
-        m_runLabel->setText(QString("Running Tests.... %1 remaining.").arg(m_testQueue.size()));
+        m_runLabel->setText(tr("Running Tests.... %1 remaining.").arg(m_testQueue.size()));
     }
 
     void EditorAutomationTestDialog::DisplayErrorsForTest(EditorAutomationTest* actionTest)

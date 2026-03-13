@@ -14,6 +14,8 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/i18n/TranslationMacros.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace GameState
 {

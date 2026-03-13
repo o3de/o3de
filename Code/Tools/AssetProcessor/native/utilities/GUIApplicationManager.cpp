@@ -25,6 +25,7 @@
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 
 #if defined(EXTERNAL_CRASH_REPORTING)
 #include <ToolsCrashHandler.h>
@@ -38,6 +39,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
+#include <QCoreApplication>
 #include <ui/MessageWindow.h>
 
 using namespace AssetProcessor;
@@ -265,13 +267,13 @@ bool GUIApplicationManager::Run()
     connect(new MacDockIconHandler(this), &MacDockIconHandler::dockIconClicked, m_mainWindow, &MainWindow::ShowWindow);
 #endif
 
-    QAction* quitAction = new QAction(QObject::tr("Quit"), m_mainWindow);
+    QAction* quitAction = new QAction(QCoreApplication::translate("AssetProcessor", "Quit"), m_mainWindow);
     quitAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Q));
     quitAction->setMenuRole(QAction::QuitRole);
     m_mainWindow->addAction(quitAction);
     m_mainWindow->connect(quitAction, SIGNAL(triggered()), this, SLOT(QuitRequested()));
 
-    QAction* refreshAction = new QAction(QObject::tr("Refresh Stylesheet"), m_mainWindow);
+    QAction* refreshAction = new QAction(QCoreApplication::translate("AssetProcessor", "Refresh Stylesheet"), m_mainWindow);
     refreshAction->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_R));
     m_mainWindow->addAction(refreshAction);
     m_mainWindow->connect(refreshAction, &QAction::triggered, this, refreshStyleSheets);
@@ -281,9 +283,9 @@ bool GUIApplicationManager::Run()
 
     if (QSystemTrayIcon::isSystemTrayAvailable())
     {
-        QAction* showAction = new QAction(QObject::tr("Show"), m_mainWindow);
+        QAction* showAction = new QAction(QCoreApplication::translate("AssetProcessor", "Show"), m_mainWindow);
         QObject::connect(showAction, &QAction::triggered, m_mainWindow, &MainWindow::ShowWindow);
-        QAction* hideAction = new QAction(QObject::tr("Hide"), m_mainWindow);
+        QAction* hideAction = new QAction(QCoreApplication::translate("AssetProcessor", "Hide"), m_mainWindow);
         QObject::connect(hideAction, &QAction::triggered, wrapper, &AzQtComponents::WindowDecorationWrapper::hide);
 
         QMenu* trayIconMenu = new QMenu();
@@ -292,7 +294,7 @@ bool GUIApplicationManager::Run()
         trayIconMenu->addSeparator();
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
-        QAction* systemTrayQuitAction = new QAction(QObject::tr("Quit"), m_mainWindow);
+        QAction* systemTrayQuitAction = new QAction(QCoreApplication::translate("AssetProcessor", "Quit"), m_mainWindow);
         systemTrayQuitAction->setMenuRole(QAction::NoRole);
         m_mainWindow->connect(systemTrayQuitAction, SIGNAL(triggered()), this, SLOT(QuitRequested()));
         trayIconMenu->addAction(systemTrayQuitAction);
@@ -302,7 +304,7 @@ bool GUIApplicationManager::Run()
 
         m_trayIcon = new QSystemTrayIcon(QIcon(":/o3de_assetprocessor_taskbar.svg"), m_mainWindow);
         m_trayIcon->setContextMenu(trayIconMenu);
-        m_trayIcon->setToolTip(QObject::tr("O3DE Asset Processor"));
+        m_trayIcon->setToolTip(QCoreApplication::translate("AssetProcessor", "O3DE Asset Processor"));
         m_trayIcon->show();
         QObject::connect(m_trayIcon, &QSystemTrayIcon::activated, m_mainWindow, [&, wrapper](QSystemTrayIcon::ActivationReason reason)
             {
@@ -547,6 +549,7 @@ void GUIApplicationManager::CreateQtApplication()
 
     // Qt actually modifies the argc and argv, you must pass the real ones in as ref so it can.
     m_qApp = new QApplication(*m_frameworkApp.GetArgC(), *m_frameworkApp.GetArgV());
+    AzToolsFramework::TranslationManager::InitializeToolTranslations("AssetProcessor", m_qApp);
 }
 
 void GUIApplicationManager::DirectoryChanged([[maybe_unused]] QString path)

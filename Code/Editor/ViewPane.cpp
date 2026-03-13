@@ -23,6 +23,7 @@
 #include <QMouseEvent>
 #include <QScrollArea>
 #include <QToolBar>
+#include <QCoreApplication>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -117,37 +118,37 @@ void CLayoutViewPane::OnMenuRegistrationHook()
 {
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Viewport Camera Settings";
+        menuProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Viewport Camera Settings").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportCameraMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Viewport Debug Info";
+        menuProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Viewport Debug Info").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportDebugInfoMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Viewport Helpers";
+        menuProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Viewport Helpers").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportHelpersMenuIdentifier, menuProperties);
     }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Viewport Size";
+        menuProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Viewport Size").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportSizeMenuIdentifier, menuProperties);
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Ratio";
+            menuProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Ratio").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportSizeRatioMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-            menuProperties.m_name = "Resolution";
+            menuProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Resolution").toUtf8().constData();
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportSizeResolutionMenuIdentifier, menuProperties);
         }
     {
         AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Viewport Options";
+        menuProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Viewport Options").toUtf8().constData();
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, menuProperties);
     }
 }
@@ -156,7 +157,7 @@ void CLayoutViewPane::OnToolBarRegistrationHook()
 {
     // Register top viewport toolbar.
     AzToolsFramework::ToolBarProperties toolBarProperties;
-    toolBarProperties.m_name = "Viewport ToolBar";
+    toolBarProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Viewport ToolBar").toUtf8().constData();
     m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
 
     // Add toolbar to top of viewport.
@@ -170,7 +171,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.resizeIcon";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Viewport Size";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Viewport Size").toUtf8().constData();
         actionProperties.m_iconPath = ":/Menu/resolution.svg";
 
         m_actionManagerInterface->RegisterAction(
@@ -187,7 +188,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.menuIcon";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Options";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Options").toUtf8().constData();
         actionProperties.m_iconPath = ":/Menu/menu.svg";
 
         m_actionManagerInterface->RegisterAction(
@@ -204,8 +205,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.toggle";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Toggle Between States";
-        actionProperties.m_category = "Viewport Debug Information";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Toggle Between States").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Debug Information").toUtf8().constData();
         actionProperties.m_iconPath = ":/Menu/debug.svg";
 
         m_actionManagerInterface->RegisterCheckableAction(
@@ -231,8 +232,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.normal";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Normal";
-        actionProperties.m_category = "Viewport Debug Information";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Normal").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Debug Information").toUtf8().constData();
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -258,8 +259,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.full";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Full";
-        actionProperties.m_category = "Viewport Debug Information";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Full").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Debug Information").toUtf8().constData();
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -285,8 +286,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.compact";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Compact";
-        actionProperties.m_category = "Viewport Debug Information";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Compact").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Debug Information").toUtf8().constData();
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -312,8 +313,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.info.none";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "None";
-        actionProperties.m_category = "Viewport Debug Information";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "None").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Debug Information").toUtf8().constData();
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -346,7 +347,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.ratio[%i:%i]", width, height);
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = AZStd::string::format("%i:%i", width, height);
-        actionProperties.m_category = "Viewport Size Ratio";
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Size Ratio").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -361,8 +362,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.size.ratio.custom";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Custom...";
-        actionProperties.m_category = "Viewport Size Ratio";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Custom...").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Size Ratio").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -395,7 +396,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
         AZStd::string actionIdentifier = AZStd::string::format("o3de.action.viewport.size.resolution[%i:%i]", width, height);
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = AZStd::string::format("%i:%i", width, height);
-        actionProperties.m_category = "Viewport Size Resolution";
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Size Resolution").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -410,8 +411,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.size.resolution.custom";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Custom...";
-        actionProperties.m_category = "Viewport Size Resolution";
+        actionProperties.m_name = QCoreApplication::translate("CLayoutViewPane", "Custom...").toUtf8().constData();
+        actionProperties.m_category = QCoreApplication::translate("CLayoutViewPane", "Viewport Size Resolution").toUtf8().constData();
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,

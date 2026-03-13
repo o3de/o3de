@@ -72,6 +72,8 @@
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
+
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
@@ -277,6 +279,8 @@ namespace AzToolsFramework
 
     void ToolsApplication::Stop()
     {
+        ClearTranslationContexts(); // from UI/PropertyEditor/PropertyEditorAPI.h
+
         if (m_isStarted)
         {
             FlushUndo();

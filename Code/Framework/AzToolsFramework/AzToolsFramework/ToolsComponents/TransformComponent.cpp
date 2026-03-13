@@ -43,6 +43,7 @@
 
 #include <QMenu>
 #include <QMessageBox>
+#include <QCoreApplication>
 
 namespace AzToolsFramework
 {
@@ -1180,30 +1181,41 @@ namespace AzToolsFramework
 
                 if (AZ::EditContext* ptrEdit = serializeContext->GetEditContext())
                 {
-                    ptrEdit->Class<TransformComponent>("Transform", "Controls the placement of the entity in the world in 3d")->
+                    ptrEdit->Class<TransformComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Transform"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Controls the placement of the entity in the world in 3d"))->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                             Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 0)->
                             Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Transform.svg")->
                             Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Transform.svg")->
                             Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/transform/")->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
-                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent entity", "Modify this using the Entity Outliner")->
+                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId,
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Parent entity"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Modify this using the Entity Outliner"))->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
                             Attribute(AZ::Edit::Attributes::ShowClearButtonHandler, false)->
                             Attribute(AZ::Edit::Attributes::ShowPickButton, false)->
                             Attribute(AZ::Edit::Attributes::AllowDrop, false)->
-                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform, "Values", "")->
+                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform,
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Values"), "")->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChangedInspector)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         UIElement(AZ::Edit::UIHandlers::Button, "", "")->
-                            Attribute(AZ::Edit::Attributes::ButtonText, "Add non-uniform scale")->
+                            Attribute(AZ::Edit::Attributes::ButtonText,
+                                QT_TRANSLATE_NOOP("AzToolsFramework", "Add non-uniform scale"))->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &TransformComponent::IsAddNonUniformScaleButtonReadOnly)->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::OnAddNonUniformScaleButtonPressed)->
                         DataElement(AZ::Edit::UIHandlers::ComboBox, &TransformComponent::m_parentActivationTransformMode,
-                            "Parent activation", "Configures relative transform behavior when parent activates.")->
-                            EnumAttribute(AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform, "Original relative transform")->
-                            EnumAttribute(AZ::TransformConfig::ParentActivationTransformMode::MaintainCurrentWorldTransform, "Current world transform")->
-                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_isStatic ,"Static", "Static entities are highly optimized and cannot be moved during runtime.")->
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Parent activation"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Configures relative transform behavior when parent activates."))->
+                            EnumAttribute(AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform,
+                                QT_TRANSLATE_NOOP("AzToolsFramework", "Original relative transform"))->
+                            EnumAttribute(AZ::TransformConfig::ParentActivationTransformMode::MaintainCurrentWorldTransform,
+                                QT_TRANSLATE_NOOP("AzToolsFramework", "Current world transform"))->
+                        DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_isStatic,
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Static"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Static entities are highly optimized and cannot be moved during runtime."))->
                             Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::StaticChangedInspector)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_cachedWorldTransformParent, "Cached Parent Entity", "")->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushable)->
@@ -1212,20 +1224,30 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
 
-                    ptrEdit->Class<EditorTransform>("Values", "XYZ PYR")->
-                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_translate, "Translate", "Local Position (Relative to parent) in meters.")->
+                    ptrEdit->Class<EditorTransform>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Values"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "XYZ PYR"))->
+                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_translate,
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Translate"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Local Position (Relative to parent) in meters."))->
                             Attribute(AZ::Edit::Attributes::Step, 0.1f)->
-                            Attribute(AZ::Edit::Attributes::Suffix, " m")->
+                            Attribute(AZ::Edit::Attributes::Suffix,
+                                QT_TRANSLATE_NOOP("AzToolsFramework", " m"))->
                             Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)->
                             Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)->
-                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_rotate, "Rotate", "Local Rotation (Relative to parent) in degrees.")->
+                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_rotate,
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Rotate"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Local Rotation (Relative to parent) in degrees."))->
                             Attribute(AZ::Edit::Attributes::Step, 1.0f)->
-                            Attribute(AZ::Edit::Attributes::Suffix, " deg")->
+                            Attribute(AZ::Edit::Attributes::Suffix,
+                                QT_TRANSLATE_NOOP("AzToolsFramework", " deg"))->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
-                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_uniformScale, "Uniform Scale", "Local Uniform Scale")->
+                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_uniformScale,
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Uniform Scale"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Local Uniform Scale"))->
                             Attribute(AZ::Edit::Attributes::Step, 0.1f)->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)
                         ;
@@ -1268,7 +1290,7 @@ namespace AzToolsFramework
                     menu->addSeparator();
                 }
 
-                QAction* resetAction = menu->addAction(QObject::tr("Reset transform values"), [this]()
+                QAction* resetAction = menu->addAction(QCoreApplication::translate("TransformComponent", "Reset transform values"), [this]()
                 {
                     {
                         AzToolsFramework::ScopedUndoBatch undo("Reset transform values");
@@ -1284,7 +1306,7 @@ namespace AzToolsFramework
                 });
                 resetAction->setEnabled(!m_editorTransform.m_locked && !parentEntityIsReadOnly);
 
-                QString lockString = m_editorTransform.m_locked ? "Unlock transform values" : "Lock transform values";
+                QString lockString = m_editorTransform.m_locked ? QCoreApplication::translate("TransformComponent", "Unlock transform values") : QCoreApplication::translate("TransformComponent", "Lock transform values");
                 QAction* lockAction = menu->addAction(lockString, [this, lockString]()
                 {
                     {

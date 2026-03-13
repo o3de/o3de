@@ -19,6 +19,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Legacy::CryCommon
+            AZ::AzCore
 )
 
 ly_add_target(

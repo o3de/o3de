@@ -23,6 +23,7 @@ namespace O3DE::ProjectManager
     class ProjectSettingsScreen
         : public ScreenWidget
     {
+        Q_OBJECT
     public:
         explicit ProjectSettingsScreen(QWidget* parent = nullptr);
         ~ProjectSettingsScreen() = default;

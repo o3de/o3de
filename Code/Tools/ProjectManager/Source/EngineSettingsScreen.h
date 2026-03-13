@@ -17,6 +17,7 @@ namespace O3DE::ProjectManager
     class EngineSettingsScreen
         : public ScreenWidget
     {
+        Q_OBJECT
     public:
         explicit EngineSettingsScreen(QWidget* parent = nullptr);
         ~EngineSettingsScreen() = default;

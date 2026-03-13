@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <QCoreApplication>
 #include <QMenu>
 #include <QMessageBox>
 
@@ -28,6 +29,7 @@ namespace GraphCanvas
     RemoveSlotMenuAction::RemoveSlotMenuAction(QObject* parent)
         : SlotContextMenuAction("Remove slot", parent)
     {
+        setText(QCoreApplication::translate("RemoveSlotMenuAction", "Remove slot"));
     }
 
     void RemoveSlotMenuAction::RefreshAction()
@@ -83,7 +85,7 @@ namespace GraphCanvas
 
                 ViewRequestBus::EventResult(graphicsView, viewId, &ViewRequests::AsGraphicsView);
 
-                QMessageBox::StandardButton result = QMessageBox::question(graphicsView, "Slot has active connections", "The selected slot has active connections, as you sure you wish to remove it?");
+                QMessageBox::StandardButton result = QMessageBox::question(graphicsView, QCoreApplication::translate("RemoveSlotMenuAction", "Slot has active connections"), QCoreApplication::translate("RemoveSlotMenuAction", "The selected slot has active connections, are you sure you wish to remove it?"));
 
                 if (result == QMessageBox::StandardButton::Cancel
                     || result == QMessageBox::StandardButton::No)
@@ -107,6 +109,7 @@ namespace GraphCanvas
     ClearConnectionsMenuAction::ClearConnectionsMenuAction(QObject* parent)
         : SlotContextMenuAction("Clear connections", parent)
     {
+        setText(QCoreApplication::translate("ClearConnectionsMenuAction", "Clear connections"));
     }
     
     void ClearConnectionsMenuAction::RefreshAction()
@@ -143,7 +146,7 @@ namespace GraphCanvas
     ResetToDefaultValueMenuAction::ResetToDefaultValueMenuAction(QObject* parent)
         : SlotContextMenuAction("Reset Value", parent)
     {
-
+        setText(QCoreApplication::translate("ResetToDefaultValueMenuAction", "Reset Value"));
     }
 
     void ResetToDefaultValueMenuAction::RefreshAction()
@@ -172,21 +175,21 @@ namespace GraphCanvas
 
                 if (slotType2 == DataSlotType::Reference)
                 {
-                    setText("Reset Reference");
+                    setText(QCoreApplication::translate("ResetToDefaultValueMenuAction", "Reset Reference"));
                 }
                 else
                 {
-                    setText("Reset Value");
+                    setText(QCoreApplication::translate("ResetToDefaultValueMenuAction", "Reset Value"));
                 }
             }
             else if (slotType == SlotTypes::PropertySlot)
             {
                 enableAction = true;
-                setText("Reset Property");
+                setText(QCoreApplication::translate("ResetToDefaultValueMenuAction", "Reset Property"));
             }
             else
             {
-                setText("Reset Value");
+                setText(QCoreApplication::translate("ResetToDefaultValueMenuAction", "Reset Value"));
             }
         }
 
@@ -236,7 +239,7 @@ namespace GraphCanvas
     ToggleReferenceStateAction::ToggleReferenceStateAction(QObject* parent)
         : GraphCanvas::SlotContextMenuAction("Toggle Reference", parent)
     {
-
+        setText(QCoreApplication::translate("ToggleReferenceStateAction", "Toggle Reference"));
     }
 
     void ToggleReferenceStateAction::RefreshAction()
@@ -257,12 +260,12 @@ namespace GraphCanvas
 
                 if (DataSlotUtils::IsValueDataSlotType(dataSlotType))
                 {
-                    setText("Convert to Reference");
+                    setText(QCoreApplication::translate("ToggleReferenceStateAction", "Convert to Reference"));
                     DataSlotRequestBus::EventResult(canToggleState, targetId, &DataSlotRequests::CanConvertToReference, false);
                 }
                 else
                 {
-                    setText("Convert to Value");
+                    setText(QCoreApplication::translate("ToggleReferenceStateAction", "Convert to Value"));
                     DataSlotRequestBus::EventResult(canToggleState, targetId, &DataSlotRequests::CanConvertToValue);
                 }
                 
@@ -315,7 +318,7 @@ namespace GraphCanvas
     PromoteToVariableAction::PromoteToVariableAction(QObject* parent)
         : GraphCanvas::SlotContextMenuAction("Promote to Variable", parent)
     {
-
+        setText(QCoreApplication::translate("PromoteToVariableAction", "Promote to Variable"));
     }
 
     void PromoteToVariableAction::RefreshAction()

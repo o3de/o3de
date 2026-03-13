@@ -27,17 +27,18 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QCoreApplication>
 
 namespace StandaloneRPE
 {
 void Button1()
 {
-    QMessageBox::information(nullptr, "Button", "Button1 pressed");
+    QMessageBox::information(nullptr, QCoreApplication::translate("PropertyEditorStandalone", "Button"), QCoreApplication::translate("PropertyEditorStandalone", "Button1 pressed"));
 }
 
 void Button2()
 {
-    QMessageBox::information(nullptr, "Button", "Button2 pressed");
+    QMessageBox::information(nullptr, QCoreApplication::translate("PropertyEditorStandalone", "Button"), QCoreApplication::translate("PropertyEditorStandalone", "Button2 pressed"));
 }
 
 class TestContainer
@@ -194,8 +195,8 @@ int main(int argc, char** argv)
     editor->Setup(serializeContext, nullptr, true);
     float newValue = 0.f;
 
-    QPushButton* addInstanceButton = new QPushButton("Add Multi-Edit Instance");
-    QPushButton* clearInstancesButton = new QPushButton("Clear Multi-Edit Instances");
+    QPushButton* addInstanceButton = new QPushButton(QCoreApplication::translate("PropertyEditorStandalone", "Add Multi-Edit Instance"));
+    QPushButton* clearInstancesButton = new QPushButton(QCoreApplication::translate("PropertyEditorStandalone", "Clear Multi-Edit Instances"));
 
     auto addInstance = [&]()
     {

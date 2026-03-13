@@ -27,6 +27,7 @@
 #include <AzToolsFramework/UI/DocumentPropertyEditor/KeyQueryDPE.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 AZ_CVAR(
     bool,
@@ -560,8 +561,10 @@ namespace AzToolsFramework
             if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
             {
                 auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(childValue).value_or("");
+                // Translate the label text for i18n support
+                AZStd::string translatedLabel = AzToolsFramework::TranslatePropertyString(labelString.data());
                 auto label = DocumentPropertyEditor::GetLabelPool()->GetInstance();
-                label->SetText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                label->SetText(QString::fromUtf8(translatedLabel.c_str(), aznumeric_cast<int>(translatedLabel.size())));
                 label->setParent(this);
                 addedWidget = label;
             }
@@ -697,7 +700,9 @@ namespace AzToolsFramework
         }
 
         AZStd::string_view descriptionView = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domArray).value_or("");
-        QString descriptionString = QString::fromUtf8(descriptionView.data(), aznumeric_cast<int>(descriptionView.size()));
+        // Translate the description for i18n support
+        AZStd::string translatedDescription = AzToolsFramework::TranslatePropertyString(descriptionView.data());
+        QString descriptionString = QString::fromUtf8(translatedDescription.c_str(), aznumeric_cast<int>(translatedDescription.size()));
         if (descriptionString != childWidget->toolTip())
         {
             setToolTip(descriptionString);
@@ -961,7 +966,9 @@ namespace AzToolsFramework
                         if (changedLabel)
                         {
                             auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
-                            changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                            // Translate the label text for i18n support
+                            AZStd::string translatedLabel = AzToolsFramework::TranslatePropertyString(labelString.data());
+                            changedLabel->setText(QString::fromUtf8(translatedLabel.c_str(), aznumeric_cast<int>(translatedLabel.size())));
                         }
                     }
                 }
@@ -1822,8 +1829,8 @@ namespace AzToolsFramework
 
                 QString item;
                 QInputDialog dialog(this);
-                dialog.setWindowTitle(QObject::tr("Class to create"));
-                dialog.setLabelText(QObject::tr("Classes"));
+                dialog.setWindowTitle(tr("Class to create"));
+                dialog.setLabelText(tr("Classes"));
                 dialog.setComboBoxItems(derivedClassNames);
                 dialog.setTextValue(derivedClassNames.value(0));
                 dialog.setComboBoxEditable(false);

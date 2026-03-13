@@ -16,6 +16,7 @@
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogBus.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -165,6 +166,7 @@ namespace AssetBundler
 
         // Create the actual Qt Application
         m_qApp.reset(new QApplication(*GetArgC(), *GetArgV()));
+        AzToolsFramework::TranslationManager::InitializeToolTranslations("AssetBundler", m_qApp.get());
 
         // Create the Main Window
         m_mainWindow.reset(new MainWindow(this));

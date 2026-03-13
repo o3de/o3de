@@ -24,6 +24,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzQtComponents/Components/Titlebar.h>
@@ -124,6 +125,10 @@ namespace EMotionFX
 
     void UIFixture::TearDown()
     {
+        // ClearTranslationContexts to clean up memory. Normally the framework does this automatically,
+        // but in this unit test fixture, we don't allow the usual framework to start and stop itself.
+        AzToolsFramework::ClearTranslationContexts();
+
         m_assetSystemRequestMock.BusDisconnect();
         Integration::SystemNotificationBus::Handler::BusDisconnect();
         CloseAllNotificationWindows();

@@ -6,6 +6,8 @@
  *
  */
 
+#include <QCoreApplication>
+
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/BreakpointMenuActions/BreakpointContextMenuActions.h>
 
 #include <AzCore/Component/EntityId.h>
@@ -22,6 +24,7 @@ namespace GraphCanvas
     AddBreakpointMenuAction::AddBreakpointMenuAction(QObject* parent)
         : BreakpointContextMenuAction("Add Breakpoint", parent)
     {
+        setText(QCoreApplication::translate("AddBreakpointMenuAction", "Add Breakpoint"));
     }
 
     ContextMenuAction::SceneReaction AddBreakpointMenuAction::TriggerAction(

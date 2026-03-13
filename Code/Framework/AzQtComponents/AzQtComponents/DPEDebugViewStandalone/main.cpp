@@ -29,6 +29,7 @@
 #include <QTreeView>
 #include <QScrollArea>
 #include <QComboBox>
+#include <QCoreApplication>
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/AggregateAdapter.h>
@@ -51,12 +52,12 @@ namespace DPEDebugView
 {
     void Button1()
     {
-        QMessageBox::information(nullptr, "Button", "Button1 pressed");
+        QMessageBox::information(nullptr, QCoreApplication::translate("DPEDebugView", "Button"), QCoreApplication::translate("DPEDebugView", "Button1 pressed"));
     }
 
     AZ::Crc32 Button2()
     {
-        QMessageBox::information(nullptr, "Button", "Button2 pressed");
+        QMessageBox::information(nullptr, QCoreApplication::translate("DPEDebugView", "Button"), QCoreApplication::translate("DPEDebugView", "Button2 pressed"));
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
@@ -447,11 +448,11 @@ int main(int argc, char** argv)
     sortFilter->SetSourceAdapter(cvarAdapter);
 
     debugViewer->AddAdapterToList(
-        "Reflection Adapter",
+        QCoreApplication::translate("DPEDebugView", "Reflection Adapter"),
         AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
-    debugViewer->AddAdapterToList("CVar Adapter", sortFilter);
-    debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
-    debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
+    debugViewer->AddAdapterToList(QCoreApplication::translate("DPEDebugView", "CVar Adapter"), sortFilter);
+    debugViewer->AddAdapterToList(QCoreApplication::translate("DPEDebugView", "Example Adapter"), AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
+    debugViewer->AddAdapterToList(QCoreApplication::translate("DPEDebugView", "Settings Registry Adapter"), AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
     // Important! Note that the following type must already be exposed to the reflection system, so we will re-use AZStd::map<int, float>,
     // which was previously used for m_readOnlyMap
@@ -484,7 +485,7 @@ int main(int argc, char** argv)
     aggregateAdapter->AddAdapter(firstContainerAdapter);
     aggregateAdapter->AddAdapter(secondContainerAdapter);
 
-    debugViewer->AddAdapterToList("Vector AggregateAdapter", aggregateAdapter);
+    debugViewer->AddAdapterToList(QCoreApplication::translate("DPEDebugView", "Vector AggregateAdapter"), aggregateAdapter);
     debugViewer->show();
     filteredDPE->show();
 

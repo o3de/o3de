@@ -21,6 +21,7 @@
 #include <AzFramework/Asset/CustomAssetTypeComponent.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/O3DEStylesheet.h>
@@ -134,6 +135,11 @@ int main(int argc, char **argv)
 
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::PerScreenDpiAware);
     QApplication app(argc, argv);
+
+    // Initialize translations for the Gallery
+    AzToolsFramework::TranslationManager::InitializeToolTranslations("AzQtComponents", &app);
+    AzToolsFramework::TranslationManager::InitializeToolTranslations("AzCore", &app);
+    AzToolsFramework::TranslationManager::InitializeToolTranslations("AzToolsFramework", &app);
 
     AzQtComponents::StyleManager styleManager(&app);
     AZ::IO::FixedMaxPath engineRootPath;

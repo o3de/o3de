@@ -26,8 +26,8 @@ namespace AZ::NativeUI
         ////////////////////////////////////////////////////////////////////////
         // NativeUIRequestBus interface implementation
         AZStd::string DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const override;
-        AZStd::string DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
-        AZStd::string DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
+        OkDialogResult DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
+        YesNoDialogResult DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
         AssertAction DisplayAssertDialog(const AZStd::string& message) const override;
         ////////////////////////////////////////////////////////////////////////
     };

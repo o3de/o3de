@@ -7,6 +7,7 @@
  */
 #include "PropertyButtonCtrl.hxx"
 #include "PropertyQTConstants.h"
+#include "PropertyEditorAPI.h"
 #include <QPushButton>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QHBoxLayout>
@@ -85,7 +86,9 @@ namespace AzToolsFramework
 
     void PropertyButtonCtrl::SetButtonText(const char* text)
     {
-        m_button->setText(QString::fromUtf8(text));
+        // Try to translate button text
+        AZStd::string translatedText = TranslatePropertyString(text);
+        m_button->setText(QString::fromUtf8(translatedText.c_str()));
     }
 
     QString PropertyButtonCtrl::GetButtonText() const

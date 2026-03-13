@@ -87,9 +87,10 @@ namespace AtomToolsFramework
         if (const int index = findData(pathItemData); index < 0)
         {
             const auto& title = GetDisplayNameFromPath(pathWithoutAlias);
+            const QString translatedTitle = tr(title.c_str());
 
             // Compare the item title against all other items and append a suffix until the new title is unique
-            AZStd::string uniqueTitle = title;
+            QString uniqueTitle = translatedTitle;
             int uniqueTitleSuffix = 0;
             bool uniqueTitleFound = true;
             while (uniqueTitleFound)
@@ -97,16 +98,16 @@ namespace AtomToolsFramework
                 uniqueTitleFound = false;
                 for (int i = 0; i < count(); ++i)
                 {
-                    if (uniqueTitle == itemText(i).toUtf8().constData())
+                    if (uniqueTitle == itemText(i))
                     {
-                        uniqueTitle = AZStd::string::format("%s (%i)",title.c_str(), ++uniqueTitleSuffix);
+                        uniqueTitle = QString("%1 (%2)").arg(translatedTitle).arg(++uniqueTitleSuffix);
                         uniqueTitleFound = true;
                         break;
                     }
                 }
             }
 
-            addItem(uniqueTitle.c_str(), pathItemData);
+            addItem(uniqueTitle, pathItemData);
             setItemData(count() - 1, pathWithoutAlias.c_str(), Qt::ToolTipRole);
 
             QueueSort();

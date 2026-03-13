@@ -11,15 +11,16 @@
 #include <QAction>
 #include <QToolBar>
 #include <QMenu>
-
 #include <Integration/Rendering/RenderFlag.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 
 namespace EMStudio
 {
-    class AnimRenderPlugin;
+    class AtomRenderPlugin;
 
     class AnimViewportToolBar : public QToolBar
     {
+        Q_OBJECT
     public:
         AnimViewportToolBar(AtomRenderPlugin* plugin, QWidget* parent);
         ~AnimViewportToolBar();
@@ -28,7 +29,7 @@ namespace EMStudio
 
     private:
         void CreateViewOptionEntry(
-            QMenu* menu, const char* menuEntryName, AZ::u8 actionIndex, bool visible = true, const char* iconFileName = nullptr);
+            QMenu* menu, const QString& menuEntryName, AZ::u8 actionIndex, bool visible = true, const char* iconFileName = nullptr);
 
         AtomRenderPlugin* m_plugin = nullptr;
         QAction* m_manipulatorActions[RenderOptions::ManipulatorMode::NUM_MODES] = { nullptr };

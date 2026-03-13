@@ -17,6 +17,8 @@ namespace O3DE::ProjectManager
     class GemRepoAddDialog
         : public QDialog
     {
+        Q_OBJECT
+
     public:
         explicit GemRepoAddDialog(QWidget* parent = nullptr);
         ~GemRepoAddDialog() = default;

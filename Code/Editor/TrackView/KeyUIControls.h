@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <QCoreApplication>
 #include <AzFramework/Components/CameraBus.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
@@ -28,8 +29,8 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_value, "Value");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_value, QCoreApplication::translate("KeyUIControls", "Value").toUtf8().constData());
     }
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -77,14 +78,14 @@ public:
         mv_asset->SetUserData(assetId.m_subId);
         mv_asset->SetDisplayValue(assetId.m_guid.ToString<AZStd::string>().c_str());
 
-        AddVariable(mv_table, "Key Properties");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
         // In the future, we may have different types of AssetBlends supported. Right now
         // "motion" for the Simple Motion Component is the only instance.
-        AddVariable(mv_table, mv_asset, "Motion", IVariable::DT_MOTION);
-        AddVariable(mv_table, mv_loop, "Loop");
-        AddVariable(mv_table, mv_timeScale, "Time Scale");
-        AddVariable(mv_table, mv_blendInTime, "Blend In Time");
-        AddVariable(mv_table, mv_blendOutTime, "Blend Out Time");
+        AddVariable(mv_table, mv_asset, QCoreApplication::translate("KeyUIControls", "Motion").toUtf8().constData(), IVariable::DT_MOTION);
+        AddVariable(mv_table, mv_loop, QCoreApplication::translate("KeyUIControls", "Loop").toUtf8().constData());
+        AddVariable(mv_table, mv_timeScale, QCoreApplication::translate("KeyUIControls", "Time Scale").toUtf8().constData());
+        AddVariable(mv_table, mv_blendInTime, QCoreApplication::translate("KeyUIControls", "Blend In Time").toUtf8().constData());
+        AddVariable(mv_table, mv_blendOutTime, QCoreApplication::translate("KeyUIControls", "Blend Out Time").toUtf8().constData());
     }
 
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
@@ -129,12 +130,12 @@ public:
         mv_duration.GetVar()->SetLimits(0, 100000.0f);
         mv_timeStep.GetVar()->SetLimits(0.001f, 1.0f);
 
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_duration, "Duration");
-        AddVariable(mv_table, mv_timeStep, "Time Step");
-        AddVariable(mv_table, mv_prefix, "Output Prefix");
-        AddVariable(mv_table, mv_folder, "Output Folder");
-        AddVariable(mv_table, mv_once, "Just one frame?");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_duration, QCoreApplication::translate("KeyUIControls", "Duration").toUtf8().constData());
+        AddVariable(mv_table, mv_timeStep, QCoreApplication::translate("KeyUIControls", "Time Step").toUtf8().constData());
+        AddVariable(mv_table, mv_prefix, QCoreApplication::translate("KeyUIControls", "Output Prefix").toUtf8().constData());
+        AddVariable(mv_table, mv_folder, QCoreApplication::translate("KeyUIControls", "Output Folder").toUtf8().constData());
+        AddVariable(mv_table, mv_once, QCoreApplication::translate("KeyUIControls", "Just one frame?").toUtf8().constData());
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -172,20 +173,20 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_comment, "Comment");
-        AddVariable(mv_table, mv_duration, "Duration");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_comment, QCoreApplication::translate("KeyUIControls", "Comment").toUtf8().constData());
+        AddVariable(mv_table, mv_duration, QCoreApplication::translate("KeyUIControls", "Duration").toUtf8().constData());
 
         mv_size->SetLimits(1.f, 10.f);
-        AddVariable(mv_table, mv_size, "Size");
+        AddVariable(mv_table, mv_size, QCoreApplication::translate("KeyUIControls", "Size").toUtf8().constData());
 
-        AddVariable(mv_table, mv_color, "Color", IVariable::DT_COLOR);
+        AddVariable(mv_table, mv_color, QCoreApplication::translate("KeyUIControls", "Color").toUtf8().constData(), IVariable::DT_COLOR);
 
         mv_align->SetEnumList(nullptr);
-        mv_align->AddEnumItem("Left", ICommentKey::eTA_Left);
-        mv_align->AddEnumItem("Center", ICommentKey::eTA_Center);
-        mv_align->AddEnumItem("Right", ICommentKey::eTA_Right);
-        AddVariable(mv_table, mv_align, "Align");
+        mv_align->AddEnumItem(QCoreApplication::translate("KeyUIControls", "Left"), ICommentKey::eTA_Left);
+        mv_align->AddEnumItem(QCoreApplication::translate("KeyUIControls", "Center"), ICommentKey::eTA_Center);
+        mv_align->AddEnumItem(QCoreApplication::translate("KeyUIControls", "Right"), ICommentKey::eTA_Right);
+        AddVariable(mv_table, mv_align, QCoreApplication::translate("KeyUIControls", "Align").toUtf8().constData());
 
         mv_font->SetEnumList(nullptr);
         IFileUtil::FileArray fa;
@@ -196,7 +197,7 @@ public:
             PathUtil::RemoveExtension(name);
             mv_font->AddEnumItem(name.c_str(), name.c_str());
         }
-        AddVariable(mv_table, mv_font, "Font");
+        AddVariable(mv_table, mv_font, QCoreApplication::translate("KeyUIControls", "Font").toUtf8().constData());
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -228,8 +229,8 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_command, "Command");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_command, QCoreApplication::translate("KeyUIControls", "Command").toUtf8().constData());
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -266,12 +267,12 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_event, "Event");
-        AddVariable(mv_table, mv_value, "Value");
-        AddVariable(mv_table, mv_notrigger_in_scrubbing, "No trigger in scrubbing");
-        AddVariable(mv_deprecated, "Deprecated");
-        AddVariable(mv_deprecated, mv_animation, "Animation");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_event, QCoreApplication::translate("KeyUIControls", "Event").toUtf8().constData());
+        AddVariable(mv_table, mv_value, QCoreApplication::translate("KeyUIControls", "Value").toUtf8().constData());
+        AddVariable(mv_table, mv_notrigger_in_scrubbing, QCoreApplication::translate("KeyUIControls", "No trigger in scrubbing").toUtf8().constData());
+        AddVariable(mv_deprecated, QCoreApplication::translate("KeyUIControls", "Deprecated").toUtf8().constData());
+        AddVariable(mv_deprecated, mv_animation, QCoreApplication::translate("KeyUIControls", "Animation").toUtf8().constData());
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -305,8 +306,8 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_command, "Goto Time");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_command, QCoreApplication::translate("KeyUIControls", "Goto Time").toUtf8().constData());
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -372,35 +373,36 @@ public:
     //!
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
 
         mv_fadeType->SetEnumList(nullptr);
-        mv_fadeType->AddEnumItem("FadeIn", IScreenFaderKey::eFT_FadeIn);
-        mv_fadeType->AddEnumItem("FadeOut", IScreenFaderKey::eFT_FadeOut);
-        AddVariable(mv_table, mv_fadeType, "Type");
+        mv_fadeType->AddEnumItem(QCoreApplication::translate("KeyUIControls", "FadeIn").toUtf8().constData(), IScreenFaderKey::eFT_FadeIn);
+        mv_fadeType->AddEnumItem(QCoreApplication::translate("KeyUIControls", "FadeOut").toUtf8().constData(), IScreenFaderKey::eFT_FadeOut);
+        AddVariable(mv_table, mv_fadeType, QCoreApplication::translate("KeyUIControls", "Type").toUtf8().constData());
 
         mv_fadechangeType->SetEnumList(nullptr);
-        mv_fadechangeType->AddEnumItem("Linear", IScreenFaderKey::eFCT_Linear);
-        mv_fadechangeType->AddEnumItem("Square", IScreenFaderKey::eFCT_Square);
-        mv_fadechangeType->AddEnumItem("Cubic Square", IScreenFaderKey::eFCT_CubicSquare);
-        mv_fadechangeType->AddEnumItem("Square Root", IScreenFaderKey::eFCT_SquareRoot);
-        mv_fadechangeType->AddEnumItem("Sin", IScreenFaderKey::eFCT_Sin);
-        AddVariable(mv_table, mv_fadechangeType, "ChangeType");
+        mv_fadechangeType->AddEnumItem(QCoreApplication::translate("KeyUIControls", "Linear").toUtf8().constData(), IScreenFaderKey::eFCT_Linear);
+        mv_fadechangeType->AddEnumItem(QCoreApplication::translate("KeyUIControls", "Square").toUtf8().constData(), IScreenFaderKey::eFCT_Square);
+        mv_fadechangeType->AddEnumItem(QCoreApplication::translate("KeyUIControls", "Cubic Square").toUtf8().constData(), IScreenFaderKey::eFCT_CubicSquare);
+        mv_fadechangeType->AddEnumItem(QCoreApplication::translate("KeyUIControls", "Square Root").toUtf8().constData(), IScreenFaderKey::eFCT_SquareRoot);
+        mv_fadechangeType->AddEnumItem(QCoreApplication::translate("KeyUIControls", "Sin").toUtf8().constData(), IScreenFaderKey::eFCT_Sin);
+        AddVariable(mv_table, mv_fadechangeType, QCoreApplication::translate("KeyUIControls", "ChangeType").toUtf8().constData());
 
         // For single CSmartVariable<AZ::Vector3> mv_fadeColor; - with XYZ sub-items, code would be as commented out below:
         //AddVariable(mv_table, mv_fadeColor, "Color", IVariable::DT_COLOR);
         // Forming sub-group for R,G,B floats 
-        AddVariable(mv_fadeColor, mv_fadeColorR, "Red");
-        AddVariable(mv_fadeColor, mv_fadeColorG, "Green");
-        AddVariable(mv_fadeColor, mv_fadeColorB, "Blue");
-        AddVariable(mv_table, mv_fadeColor, "Color");
+        AddVariable(mv_fadeColor, mv_fadeColorR, QCoreApplication::translate("KeyUIControls", "Red").toUtf8().constData());
+        AddVariable(mv_fadeColor, mv_fadeColorG, QCoreApplication::translate("KeyUIControls", "Green").toUtf8().constData());
+        AddVariable(mv_fadeColor, mv_fadeColorB, QCoreApplication::translate("KeyUIControls", "Blue").toUtf8().constData());
+        AddVariable(mv_table, mv_fadeColor, QCoreApplication::translate("KeyUIControls", "Color").toUtf8().constData());
 
         mv_fadeTime->SetLimits(0.f, 100.f);
-        AddVariable(mv_table, mv_fadeTime, "Duration");
-        AddVariable(mv_table, mv_strTexture, "Texture", IVariable::DT_TEXTURE);
-        mv_strTexture.GetVar()->SetDescription("Relative path to an existing texture (.png, .tif, .jpg, ...)");
+        AddVariable(mv_table, mv_fadeTime, QCoreApplication::translate("KeyUIControls", "Duration").toUtf8().constData());
+        AddVariable(mv_table, mv_strTexture, QCoreApplication::translate("KeyUIControls", "Texture").toUtf8().constData(), IVariable::DT_TEXTURE);
+        mv_strTexture.GetVar()->SetDescription(
+            QCoreApplication::translate("KeyUIControls", "Relative path to an existing texture (.png, .tif, .jpg, ...)").toUtf8().constData());
 
-        AddVariable(mv_table, mv_bUseCurColor, "Use Current Color");
+        AddVariable(mv_table, mv_bUseCurColor, QCoreApplication::translate("KeyUIControls", "Use Current Color").toUtf8().constData());
     }
 
     //-----------------------------------------------------------------------------
@@ -447,9 +449,9 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_camera, "Camera");
-        AddVariable(mv_table, mv_BlendTime, "Blend time");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_camera, QCoreApplication::translate("KeyUIControls", "Camera").toUtf8().constData());
+        AddVariable(mv_table, mv_BlendTime, QCoreApplication::translate("KeyUIControls", "Blend time").toUtf8().constData());
 
         Camera::CameraNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
@@ -504,11 +506,11 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_sequence, "Sequence");
-        AddVariable(mv_table, mv_overrideTimes, "Override Start/End Times");
-        AddVariable(mv_table, mv_startTime, "Start Time");
-        AddVariable(mv_table, mv_endTime, "End Time");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_sequence, QCoreApplication::translate("KeyUIControls", "Sequence").toUtf8().constData());
+        AddVariable(mv_table, mv_overrideTimes, QCoreApplication::translate("KeyUIControls", "Override Start/End Times").toUtf8().constData());
+        AddVariable(mv_table, mv_startTime, QCoreApplication::translate("KeyUIControls", "Start Time").toUtf8().constData());
+        AddVariable(mv_table, mv_endTime, QCoreApplication::translate("KeyUIControls", "End Time").toUtf8().constData());
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -548,12 +550,12 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_startTrigger, "StartTrigger", IVariable::DT_AUDIO_TRIGGER);
-        AddVariable(mv_table, mv_stopTrigger, "StopTrigger", IVariable::DT_AUDIO_TRIGGER);
-        AddVariable(mv_table, mv_duration, "Duration");
-        AddVariable(mv_options, "Options");
-        AddVariable(mv_options, mv_customColor, "Custom Color", IVariable::DT_COLOR);
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_startTrigger, QCoreApplication::translate("KeyUIControls", "StartTrigger").toUtf8().constData(), IVariable::DT_AUDIO_TRIGGER);
+        AddVariable(mv_table, mv_stopTrigger, QCoreApplication::translate("KeyUIControls", "StopTrigger").toUtf8().constData(), IVariable::DT_AUDIO_TRIGGER);
+        AddVariable(mv_table, mv_duration, QCoreApplication::translate("KeyUIControls", "Duration").toUtf8().constData());
+        AddVariable(mv_options, QCoreApplication::translate("KeyUIControls", "Options").toUtf8().constData());
+        AddVariable(mv_options, mv_customColor, QCoreApplication::translate("KeyUIControls", "Custom Color").toUtf8().constData(), IVariable::DT_COLOR);
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -588,11 +590,11 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_startTime, "Start Time");
-        AddVariable(mv_table, mv_endTime, "End Time");
-        AddVariable(mv_table, mv_timeScale, "Time Scale");
-        AddVariable(mv_table, mv_bLoop, "Loop");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_startTime, QCoreApplication::translate("KeyUIControls", "Start Time").toUtf8().constData());
+        AddVariable(mv_table, mv_endTime, QCoreApplication::translate("KeyUIControls", "End Time").toUtf8().constData());
+        AddVariable(mv_table, mv_timeScale, QCoreApplication::translate("KeyUIControls", "Time Scale").toUtf8().constData());
+        AddVariable(mv_table, mv_bLoop, QCoreApplication::translate("KeyUIControls", "Loop").toUtf8().constData());
         mv_timeScale->SetLimits(0.001f, 100.f);
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
@@ -625,10 +627,10 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_event, "Track Event");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_event, QCoreApplication::translate("KeyUIControls", "Track Event").toUtf8().constData());
         mv_event->SetFlags(mv_event->GetFlags() | IVariable::UI_UNSORTED);
-        AddVariable(mv_table, mv_value, "Value");
+        AddVariable(mv_table, mv_value, QCoreApplication::translate("KeyUIControls", "Value").toUtf8().constData());
     }
     bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
@@ -657,7 +659,7 @@ private:
 
     static const char* GetAddEventString()
     {
-        static const char* addEventString = "Add a new event...";
+        static const char* addEventString = QT_TRANSLATE_NOOP("KeyUIControls", "Add a new event...");
 
         return addEventString;
     }
@@ -673,8 +675,8 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_value, "Value");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_value, QCoreApplication::translate("KeyUIControls", "Value").toUtf8().constData());
     }
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
     {
@@ -742,10 +744,10 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_x, "X");
-        AddVariable(mv_table, mv_y, "Y");
-        AddVariable(mv_table, mv_z, "Z");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_x, QCoreApplication::translate("KeyUIControls", "X").toUtf8().constData());
+        AddVariable(mv_table, mv_y, QCoreApplication::translate("KeyUIControls", "Y").toUtf8().constData());
+        AddVariable(mv_table, mv_z, QCoreApplication::translate("KeyUIControls", "Z").toUtf8().constData());
     }
 
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
@@ -784,10 +786,10 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_x, "Red");
-        AddVariable(mv_table, mv_y, "Green");
-        AddVariable(mv_table, mv_z, "Blue");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_x, QCoreApplication::translate("KeyUIControls", "Red").toUtf8().constData());
+        AddVariable(mv_table, mv_y, QCoreApplication::translate("KeyUIControls", "Green").toUtf8().constData());
+        AddVariable(mv_table, mv_z, QCoreApplication::translate("KeyUIControls", "Blue").toUtf8().constData());
     }
 
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
@@ -818,11 +820,11 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
         // Names correspond to ZXY order in [Quaternion] <-> [Tait-Bryan angles in Degrees] conversions in <Transform::Rotation> tracks.
-        AddVariable(mv_table, mv_x, "Pitch");
-        AddVariable(mv_table, mv_y, "Roll");
-        AddVariable(mv_table, mv_z, "Yaw");
+        AddVariable(mv_table, mv_x, QCoreApplication::translate("KeyUIControls", "Pitch").toUtf8().constData());
+        AddVariable(mv_table, mv_y, QCoreApplication::translate("KeyUIControls", "Roll").toUtf8().constData());
+        AddVariable(mv_table, mv_z, QCoreApplication::translate("KeyUIControls", "Yaw").toUtf8().constData());
     }
 
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
@@ -861,11 +863,11 @@ public:
 
     void OnCreateVars() override
     {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_x, "X");
-        AddVariable(mv_table, mv_y, "Y");
-        AddVariable(mv_table, mv_z, "Z");
-        AddVariable(mv_table, mv_z, "W");
+        AddVariable(mv_table, QCoreApplication::translate("KeyUIControls", "Key Properties").toUtf8().constData());
+        AddVariable(mv_table, mv_x, QCoreApplication::translate("KeyUIControls", "X").toUtf8().constData());
+        AddVariable(mv_table, mv_y, QCoreApplication::translate("KeyUIControls", "Y").toUtf8().constData());
+        AddVariable(mv_table, mv_z, QCoreApplication::translate("KeyUIControls", "Z").toUtf8().constData());
+        AddVariable(mv_table, mv_z, QCoreApplication::translate("KeyUIControls", "W").toUtf8().constData());
     }
 
     bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override

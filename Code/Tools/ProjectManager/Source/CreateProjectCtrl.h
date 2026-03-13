@@ -27,6 +27,7 @@ namespace O3DE::ProjectManager
     class CreateProjectCtrl
         : public ScreenWidget
     {
+        Q_OBJECT
     public:
         explicit CreateProjectCtrl(DownloadController* downloadController, QWidget* parent = nullptr);
         ~CreateProjectCtrl() = default;

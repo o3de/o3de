@@ -72,8 +72,11 @@ namespace AzToolsFramework::Prefab
 
         AZ_Assert(adapterBuilder != nullptr, "PrefabComponentAdapter: CreateLabel called with null adapterBuilder!");
 
+        // Translate the label text for i18n support
+        AZStd::string translatedLabel = AzToolsFramework::TranslatePropertyString(labelText.data());
+
         adapterBuilder->BeginPropertyEditor<PrefabOverrideLabel>();
-        adapterBuilder->Attribute(PrefabOverrideLabel::Value, labelText);
+        adapterBuilder->Attribute(PrefabOverrideLabel::Value, translatedLabel);
 
         AZ::Dom::Path relativePathFromEntity;
         if (!m_componentAlias.empty() && !serializedPath.empty())

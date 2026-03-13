@@ -33,6 +33,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 
 #include "AtomToolsFramework_Traits_Platform.h"
 
@@ -40,6 +41,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QClipboard>
 #include <QMessageBox>
 #include <QObject>
+#include <QCoreApplication>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
@@ -173,6 +175,9 @@ namespace AtomToolsFramework
 
         Base::StartCommon(systemEntity);
 
+        // Initialize i18n translations for this tool
+        InitializeTranslations();
+
         // Before serializing data to the log file, determine if it should be cleared first.
         const bool clearLogFile = GetSettingsValue("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
 
@@ -245,6 +250,14 @@ namespace AtomToolsFramework
     {
         // Clearing graph canvas clipboard mime data for copied nodes before exiting the application to prevent a crash in qt_call_post_routines
         QApplication::clipboard()->clear();
+
+        // Clean up translator
+        if (m_translator)
+        {
+            removeTranslator(m_translator);
+            delete m_translator;
+            m_translator = nullptr;
+        }
 
         m_assetBrowserInteractions.reset();
         m_styleManager.reset();
@@ -366,10 +379,10 @@ namespace AtomToolsFramework
         {
             QMessageBox::critical(
                 GetToolMainWindow(),
-                QString("Failed to compile critical assets"),
-                QString("Failed to compile the following critical assets:\n%1\n%2")
+                QCoreApplication::translate("AtomToolsApplication", "Failed to compile critical assets"),
+                QCoreApplication::translate("AtomToolsApplication", "Failed to compile the following critical assets:\n%1\n%2")
                 .arg(failedAssets.join(",\n"))
-                .arg("Make sure this is an Atom project."));
+                .arg(QCoreApplication::translate("AtomToolsApplication", "Make sure this is an Atom project.")));
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
 
@@ -705,5 +718,18 @@ namespace AtomToolsFramework
     AtomToolsApplication* AtomToolsApplication::GetInstance()
     {
         return m_instance;
+    }
+
+    void AtomToolsApplication::InitializeTranslations()
+    {
+        // Use TranslationManager to initialize translations for this tool
+        // This uses the cross-process language synchronization system
+        m_translator = AzToolsFramework::TranslationManager::InitializeToolTranslations(
+            QString::fromUtf8(m_targetName.c_str()), this);
+
+        if (m_translator)
+        {
+            AZ_TracePrintf(m_targetName.c_str(), "Translations initialized for %s\n", m_targetName.c_str());
+        }
     }
 } // namespace AtomToolsFramework

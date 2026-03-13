@@ -13,6 +13,8 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <Window/MaterialEditorMainWindow.h>
 
+class QTranslator;
+
 namespace MaterialEditor
 {
     class MaterialEditorApplication
@@ -43,5 +45,8 @@ namespace MaterialEditor
     private:
         AZStd::unique_ptr<MaterialEditorMainWindow> m_window;
         AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
+        QTranslator* m_atomToolsFrameworkTranslator = nullptr;
+        QTranslator* m_materialEditorTranslator = nullptr;
+        QTranslator* m_materialPropertyTranslator = nullptr;
     };
 } // namespace MaterialEditor

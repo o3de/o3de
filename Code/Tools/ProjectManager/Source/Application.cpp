@@ -16,6 +16,7 @@
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 #include <ProjectManager_Traits_Platform.h>
 
 #include <QApplication>
@@ -23,6 +24,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QIcon>
+#include <QCoreApplication>
 
 #if defined(EXTERNAL_CRASH_REPORTING)
 #include <ToolsCrashHandler.h>
@@ -71,6 +73,7 @@ namespace O3DE::ProjectManager
         // Create the actual Qt Application - this needs to happen before using QMessageBox
         m_app.reset(new QApplication(*GetArgC(), *GetArgV()));
 
+        AzToolsFramework::TranslationManager::InitializeToolTranslations("ProjectManager", m_app.get());
         if(!InitLog(applicationName))
         {
             AZ_Warning("ProjectManager", false, "Failed to init logging");
@@ -99,8 +102,8 @@ namespace O3DE::ProjectManager
         {
             if (interactive)
             {
-                QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
-                QObject::tr("This tool requires an O3DE engine with a Python runtime, "
+                QMessageBox::critical(nullptr, QCoreApplication::translate("ProjectManagerApplication", "Failed to start Python"),
+                QCoreApplication::translate("ProjectManagerApplication", "This tool requires an O3DE engine with a Python runtime, "
                             "but was unable to automatically install O3DE's built-in Python."
                             "You can troubleshoot this issue by trying to manually install O3DE's built-in "
                             "Python by running the '%1' script.")
@@ -178,8 +181,8 @@ namespace O3DE::ProjectManager
             if (interactive)
             {
                 QMessageBox::critical(nullptr,
-                    QObject::tr("Failed to get engine info"),
-                    QObject::tr("A valid engine.json could not be found or loaded. "
+                    QCoreApplication::translate("ProjectManagerApplication", "Failed to get engine info"),
+                    QCoreApplication::translate("ProjectManagerApplication", "A valid engine.json could not be found or loaded. "
                                 "Please verify a valid engine.json file exists in %1")
                     .arg(GetEngineRoot()));
             }
@@ -202,7 +205,7 @@ namespace O3DE::ProjectManager
         {
             if (interactive)
             {
-                ProjectUtils::DisplayDetailedError(QObject::tr("Failed to register engine"), registerOutcome);
+                ProjectUtils::DisplayDetailedError(QCoreApplication::translate("ProjectManagerApplication", "Failed to register engine"), registerOutcome);
             }
             
             AZ_Error("Project Manager", false, "Failed to register engine %s : %s",

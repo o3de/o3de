@@ -27,6 +27,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 #include <AzToolsFramework/UI/LegacyFramework/CustomMenus/CustomMenusAPI.h>
 #include <AzToolsFramework/UI/LegacyFramework/MainWindowSavedState.h>
@@ -58,9 +59,11 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QLabel>
+#include <QLocale>
 #include <QMessageBox>
 #include <QString>
 #include <QTimer>
+#include <QTranslator>
 
 void initSharedResources()
 {
@@ -94,6 +97,12 @@ namespace LUAEditor
         AzQtComponents::StyleManager* m_styleSheet = new AzQtComponents::StyleManager(this);
         m_styleSheet->initialize(qApp, engineRootPath);
 
+        // Load translations before setupUi() so all UI strings are translated.
+        // Uses the centralized TranslationManager for cross-process language synchronization.
+        AzToolsFramework::TranslationManager::InitializeToolTranslations("LuaIDE", qApp);
+        AzToolsFramework::TranslationManager::InitializeToolTranslations("AzToolsFramework", qApp);
+        AzToolsFramework::TranslationManager::InitializeToolTranslations("AzQtComponents", qApp);
+
         LUAViewMessages::Bus::Handler::BusConnect();
 
         //m_currentTabContextMenuUUID = AZ::Uuid::CreateNull();
@@ -105,7 +114,7 @@ namespace LUAEditor
 
         QMenu* theMenu = new QMenu(this);
         (void)theMenu->addAction(
-            "Close Lua Editor App", QKeySequence("Alt+F4"),
+            tr("Close Lua Editor App"), QKeySequence("Alt+F4"),
             this,
             SLOT(OnMenuCloseCurrentWindow())
             );
@@ -350,7 +359,7 @@ namespace LUAEditor
 
         m_gui->menuOpenRecent->addSeparator();
 
-        m_actionClearRecentFiles = new QAction("Clear Recent Files", this);
+        m_actionClearRecentFiles = new QAction(tr("Clear Recent Files"), this);
 
         connect(
             m_actionClearRecentFiles,
@@ -681,7 +690,7 @@ namespace LUAEditor
         }
 
         QMenu menu(this);
-        menu.addAction("Close All Except This", this, SLOT(closeAllTabsExceptThisTabContextMenu()));
+        menu.addAction(tr("Close All Except This"), this, SLOT(closeAllTabsExceptThisTabContextMenu()));
         menu.exec(emitter->mapToGlobal(pos));
     }
 
@@ -1064,7 +1073,7 @@ namespace LUAEditor
             viewInfo.luaViewWidget()->IsModified())
         {
             QMessageBox msgBox;
-            msgBox.setText("This file has been modified.\nDo you really want to Reload and lose changes?");
+            msgBox.setText(tr("This file has been modified.\nDo you really want to Reload and lose changes?"));
             msgBox.setInformativeText(currentView->m_Info.m_assetName.c_str());
             msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
             msgBox.setDefaultButton(QMessageBox::Cancel);
@@ -1482,7 +1491,7 @@ namespace LUAEditor
         if (currentView->IsReadOnly())
         {
             QMessageBox msgBox;
-            msgBox.setText("Checkout This File To Edit?");
+            msgBox.setText(tr("Checkout This File To Edit?"));
             msgBox.setInformativeText(currentView->m_Info.m_assetName.c_str());
             msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
             msgBox.setDefaultButton(QMessageBox::Cancel);
@@ -1599,7 +1608,7 @@ namespace LUAEditor
         if (!SyncDocumentToContext(m_lastFocusedAssetId))
         {
             AZ_Warning(LUAEditorDebugName, false, "Could not sync doc data before checkout, data may be lost.");
-            QMessageBox::warning(this, "Error!", "Could not sync document before checkout!");
+            QMessageBox::warning(this, tr("Error!"), tr("Could not sync document before checkout!"));
             return;
         }
 
@@ -1734,7 +1743,7 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::OnLogTabsReset()
     {
-        m_gui->m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Lua Editor", "Lua Editor", ""));
+        m_gui->m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings(tr("Lua Editor").toUtf8().constData(), "Lua Editor", ""));
     }
 
     void LUAEditorMainWindow::RestoreWindowState() // call this after you have rebuilt everything.

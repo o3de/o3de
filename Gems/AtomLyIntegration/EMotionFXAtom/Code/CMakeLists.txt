@@ -57,6 +57,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ${gem_name}.Editor GEM_MODULE
 
         NAMESPACE Gem
+        AUTOMOC
         AUTORCC
         FILES_CMAKE
             emotionfx_atom_editor_files.cmake

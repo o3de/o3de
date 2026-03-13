@@ -6,6 +6,8 @@
  *
  */
 
+#include <QCoreApplication>
+
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/AlignmentMenuActions/AlignmentContextMenuActions.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
@@ -34,7 +36,7 @@ namespace GraphCanvas
     
     AZStd::string AlignSelectionMenuAction::GetSubMenuPath() const
     {
-        return "Align";
+        return QCoreApplication::translate("AlignSelectionMenuAction", "Align").toUtf8().constData();
     }
     
     ContextMenuAction::SceneReaction AlignSelectionMenuAction::TriggerAction(const AZ::Vector2& /*scenePos*/)

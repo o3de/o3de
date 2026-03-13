@@ -36,6 +36,7 @@ namespace O3DE::ProjectManager
     class ProjectsScreen
         : public ScreenWidget
     {
+        Q_OBJECT
 
     public:
         explicit ProjectsScreen(DownloadController* downloadController, QWidget* parent = nullptr);

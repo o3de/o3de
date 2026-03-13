@@ -27,6 +27,23 @@ namespace AZ::NativeUI
         ENABLED,
     };
 
+    //! Result of DisplayOkDialog
+    enum class OkDialogResult
+    {
+        OK,
+        Cancel,
+        None, //!< Dialog was disabled or unavailable
+    };
+
+    //! Result of DisplayYesNoDialog
+    enum class YesNoDialogResult
+    {
+        Yes,
+        No,
+        Cancel,
+        None, //!< Dialog was disabled or unavailable
+    };
+
     class NativeUIRequests
     {
     public:
@@ -44,23 +61,23 @@ namespace AZ::NativeUI
         }
 
         //! Waits for user to select an option ('Ok' or optionally 'Cancel') before execution continues
-        //! Returns the option string selected by the user
-        virtual AZStd::string DisplayOkDialog(
+        //! Returns an OkDialogResult enum indicating the user's choice
+        virtual OkDialogResult DisplayOkDialog(
             [[maybe_unused]] const AZStd::string& title,
             [[maybe_unused]] const AZStd::string& message,
             [[maybe_unused]] bool showCancel) const
         {
-            return {};
+            return OkDialogResult::None;
         }
 
         //! Waits for user to select an option ('Yes', 'No' or optionally 'Cancel') before execution continues
-        //! Returns the option string selected by the user
-        virtual AZStd::string DisplayYesNoDialog(
+        //! Returns a YesNoDialogResult enum indicating the user's choice
+        virtual YesNoDialogResult DisplayYesNoDialog(
             [[maybe_unused]] const AZStd::string& title,
             [[maybe_unused]] const AZStd::string& message,
             [[maybe_unused]] bool showCancel) const
         {
-            return {};
+            return YesNoDialogResult::None;
         }
 
         //! Displays an assert dialog box
