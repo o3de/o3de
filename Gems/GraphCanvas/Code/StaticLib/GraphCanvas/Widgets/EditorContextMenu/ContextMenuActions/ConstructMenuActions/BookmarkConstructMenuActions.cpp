@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <QCoreApplication>
+
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/BookmarkConstructMenuActions.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
@@ -18,6 +20,7 @@ namespace GraphCanvas
     AddBookmarkMenuAction::AddBookmarkMenuAction(QObject* parent)
         : ConstructContextMenuAction("Add bookmark", parent)
     {
+        setText(QCoreApplication::translate("AddBookmarkMenuAction", "Add bookmark"));
     }
 
     ContextMenuAction::SceneReaction AddBookmarkMenuAction::TriggerAction(const AZ::Vector2& scenePos)

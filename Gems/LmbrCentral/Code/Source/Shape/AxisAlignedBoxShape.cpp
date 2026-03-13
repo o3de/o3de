@@ -19,6 +19,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Shape/ShapeDisplay.h>
 #include <random>
 
@@ -39,7 +40,9 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<AxisAlignedBoxShape>("Axis Aligned Box Shape", "Axis Aligned Box shape configuration parameters")
+                editContext->Class<AxisAlignedBoxShape>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Axis Aligned Box Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Axis Aligned Box shape configuration parameters"))
                 ;
             }
         }

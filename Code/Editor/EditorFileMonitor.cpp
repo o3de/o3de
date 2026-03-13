@@ -201,7 +201,7 @@ void CEditorFileMonitor::OnFileMonitorChange(const SFileChangeInfo& rChange)
                 {
                     if (AZ::IO::PathView(sCallback.item.toUtf8().constData()) == projectRelativeFilePath)
                     {
-                        sCallback.pListener->OnFileChange(qPrintable(projectRelativeFilePath.c_str()), IFileChangeListener::EChangeType(rChange.changeType));
+                        sCallback.pListener->OnFileChange(qUtf8Printable(projectRelativeFilePath.c_str()), IFileChangeListener::EChangeType(rChange.changeType));
                     }
                 }
             }

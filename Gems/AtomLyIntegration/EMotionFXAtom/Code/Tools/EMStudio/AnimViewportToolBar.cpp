@@ -10,6 +10,8 @@
 #include <QPushButton>
 #include <QActionGroup>
 #include <QMenu>
+#include <QPair>
+#include <QVector>
 #include <QSettings>
 #include <EMStudio/AtomRenderPlugin.h>
 #include <EMStudio/AnimViewportToolBar.h>
@@ -31,9 +33,9 @@ namespace EMStudio
         QActionGroup* manipulatorGroup = new QActionGroup(this);
         manipulatorGroup->setExclusive(true);
         manipulatorGroup->setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional);
-        m_manipulatorActions[RenderOptions::TRANSLATE] = addAction(QIcon(":/EMotionFXAtom/Translate.svg"), "Translate");
-        m_manipulatorActions[RenderOptions::ROTATE] = addAction(QIcon(":/EMotionFXAtom/Rotate.svg"), "Rotate");
-        m_manipulatorActions[RenderOptions::SCALE] = addAction(QIcon(":/EMotionFXAtom/Scale.svg"), "Scale");
+        m_manipulatorActions[RenderOptions::TRANSLATE] = addAction(QIcon(":/EMotionFXAtom/Translate.svg"), tr("Translate"));
+        m_manipulatorActions[RenderOptions::ROTATE] = addAction(QIcon(":/EMotionFXAtom/Rotate.svg"), tr("Rotate"));
+        m_manipulatorActions[RenderOptions::SCALE] = addAction(QIcon(":/EMotionFXAtom/Scale.svg"), tr("Scale"));
         for (size_t i = RenderOptions::ManipulatorMode::TRANSLATE; i < RenderOptions::ManipulatorMode::NUM_MODES; ++i)
         {
             m_manipulatorActions[i]->setCheckable(true);
@@ -55,47 +57,47 @@ namespace EMStudio
         {
             QMenu* contextMenu = new QMenu(renderOptionsButton);
 
-            renderOptionsButton->setText("Render Options");
+            renderOptionsButton->setText(tr("Render Options"));
             renderOptionsButton->setMenu(contextMenu);
             renderOptionsButton->setPopupMode(QToolButton::InstantPopup);
             renderOptionsButton->setVisible(true);
             renderOptionsButton->setIcon(QIcon(":/EMotionFXAtom/Visualization.svg"));
             addWidget(renderOptionsButton);
 
-            CreateViewOptionEntry(contextMenu, "Solid", EMotionFX::ActorRenderFlagIndex::SOLID);
-            CreateViewOptionEntry(contextMenu, "Wireframe", EMotionFX::ActorRenderFlagIndex::WIREFRAME);
+            CreateViewOptionEntry(contextMenu, tr("Solid"), EMotionFX::ActorRenderFlagIndex::SOLID);
+            CreateViewOptionEntry(contextMenu, tr("Wireframe"), EMotionFX::ActorRenderFlagIndex::WIREFRAME);
             // [EMFX-TODO] Add those option once implemented.
-            // CreateViewOptionEntry(contextMenu, "Lighting", EMotionFX::ActorRenderFlagIndex::RENDER_LIGHTING);
-            // CreateViewOptionEntry(contextMenu, "Backface Culling", EMotionFX::ActorRenderFlagIndex::RENDER_BACKFACECULLING);
+            // CreateViewOptionEntry(contextMenu, tr("Lighting"), EMotionFX::ActorRenderFlagIndex::RENDER_LIGHTING);
+            // CreateViewOptionEntry(contextMenu, tr("Backface Culling"), EMotionFX::ActorRenderFlagIndex::RENDER_BACKFACECULLING);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Vertex Normals", EMotionFX::ActorRenderFlagIndex::VERTEXNORMALS);
-            CreateViewOptionEntry(contextMenu, "Face Normals", EMotionFX::ActorRenderFlagIndex::FACENORMALS);
-            CreateViewOptionEntry(contextMenu, "Tangents", EMotionFX::ActorRenderFlagIndex::TANGENTS);
-            CreateViewOptionEntry(contextMenu, "Actor Bounding Boxes", EMotionFX::ActorRenderFlagIndex::AABB);
+            CreateViewOptionEntry(contextMenu, tr("Vertex Normals"), EMotionFX::ActorRenderFlagIndex::VERTEXNORMALS);
+            CreateViewOptionEntry(contextMenu, tr("Face Normals"), EMotionFX::ActorRenderFlagIndex::FACENORMALS);
+            CreateViewOptionEntry(contextMenu, tr("Tangents"), EMotionFX::ActorRenderFlagIndex::TANGENTS);
+            CreateViewOptionEntry(contextMenu, tr("Actor Bounding Boxes"), EMotionFX::ActorRenderFlagIndex::AABB);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Line Skeleton", EMotionFX::ActorRenderFlagIndex::LINESKELETON);
-            CreateViewOptionEntry(contextMenu, "Solid Skeleton", EMotionFX::ActorRenderFlagIndex::SKELETON);
-            CreateViewOptionEntry(contextMenu, "Joint Names", EMotionFX::ActorRenderFlagIndex::NODENAMES);
-            CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlagIndex::NODEORIENTATION);
+            CreateViewOptionEntry(contextMenu, tr("Line Skeleton"), EMotionFX::ActorRenderFlagIndex::LINESKELETON);
+            CreateViewOptionEntry(contextMenu, tr("Solid Skeleton"), EMotionFX::ActorRenderFlagIndex::SKELETON);
+            CreateViewOptionEntry(contextMenu, tr("Joint Names"), EMotionFX::ActorRenderFlagIndex::NODENAMES);
+            CreateViewOptionEntry(contextMenu, tr("Joint Orientations"), EMotionFX::ActorRenderFlagIndex::NODEORIENTATION);
             // [EMFX-TODO] Add those option once implemented.
-            // CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlagIndex::RENDER_ACTORBINDPOSE);
+            // CreateViewOptionEntry(contextMenu, tr("Actor Bind Pose"), EMotionFX::ActorRenderFlagIndex::RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlagIndex::HITDETECTION_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, tr("Hit Detection Colliders"), EMotionFX::ActorRenderFlagIndex::HITDETECTION_COLLIDERS, true,
                 ":/EMotionFXAtom/HitDetection.svg");
-            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlagIndex::RAGDOLL_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, tr("Ragdoll Colliders"), EMotionFX::ActorRenderFlagIndex::RAGDOLL_COLLIDERS, true,
                 ":/EMotionFXAtom/RagdollCollider.svg");
-            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlagIndex::RAGDOLL_JOINTLIMITS, true,
+            CreateViewOptionEntry(contextMenu, tr("Ragdoll Joint Limits"), EMotionFX::ActorRenderFlagIndex::RAGDOLL_JOINTLIMITS, true,
                 ":/EMotionFXAtom/RagdollJointLimit.svg");
-            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlagIndex::CLOTH_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, tr("Cloth Colliders"), EMotionFX::ActorRenderFlagIndex::CLOTH_COLLIDERS, true,
                 ":/EMotionFXAtom/Cloth.svg");
-            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlagIndex::SIMULATEDOBJECT_COLLIDERS, true,
+            CreateViewOptionEntry(contextMenu, tr("Simulated Object Colliders"), EMotionFX::ActorRenderFlagIndex::SIMULATEDOBJECT_COLLIDERS, true,
                 ":/EMotionFXAtom/SimulatedObjectCollider.svg");
-            CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlagIndex::SIMULATEJOINTS);
+            CreateViewOptionEntry(contextMenu, tr("Simulated Joints"), EMotionFX::ActorRenderFlagIndex::SIMULATEJOINTS);
 
             contextMenu->addSeparator();
-            CreateViewOptionEntry(contextMenu, "Motion Extraction", EMotionFX::ActorRenderFlagIndex::MOTIONEXTRACTION);
-            CreateViewOptionEntry(contextMenu, "Root Motion", EMotionFX::ActorRenderFlagIndex::ROOTMOTION);
-            CreateViewOptionEntry(contextMenu, "Debug Rendering", EMotionFX::ActorRenderFlagIndex::EMFX_DEBUG);
+            CreateViewOptionEntry(contextMenu, tr("Motion Extraction"), EMotionFX::ActorRenderFlagIndex::MOTIONEXTRACTION);
+            CreateViewOptionEntry(contextMenu, tr("Root Motion"), EMotionFX::ActorRenderFlagIndex::ROOTMOTION);
+            CreateViewOptionEntry(contextMenu, tr("Debug Rendering"), EMotionFX::ActorRenderFlagIndex::EMFX_DEBUG);
         }
 
         // Add the camera button
@@ -104,20 +106,20 @@ namespace EMStudio
             QMenu* cameraMenu = new QMenu(cameraButton);
 
             // Add the camera option
-            const AZStd::vector<AZStd::pair<RenderOptions::CameraViewMode, AZStd::string>> cameraOptionNames = {
-                { RenderOptions::CameraViewMode::FRONT, "Front" },
-                { RenderOptions::CameraViewMode::BACK, "Back" },
-                { RenderOptions::CameraViewMode::TOP, "Top" },
-                { RenderOptions::CameraViewMode::BOTTOM, "Bottom" },
-                { RenderOptions::CameraViewMode::LEFT, "Left" },
-                { RenderOptions::CameraViewMode::RIGHT, "Right" },
+            const QVector<QPair<RenderOptions::CameraViewMode, QString>> cameraOptionNames = {
+                { RenderOptions::CameraViewMode::FRONT, tr("Front") },
+                { RenderOptions::CameraViewMode::BACK, tr("Back") },
+                { RenderOptions::CameraViewMode::TOP, tr("Top") },
+                { RenderOptions::CameraViewMode::BOTTOM, tr("Bottom") },
+                { RenderOptions::CameraViewMode::LEFT, tr("Left") },
+                { RenderOptions::CameraViewMode::RIGHT, tr("Right") },
             };
 
             for (const auto& pair : cameraOptionNames)
             {
                 RenderOptions::CameraViewMode mode = pair.first;
                 cameraMenu->addAction(
-                    pair.second.c_str(),
+                    pair.second,
                     [this, mode]()
                     {
                         m_plugin->GetRenderOptions()->SetCameraViewMode(mode);
@@ -127,7 +129,7 @@ namespace EMStudio
 
             cameraMenu->addSeparator();
             cameraMenu->addAction(
-                "Reset Camera",
+                tr("Reset Camera"),
                 [this]()
                 {
                     m_plugin->GetRenderOptions()->SetCameraViewMode(RenderOptions::CameraViewMode::DEFAULT);
@@ -136,7 +138,7 @@ namespace EMStudio
                 });
 
             cameraMenu->addSeparator();
-            m_followCharacterAction = cameraMenu->addAction("Follow Character");
+            m_followCharacterAction = cameraMenu->addAction(tr("Follow Character"));
             m_followCharacterAction->setCheckable(true);
             m_followCharacterAction->setChecked(false);
             connect(m_followCharacterAction, &QAction::triggered, this,
@@ -155,7 +157,7 @@ namespace EMStudio
                 });
 
             cameraButton->setMenu(cameraMenu);
-            cameraButton->setText("Camera Option");
+            cameraButton->setText(tr("Camera Option"));
             cameraButton->setPopupMode(QToolButton::InstantPopup);
             cameraButton->setVisible(true);
             cameraButton->setIcon(QIcon(":/EMotionFXAtom/Camera_category.svg"));
@@ -170,7 +172,7 @@ namespace EMStudio
     }
 
     void AnimViewportToolBar::CreateViewOptionEntry(
-        QMenu* menu, const char* menuEntryName, AZ::u8 actionIndex, bool visible, const char* iconFileName)
+        QMenu* menu, const QString& menuEntryName, AZ::u8 actionIndex, bool visible, const char* iconFileName)
     {
         QAction* action = menu->addAction(
             menuEntryName,

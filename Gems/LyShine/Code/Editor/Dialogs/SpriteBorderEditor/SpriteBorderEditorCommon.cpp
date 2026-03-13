@@ -8,6 +8,7 @@
 #include "SpriteBorderEditorCommon.h"
 
 #include <LyShine/ISprite.h>
+#include <QCoreApplication>
 
 bool IsBorderVertical(SpriteBorder border)
 {
@@ -90,19 +91,19 @@ const char* SpriteBorderToString(SpriteBorder b)
 {
     if (b == SpriteBorder::Top)
     {
-        return "Top";
+        return QT_TR_NOOP("Top");
     }
     else if (b == SpriteBorder::Bottom)
     {
-        return "Bottom";
+        return QT_TR_NOOP("Bottom");
     }
     else if (b == SpriteBorder::Left)
     {
-        return "Left";
+        return QT_TR_NOOP("Left");
     }
     else if (b == SpriteBorder::Right)
     {
-        return "Right";
+        return QT_TR_NOOP("Right");
     }
     else
     {

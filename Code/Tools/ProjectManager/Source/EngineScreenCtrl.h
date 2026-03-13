@@ -21,6 +21,8 @@ namespace O3DE::ProjectManager
     class EngineScreenCtrl
         : public ScreenWidget
     {
+        Q_OBJECT
+
     public:
         explicit EngineScreenCtrl(QWidget* parent = nullptr);
         ~EngineScreenCtrl() = default;
@@ -35,6 +37,7 @@ namespace O3DE::ProjectManager
     public slots:
         void TabChanged(int index);
 
+    private:
         QTabWidget* m_tabWidget = nullptr;
         EngineSettingsScreen* m_engineSettingsScreen = nullptr;
         GemRepoScreen* m_gemRepoScreen = nullptr;

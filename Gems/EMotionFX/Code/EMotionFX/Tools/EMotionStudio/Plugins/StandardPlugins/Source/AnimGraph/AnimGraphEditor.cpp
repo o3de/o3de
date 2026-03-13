@@ -79,7 +79,7 @@ namespace EMotionFX
         motionSetLayout->setSpacing(0);
         vLayout->addLayout(motionSetLayout);
 
-        QLabel* motionSetLabel = new QLabel("Preview with");
+        QLabel* motionSetLabel = new QLabel(tr("Preview with"));
         motionSetLayout->addWidget(motionSetLabel);
         motionSetLabel->setFixedWidth(120);
 

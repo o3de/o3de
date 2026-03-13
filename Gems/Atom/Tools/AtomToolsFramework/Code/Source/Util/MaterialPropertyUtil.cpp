@@ -23,6 +23,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <QCoreApplication>
 
 namespace AtomToolsFramework
 {
@@ -39,8 +40,11 @@ namespace AtomToolsFramework
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertySourceData& propertyDefinition)
     {
         propertyConfig.m_name = propertyDefinition.GetName();
-        propertyConfig.m_displayName = propertyDefinition.m_displayName;
-        propertyConfig.m_description = propertyDefinition.m_description;
+        // Translate displayName and description for material properties i18n support
+        propertyConfig.m_displayName = QCoreApplication::translate(
+            "PropertyInspector", propertyDefinition.m_displayName.c_str()).toUtf8().constData();
+        propertyConfig.m_description = QCoreApplication::translate(
+            "PropertyInspector", propertyDefinition.m_description.c_str()).toUtf8().constData();
         propertyConfig.m_defaultValue = ConvertToEditableType(propertyDefinition.m_value);
         propertyConfig.m_min = ConvertToEditableType(propertyDefinition.m_min);
         propertyConfig.m_max = ConvertToEditableType(propertyDefinition.m_max);

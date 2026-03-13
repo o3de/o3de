@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/ObjectStream.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Utilities/CidrAddress.h>
@@ -40,7 +41,9 @@ namespace RemoteTools
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<RemoteToolsSystemComponent>("RemoteTools", "[Description of functionality provided by this System Component]")
+                ec->Class<RemoteToolsSystemComponent>(
+                    QT_TRANSLATE_NOOP("RemoteTools", "RemoteTools"),
+                    QT_TRANSLATE_NOOP("RemoteTools", "[Description of functionality provided by this System Component]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

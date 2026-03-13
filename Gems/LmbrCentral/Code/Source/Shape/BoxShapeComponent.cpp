@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Shape/ShapeComponentConverters.h>
 #include <Shape/ShapeDisplay.h>
 
@@ -118,15 +119,21 @@ namespace LmbrCentral
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<BoxShapeConfig>("Configuration", "Box shape configuration parameters")
+                editContext->Class<BoxShapeConfig>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Box shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Shape Configuration")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_dimensions, "Dimensions", "Dimensions of the box along its axes")
+                        AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_dimensions,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Dimensions"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Dimensions of the box along its axes"))
                     ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_translationOffset, "Translation Offset", "Translation offset of shape relative to its entity")
+                        AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_translationOffset,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Translation Offset"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Translation offset of shape relative to its entity"))
                     ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.05f);
             }

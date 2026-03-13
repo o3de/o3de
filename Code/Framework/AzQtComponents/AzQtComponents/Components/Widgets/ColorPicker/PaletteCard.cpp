@@ -195,7 +195,7 @@ QuickPaletteCard::QuickPaletteCard(QSharedPointer<Palette> palette, Internal::Co
 {
     m_paletteView->addDefaultRGBColors();
     
-    m_header->setTitle("Quick Palette");
+    m_header->setTitle(tr("Quick Palette"));
 
     connect(m_paletteView, &PaletteView::selectedColorsChanged, this, &QuickPaletteCard::selectedColorsChanged);
 }

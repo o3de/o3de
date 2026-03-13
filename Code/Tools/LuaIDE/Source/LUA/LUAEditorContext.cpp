@@ -39,6 +39,7 @@
 #include <Source/LUA/LUALocalsTrackerMessages.h>
 
 #include <QMessageBox>
+#include <QCoreApplication>
 #include <regex>
 
 #include "LUAEditorContextInterface.h"
@@ -475,11 +476,11 @@ namespace LUAEditor
             {
                 // we may have unsaved changes:
                 QMessageBox msgBox(this->m_pLUAEditorMainWindow);
-                msgBox.setText("A file has been modified by an outside program. Would you like to reload it from disk? If you do, you will lose any unsaved changes.");
+                msgBox.setText(QCoreApplication::translate("LUAEditorContext", "A file has been modified by an outside program. Would you like to reload it from disk? If you do, you will lose any unsaved changes."));
                 msgBox.setInformativeText(info.m_assetName.c_str());
                 msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-                msgBox.setButtonText(QMessageBox::Yes, "Reload From Disk");
-                msgBox.setButtonText(QMessageBox::No, "Don't reload");
+                msgBox.setButtonText(QMessageBox::Yes, QCoreApplication::translate("LUAEditorContext", "Reload From Disk"));
+                msgBox.setButtonText(QMessageBox::No, QCoreApplication::translate("LUAEditorContext", "Don't reload"));
                 msgBox.setDefaultButton(QMessageBox::No);
                 msgBox.setIcon(QMessageBox::Question);
                 shouldReload = (msgBox.exec() == QMessageBox::Yes);
@@ -1431,7 +1432,7 @@ namespace LUAEditor
 
             QMessageBox msgBox(m_pLUAEditorMainWindow);
             msgBox.setModal(true);
-            msgBox.setText("File not found");
+            msgBox.setText(QCoreApplication::translate("LUAEditorContext", "File not found"));
             msgBox.setInformativeText(physicalPath);
             msgBox.setStandardButtons(QMessageBox::Ok);
             msgBox.setDefaultButton(QMessageBox::Ok);
@@ -1487,7 +1488,7 @@ namespace LUAEditor
                 AZ_Warning(LUAEditorInfoName, false, AZStd::string::format("<span severity=\"err\">Could not open the file, file not found: '%s'</span>", assetId.c_str()).c_str());
                 QMessageBox msgBox(m_pLUAEditorMainWindow);
                 msgBox.setModal(true);
-                msgBox.setText("File not found");
+                msgBox.setText(QCoreApplication::translate("LUAEditorContext", "File not found"));
                 msgBox.setStandardButtons(QMessageBox::Ok);
                 msgBox.setDefaultButton(QMessageBox::Ok);
                 msgBox.setIcon(QMessageBox::Critical);

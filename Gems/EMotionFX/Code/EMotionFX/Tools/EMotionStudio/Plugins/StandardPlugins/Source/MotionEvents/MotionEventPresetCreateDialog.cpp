@@ -23,7 +23,7 @@ namespace EMStudio
         , m_preset(preset)
         , m_eventDataEditor(nullptr, nullptr, &m_preset.GetEventDatas(), this)
     {
-        setWindowTitle("Motion Event Preset Creation");
+        setWindowTitle(tr("Motion Event Preset Creation"));
         AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
@@ -56,7 +56,7 @@ namespace EMStudio
     {
         if (m_preset.GetName().empty())
         {
-            QMessageBox::critical(this, "Missing Information", "Please enter at least preset name.");
+            QMessageBox::critical(this, tr("Missing Information"), tr("Please enter at least preset name."));
             return;
         }
 

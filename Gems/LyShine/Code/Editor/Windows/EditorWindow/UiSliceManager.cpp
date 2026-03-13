@@ -70,8 +70,8 @@ UiSliceManager::~UiSliceManager()
 void UiSliceManager::OnSliceInstantiationFailed(const AZ::Data::AssetId&, const AzFramework::SliceInstantiationTicket&)
 {
     QMessageBox::warning(QApplication::activeWindow(),
-        QStringLiteral("Cannot Instantiate UI Slice"),
-        QString("Slice cannot be instantiated. Check that it is a slice containing UI elements."),
+        QObject::tr("Cannot Instantiate UI Slice"),
+        QObject::tr("Slice cannot be instantiated. Check that it is a slice containing UI elements."),
         QMessageBox::Ok);
 }
 
@@ -196,12 +196,12 @@ bool UiSliceManager::MakeNewSlice(
 
         if (hasExternalReferences)
         {
-            const AZStd::string message = AZStd::string::format(
+            const QString message = QObject::tr(
                 "Some of the selected entities reference entities not contained in the selection and its children.\n"
                 "UI slices cannot contain references to outside of the slice.\n");
 
-            QMessageBox::warning(activeWindow, QStringLiteral("Create Slice"),
-                QString(message.c_str()), QMessageBox::Ok);
+            QMessageBox::warning(activeWindow, QObject::tr("Create Slice"),
+                message, QMessageBox::Ok);
 
             return false;
         }
@@ -218,8 +218,8 @@ bool UiSliceManager::MakeNewSlice(
         if (!commonParent)
         {
             QMessageBox::warning(activeWindow,
-                QStringLiteral("Cannot Create UI Slice"),
-                QString("The slice cannot be created because there is no single element in the selection that is parent "
+                QObject::tr("Cannot Create UI Slice"),
+                QObject::tr("The slice cannot be created because there is no single element in the selection that is parent "
                     "to all other elements in the selection."
                     "Please make sure your slice contains only one root entity.\n\n"
                     "You may want to create a new entity, and assign it as the parent of your existing root entities."),
@@ -275,7 +275,7 @@ bool UiSliceManager::MakeNewSlice(
                 SliceTransaction::Result addResult = transaction->AddEntity(entityId, !inheritSlices ? SliceTransaction::SliceAddEntityFlags::DiscardSliceAncestry : 0);
                 if (!addResult)
                 {
-                    QMessageBox::warning(activeWindow, QStringLiteral("Slice Save Failed"),
+                    QMessageBox::warning(activeWindow, QObject::tr("Slice Save Failed"),
                         QString(addResult.GetError().c_str()), QMessageBox::Ok);
                     return false;
                 }
@@ -290,7 +290,7 @@ bool UiSliceManager::MakeNewSlice(
 
         if (!result)
         {
-            QMessageBox::warning(activeWindow, QStringLiteral("Slice Save Failed"),
+            QMessageBox::warning(activeWindow, QObject::tr("Slice Save Failed"),
                 QString(result.GetError().c_str()), QMessageBox::Ok);
             return false;
         }

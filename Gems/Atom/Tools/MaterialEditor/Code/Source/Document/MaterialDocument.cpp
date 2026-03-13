@@ -25,6 +25,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Document/MaterialDocument.h>
 
+#include <QCoreApplication>
+
 namespace MaterialEditor
 {
     void MaterialDocument::Reflect(AZ::ReflectContext* context)
@@ -143,14 +145,14 @@ namespace MaterialEditor
     AtomToolsFramework::DocumentTypeInfo MaterialDocument::BuildDocumentTypeInfo()
     {
         AtomToolsFramework::DocumentTypeInfo documentType;
-        documentType.m_documentTypeName = "Material";
+        documentType.m_documentTypeName = QCoreApplication::translate("MaterialDocument", "Material").toUtf8().constData();
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             return aznew MaterialDocument(toolId, documentTypeInfo); };
-        documentType.m_supportedExtensionsToCreate.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
-        documentType.m_supportedExtensionsToCreate.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Material Type", AZ::RPI::MaterialTypeSourceData::Extension });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
-        documentType.m_supportedExtensionsToSave.push_back({ "Material", AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedExtensionsToCreate.push_back({ QCoreApplication::translate("MaterialDocument", "Material Type").toUtf8().constData(), AZ::RPI::MaterialTypeSourceData::Extension });
+        documentType.m_supportedExtensionsToCreate.push_back({ QCoreApplication::translate("MaterialDocument", "Material").toUtf8().constData(), AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ QCoreApplication::translate("MaterialDocument", "Material Type").toUtf8().constData(), AZ::RPI::MaterialTypeSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ QCoreApplication::translate("MaterialDocument", "Material").toUtf8().constData(), AZ::RPI::MaterialSourceData::Extension });
+        documentType.m_supportedExtensionsToSave.push_back({ QCoreApplication::translate("MaterialDocument", "Material").toUtf8().constData(), AZ::RPI::MaterialSourceData::Extension });
         documentType.m_defaultDocumentTemplate =
             AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/MaterialEditor/DefaultMaterialType",
@@ -532,12 +534,12 @@ namespace MaterialEditor
         // top of the inspector. Dynamic properties were originally created to generically adapt and edit JSON and other non-standard
         // reflected data using the RPE. Most of these hardcoded properties are readonly. As that changes, it may be cleaner to add
         // explicit functions and reflection for things that are more complicated to edit like parent material and material type.
-        auto createHeadingPropertyConfig = [](const AZStd::string& group, const AZStd::string& name, const AZStd::string& description,
-            const AZStd::any& value, bool readOnly)
+        auto createHeadingPropertyConfig = [](const AZStd::string& group, const AZStd::string& name, const AZStd::string& displayName,
+            const AZStd::string& description, const AZStd::any& value, bool readOnly)
         {
             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
             propertyConfig.m_name = name;
-            propertyConfig.m_displayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_name);
+            propertyConfig.m_displayName = displayName;
             propertyConfig.m_groupName = group;
             propertyConfig.m_groupDisplayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_groupName);
             propertyConfig.m_id = propertyConfig.m_groupName + "." + name;
@@ -550,15 +552,17 @@ namespace MaterialEditor
 
         m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
         m_groups.back()->m_name = "overview";
-        m_groups.back()->m_displayName = "Overview";
-        m_groups.back()->m_description = "Overview of the current material and its dependencies";
+        m_groups.back()->m_displayName = QCoreApplication::translate("MaterialDocument", "Overview").toUtf8().constData();
+        m_groups.back()->m_description = QCoreApplication::translate("MaterialDocument", "Overview of the current material and its dependencies").toUtf8().constData();
 
         m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(
             "overview",
             "materialType",
+            QCoreApplication::translate("MaterialDocument", "Material Type").toUtf8().constData(),
             AZStd::string::format(
-                "The material type defines the layout, properties, default values, shader connections, and other data needed to create and "
-                "edit a material.\n\nDescription of %s:\n%s",
+                QCoreApplication::translate("MaterialDocument",
+                    "The material type defines the layout, properties, default values, shader connections, and other data needed to create and "
+                    "edit a material.\n\nDescription of %s:\n%s").toUtf8().constData(),
                 AtomToolsFramework::GetDisplayNameFromPath(m_materialSourceData.m_materialType).c_str(),
                 m_materialTypeSourceData.m_description.c_str()),
             AZStd::any(materialTypeAsset),
@@ -567,29 +571,31 @@ namespace MaterialEditor
         m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(
             "overview",
             "parentMaterial",
-            "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.",
+            QCoreApplication::translate("MaterialDocument", "Parent Material").toUtf8().constData(),
+            QCoreApplication::translate("MaterialDocument", "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.").toUtf8().constData(),
             AZStd::any(parentMaterialAsset),
             true));
 
         m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(
             "overview",
             "materialDescription",
-            "Description of the selected material.",
+            QCoreApplication::translate("MaterialDocument", "Material Description").toUtf8().constData(),
+            QCoreApplication::translate("MaterialDocument", "Description of the selected material.").toUtf8().constData(),
             AZStd::any(m_materialSourceData.m_description),
             false));
 
         // Inserting a hard coded property group to display UV channels specified in the material type.
         m_groups.emplace_back(aznew AtomToolsFramework::DynamicPropertyGroup);
         m_groups.back()->m_name = UvGroupName;
-        m_groups.back()->m_displayName = "UV Sets";
-        m_groups.back()->m_description = "UV set names in this material, which can be renamed to match those in the model.";
+        m_groups.back()->m_displayName = QCoreApplication::translate("MaterialDocument", "UV Sets").toUtf8().constData();
+        m_groups.back()->m_description = QCoreApplication::translate("MaterialDocument", "UV set names in this material, which can be renamed to match those in the model.").toUtf8().constData();
 
         const AZ::RPI::MaterialUvNameMap& uvNameMap = materialTypeAsset->GetUvNameMap();
         for (const AZ::RPI::UvNamePair& uvNamePair : uvNameMap)
         {
             const AZStd::string shaderInput = uvNamePair.m_shaderInput.ToString();
             const AZStd::string uvName = uvNamePair.m_uvName.GetStringView();
-            m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(UvGroupName, shaderInput, shaderInput, AZStd::any(uvName), true));
+            m_groups.back()->m_properties.emplace_back(createHeadingPropertyConfig(UvGroupName, shaderInput, AtomToolsFramework::GetDisplayNameFromText(shaderInput), shaderInput, AZStd::any(uvName), true));
         }
 
         // Populate the property map from a combination of source data and assets
@@ -620,7 +626,10 @@ namespace MaterialEditor
                 for (auto& propertyGroupStackItem : propertyGroupStack)
                 {
                     groupNameVector.push_back(propertyGroupStackItem->GetName());
-                    groupDisplayNameVector.push_back(propertyGroupStackItem->GetDisplayName());
+                    // Translate property group display names for i18n support
+                    AZStd::string translatedDisplayName = QCoreApplication::translate(
+                        "PropertyInspector", propertyGroupStackItem->GetDisplayName().c_str()).toUtf8().constData();
+                    groupDisplayNameVector.push_back(translatedDisplayName);
                 }
 
                 // Create a dynamic property group that will be managed by the document and used to display the properties in the inspector.
@@ -634,11 +643,15 @@ namespace MaterialEditor
 
                 if (dynamicPropertyGroup->m_displayName.empty())
                 {
-                    dynamicPropertyGroup->m_displayName =
-                        !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : propertyGroup->GetName();
+                    // Translate the display name for i18n support
+                    AZStd::string originalDisplayName = !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : propertyGroup->GetName();
+                    dynamicPropertyGroup->m_displayName = QCoreApplication::translate(
+                        "PropertyInspector", originalDisplayName.c_str()).toUtf8().constData();
                 }
 
-                dynamicPropertyGroup->m_description = propertyGroup->GetDescription();
+                // Translate the description for i18n support
+                dynamicPropertyGroup->m_description = QCoreApplication::translate(
+                    "PropertyInspector", propertyGroup->GetDescription().c_str()).toUtf8().constData();
                 if (dynamicPropertyGroup->m_description.empty())
                 {
                     dynamicPropertyGroup->m_description = dynamicPropertyGroup->m_displayName;
@@ -679,8 +692,9 @@ namespace MaterialEditor
                         // appears when properties are modified. The tooltip will automatically interpret the embedded HTML and display the
                         // image and formatting.
                         propertyConfig.m_description +=
-                            "\n\n<img src=\':/Icons/changed_property.svg\'> An indicator icon will be shown to the left of properties with "
-                            "overridden values that are different from the parent material, or material type if there is no parent.\n";
+                            QCoreApplication::translate("MaterialDocument",
+                                "\n\n<img src=':/Icons/changed_property.svg'> An indicator icon will be shown to the left of properties with "
+                                "overridden values that are different from the parent material, or material type if there is no parent.\n").toUtf8().constData();
 
                         // The dynamic property uses the group name and display name to forward as attributes to the RPE and property asset
                         // control. The control will then use the attributes to display a context sensitive title when opening the asset

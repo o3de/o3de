@@ -25,8 +25,38 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': c
 AZ_POP_DISABLE_WARNING
 #include <QTimer>
 #include <QSet>
+#include <QCoreApplication>
 #include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzCore/std/sort.h>
+
+// Helper function: translate property editor group names.
+// Returns a QString to avoid dangling-pointer issues with temporary buffers.
+// The caller should convert to QByteArray/const char* only when needed and
+// keep ownership of the QByteArray alive for the duration of use.
+static QString TranslateGroupName(const char* sourceText)
+{
+    if (!sourceText || sourceText[0] == '\0')
+    {
+        return {};
+    }
+
+    static const char* contexts[] = {
+        "AzCore", "AzFramework", "AzToolsFramework", "AtomToolsFramework", "Editor"
+    };
+
+    QString source = QString::fromUtf8(sourceText);
+    for (const char* ctx : contexts)
+    {
+        QString translated = QCoreApplication::translate(ctx, sourceText);
+        if (translated != source)
+        {
+            return translated;
+        }
+    }
+
+    return source;
+}
 
 namespace AzToolsFramework
 {
@@ -507,7 +537,11 @@ namespace AzToolsFramework
             if (groupElementData)
             {
                 bool isToggleGroup = false;
-                const char* groupName = groupElementData->m_description;
+                // Translate group name. Keep QByteArray alive to ensure the
+                // const char* obtained from it remains valid for the entire scope.
+                QString groupNameTranslated = TranslateGroupName(groupElementData->m_description);
+                QByteArray groupNameUtf8 = groupNameTranslated.toUtf8();
+                const char* groupName = groupNameUtf8.constData();
                 PropertyRowWidget*& widgetEntry = m_groupWidgets[{parent, groupName}];
 
                 // Create the group's widget if we haven't already.
@@ -538,7 +572,9 @@ namespace AzToolsFramework
 
                     widgetEntry->SetLeafIndentation(m_leafIndentation);
                     widgetEntry->SetTreeIndentation(m_treeIndentation);
-                    widgetEntry->setObjectName(groupName);
+                    // Use the original untranslated name for objectName to keep it
+                    // locale-independent (stylesheets, findChild, test automation).
+                    widgetEntry->setObjectName(QString::fromUtf8(groupElementData->m_description));
 
                     for (const AZ::Edit::AttributePair& attribute : groupElementData->m_attributes)
                     {

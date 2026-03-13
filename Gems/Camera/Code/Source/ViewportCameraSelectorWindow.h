@@ -7,9 +7,11 @@
  */
 #pragma once
 
+#include <QCoreApplication>
+
 namespace Camera
 {
-    static constexpr const char* s_viewportCameraSelectorName = "Viewport Camera Selector";
+    static const char* const s_viewportCameraSelectorName = QT_TRANSLATE_NOOP("Camera", "Viewport Camera Selector");
 
     extern void RegisterViewportCameraSelectorWindow();
 } // namespace Camera

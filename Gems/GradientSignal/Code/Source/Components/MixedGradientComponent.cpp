@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace GradientSignal
 {
@@ -30,22 +31,22 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<MixedGradientLayer>(
-                    "Mixed Gradient Layer", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Mixed Gradient Layer"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &MixedGradientLayer::m_enabled, "Enabled", "Toggle the influence of this gradient layer.")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MixedGradientLayer::m_operation, "Operation", "Function used to mix the current gradient with the previous result.")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Initialize, "Initialize")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Multiply, "Multiply")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Screen, "Screen")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Add, "Linear Dodge (Add)")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Subtract, "Subtract")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Min, "Darken (Min)")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Max, "Lighten (Max)")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Average, "Average")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Normal, "Normal")
-                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Overlay, "Overlay")
-                    ->DataElement(0, &MixedGradientLayer::m_gradientSampler, "Gradient", "Gradient that will contribute to result of gradient mixing.")
+                    ->DataElement(0, &MixedGradientLayer::m_enabled, QT_TRANSLATE_NOOP("GradientSignal", "Enabled"), QT_TRANSLATE_NOOP("GradientSignal", "Toggle the influence of this gradient layer."))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MixedGradientLayer::m_operation, QT_TRANSLATE_NOOP("GradientSignal", "Operation"), QT_TRANSLATE_NOOP("GradientSignal", "Function used to mix the current gradient with the previous result."))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Initialize, QT_TRANSLATE_NOOP("GradientSignal", "Initialize"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Multiply, QT_TRANSLATE_NOOP("GradientSignal", "Multiply"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Screen, QT_TRANSLATE_NOOP("GradientSignal", "Screen"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Add, QT_TRANSLATE_NOOP("GradientSignal", "Linear Dodge (Add)"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Subtract, QT_TRANSLATE_NOOP("GradientSignal", "Subtract"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Min, QT_TRANSLATE_NOOP("GradientSignal", "Darken (Min)"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Max, QT_TRANSLATE_NOOP("GradientSignal", "Lighten (Max)"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Average, QT_TRANSLATE_NOOP("GradientSignal", "Average"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Normal, QT_TRANSLATE_NOOP("GradientSignal", "Normal"))
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Overlay, QT_TRANSLATE_NOOP("GradientSignal", "Overlay"))
+                    ->DataElement(0, &MixedGradientLayer::m_gradientSampler, QT_TRANSLATE_NOOP("GradientSignal", "Gradient"), QT_TRANSLATE_NOOP("GradientSignal", "Gradient that will contribute to result of gradient mixing."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -141,11 +142,11 @@ namespace GradientSignal
             if (edit)
             {
                 edit->Class<MixedGradientConfig>(
-                    "Mixed Gradient", "")
+                    QT_TRANSLATE_NOOP("GradientSignal", "Mixed Gradient"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &MixedGradientConfig::m_layers, "Layers", "List of gradient mixing layers.")
+                    ->DataElement(0, &MixedGradientConfig::m_layers, QT_TRANSLATE_NOOP("GradientSignal", "Layers"), QT_TRANSLATE_NOOP("GradientSignal", "List of gradient mixing layers."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
                     ->Attribute(AZ::Edit::Attributes::AddNotify, &MixedGradientConfig::OnLayerAdded)

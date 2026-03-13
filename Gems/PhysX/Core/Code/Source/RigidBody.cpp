@@ -15,6 +15,7 @@
 #include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/MathConversion.h>
 #include <Source/Utils.h>
@@ -62,20 +63,20 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PhysX::RigidBodyConfiguration>("PhysX-specific Rigid Body Configuration",
-                    "Additional Rigid Body settings specific to PhysX.")
+                editContext->Class<PhysX::RigidBodyConfiguration>(QT_TRANSLATE_NOOP("PhysX", "PhysX-specific Rigid Body Configuration"),
+                    QT_TRANSLATE_NOOP("PhysX", "Additional Rigid Body settings specific to PhysX."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PhysX::RigidBodyConfiguration::m_solverPositionIterations,
-                        "Solver Position Iterations",
-                        "Higher values can improve stability at the cost of performance.")
+                        QT_TRANSLATE_NOOP("PhysX", "Solver Position Iterations"),
+                        QT_TRANSLATE_NOOP("PhysX", "Higher values can improve stability at the cost of performance."))
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &PhysX::RigidBodyConfiguration::m_solverVelocityIterations,
-                        "Solver Velocity Iterations",
-                        "Higher values can improve stability at the cost of performance.")
+                        QT_TRANSLATE_NOOP("PhysX", "Solver Velocity Iterations"),
+                        QT_TRANSLATE_NOOP("PhysX", "Higher values can improve stability at the cost of performance."))
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
                     ;

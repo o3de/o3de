@@ -34,8 +34,8 @@ public:
     CEditorPreferencesPage_General();
     virtual ~CEditorPreferencesPage_General() = default;
 
-    virtual const char* GetCategory() override { return "General Settings"; }
-    virtual const char* GetTitle() override;
+    virtual const char* GetCategory() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "General Settings"); }
+    virtual const char* GetTitle() override { return QT_TRANSLATE_NOOP("EditorPreferencesDialog", "General Settings"); }
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
     virtual void OnCancel() override {}
@@ -43,6 +43,7 @@ public:
 
 private:
     void InitializeSettings();
+    static AZStd::vector<AZStd::string> GetAvailableLanguages();
 
     struct GeneralSettings
     {
@@ -58,6 +59,7 @@ private:
         bool m_stylusMode;
         bool m_restoreViewportCamera;
         bool m_bShowNews;
+        AZStd::string m_editorLanguage;
         
         bool m_enableSceneInspector;
     };

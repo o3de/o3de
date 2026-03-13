@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "ScriptCanvasTestingSystemComponent.h"
 #include "ScriptCanvasTestBus.h"
@@ -34,12 +35,15 @@ namespace ScriptCanvasTestingNodes
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<BehaviorContextObjectTest>("Behavior Context Object Test", "An Object that lives within Behavior Context exclusively for testing")
+                editContext->Class<BehaviorContextObjectTest>(
+                    QT_TRANSLATE_NOOP("ScriptCanvasTesting", "Behavior Context Object Test"),
+                    QT_TRANSLATE_NOOP("ScriptCanvasTesting", "An Object that lives within Behavior Context exclusively for testing"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Tests/Behavior Context")
                     ->Attribute(AZ::Edit::Attributes::CategoryStyle, ".method")
                     ->Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "TestingNodeTitlePalette")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &BehaviorContextObjectTest::m_string, "String", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BehaviorContextObjectTest::m_string,
+                        QT_TRANSLATE_NOOP("ScriptCanvasTesting", "String"), "")
                     ;
             }
         }
@@ -70,7 +74,8 @@ namespace ScriptCanvasTesting
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<ScriptCanvasTestingSystemComponent>("ScriptCanvasTesting", "")
+                ec->Class<ScriptCanvasTestingSystemComponent>(
+                    QT_TRANSLATE_NOOP("ScriptCanvasTesting", "ScriptCanvasTesting"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

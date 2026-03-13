@@ -13,6 +13,8 @@
 #include <AzCore/Math/MathScriptHelpers.h>
 #include <AzCore/Math/ShapeIntersection.h>
 
+#include <AzCore/i18n/TranslationMacros.h>
+
 namespace AZ
 {
     void ViewFrustumAttributes::Reflect(ReflectContext* context)
@@ -30,23 +32,28 @@ namespace AZ
 
             if (EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ViewFrustumAttributes>("ViewFrustumAttributes", "")
+                editContext->Class<ViewFrustumAttributes>(QT_TRANSLATE_NOOP("AzCore", "ViewFrustumAttributes"), "")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                     ->DataElement(
-                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_worldTransform, "WorldTransform",
-                        "The world transform used to construct the frustum")
+                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_worldTransform,
+                        QT_TRANSLATE_NOOP("AzCore", "WorldTransform"),
+                        QT_TRANSLATE_NOOP("AzCore", "The world transform used to construct the frustum"))
                     ->DataElement(
-                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_aspectRatio, "AspectRatio",
-                        "The aspect ratio of the frustum")
+                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_aspectRatio,
+                        QT_TRANSLATE_NOOP("AzCore", "AspectRatio"),
+                        QT_TRANSLATE_NOOP("AzCore", "The aspect ratio of the frustum"))
                     ->DataElement(
-                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_verticalFovRadians, "FovRadians",
-                        "The vertical field of view of the frustum in radians")
+                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_verticalFovRadians,
+                        QT_TRANSLATE_NOOP("AzCore", "FovRadians"),
+                        QT_TRANSLATE_NOOP("AzCore", "The vertical field of view of the frustum in radians"))
                     ->DataElement(
-                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_nearClip, "NearClip",
-                        "Distance to the frustums near clip plane")
+                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_nearClip,
+                        QT_TRANSLATE_NOOP("AzCore", "NearClip"),
+                        QT_TRANSLATE_NOOP("AzCore", "Distance to the frustums near clip plane"))
                     ->DataElement(
-                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_farClip, "FarClip",
-                        "Distance to the frustums far clip plane")
+                        Edit::UIHandlers::Default, &ViewFrustumAttributes::m_farClip,
+                        QT_TRANSLATE_NOOP("AzCore", "FarClip"),
+                        QT_TRANSLATE_NOOP("AzCore", "Distance to the frustums far clip plane"))
                     ;
             }
         }

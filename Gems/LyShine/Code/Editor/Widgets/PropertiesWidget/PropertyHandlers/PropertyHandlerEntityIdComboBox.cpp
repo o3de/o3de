@@ -74,7 +74,7 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
                 }
                 else
                 {
-                    AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'EnumValue' attribute from property '%s' into enum combo box. Expected pair<IntegerType, char*> or pair<IntegerType, AZStd::string>, where IntegerType is int or u32 ", debugName);
+                    AZ_WarningOnce("LyShine", false, "Failed to read 'EnumValue' attribute from property '%s' into enum combo box. Expected pair<IntegerType, char*> or pair<IntegerType, AZStd::string>, where IntegerType is int or u32 ", debugName);
                 }
             }
         }
@@ -116,7 +116,7 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
                 else
                 {
                     // emit a warning!
-                    AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'EnumValue' attribute from property '%s' into enum combo box", debugName);
+                    AZ_WarningOnce("LyShine", false, "Failed to read 'EnumValue' attribute from property '%s' into enum combo box", debugName);
                 }
             }
         }
@@ -168,7 +168,7 @@ void PropertyEntityIdComboBoxCtrl::setValue(AZ::EntityId value)
             break;
         }
     }
-    AZ_Warning("AzToolsFramework", indexWasFound == true, "No index in property enum for value %d", value);
+    AZ_Warning("LyShine", indexWasFound == true, "No index in property enum for value %d", value);
 
     m_pComboBox->blockSignals(false);
 }

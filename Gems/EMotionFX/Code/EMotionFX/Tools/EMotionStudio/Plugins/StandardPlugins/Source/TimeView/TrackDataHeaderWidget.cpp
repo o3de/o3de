@@ -814,10 +814,10 @@ namespace EMStudio
         //---------------------
         // Timeline actions
         //---------------------
-        QAction* action = menu.addAction("Zoom To Fit All");
+        QAction* action = menu.addAction(tr("Zoom To Fit All"));
         connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnZoomAll);
 
-        action = menu.addAction("Reset Timeline");
+        action = menu.addAction(tr("Reset Timeline"));
         connect(action, &QAction::triggered, m_plugin, &TimeViewPlugin::OnResetTimeline);
 
         // show the menu at the given position

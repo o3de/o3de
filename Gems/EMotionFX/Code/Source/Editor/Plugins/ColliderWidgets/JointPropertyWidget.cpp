@@ -42,7 +42,7 @@ namespace EMotionFX
         mainLayout->setSpacing(0);
         auto* propertyCard = new AzQtComponents::Card;
         AzQtComponents::Card::applySectionStyle(propertyCard);
-        propertyCard->setTitle("Node Properties");
+        propertyCard->setTitle(tr("Node Properties"));
 
         mainLayout->addWidget(propertyCard);
 
@@ -219,7 +219,7 @@ namespace EMotionFX
     AddCollidersButton::AddCollidersButton(QWidget* parent)
         : QPushButton(parent)
     {
-        setText("Add Property \342\226\276");
+        setText(tr("Add Property \342\226\276"));
         connect(this, &QPushButton::clicked, this, &AddCollidersButton::OnCreateContextMenu);
     }
 

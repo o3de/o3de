@@ -335,7 +335,7 @@ namespace EMStudio
         m_saveDirtyFiles = true;
 
         // update title of the dialog
-        setWindowTitle("Save Changes To Files");
+        setWindowTitle(tr("Save Changes To Files"));
 
         // set the default size
         resize(1024, 576);
@@ -344,7 +344,7 @@ namespace EMStudio
         QVBoxLayout* vLayout = new QVBoxLayout(this);
 
         // add the top message
-        vLayout->addWidget(new QLabel("Do you want to save changes? The following files have been changed but have not been saved yet:"));
+        vLayout->addWidget(new QLabel(tr("Do you want to save changes? The following files have been changed but have not been saved yet:")));
 
         // create the lod information table
         m_tableWidget = new QTableWidget();
@@ -372,10 +372,10 @@ namespace EMStudio
         QTableWidgetItem* headerItem = new QTableWidgetItem("");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(0, headerItem);
-        headerItem = new QTableWidgetItem("FileName");
+        headerItem = new QTableWidgetItem(tr("FileName"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(1, headerItem);
-        headerItem = new QTableWidgetItem("Type");
+        headerItem = new QTableWidgetItem(tr("Type"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(2, headerItem);
 
@@ -399,7 +399,7 @@ namespace EMStudio
             QString labelText;
             if (dirtyFileNames[i].empty())
             {
-                labelText = "<not saved yet>";
+                labelText = tr("<not saved yet>");
             }
             else
             {
@@ -437,23 +437,23 @@ namespace EMStudio
             QString typeString;
             if (object.m_motion)
             {
-                typeString = "Motion";
+                typeString = tr("Motion");
             }
             else if (object.m_actor)
             {
-                typeString = "Actor";
+                typeString = tr("Actor");
             }
             else if (object.m_motionSet)
             {
-                typeString = "Motion Set";
+                typeString = tr("Motion Set");
             }
             else if (object.m_animGraph)
             {
-                typeString = "Anim Graph";
+                typeString = tr("Anim Graph");
             }
             else if (object.m_workspace)
             {
-                typeString = "Workspace";
+                typeString = tr("Workspace");
             }
 
             QTableWidgetItem* itemType = new QTableWidgetItem(typeString);
@@ -480,19 +480,19 @@ namespace EMStudio
         if (buttons & QDialogButtonBox::Save)
         {
             QPushButton* saveButton = buttonBox->button(QDialogButtonBox::Save);
-            saveButton->setText("&Save Selected");
+            saveButton->setText(tr("&Save Selected"));
             saveButton->setObjectName("EMFX.SaveDirtySettingsWindow.SaveButton");
         }
         if (buttons & QDialogButtonBox::Discard)
         {
             QPushButton* discardButton = buttonBox->button(QDialogButtonBox::Discard);
-            discardButton->setText("&Discard Changes");
+            discardButton->setText(tr("&Discard Changes"));
             discardButton->setObjectName("EMFX.SaveDirtySettingsWindow.DiscardButton");
         }
         if (buttons & QDialogButtonBox::Cancel)
         {
             QPushButton* cancelButton = buttonBox->button(QDialogButtonBox::Cancel);
-            cancelButton->setText("&Cancel");
+            cancelButton->setText(tr("&Cancel"));
             cancelButton->setObjectName("EMFX.SaveDirtySettingsWindow.CancelButton");
         }
         vLayout->addWidget(buttonBox);

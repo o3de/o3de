@@ -17,11 +17,13 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 
 #include <Source/AssetDatabaseLocationListener.h>
 #include <Source/LUA/LUAEditorContext.h>
 #include <Source/LUA/LUADebuggerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
+#include <QApplication>
 
 
 namespace LUAEditor
@@ -73,6 +75,15 @@ namespace LUAEditor
         EnsureComponentCreated(AzToolsFramework::Thumbnailer::ThumbnailerNullComponent::RTTI_Type());
         EnsureComponentCreated(AzToolsFramework::AssetBrowser::AssetBrowserComponent::RTTI_Type());
         EnsureComponentCreated(AzToolsFramework::Components::EditorSelectionAccentSystemComponent::RTTI_Type());
+    }
+
+    void Application::OnApplicationEntityActivated()
+    {
+        StandaloneTools::BaseApplication::OnApplicationEntityActivated();
+
+        // Note: Translation loading has been moved to LUAEditorMainWindow constructor
+        // (before setupUi()) to ensure translations are applied before the UI is created.
+        // Using engine root path directly avoids @engroot@ alias resolution issues.
     }
 
     void Application::ConnectivityStateChanged(const AzToolsFramework::SourceControlState state)

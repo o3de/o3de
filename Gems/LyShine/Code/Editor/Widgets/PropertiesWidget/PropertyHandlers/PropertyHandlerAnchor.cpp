@@ -35,7 +35,7 @@ PropertyAnchorCtrl::PropertyAnchorCtrl(QWidget* parent)
     // when the transform is disabled.
     {
         m_disabledLabel = new QLabel(this);
-        m_disabledLabel->setText("Anchors and Offsets are\ncontrolled by parent");
+        m_disabledLabel->setText(tr("Anchors and Offsets are\ncontrolled by parent"));
         m_disabledLabel->setVisible(false);
         vLayout->addWidget(m_disabledLabel);
     }
@@ -77,10 +77,10 @@ PropertyAnchorCtrl::PropertyAnchorCtrl(QWidget* parent)
 
     // Vector ctrl.
     {
-        m_propertyVectorCtrl->setLabel(0, "Left");
-        m_propertyVectorCtrl->setLabel(1, "Top");
-        m_propertyVectorCtrl->setLabel(2, "Right");
-        m_propertyVectorCtrl->setLabel(3, "Bottom");
+        m_propertyVectorCtrl->setLabel(0, tr("Left"));
+        m_propertyVectorCtrl->setLabel(1, tr("Top"));
+        m_propertyVectorCtrl->setLabel(2, tr("Right"));
+        m_propertyVectorCtrl->setLabel(3, tr("Bottom"));
 
         QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::valueChanged, this, [this]()
             {
@@ -118,7 +118,7 @@ void PropertyAnchorCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::Prop
         else
         {
             // emit a warning!
-            AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'ReadOnly' attribute from property '%s' into string box", debugName);
+            AZ_WarningOnce("LyShine", false, "Failed to read 'ReadOnly' attribute from property '%s' into string box", debugName);
         }
         return;
     }
@@ -174,7 +174,7 @@ void PropertyAnchorCtrl::ConsumeAttribute(AZ::u32 attrib, AzToolsFramework::Prop
         else
         {
             // emit a warning!
-            AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'LayoutFitterType' attribute from property '%s' into string box", debugName);
+            AZ_WarningOnce("LyShine", false, "Failed to read 'LayoutFitterType' attribute from property '%s' into string box", debugName);
         }
     }
 }

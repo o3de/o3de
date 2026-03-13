@@ -8,6 +8,8 @@
 
 #include <GraphCanvas.h>
 
+#include <QCoreApplication>
+
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -124,7 +126,7 @@ namespace GraphCanvas
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<GraphCanvasSystemComponent>(
-                    "LmbrCentral", "Provides factory methods for Graph Canvas components")
+                    QT_TRANSLATE_NOOP("GraphCanvas", "LmbrCentral"), QT_TRANSLATE_NOOP("GraphCanvas", "Provides factory methods for Graph Canvas components"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
                     ;

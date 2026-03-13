@@ -232,7 +232,7 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     // Fill the FPS combo box.
     for (int i = 0; i < AZStd::size(fpsOptions); ++i)
     {
-        m_ui->m_fpsCombo->addItem(fpsOptions[i].fpsDesc);
+        m_ui->m_fpsCombo->addItem(tr(fpsOptions[i].fpsDesc));
     }
     m_ui->m_fpsCombo->setCurrentIndex(0);
 
@@ -243,10 +243,10 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     }
     m_ui->m_imageFormatCombo->setCurrentIndex(0);
 
-    m_ui->BATCH_RENDER_FILE_PREFIX->setText("Frame");
+    m_ui->BATCH_RENDER_FILE_PREFIX->setText(tr("Frame"));
     m_ui->BATCH_RENDER_FILE_PREFIX->setValidator(m_prefixValidator.data());
 
-    m_ui->m_progressStatusMsg->setText("Not running");
+    m_ui->m_progressStatusMsg->setText(tr("Not running"));
 
     m_ui->BATCH_RENDER_REMOVE_SEQ->setEnabled(false);
     m_ui->m_pGoBtn->setEnabled(false);
@@ -497,7 +497,7 @@ void CSequenceBatchRenderDialog::OnUpdateRenderItem()
 void CSequenceBatchRenderDialog::OnLoadPreset()
 {
     QString loadPath;
-    if (CFileUtil::SelectFile("Preset Files (*.preset)", Path::GetUserSandboxFolder(), loadPath))
+    if (CFileUtil::SelectFile(tr("Preset Files (*.preset)"), Path::GetUserSandboxFolder(), loadPath))
     {
         if (LoadOutputOptions(loadPath) == false)
         {
@@ -509,7 +509,7 @@ void CSequenceBatchRenderDialog::OnLoadPreset()
 void CSequenceBatchRenderDialog::OnSavePreset()
 {
     QString savePath;
-    if (CFileUtil::SelectSaveFile("Preset Files (*.preset)", "preset", Path::GetUserSandboxFolder(), savePath))
+    if (CFileUtil::SelectSaveFile(tr("Preset Files (*.preset)"), "preset", Path::GetUserSandboxFolder(), savePath))
     {
         SaveOutputOptions(savePath);
     }
@@ -536,7 +536,7 @@ void CSequenceBatchRenderDialog::OnGo()
     else
     {
         // Start a new batch.
-        m_ui->m_pGoBtn->setText("Cancel");
+        m_ui->m_pGoBtn->setText(tr("Cancel"));
         m_ui->m_pGoBtn->setIcon(QPixmap(":/Trackview/clapperboard_cancel.png"));
         // Inform the movie system that it soon will be in a batch-rendering mode.
 
@@ -928,7 +928,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     QString probeName = finalFolder;
     while (QFileInfo::exists(probeName))
     {
-        probeName = QObject::tr("%1_v%2").arg(finalFolder).arg(numProbeIndex++);
+        probeName = tr("%1_v%2").arg(finalFolder).arg(numProbeIndex++);
     }
     finalFolder = probeName;
 
@@ -939,7 +939,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
         TrackViewMessageBox::Critical(
             AzToolsFramework::GetActiveWindow(),
             QString(),
-            QObject::tr("Cannot create directory %1 for output frames").arg(finalFolder));
+            tr("Cannot create directory %1 for output frames").arg(finalFolder));
 
         OnUpdateFinalize();
         return;
@@ -1015,7 +1015,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
 
 void CSequenceBatchRenderDialog::OnUpdateWarmingUpAfterResChange()
 {
-    UpdateSpinnerProgressMessage("Warming up");
+    UpdateSpinnerProgressMessage(qUtf8Printable(tr("Warming up")));
 
     // Spend the given frames warming up after frame buffer resolution change
     if (m_renderContext.framesSpentInCurrentPhase++ >= TrackView::tv_SkipFramesCount)
@@ -1031,7 +1031,7 @@ void CSequenceBatchRenderDialog::OnUpdateWarmingUpAfterResChange()
 
 void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
 {
-    UpdateSpinnerProgressMessage("Entering game mode");
+    UpdateSpinnerProgressMessage(qUtf8Printable(tr("Entering game mode")));
 
     GetIEditor()->GetGameEngine()->Update();
 
@@ -1053,7 +1053,7 @@ void CSequenceBatchRenderDialog::OnUpdateEnteringGameMode()
 
 void CSequenceBatchRenderDialog::OnUpdateBeginPlayingSequence()
 {
-    UpdateSpinnerProgressMessage("Begin Playing Sequence");
+    UpdateSpinnerProgressMessage(qUtf8Printable(tr("Begin Playing Sequence")));
 
     SRenderItem& renderItem = m_renderItems[m_renderContext.currentItemIndex];
     const AZStd::string seqName = renderItem.seqName.toUtf8().data();
@@ -1131,7 +1131,7 @@ void CSequenceBatchRenderDialog::OnUpdateCapturing()
     // Progress message
     const QString itemText = m_ui->m_renderList->model()->index(m_renderContext.currentItemIndex, 0).data().toString();
     const QString msg = tr("Rendering '%1'...(%2%)").arg(itemText).arg(static_cast<int>(100.0f * elapsedTime / (rng.end - rng.start)));
-    UpdateSpinnerProgressMessage(msg.toLatin1().data());
+    UpdateSpinnerProgressMessage(qUtf8Printable(msg));
 
     m_renderContext.framesSpentInCurrentPhase++;
 }
@@ -1223,7 +1223,7 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
 
 void CSequenceBatchRenderDialog::OnUpdateFFMPEGProcessing()
 {
-    UpdateSpinnerProgressMessage("FFMPEG processing");
+    UpdateSpinnerProgressMessage(qUtf8Printable(tr("FFMPEG processing")));
 
     if (!m_renderContext.processingFFMPEG)
     {
@@ -1511,7 +1511,7 @@ void CSequenceBatchRenderDialog::OnCreateVideoChange()
 void CSequenceBatchRenderDialog::OnLoadBatch()
 {
     QString loadPath;
-    if (CFileUtil::SelectFile("Render Batch Files (*.batch)",
+    if (CFileUtil::SelectFile(tr("Render Batch Files (*.batch)"),
             Path::GetUserSandboxFolder(), loadPath))
     {
         XmlNodeRef batchRenderListNode = XmlHelpers::LoadXmlFromFile(loadPath.toStdString().c_str());
@@ -1602,7 +1602,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
 void CSequenceBatchRenderDialog::OnSaveBatch()
 {
     QString savePath;
-    if (CFileUtil::SelectSaveFile("Render Batch Files (*.batch)", "batch",
+    if (CFileUtil::SelectSaveFile(tr("Render Batch Files (*.batch)"), "batch",
             Path::GetUserSandboxFolder(), savePath))
     {
         XmlNodeRef batchRenderListNode = XmlHelpers::CreateXmlNode("batchrenderlist");
@@ -1688,7 +1688,7 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
     item.frameRange = Range(m_ui->m_startFrame->value() / m_fpsForTimeToFrameConversion,
             m_ui->m_endFrame->value() / m_fpsForTimeToFrameConversion);
     // fps
-    if (m_ui->m_fpsCombo->currentIndex() == -1 || m_ui->m_fpsCombo->currentText() != fpsOptions[m_ui->m_fpsCombo->currentIndex()].fpsDesc)
+    if (m_ui->m_fpsCombo->currentIndex() == -1 || m_ui->m_fpsCombo->currentText() != tr(fpsOptions[m_ui->m_fpsCombo->currentIndex()].fpsDesc))
     {
         item.fps = m_customFPS;
     }

@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Viewport/VertexContainerDisplay.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "EditorShapeComponentConverters.h"
 #include "ShapeDisplay.h"
@@ -159,7 +160,8 @@ namespace LmbrCentral
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorPolygonPrismShapeComponent>(
-                    "Polygon Prism Shape", "Provides polygon prism shape")
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Polygon Prism Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Provides polygon prism shape"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PolygonPrism.svg")
@@ -167,9 +169,13 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/shape/polygon-prism-shape/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPolygonPrismShapeComponent::m_polygonPrismShape, "Configuration", "PolygonPrism Shape Configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPolygonPrismShapeComponent::m_polygonPrismShape,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "PolygonPrism Shape Configuration"))
                         // ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // disabled - prevents ChangeNotify attribute firing correctly
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPolygonPrismShapeComponent::m_componentModeDelegate, "Component Mode", "PolygonPrism Component Mode")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorPolygonPrismShapeComponent::m_componentModeDelegate,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Component Mode"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "PolygonPrism Component Mode"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
             }

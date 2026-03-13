@@ -9,6 +9,7 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <MiniAudio/SoundAsset.h>
 
 namespace MiniAudio
@@ -23,7 +24,9 @@ namespace MiniAudio
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SoundAsset>("MiniSound SoundAsset", "")->ClassElement(AZ::Edit::ClassElements::EditorData, "");
+                editContext->Class<SoundAsset>(
+                    QT_TRANSLATE_NOOP("MiniAudio", "MiniSound SoundAsset"), "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "");
             }
         }
     }

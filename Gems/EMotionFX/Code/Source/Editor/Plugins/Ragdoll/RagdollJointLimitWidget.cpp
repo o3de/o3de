@@ -52,7 +52,7 @@ namespace EMotionFX
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Error("EMotionFX", serializeContext, "Can't get serialize context from component application.");
 
-        setTitle("Joint limit");
+        setTitle(tr("Joint limit"));
 
         AzQtComponents::CardHeader* cardHeader = header();
         cardHeader->setIcon(m_cardHeaderIcon);
@@ -74,7 +74,7 @@ namespace EMotionFX
         spacerWidget->setFixedWidth(s_leftMargin);
         topLayout->addWidget(spacerWidget, 0, 0, Qt::AlignLeft);
 
-        QLabel* hasLimitLabel = new QLabel("Has joint limit");
+        QLabel* hasLimitLabel = new QLabel(tr("Has joint limit"));
         hasLimitLabel->setFixedWidth(s_textColumnWidth);
         topLayout->addWidget(hasLimitLabel, 0, 1, Qt::AlignLeft);
 
@@ -83,7 +83,7 @@ namespace EMotionFX
         topLayout->addWidget(m_hasLimitCheckbox, 0, 2);
 
         // Joint limit type
-        m_typeLabel = new QLabel("Limit type");
+        m_typeLabel = new QLabel(tr("Limit type"));
         topLayout->addWidget(m_typeLabel, 1, 1, Qt::AlignLeft);
 
         m_typeComboBox = new QComboBox(innerWidget);
@@ -217,7 +217,7 @@ namespace EMotionFX
         QMenu* contextMenu = new QMenu(this);
         contextMenu->setObjectName("EMFX.RagdollJointLimitWidget.ContextMenu");
 
-        QAction* copyAction = contextMenu->addAction("Copy joint limits");
+        QAction* copyAction = contextMenu->addAction(tr("Copy joint limits"));
         copyAction->setObjectName("EMFX.RagdollJointLimitWidget.CopyJointLimitsAction");
         connect(copyAction, &QAction::triggered, [this]()
         {
@@ -236,7 +236,7 @@ namespace EMotionFX
             emit JointLimitCopied(serialized.GetValue());
         });
 
-        QAction* pasteAction = contextMenu->addAction("Paste joint limits");
+        QAction* pasteAction = contextMenu->addAction(tr("Paste joint limits"));
         pasteAction->setObjectName("EMFX.RagdollJointLimitWidget.PasteJointLimitsAction");
         connect(pasteAction, &QAction::triggered, [this]()
         {

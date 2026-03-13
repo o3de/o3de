@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Shape/ShapeDisplay.h>
 
 namespace LmbrCentral
@@ -31,9 +32,13 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SphereShape>("Sphere Shape", "Sphere shape configuration parameters")
+                editContext->Class<SphereShape>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Sphere Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Sphere shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SphereShape::m_sphereShapeConfig, "Sphere Configuration", "Sphere shape configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SphereShape::m_sphereShapeConfig,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Sphere Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Sphere shape configuration"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

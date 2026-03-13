@@ -7,6 +7,7 @@
  */
 
 #include "InputChannelGestureClickOrTap.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -24,7 +25,9 @@ namespace Gestures
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<TypeAndConfig>("Click Or Tap", "Gesture recognizer for clicks or taps.")
+                ec->Class<TypeAndConfig>(
+                    QT_TRANSLATE_NOOP("Gestures", "Click Or Tap"),
+                    QT_TRANSLATE_NOOP("Gestures", "Gesture recognizer for clicks or taps."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;

@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace SurfaceData
 {
@@ -50,7 +51,7 @@ namespace SurfaceData
             if (edit)
             {
                 edit->Class<EditorSurfaceDataSystemConfig>(
-                    "Editor Surface Data System Config", "")
+                    QT_TRANSLATE_NOOP("SurfaceData", "Editor Surface Data System Config"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -72,10 +73,13 @@ namespace SurfaceData
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<EditorSurfaceDataSystemComponent>("Editor Surface Data System", "Manages discovery and registration of surface tag list assets")
+                ec->Class<EditorSurfaceDataSystemComponent>(
+                    QT_TRANSLATE_NOOP("SurfaceData", "Editor Surface Data System"),
+                    QT_TRANSLATE_NOOP("SurfaceData", "Manages discovery and registration of surface tag list assets"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorSurfaceDataSystemComponent::m_configuration, "Configuration", "")
+                    ->DataElement(0, &EditorSurfaceDataSystemComponent::m_configuration,
+                        QT_TRANSLATE_NOOP("SurfaceData", "Configuration"), "")
                     ;
             }
         }

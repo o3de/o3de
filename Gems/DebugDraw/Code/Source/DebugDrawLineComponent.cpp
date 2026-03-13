@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "DebugDrawLineComponent.h"
 
@@ -30,11 +31,17 @@ namespace DebugDraw
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<DebugDrawLineElement>("DebugDraw Line element settings", "Settings for DebugDraw line element.")
+                editContext->Class<DebugDrawLineElement>(
+                    QT_TRANSLATE_NOOP("DebugDraw", "DebugDraw Line element settings"),
+                    QT_TRANSLATE_NOOP("DebugDraw", "Settings for DebugDraw line element."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->DataElement(0, &DebugDrawLineElement::m_endEntityId, "End Entity", "Which entity the line is drawn to (starts on this entity).")
-                    ->DataElement(0, &DebugDrawLineElement::m_color, "Color", "Display color for the line.")
+                    ->DataElement(0, &DebugDrawLineElement::m_endEntityId,
+                        QT_TRANSLATE_NOOP("DebugDraw", "End Entity"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Which entity the line is drawn to (starts on this entity)."))
+                    ->DataElement(0, &DebugDrawLineElement::m_color,
+                        QT_TRANSLATE_NOOP("DebugDraw", "Color"),
+                        QT_TRANSLATE_NOOP("DebugDraw", "Display color for the line."))
                 ;
             }
         }

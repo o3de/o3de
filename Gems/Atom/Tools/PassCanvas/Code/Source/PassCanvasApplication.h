@@ -15,6 +15,8 @@
 #include <GraphModel/Model/GraphContext.h>
 #include <Window/PassCanvasMainWindow.h>
 
+class QTranslator;
+
 namespace PassCanvas
 {
     //! The main application class for Pass Canvas, setting up top level systems, document types, and the main window. 
@@ -59,5 +61,7 @@ namespace PassCanvas
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
+        QTranslator* m_atomToolsFrameworkTranslator = nullptr;
+        QTranslator* m_passCanvasTranslator = nullptr;
     };
 } // namespace PassCanvas

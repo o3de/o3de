@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/i18n/TranslationMacros.h>
 #include <AzNetworking/Framework/INetworking.h>
 
 #include "MultiplayerCompressionSystemComponent.h"
@@ -28,7 +29,9 @@ namespace MultiplayerCompression
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<MultiplayerCompressionSystemComponent>("MultiplayerCompression", "Provides packet compression via an open source library for the Multiplayer Gem")
+                ec->Class<MultiplayerCompressionSystemComponent>(
+                    QT_TRANSLATE_NOOP("MultiplayerCompression", "MultiplayerCompression"),
+                    QT_TRANSLATE_NOOP("MultiplayerCompression", "Provides packet compression via an open source library for the Multiplayer Gem"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

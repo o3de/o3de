@@ -171,17 +171,17 @@ void StyledDockWidgetPage::showMainWindow()
     m_mainWindow->addToolBar(toolBar);
 
     auto statusBar = new QStatusBar(m_mainWindow);
-    statusBar->showMessage(QStringLiteral("Status Bar..."));
+    statusBar->showMessage(tr("Status Bar..."));
     m_mainWindow->setStatusBar(statusBar);
 
     QWidget* centralWidget = new QWidget;
-    QPushButton* load = new QPushButton("Restore layout");
-    QPushButton* save = new QPushButton("Save layout");
-    QPushButton* split = new QPushButton("Split docks");
-    QPushButton* tabs = new QPushButton("Tabs docks");
+    QPushButton* load = new QPushButton(tr("Restore layout"));
+    QPushButton* save = new QPushButton(tr("Save layout"));
+    QPushButton* split = new QPushButton(tr("Split docks"));
+    QPushButton* tabs = new QPushButton(tr("Tabs docks"));
     QVBoxLayout* vl = new QVBoxLayout(centralWidget);
 
-    vl->addWidget(new QLabel("Central Widget"));
+    vl->addWidget(new QLabel(tr("Central Widget")));
     vl->addWidget(load);
     vl->addWidget(save);
     vl->addWidget(split);
@@ -189,24 +189,24 @@ void StyledDockWidgetPage::showMainWindow()
 
     m_mainWindow->setCentralWidget(centralWidget);
 
-    auto leftDockWidget = new AzQtComponents::StyledDockWidget("Left Dock Widget", m_mainWindow);
+    auto leftDockWidget = new AzQtComponents::StyledDockWidget(tr("Left Dock Widget"), m_mainWindow);
     leftDockWidget->setObjectName(leftDockWidget->windowTitle());
-    leftDockWidget->setWidget(new QLabel("StyledDockWidget"));
+    leftDockWidget->setWidget(new QLabel(tr("StyledDockWidget")));
     m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, leftDockWidget);
 
-    auto topDockWidget = new AzQtComponents::StyledDockWidget("Top Dock Widget", m_mainWindow);
+    auto topDockWidget = new AzQtComponents::StyledDockWidget(tr("Top Dock Widget"), m_mainWindow);
     topDockWidget->setObjectName(topDockWidget->windowTitle());
-    topDockWidget->setWidget(new QLabel("StyledDockWidget"));
+    topDockWidget->setWidget(new QLabel(tr("StyledDockWidget")));
     m_mainWindow->addDockWidget(Qt::TopDockWidgetArea, topDockWidget);
 
-    auto rightDockWidget = new AzQtComponents::StyledDockWidget("Right Dock Widget", m_mainWindow);
+    auto rightDockWidget = new AzQtComponents::StyledDockWidget(tr("Right Dock Widget"), m_mainWindow);
     rightDockWidget->setObjectName(rightDockWidget->windowTitle());
-    rightDockWidget->setWidget(new QLabel("StyledDockWidget"));
+    rightDockWidget->setWidget(new QLabel(tr("StyledDockWidget")));
     m_mainWindow->addDockWidget(Qt::RightDockWidgetArea, rightDockWidget);
 
-    auto bottomDockWidget = new AzQtComponents::StyledDockWidget("Bottom Dock Widget", m_mainWindow);
+    auto bottomDockWidget = new AzQtComponents::StyledDockWidget(tr("Bottom Dock Widget"), m_mainWindow);
     bottomDockWidget->setObjectName(bottomDockWidget->windowTitle());
-    bottomDockWidget->setWidget(new QLabel("StyledDockWidget"));
+    bottomDockWidget->setWidget(new QLabel(tr("StyledDockWidget")));
     m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, bottomDockWidget);
 
     auto galleryCenter = mapToGlobal(frameGeometry().center());

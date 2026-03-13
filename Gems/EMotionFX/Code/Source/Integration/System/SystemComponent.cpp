@@ -382,10 +382,10 @@ namespace EMotionFX
 
                 if (AZ::EditContext* ec = serializeContext->GetEditContext())
                 {
-                    ec->Class<SystemComponent>("EMotion FX Animation", "Enables the EMotion FX animation solution")
+                    ec->Class<SystemComponent>(QT_TRANSLATE_NOOP("EMotionFX", "EMotion FX Animation"), QT_TRANSLATE_NOOP("EMotionFX", "Enables the EMotion FX animation solution"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_numThreads, "Number of threads", "Number of threads used internally by EMotion FX")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_numThreads, QT_TRANSLATE_NOOP("EMotionFX", "Number of threads"), QT_TRANSLATE_NOOP("EMotionFX", "Number of threads used internally by EMotion FX"))
                     ;
                 }
             }
@@ -842,7 +842,7 @@ namespace EMotionFX
 #if AZ_TRAIT_EMOTIONFX_MAIN_WINDOW_DETACHED
             emotionFXWindowOptions.detachedWindow = true;
 #endif
-            emotionFXWindowOptions.optionalMenuText = "Animation Editor";
+            emotionFXWindowOptions.optionalMenuText = QObject::tr("Animation Editor");
             emotionFXWindowOptions.showOnToolsToolbar = true;
             emotionFXWindowOptions.toolbarIcon = ":/Menu/emfx_editor.svg";
 

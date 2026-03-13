@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/i18n/TranslationMacros.h>
 
 namespace AzPhysics
 {
@@ -43,25 +44,27 @@ namespace AzPhysics
                 editContext->Class<AzPhysics::SystemConfiguration>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_maxTimestep, "Max Time Step (sec)", "Max time step in seconds")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_maxTimestep,
+                        QT_TRANSLATE_NOOP("PhysX", "Max Time Step (sec)"), QT_TRANSLATE_NOOP("PhysX", "Max time step in seconds"))
                         ->Attribute(AZ::Edit::Attributes::Min, TimestepMin)
                         ->Attribute(AZ::Edit::Attributes::Max, TimestepMax)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SystemConfiguration::OnMaxTimeStepChanged)//need to clamp m_fixedTimeStep if this value changes
                         ->Attribute(AZ::Edit::Attributes::Decimals, 8)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 8)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_fixedTimestep, "Fixed Time Step (sec)", "Fixed time step in seconds. Limited by 'Max Time Step'")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_fixedTimestep,
+                        QT_TRANSLATE_NOOP("PhysX", "Fixed Time Step (sec)"), QT_TRANSLATE_NOOP("PhysX", "Fixed time step in seconds. Limited by 'Max Time Step'"))
                         ->Attribute(AZ::Edit::Attributes::Min, TimestepMin)
                         ->Attribute(AZ::Edit::Attributes::Max, &SystemConfiguration::GetFixedTimeStepMax)
                         ->Attribute(AZ::Edit::Attributes::Decimals, 8)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 8)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_raycastBufferSize,
-                        "Raycast Buffer Size", "Maximum number of hits from a raycast")
+                        QT_TRANSLATE_NOOP("PhysX", "Raycast Buffer Size"), QT_TRANSLATE_NOOP("PhysX", "Maximum number of hits from a raycast"))
                         ->Attribute(AZ::Edit::Attributes::Min, 1u)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_shapecastBufferSize,
-                        "Shapecast Buffer Size", "Maximum number of hits from a shapecast")
+                        QT_TRANSLATE_NOOP("PhysX", "Shapecast Buffer Size"), QT_TRANSLATE_NOOP("PhysX", "Maximum number of hits from a shapecast"))
                         ->Attribute(AZ::Edit::Attributes::Min, 1u)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemConfiguration::m_overlapBufferSize,
-                        "Overlap Query Buffer Size", "Maximum number of hits from a overlap query")
+                        QT_TRANSLATE_NOOP("PhysX", "Overlap Query Buffer Size"), QT_TRANSLATE_NOOP("PhysX", "Maximum number of hits from a overlap query"))
                         ->Attribute(AZ::Edit::Attributes::Min, 1u)
                     ;
             }

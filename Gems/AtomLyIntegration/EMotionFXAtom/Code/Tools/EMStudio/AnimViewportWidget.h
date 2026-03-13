@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <QSettings>
 #include <QMouseEvent>
 
@@ -18,6 +19,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <EMStudio/AnimViewportRequestBus.h>
 #include <Integration/Rendering/RenderFlag.h>
+#endif
 
 
 namespace EMStudio
@@ -31,6 +33,8 @@ namespace EMStudio
         , private ViewportPluginRequestBus::Handler
         , private AZ::RPI::SceneNotificationBus::Handler
     {
+        Q_OBJECT
+        
     public:
         AnimViewportWidget(AtomRenderPlugin* parentPlugin);
         ~AnimViewportWidget() override;

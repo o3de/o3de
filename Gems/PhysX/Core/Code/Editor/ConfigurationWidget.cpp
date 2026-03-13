@@ -35,9 +35,9 @@ namespace PhysX
             m_collisionFiltering = new CollisionFilteringWidget();
             m_pvd = new PvdWidget();
 
-            m_tabs->addTab(m_settings, "Global Configuration");
-            m_tabs->addTab(m_collisionFiltering, "Collision Filtering");
-            m_tabs->addTab(m_pvd, "Debugger");
+            m_tabs->addTab(m_settings, tr("Global Configuration"));
+            m_tabs->addTab(m_collisionFiltering, tr("Collision Filtering"));
+            m_tabs->addTab(m_pvd, tr("Debugger"));
 
             verticalLayout->addWidget(m_tabs);
 

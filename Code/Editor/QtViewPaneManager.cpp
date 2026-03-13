@@ -307,6 +307,11 @@ DockWidget::DockWidget(QWidget* widget, QtViewPane* pane, [[maybe_unused]] QSett
     QString objectNameForSave = pane->m_options.saveKeyName.length() > 0 ? pane->m_options.saveKeyName : pane->m_name;
     setObjectName(objectNameForSave);
 
+    // Display the translated pane name as the window title.
+    // The raw m_name is kept as an identifier for registration, lookup, and layout persistence,
+    // but the window title should show the localized version.
+    setWindowTitle(QCoreApplication::translate("LyViewPane", pane->m_name.toUtf8().constData()));
+
     setWidget(widget);
     setFocusPolicy(Qt::StrongFocus);
 
@@ -964,7 +969,7 @@ QWidget* QtViewPaneManager::CreateWidget(const QString& paneName)
     QWidget* w = pane->CreateWidget();
     if (w)
     {
-        w->setWindowTitle(paneName);
+        w->setWindowTitle(QCoreApplication::translate("LyViewPane", paneName.toUtf8().constData()));
         return w;
     }
 
@@ -1393,8 +1398,10 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
     // if it doesn't contain the Entity Inspector and Outliner then we need to
     // save their previous layout for them and switch them to the new default
     // layout because they won't be able to do much without them
-    static const QString userLegacyLayout = "User Legacy Layout";
-    if (layoutName == s_lastLayoutName && !HasLayout(userLegacyLayout))
+    // Use a fixed English identifier for layout persistence (must not be translated).
+    // Only the display text in the message box should be translated.
+    const QString userLegacyLayoutKey = QStringLiteral("User Legacy Layout");
+    if (layoutName == s_lastLayoutName && !HasLayout(userLegacyLayoutKey))
     {
         bool layoutHasInspector = false;
         bool layoutHasEntityOutliner = false;
@@ -1412,12 +1419,12 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
 
         if (!layoutHasInspector || !layoutHasEntityOutliner)
         {
-            SaveStateToLayout(state, userLegacyLayout);
+            SaveStateToLayout(state, userLegacyLayoutKey);
 
             QMessageBox box(AzToolsFramework::GetActiveWindow());
             box.addButton(QMessageBox::Ok);
             box.setWindowTitle(tr("Layout Saved"));
-            box.setText(tr("Your layout has been automatically updated for the new Component-Entity workflows. Your old layout has been saved as \"%1\" and can be restored from the View -> Layouts menu.").arg(userLegacyLayout));
+            box.setText(tr("Your layout has been automatically updated for the new Component-Entity workflows. Your old layout has been saved as \"%1\" and can be restored from the View -> Layouts menu.").arg(tr("User Legacy Layout")));
             box.exec();
 
             return false;

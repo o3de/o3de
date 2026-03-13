@@ -20,6 +20,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/Translation/TranslationManager.h>
 #include <Document/PassGraphCompiler.h>
 #include <GraphModel/Model/DataType.h>
 #include <PassCanvasApplication.h>
@@ -102,6 +103,12 @@ namespace PassCanvas
     {
         Base::StartCommon(systemEntity);
 
+        // Load AtomToolsFramework translations for menu and UI strings
+        m_atomToolsFrameworkTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("AtomToolsFramework", this);
+
+        // Load PassCanvas translations for i18n support
+        m_passCanvasTranslator = AzToolsFramework::TranslationManager::LoadModuleTranslator("PassCanvas", this);
+
         InitDynamicNodeManager();
         InitDynamicNodeEditData();
         InitSharedGraphContext();
@@ -121,6 +128,22 @@ namespace PassCanvas
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();
         m_dynamicNodeManager.reset();
+
+        // Clean up PassCanvas translator
+        if (m_passCanvasTranslator)
+        {
+            removeTranslator(m_passCanvasTranslator);
+            delete m_passCanvasTranslator;
+            m_passCanvasTranslator = nullptr;
+        }
+
+        // Clean up AtomToolsFramework translator
+        if (m_atomToolsFrameworkTranslator)
+        {
+            removeTranslator(m_atomToolsFrameworkTranslator);
+            delete m_atomToolsFrameworkTranslator;
+            m_atomToolsFrameworkTranslator = nullptr;
+        }
 
         Base::Destroy();
     }

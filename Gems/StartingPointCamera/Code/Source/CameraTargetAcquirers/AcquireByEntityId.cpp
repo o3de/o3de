@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Transform.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <StartingPointCamera/StartingPointCameraConstants.h>
 
 namespace Camera
@@ -33,12 +34,20 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<AcquireByEntityId>("AcquireByEntityId", "Acquires a target by entity ref")
+                editContext->Class<AcquireByEntityId>(
+                    QT_TRANSLATE_NOOP("Camera", "AcquireByEntityId"),
+                    QT_TRANSLATE_NOOP("Camera", "Acquires a target by entity ref"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcquireByEntityId::m_target, "Entity target", "Specify an entity to target")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcquireByEntityId::m_shouldUseTargetRotation, "Use target rotation", "Set to false to not have the camera orient itself with the target")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcquireByEntityId::m_shouldUseTargetPosition, "Use target position", "Set to false to not have the camera position itself with the target");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcquireByEntityId::m_target,
+                        QT_TRANSLATE_NOOP("Camera", "Entity target"),
+                        QT_TRANSLATE_NOOP("Camera", "Specify an entity to target"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcquireByEntityId::m_shouldUseTargetRotation,
+                        QT_TRANSLATE_NOOP("Camera", "Use target rotation"),
+                        QT_TRANSLATE_NOOP("Camera", "Set to false to not have the camera orient itself with the target"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AcquireByEntityId::m_shouldUseTargetPosition,
+                        QT_TRANSLATE_NOOP("Camera", "Use target position"),
+                        QT_TRANSLATE_NOOP("Camera", "Set to false to not have the camera position itself with the target"));
             }
         }
     }

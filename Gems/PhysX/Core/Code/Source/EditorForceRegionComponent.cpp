@@ -17,6 +17,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 
 namespace PhysX
@@ -39,28 +41,28 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorForceProxy>(
-                    "Forces", "forces")
+                    QT_TRANSLATE_NOOP("PhysX", "Forces"), QT_TRANSLATE_NOOP("PhysX", "forces"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorForceProxy::m_type, "Force Type", "")
-                    ->EnumAttribute(ForceType::WorldSpace, "World Space")
-                    ->EnumAttribute(ForceType::LocalSpace, "Local Space")
-                    ->EnumAttribute(ForceType::Point, "Point")
-                    ->EnumAttribute(ForceType::SplineFollow, "Spline Follow")
-                    ->EnumAttribute(ForceType::SimpleDrag, "Simple Drag")
-                    ->EnumAttribute(ForceType::LinearDamping, "Linear Damping")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorForceProxy::m_type, QT_TRANSLATE_NOOP("PhysX", "Force Type"), "")
+                    ->EnumAttribute(ForceType::WorldSpace, QT_TRANSLATE_NOOP("PhysX", "World Space"))
+                    ->EnumAttribute(ForceType::LocalSpace, QT_TRANSLATE_NOOP("PhysX", "Local Space"))
+                    ->EnumAttribute(ForceType::Point, QT_TRANSLATE_NOOP("PhysX", "Point"))
+                    ->EnumAttribute(ForceType::SplineFollow, QT_TRANSLATE_NOOP("PhysX", "Spline Follow"))
+                    ->EnumAttribute(ForceType::SimpleDrag, QT_TRANSLATE_NOOP("PhysX", "Simple Drag"))
+                    ->EnumAttribute(ForceType::LinearDamping, QT_TRANSLATE_NOOP("PhysX", "Linear Damping"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceWorldSpace, "World Space Force", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceWorldSpace, QT_TRANSLATE_NOOP("PhysX", "World Space Force"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorForceProxy::IsWorldSpaceForce)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceLocalSpace, "Local Space Force", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceLocalSpace, QT_TRANSLATE_NOOP("PhysX", "Local Space Force"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorForceProxy::IsLocalSpaceForce)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forcePoint, "Point Force", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forcePoint, QT_TRANSLATE_NOOP("PhysX", "Point Force"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorForceProxy::IsPointForce)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceSplineFollow, "Spline Follow Force", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceSplineFollow, QT_TRANSLATE_NOOP("PhysX", "Spline Follow Force"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorForceProxy::IsSplineFollowForce)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceSimpleDrag, "Simple Drag Force", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceSimpleDrag, QT_TRANSLATE_NOOP("PhysX", "Simple Drag Force"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorForceProxy::IsSimpleDragForce)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceLinearDamping, "Linear Damping Force", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceProxy::m_forceLinearDamping, QT_TRANSLATE_NOOP("PhysX", "Linear Damping Force"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorForceProxy::IsLinearDampingForce)
                     ;
             }
@@ -165,7 +167,7 @@ namespace PhysX
             {
                 // EditorForceRegionComponent
                 editContext->Class<EditorForceRegionComponent>(
-                    "PhysX Force Region", "The force region component is used to apply a physical force on objects within the region.")
+                    QT_TRANSLATE_NOOP("PhysX", "PhysX Force Region"), QT_TRANSLATE_NOOP("PhysX", "The force region component is used to apply a physical force on objects within the region."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/ForceVolume.svg")
@@ -174,10 +176,10 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/components/reference/physx/force-region/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("PhysicsTriggerService"))
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_visibleInEditor, "Visible", "Always show the component in viewport.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_debugForces, "Debug Forces",
-                        "Draws debug arrows when an entity enters a force region. This occurs in gameplay mode to show the force direction on an entity.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_forces, "Forces", "Forces in force region.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_visibleInEditor, QT_TRANSLATE_NOOP("PhysX", "Visible"), QT_TRANSLATE_NOOP("PhysX", "Always show the component in viewport."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_debugForces, QT_TRANSLATE_NOOP("PhysX", "Debug Forces"),
+                        QT_TRANSLATE_NOOP("PhysX", "Draws debug arrows when an entity enters a force region. This occurs in gameplay mode to show the force direction on an entity."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_forces, QT_TRANSLATE_NOOP("PhysX", "Forces"), QT_TRANSLATE_NOOP("PhysX", "Forces in force region."))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorForceRegionComponent::OnForcesChanged)
                     ;

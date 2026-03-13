@@ -301,7 +301,7 @@ namespace O3DE::ProjectManager
         mainLayout->setAlignment(Qt::AlignTop);
         mainWidget->setLayout(mainLayout);
 
-        QLabel* filterByLabel = new QLabel("Filter by");
+        QLabel* filterByLabel = new QLabel(tr("Filter by"));
         filterByLabel->setObjectName("FilterByLabel");
         mainLayout->addWidget(filterByLabel);
 
@@ -313,22 +313,22 @@ namespace O3DE::ProjectManager
         filterLayout->setContentsMargins(0, 0, 0, 0);
         filterSection->setLayout(filterLayout);
 
-        m_statusFilter = new FilterCategoryWidget("Status");
+        m_statusFilter = new FilterCategoryWidget(tr("Status"));
         connect(m_statusFilter->GetButtonGroup(), QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), this, &GemFilterWidget::OnStatusFilterToggled);
 
-        m_versionsFilter = new FilterCategoryWidget("Versions");
+        m_versionsFilter = new FilterCategoryWidget(tr("Versions"));
         connect(m_versionsFilter->GetButtonGroup(), QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), this, &GemFilterWidget::OnUpdateFilterToggled);
 
-        m_featureFilter = new FilterCategoryWidget("Feature", /*showAllLessButton=*/true, /*collapsed*/false, /*defaultShowCount=*/5);
+        m_featureFilter = new FilterCategoryWidget(tr("Feature"), /*showAllLessButton=*/true, /*collapsed*/false, /*defaultShowCount=*/5);
         connect(m_featureFilter->GetButtonGroup(), QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), this, &GemFilterWidget::OnFeatureFilterToggled);
 
-        m_platformFilter = new OrFilterCategoryWidget("Platform", GemInfo::NumPlatforms, m_gemModel);
+        m_platformFilter = new OrFilterCategoryWidget(tr("Platform"), GemInfo::NumPlatforms, m_gemModel);
         connect(m_platformFilter, &OrFilterCategoryWidget::FilterToggled, m_filterProxyModel, &GemSortFilterProxyModel::SetPlatformFilterFlag);
 
-        m_originFilter = new OrFilterCategoryWidget("Provider", GemInfo::NumGemOrigins, m_gemModel);
+        m_originFilter = new OrFilterCategoryWidget(tr("Provider"), GemInfo::NumGemOrigins, m_gemModel);
         connect(m_originFilter, &OrFilterCategoryWidget::FilterToggled, m_filterProxyModel, &GemSortFilterProxyModel::SetOriginFilterFlag);
 
-        m_typeFilter = new OrFilterCategoryWidget("Type", GemInfo::NumTypes, m_gemModel);
+        m_typeFilter = new OrFilterCategoryWidget(tr("Type"), GemInfo::NumTypes, m_gemModel);
         connect(m_typeFilter, &OrFilterCategoryWidget::FilterToggled, m_filterProxyModel, &GemSortFilterProxyModel::SetTypeFilterFlag);
 
         // add filters in the order they appear
@@ -393,7 +393,7 @@ namespace O3DE::ProjectManager
             numCompatibleGems += GemModel::IsCompatible(m_gemModel->index(i, 0)) ? 1 : 0;
         }
 
-        m_versionsFilter->SetElements({ "Update Available", "Compatible" }, { numGemsWithUpdates, numCompatibleGems });
+        m_versionsFilter->SetElements({ tr("Update Available"), tr("Compatible") }, { numGemsWithUpdates, numCompatibleGems });
 
         if (buttons.isEmpty())
         {

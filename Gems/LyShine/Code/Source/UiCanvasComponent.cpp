@@ -60,6 +60,7 @@
 #endif
 
 #include "LyShinePassDataBus.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasNotificationBus Behavior context handler class
@@ -2396,7 +2397,7 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiCanvasComponent>("UI Canvas", "These are the properties of the UI canvas.");
+            auto editInfo = ec->Class<UiCanvasComponent>(QT_TRANSLATE_NOOP("LyShine", "UI Canvas"), QT_TRANSLATE_NOOP("LyShine", "These are the properties of the UI canvas."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
@@ -2404,55 +2405,55 @@ void UiCanvasComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiCanvas.png")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Rendering")
+            editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Rendering"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_drawOrder, "Draw order", "The order, relative to other canvases, in which this canvas will draw (higher numbers on top).");
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isPixelAligned, "Is pixel aligned", "When checked, all corners of all elements will be rounded to the nearest pixel.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_drawOrder, QT_TRANSLATE_NOOP("LyShine", "Draw order"), QT_TRANSLATE_NOOP("LyShine", "The order, relative to other canvases, in which this canvas will draw (higher numbers on top)."));
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isPixelAligned, QT_TRANSLATE_NOOP("LyShine", "Is pixel aligned"), QT_TRANSLATE_NOOP("LyShine", "When checked, all corners of all elements will be rounded to the nearest pixel."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCanvasComponent::OnPixelAlignmentChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isTextPixelAligned, "Is text pixel aligned", "When checked, all text will be rounded to the nearest pixel.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isTextPixelAligned, QT_TRANSLATE_NOOP("LyShine", "Is text pixel aligned"), QT_TRANSLATE_NOOP("LyShine", "When checked, all text will be rounded to the nearest pixel."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiCanvasComponent::OnTextPixelAlignmentChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_renderToTexture, "Render to texture", "When checked, the canvas is rendered to a texture instead of the full screen.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_renderToTexture, QT_TRANSLATE_NOOP("LyShine", "Render to texture"), QT_TRANSLATE_NOOP("LyShine", "When checked, the canvas is rendered to a texture instead of the full screen."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_attachmentImageAsset, "Render Target", "The asset for the attachment image that this canvas renders to.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_attachmentImageAsset, QT_TRANSLATE_NOOP("LyShine", "Render Target"), QT_TRANSLATE_NOOP("LyShine", "The asset for the attachment image that this canvas renders to."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasComponent::m_renderToTexture);
 
-            editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Input")
+            editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Input"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isPositionalInputSupported, "Handle positional", "When checked, positional input (mouse/touch) will automatically be handled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isPositionalInputSupported, QT_TRANSLATE_NOOP("LyShine", "Handle positional"), QT_TRANSLATE_NOOP("LyShine", "When checked, positional input (mouse/touch) will automatically be handled."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isConsumingAllInputEvents, "Consume all input", "When checked, all input events will be consumed by this canvas while it is enabled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isConsumingAllInputEvents, QT_TRANSLATE_NOOP("LyShine", "Consume all input"), QT_TRANSLATE_NOOP("LyShine", "When checked, all input events will be consumed by this canvas while it is enabled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasComponent::GetIsPositionalInputSupported);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isMultiTouchSupported, "Handle multi-touch", "When checked, multi-touch input will automatically be handled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isMultiTouchSupported, QT_TRANSLATE_NOOP("LyShine", "Handle multi-touch"), QT_TRANSLATE_NOOP("LyShine", "When checked, multi-touch input will automatically be handled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiCanvasComponent::GetIsPositionalInputSupported);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isNavigationSupported, "Handle navigation", "When checked, keyboard/gamepad events will automatically be used for navigation.");
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_navigationThreshold, "Navigation threshold", "The analog (eg. thumb-stick) input value that must be exceeded before a navigation command will be processed.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasComponent::m_isNavigationSupported, QT_TRANSLATE_NOOP("LyShine", "Handle navigation"), QT_TRANSLATE_NOOP("LyShine", "When checked, keyboard/gamepad events will automatically be used for navigation."));
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_navigationThreshold, QT_TRANSLATE_NOOP("LyShine", "Navigation threshold"), QT_TRANSLATE_NOOP("LyShine", "The analog (eg. thumb-stick) input value that must be exceeded before a navigation command will be processed."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_navigationRepeatDelay, "Navigation repeat delay", "The delay (milliseconds) before a held navigation command will begin repeating.");
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_navigationRepeatPeriod, "Navigation repeat period", "The delay (milliseconds) before a held navigation command will continue repeating.");
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiCanvasComponent::m_firstHoverInteractable, "First focus elem", "The element to receive focus when the canvas loads.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_navigationRepeatDelay, QT_TRANSLATE_NOOP("LyShine", "Navigation repeat delay"), QT_TRANSLATE_NOOP("LyShine", "The delay (milliseconds) before a held navigation command will begin repeating."));
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_navigationRepeatPeriod, QT_TRANSLATE_NOOP("LyShine", "Navigation repeat period"), QT_TRANSLATE_NOOP("LyShine", "The delay (milliseconds) before a held navigation command will continue repeating."));
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiCanvasComponent::m_firstHoverInteractable, QT_TRANSLATE_NOOP("LyShine", "First focus elem"), QT_TRANSLATE_NOOP("LyShine", "The element to receive focus when the canvas loads."))
                 ->Attribute("EnumValues", &UiCanvasComponent::PopulateNavigableEntityList);
 
-            editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Tooltips")
+            editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Tooltips"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiCanvasComponent::m_tooltipDisplayElement, "Tooltip display elem", "The element to be displayed when hovering over an interactable.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiCanvasComponent::m_tooltipDisplayElement, QT_TRANSLATE_NOOP("LyShine", "Tooltip display elem"), QT_TRANSLATE_NOOP("LyShine", "The element to be displayed when hovering over an interactable."))
                 ->Attribute("EnumValues", &UiCanvasComponent::PopulateTooltipDisplayEntityList);
 
-            editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Editor settings")
+            editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Editor settings"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_snapDistance, "Snap distance", "The snap grid spacing.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_snapDistance, QT_TRANSLATE_NOOP("LyShine", "Snap distance"), QT_TRANSLATE_NOOP("LyShine", "The snap grid spacing."))
                 ->Attribute(AZ::Edit::Attributes::Min, 1.0f);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_snapRotationDegrees, "Snap rotation", "The degrees of rotation to snap to.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_snapRotationDegrees, QT_TRANSLATE_NOOP("LyShine", "Snap rotation"), QT_TRANSLATE_NOOP("LyShine", "The degrees of rotation to snap to."))
                 ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 359.0f)
-                ->Attribute(AZ::Edit::Attributes::Suffix, " degrees");
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_guideColor, "Guide color", "The color to draw the guide lines on this canvas.");
+                ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("LyShine", " degrees"));
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiCanvasComponent::m_guideColor, QT_TRANSLATE_NOOP("LyShine", "Guide color"), QT_TRANSLATE_NOOP("LyShine", "The color to draw the guide lines on this canvas."));
 
-            editInfo->DataElement("SimpleAssetRef", &UiCanvasComponent::m_atlasPathNames, "Texture atlases", "The texture atlases that this canvas loads.")
+            editInfo->DataElement("SimpleAssetRef", &UiCanvasComponent::m_atlasPathNames, QT_TRANSLATE_NOOP("LyShine", "Texture atlases"), QT_TRANSLATE_NOOP("LyShine", "The texture atlases that this canvas loads."))
                 ->Attribute("ChangeNotify", &UiCanvasComponent::ReloadAtlases);
         }
     }

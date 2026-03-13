@@ -10,6 +10,7 @@
 #include "ScriptEventsBus.h"
 
 #include <AzCore/std/string/regex.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ScriptEvents
 {
@@ -45,16 +46,28 @@ namespace ScriptEvents
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ScriptEvent>("Script Event Definition", "Data driven script event definition")
+                editContext->Class<ScriptEvent>(
+                    QT_TRANSLATE_NOOP("ScriptEvents", "Script Event Definition"),
+                    QT_TRANSLATE_NOOP("ScriptEvents", "Data driven script event definition"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &ScriptEvent::GetLabel)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_name, "Name", "Name of the Script Event")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_tooltip, "Tooltip", "The name of this Script Event")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_category, "Category", "The category that the Event will be put into")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ScriptEvent::m_addressType, "Address Type", "If required, this defines the address type for this event")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_name,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Name"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Name of the Script Event"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_tooltip,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Tooltip"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "The name of this Script Event"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_category,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Category"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "The category that the Event will be put into"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ScriptEvent::m_addressType,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Address Type"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "If required, this defines the address type for this event"))
                         ->Attribute(AZ::Edit::Attributes::GenericValueList, &Types::GetValidAddressTypes)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_methods, "Events", "The list of events available.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEvent::m_methods,
+                        QT_TRANSLATE_NOOP("ScriptEvents", "Events"),
+                        QT_TRANSLATE_NOOP("ScriptEvents", "The list of events available."))
                     ;
             }
         }

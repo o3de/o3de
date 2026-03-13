@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include "VideoPlaybackFrameworkSystemComponent.h"
 #include "Include/VideoPlaybackFramework/VideoPlaybackAsset.h"
@@ -74,7 +75,9 @@ namespace VideoPlaybackFramework
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<VideoPlaybackFrameworkSystemComponent>("VideoPlaybackFramework", "Interface framework to play back video during gameplay.")
+                ec->Class<VideoPlaybackFrameworkSystemComponent>(
+                    QT_TRANSLATE_NOOP("VideoPlaybackFramework", "VideoPlaybackFramework"),
+                    QT_TRANSLATE_NOOP("VideoPlaybackFramework", "Interface framework to play back video during gameplay."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 // Graph Model
 #include <GraphModel/GraphModelBus.h>
@@ -70,7 +71,9 @@ namespace GraphModel
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<GraphModelSystemComponent>("GraphModel", "A generic node graph data model")
+                editContext->Class<GraphModelSystemComponent>(
+                    QT_TRANSLATE_NOOP("GraphModel", "GraphModel"),
+                    QT_TRANSLATE_NOOP("GraphModel", "A generic node graph data model"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

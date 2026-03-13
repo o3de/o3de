@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <Inspector/ui_InspectorWidget.h>
 
 #include <QMenu>
@@ -121,9 +122,17 @@ namespace AtomToolsFramework
         const AZStd::string& groupDescription,
         QWidget* groupWidget)
     {
+        // Translate group display name and description for i18n support.
+        // Material property groups and other JSON-sourced strings are registered
+        // via QT_TRANSLATE_NOOP in generated files (see Translation.cmake's
+        // add_json_property_translations). TranslatePropertyString searches all
+        // registered contexts and returns the original string if no translation exists.
+        AZStd::string translatedDisplayName = AzToolsFramework::TranslatePropertyString(groupDisplayName.c_str());
+        AZStd::string translatedDescription = AzToolsFramework::TranslatePropertyString(groupDescription.c_str());
+
         InspectorGroupHeaderWidget* groupHeader = new InspectorGroupHeaderWidget(m_ui->m_groupContents);
-        groupHeader->setText(groupDisplayName.c_str());
-        groupHeader->setToolTip(groupDescription.c_str());
+        groupHeader->setText(translatedDisplayName.c_str());
+        groupHeader->setToolTip(translatedDescription.c_str());
         m_ui->m_groupContentsLayout->addWidget(groupHeader);
 
         groupWidget->setObjectName(groupName.c_str());

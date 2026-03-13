@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <QCoreApplication>
+
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ContextMenuAction.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
@@ -32,7 +34,7 @@ namespace GraphCanvas
             */
 
             setEnabled(false);
-            setToolTip("Feature in development. Adding breakpoint works but will freeze the editor when breakpoint is hit.");
+            setToolTip(QCoreApplication::translate("GraphCanvas::BreakpointContextMenuAction", "Feature in development. Adding breakpoint works but will freeze the editor when breakpoint is hit."));
         }
 
     public:

@@ -23,6 +23,7 @@ namespace LUAEditor
     protected:
         void RegisterCoreComponents() override;
         void CreateApplicationComponents() override;
+        void OnApplicationEntityActivated() override;
 
         void ConnectivityStateChanged(const AzToolsFramework::SourceControlState /*connected*/) override;
     };
