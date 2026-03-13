@@ -25,11 +25,13 @@ function(GetAssimp)
 
     set(ASSIMP_GIT_REPO "https://github.com/assimp/assimp.git")
     set(ASSIMP_GIT_TAG "fb375dd8c0a032106a2122815fb18dffe0283721")
+    set(ASSIMP_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch")
 
     FetchContent_Declare(
             assimp
             GIT_REPOSITORY ${ASSIMP_GIT_REPO}
             GIT_TAG ${ASSIMP_GIT_TAG}
+            PATCH_COMMAND cmake -P "${LY_ROOT_FOLDER}/cmake/PatchIfNotAlreadyPatched.cmake" ${ASSIMP_GIT_PATCH}
             GIT_SHALLOW
             EXCLUDE_FROM_ALL # Prevent it from executing 'install' ops, it doesn't need to be included in installer
     )
