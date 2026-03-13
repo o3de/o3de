@@ -37,6 +37,40 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        bool AddPathToPathEnv(QString newPath, bool prepend)
+        {
+            QString pathEnvName = GetPlatformPathEnvVariableName();
+            QString pathEnv = qEnvironmentVariable(pathEnvName.toUtf8().constData());
+            QStringList pathEnvList = pathEnv.split(GetPlatformPathEnvSeparator());
+
+            // if we are prepending it means that the path must, absolutely contain the given
+            // path at the very front, we want it to take priority, so its not enough for the
+            // path to just contain it.  Thus, when prepending it, we check if it starts with the given one
+            // instead of just whether it contains it.
+
+            bool should_apply = false;
+            QString newCombinedPath;
+            if (prepend)
+            {
+                should_apply = !pathEnvList.startsWith(newPath);
+                newCombinedPath = newPath + GetPlatformPathEnvSeparator() + pathEnv;
+            }
+            else
+            {
+                should_apply = !pathEnvList.contains(newPath);
+                newCombinedPath = pathEnv + GetPlatformPathEnvSeparator() + newPath;
+            }
+
+            if (should_apply)
+            {
+                if (!qputenv(pathEnvName.toUtf8().constData(), newCombinedPath.toStdString().c_str()))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         static bool WarnDirectoryOverwrite(const QString& path, QWidget* parent)
         {
             if (!QDir(path).isEmpty())

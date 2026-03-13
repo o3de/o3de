@@ -25,7 +25,7 @@ namespace AZ
         RPI::Ptr<SsaoParentPass> SsaoParentPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<SsaoParentPass> pass = aznew SsaoParentPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         SsaoParentPass::SsaoParentPass(const RPI::PassDescriptor& descriptor)
@@ -122,7 +122,7 @@ namespace AZ
         RPI::Ptr<SsaoComputePass> SsaoComputePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<SsaoComputePass> pass = aznew SsaoComputePass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         SsaoComputePass::SsaoComputePass(const RPI::PassDescriptor& descriptor)
@@ -147,7 +147,7 @@ namespace AZ
                 // The strength of the SSAO effect
                 float m_strength = Ssao::DefaultStrength;
 
-                // The sampling radius calculated in screen UV space 
+                // The sampling radius calculated in screen UV space
                 float m_samplingRadius = Ssao::DefaultSamplingRadius;
 
             } ssaoConstants{};

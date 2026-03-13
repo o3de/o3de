@@ -23,7 +23,7 @@ namespace AZ::Render
         {
             serializeContext->Class<AZ::Render::EditorMeshComponent>();
         }
-        
+
         if (BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<EditorMeshComponent>("AZ::Render::EditorMeshComponent");
@@ -63,7 +63,7 @@ namespace UnitTest
         auto root = scene->GetGraph().GetRoot();
         scene->GetGraph().SetContent(root, AZStd::make_shared<DataTypes::MockIGraphObject>(0));
 
-        return AZStd::move(scene);
+        return scene;
     }
 
     void BuildMockScene(AZ::SceneAPI::Containers::Scene& scene)

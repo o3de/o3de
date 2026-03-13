@@ -672,7 +672,7 @@ namespace EditorPythonBindings
             {
                 if (Internal::AllocateBehaviorValueParameter(behaviorMethod, result, stackVariableAllocator))
                 {
-                    if (behaviorMethod->Call(parameters.begin(), static_cast<unsigned int>(totalPythonArgs), &result))
+                    if (behaviorMethod->Call(parameters.data(), static_cast<unsigned int>(totalPythonArgs), &result))
                     {
                         result.m_azRtti = behaviorMethod->GetResult()->m_azRtti;
                         result.m_typeId = behaviorMethod->GetResult()->m_typeId;
@@ -689,7 +689,7 @@ namespace EditorPythonBindings
                     AZ_Warning("python", false, "Failed to allocate return value for method %s", behaviorMethod->m_name.c_str());
                 }
             }
-            else if (!behaviorMethod->Call(parameters.begin(), static_cast<unsigned int>(totalPythonArgs)))
+            else if (!behaviorMethod->Call(parameters.data(), static_cast<unsigned int>(totalPythonArgs)))
             {
                 AZ_Warning("python", false, "Failed to invoke class method %s", behaviorMethod->m_name.c_str());
             }

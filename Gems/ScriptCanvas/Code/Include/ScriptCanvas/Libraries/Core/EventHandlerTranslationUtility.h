@@ -5,7 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
+
 #include <Include/ScriptCanvas/Libraries/Core/EBusEventHandler.generated.h>
 #include <Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.generated.h>
 
@@ -25,7 +27,7 @@ namespace ScriptCanvas
             public:
                 // EbusEvent handler
                 static ConstSlotsOutcome  GetSlotsInExecutionThreadByType(const EBusEventHandler& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
-                
+
                 // ScriptEvent handler
                 static ConstSlotsOutcome  GetSlotsInExecutionThreadByType(const ReceiveScriptEvent& handler, const Slot& executionSlot, CombinedSlotType targetSlotType);
 
@@ -73,7 +75,7 @@ namespace ScriptCanvas
 
                 if (!eventEntry)
                 {
-                    return AZ::Failure(AZStd::string("Failure to find event with executionSlot, %s", executionSlot.GetName().data()));
+                    return AZ::Failure(AZStd::string::format("Failure to find event with executionSlot, %s", executionSlot.GetName().data()));
                 }
 
                 // some event slots are mis-labeled

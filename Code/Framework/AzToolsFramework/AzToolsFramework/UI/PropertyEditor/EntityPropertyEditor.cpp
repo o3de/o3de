@@ -495,7 +495,7 @@ namespace AzToolsFramework
 
 
     private:
-        EntityPropertyEditor* m_editor;        
+        EntityPropertyEditor* m_editor;
         int m_dropIndicatorOffset;
         int m_dropIndicatorRowWidgetOffset;
     };
@@ -696,7 +696,7 @@ namespace AzToolsFramework
         EntityPropertyEditorNotificationBus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
         ToolsApplicationEvents::Bus::Handler::BusDisconnect();
-        
+
         for (auto& entityId : m_overrideSelectedEntityIds)
         {
             DisconnectFromEntityBuses(entityId);
@@ -1299,7 +1299,7 @@ namespace AzToolsFramework
             if (!m_customFilterSet)
             {
                 // Don't call SetAddComponentMenuFilter because it will set the custom filter flag.
-                m_componentFilter = AZStd::move(GetDefaultComponentFilter());
+                m_componentFilter = GetDefaultComponentFilter();
             }
         }
         else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::LevelEntity)
@@ -1360,7 +1360,7 @@ namespace AzToolsFramework
         m_gui->m_entitySearchBox->setVisible(displayComponentSearchBox);
 
         bool isEditingPrefabContainer = isContainerOfFocusedPrefabLayout;
-        
+
         m_gui->m_entityIdWidget->setVisible(!isEditingPrefabContainer);
         m_gui->m_prefabContainerWidget->setVisible(isPrefabLayout);
 
@@ -2298,7 +2298,7 @@ namespace AzToolsFramework
             fieldNode = fieldNode->GetParent();
             AZ_Assert(fieldNode && fieldNode->GetClassMetadata() && fieldNode->GetClassMetadata()->m_container, "New element should be a child of a container.");
         }
-        
+
         AZ::Component* componentInstance =
             m_serializeContext->Cast<AZ::Component*>(componentNode->FirstInstance(), componentClassData->m_typeId);
         AZ_Assert(componentInstance, "Failed to cast component instance.");
@@ -3832,7 +3832,7 @@ namespace AzToolsFramework
             return;
         }
         m_shouldScrollToNewComponents = false;
-        
+
         // force new components to be visible
         // if no component has been explicitly set at the most recently added,
         // assume new components are added to the end of the list and layout
@@ -5448,7 +5448,7 @@ namespace AzToolsFramework
             // note: ComponentModeCollectionInterface cannot be cached as it may change during the lifetime of the application
             const auto componentModeTypes = AZ::Interface<ComponentModeCollectionInterface>::Get()->GetComponentTypes();
 
-            
+
             if (!componentModeTypes.empty())
             {
                 m_componentEditorLastSelectedIndex = GetComponentEditorIndexFromType(componentModeTypes.front());

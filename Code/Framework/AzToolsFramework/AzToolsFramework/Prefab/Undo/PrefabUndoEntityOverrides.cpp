@@ -116,7 +116,7 @@ namespace AzToolsFramework
 
                 // Remove the subtree and cache the subtree for undo.
                 AZ::Dom::Path entityDomPath(entityPathFromTopInstance.c_str());
-                m_subtreeStates[entityDomPath] = AZStd::move(link->get().RemoveOverrides(entityDomPath));
+                m_subtreeStates[entityDomPath] = link->get().RemoveOverrides(entityDomPath);
 
                 // Redo - Add the override patches to the tree.
                 link->get().AddOverrides(overridePatches);
@@ -135,7 +135,7 @@ namespace AzToolsFramework
                         link->get().GetInstanceName().c_str(),
                         entityPathFromTopInstance.c_str());
                     PrefabUndoUtils::UpdateEntityInPrefabDom(cachedFocusedInstanceDom, entityDomAfterUpdate, pathInsideFocusedInstance);
-                } 
+                }
             }
 
             // Redo - Update target template of the link.
@@ -171,7 +171,7 @@ namespace AzToolsFramework
                     // In redo, after-state subtrees in map will be moved to the link tree.
                     // In undo, before-state subtrees in map will be moved to the link tree.
                     // The previous states of subtrees in link are moved back to the map for next undo/redo if any.
-                    PrefabOverridePrefixTree subtreeInLink = AZStd::move(link->get().RemoveOverrides(pathToSubtree));
+                    PrefabOverridePrefixTree subtreeInLink = link->get().RemoveOverrides(pathToSubtree);
                     link->get().AddOverrides(pathToSubtree, AZStd::move(subtreeState));
                     subtreeState = AZStd::move(subtreeInLink);
                 }

@@ -144,7 +144,7 @@ namespace AZ
         void EditorMaterialSystemComponent::OpenMaterialEditor(const AZStd::string& sourcePath)
         {
             QStringList arguments;
-            arguments.append(sourcePath.c_str());
+            arguments.append(QString(R"("%1")").arg(sourcePath.c_str()));
 
             // Use the same RHI as the main editor
             AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
@@ -156,7 +156,7 @@ namespace AZ
             AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
             if (!projectPath.empty())
             {
-                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+                arguments.append(QString(R"(--project-path="%1")").arg(projectPath.c_str()));
             }
 
             AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
@@ -166,7 +166,7 @@ namespace AZ
         void EditorMaterialSystemComponent::OpenMaterialCanvas(const AZStd::string& sourcePath)
         {
             QStringList arguments;
-            arguments.append(sourcePath.c_str());
+            arguments.append(QString(R"("%1")").arg(sourcePath.c_str()));
 
             // Use the same RHI as the main Canvas
             AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
@@ -178,7 +178,7 @@ namespace AZ
             AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
             if (!projectPath.empty())
             {
-                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+                arguments.append(QString(R"(--project-path="%1")").arg(projectPath.c_str()));
             }
 
             AZ_TracePrintf("MaterialComponent", "Launching Material Canvas");

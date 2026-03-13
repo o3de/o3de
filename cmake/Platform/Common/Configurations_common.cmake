@@ -75,6 +75,16 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
     endif()
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "21")
+    # Workaround for a googletest bug with char conversions recognized by Clang 21+
+    # See https://github.com/google/googletest/issues/4762
+    # TODO: remove when googletest is updated
+    ly_append_configurations_options(
+        COMPILATION
+            -Wno-character-conversion
+    )
+endif()
+
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 
 include(CheckPIESupported)

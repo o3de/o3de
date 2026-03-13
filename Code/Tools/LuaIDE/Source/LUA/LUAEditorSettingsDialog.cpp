@@ -86,6 +86,10 @@ namespace LUAEditor
 
     void LUAEditorSettingsDialog::OnSave()
     {
+        AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
+
+        m_originalSettings = *syntaxStyleSettings;
+
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequestBus::Events::Save);
 
         LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
@@ -101,10 +105,11 @@ namespace LUAEditor
     {
         AZStd::intrusive_ptr<SyntaxStyleSettings> syntaxStyleSettings = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC_CE("LUA Editor Text Settings"), AZ::UserSettings::CT_GLOBAL);
 
-        // Revert the stored copy, no changes will be stored.
-        *syntaxStyleSettings = m_originalSettings;
-
-        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
+        if (*syntaxStyleSettings != m_originalSettings)
+        {
+            *syntaxStyleSettings = m_originalSettings;
+            LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
+        }
 
         close();
     }

@@ -26,7 +26,7 @@ fi
 #
 # Install the necessary tools to download, install, and run the android tools
 #
-apt install -y openjdk-11-jdk unzip wget
+apt install -y openjdk-17-jdk unzip wget
 
 mkdir /opt/android-sdk-linux
 wget -q https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip -O /tmp/commandlinetools-linux.zip

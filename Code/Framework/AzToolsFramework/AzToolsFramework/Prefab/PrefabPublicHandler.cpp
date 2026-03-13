@@ -200,12 +200,12 @@ namespace AzToolsFramework
 
                         commonRootEntityOwningInstance->get().DetachEntity(entityId).release();
                     }
-                    
+
                     PrefabUndoHelpers::RemoveEntityDoms(detachedEntityDomAndPathList, commonRootInstanceTemplateId, undoBatch.GetUndoBatch());
                 }
 
                 // Detach the retrieved nested instances.
-                // When we create a prefab with other prefab instances, we have to remove the existing links between the source and 
+                // When we create a prefab with other prefab instances, we have to remove the existing links between the source and
                 // target templates of the other instances.
                 for (auto& instance : detachedInstances)
                 {
@@ -433,7 +433,7 @@ namespace AzToolsFramework
                         AZ_STRING_ARG(filePathString)));
                 }
             }
-            
+
             return result;
         }
 
@@ -462,7 +462,7 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GeneratePatch(patch, containerEntityDomBefore, containerEntityDomAfter);
             m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patch, containerEntityId);
 
-            return AZStd::move(patch);
+            return patch;
         }
 
         InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(
@@ -706,7 +706,7 @@ namespace AzToolsFramework
             LinkReference nestedInstanceLink = m_prefabSystemComponentInterface->FindLink(sourceInstance->GetLinkId());
             AZ_Assert(
                 nestedInstanceLink.has_value(),
-                "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");    
+                "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");
 
             PrefabDom patchesCopyForUndoSupport;
             PrefabDom nestedInstanceLinkDom;
@@ -785,7 +785,7 @@ namespace AzToolsFramework
             AZStd::string entityName = AZStd::string::format("Entity%llu", static_cast<AZ::u64>(m_newEntityCounter++));
 
             AZ::Entity* entity = aznew AZ::Entity(entityId, entityName.c_str());
-            
+
             Instance& entityOwningInstance = owningInstanceOfParentEntity->get();
 
             ScopedUndoBatch undoBatch("Add Entity");
@@ -1154,7 +1154,7 @@ namespace AzToolsFramework
                     "PrefabEditorEntityOwnershipInterface unavailable.");
             }
             InstanceOptionalReference levelInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
-            
+
             return owningInstance
                 && levelInstance
                 && (&owningInstance->get() == &levelInstance->get())
@@ -1453,7 +1453,7 @@ namespace AzToolsFramework
 
             if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
             {
-                return AZStd::move(retrieveEntitiesAndInstancesOutcome);
+                return retrieveEntitiesAndInstancesOutcome;
             }
 
             // Gets selected entities.
@@ -1516,7 +1516,7 @@ namespace AzToolsFramework
 
                 if (isOverrideEditing)
                 {
-                    detachedInstanceAliasPaths.push_back(AZStd::move(PrefabDomUtils::PathStartingWithInstances + instanceAlias));
+                    detachedInstanceAliasPaths.push_back(PrefabDomUtils::PathStartingWithInstances + instanceAlias);
                 }
                 else
                 {
@@ -1570,7 +1570,7 @@ namespace AzToolsFramework
 
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
-            
+
             return AZ::Success();
         }
 
@@ -1583,7 +1583,7 @@ namespace AzToolsFramework
         {
             return DetachPrefabImpl(containerEntityId, false /* Discard Container Entity */);
         }
-        
+
         PrefabOperationResult PrefabPublicHandler::DetachPrefabImpl(const AZ::EntityId& containerEntityId, bool keepContainerEntity)
         {
             if (!containerEntityId.IsValid())
@@ -1720,7 +1720,7 @@ namespace AzToolsFramework
                                     AZ::TransformBus::Event(currentEntityId, &AZ::TransformBus::Events::SetParent, containerParentId);
                                 }
                             }
-                            
+
                             PrefabDom nestedInstanceDomUnderNewParent;
                             m_instanceToTemplateInterface->GenerateInstanceDomBySerializing(
                                 nestedInstanceDomUnderNewParent, nestedInstanceUnderNewParent);
@@ -1753,7 +1753,7 @@ namespace AzToolsFramework
                             {
                                 // get the absolute alias path of the parent instance (the parent of the container entity
                                 AliasPath aliasPath = resultInstance.first->GetAbsoluteInstanceAliasPath();
-                        
+
                                 aliasPath.Append(resultInstance.second);
                                 AZ::EntityId newId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(aliasPath);
                                 if (newId.IsValid())
@@ -1772,7 +1772,7 @@ namespace AzToolsFramework
                         {
                             // use erase-remove-if idiom:
                             vector.erase(
-                                
+
                                 AZStd::remove_if(vector.begin(), vector.end(), [&toRemove](const AZ::EntityId& entityId)
                                 {
                                     return AZStd::find(toRemove.begin(), toRemove.end(), entityId) != toRemove.end();
@@ -1805,21 +1805,21 @@ namespace AzToolsFramework
                     // before the current undo batch expires, clear any dirty entities.
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::ClearDirtyEntities);
                 } // end of first "inner" undo batch
-                
+
                 // now that a complete undo batch is done for the operation which leaves the data intact, we can delete
                 // the leftover container entity in a normal "delete this thing" step.  We can behave as if the entity
                 // is always attached.
 
                 // note that this is still within the scope of the "outer" undo batch, so it still counts as one operation.
                 if (!keepContainerEntity)
-                {   
+                {
                     DeleteFromInstance({containerEntityId});
                 }
 
                 // before the current undo batch expires, clear any dirty entities.
                 ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             } // end of the "outer" undo batch.
-            
+
             return AZ::Success();
         }
 
@@ -1978,7 +1978,7 @@ namespace AzToolsFramework
                 {
                     // If it's the same instance, we can add this entity to the new instance entities.
                     size_t priorEntitiesSize = entities.size();
-                    
+
                     entities.insert(entity);
 
                     // If the size of entities increased, then it wasn't added before.
@@ -2070,7 +2070,7 @@ namespace AzToolsFramework
             {
                 outEntityIds.erase(iter);
             }
-            
+
             return outEntityIds;
         }
 
@@ -2172,7 +2172,7 @@ namespace AzToolsFramework
             AzToolsFramework::EntityIdList selectedEntities;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
                 selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-            
+
             // Find the EditorEntitySortComponent DOM
             auto componentsIter = parentEntityValue->FindMember(PrefabDomUtils::ComponentsName);
             if (componentsIter == parentEntityValue->MemberEnd())

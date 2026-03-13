@@ -45,6 +45,16 @@ namespace O3DE::ProjectManager
         // Any notes returned will be showend as a message box or output log, regardless of success or failure.
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform(const ProjectInfo& projectInfo);
 
+        //! Return the platform specific path separator for the PATH environment variable, e.g. ';' on windows and ':' on unix
+        QChar GetPlatformPathEnvSeparator();
+
+        //! Return the platform specific name of the PATH environment variable, e.g. 'Path' on windows and 'PATH' on unix
+        QString GetPlatformPathEnvVariableName();
+
+        //! modify the process environment to prepent the given path to the front of the system environment path
+        //! Prepend it, if prepend is true, otherwise append it.
+        bool AddPathToPathEnv(QString newPath, bool prepend = true);
+
         //! Detect if cmake is installed
         //! Does NOT detect if the version of cmake required to run O3DE
         //! The cmake exeuctable is only tool suitable for detecting the minimum cmake version

@@ -110,7 +110,6 @@ set(FILES
     containers/set.h
     containers/span_fwd.h
     containers/span.h
-    containers/span.inl
     containers/stack.h
     containers/unordered_map.h
     containers/unordered_set.h

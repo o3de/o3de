@@ -1101,7 +1101,7 @@ namespace AZ
                 "PerDraw shading rate is not supported on this platform");
 
             VkExtent2D vkFragmentSize = ConvertFragmentShadingRate(m_state.m_shadingRateState.m_shadingRate);
-            AZStd::array<VkFragmentShadingRateCombinerOpKHR, RHI::ShadingRateCombinators::array_size> vkCombinators;
+            AZStd::array<VkFragmentShadingRateCombinerOpKHR, AZStd::tuple_size_v<RHI::ShadingRateCombinators>> vkCombinators;
             for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
             {
                 vkCombinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);

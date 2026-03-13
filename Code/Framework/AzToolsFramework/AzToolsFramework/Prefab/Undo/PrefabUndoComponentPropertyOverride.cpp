@@ -125,7 +125,7 @@ namespace AzToolsFramework
 
                 // Remove the subtree and cache the subtree for undo.
                 // Note: Depending on the path, this would remove all existing patches to individual values (e.g. vector).
-                m_overriddenPropertySubTree = AZStd::move(link->get().RemoveOverrides(pathToPropertyFromTopPrefab));
+                m_overriddenPropertySubTree = link->get().RemoveOverrides(pathToPropertyFromTopPrefab);
 
                 m_overriddenPropertyPath = pathToPropertyFromTopPrefab;
 
@@ -169,7 +169,7 @@ namespace AzToolsFramework
                     // In undo, before-state subtrees in map will be moved to the link tree.
                     // The previous states of subtrees in link are moved back to the map for next undo/redo if any.
                     AZ_Assert(!m_overriddenPropertyPath.IsEmpty(), "PrefabUndoComponentPropertyOverride - Overriden property path is empty.");
-                    PrefabOverridePrefixTree subtreeInLink = AZStd::move(link->get().RemoveOverrides(m_overriddenPropertyPath));
+                    PrefabOverridePrefixTree subtreeInLink = link->get().RemoveOverrides(m_overriddenPropertyPath);
                     link->get().AddOverrides(m_overriddenPropertyPath, AZStd::move(m_overriddenPropertySubTree));
                     m_overriddenPropertySubTree = AZStd::move(subtreeInLink);
 

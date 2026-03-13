@@ -101,7 +101,7 @@ namespace AzToolsFramework
                 this,
                 [this]()
                 {
-                    auto entries = AZStd::move(GetSelectedAssets());
+                    auto entries = GetSelectedAssets();
                     if (entries.empty() && m_assetTreeView)
                     {
                         // Tree has the current open folder selected if context is valid (not searching, etc)
@@ -110,7 +110,7 @@ namespace AzToolsFramework
                         {
                             m_thumbnailViewWidget->selectionModel()->select(
                                 treeSelection.first(), QItemSelectionModel::SelectionFlag::ClearAndSelect);
-                            entries = AZStd::move(GetSelectedAssets());
+                            entries = GetSelectedAssets();
                         }
                     }
 
@@ -399,7 +399,7 @@ namespace AzToolsFramework
                                                 .data(AssetBrowserModel::Roles::EntryRole)
                                                 .value<const AssetBrowserEntry*>();
             AZStd::string pathName = item->GetFullPath();
-            
+
 
             using namespace AzQtComponents;
             DragAndDropContextBase context;
@@ -540,7 +540,7 @@ namespace AzToolsFramework
         {
             return m_assetFilterModel->GetSortMode();
         }
-        
+
         void AssetBrowserThumbnailView::SelectEntry(QString assetName)
         {
             QModelIndex rootIndex = m_thumbnailViewProxyModel->GetRootIndex();

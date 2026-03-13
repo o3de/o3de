@@ -135,7 +135,7 @@ namespace AZ
         {
             AZ_Assert(m_materials.size() > 0, "GetImageDimensions() cannot be called until at least one material has been added");
             const int iter = m_materials.begin();
-            // All textures in a texture array must have the same size, so just pick the first 
+            // All textures in a texture array must have the same size, so just pick the first
             const MaterialData& firstMaterial = m_materials[iter];
             const auto& baseColorAsset = GetStreamingImageAsset(firstMaterial.m_materialAssetData, GetMapName(mapType));
             return baseColorAsset->GetImageDescriptor().m_size;
@@ -164,7 +164,7 @@ namespace AZ
                 assetCreator.BeginMip(layout);
 
                 for (int i = 0; i < m_materials.array_size(); ++i)
-                {                   
+                {
                     const auto imageData = GetRawImageData(GetMapName(mapType), i, mipLevel);
                     assetCreator.AddSubImage(imageData.data(), imageData.size());
                 }
@@ -175,7 +175,7 @@ namespace AZ
             Data::Asset<RPI::ImageMipChainAsset> asset;
             assetCreator.End(asset);
 
-            return AZStd::move(asset);
+            return asset;
         }
 
         RHI::ImageDescriptor DecalTextureArray::CreatePackedImageDescriptor(
@@ -252,7 +252,7 @@ namespace AZ
         uint16_t DecalTextureArray::GetNumMipLevels(const DecalMapType mapType) const
         {
             AZ_Assert(m_materials.size() > 0, "GetNumMipLevels() cannot be called until at least one material has been added");
-            // All decals in a texture array must have the same number of mips, so just pick the first 
+            // All decals in a texture array must have the same number of mips, so just pick the first
             const int iter = m_materials.begin();
             const MaterialData& firstMaterial = m_materials[iter];
             const auto& imageAsset = GetStreamingImageAsset(firstMaterial.m_materialAssetData, GetMapName(mapType));
@@ -329,7 +329,7 @@ namespace AZ
             while (iter != -1)
             {
                 if (!IsTextureMapPresentInMaterial(m_materials[iter], mapType))
-                {                    
+                {
                     return false;
                 }
                 iter = m_materials.next(iter);

@@ -533,7 +533,7 @@ namespace AzToolsFramework
                     }
 
                     // Run the scrubber and store the result
-                    resultMap.emplace(entity->GetId(), AZStd::move(ScrubEntity(entity)));
+                    resultMap.emplace(entity->GetId(), ScrubEntity(entity));
 
                     // Attempt to re-activate if we were previously active
                     if (reactivate)

@@ -3197,10 +3197,29 @@ void CCryEditApp::OpenLUAEditor(const char* files)
     AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
     AZStd::vector<AZStd::string> launchCmd = { executablePath.String() };
+
     launchCmd.emplace_back("--engine-path");
-    launchCmd.emplace_back(AZStd::string_view{ enginePath });
+
+    {
+        AZ::IO::FixedMaxPathString enginePathQuoted{};
+        enginePathQuoted += '"';
+        enginePathQuoted += enginePath;
+        enginePathQuoted += '"';
+
+        launchCmd.emplace_back(enginePathQuoted);
+    }
+
     launchCmd.emplace_back("--project-path");
-    launchCmd.emplace_back(AZStd::string_view{ projectPath });
+
+    {
+        AZ::IO::FixedMaxPathString projectPathQuoted{};
+        projectPathQuoted += '"';
+        projectPathQuoted += projectPath;
+        projectPathQuoted += '"';
+
+        launchCmd.emplace_back(projectPathQuoted);
+    }
+
     launchCmd.emplace_back("--launch");
     launchCmd.emplace_back("lua");
 
@@ -3215,7 +3234,13 @@ void CCryEditApp::OpenLUAEditor(const char* files)
             {
                 fullPathFound = true;
                 launchCmd.emplace_back("--files");
-                launchCmd.emplace_back(AZStd::move(assetFullPath.Native()));
+
+                AZ::IO::FixedMaxPathString fileArgQuoted{};
+                fileArgQuoted += '"';
+                fileArgQuoted += AZ::IO::PathView(assetFullPath).Native();
+                fileArgQuoted += '"';
+
+                launchCmd.emplace_back(fileArgQuoted);
             }
         };
         AzToolsFramework::AssetSystemRequestBus::Broadcast(AZStd::move(GetFullSourcePath));
@@ -3229,7 +3254,13 @@ void CCryEditApp::OpenLUAEditor(const char* files)
                 && fileIo->Exists(resolvedFilePath.c_str()))
             {
                 launchCmd.emplace_back("--files");
-                launchCmd.emplace_back(resolvedFilePath.String());
+
+                AZ::IO::FixedMaxPathString fileArgQuoted{};
+                fileArgQuoted += '"';
+                fileArgQuoted += AZ::IO::PathView(resolvedFilePath).Native();
+                fileArgQuoted += '"';
+
+                launchCmd.emplace_back(fileArgQuoted);
             }
         }
     };

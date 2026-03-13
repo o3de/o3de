@@ -242,19 +242,19 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
         }
 
         auto positionBufferAsset = positionBuffer->m_bufferAssetView.GetBufferAsset();
-        const float* rawPositionBuffer = (const float*)(positionBufferAsset->GetBuffer().begin());
+        const float* rawPositionBuffer = (const float*)(positionBufferAsset->GetBuffer().data());
         AZ_Assert(
             positionBuffer->m_bufferAssetView.GetBufferViewDescriptor().m_elementFormat == AZ::RHI::Format::R32G32B32_FLOAT,
             "Unexpected position element format.");
 
         auto uvBufferAsset = uvBuffer->m_bufferAssetView.GetBufferAsset();
-        const float* rawUvBuffer = (const float*)(uvBufferAsset->GetBuffer().begin());
+        const float* rawUvBuffer = (const float*)(uvBufferAsset->GetBuffer().data());
         AZ_Assert(
             uvBuffer->m_bufferAssetView.GetBufferViewDescriptor().m_elementFormat == AZ::RHI::Format::R32G32_FLOAT,
             "Unexpected UV element format.");
 
         auto indexBuffer = mesh.GetIndexBufferAssetView().GetBufferAsset();
-        const uint32_t* rawIndexBuffer = (const uint32_t*)(indexBuffer->GetBuffer().begin());
+        const uint32_t* rawIndexBuffer = (const uint32_t*)(indexBuffer->GetBuffer().data());
         AZ_Assert(
             (indexBuffer->GetBufferViewDescriptor().m_elementCount % 3) == 0,
             "index buffer not a multiple of 3");

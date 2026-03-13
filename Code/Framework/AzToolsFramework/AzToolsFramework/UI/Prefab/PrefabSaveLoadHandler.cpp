@@ -102,7 +102,7 @@ namespace AzToolsFramework
                 AZ_Assert(false, "PrefabSaveHandler - could not get PrefabPublicInterface on construction.");
                 return;
             }
-           
+
             s_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             if (s_prefabSystemComponentInterface == nullptr)
             {
@@ -123,7 +123,7 @@ namespace AzToolsFramework
                 AZ_Assert(false, "PrefabSaveHandler - could not get TemplateInstanceMapperInterface on construction.");
                 return;
             }
-            
+
             // we care about both outliner and viewport.
             AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
             AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EntityOutliner);
@@ -253,7 +253,7 @@ namespace AzToolsFramework
 
                     DoDragAndDropData(instantiateLocation, AZ::EntityId(), thingsToInstantiate, thingsToDetach);
 
-                    
+
                 }
             }
         }
@@ -273,7 +273,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
-                        
+
             // helper lambda: given a product, evaluate whether it is a proc prefab.
             // if it is, add it to the list of things that should be instantiated.
             // if its not selected, add it to the list of things that should also be detached.
@@ -387,7 +387,7 @@ namespace AzToolsFramework
                 {
                     EditorRequestBus::BroadcastResult(instantiateLocation, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
                 }
-               
+
                 if (CanDragAndDropData(outlinerContext->m_dataBeingDropped, &thingsToInstantiate, &thingsToDetach))
                 {
                     accepted = true;
@@ -781,12 +781,12 @@ namespace AzToolsFramework
                 }
 
                 // We also check if the prefab template already exists in the Prefabs Database.
-                // This happens if the prefab file having the same name was removed from the disk, 
+                // This happens if the prefab file having the same name was removed from the disk,
                 // but the prefab instance still exists in the Editor.
                 TemplateId templateId = s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(prefabRelativeName.c_str());
                 if (templateId != Prefab::InvalidTemplateId)
                 {
-                    const AZStd::string message = AZStd::string::format(                        
+                    const AZStd::string message = AZStd::string::format(
                         "A prefab with the path '%s' already exists in the Asset Database. \r\n\r\n"
                         "Overriding it will damage instances or cascades of this prefab.",
                         prefabRelativeName.c_str());
@@ -947,7 +947,7 @@ namespace AzToolsFramework
             AzQtComponents::StyleManager::setStyleSheet(savePrefabDialog->parentWidget(), QStringLiteral("style:Editor.qss"));
 
             savePrefabDialog->setLayout(contentLayout);
-            return AZStd::move(savePrefabDialog);
+            return savePrefabDialog;
         }
 
         AZStd::shared_ptr<QDialog> PrefabSaveHandler::ConstructClosePrefabDialog(TemplateId templateId)
@@ -1034,7 +1034,7 @@ namespace AzToolsFramework
             unsavedPrefabsScrollArea->setWidgetResizable(true);
             unsavedPrefabsContainer->setContentWidget(unsavedPrefabsScrollArea);
 
-            return AZStd::move(unsavedPrefabsContainer);
+            return unsavedPrefabsContainer;
         }
 
         void PrefabSaveHandler::SourceFileRemoved(

@@ -19,7 +19,7 @@ namespace AzToolsFramework
             InstanceClimbUpResult ClimbUpToTargetOrRootInstance(const Instance& startInstance, const Instance* targetInstance)
             {
                 InstanceClimbUpResult result;
-                
+
                 // Climbs up the instance hierarchy from the start instance until it hits the target or the root instance.
                 const Instance* instancePtr = &startInstance;
 
@@ -89,7 +89,7 @@ namespace AzToolsFramework
                     relativePath.append((*instanceIter)->GetInstanceAlias());
                 }
 
-                return AZStd::move(relativePath);
+                return relativePath;
             }
 
             bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance)
