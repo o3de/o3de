@@ -6,7 +6,7 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! Thos module contains some lightweight PySide2 sample ui code.
+"""! Thos module contains some lightweight PySide sample ui code.
 
 :file: < DCCsi >\\azpy\\shared\\ui\\samples.py
 :Status: Prototype
@@ -16,8 +16,8 @@
 # standard imports
 from pathlib import Path
 import logging as _logging
-#PySide2 imports
-from PySide2 import QtWidgets
+#PySide imports
+from PySide6 import QtWidgets
 # -------------------------------------------------------------------------
 # global scope
 _MODULENAME = 'azpy.shared.ui.samples'

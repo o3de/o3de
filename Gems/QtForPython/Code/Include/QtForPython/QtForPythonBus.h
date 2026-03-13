@@ -15,7 +15,7 @@ namespace QtForPython
 {
     //////////////////////////////////////////////////////////////////////////
     // Used to fetch the data points a bootstrap script requires to hook in
-    // QtForPython (aka PySide2) 
+    // QtForPython (aka PySide) 
     struct QtBootstrapParameters
     {
         AZ_TYPE_INFO(QtBootstrapParameters, "{4103CF43-6CF7-413D-B2C8-D511E23BAB50}");

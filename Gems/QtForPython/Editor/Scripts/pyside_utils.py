@@ -9,11 +9,11 @@ import azlmbr.qt
 import azlmbr.qt_helpers
 import asyncio
 import re
-from shiboken2 import wrapInstance, getCppPointer
-from PySide2 import QtCore, QtWidgets, QtGui, QtTest
-from PySide2.QtWidgets import QAction, QWidget
-from PySide2.QtCore import Qt
-from PySide2.QtTest import QTest
+from shiboken6 import wrapInstance, getCppPointer
+from PySide6 import QtCore, QtWidgets, QtGui, QtTest
+from PySide6.QtWidgets import QAction, QWidget
+from PySide6.QtCore import Qt
+from PySide6.QtTest import QTest
 import traceback
 import threading
 import types
