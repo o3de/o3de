@@ -31,3 +31,9 @@ ros-jazzy-urdfdom                      # ROS2 development tools
 ros-jazzy-vision-msgs                  # ROS2 development tools
 libunwind-dev
 libzstd-dev
+
+# Wayland Libraries
+libwayland-dev                         # For client headers (includes cursor header)
+libwayland-cursor0                     # Wayland cursor library
+wayland-protocols                      # For protocols
+libwayland-bin                         # For wayland-scanner

@@ -18,6 +18,13 @@
 #include <AzFramework/XcbNativeWindow.h>
 #endif
 
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+#include <AzFramework/WaylandApplication.h>
+#include <AzFramework/WaylandNativeWindow.h>
+#include <AzFramework/WaylandInputDeviceMouse.h>
+#include <AzFramework/WaylandInputDeviceKeyboard.h>
+#endif
+
 // libevdev could be used for other devices in the future (Can do keyboard, mouse, etc), so it doesn't belong in the gamepad
 // folder.
 #include <AzFramework/Input/LibEVDevWrapper.h> 
@@ -29,6 +36,8 @@ constexpr int g_max_gamepads = 4;
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad_Linux.h>
 
 constexpr rlim_t g_minimumOpenFileHandles = 65536L;
+
+[[maybe_unused]] static bool g_useWayland = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -55,15 +64,17 @@ namespace AzFramework
                 [[maybe_unused]] int set_limit_result = setrlimit(RLIMIT_NOFILE, &newLimit);
                 AZ_Assert(set_limit_result == 0, "Unable to update open file limits");
             }
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+            if (g_useWayland)
+            {
+                return AZStd::make_unique<WaylandApplication>();
+            }
+#endif
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             return AZStd::make_unique<XcbApplication>();
-#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-            #error "Linux Window Manager Wayland not supported."
+#endif
+            AZ_Assert(false, "Linux Window Manager not recognized.");
             return nullptr;
-#else
-            #error "Linux Window Manager not recognized."
-            return nullptr;
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         }
     };
 
@@ -72,15 +83,17 @@ namespace AzFramework
     {
         AZStd::unique_ptr<InputDeviceKeyboard::Implementation> Create(InputDeviceKeyboard& inputDevice) override
         {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+            if (g_useWayland)
+            {
+                return AZStd::make_unique<WaylandInputDeviceKeyboard>(inputDevice);
+            }
+#endif
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             return AZStd::make_unique<XcbInputDeviceKeyboard>(inputDevice);
-#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-            #error "Linux Window Manager Wayland not supported."
+#endif
+            AZ_Assert(false, "Linux Window Manager not recognized.");
             return nullptr;
-#else
-            #error "Linux Window Manager not recognized."
-            return nullptr;
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         }
     };
 
@@ -89,16 +102,17 @@ namespace AzFramework
     {
         AZStd::unique_ptr<InputDeviceMouse::Implementation> Create(InputDeviceMouse& inputDevice) override
         {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+            if (g_useWayland)
+            {
+                return AZStd::unique_ptr<InputDeviceMouse::Implementation>(WaylandInputDeviceMouse::Create(inputDevice));;
+            }
+#endif
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-            
             return AZStd::unique_ptr<InputDeviceMouse::Implementation>(XcbInputDeviceMouse::Create(inputDevice));
-#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-#error "Linux Window Manager Wayland not supported."
+#endif
+            AZ_Assert(false, "Linux Window Manager not recognized.");
             return nullptr;
-#else
-#error "Linux Window Manager not recognized."
-            return nullptr;
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         }
     };
 
@@ -107,15 +121,17 @@ namespace AzFramework
     {
         AZStd::unique_ptr<NativeWindow::Implementation> Create() override
         {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+            if (g_useWayland)
+            {
+                return AZStd::make_unique<WaylandNativeWindow>();
+            }
+#endif
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             return AZStd::make_unique<XcbNativeWindow>();
-#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-            #error "Linux Window Manager Wayland not supported."
+#endif
+            AZ_Assert(false, "Linux Window Manager not recognized.");
             return nullptr;
-#else
-            #error "Linux Window Manager not recognized."
-            return nullptr;
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         }
     };
 
@@ -152,6 +168,19 @@ namespace AzFramework
     
     void NativeUISystemComponent::InitializeApplicationImplementationFactory()
     {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB && PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        //Check for a Wayland env var if we also support X11
+        const char* waylandEnvVar = getenv("WAYLAND_DISPLAY");
+        if (waylandEnvVar != nullptr && strlen(waylandEnvVar) > 0)
+        {
+            g_useWayland = true;
+            AZ_Printf("NativeUISystemComponent", "Using Wayland, found WAYLAND_DISPLAY env var.");
+        }
+#elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND && !PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        //Only supports Wayland.
+        g_useWayland = true;
+#endif
+
         m_applicationImplFactory = AZStd::make_unique<LinuxApplicationImplFactory>();
         AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory.get());
     }
