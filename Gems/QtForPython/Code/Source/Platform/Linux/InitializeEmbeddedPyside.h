@@ -12,29 +12,30 @@
 
 namespace QtForPython
 {
+    // #QT6_TODO lib names might need adjustments
     // s_libPythonLibraryFile must match the library name listed in (O3DE Engine Root)/python/runtime/.../python-config.cmake
     // in the set(${MY}_LIBRARY_xxxx sections.
     const char* s_libPythonLibraryFile = "libpython3.10.so.1.0"; 
-    const char* s_libPyside2LibraryFile = "libpyside2.abi3.so.5.15";
-    const char* s_libShibokenLibraryFile = "libshiboken2.abi3.so.5.15";
-    const char* s_libQt5TestLibraryFile = "libQt5Test.so.5";
+    const char* s_libPysideLibraryFile = "libpyside6.abi3.so.6.10";
+    const char* s_libShibokenLibraryFile = "libshiboken6.abi3.so.6.10";
+    const char* s_libQtTestLibraryFile = "libQt6Test.so.6";
 
-    class InitializeEmbeddedPyside2
+    class InitializeEmbeddedPyside
     {
     public:
-        InitializeEmbeddedPyside2()
+        InitializeEmbeddedPyside()
         {
-            m_libPythonLibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libPythonLibraryFile);
-            m_libPyside2LibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libPyside2LibraryFile);
-            m_libShibokenLibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libShibokenLibraryFile);
-            m_libQt5TestLibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libQt5TestLibraryFile);
+            m_libPythonLibraryFile = InitializeEmbeddedPyside::LoadModule(s_libPythonLibraryFile);
+            m_libPysideLibraryFile = InitializeEmbeddedPyside::LoadModule(s_libPysideLibraryFile);
+            m_libShibokenLibraryFile = InitializeEmbeddedPyside::LoadModule(s_libShibokenLibraryFile);
+            m_libQtTestLibraryFile = InitializeEmbeddedPyside::LoadModule(s_libQtTestLibraryFile);
         }
-        virtual ~InitializeEmbeddedPyside2()
+        virtual ~InitializeEmbeddedPyside()
         {
-            InitializeEmbeddedPyside2::UnloadModule(m_libQt5TestLibraryFile);
-            InitializeEmbeddedPyside2::UnloadModule(m_libShibokenLibraryFile);
-            InitializeEmbeddedPyside2::UnloadModule(m_libPyside2LibraryFile);
-            InitializeEmbeddedPyside2::UnloadModule(m_libPythonLibraryFile);
+            InitializeEmbeddedPyside::UnloadModule(m_libQtTestLibraryFile);
+            InitializeEmbeddedPyside::UnloadModule(m_libShibokenLibraryFile);
+            InitializeEmbeddedPyside::UnloadModule(m_libPysideLibraryFile);
+            InitializeEmbeddedPyside::UnloadModule(m_libPythonLibraryFile);
         }
 
     private:
@@ -44,7 +45,7 @@ namespace QtForPython
             if (!moduleHandle)
             {
                 [[maybe_unused]] const char* loadError = dlerror();
-                AZ_Error("QtForPython", false, "Unable to load python library %s for Pyside2: %s", moduleToLoad,
+                AZ_Error("QtForPython", false, "Unable to load python library %s for Pyside: %s", moduleToLoad,
                          loadError ? loadError : "Unknown Error");
             }
             return moduleHandle;
@@ -59,8 +60,8 @@ namespace QtForPython
         }
 
         void* m_libPythonLibraryFile;
-        void* m_libPyside2LibraryFile;
+        void* m_libPysideLibraryFile;
         void* m_libShibokenLibraryFile;
-        void* m_libQt5TestLibraryFile;
+        void* m_libQtTestLibraryFile;
     };
 } // namespace QtForPython

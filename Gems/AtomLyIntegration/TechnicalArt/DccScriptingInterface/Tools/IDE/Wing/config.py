@@ -58,10 +58,10 @@ import DccScriptingInterface.config as dccsi_core_config
 # wing's default interpretter won't have access to o3de packages, etc.
 # but maybe they could be installed into wing with foundation.py?
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
-                                                       enable_o3de_pyside2=False,
+                                                       enable_o3de_pyside=False,
                                                        set_env=True)
 
-# from within wing, setting the Qt/PySide2 envars before running
+# from within wing, setting the Qt/PySide envars before running
 # another script/tool performs fine, as the interpreter is a subprocess
 
 # local dccsi imports
@@ -83,7 +83,7 @@ except EnvironmentError as e:
 # can run local tests
 if DCCSI_TESTS: # from DccScriptingInterface.globals
     # this will validate pyside bootstrapping
-    foo = dccsi_core_config.test_pyside2(exit = False)
+    foo = dccsi_core_config.test_pyside(exit = False)
     pass
 
 # this is the root path for the wing pkg
