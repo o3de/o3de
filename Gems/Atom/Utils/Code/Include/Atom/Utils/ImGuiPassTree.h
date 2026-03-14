@@ -37,9 +37,12 @@ namespace AZ
 
             bool GetFilteredPassNames(AZ::RPI::Pass* pass, AZStd::unordered_set<Name>& filteredPassNames) const;
 
+            AZStd::string GetPassDisplayName(AZ::RPI::Pass* pass) const;
+
             bool m_shouldPreviewAttachment = false;
             bool m_showAttachments = false;
             bool m_expandAllPasses = true;
+            bool m_showDisabledPasses = true;
 
             AZ::RPI::Pass* m_selectedPass = nullptr;
             AZ::RPI::Pass* m_lastSelectedPass = nullptr;
