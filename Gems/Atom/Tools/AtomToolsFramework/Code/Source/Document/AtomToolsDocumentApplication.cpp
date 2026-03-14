@@ -129,7 +129,9 @@ namespace AtomToolsFramework
         {
             const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
             if (openDocumentPath.empty())
+            {
                 continue;
+            }
 
             AZ_Printf(m_targetName.c_str(), "Opening document: %s", openDocumentPath.c_str());
             AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
