@@ -81,7 +81,7 @@ StyleSheetPage::StyleSheetPage(QWidget* parent)
     // Add demo filters to filteredSearchWidget
     const auto fruitList = {tr("Apple"), tr("Orange"), tr("Pear"), tr("Banana")};
     const auto category = tr("Fruit");
-    for (const auto fruit : fruitList)
+    for (const auto& fruit : fruitList)
     {
         ui->filteredSearchWidget->AddTypeFilter(category, fruit);
     }
