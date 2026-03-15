@@ -25,3 +25,4 @@ _savebackup/
 .command_settings
 CrashDB/
 *.DotSettings.user
+imgui.ini
