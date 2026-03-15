@@ -8,29 +8,31 @@
 #pragma once
 
 #include "UnlitShared.azsli"
-#include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
+
+struct TransparentOutput
+{
+    float4 m_color : SV_Target0;
+};
 
 VertexShaderOutput MainVS(VertexShaderInput IN, uint instanceId : SV_InstanceID)
 {
     return TransformVertex(IN, instanceId);
 }
 
-ForwardPassOutput MainPS(VertexShaderOutput IN)
+TransparentOutput MainPS(VertexShaderOutput IN)
 {
-    ForwardPassOutput OUT = (ForwardPassOutput)0;
+    TransparentOutput OUT;
 
     float3 baseColor = UnlitColorSrg::m_unlitColor;
     float4 sampledBaseColor = SampleBaseColorTexture(IN);
-
-    ApplyAlphaClip(IN, sampledBaseColor.a);
 
     if (o_baseColor_useTexture)
     {
         baseColor *= sampledBaseColor.rgb;
     }
 
-    OUT.m_diffuseColor = float4(baseColor, -1.0);
-    OUT.m_specularColor = float4(0.0, 0.0, 0.0, 0.0);
+    float alpha = saturate(float(ResolveOpacityAlpha(IN, sampledBaseColor.a)) * UnlitColorSrg::m_opacityFactor);
 
+    OUT.m_color = float4(baseColor * alpha, alpha);
     return OUT;
 }

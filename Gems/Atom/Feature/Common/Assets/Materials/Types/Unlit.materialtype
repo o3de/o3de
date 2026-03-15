@@ -1,6 +1,6 @@
 {
     "description": "Renders a model unlit with a single surface color value.",
-    "version": 0,
+    "version": 1,
     "versionUpdates": [],
     "propertyLayout": {
         "propertyGroups": [
@@ -30,6 +30,13 @@
                         }
                     },
                     {
+                        "name": "useTexture",
+                        "displayName": "Use Texture",
+                        "description": "Whether to use the texture.",
+                        "type": "Bool",
+                        "defaultValue": true
+                    },
+                    {
                         "name": "textureMapUv",
                         "displayName": "UV",
                         "description": "Base color map UV set",
@@ -39,6 +46,144 @@
                         "connection": {
                             "type": "ShaderInput",
                             "name": "m_baseColorMapUvIndex"
+                        }
+                    }
+                ],
+                "functors": [
+                    {
+                        "type": "UseTexture",
+                        "args": {
+                            "textureProperty": "baseColorTexture",
+                            "useTextureProperty": "useTexture",
+                            "dependentProperties": ["textureMapUv"],
+                            "shaderOption": "o_baseColor_useTexture"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "opacity",
+                "displayName": "Opacity",
+                "description": "Properties for configuring alpha clipping and blending.",
+                "properties": [
+                    {
+                        "name": "mode",
+                        "displayName": "Opacity Mode",
+                        "description": "Indicates whether alpha clipping or alpha blending is enabled.",
+                        "type": "Enum",
+                        "enumValues": [ "Opaque", "Cutout", "Blended" ],
+                        "defaultValue": "Opaque",
+                        "connection": {
+                            "type": "ShaderOption",
+                            "name": "o_opacity_mode"
+                        }
+                    },
+                    {
+                        "name": "alphaSource",
+                        "displayName": "Alpha Source",
+                        "description": "Indicates whether to get the alpha from the base color map or from a separate greyscale texture.",
+                        "type": "Enum",
+                        "enumValues": [ "Packed", "Split", "None" ],
+                        "defaultValue": "Packed",
+                        "connection": {
+                            "type": "ShaderOption",
+                            "name": "o_opacity_source"
+                        }
+                    },
+                    {
+                        "name": "textureMap",
+                        "displayName": "Texture",
+                        "description": "Texture for defining opacity.",
+                        "type": "Image",
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_opacityMap"
+                        }
+                    },
+                    {
+                        "name": "useTexture",
+                        "displayName": "Use Texture",
+                        "description": "Whether to use the opacity texture.",
+                        "type": "Bool",
+                        "defaultValue": true
+                    },
+                    {
+                        "name": "textureMapUv",
+                        "displayName": "UV",
+                        "description": "Opacity map UV set",
+                        "type": "Enum",
+                        "enumIsUv": true,
+                        "defaultValue": "Tiled",
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_opacityMapUvIndex"
+                        }
+                    },
+                    {
+                        "name": "factor",
+                        "displayName": "Factor",
+                        "description": "Factor for cutout threshold and blended opacity.",
+                        "type": "Float",
+                        "min": 0.0,
+                        "max": 1.0,
+                        "defaultValue": 0.5,
+                        "connection": {
+                            "type": "ShaderInput",
+                            "name": "m_opacityFactor"
+                        }
+                    }
+                ],
+                "functors": [
+                    {
+                        "type": "Lua",
+                        "args": {
+                            "file": "Materials/Types/Unlit_OpacityState.lua"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "general",
+                "displayName": "General Settings",
+                "description": "General settings.",
+                "properties": [
+                    {
+                        "name": "doubleSided",
+                        "displayName": "Double-sided",
+                        "description": "Whether to render back-faces or just front-faces.",
+                        "type": "Bool",
+                        "defaultValue": false
+                    },
+                    {
+                        "name": "castShadows",
+                        "displayName": "Cast Shadows",
+                        "description": "Whether this material contributes to shadow maps.",
+                        "type": "Bool",
+                        "defaultValue": true
+                    },
+                    {
+                        "name": "billboard",
+                        "displayName": "Billboard",
+                        "description": "Whether the geometry should face the active camera.",
+                        "type": "Bool",
+                        "defaultValue": false,
+                        "connection": {
+                            "type": "ShaderOption",
+                            "name": "o_billboardEnabled"
+                        }
+                    }
+                ],
+                "functors": [
+                    {
+                        "type": "Lua",
+                        "args": {
+                            "file": "Materials/Pipelines/Common/DoubleSided.lua"
+                        }
+                    },
+                    {
+                        "type": "Lua",
+                        "args": {
+                            "file": "Materials/Types/Unlit_GeneralState.lua"
                         }
                     }
                 ]
@@ -55,10 +200,20 @@
     },
     "shaders": [
         {
-            "file": "../../Shaders/Unlit/Unlit.shader"
+            "file": "../../Shaders/Unlit/Unlit.shader",
+            "tag": "forward"
         },
         {
-            "file": "../../Shaders/Depth/DepthPass.shader"
+            "file": "../../Shaders/Unlit/UnlitTransparent.shader",
+            "tag": "transparent"
+        },
+        {
+            "file": "../../Shaders/Unlit/UnlitDepthPass.shader",
+            "tag": "depth"
+        },
+        {
+            "file": "../../Shaders/Unlit/UnlitShadowmap.shader",
+            "tag": "shadow"
         }
     ]
 }
