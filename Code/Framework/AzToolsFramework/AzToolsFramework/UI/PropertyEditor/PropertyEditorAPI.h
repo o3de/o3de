@@ -431,6 +431,12 @@ namespace AzToolsFramework
     AZTF_API void RegisterTranslationContext(const AZStd::string& contextName);
 
     /**
+    * Call during shutdown to clean up.  Must be called before any modules are unloaded
+    * as part of cleaning up AZToolsFramework.
+    */
+    AZTF_API void ClearTranslationContexts();
+
+    /**
      * A function that evaluates whether a property node is read-only.
      * This can be used to make a property read-only when that can't be
      * accomplished through attributes on the node.

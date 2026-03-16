@@ -72,6 +72,12 @@ namespace AzToolsFramework
         return s_contexts;
     }
 
+    void ClearTranslationContexts()
+    {
+        AZStd::vector<AZStd::string> empty;
+        GetRegisteredContexts().swap(empty);
+    }
+
     void RegisterTranslationContext(const AZStd::string& contextName)
     {
         auto& contexts = GetRegisteredContexts();
