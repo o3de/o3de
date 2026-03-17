@@ -948,7 +948,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
         ret = process_command(gen_engine_bundle_command,
                             cwd=ctx.engine_path if engine_centric else ctx.project_path)
         if ret != 0:
-            raise RuntimeError(f"Error generating engine bundle for {bundles_path / f'game_{selected_platform}.pak'}")
+            raise RuntimeError(f"Error generating engine bundle for {bundles_path / f'engine_{selected_platform}.pak'}")
 
     return bundles_path
 
