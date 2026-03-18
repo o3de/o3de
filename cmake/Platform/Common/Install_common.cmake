@@ -912,7 +912,7 @@ function(ly_setup_assets)
     # this first loop real-path-izes all the paths to avoid doing so repeatedly.
     get_external_subdirectories_in_use(external_subdirs_non_realpath)
     foreach(gem_candidate_dir IN LISTS external_subdirs_non_realpath)
-        file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        cmake_path(ABSOLUTE_PATH gem_candidate_dir OUTPUT_VARIABLE gem_candidate_dir NORMALIZE BASE_DIRECTORY ${LY_ROOT_FOLDER})
         list(APPEND external_subdirs ${gem_candidate_dir})
     endforeach()
 
