@@ -349,6 +349,10 @@ function(ly_add_target)
             message(FATAL_ERROR "Target ${ly_add_target_NAME} contains AUTOUIC but doesnt have any .ui file")
         endif()
         ly_qt_uic_target(${ly_add_target_NAME})
+        # remove the UIC sources from the target since a custom build command will be applied for them:
+        get_target_property(all_ui_sources ${ly_add_target_NAME} SOURCES)
+        list(FILTER all_ui_sources EXCLUDE REGEX "^.*\\.ui$")
+        set_target_properties(${ly_add_target_NAME} PROPERTIES SOURCES "${all_ui_sources}")
     endif()
 
     # Add dependencies that were added before this target was available
