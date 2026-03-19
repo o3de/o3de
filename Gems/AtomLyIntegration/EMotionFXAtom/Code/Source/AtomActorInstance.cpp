@@ -549,7 +549,7 @@ namespace AZ::Render
 
     void AtomActorInstance::OnUpdateSkinningMatrices()
     {
-        if (m_skinnedMeshHandle.IsValid())
+        if (m_skinnedMeshHandle.IsValid() && IsVisible())
         {
             AZStd::vector<float> boneTransforms;
             GetBoneTransformsFromActorInstance(m_actorInstance, boneTransforms, GetSkinningMethod());
