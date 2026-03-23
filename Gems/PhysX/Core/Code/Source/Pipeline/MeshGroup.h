@@ -164,14 +164,21 @@ namespace PhysX
             AZ::u32 GetMinEdgeLength() const;
 
         private:
-            AZ::u32 m_maxConvexHulls = 1024;
-            AZ::u32 m_resolution = 100000;
-            float m_minVolumePercentError = 1.0f;
-            AZ::u32 m_maxRecursionDepth = 10;
-            bool m_shrinkWrap = true;
-            FillMode m_fillMode = FillMode::FloodFill;
-            AZ::u32 m_maxNumVerticesPerConvexHull = 64;
-            AZ::u32 m_minEdgeLength = 2;
+            // Note that the new version of VHACD was updated.  The "meaning" of this maxConvexHulls parameter changed.
+            // Previously it would try to minimize the number of convex hulls and this provided an escape hatch for the
+            // algorithm to stop trying in case you gave it some insane model that would cause it to process forever.
+            // But in the new version, its going to try to create as many convex hulls as you specify, and then try to minimize
+            // the error of those convex hulls.  If you give it 1024 hulls, its going to use 1024 hulls, where previously it may
+            // have only used 4-5.   8 Should be enough for almost all "props" you place in the level (chairs, tables, vases,
+            // pillars, stalegtites, etc).  You can tweak this in the Mesh Export settings if you need more, for a specific mesh.
+            AZ::u32 m_maxConvexHulls = 8;
+            AZ::u32 m_resolution = 400000;               // default from vhacd.h
+            float m_minVolumePercentError = 1.0f;        // default from vhacd.h
+            AZ::u32 m_maxRecursionDepth = 10;            // default from vhacd.h
+            bool m_shrinkWrap = true;                    // default from vhacd.h
+            FillMode m_fillMode = FillMode::FloodFill;   // default from vhacd.h
+            AZ::u32 m_maxNumVerticesPerConvexHull = 64;  // default from vhacd.h
+            AZ::u32 m_minEdgeLength = 2;                 // default from vhacd.h
         };
 
         class MeshGroup
