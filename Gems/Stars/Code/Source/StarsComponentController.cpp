@@ -24,6 +24,23 @@ namespace AZ::Render
                 ->Field("TwinkleRate", &StarsComponentConfig::m_twinkleRate)
                 ;
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<StarsComponentRequestBus>("StarsComponentRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "scene")
+                ->Attribute(AZ::Script::Attributes::Category, "Stars")
+                ->Event("Get Stars Exposure", &StarsComponentRequests::GetStarsExposure)
+                ->Event("Set Stars Exposure", &StarsComponentRequests::SetStarsExposure)
+                ->Event("Get Stars Radius Factor", &StarsComponentRequests::GetStarsRadiusFactor)
+                ->Event("Set Stars Radius Factor", &StarsComponentRequests::SetStarsRadiusFactor)
+                ->Event("Get Stars Twinkle Rate", &StarsComponentRequests::GetStarsTwinkleRate)
+                ->Event("Set Stars Twinkle Rate", &StarsComponentRequests::SetStarsTwinkleRate)
+                ;
+
+            behaviorContext->Class<StarsComponentController>()->RequestBus("StarsComponentRequestBus");
+        }
     }
 
     void StarsComponentController::Reflect(ReflectContext* context)
@@ -63,6 +80,7 @@ namespace AZ::Render
     {
         EnableFeatureProcessor(entityId);
 
+        StarsComponentRequestBus::Handler::BusConnect(entityId);
         TransformNotificationBus::Handler::BusConnect(entityId);
     }
 
@@ -154,7 +172,7 @@ namespace AZ::Render
             for (uint32_t i = 0; i < numStars; ++i)
             {
                 stream.Read(starSize, &star);
-                
+
                 position[0] = -cosf(AZ::DegToRad(star.declination)) * sinf(AZ::DegToRad(star.ascension * 15.0f));
                 position[1] = cosf(AZ::DegToRad(star.declination)) * cosf(AZ::DegToRad(star.ascension * 15.0f));
                 position[2] = sinf(AZ::DegToRad(star.declination));
@@ -174,6 +192,7 @@ namespace AZ::Render
     {
         TransformNotificationBus::Handler::BusDisconnect();
         Data::AssetBus::MultiHandler::BusDisconnect();
+        StarsComponentRequestBus::Handler::BusDisconnect();
 
         DisableFeatureProcessor();
     }
@@ -205,5 +224,38 @@ namespace AZ::Render
         {
             m_starsFeatureProcessor->SetOrientation(world.GetRotation());
         }
+    }
+
+    float StarsComponentController::GetStarsExposure() const
+    {
+        return m_configuration.m_exposure;
+    }
+
+    void StarsComponentController::SetStarsExposure(float exposure)
+    {
+        m_configuration.m_exposure = exposure;
+        m_starsFeatureProcessor->SetExposure(m_configuration.m_exposure);
+    }
+
+    float StarsComponentController::GetStarsRadiusFactor() const
+    {
+        return m_configuration.m_radiusFactor;
+    }
+
+    void StarsComponentController::SetStarsRadiusFactor(float radiusFactor)
+    {
+        m_configuration.m_radiusFactor = radiusFactor;
+        m_starsFeatureProcessor->SetRadiusFactor(m_configuration.m_radiusFactor);
+    }
+
+    float StarsComponentController::GetStarsTwinkleRate() const
+    {
+        return m_configuration.m_twinkleRate;
+    }
+
+    void StarsComponentController::SetStarsTwinkleRate(float twinkleRate)
+    {
+        m_configuration.m_twinkleRate = twinkleRate;
+        m_starsFeatureProcessor->SetTwinkleRate(m_configuration.m_twinkleRate);
     }
 }

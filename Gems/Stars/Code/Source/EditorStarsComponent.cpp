@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <StarsFeatureProcessor.h>
 
-namespace AZ::Render 
+namespace AZ::Render
 {
     void EditorStarsComponent::Reflect(AZ::ReflectContext* context)
     {

@@ -12,6 +12,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <StarsComponentConfig.h>
+#include <Stars/StarsComponentBus.h>
 
 namespace AZ::RPI
 {
@@ -25,6 +26,7 @@ namespace AZ::Render
     class StarsComponentController final
         : private TransformNotificationBus::Handler
         , private Data::AssetBus::MultiHandler
+        , public StarsComponentRequestBus::Handler
     {
     public:
         friend class EditorStarsComponent;
@@ -42,6 +44,13 @@ namespace AZ::Render
         void Deactivate();
         void SetConfiguration(const StarsComponentConfig& config);
         const StarsComponentConfig& GetConfiguration() const;
+
+        float GetStarsExposure() const override;
+        void SetStarsExposure(float exposure) override;
+        float GetStarsRadiusFactor() const override;
+        void SetStarsRadiusFactor(float radiusFactor) override;
+        float GetStarsTwinkleRate() const override;
+        void SetStarsTwinkleRate(float twinkleRate) override;
 
     private:
         AZ_DISABLE_COPY(StarsComponentController);
