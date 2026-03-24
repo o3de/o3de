@@ -66,6 +66,12 @@ endfunction()
 Getminiaudio()
 unset(Getminiaudio)
 
+# MiniAudio by default calls CoInitializeEx and CoUninitialize, repeatedly,
+# and sets the flags field to whatever you set MA_COINIIT_VALUE to. It does this on the main thread.
+# This needs to be the same as any other calls to CoInitializeEx on the main thread, which in O3DE's
+# case is 2 (STA mode)
+target_compile_definitions(miniaudio PRIVATE "MA_COINIT_VALUE=2")
+
 get_property(this_gem_root GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
 ly_get_engine_relative_source_dir(${this_gem_root} relative_this_gem_root)
 
