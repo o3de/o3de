@@ -204,6 +204,10 @@
             "tag": "forward"
         },
         {
+            "file": "../../Shaders/Unlit/UnlitOpaque.shader",
+            "tag": "opaque"
+        },
+        {
             "file": "../../Shaders/Unlit/UnlitTransparent.shader",
             "tag": "transparent"
         },
