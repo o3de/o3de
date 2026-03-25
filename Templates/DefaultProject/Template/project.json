@@ -31,7 +31,7 @@
         "ImGui",
         "LandscapeCanvas",
         "LyShine",
-	"MaterialCanvas",
+        "MaterialCanvas",
         "MiniAudio",
         "PhysX5",
         "PrimitiveAssets",
