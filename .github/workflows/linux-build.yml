@@ -161,7 +161,7 @@ jobs:
         continue-on-error: true
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         run: |
-          if [ -f ${{ github.workspace }}/cache.tar ]; then          
+          if [ -f ${{ github.workspace }}/cache.tar ]; then
             tar -xvpf ${{ github.workspace }}/cache.tar --ignore-failed-read
             rm ${{ github.workspace }}/cache.tar
             ccache --zero-stats --cleanup
@@ -175,10 +175,16 @@ jobs:
           cmakeVersion: "${{ inputs.cmake_version }}"
 
       - name: Install specific clang version
+        # Use the official LLVM installer script so we can install arbitrary upstream Clang versions
+        # on GitHub-hosted runners (beyond what's in the distro's default apt repositories).
+        #
+        # Ref: https://apt.llvm.org/llvm.sh
         if: ${{ inputs.compiler == 'clang' && inputs.clang_version }}
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y clang-${{ inputs.clang_version }} lld-${{ inputs.clang_version }}
+          wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+          chmod +x /tmp/llvm.sh
+          sudo /tmp/llvm.sh ${{ inputs.clang_version }}
+          sudo apt-get install -y lld-${{ inputs.clang_version }}
           echo "CC=$(which clang-${{ inputs.clang_version }})" >> $GITHUB_ENV
           echo "CXX=$(which clang++-${{ inputs.clang_version }})" >> $GITHUB_ENV
 
@@ -216,7 +222,7 @@ jobs:
           export EXTRA_CMAKE_OPTIONS="-DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX"
           export DISPLAY=:0
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          if [ "${{ inputs.desktop }}" == "true" ]; then 
+          if [ "${{ inputs.desktop }}" == "true" ]; then
             Xvfb :0 -screen 0 1400x1050x16 & # Start X virtual framebuffer for tests
           fi
           python/python.sh -u scripts/build/ci_build.py --platform ${{ inputs.platform }} --type ${{ inputs.type }}
