@@ -79,7 +79,7 @@ ly_add_target(
             PUBLIC
                 Source/Runtime
         BUILD_DEPENDENCIES
-            PUBLIC
+            PRIVATE
                 ${gem_name}.Static
 )
 
