@@ -15,7 +15,7 @@
 #include <OpenParticleSystem/ParticleRequestBus.h>
 #include <OpenParticleSystem/ParticleFeatureProcessorInterface.h>
 
-#include <Runtime/OpenParticleSystem/ParticleComponentConfig.h>
+#include <OpenParticleSystem/ParticleComponentConfig.h>
 
 namespace OpenParticle
 {
