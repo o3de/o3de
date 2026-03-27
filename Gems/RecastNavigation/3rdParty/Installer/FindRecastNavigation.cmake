@@ -34,7 +34,7 @@ foreach(recastLibrary ${recastLibraries})
     target_compile_definitions(3rdParty::RecastNavigation::${recastLibrary} INTERFACE DT_POLYREF64)
     ly_target_include_system_directories(TARGET 3rdParty::RecastNavigation::${recastLibrary} 
         INTERFACE 
-            "${LY_ROOT_FOLDER}/include/recastnavigation")
+            "${LY_ROOT_FOLDER}/Include/recastnavigation")
 endforeach()
 
 # notify O3DE That we have satisfied the RecastNavigation find_package requirements.
