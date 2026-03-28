@@ -134,7 +134,7 @@ namespace AZ::Render
         // Prefer R16G16B16A16_FLOAT (full HDR, matches engine convention).
         // Fall back to R8G8B8A8_UNORM for universal compatibility.
         // R11G11B10_FLOAT is skipped as a default because it lacks alpha and
-        // has inconsistent storage support on mobile — the gradient data is
+        // has inconsistent storage support on mobile -- the gradient data is
         // simple enough that UNORM8 with exposure compensation works well.
         //
         // A future enhancement could query RHI::FormatCapabilities::Sample
@@ -180,17 +180,17 @@ namespace AZ::Render
         {
             for (uint32_t x = 0; x < faceSize; ++x)
             {
-                // Texel center → normalized cubemap coordinates
+                // Texel center -> normalized cubemap coordinates
                 float uc = (2.0f * (static_cast<float>(x) + 0.5f) / static_cast<float>(faceSize)) - 1.0f;
                 float vc = (2.0f * (static_cast<float>(y) + 0.5f) / static_cast<float>(faceSize)) - 1.0f;
 
                 Vector3 dir = CubeFaceDirection(face, uc, vc);
                 dir.NormalizeSafe();
 
-                // Vertical gradient: Y axis maps [-1..1] → [0..1], bottom to top
+                // Vertical gradient: Y axis maps [-1..1] -> [0..1], bottom to top
                 float t = (dir.GetY() + 1.0f) * 0.5f;
 
-                // Two-segment lerp: low→mid (t=0..0.5), mid→high (t=0.5..1.0)
+                // Two-segment lerp: low->mid (t=0..0.5), mid->high (t=0.5..1.0)
                 Color c;
                 if (t < 0.5f)
                 {

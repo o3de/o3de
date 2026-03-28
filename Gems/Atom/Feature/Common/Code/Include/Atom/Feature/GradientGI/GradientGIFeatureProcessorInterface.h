@@ -38,7 +38,7 @@ namespace AZ::Render
         //! Returns true if the gradient cubemap has been built and is active.
         virtual bool IsActive() const = 0;
 
-        //! Reset to defaults — removes the gradient cubemap from the IBL slots.
+        //! Reset to defaults -- removes the gradient cubemap from the IBL slots.
         virtual void Reset() = 0;
     };
 } // namespace AZ::Render
