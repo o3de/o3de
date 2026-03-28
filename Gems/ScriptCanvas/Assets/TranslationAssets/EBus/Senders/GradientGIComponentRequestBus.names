@@ -1,0 +1,134 @@
+{
+    "entries": [
+        {
+            "base": "GradientGIComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Gradient GI",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "SetLowColor",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Low Color" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Low Color is invoked" },
+                    "details": { "name": "Set Low Color", "tooltip": "Sets the nadir (ground) color of the gradient GI cubemap" },
+                    "params": [
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                    ]
+                },
+                {
+                    "base": "GetLowColor",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Low Color" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Low Color is invoked" },
+                    "details": { "name": "Get Low Color", "tooltip": "Gets the nadir (ground) color of the gradient GI cubemap" },
+                    "results": [
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                    ]
+                },
+                {
+                    "base": "SetMidColor",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Mid Color" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Mid Color is invoked" },
+                    "details": { "name": "Set Mid Color", "tooltip": "Sets the horizon (equator) color of the gradient GI cubemap" },
+                    "params": [
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                    ]
+                },
+                {
+                    "base": "GetMidColor",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Mid Color" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Mid Color is invoked" },
+                    "details": { "name": "Get Mid Color", "tooltip": "Gets the horizon (equator) color of the gradient GI cubemap" },
+                    "results": [
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                    ]
+                },
+                {
+                    "base": "SetHighColor",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set High Color" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set High Color is invoked" },
+                    "details": { "name": "Set High Color", "tooltip": "Sets the zenith (sky) color of the gradient GI cubemap" },
+                    "params": [
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                    ]
+                },
+                {
+                    "base": "GetHighColor",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get High Color" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get High Color is invoked" },
+                    "details": { "name": "Get High Color", "tooltip": "Gets the zenith (sky) color of the gradient GI cubemap" },
+                    "results": [
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                    ]
+                },
+                {
+                    "base": "SetGradientColors",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Gradient Colors" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Gradient Colors is invoked" },
+                    "details": { "name": "Set Gradient Colors", "tooltip": "Sets all three gradient layers (low, mid, high) at once" },
+                    "params": [
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Low Color" } },
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Mid Color" } },
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "High Color" } }
+                    ]
+                },
+                {
+                    "base": "SetExposure",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Exposure" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Exposure is invoked" },
+                    "details": { "name": "Set Exposure", "tooltip": "Sets the exposure in EV stops applied to the gradient GI cubemap" },
+                    "params": [
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Exposure" } }
+                    ]
+                },
+                {
+                    "base": "GetExposure",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Exposure" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Exposure is invoked" },
+                    "details": { "name": "Get Exposure", "tooltip": "Gets the exposure in EV stops applied to the gradient GI cubemap" },
+                    "results": [
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Exposure" } }
+                    ]
+                },
+                {
+                    "base": "SetFaceResolution",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Face Resolution" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Face Resolution is invoked" },
+                    "details": { "name": "Set Face Resolution", "tooltip": "Sets the cubemap face resolution in pixels (4-256)" },
+                    "params": [
+                        { "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}", "details": { "name": "Resolution" } }
+                    ]
+                },
+                {
+                    "base": "GetFaceResolution",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Face Resolution" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Face Resolution is invoked" },
+                    "details": { "name": "Get Face Resolution", "tooltip": "Gets the cubemap face resolution in pixels" },
+                    "results": [
+                        { "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}", "details": { "name": "Resolution" } }
+                    ]
+                },
+                {
+                    "base": "SetUpdateMode",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Update Mode" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Update Mode is invoked" },
+                    "details": { "name": "Set Update Mode", "tooltip": "Sets the update mode (0 = Static / CPU, 1 = Dynamic / GPU compute)" },
+                    "params": [
+                        { "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}", "details": { "name": "Update Mode" } }
+                    ]
+                },
+                {
+                    "base": "GetUpdateMode",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Update Mode" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Update Mode is invoked" },
+                    "details": { "name": "Get Update Mode", "tooltip": "Gets the current update mode (0 = Static, 1 = Dynamic)" },
+                    "results": [
+                        { "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}", "details": { "name": "Update Mode" } }
+                    ]
+                }
+            ]
+        }
+    ]
+}

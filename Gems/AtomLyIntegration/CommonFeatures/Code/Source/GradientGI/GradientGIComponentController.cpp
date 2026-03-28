@@ -9,6 +9,7 @@
 #include <GradientGI/GradientGIComponentController.h>
 #include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConstants.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContextAttributes.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Public/Scene.h>
 
@@ -34,19 +35,40 @@ namespace AZ
 
             if (auto* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
+                // Expose the update mode enum values for Script Canvas
+                behaviorContext
+                    ->Enum<static_cast<uint32_t>(GradientGIUpdateMode::Static)>("GradientGIUpdateMode_Static")
+                    ->Enum<static_cast<uint32_t>(GradientGIUpdateMode::Dynamic)>("GradientGIUpdateMode_Dynamic")
+                    ;
+
                 behaviorContext->EBus<GradientGIComponentRequestBus>("GradientGIComponentRequestBus")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    // Single-layer color setters/getters
                     ->Event("SetLowColor",    &GradientGIComponentRequestBus::Events::SetLowColor)
                     ->Event("GetLowColor",    &GradientGIComponentRequestBus::Events::GetLowColor)
                     ->Event("SetMidColor",    &GradientGIComponentRequestBus::Events::SetMidColor)
                     ->Event("GetMidColor",    &GradientGIComponentRequestBus::Events::GetMidColor)
                     ->Event("SetHighColor",   &GradientGIComponentRequestBus::Events::SetHighColor)
                     ->Event("GetHighColor",   &GradientGIComponentRequestBus::Events::GetHighColor)
+                    // Set all three gradient layers at once
+                    ->Event("SetGradientColors", &GradientGIComponentRequestBus::Events::SetGradientColors)
+                    // Exposure
                     ->Event("SetExposure",    &GradientGIComponentRequestBus::Events::SetExposure)
                     ->Event("GetExposure",    &GradientGIComponentRequestBus::Events::GetExposure)
+                    // Resolution
                     ->Event("SetFaceResolution", &GradientGIComponentRequestBus::Events::SetFaceResolution)
                     ->Event("GetFaceResolution", &GradientGIComponentRequestBus::Events::GetFaceResolution)
+                    // Update mode (Static / Dynamic)
                     ->Event("SetUpdateMode",  &GradientGIComponentRequestBus::Events::SetUpdateMode)
                     ->Event("GetUpdateMode",  &GradientGIComponentRequestBus::Events::GetUpdateMode)
+                    // Virtual properties for Script Canvas property nodes
+                    ->VirtualProperty("LowColor",       "GetLowColor",       "SetLowColor")
+                    ->VirtualProperty("MidColor",       "GetMidColor",       "SetMidColor")
+                    ->VirtualProperty("HighColor",      "GetHighColor",      "SetHighColor")
+                    ->VirtualProperty("Exposure",       "GetExposure",       "SetExposure")
+                    ->VirtualProperty("FaceResolution", "GetFaceResolution", "SetFaceResolution")
+                    ->VirtualProperty("UpdateMode",     "GetUpdateMode",     "SetUpdateMode")
                     ;
             }
         }
@@ -165,6 +187,15 @@ namespace AZ
         Color GradientGIComponentController::GetHighColor() const
         {
             return m_configuration.m_highColor;
+        }
+
+        void GradientGIComponentController::SetGradientColors(
+            const Color& low, const Color& mid, const Color& high)
+        {
+            m_configuration.m_lowColor  = low;
+            m_configuration.m_midColor  = mid;
+            m_configuration.m_highColor = high;
+            UpdateColors();
         }
 
         void GradientGIComponentController::SetExposure(float exposure)

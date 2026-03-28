@@ -24,6 +24,7 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            // Single-layer color setters/getters
             virtual void SetLowColor(const Color& color) = 0;
             virtual Color GetLowColor() const = 0;
 
@@ -32,6 +33,9 @@ namespace AZ
 
             virtual void SetHighColor(const Color& color) = 0;
             virtual Color GetHighColor() const = 0;
+
+            // Set all three gradient layers at once
+            virtual void SetGradientColors(const Color& low, const Color& mid, const Color& high) = 0;
 
             virtual void SetExposure(float exposure) = 0;
             virtual float GetExposure() const = 0;

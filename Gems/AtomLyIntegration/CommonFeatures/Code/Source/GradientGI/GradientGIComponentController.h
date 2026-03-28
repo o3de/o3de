@@ -51,6 +51,7 @@ namespace AZ
             Color GetMidColor() const override;
             void SetHighColor(const Color& color) override;
             Color GetHighColor() const override;
+            void SetGradientColors(const Color& low, const Color& mid, const Color& high) override;
             void SetExposure(float exposure) override;
             float GetExposure() const override;
             void SetFaceResolution(uint32_t resolution) override;
