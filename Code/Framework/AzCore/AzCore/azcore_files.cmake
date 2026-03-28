@@ -296,6 +296,8 @@ set(FILES
     Math/Crc.inl
     Math/Crc.h
     Math/CrcInternal.h
+    Math/Curve.cpp
+    Math/Curve.h
     Math/DocsMath.h
     Math/Frustum.cpp
     Math/Frustum.h
