@@ -149,14 +149,16 @@ namespace AZ::Render
 
     Vector3 GradientGIFeatureProcessor::CubeFaceDirection(uint32_t face, float uc, float vc)
     {
+        // Standard cubemap convention: vc increases downward in texture space,
+        // so side faces use -vc for Y (up) to keep the gradient oriented correctly.
         switch (face)
         {
-        case 0: return Vector3( 1.0f,    vc,  -uc);   // +X
-        case 1: return Vector3(-1.0f,    vc,   uc);   // -X
-        case 2: return Vector3(   uc,  1.0f,  -vc);   // +Y
-        case 3: return Vector3(   uc, -1.0f,   vc);   // -Y
-        case 4: return Vector3(   uc,    vc,  1.0f);   // +Z
-        case 5: return Vector3(  -uc,    vc, -1.0f);   // -Z
+        case 0: return Vector3( 1.0f,  -vc,  -uc);   // +X
+        case 1: return Vector3(-1.0f,  -vc,   uc);   // -X
+        case 2: return Vector3(   uc,  1.0f,   vc);   // +Y (zenith)
+        case 3: return Vector3(   uc, -1.0f,  -vc);   // -Y (nadir)
+        case 4: return Vector3(   uc,  -vc,  1.0f);   // +Z
+        case 5: return Vector3(  -uc,  -vc, -1.0f);   // -Z
         default: return Vector3(0.0f, 1.0f, 0.0f);
         }
     }

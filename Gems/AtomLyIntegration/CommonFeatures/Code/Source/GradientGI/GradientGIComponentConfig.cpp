@@ -19,9 +19,9 @@ namespace AZ
             {
                 serializeContext->Class<GradientGIComponentConfig, ComponentConfig>()
                     ->Version(1)
-                    ->Field("LowColor", &GradientGIComponentConfig::m_lowColor)
-                    ->Field("MidColor", &GradientGIComponentConfig::m_midColor)
                     ->Field("HighColor", &GradientGIComponentConfig::m_highColor)
+                    ->Field("MidColor", &GradientGIComponentConfig::m_midColor)
+                    ->Field("LowColor", &GradientGIComponentConfig::m_lowColor)
                     ->Field("Exposure", &GradientGIComponentConfig::m_exposure)
                     ->Field("FaceResolution", &GradientGIComponentConfig::m_faceResolution)
                     ;
