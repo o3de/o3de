@@ -1,0 +1,31 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConfig.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ
+{
+    namespace Render
+    {
+        void GradientGIComponentConfig::Reflect(ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
+                serializeContext->Class<GradientGIComponentConfig, ComponentConfig>()
+                    ->Version(1)
+                    ->Field("LowColor", &GradientGIComponentConfig::m_lowColor)
+                    ->Field("MidColor", &GradientGIComponentConfig::m_midColor)
+                    ->Field("HighColor", &GradientGIComponentConfig::m_highColor)
+                    ->Field("Exposure", &GradientGIComponentConfig::m_exposure)
+                    ->Field("FaceResolution", &GradientGIComponentConfig::m_faceResolution)
+                    ;
+            }
+        }
+    } // namespace Render
+} // namespace AZ
