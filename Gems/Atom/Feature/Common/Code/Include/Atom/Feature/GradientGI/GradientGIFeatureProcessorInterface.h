@@ -16,7 +16,7 @@ namespace AZ::Render
     //! Feature processor that generates a procedural gradient cubemap and writes it
     //! to the scene SRG's IBL slots (m_diffuseEnvMap, m_specularEnvMap, m_iblExposure).
     //!
-    //! This replicates Unity's Gradient GI: three colors (low/mid/high) produce a
+    //! This creates a GI: where three colors (low/mid/high) produce a
     //! vertical gradient cubemap for generic ambient fill lighting.
     //!
     //! Two update modes are supported:
