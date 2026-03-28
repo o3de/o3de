@@ -55,6 +55,8 @@ namespace AZ
             float GetExposure() const override;
             void SetFaceResolution(uint32_t resolution) override;
             uint32_t GetFaceResolution() const override;
+            void SetUpdateMode(GradientGIUpdateMode mode) override;
+            GradientGIUpdateMode GetUpdateMode() const override;
 
             // =====================================================================
             // Helpers
@@ -62,9 +64,10 @@ namespace AZ
 
             void UpdateColors();
 
-            EntityId m_entityId;
-            GradientGIComponentConfig m_configuration;
+            EntityId                         m_entityId;
+            GradientGIComponentConfig        m_configuration;
             GradientGIFeatureProcessorInterface* m_featureProcessor = nullptr;
         };
+
     } // namespace Render
 } // namespace AZ

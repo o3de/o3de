@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Color.h>
+#include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConstants.h>
 
 namespace AZ
 {
@@ -37,7 +38,11 @@ namespace AZ
 
             virtual void SetFaceResolution(uint32_t resolution) = 0;
             virtual uint32_t GetFaceResolution() const = 0;
+
+            virtual void SetUpdateMode(GradientGIUpdateMode mode) = 0;
+            virtual GradientGIUpdateMode GetUpdateMode() const = 0;
         };
+
         using GradientGIComponentRequestBus = EBus<GradientGIComponentRequests>;
 
     } // namespace Render

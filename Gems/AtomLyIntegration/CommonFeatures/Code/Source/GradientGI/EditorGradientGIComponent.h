@@ -33,6 +33,7 @@ namespace AZ
             AZ::u32 OnColorChanged();
             AZ::u32 OnExposureChanged();
             AZ::u32 OnResolutionChanged();
+            AZ::u32 OnUpdateModeChanged();
         };
     } // namespace Render
 } // namespace AZ

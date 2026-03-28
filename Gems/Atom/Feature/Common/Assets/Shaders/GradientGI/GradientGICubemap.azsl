@@ -1,0 +1,109 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// ============================================================================
+// GradientGICubemap.azsl
+//
+// Compute shader that generates a procedural tri-band gradient cubemap for
+// ambient GI (Unity Gradient GI equivalent). Each texel's world-space
+// direction determines how far between Low (nadir), Mid (horizon), and
+// High (zenith) colors it sits, then the result is exposure-scaled.
+//
+// Dispatch: (ceil(faceSize/8), ceil(faceSize/8), 6)
+//   Group size [numthreads(8, 8, 1)]
+//   Z dimension = face index (0=+X, 1=-X, 2=+Y, 3=-Y, 4=+Z, 5=-Z)
+// ============================================================================
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+// ============================================================================
+// PassSrg
+// ============================================================================
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    // Output cubemap bound as 2DArray UAV (cubemap-typed UAVs not legal in DX12/Vulkan).
+    RWTexture2DArray<float4> m_outputCubemap;
+
+    // Gradient band colors (linear HDR, pre-exposure)
+    float3 m_lowColor;      // nadir  (-Y)
+    float3 m_midColor;      // horizon (equator)
+    float3 m_highColor;     // zenith (+Y)
+
+    // Exposure in EV stops; applied as pow(2, m_exposure) multiplier
+    float m_exposure;
+
+    // Cubemap face resolution in pixels
+    uint m_faceSize;
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+// Returns the world-space direction for a texel at (uc, vc) on the given face.
+// Convention matches GradientGIFeatureProcessor::CubeFaceDirection on the CPU side.
+// uc, vc are in [-1, 1]; vc increases downward in texture space.
+float3 GetCubemapDirection(uint face, float uc, float vc)
+{
+    float3 dir;
+    switch (face)
+    {
+    case 0: dir = float3( 1.0f, -vc, -uc); break;  // +X
+    case 1: dir = float3(-1.0f, -vc,  uc); break;  // -X
+    case 2: dir = float3(  uc,  1.0f,  vc); break;  // +Y zenith
+    case 3: dir = float3(  uc, -1.0f, -vc); break;  // -Y nadir
+    case 4: dir = float3(  uc,  -vc, 1.0f); break;  // +Z
+    case 5: dir = float3( -uc,  -vc,-1.0f); break;  // -Z
+    default: dir = float3(0.0f, 1.0f, 0.0f); break;
+    }
+    return normalize(dir);
+}
+
+// ============================================================================
+// Compute Entry Point
+// ============================================================================
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
+{
+    uint x    = dispatch_thread_id.x;
+    uint y    = dispatch_thread_id.y;
+    uint face = dispatch_thread_id.z;
+
+    // Bounds check: dispatch may be rounded up to the next multiple of 8
+    if (x >= PassSrg::m_faceSize || y >= PassSrg::m_faceSize)
+    {
+        return;
+    }
+
+    // Map pixel center to [-1, 1] UV space
+    float uc = (2.0f * (float(x) + 0.5f) / float(PassSrg::m_faceSize)) - 1.0f;
+    float vc = (2.0f * (float(y) + 0.5f) / float(PassSrg::m_faceSize)) - 1.0f;
+
+    float3 dir = GetCubemapDirection(face, uc, vc);
+
+    // t: 0 at nadir (-Y), 1 at zenith (+Y)
+    float t = (dir.y + 1.0f) * 0.5f;
+
+    // Tri-band gradient: Low -> Mid -> High
+    float3 color;
+    if (t < 0.5f)
+    {
+        color = lerp(PassSrg::m_lowColor, PassSrg::m_midColor, t * 2.0f);
+    }
+    else
+    {
+        color = lerp(PassSrg::m_midColor, PassSrg::m_highColor, (t - 0.5f) * 2.0f);
+    }
+
+    // Apply exposure (EV stops)
+    color *= pow(2.0f, PassSrg::m_exposure);
+
+    PassSrg::m_outputCubemap[uint3(x, y, face)] = float4(color, 1.0f);
+}

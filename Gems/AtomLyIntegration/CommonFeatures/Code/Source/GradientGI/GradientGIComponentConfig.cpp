@@ -18,14 +18,16 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<GradientGIComponentConfig, ComponentConfig>()
-                    ->Version(1)
-                    ->Field("HighColor", &GradientGIComponentConfig::m_highColor)
-                    ->Field("MidColor", &GradientGIComponentConfig::m_midColor)
-                    ->Field("LowColor", &GradientGIComponentConfig::m_lowColor)
-                    ->Field("Exposure", &GradientGIComponentConfig::m_exposure)
-                    ->Field("FaceResolution", &GradientGIComponentConfig::m_faceResolution)
+                    ->Version(2)
+                    ->Field("HighColor",     &GradientGIComponentConfig::m_highColor)
+                    ->Field("MidColor",      &GradientGIComponentConfig::m_midColor)
+                    ->Field("LowColor",      &GradientGIComponentConfig::m_lowColor)
+                    ->Field("Exposure",      &GradientGIComponentConfig::m_exposure)
+                    ->Field("FaceResolution",&GradientGIComponentConfig::m_faceResolution)
+                    ->Field("UpdateMode",    &GradientGIComponentConfig::m_updateMode)
                     ;
             }
         }
+
     } // namespace Render
 } // namespace AZ

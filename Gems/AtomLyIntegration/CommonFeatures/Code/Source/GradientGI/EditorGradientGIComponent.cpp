@@ -63,6 +63,8 @@ namespace AZ
                         "GradientGIComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        // -- Gradient Colors group --
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Gradient Colors")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &GradientGIComponentConfig::m_highColor, "High (Zenith)", "Color at the top of the sky gradient")
@@ -71,18 +73,31 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Color, &GradientGIComponentConfig::m_lowColor, "Low (Nadir)", "Color at the bottom of the sky gradient")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        // -- Settings group --
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Settings")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientGIComponentConfig::m_exposure, "Exposure", "IBL exposure in EV stops")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
-                            ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMax,  5.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
-                            ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max,  20.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientGIComponentConfig::m_faceResolution, "Face Resolution", "Cubemap face size in pixels (4-256)")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::Min, 4u)
                             ->Attribute(AZ::Edit::Attributes::Max, 256u)
+
+                        // -- Update Mode group --
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Advanced")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientGIComponentConfig::m_updateMode,
+                            "Update Mode",
+                            "Static: CPU-generated StreamingImage (mobile-safe, updates on change).\n"
+                            "Dynamic: GPU compute pass writing every frame (desktop only, falls back to Static if unsupported).")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->EnumAttribute(GradientGIUpdateMode::Static,  "Static (Mobile-Safe)")
+                            ->EnumAttribute(GradientGIUpdateMode::Dynamic, "Dynamic (Desktop GPU)")
                         ;
                 }
             }
@@ -91,7 +106,8 @@ namespace AZ
             {
                 behaviorContext->Class<EditorGradientGIComponent>()->RequestBus("GradientGIComponentRequestBus");
 
-                behaviorContext->ConstantProperty("EditorGradientGIComponentTypeId", BehaviorConstant(Uuid(EditorGradientGIComponentTypeId)))
+                behaviorContext->ConstantProperty("EditorGradientGIComponentTypeId",
+                    BehaviorConstant(Uuid(EditorGradientGIComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             }
@@ -125,6 +141,12 @@ namespace AZ
         AZ::u32 EditorGradientGIComponent::OnResolutionChanged()
         {
             m_controller.SetFaceResolution(m_controller.m_configuration.m_faceResolution);
+            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        }
+
+        AZ::u32 EditorGradientGIComponent::OnUpdateModeChanged()
+        {
+            m_controller.SetUpdateMode(m_controller.m_configuration.m_updateMode);
             return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
         }
 

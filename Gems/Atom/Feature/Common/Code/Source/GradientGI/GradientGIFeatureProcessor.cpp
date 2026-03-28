@@ -7,19 +7,23 @@
  */
 
 #include "GradientGIFeatureProcessor.h"
+#include "GradientGICubemapPass.h"
 #include "GradientGIConstants.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Name/Name.h>
 
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
+#include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
 
 namespace AZ::Render
 {
@@ -42,70 +46,385 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::Activate()
     {
-        m_iblFeatureProcessor = GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
-        AZ_Error("GradientGI", m_iblFeatureProcessor, "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
+        AZ_TracePrintf("GradientGI", "=== FP::Activate() BEGIN === updateMode=%d\n",
+            static_cast<int>(m_updateMode));
+
+        m_iblFeatureProcessor =
+            GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
+        AZ_Error("GradientGI", m_iblFeatureProcessor,
+            "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
+        AZ_TracePrintf("GradientGI", "  IBL FP ptr = %p\n", m_iblFeatureProcessor);
+
+        // If Dynamic mode was requested, check platform support; fall back to Static if needed.
+        if (m_updateMode == UpdateMode::Dynamic && !GradientGICubemapPass::IsGpuComputeSupported())
+        {
+            AZ_Warning("GradientGI", false,
+                "GPU compute UAV cubemaps are not supported on this platform. "
+                "GradientGI falling back to Static mode.");
+            m_updateMode = UpdateMode::Static;
+        }
+
         m_needsRebuild = false;
-        m_active = false;
+        m_active       = false;
+
+        // Static mode: trigger an immediate CPU rebuild.
+        if (m_updateMode == UpdateMode::Static)
+        {
+            AZ_TracePrintf("GradientGI", "  Static mode: scheduling CPU rebuild\n");
+            m_needsRebuild = true;
+        }
+
+        // Cache the scene SRG IBL slot indices for Dynamic mode's direct writes.
+        if (m_updateMode == UpdateMode::Dynamic && !m_sceneSrgIndicesCached)
+        {
+            CacheSceneSrgIndices();
+        }
+
+        AZ_TracePrintf("GradientGI", "=== FP::Activate() END === active=%d, needsRebuild=%d, sceneSrg=%p, srgCached=%d\n",
+            m_active, m_needsRebuild, m_sceneSrg.get(), m_sceneSrgIndicesCached);
     }
 
     void GradientGIFeatureProcessor::Deactivate()
     {
-        if (m_active && m_iblFeatureProcessor)
+        AZ_TracePrintf("GradientGI", "=== FP::Deactivate() === updateMode=%d, active=%d, pass=%p\n",
+            static_cast<int>(m_updateMode), m_active, m_gradientPass);
+
+        // Remove the GPU pass from the pipeline, then drop our reference.
+        if (m_gradientPassPtr)
         {
+            m_gradientPassPtr->QueueForRemoval();
+            m_gradientPassPtr = nullptr;
+            m_gradientPass    = nullptr;
+        }
+
+        // Reset IBL slots for Static mode.
+        if (m_active && m_iblFeatureProcessor && m_updateMode == UpdateMode::Static)
+        {
+            AZ_TracePrintf("GradientGI", "  Resetting IBL FP (Static cleanup)\n");
             m_iblFeatureProcessor->Reset();
         }
-        m_cubemapImage = nullptr;
-        m_active = false;
+
+        m_cubemapImage  = nullptr;
+        m_imageAsset    = {};
+        m_active        = false;
+        m_needsRebuild  = false;
         m_iblFeatureProcessor = nullptr;
+        m_sceneSrg      = nullptr;
+        m_sceneSrgIndicesCached = false;
     }
+
+    // =========================================================================
+    // CacheSceneSrgIndices -- cache IBL slot indices from the scene SRG
+    // =========================================================================
+
+    void GradientGIFeatureProcessor::CacheSceneSrgIndices()
+    {
+        m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
+        AZ_TracePrintf("GradientGI", "  CacheSceneSrgIndices: sceneSrg=%p\n", m_sceneSrg.get());
+        if (m_sceneSrg)
+        {
+            m_specularEnvMapIndex = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_specularEnvMap"));
+            m_diffuseEnvMapIndex  = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_diffuseEnvMap"));
+            m_iblExposureIndex    = m_sceneSrg->FindShaderInputConstantIndex(AZ::Name("m_iblExposure"));
+            m_sceneSrgIndicesCached = true;
+            AZ_TracePrintf("GradientGI", "  SRG indices: specular=%d (valid=%d), diffuse=%d (valid=%d), exposure=%d (valid=%d)\n",
+                m_specularEnvMapIndex.GetIndex(), m_specularEnvMapIndex.IsValid(),
+                m_diffuseEnvMapIndex.GetIndex(), m_diffuseEnvMapIndex.IsValid(),
+                m_iblExposureIndex.GetIndex(), m_iblExposureIndex.IsValid());
+        }
+        else
+        {
+            AZ_Error("GradientGI", false, "  CacheSceneSrgIndices: scene SRG is NULL! Dynamic mode cannot write IBL slots.");
+        }
+    }
+
+    // =========================================================================
+    // Simulate -- Static mode cubemap rebuild (runs on a job thread)
+    // =========================================================================
 
     void GradientGIFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& /*packet*/)
     {
         AZ_PROFILE_SCOPE(RPI, "GradientGIFeatureProcessor: Simulate");
 
-        if (!m_needsRebuild || !m_iblFeatureProcessor)
+        if (m_updateMode != UpdateMode::Static || !m_needsRebuild || !m_iblFeatureProcessor)
         {
+            // Log once per mode switch (avoid spamming every frame)
+            if (m_diagnosticLogSimulateSkip)
+            {
+                AZ_TracePrintf("GradientGI", "FP::Simulate() SKIP: mode=%d, needsRebuild=%d, iblFP=%p\n",
+                    static_cast<int>(m_updateMode), m_needsRebuild, m_iblFeatureProcessor);
+                m_diagnosticLogSimulateSkip = false;
+            }
             return;
         }
 
-        // Rebuild cubemap and feed it to the IBL FP (single owner of scene SRG IBL slots)
+        AZ_TracePrintf("GradientGI", "FP::Simulate() REBUILDING static cubemap (res=%u)\n", m_faceResolution);
+
+        // Rebuild the CPU cubemap and delegate to the IBL FP (sole owner of scene SRG IBL slots).
         m_cubemapImage = BuildGradientCubemap();
-        m_active = (m_cubemapImage != nullptr);
+        m_active       = (m_cubemapImage != nullptr);
         m_needsRebuild = false;
+
+        AZ_TracePrintf("GradientGI", "  BuildGradientCubemap result: image=%p, active=%d, assetValid=%d\n",
+            m_cubemapImage.get(), m_active, m_imageAsset.GetId().IsValid());
 
         if (m_active && m_imageAsset.GetId().IsValid())
         {
             m_iblFeatureProcessor->SetSpecularImage(m_imageAsset);
             m_iblFeatureProcessor->SetDiffuseImage(m_imageAsset);
             m_iblFeatureProcessor->SetExposure(m_exposure);
+            AZ_TracePrintf("GradientGI", "  Delegated cubemap to IBL FP (specular+diffuse+exposure=%.2f)\n", m_exposure);
         }
+    }
+
+    // =========================================================================
+    // AddRenderPasses -- Dynamic mode: inject GPU compute pass into the pipeline
+    // =========================================================================
+
+    void GradientGIFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
+    {
+        AZ_TracePrintf("GradientGI", "FP::AddRenderPasses() called: mode=%d, passPtr=%p, pipeline=%p\n",
+            static_cast<int>(m_updateMode), m_gradientPassPtr.get(), renderPipeline);
+
+        if (m_updateMode != UpdateMode::Dynamic)
+        {
+            AZ_TracePrintf("GradientGI", "  SKIP: not in Dynamic mode\n");
+            return;
+        }
+
+        // Only create one pass (for the first pipeline that registers with this FP).
+        if (m_gradientPassPtr)
+        {
+            AZ_TracePrintf("GradientGI", "  SKIP: pass already exists\n");
+            return;
+        }
+
+        CreateAndInjectPass(renderPipeline);
+    }
+
+    void GradientGIFeatureProcessor::CreateAndInjectPass(RPI::RenderPipeline* renderPipeline)
+    {
+        AZ_TracePrintf("GradientGI", "=== FP::CreateAndInjectPass() BEGIN ===\n");
+
+        RPI::PassDescriptor passDescriptor(AZ::Name("GradientGICubemapPass"));
+        m_gradientPassPtr = aznew GradientGICubemapPass(passDescriptor);
+        m_gradientPass    = m_gradientPassPtr.get();
+
+        AZ_TracePrintf("GradientGI", "  Pass created: %p\n", m_gradientPass);
+
+        // Push current gradient state into the pass before it starts running.
+        m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
+
+        // Inject before DepthPrePass so it runs early in the frame.
+        // The cubemap is ready by the time IBL sampling occurs later in the pipeline.
+        renderPipeline->AddPassBefore(m_gradientPassPtr, AZ::Name("DepthPrePass"));
+
+        m_active = true;
+
+        AZ_TracePrintf("GradientGI", "=== FP::CreateAndInjectPass() END === active=%d\n", m_active);
+    }
+
+    // =========================================================================
+    // Render -- Dynamic mode: write AttachmentImage to scene SRG IBL slots
+    // =========================================================================
+
+    void GradientGIFeatureProcessor::Render(const FeatureProcessor::RenderPacket& /*packet*/)
+    {
+        AZ_PROFILE_SCOPE(RPI, "GradientGIFeatureProcessor: Render");
+
+        if (m_updateMode != UpdateMode::Dynamic || !m_gradientPass || !m_sceneSrg)
+        {
+            // Log once per mode switch
+            if (m_diagnosticLogRenderSkip)
+            {
+                AZ_TracePrintf("GradientGI", "FP::Render() SKIP: mode=%d, pass=%p, sceneSrg=%p, srgCached=%d\n",
+                    static_cast<int>(m_updateMode), m_gradientPass, m_sceneSrg.get(), m_sceneSrgIndicesCached);
+                AZ_TracePrintf("GradientGI", "  specularIdx.IsValid=%d, diffuseIdx.IsValid=%d, exposureIdx.IsValid=%d\n",
+                    m_specularEnvMapIndex.IsValid(), m_diffuseEnvMapIndex.IsValid(), m_iblExposureIndex.IsValid());
+                m_diagnosticLogRenderSkip = false;
+            }
+            return;
+        }
+
+        WriteSceneSrgFromPass();
+    }
+
+    void GradientGIFeatureProcessor::WriteSceneSrgFromPass()
+    {
+        auto cubemapImage = m_gradientPass->GetCubemapImage();
+        if (!cubemapImage)
+        {
+            // Log once
+            if (m_diagnosticLogWriteSrg)
+            {
+                AZ_TracePrintf("GradientGI", "FP::WriteSceneSrgFromPass() SKIP: cubemapImage is NULL (pass not built yet?)\n");
+                m_diagnosticLogWriteSrg = false;
+            }
+            return;
+        }
+
+        // Write the gradient cubemap to both IBL slots. This runs on the render thread
+        // after all Simulate() jobs have completed, so there is no race with the IBL FP.
+        // The cubemap SRV (default view set at image creation) is used for sampling.
+        const RHI::ImageView* cubemapView = cubemapImage->GetImageView();
+
+        if (m_diagnosticLogWriteSrg)
+        {
+            AZ_TracePrintf("GradientGI", "FP::WriteSceneSrgFromPass() WRITING: cubemapImage=%p, imageView=%p\n",
+                cubemapImage.get(), cubemapView);
+            AZ_TracePrintf("GradientGI", "  specularIdx=%d, diffuseIdx=%d, exposureIdx=%d, exposure=%.2f\n",
+                m_specularEnvMapIndex.GetIndex(), m_diffuseEnvMapIndex.GetIndex(),
+                m_iblExposureIndex.GetIndex(), m_exposure);
+            m_diagnosticLogWriteSrg = false;
+        }
+
+        m_sceneSrg->SetImageView(m_specularEnvMapIndex, cubemapView);
+        m_sceneSrg->SetImageView(m_diffuseEnvMapIndex,  cubemapView);
+        m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
     }
 
     // =========================================================================
     // Public API
     // =========================================================================
 
-    void GradientGIFeatureProcessor::SetGradientColors(const Color& low, const Color& mid, const Color& high)
+    void GradientGIFeatureProcessor::SetGradientColors(
+        const Color& low, const Color& mid, const Color& high)
     {
-        m_lowColor = low;
-        m_midColor = mid;
+        m_lowColor  = low;
+        m_midColor  = mid;
         m_highColor = high;
-        m_needsRebuild = true;
+
+        if (m_updateMode == UpdateMode::Static)
+        {
+            m_needsRebuild = true;
+        }
+        else if (m_gradientPass)
+        {
+            m_gradientPass->SetGradientColors(low, mid, high, m_exposure, m_faceResolution);
+        }
     }
 
     void GradientGIFeatureProcessor::SetExposure(float exposureStops)
     {
         m_exposure = exposureStops;
-        if (m_active && m_iblFeatureProcessor)
+
+        if (m_updateMode == UpdateMode::Static)
         {
-            m_iblFeatureProcessor->SetExposure(exposureStops);
+            if (m_active && m_iblFeatureProcessor)
+            {
+                m_iblFeatureProcessor->SetExposure(exposureStops);
+            }
+        }
+        else if (m_gradientPass)
+        {
+            // Push full color state (exposure is embedded in the shader SRG).
+            m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
         }
     }
 
     void GradientGIFeatureProcessor::SetFaceResolution(uint32_t resolution)
     {
         m_faceResolution = AZStd::clamp(resolution, 4u, 256u);
-        m_needsRebuild = true;
+
+        if (m_updateMode == UpdateMode::Static)
+        {
+            m_needsRebuild = true;
+        }
+        // Dynamic mode: resolution changes require rebuilding the AttachmentImage.
+        // This happens automatically on the next component deactivate/activate cycle
+        // (triggered by ChangeNotify in the editor component).
+    }
+
+    void GradientGIFeatureProcessor::SetUpdateMode(UpdateMode mode)
+    {
+        AZ_TracePrintf("GradientGI", "FP::SetUpdateMode(%d) current=%d, pass=%p, sceneSrg=%p\n",
+            static_cast<int>(mode), static_cast<int>(m_updateMode), m_gradientPass, m_sceneSrg.get());
+
+        if (m_updateMode == mode)
+        {
+            AZ_TracePrintf("GradientGI", "  SKIP: same mode\n");
+            return;
+        }
+
+        m_updateMode = mode;
+
+        // Reset diagnostic log flags so they fire again for the new mode
+        m_diagnosticLogSimulateSkip = true;
+        m_diagnosticLogRenderSkip   = true;
+        m_diagnosticLogWriteSrg     = true;
+
+        // =================================================================
+        // Switch TO Static
+        // =================================================================
+        if (mode == UpdateMode::Static)
+        {
+            AZ_TracePrintf("GradientGI", "  Switching Dynamic->Static\n");
+
+            // Tear down dynamic pass: queue it for removal from the pipeline,
+            // then drop our reference. The PassSystem removes it next frame.
+            if (m_gradientPassPtr)
+            {
+                AZ_TracePrintf("GradientGI", "  Removing dynamic pass from pipeline: %p\n", m_gradientPass);
+                m_gradientPassPtr->QueueForRemoval();
+                m_gradientPassPtr = nullptr;
+                m_gradientPass    = nullptr;
+            }
+
+            // Trigger CPU rebuild so the IBL FP picks up our cubemap again
+            m_needsRebuild = true;
+        }
+        // =================================================================
+        // Switch TO Dynamic
+        // =================================================================
+        else if (mode == UpdateMode::Dynamic)
+        {
+            AZ_TracePrintf("GradientGI", "  Switching Static->Dynamic\n");
+
+            // FIX 1: Check platform support
+            if (!GradientGICubemapPass::IsGpuComputeSupported())
+            {
+                AZ_Warning("GradientGI", false,
+                    "GPU compute UAV cubemaps not supported. Staying in Static mode.");
+                m_updateMode = UpdateMode::Static;
+                return;
+            }
+
+            // FIX 2: Cache scene SRG indices if not already done
+            if (!m_sceneSrgIndicesCached)
+            {
+                AZ_TracePrintf("GradientGI", "  Caching scene SRG indices (first-time Dynamic)\n");
+                CacheSceneSrgIndices();
+            }
+
+            // FIX 3: Disengage the IBL FP -- clear its stale Static-mode images
+            // so it stops overwriting scene SRG IBL slots in its Simulate().
+            if (m_iblFeatureProcessor)
+            {
+                AZ_TracePrintf("GradientGI", "  Disengaging IBL FP: Reset() to clear stale images\n");
+                m_iblFeatureProcessor->Reset();
+            }
+
+            // FIX 4: Create and inject the GPU compute pass at runtime
+            if (!m_gradientPassPtr)
+            {
+                auto defaultPipeline = GetParentScene()->GetDefaultRenderPipeline();
+                if (defaultPipeline)
+                {
+                    AZ_TracePrintf("GradientGI", "  Creating dynamic pass (runtime injection into default pipeline)\n");
+                    CreateAndInjectPass(defaultPipeline.get());
+                }
+                else
+                {
+                    AZ_Error("GradientGI", false,
+                        "No default render pipeline found! Cannot inject compute pass.");
+                }
+            }
+        }
+    }
+
+    GradientGIFeatureProcessorInterface::UpdateMode GradientGIFeatureProcessor::GetUpdateMode() const
+    {
+        return m_updateMode;
     }
 
     bool GradientGIFeatureProcessor::IsActive() const
@@ -115,13 +434,17 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::Reset()
     {
-        if (m_active && m_iblFeatureProcessor)
+        if (m_updateMode == UpdateMode::Static)
         {
-            m_iblFeatureProcessor->Reset();
+            if (m_active && m_iblFeatureProcessor)
+            {
+                m_iblFeatureProcessor->Reset();
+            }
         }
+
         m_cubemapImage = nullptr;
-        m_imageAsset = {};
-        m_active = false;
+        m_imageAsset   = {};
+        m_active       = false;
         m_needsRebuild = false;
     }
 
@@ -131,15 +454,6 @@ namespace AZ::Render
 
     RHI::Format GradientGIFeatureProcessor::ChooseBestFormat() const
     {
-        // Prefer R16G16B16A16_FLOAT (full HDR, matches engine convention).
-        // Fall back to R8G8B8A8_UNORM for universal compatibility.
-        // R11G11B10_FLOAT is skipped as a default because it lacks alpha and
-        // has inconsistent storage support on mobile -- the gradient data is
-        // simple enough that UNORM8 with exposure compensation works well.
-        //
-        // A future enhancement could query RHI::FormatCapabilities::Sample
-        // per format, but all devices that run O3DE support both of these
-        // as shader-readable textures.
         return RHI::Format::R16G16B16A16_FLOAT;
     }
 
@@ -180,17 +494,14 @@ namespace AZ::Render
         {
             for (uint32_t x = 0; x < faceSize; ++x)
             {
-                // Texel center -> normalized cubemap coordinates
                 float uc = (2.0f * (static_cast<float>(x) + 0.5f) / static_cast<float>(faceSize)) - 1.0f;
                 float vc = (2.0f * (static_cast<float>(y) + 0.5f) / static_cast<float>(faceSize)) - 1.0f;
 
                 Vector3 dir = CubeFaceDirection(face, uc, vc);
                 dir.NormalizeSafe();
 
-                // Vertical gradient: Y axis maps [-1..1] -> [0..1], bottom to top
                 float t = (dir.GetY() + 1.0f) * 0.5f;
 
-                // Two-segment lerp: low->mid (t=0..0.5), mid->high (t=0.5..1.0)
                 Color c;
                 if (t < 0.5f)
                 {
@@ -201,7 +512,6 @@ namespace AZ::Render
                     c = m_midColor.Lerp(m_highColor, (t - 0.5f) * 2.0f);
                 }
 
-                // Write pixel in the selected format
                 size_t offset = (static_cast<size_t>(y) * faceSize + x) * bpp;
                 GradientGI::WritePixel(outPixels.data() + offset, c.GetR(), c.GetG(), c.GetB(), 1.0f, format);
             }
@@ -209,13 +519,13 @@ namespace AZ::Render
     }
 
     // =========================================================================
-    // Cubemap Asset Construction
+    // Cubemap Asset Construction (Static mode)
     // =========================================================================
 
     Data::Instance<RPI::StreamingImage> GradientGIFeatureProcessor::BuildGradientCubemap()
     {
-        const RHI::Format format = ChooseBestFormat();
-        const uint32_t faceSize = m_faceResolution;
+        const RHI::Format format   = ChooseBestFormat();
+        const uint32_t    faceSize = m_faceResolution;
 
         // Step 1: Generate pixel data for each of the 6 faces
         AZStd::array<AZStd::vector<uint8_t>, 6> facePixels;
@@ -283,9 +593,7 @@ namespace AZ::Render
         }
 
         // Step 5: Create runtime GPU image instance
-        Data::Instance<RPI::StreamingImage> image =
-            RPI::StreamingImage::FindOrCreate(m_imageAsset);
-
+        Data::Instance<RPI::StreamingImage> image = RPI::StreamingImage::FindOrCreate(m_imageAsset);
         if (!image)
         {
             AZ_Error("GradientGI", false, "Failed to create StreamingImage instance.");

@@ -17,23 +17,55 @@ namespace AZ::Render
     //! to the scene SRG's IBL slots (m_diffuseEnvMap, m_specularEnvMap, m_iblExposure).
     //!
     //! This replicates Unity's Gradient GI: three colors (low/mid/high) produce a
-    //! vertical gradient cubemap for generic ambient fill lighting. The cubemap is
-    //! generated on the CPU at low resolution (4-256 px per face) and uploaded as a
-    //! StreamingImage. It composites naturally with DiffuseProbeGrid as fallback ambient.
+    //! vertical gradient cubemap for generic ambient fill lighting.
+    //!
+    //! Two update modes are supported:
+    //!   Static  -- CPU-generated StreamingImage (mobile-safe, one rebuild per change)
+    //!   Dynamic -- GPU compute AttachmentImage  (desktop-only, runs every frame)
     class GradientGIFeatureProcessorInterface
         : public RPI::FeatureProcessor
     {
     public:
         AZ_RTTI(AZ::Render::GradientGIFeatureProcessorInterface, "{8A3D1F9E-C4B2-4E6D-A7F0-3B5C8D2E1A09}", AZ::RPI::FeatureProcessor);
 
-        //! Set the three gradient colors. Low = nadir, mid = horizon, high = zenith.
+        // =====================================================================
+        // Update Mode
+        // =====================================================================
+
+        enum class UpdateMode : uint8_t
+        {
+            //! CPU-side StreamingImage rebuild -- one GPU upload per change.
+            //! Works on all platforms including mobile.
+            Static = 0,
+
+            //! GPU compute pass writing an AttachmentImage every frame.
+            //! Requires compute shader UAV cubemap support (DX12 / Vulkan desktop).
+            //! Falls back to Static automatically if the platform does not support it.
+            Dynamic = 1,
+        };
+
+        // =====================================================================
+        // Interface
+        // =====================================================================
+
+        //! Set the three gradient colors. Low = nadir (-Y), mid = horizon, high = zenith (+Y).
         virtual void SetGradientColors(const Color& low, const Color& mid, const Color& high) = 0;
 
         //! Set IBL exposure in EV stops. Final intensity = base * 2^exposure.
         virtual void SetExposure(float exposureStops) = 0;
 
         //! Set cubemap face resolution in pixels (default 64). Clamped to [4..256].
+        //! Resolution changes only take effect on next component activation for Dynamic mode.
         virtual void SetFaceResolution(uint32_t resolution) = 0;
+
+        //! Set the update mode (Static CPU or Dynamic GPU).
+        //! If the platform does not support GPU compute UAV cubemaps, Dynamic silently
+        //! falls back to Static.
+        virtual void SetUpdateMode(UpdateMode mode) = 0;
+
+        //! Returns the currently active update mode (may differ from requested if
+        //! the platform forced a fallback).
+        virtual UpdateMode GetUpdateMode() const = 0;
 
         //! Returns true if the gradient cubemap has been built and is active.
         virtual bool IsActive() const = 0;
@@ -41,4 +73,5 @@ namespace AZ::Render
         //! Reset to defaults -- removes the gradient cubemap from the IBL slots.
         virtual void Reset() = 0;
     };
+
 } // namespace AZ::Render

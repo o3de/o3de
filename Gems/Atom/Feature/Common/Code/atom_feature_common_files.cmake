@@ -18,6 +18,7 @@ set(FILES
     Source/DisplayMapper/BakeAcesOutputTransformLutPass.h
     Source/DisplayMapper/OutputTransformPass.h
     Source/GradientGI/GradientGIConstants.h
+    Source/GradientGI/GradientGICubemapPass.h
     Source/GradientGI/GradientGIFeatureProcessor.h
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Source/LookupTable/LookupTableAsset.h
@@ -120,6 +121,7 @@ set(FILES
     Source/DisplayMapper/OutputTransformPass.cpp
     Source/ImGui/ImGuiSystemComponent.cpp
     Source/ImGui/ImGuiSystemComponent.h
+    Source/GradientGI/GradientGICubemapPass.cpp
     Source/GradientGI/GradientGIFeatureProcessor.cpp
     Source/ImageBasedLights/ImageBasedLightFeatureProcessor.cpp
     Source/LookupTable/LookupTableAsset.cpp
