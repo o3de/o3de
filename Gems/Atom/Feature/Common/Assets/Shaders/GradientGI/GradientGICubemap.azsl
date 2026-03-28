@@ -10,7 +10,7 @@
 // GradientGICubemap.azsl
 //
 // Compute shader that generates a procedural tri-band gradient cubemap for
-// ambient GI (Unity Gradient GI equivalent). Each texel's world-space
+// ambient GI. Each texel's world-space
 // direction determines how far between Low (nadir), Mid (horizon), and
 // High (zenith) colors it sits, then the result is exposure-scaled.
 //
