@@ -108,6 +108,8 @@ ly_create_alias(NAME ${gem_name}.Unified.API NAMESPACE Gem TARGETS Gem::${gem_na
 o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Clients Servers Unified)
 
 # If we are on a host platform, we want to add the host tools targets like the ${gem_name}.Editor MODULE target
+# Do not comment out this if-block if your gem has an Assets folder
+# Required by Assets Processor to know where to look for this-gem-assets
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # The ${gem_name}.Editor.API target can be used by other gems that want to interact with the ${gem_name}.Editor module
     ly_add_target(
