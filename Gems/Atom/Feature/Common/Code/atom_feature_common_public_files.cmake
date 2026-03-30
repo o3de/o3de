@@ -41,7 +41,6 @@ set(FILES
     Include/Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h
     Include/Atom/Feature/ImGui/ImGuiUtils.h
     Include/Atom/Feature/ImGui/SystemBus.h
-    Include/Atom/Feature/ImGui/ImGuiPass.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/Material/ConvertEmissiveUnitFunctor.h
@@ -165,5 +164,4 @@ set(FILES
     Source/Utils/GpuBufferHandler.cpp
     Source/Utils/LightingPreset.cpp
     Source/Utils/ModelPreset.cpp
-    Source/ImGui/ImGuiPass.cpp
 )

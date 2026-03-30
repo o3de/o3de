@@ -55,7 +55,7 @@ namespace AZ
         };
 
         //! This pass owns and manages activation of an Imgui context.
-        class ATOM_FEATURE_COMMON_API ImGuiPass
+        class ImGuiPass
             : public RPI::RenderPass
             , private AzFramework::InputChannelEventListener
             , private AzFramework::InputTextEventListener
