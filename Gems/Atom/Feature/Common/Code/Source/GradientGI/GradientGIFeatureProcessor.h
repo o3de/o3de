@@ -76,6 +76,14 @@ namespace AZ::Render
         // Dynamic Mode -- GPU Compute Pass Path
         // =====================================================================
 
+        //! Safely remove the dynamic pass, handling the case where pipeline rebuilds
+        //! have orphaned it (parent pointer null). Used by Deactivate and SetUpdateMode.
+        void SafeRemoveDynamicPass();
+
+        //! Verify the dynamic pass is still healthy; recreate if orphaned or missing.
+        //! Called from SetUpdateMode "same mode" path and AddRenderPasses.
+        void EnsureDynamicPassExists();
+
         //! Create the GPU compute pass and add it to the given pipeline.
         void CreateAndInjectPass(RPI::RenderPipeline* renderPipeline);
 

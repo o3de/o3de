@@ -84,18 +84,55 @@ namespace AZ::Render
             m_active, m_needsRebuild, m_sceneSrg.get(), m_sceneSrgIndicesCached);
     }
 
+    void GradientGIFeatureProcessor::SafeRemoveDynamicPass()
+    {
+        if (m_gradientPassPtr)
+        {
+            // Pipeline rebuilds can orphan dynamically injected passes, setting
+            // their parent pointer to null. Only queue for removal if the pass
+            // still has a parent; otherwise just release our reference.
+            if (m_gradientPassPtr->GetParent())
+            {
+                AZ_TracePrintf("GradientGI", "  SafeRemoveDynamicPass: queuing removal (parent valid)\n");
+                m_gradientPassPtr->QueueForRemoval();
+            }
+            else
+            {
+                AZ_TracePrintf("GradientGI", "  SafeRemoveDynamicPass: pass orphaned (parent null), releasing reference\n");
+            }
+            m_gradientPassPtr = nullptr;
+            m_gradientPass    = nullptr;
+        }
+    }
+
+    void GradientGIFeatureProcessor::EnsureDynamicPassExists()
+    {
+        // Check for orphaned pass (parent null after pipeline rebuild)
+        if (m_gradientPassPtr && !m_gradientPassPtr->GetParent())
+        {
+            AZ_TracePrintf("GradientGI", "  EnsureDynamicPass: orphaned, releasing\n");
+            m_gradientPassPtr = nullptr;
+            m_gradientPass    = nullptr;
+        }
+
+        if (!m_gradientPassPtr)
+        {
+            auto defaultPipeline = GetParentScene()->GetDefaultRenderPipeline();
+            if (defaultPipeline)
+            {
+                AZ_TracePrintf("GradientGI", "  EnsureDynamicPass: recreating pass\n");
+                CreateAndInjectPass(defaultPipeline.get());
+            }
+        }
+    }
+
     void GradientGIFeatureProcessor::Deactivate()
     {
         AZ_TracePrintf("GradientGI", "=== FP::Deactivate() === updateMode=%d, active=%d, pass=%p\n",
             static_cast<int>(m_updateMode), m_active, m_gradientPass);
 
         // Remove the GPU pass from the pipeline, then drop our reference.
-        if (m_gradientPassPtr)
-        {
-            m_gradientPassPtr->QueueForRemoval();
-            m_gradientPassPtr = nullptr;
-            m_gradientPass    = nullptr;
-        }
+        SafeRemoveDynamicPass();
 
         // Reset IBL slots for Static mode.
         if (m_active && m_iblFeatureProcessor && m_updateMode == UpdateMode::Static)
@@ -190,6 +227,14 @@ namespace AZ::Render
         {
             AZ_TracePrintf("GradientGI", "  SKIP: not in Dynamic mode\n");
             return;
+        }
+
+        // Detect orphaned pass (detached from pipeline tree by a rebuild).
+        if (m_gradientPassPtr && !m_gradientPassPtr->GetParent())
+        {
+            AZ_TracePrintf("GradientGI", "  Pass orphaned by pipeline rebuild, releasing\n");
+            m_gradientPassPtr = nullptr;
+            m_gradientPass    = nullptr;
         }
 
         // Only create one pass (for the first pipeline that registers with this FP).
@@ -342,7 +387,14 @@ namespace AZ::Render
 
         if (m_updateMode == mode)
         {
-            AZ_TracePrintf("GradientGI", "  SKIP: same mode\n");
+            // Same mode requested. In Dynamic mode, verify the pass is still healthy.
+            // Pipeline rebuilds (e.g. game-mode exit) can orphan it, or Reset() may
+            // have cleared m_active without touching the pass. Re-establish if needed.
+            if (mode == UpdateMode::Dynamic)
+            {
+                EnsureDynamicPassExists();
+            }
+            AZ_TracePrintf("GradientGI", "  SKIP: same mode (pass=%p)\n", m_gradientPass);
             return;
         }
 
@@ -360,15 +412,11 @@ namespace AZ::Render
         {
             AZ_TracePrintf("GradientGI", "  Switching Dynamic->Static\n");
 
-            // Tear down dynamic pass: queue it for removal from the pipeline,
-            // then drop our reference. The PassSystem removes it next frame.
-            if (m_gradientPassPtr)
-            {
-                AZ_TracePrintf("GradientGI", "  Removing dynamic pass from pipeline: %p\n", m_gradientPass);
-                m_gradientPassPtr->QueueForRemoval();
-                m_gradientPassPtr = nullptr;
-                m_gradientPass    = nullptr;
-            }
+            // Tear down dynamic pass safely. Pipeline rebuilds (e.g. during
+            // game-mode exit) can orphan injected passes, so we must check
+            // the parent pointer before queuing removal.
+            AZ_TracePrintf("GradientGI", "  Removing dynamic pass from pipeline: %p\n", m_gradientPass);
+            SafeRemoveDynamicPass();
 
             // Trigger CPU rebuild so the IBL FP picks up our cubemap again
             m_needsRebuild = true;
@@ -434,6 +482,14 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::Reset()
     {
+        // NOTE: We intentionally do NOT destroy the dynamic pass here.
+        // Reset() is called on every Controller Deactivate/Activate cycle, including
+        // property edits in the editor. Destroying and recreating the GPU compute pass
+        // on every slider drag tick is expensive and causes visible stuttering.
+        // The pass is only torn down when actually switching modes (SetUpdateMode)
+        // or when the FP deactivates. Orphaned passes (from pipeline rebuilds) are
+        // detected and handled in SetUpdateMode() and AddRenderPasses().
+
         if (m_updateMode == UpdateMode::Static)
         {
             if (m_active && m_iblFeatureProcessor)
