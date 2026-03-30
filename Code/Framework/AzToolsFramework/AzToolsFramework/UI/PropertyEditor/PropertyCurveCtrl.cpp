@@ -672,7 +672,20 @@ namespace AzToolsFramework
 
     QWidget* PropertyCurveEditHandler::CreateGUI(QWidget* pParent)
     {
-        return aznew CurveEditor(pParent);
+        CurveEditor* newCtrl = aznew CurveEditor(pParent);
+        newCtrl->setFixedHeight(256);
+        connect(
+            newCtrl,
+            &CurveEditor::curveChanged,
+            this,
+            [newCtrl]()
+            {
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
+            });
+        return newCtrl;
     }
 
     void PropertyCurveEditHandler::ConsumeAttribute(CurveEditor* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)

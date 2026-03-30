@@ -86,6 +86,7 @@ namespace AzToolsFramework
     signals:
         void mouseRelease();
         void afterCurveSet();
+        void curveChanged();
 
     private:
         void SetupUi();
