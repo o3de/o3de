@@ -63,12 +63,6 @@ namespace MiniAudio
         MiniAudioSystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
 
-        // Register MiniSound Asset
-        auto* materialAsset =
-            aznew AzFramework::GenericAssetHandler<SoundAsset>("MiniSound Asset", SoundAsset::AssetGroup, SoundAsset::FileExtension);
-        materialAsset->Register();
-        m_assetHandlers.emplace_back(materialAsset);
-
         // Register MiniSound Asset Builder
         AssetBuilderSDK::AssetBuilderDesc materialAssetBuilderDescriptor;
         materialAssetBuilderDescriptor.m_name = "MiniSound Asset Builder";
@@ -99,8 +93,6 @@ namespace MiniAudio
 
     void MiniAudioEditorSystemComponent::Deactivate()
     {
-        m_assetHandlers.clear();
-
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MiniAudioSystemComponent::Deactivate();
     }

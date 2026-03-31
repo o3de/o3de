@@ -330,4 +330,6 @@ set(FILES
     Source/SplashScreen/SplashScreenPass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/TransformService/TransformServiceFeatureProcessor.h
+    Source/ImGui/ImGuiPass.cpp
+    Source/ImGui/ImGuiPass.h
 )

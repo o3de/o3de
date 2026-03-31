@@ -207,11 +207,23 @@ namespace OpenParticleSystemEditor
                 break;
             }
         }
+        CheckWarningText();
+    }
+
+    void EffectorInspector::CheckWarningText()
+    {
+        bool shouldBeVisible = false;
+        if (m_comboBoxWidget != nullptr)
+        {
+            shouldBeVisible = m_comboBoxWidget->IsMeshRenderer();
+        }
+
+        m_ui->meshWarningLabel->setVisible(shouldBeVisible);
     }
 
     void EffectorInspector::SetClassName(const QString& className, const QIcon& icon)
     {
-        m_ui->itemName->setText(className);
+        m_ui->itemName->setText(QCoreApplication::translate("OpenParticleSystem", qUtf8Printable(className)));
         m_ui->itemTitleIco->setIcon(icon);
     }
 
@@ -237,6 +249,7 @@ namespace OpenParticleSystemEditor
             m_comboBoxWidget->Refresh(m_detail->m_modules[className.data()][moduleName.data()].second);
         }
         EBUS_EVENT_ID(m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
+        CheckWarningText();
     }
 
     void EffectorInspector::UpdatePropertyEditorWidget(const AZStd::string moduleName, const AZStd::string className, bool bCheck)
@@ -322,57 +335,58 @@ namespace OpenParticleSystemEditor
         case OpenParticleSystemEditor::WIDGET_LINE_TITLE:
         case OpenParticleSystemEditor::WIDGET_LINE_BLANK:
         case OpenParticleSystemEditor::WIDGET_LINE_EMITTER:
-            SetClassName(tr("Emitter"), QIcon(":/ColorPickerDialog/ColorGrid/toggle-normal-on.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Emitter"), QIcon(":/ColorPickerDialog/ColorGrid/toggle-normal-on.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_EMITTER]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_SPAWN:
-            SetClassName(tr("Spawn"), QIcon(":/Gallery/Grid-small.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn"), QIcon(":/Gallery/Grid-small.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_SPAWN]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_PARTICLES:
-            SetClassName(tr("Particles"), QIcon(":/stylesheet/img/UI20/toolbar/particle.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particles"), QIcon(":/stylesheet/img/UI20/toolbar/particle.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_PARTICLES]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_LOCATION:
-            SetClassName(tr("Shape"), QIcon(":/stylesheet/img/UI20/toolbar/SketchMode.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Shape"), QIcon(":/stylesheet/img/UI20/toolbar/SketchMode.svg"));
             ClickComboBoxWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_LOCATION]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_VELOCITY:
-            SetClassName(tr("Velocity"), QIcon(":/stylesheet/img/UI20/toolbar/joints/SwingLimits.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity"), QIcon(":/stylesheet/img/UI20/toolbar/joints/SwingLimits.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_VELOCITY]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_COLOR:
-            SetClassName(tr("Color"), QIcon(":/ColorPickerDialog/ColorGrid/eyedropper-normal.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Color"), QIcon(":/ColorPickerDialog/ColorGrid/eyedropper-normal.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_COLOR]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_SIZE:
-            SetClassName(tr("Size"), QIcon(":/stylesheet/img/UI20/toolbar/Measure.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Size"), QIcon(":/stylesheet/img/UI20/toolbar/Measure.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_SIZE]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_FORCE:
-            SetClassName(tr("Force"), QIcon(":/stylesheet/img/UI20/toolbar/joints/MaxForce.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Force"), QIcon(":/stylesheet/img/UI20/toolbar/joints/MaxForce.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_FORCE]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_LIGHT:
-            SetClassName(tr("Light"), QIcon(":/stylesheet/img/UI20/toolbar/particle.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Light"), QIcon(":/stylesheet/img/UI20/toolbar/particle.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_LIGHT]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_SUBUV:
-            SetClassName(tr("SubUV"), QIcon(":/stylesheet/img/UI20/toolbar/XY2_copy.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "SubUV"), QIcon(":/stylesheet/img/UI20/toolbar/XY2_copy.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_SUBUV]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_EVENT:
-            SetClassName(tr("Event"), QIcon(":/stylesheet/img/logging/pending.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Event"), QIcon(":/stylesheet/img/logging/pending.svg"));
             ClickEventWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_EVENT]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_RENDERER:
-            SetClassName(tr("Renderer"), QIcon(":/stylesheet/img/UI20/toolbar/AutoFit.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Renderer"), QIcon(":/stylesheet/img/UI20/toolbar/AutoFit.svg"));
             ClickComboBoxWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_RENDERER]);
             break;
         default:
             break;
         }
         m_ui->particleName->setEnabled(true);
+        CheckWarningText();
     }
 
     // AzToolsFramework::IPropertyEditorNotify overrides...
@@ -476,6 +490,7 @@ namespace OpenParticleSystemEditor
             }
         }
         EBUS_EVENT_ID(m_widgetName, OpenParticleSystemEditor::ParticleDocumentRequestBus, NotifyParticleSourceDataModified);
+        CheckWarningText();
     }
     
     bool EffectorInspector::AfterVortexForceModified(AzToolsFramework::InstanceDataNode* pNode)
@@ -539,6 +554,8 @@ namespace OpenParticleSystemEditor
         m_ui->particleName->setText("");
         m_ui->itemTitleIco->setIcon(QIcon(""));
         m_ui->itemName->setText("");
+
+        CheckWarningText();
     }
 
     AZStd::vector<AZStd::string> EffectorInspector::GetEmitterNames()
