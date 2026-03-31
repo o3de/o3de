@@ -260,20 +260,25 @@ namespace EMotionFX
 
         void SimpleMotionComponent::PlayMotion()
         {
-            // In case of existing motion instance, play it.
-            if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
+            if (CheckMotionInstance(m_lastMotionInstance))
             {
-                auto motionInstance = SimpleMotionComponent::StartMotionInternal(m_motionInstance, m_configuration);
-                if (SimpleMotionComponent::CheckMotionInstance(motionInstance) && (motionInstance != m_motionInstance))
+                RemoveMotionInstanceFromActor(m_lastMotionInstance);
+                m_lastMotionInstance = nullptr;
+            }
+
+            if (CheckMotionInstance(m_motionInstance))
+            {
+                if (m_configuration.m_blendOutTime > 0.0f)
                 {
-                    if (SimpleMotionComponent::CheckMotionInstance(m_lastMotionInstance))
-                    {
-                        RemoveMotionInstanceFromActor(m_lastMotionInstance);
-                    }
+                    m_lastMotionInstance = m_motionInstance;
+                    m_lastMotionInstance->Stop(m_configuration.m_blendOutTime);
                 }
-                m_lastMotionInstance = m_motionInstance;
-                m_motionInstance = motionInstance;
-                return;
+                else
+                {
+                    RemoveMotionInstanceFromActor(m_motionInstance);
+                }
+
+                m_motionInstance = nullptr;
             }
 
             constexpr const bool deleteOnZeroWeight = false;  // was true
@@ -548,6 +553,10 @@ namespace EMotionFX
             info.m_blendOutTime = cfg.m_blendOutTime;
             info.m_inPlace = cfg.m_inPlace;
             info.m_freezeAtLastFrame = cfg.m_freezeAtLastFrame;
+
+            // Replaying an existing motion instance must clear its previous playback state.
+            motionInstance->InitFromPlayBackInfo(info, false);
+            motionInstance->ResetTimes();
             return actorInstance->GetMotionSystem()->PlayMotion(motionInstance, &info);
         }
 
