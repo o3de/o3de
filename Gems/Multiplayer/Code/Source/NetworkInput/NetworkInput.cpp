@@ -132,8 +132,27 @@ namespace Multiplayer
             return false;
         }
 
-        uint16_t componentInputCount = static_cast<uint16_t>(m_componentInputs.size());
+        // Security: Store the maximum component count to prevent unbounded allocation
+        // from malicious network input. The original size represents the valid component
+        // count for this entity - clients cannot legitimately need more than this.
+        const uint16_t maxComponentCount = static_cast<uint16_t>(m_componentInputs.size());
+        uint16_t componentInputCount = maxComponentCount;
         serializer.Serialize(componentInputCount, "ComponentInputCount");
+        
+        // Security: Clamp componentInputCount to prevent denial of service via
+        // unbounded memory allocation. A malicious client could otherwise send
+        // a very large count (e.g., 65535) causing massive memory allocation.
+        // Allow some headroom above the original size for delta compression scenarios,
+        // but cap at a reasonable maximum to prevent OOM attacks.
+        constexpr uint16_t MaxComponentCountHeadroom = 32;
+        const uint16_t absoluteMaxCount = maxComponentCount + MaxComponentCountHeadroom;
+        if (componentInputCount > absoluteMaxCount)
+        {
+            AZLOG_ERROR("Potentially malicious componentInputCount %u received, clamping to maximum %u",
+                componentInputCount, absoluteMaxCount);
+            componentInputCount = absoluteMaxCount;
+        }
+        
         m_componentInputs.resize(componentInputCount);
         if (serializer.GetSerializerMode() == AzNetworking::SerializerMode::WriteToObject)
         {
