@@ -9,8 +9,9 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/EBus/EBus.h>
 
 namespace EMotionFX
 {
@@ -36,7 +37,7 @@ namespace EMotionFX
             virtual float GetPlayTime() const = 0;
             virtual float GetDuration() const = 0;
             virtual void Motion(AZ::Data::AssetId assetId) = 0;
-            virtual AZ::Data::AssetId  GetMotion() const = 0;
+            virtual AZ::Data::AssetId GetMotion() const = 0;
             virtual void BlendInTime(float time) = 0;
             virtual float GetBlendInTime() const = 0;
             virtual void BlendOutTime(float time) = 0;
@@ -44,5 +45,5 @@ namespace EMotionFX
             virtual void PlayMotion() = 0;
         };
         using SimpleMotionComponentRequestBus = AZ::EBus<SimpleMotionComponentRequests>;
-    }
-}
+    } // namespace Integration
+} // namespace EMotionFX
