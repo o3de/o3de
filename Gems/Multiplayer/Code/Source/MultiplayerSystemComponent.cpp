@@ -1709,9 +1709,29 @@ namespace Multiplayer
     {
         AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
         const bool isAcceptor = (connection->GetConnectionRole() == ConnectionRole::Acceptor); // We're hosting if we accepted the connection
-        const AZ::ConsoleFunctorFlags requiredSet = isAcceptor ? AZ::ConsoleFunctorFlags::AllowClientSet : AZ::ConsoleFunctorFlags::Null;
+        
+        // Security: When receiving commands from network (non-acceptor/client role),
+        // only execute commands explicitly marked with AllowSync flag to prevent
+        // arbitrary code execution via malicious server (CVE scenario).
+        // Commands without AllowSync are rejected to prevent RCE attacks where
+        // a compromised server can execute arbitrary console commands on clients.
+        const AZ::ConsoleFunctorFlags requiredSet = isAcceptor 
+            ? AZ::ConsoleFunctorFlags::AllowClientSet 
+            : AZ::ConsoleFunctorFlags::AllowSync;
+        
         for (auto& command : commands)
         {
+            // For network-received commands (non-acceptor), verify the command is 
+            // explicitly allowed for sync before execution
+            if (!isAcceptor)
+            {
+                AZ::ConsoleFunctorBase* functor = console->FindCommand(command, AZ::ConsoleFunctorFlags::Null);
+                if (!functor || (functor->GetFlags() & AZ::ConsoleFunctorFlags::AllowSync) == AZ::ConsoleFunctorFlags::Null)
+                {
+                    AZLOG_WARN("Blocked console command '%s' received via network sync - command lacks AllowSync flag", command.c_str());
+                    continue;
+                }
+            }
             console->PerformCommand(command.c_str(), AZ::ConsoleSilentMode::NotSilent, AZ::ConsoleInvokedFrom::AzNetworking, requiredSet);
         }
     }
