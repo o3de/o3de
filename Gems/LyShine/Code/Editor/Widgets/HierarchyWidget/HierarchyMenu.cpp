@@ -8,7 +8,6 @@
 
 #include "HierarchyMenu.h"
 
-#include "Helpers/ComponentHelpers.h"
 #include "Helpers/EntityHelpers.h"
 #include "Helpers/HierarchyHelpers.h"
 #include "Helpers/QtHelpers.h"
@@ -18,6 +17,7 @@
 #include "HierarchyWidget.h"
 #include "Widgets/ViewportWidget/ViewportWidget.h"
 #include "Windows/EditorCommon.h"
+#include "Widgets/PropertiesWidget/PropertiesWidget.h"
 #include "Windows/EditorWindow/EditorWindow.h"
 
 #include <AzCore/Math/Vector2.h>
@@ -438,9 +438,14 @@ void HierarchyMenu::New_ElementFromSlice(
 #endif
 }
 
-void HierarchyMenu::AddComponents(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems)
+void HierarchyMenu::AddComponents(HierarchyWidget* hierarchy, [[maybe_unused]] QTreeWidgetItemRawPtrQList& selectedItems)
 {
-    addActions(ComponentHelpers::CreateAddComponentActions(hierarchy, selectedItems, this));
+    QAction* action = new QAction("Add Component...", this);
+    QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy]()
+    {
+        hierarchy->GetEditorWindow()->GetProperties()->ShowComponentPalette();
+    });
+    addAction(action);
 }
 
 void HierarchyMenu::DeleteElement(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems)

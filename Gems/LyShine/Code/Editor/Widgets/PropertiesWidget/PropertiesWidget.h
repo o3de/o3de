@@ -61,6 +61,9 @@ public:
     void SetSelectedEntityDisplayNameWidget(QLineEdit* selectedEntityDisplayNameWidget);
     void SetEditorOnlyCheckbox(QCheckBox* editorOnlyCheckbox);
 
+    //! Show the component palette popup for adding components to selected entities
+    void ShowComponentPalette();
+
     float GetScrollValue();
     void SetScrollValue(float scrollValue);
 

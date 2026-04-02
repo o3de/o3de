@@ -27,6 +27,7 @@ class QLineEdit;
 class QPushButton;
 class QSortFilterProxyModel;
 class QTreeView;
+class QStandardItem;
 
 namespace AZ
 {
@@ -63,12 +64,14 @@ namespace AzToolsFramework
     protected:
         void focusOutEvent(QFocusEvent* event) override;
 
+    protected slots:
+        virtual void ActivateSelection(const QModelIndex& index);
+
     private slots:
         void UpdateContent();
         void QueueUpdateSearch();
         void UpdateSearch();
         void ClearSearch();
-        void ActivateSelection(const QModelIndex& index);
         void ExpandCategory(const QModelIndex& index);
         void CollapseCategory(const QModelIndex& index);
         void FocusSearchBox();

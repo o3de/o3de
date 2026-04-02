@@ -1140,7 +1140,7 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiParticleEmitterComponent>("ParticleEmitter", "A visual component that emits 2D particles.");
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Visual")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 

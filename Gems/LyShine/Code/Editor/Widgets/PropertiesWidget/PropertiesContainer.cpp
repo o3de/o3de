@@ -13,10 +13,12 @@
 #include "Widgets/HierarchyWidget/HierarchyWidget.h"
 #include "Widgets/HierarchyWidget/HierarchyMenu.h"
 #include "Widgets/PropertiesWidget/PropertiesWidget.h"
+#include "Widgets/UiComponentPaletteWidget.h"
 #include "Helpers/ComponentHelpers.h"
 #include "Commands/CommandHierarchyItemRename.h"
 
 #include <AzQtComponents/Components/Style.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
@@ -165,6 +167,9 @@ PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget, Edi
     // Get the serialize context.
     AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "We should have a valid context!");
+
+    // Component palette popup (modern searchable component menu)
+    m_componentPalette = new UiComponentPaletteWidget(this);
 
     QObject::connect(m_editorWindow->GetHierarchy(),
         &HierarchyWidget::editorOnlyStateChangedOnSelectedElements,
@@ -736,11 +741,42 @@ void PropertiesContainer::UpdateInternalState()
 
 void PropertiesContainer::OnAddComponent()
 {
-    HierarchyMenu contextMenu(m_editorWindow->GetHierarchy(),
-        HierarchyMenu::Show::kAddComponents,
-        true);
+    ShowComponentPalette();
+}
 
-    contextMenu.exec(QCursor::pos());
+void PropertiesContainer::ShowComponentPalette()
+{
+    // Choose filter based on whether the canvas entity or a UI element is selected
+    AzToolsFramework::ComponentFilter componentFilter;
+    if (m_isCanvasSelected)
+    {
+        componentFilter = [](const AZ::SerializeContext::ClassData& classData)
+        {
+            return AzToolsFramework::AppearsInAddComponentMenu(classData, AZ_CRC_CE("CanvasUI"));
+        };
+    }
+    else
+    {
+        componentFilter = [](const AZ::SerializeContext::ClassData& classData)
+        {
+            return AzToolsFramework::AppearsInAddComponentMenu(classData, AZ_CRC_CE("UI"));
+        };
+    }
+
+    AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
+    AZ::ComponentDescriptor::DependencyArrayType incompatibleServiceFilter;
+
+    // Position the palette over the properties area before populating
+    // (Populate calls Present which shows the widget)
+    QRect paletteRect = GetWidgetGlobalRect(this);
+    m_componentPalette->setGeometry(paletteRect);
+
+    m_componentPalette->Populate(
+        m_serializeContext,
+        m_selectedEntities,
+        componentFilter,
+        serviceFilter,
+        incompatibleServiceFilter);
 }
 
 void PropertiesContainer::OnDisplayUiComponentEditorMenu(const QPoint& position)
