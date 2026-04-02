@@ -6,10 +6,10 @@
  *
  */
 
-#include <AzCore/Math/Curve.h>
+#include <AzFramework/Math/Curve.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AzFramework
 {
     Curve::Curve()
     {
@@ -23,7 +23,7 @@ namespace AZ
         m_keyPoints.emplace_back(last);
     }
 
-    void Curve::KeyPoint::Reflect(ReflectContext* context)
+    void Curve::KeyPoint::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
@@ -35,7 +35,7 @@ namespace AZ
         }
     }
 
-    void Curve::Reflect(ReflectContext* context)
+    void Curve::Reflect(AZ::ReflectContext* context)
     {
         KeyPoint::Reflect(context);
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);

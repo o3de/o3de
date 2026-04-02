@@ -40,7 +40,6 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/InterpolationSample.h>
 #include <AzCore/Math/MathScriptHelpers.h>
-#include <AzCore/Math/Curve.h>
 
 #include <AzCore/Casting/lossy_cast.h>
 
@@ -388,7 +387,6 @@ namespace AZ
             Frustum::Reflect(context);
             Plane::Reflect(context);
             Transform::Reflect(context);
-            Curve::Reflect(context);
 
             SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
             if (serializeContext)

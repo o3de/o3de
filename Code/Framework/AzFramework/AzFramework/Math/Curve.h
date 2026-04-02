@@ -9,10 +9,11 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzFramework/AzFrameworkAPI.h>
 
-namespace AZ
+namespace AzFramework
 {
-    struct AZCORE_API Curve
+    struct AZF_API Curve
     {
         enum class CurveTickMode
         {
@@ -45,7 +46,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(KeyPoint, AZ::SystemAllocator, 0);
             AZ_TYPE_INFO(KeyPoint, "{28F834C3-DA0C-4E0D-8D4E-BEDE1CE9D8FF}");
 
-            static void Reflect(ReflectContext* context);
+            static void Reflect(AZ::ReflectContext* context);
             float m_time = 0.0f;
             float m_value = 0.0f;
             KeyPointInterpMode m_interpMode = KeyPointInterpMode::LINEAR;
@@ -53,7 +54,7 @@ namespace AZ
 
         AZ_CLASS_ALLOCATOR(Curve, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(Curve, "{D4B7E91C-DD02-423E-B8BC-699E0DFC249B}");
-        static void Reflect(ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
         Curve();
 

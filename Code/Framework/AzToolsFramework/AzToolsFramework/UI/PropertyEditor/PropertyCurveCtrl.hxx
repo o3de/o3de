@@ -13,7 +13,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Curve.h>
+#include <AzFramework/Math/Curve.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <QWidget>
@@ -41,12 +41,12 @@ namespace AzToolsFramework
         void SetKeyPoint(
             float startTime,
             float startValue,
-            const AZ::Curve::KeyPointInterpMode& startMode,
+            const AzFramework::Curve::KeyPointInterpMode& startMode,
             float stopTime,
             float stopValue,
-            const AZ::Curve::KeyPointInterpMode& stopMode);
-        AZ::Curve::KeyPoint m_start;
-        AZ::Curve::KeyPoint m_stop;
+            const AzFramework::Curve::KeyPointInterpMode& stopMode);
+        AzFramework::Curve::KeyPoint m_start;
+        AzFramework::Curve::KeyPoint m_stop;
 
     Q_SIGNALS:
         void OnClicked();
@@ -69,14 +69,14 @@ namespace AzToolsFramework
         virtual void mouseReleaseEvent(QMouseEvent* event) override;
         virtual void resizeEvent(QResizeEvent* event) override;
 
-        const AZ::Curve& GetCurrentCurve() const;
-        void SetCurrentCurve(const AZ::Curve& curve);
+        const AzFramework::Curve& GetCurrentCurve() const;
+        void SetCurrentCurve(const AzFramework::Curve& curve);
         void UpdateKeyInterpMode();
         void DeleteKey();
         float GetValueFactor() const;
         int GetTickMode() const;
         void SetValueFactor(float value);
-        void SetTickMode(const AZ::Curve::CurveTickMode& mode);
+        void SetTickMode(const AzFramework::Curve::CurveTickMode& mode);
         float GetTimeFactor() const;
         void SetTimeFactor(float value);
         float GetCurrentKeyPointTime();
@@ -85,7 +85,6 @@ namespace AzToolsFramework
 
     signals:
         void mouseRelease();
-        void afterCurveSet();
         void curveChanged();
 
     private:
@@ -105,7 +104,7 @@ namespace AzToolsFramework
         int m_currentKeyIndex = 0;
         float m_currentKeyPointTime = 0.f;
         float m_currentKeyPointValue = 0.f;
-        AZ::Curve m_currentCurve;
+        AzFramework::Curve m_currentCurve;
 
         QRect m_mainRect;
         const int m_scaleWidth = 20;
@@ -118,7 +117,7 @@ namespace AzToolsFramework
 
     class AZTF_API PropertyCurveEditHandler
         : QObject
-        , public PropertyHandler<AZ::Curve, CurveEditor>
+        , public PropertyHandler<AzFramework::Curve, CurveEditor>
     {
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
@@ -136,3 +135,4 @@ namespace AzToolsFramework
 
     void RegisterCurveEditHandler();
 }
+

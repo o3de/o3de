@@ -26,14 +26,14 @@ namespace AzToolsFramework
     constexpr AZStd::string_view INTERPMODE_CUBICIN = "CubicIn";
     constexpr AZStd::string_view INTERPMODE_CUBICOUT = "CubicOut";
 
-    AZStd::string ConvertInterpModeToString(const AZ::Curve::KeyPointInterpMode& mode)
+    AZStd::string ConvertInterpModeToString(const AzFramework::Curve::KeyPointInterpMode& mode)
     {
-        const AZStd::unordered_map<AZ::Curve::KeyPointInterpMode, AZStd::string> table =
+        const AZStd::unordered_map<AzFramework::Curve::KeyPointInterpMode, AZStd::string> table =
         {
-            { AZ::Curve::KeyPointInterpMode::LINEAR, INTERPMODE_LINEAR },
-            { AZ::Curve::KeyPointInterpMode::STEP, INTERPMODE_STEP },
-            { AZ::Curve::KeyPointInterpMode::CUBIC_IN, INTERPMODE_CUBICIN },
-            { AZ::Curve::KeyPointInterpMode::CUBIC_OUT, INTERPMODE_CUBICOUT }
+            { AzFramework::Curve::KeyPointInterpMode::LINEAR, INTERPMODE_LINEAR },
+            { AzFramework::Curve::KeyPointInterpMode::STEP, INTERPMODE_STEP },
+            { AzFramework::Curve::KeyPointInterpMode::CUBIC_IN, INTERPMODE_CUBICIN },
+            { AzFramework::Curve::KeyPointInterpMode::CUBIC_OUT, INTERPMODE_CUBICOUT }
         };
         auto it = table.find(mode);
         if (it != table.end())
@@ -43,20 +43,20 @@ namespace AzToolsFramework
         return "";
     }
 
-    AZ::Curve::KeyPointInterpMode ConvertStringToInterpMode(const AZStd::string& mode)
+    AzFramework::Curve::KeyPointInterpMode ConvertStringToInterpMode(const AZStd::string& mode)
     {
-        const AZStd::unordered_map<AZStd::string, AZ::Curve::KeyPointInterpMode> table = {
-            { INTERPMODE_LINEAR, AZ::Curve::KeyPointInterpMode::LINEAR },
-            { INTERPMODE_STEP, AZ::Curve::KeyPointInterpMode::STEP },
-            { INTERPMODE_CUBICIN, AZ::Curve::KeyPointInterpMode::CUBIC_IN },
-            { INTERPMODE_CUBICOUT, AZ::Curve::KeyPointInterpMode::CUBIC_OUT }
+        const AZStd::unordered_map<AZStd::string, AzFramework::Curve::KeyPointInterpMode> table = {
+            { INTERPMODE_LINEAR, AzFramework::Curve::KeyPointInterpMode::LINEAR },
+            { INTERPMODE_STEP, AzFramework::Curve::KeyPointInterpMode::STEP },
+            { INTERPMODE_CUBICIN, AzFramework::Curve::KeyPointInterpMode::CUBIC_IN },
+            { INTERPMODE_CUBICOUT, AzFramework::Curve::KeyPointInterpMode::CUBIC_OUT }
         };
         auto it = table.find(mode);
         if (it != table.end())
         {
             return it->second;
         }
-        return AZ::Curve::KeyPointInterpMode::LINEAR;
+        return AzFramework::Curve::KeyPointInterpMode::LINEAR;
     }
 
     QPoint TransformPointToScreen(float x, float y, int width, int height, int offsetX, int offsetY)
@@ -67,44 +67,44 @@ namespace AzToolsFramework
         return transformedPoint;
     }
 
-    static std::function<float(const float)> GetInterpFunc(const AZ::Curve::KeyPointInterpMode& mode)
+    static std::function<float(const float)> GetInterpFunc(const AzFramework::Curve::KeyPointInterpMode& mode)
     {
-        static const AZStd::unordered_map<AZ::Curve::KeyPointInterpMode, std::function<float(float)>> interpFuncs = {
+        static const AZStd::unordered_map<AzFramework::Curve::KeyPointInterpMode, std::function<float(float)>> interpFuncs = {
             {
-                AZ::Curve::KeyPointInterpMode::LINEAR,     [](float t) -> float { return t; }
+                AzFramework::Curve::KeyPointInterpMode::LINEAR,     [](float t) -> float { return t; }
             },
             {
-                AZ::Curve::KeyPointInterpMode::STEP,       [](float) -> float { return 0; }
+                AzFramework::Curve::KeyPointInterpMode::STEP,       [](float) -> float { return 0; }
             },
             {
-                AZ::Curve::KeyPointInterpMode::CUBIC_IN,   [](float t) -> float { return t * t * t; }
+                AzFramework::Curve::KeyPointInterpMode::CUBIC_IN,   [](float t) -> float { return t * t * t; }
             },
             {
-                AZ::Curve::KeyPointInterpMode::CUBIC_OUT,
+                AzFramework::Curve::KeyPointInterpMode::CUBIC_OUT,
                 [](float t) -> float { return (t - 1.0f) * (t - 1.0f) * (t - 1.0f) + 1.0f; }
             },
             {
-                AZ::Curve::KeyPointInterpMode::SINE_IN,    [](float t) -> float { return sin((t - 1.0f) * AZ::Constants::HalfPi) + 1.0f; }
+                AzFramework::Curve::KeyPointInterpMode::SINE_IN,    [](float t) -> float { return sin((t - 1.0f) * AZ::Constants::HalfPi) + 1.0f; }
             },
             {
-                AZ::Curve::KeyPointInterpMode::SINE_OUT,   [](float t) -> float { return sin(t * AZ::Constants::HalfPi); }
+                AzFramework::Curve::KeyPointInterpMode::SINE_OUT,   [](float t) -> float { return sin(t * AZ::Constants::HalfPi); }
             },
             {
-                AZ::Curve::KeyPointInterpMode::CIRCLE_IN,  [](float t) -> float { return 1.0f - sqrt(1.0f - (t * t)); }
+                AzFramework::Curve::KeyPointInterpMode::CIRCLE_IN,  [](float t) -> float { return 1.0f - sqrt(1.0f - (t * t)); }
             },
             {
-                AZ::Curve::KeyPointInterpMode::CIRCLE_OUT, [](float t) -> float { return sqrt((2.0f - t) * t); }
+                AzFramework::Curve::KeyPointInterpMode::CIRCLE_OUT, [](float t) -> float { return sqrt((2.0f - t) * t); }
             }
         };
         if (interpFuncs.find(mode) == interpFuncs.end()) {
-            return interpFuncs.at(AZ::Curve::KeyPointInterpMode::LINEAR);
+            return interpFuncs.at(AzFramework::Curve::KeyPointInterpMode::LINEAR);
         }
         return interpFuncs.at(mode);
     }
 
     QPainterPath CreatePathFromCurve(
-        const AZ::Curve::KeyPoint& start,
-        const AZ::Curve::KeyPoint& end,
+        const AzFramework::Curve::KeyPoint& start,
+        const AzFramework::Curve::KeyPoint& end,
         float curveStep,
         int width,
         int height,
@@ -113,7 +113,7 @@ namespace AzToolsFramework
     {
         QPainterPath path;
         QPointF pt = TransformPointToScreen(start.m_time, start.m_value, width, height, offsetX, offsetY);
-        AZ::Curve::KeyPointInterpMode interpMode = static_cast<AZ::Curve::KeyPointInterpMode>(end.m_interpMode);
+        AzFramework::Curve::KeyPointInterpMode interpMode = static_cast<AzFramework::Curve::KeyPointInterpMode>(end.m_interpMode);
         std::function<float(const float)> interpFunc = GetInterpFunc(interpMode);
         path.moveTo(pt);
         float value = 0;
@@ -129,9 +129,9 @@ namespace AzToolsFramework
         return path;
     }
 
-    AZ::Curve::KeyPoint ToKeyPoint(const QPointF& point, const AZ::Curve::KeyPointInterpMode& interpMode)
+    AzFramework::Curve::KeyPoint ToKeyPoint(const QPointF& point, const AzFramework::Curve::KeyPointInterpMode& interpMode)
     {
-        AZ::Curve::KeyPoint keyNew;
+        AzFramework::Curve::KeyPoint keyNew;
         keyNew.m_time = static_cast<float>(point.x());
         keyNew.m_value = static_cast<float>(point.y());
         keyNew.m_interpMode = interpMode;
@@ -207,17 +207,19 @@ namespace AzToolsFramework
 
     int CurveEditor::GetTickMode() const
     {
-        return m_currentCurve.m_tickMode == AZ::Curve::CurveTickMode::EMIT_DURATION ? 0 : 1;
+        return m_currentCurve.m_tickMode == AzFramework::Curve::CurveTickMode::EMIT_DURATION ? 0 : 1;
     }
 
     void CurveEditor::SetValueFactor(float value)
     {
         m_currentCurve.m_valueFactor = value;
+        emit curveChanged();
     }
 
-    void CurveEditor::SetTickMode(const AZ::Curve::CurveTickMode& mode)
+    void CurveEditor::SetTickMode(const AzFramework::Curve::CurveTickMode& mode)
     {
         m_currentCurve.m_tickMode = mode;
+        emit curveChanged();
     }
 
     float CurveEditor::GetTimeFactor() const
@@ -228,17 +230,18 @@ namespace AzToolsFramework
     void CurveEditor::SetTimeFactor(float value)
     {
         m_currentCurve.m_timeFactor = value;
+        emit curveChanged();
     }
 
-    const AZ::Curve& CurveEditor::GetCurrentCurve() const
+    const AzFramework::Curve& CurveEditor::GetCurrentCurve() const
     {
         return m_currentCurve;
     }
 
-    void CurveEditor::SetCurrentCurve(const AZ::Curve& curve)
+    void CurveEditor::SetCurrentCurve(const AzFramework::Curve& curve)
     {
         m_currentCurve = curve;
-        emit afterCurveSet();
+        update();
     }
 
     float CurveEditor::GetCurrentKeyPointTime()
@@ -335,6 +338,7 @@ namespace AzToolsFramework
         painter.drawText(m_scaleWidth + static_cast<int>(width * 3) - offset, rect().bottom(), AXIS_INFO_X3.data());
         painter.drawText(rect().right() - static_cast<int>(offset * 1.5), rect().bottom(), AXIS_INFO_ONE.data());
     }
+
     void CurveEditor::paintEvent(QPaintEvent* event)
     {
         QPainter painter(this);
@@ -352,7 +356,7 @@ namespace AzToolsFramework
         time_t index = 0;
         for (auto iter = m_currentCurve.m_keyPoints.begin(); iter != m_currentCurve.m_keyPoints.end(); iter++, index++)
         {
-            AZ::Curve::KeyPoint& keyPoint = (*iter);
+            AzFramework::Curve::KeyPoint& keyPoint = (*iter);
             QPoint center = TransformPointToScreen(
                 keyPoint.m_time, keyPoint.m_value, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
             QRect rc = CenterPointToRect(center);
@@ -369,8 +373,8 @@ namespace AzToolsFramework
         // draw curves
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
-        AZ::Curve::KeyPoint keyStart;
-        AZ::Curve::KeyPoint keyEnd;
+        AzFramework::Curve::KeyPoint keyStart;
+        AzFramework::Curve::KeyPoint keyEnd;
         QPainterPath path;
         const float CURVE_STEP = 0.005f;
         for (auto iter = m_currentCurve.m_keyPoints.begin(); iter != m_currentCurve.m_keyPoints.end(); iter++)
@@ -406,7 +410,7 @@ namespace AzToolsFramework
         time_t index = 0;
         for (auto iter = m_currentCurve.m_keyPoints.begin(); iter != m_currentCurve.m_keyPoints.end(); iter++, index++)
         {
-            AZ::Curve::KeyPoint k = (*iter);
+            AzFramework::Curve::KeyPoint k = (*iter);
             QPoint center = TransformPointToScreen(k.m_time, k.m_value, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
             QRect rc = CenterPointToRect(center);
             if (rc.contains(currPos))
@@ -473,14 +477,15 @@ namespace AzToolsFramework
     void CurveEditor::AddKey(QPoint pos)
     {
         QPointF pt = TransformPointFromScreen(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
-        auto keyNew = ToKeyPoint(pt, AZ::Curve::KeyPointInterpMode::CUBIC_IN);
+        auto keyNew = ToKeyPoint(pt, AzFramework::Curve::KeyPointInterpMode::CUBIC_IN);
         m_currentCurve.m_keyPoints.emplace_back(keyNew);
         AZStd::sort(
             m_currentCurve.m_keyPoints.begin(), m_currentCurve.m_keyPoints.end(),
-            [](AZ::Curve::KeyPoint& left, AZ::Curve::KeyPoint& right)
+            [](AzFramework::Curve::KeyPoint& left, AzFramework::Curve::KeyPoint& right)
             {
                 return left.m_time < right.m_time;
             });
+            emit curveChanged();
 
         // to change the key point editor's target to current added key point
         SimulateLeftButtonPressDragRelease(keyNew.m_time, keyNew.m_value, keyNew.m_time, keyNew.m_value);
@@ -522,6 +527,7 @@ namespace AzToolsFramework
             if (index == m_currentKeyIndex)
             {
                 m_currentCurve.m_keyPoints.erase(iter);
+                emit curveChanged();
 
                 break;
             }
@@ -539,6 +545,7 @@ namespace AzToolsFramework
             if (index == m_currentKeyIndex)
             {
                 iter->m_interpMode = ConvertStringToInterpMode(interpMode.toStdString().c_str());
+                emit curveChanged();
 
                 update();
                 break;
@@ -559,7 +566,7 @@ namespace AzToolsFramework
                 {
                     if (index == m_currentKeyIndex)
                     {
-                        AZ::Curve::KeyPoint keyPoint = (*iter);
+                        AzFramework::Curve::KeyPoint keyPoint = (*iter);
                         m_currentKeyPointTime = keyPoint.m_time;
                         m_currentKeyPointValue = keyPoint.m_value;
                         AZStd::string toolTip = AZStd::string::format("time:%f\nvalue:%f\nmode:%s",
@@ -597,6 +604,7 @@ namespace AzToolsFramework
                 QPointF pt = TransformPointFromScreen(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
                 iter->m_time = static_cast<float>(pt.x());
                 iter->m_value = static_cast<float>(pt.y());
+                emit curveChanged();
                 break;
             }
         }
@@ -619,10 +627,10 @@ namespace AzToolsFramework
     void PresetCurveWidget::SetKeyPoint(
         float startTime,
         float startValue,
-        const AZ::Curve::KeyPointInterpMode& startMode,
+        const AzFramework::Curve::KeyPointInterpMode& startMode,
         float stopTime,
         float stopValue,
-        const AZ::Curve::KeyPointInterpMode& stopMode)
+        const AzFramework::Curve::KeyPointInterpMode& stopMode)
     {
         m_start.m_time = startTime;
         m_start.m_value = startValue;
