@@ -441,6 +441,7 @@ namespace AzToolsFramework
             folder->m_isScanFolder = isScanFolder;
             parent->AddChild(folder);
             folder->m_isGemFolder = m_gemNames.contains(folder->GetFullPath());
+            folder->m_isProjectFolder = (AZ::IO::PathView(folder->GetFullPath()) == m_projectPath);
             return folder;
         }
 

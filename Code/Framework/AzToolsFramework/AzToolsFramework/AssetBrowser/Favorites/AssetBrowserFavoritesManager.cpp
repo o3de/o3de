@@ -75,6 +75,12 @@ namespace AzToolsFramework
             AddFavoriteItem(item);
 
             m_favoriteEntriesCache[favorite] = item;
+
+            // If this asset was previously unresolved, remove it from the unresolved list
+            AZStd::string normalizedPath = AZ::IO::PathView(favorite->GetFullPath()).LexicallyNormal().String();
+            m_unresolvedFavoritePaths.erase(
+                AZStd::remove(m_unresolvedFavoritePaths.begin(), m_unresolvedFavoritePaths.end(), normalizedPath),
+                m_unresolvedFavoritePaths.end());
         }
 
         void AssetBrowserFavoritesManager::AddFavoriteSearchButtonPressed(SearchWidget* searchWidget)
@@ -219,6 +225,7 @@ namespace AzToolsFramework
             m_loading = true;
 
             ClearFavorites();
+            m_unresolvedFavoritePaths.clear();
 
             QSettings settings;
             settings.beginGroup("AssetBrowserFavorites");
@@ -243,12 +250,15 @@ namespace AzToolsFramework
                     const auto itFile = EntryCache::GetInstance()->m_absolutePathToFileId.find(filePath);
                     if (itFile == EntryCache::GetInstance()->m_absolutePathToFileId.end())
                     {
+                        // Cache not populated yet — save the path so we don't lose it on next save
+                        m_unresolvedFavoritePaths.push_back(filePath);
                         continue;
                     }
 
                     const auto itABEntry = EntryCache::GetInstance()->m_fileIdMap.find(itFile->second);
                     if (itABEntry == EntryCache::GetInstance()->m_fileIdMap.end())
                     {
+                        m_unresolvedFavoritePaths.push_back(filePath);
                         continue;
                     }
 
@@ -293,11 +303,13 @@ namespace AzToolsFramework
             settings.remove("");
             settings.beginWriteArray("Items");
 
+            int arrayIndex = 0;
+
             for (size_t index = 0; index < m_favorites.size(); index++)
             {
                 AssetBrowserFavoriteItem* entry = m_favorites.at(index);
 
-                settings.setArrayIndex(aznumeric_cast<int>(index));
+                settings.setArrayIndex(arrayIndex++);
 
                 if (entry->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
                 {
@@ -312,7 +324,17 @@ namespace AzToolsFramework
                 }
             }
 
+            // Preserve any favorite paths that could not be resolved during load
+            // (e.g. because the asset cache was not fully populated yet).
+            // This prevents favorites from being silently lost between sessions.
+            for (const auto& unresolvedPath : m_unresolvedFavoritePaths)
+            {
+                settings.setArrayIndex(arrayIndex++);
+                settings.setValue("entryPath", unresolvedPath.c_str());
+            }
+
             settings.endArray();
+            settings.sync();
 
             AssetBrowserFavoritesNotificationBus::Broadcast(&AssetBrowserFavoritesNotificationBus::Events::FavoritesChanged);
         }
