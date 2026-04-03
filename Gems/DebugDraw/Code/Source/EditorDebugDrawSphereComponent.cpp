@@ -32,6 +32,7 @@ namespace DebugDraw
                     "DebugDraw Sphere", "Draws debug ray on the screen from this entity's location to specified end entity's location.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/gems/reference/debug/debug-draw/")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawSphere.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/DebugDrawSphere.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
