@@ -20,13 +20,31 @@
 
 #include <AzQtComponents/Components/Style.h>
 
+#include <QApplication>
 #include <QDrag>
 #include <QHeaderView>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QTimer>
 
 namespace AzToolsFramework
 {
+    // Helper: walks up the widget parent chain to check if the widget is inside
+    // Returns true if the widget is inside an Asset Browser panel.
+    static bool IsInsideAssetBrowser(QWidget* widget)
+    {
+        while (widget)
+        {
+            const char* className = widget->metaObject()->className();
+            if (qstrcmp(className, "AzAssetBrowserWindow") == 0)
+            {
+                return true;
+            }
+            widget = widget->parentWidget();
+        }
+        return false;
+    }
+
     EntityOutlinerTreeView::EntityOutlinerTreeView(QWidget* pParent)
         : AzQtComponents::StyledTreeView(pParent)
         , m_queuedMouseEvent(nullptr)
@@ -50,6 +68,17 @@ namespace AzToolsFramework
         FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         viewport()->setMouseTracking(true);
+
+        // Clear outliner selection when ANY widget inside an Asset Browser gains focus.
+        // This covers both direct (outliner -> asset browser) and indirect (viewport -> asset browser)
+        // transitions, since focusOutEvent alone only fires when the tree view itself loses focus.
+        connect(qApp, &QApplication::focusChanged, this, [this](QWidget* /*old*/, QWidget* now)
+        {
+            if (now && IsInsideAssetBrowser(now) && selectionModel() && selectionModel()->hasSelection())
+            {
+                selectionModel()->clearSelection();
+            }
+        });
     }
 
     EntityOutlinerTreeView::~EntityOutlinerTreeView()
