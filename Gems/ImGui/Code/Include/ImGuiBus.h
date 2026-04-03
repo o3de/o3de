@@ -191,6 +191,27 @@ namespace ImGui
     };
     typedef AZ::EBus<IImGuiCameraMonitorRequests> ImGuiCameraMonitorRequestBus;
 
+    // ==================================================================================
+    // Console Key Suppression Bus
+    // Allows editor systems to suppress the ImGui console key toggle (Home key)
+    // when text input widgets have focus, preventing accidental ImGui activation
+    // during text editing in spinboxes, line edits, etc.
+    // ==================================================================================
+    class IImGuiConsoleKeySuppression : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        using Bus = AZ::EBus<IImGuiConsoleKeySuppression>;
+
+        virtual ~IImGuiConsoleKeySuppression() = default;
+
+        //! Return true if the console key toggle should be suppressed
+        //! (e.g. because a text input widget currently has keyboard focus)
+        virtual bool ShouldSuppressConsoleKeyToggle() const { return false; }
+    };
+    using ImGuiConsoleKeySuppressionBus = AZ::EBus<IImGuiConsoleKeySuppression>;
+
     // Bus for getting debug Component updates from ImGui manager
     class IImGuiUpdateDebugComponentListener : public AZ::EBusTraits
     {

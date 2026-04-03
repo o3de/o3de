@@ -7,9 +7,71 @@
  */
 
 #include "ImGuiGem.h"
+#include <ImGuiBus.h>
+
+#include <QApplication>
+#include <QWidget>
+#include <QLineEdit>
+#include <QTextEdit>
+#include <QPlainTextEdit>
+#include <QAbstractSpinBox>
+#include <QComboBox>
 
 namespace ImGui
 {
+    // ==================================================================================
+    // Editor Console Key Suppression Handler
+    // Prevents the ImGui console key (Home) from toggling the ImGui overlay
+    // when a text-editing widget has keyboard focus. This lets Home/End keys
+    // work normally for cursor navigation in spinboxes, line edits, text areas, etc.
+    // ==================================================================================
+    class EditorConsoleKeySuppression
+        : public IImGuiConsoleKeySuppression::Bus::Handler
+    {
+    public:
+        EditorConsoleKeySuppression()
+        {
+            IImGuiConsoleKeySuppression::Bus::Handler::BusConnect();
+        }
+
+        ~EditorConsoleKeySuppression() override
+        {
+            IImGuiConsoleKeySuppression::Bus::Handler::BusDisconnect();
+        }
+
+        bool ShouldSuppressConsoleKeyToggle() const override
+        {
+            QWidget* focusWidget = QApplication::focusWidget();
+            if (!focusWidget)
+            {
+                return false;
+            }
+
+            // Suppress if any text-editing widget has keyboard focus
+            if (qobject_cast<QLineEdit*>(focusWidget) ||
+                qobject_cast<QAbstractSpinBox*>(focusWidget) ||
+                qobject_cast<QTextEdit*>(focusWidget) ||
+                qobject_cast<QPlainTextEdit*>(focusWidget))
+            {
+                return true;
+            }
+
+            // Editable combo boxes contain a QLineEdit -- suppress for those too
+            if (auto* combo = qobject_cast<QComboBox*>(focusWidget))
+            {
+                if (combo->isEditable())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    };
+
+    // ==================================================================================
+    // Editor Window Module
+    // ==================================================================================
     class ImGuiEditorWindowModule
         : public ImGuiModule
     {
@@ -19,7 +81,11 @@ namespace ImGui
         ImGuiEditorWindowModule()
             : ImGuiModule()
         {
+            m_consoleKeySuppression = AZStd::make_unique<EditorConsoleKeySuppression>();
         }
+
+    private:
+        AZStd::unique_ptr<EditorConsoleKeySuppression> m_consoleKeySuppression;
     };
 }
 

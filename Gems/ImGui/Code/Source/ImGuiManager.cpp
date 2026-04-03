@@ -487,10 +487,20 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         // Handle Keyboard Hotkeys
         if (inputChannel.IsStateBegan())
         {
-            // Cycle through ImGui Menu Bar States on the console key button press
+            // Cycle through ImGui Menu Bar States on the console key button press.
+            // Check suppression bus first -- editor text input widgets (QLineEdit,
+            // QSpinBox, etc.) register a handler that returns true when they have
+            // keyboard focus, so the Home/End keys work for cursor navigation
+            // instead of toggling the ImGui overlay.
             if (inputChannelId == m_consoleKeyInputChannelId)
             {
-                ToggleThroughImGuiVisibleState();
+                AZ::EBusReduceResult<bool, AZStd::logical_or<bool>> suppress(false);
+                ImGuiConsoleKeySuppressionBus::BroadcastResult(
+                    suppress, &IImGuiConsoleKeySuppression::ShouldSuppressConsoleKeyToggle);
+                if (!suppress.value)
+                {
+                    ToggleThroughImGuiVisibleState();
+                }
             }
         }
 

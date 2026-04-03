@@ -129,6 +129,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::${gem_name}.Static
+                3rdParty::Qt::Widgets
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
