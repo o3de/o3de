@@ -25,7 +25,6 @@ namespace AzToolsFramework
     {
         // create the gui, it consists of a layout, and in that layout, a text field for the value
         // and then a slider for the value.
-        setFocusPolicy(Qt::StrongFocus);
         QHBoxLayout* pLayout = new QHBoxLayout(this);
         m_pSpinBox = new AzQtComponents::SpinBox(this);
 
@@ -42,9 +41,13 @@ namespace AzToolsFramework
 
         m_pSpinBox->setKeyboardTracking(false);
         m_pSpinBox->setFocusPolicy(Qt::StrongFocus);
+        setFocusProxy(m_pSpinBox);
+        setFocusPolicy(m_pSpinBox->focusPolicy());
 
         connect(m_pSpinBox, SIGNAL(valueChanged(int)), this, SLOT(onChildSpinboxValueChange(int)));
         connect(m_pSpinBox, &QSpinBox::editingFinished, this, &PropertyIntSpinCtrl::editingFinished);
+        connect(m_pSpinBox, &AzQtComponents::SpinBox::valueChangeBegan, this, &PropertyIntSpinCtrl::valueChangeBegan);
+        connect(m_pSpinBox, &AzQtComponents::SpinBox::valueChangeEnded, this, &PropertyIntSpinCtrl::valueChangeEnded);
     };
 
     QWidget* PropertyIntSpinCtrl::GetFirstInTabOrder()

@@ -89,6 +89,11 @@ namespace AzQtComponents
 
         //! Sets whether the initial value was initialized. False prompts reinitialization.
         void setInitialValueWasSetting(bool b);
+
+        //! Returns true when the current spinbox value differs from the value
+        //! captured at focus-in, meaning the user has an uncommitted local edit.
+        bool hasInProgressEdit() const;
+
     Q_SIGNALS:
         //! Triggered when the value begins changing, for example when the control starts being dragged.
         void valueChangeBegan();
@@ -141,6 +146,7 @@ namespace AzQtComponents
 
         internal::SpinBoxLineEdit* m_lineEdit = nullptr;
         int m_lastValue = 0;
+        int m_valueOnFocusIn = 0;
         QString m_lastSuffix;
         QSize m_lastMinimumSize;
 
@@ -208,6 +214,10 @@ namespace AzQtComponents
         //! Sets whether the initial value was initialized. False prompts reinitialization.
         void setInitialValueWasSetting(bool b);
 
+        //! Returns true when the current spinbox value differs from the value
+        //! captured at focus-in, meaning the user has an uncommitted local edit.
+        bool hasInProgressEdit() const;
+
     Q_SIGNALS:
         //! Triggered when the value begins changing, for example when the control starts being dragged.
         void valueChangeBegan();
@@ -245,6 +255,7 @@ namespace AzQtComponents
 
         internal::SpinBoxLineEdit* m_lineEdit = nullptr;
         double m_lastValue = 0.0;
+        double m_valueOnFocusIn = 0.0;
         QString m_lastSuffix;
         QSize m_lastMinimumSize;
         int m_displayDecimals;
@@ -273,6 +284,9 @@ namespace AzQtComponents
         Q_SIGNALS:
             void globalUndoTriggered();
             void globalRedoTriggered();
+            //! Emitted when Ctrl+Z is pressed while the user has made local edits.
+            //! The parent spinbox should revert to its pre-edit value and clear focus.
+            void editCancelTriggered();
 
             void selectAllTriggered();
             void cutTriggered();

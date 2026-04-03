@@ -444,9 +444,11 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
         {
             if (!spinBox->hasFocus())
             {
-                // To prevent the event being turned into a focus event, be sure to install an
-                // AzQtComponents::GlobalEventFilter on your QApplication instance.
-                event->accept();
+                // When the spinbox does not have focus, ignore the wheel event so it
+                // propagates to the parent scroll area instead of being swallowed.
+                // This prevents scroll hijacking when the mouse passes over spinboxes
+                // in scrollable containers like the Entity Inspector.
+                event->ignore();
                 return true;
             }
 
@@ -774,6 +776,7 @@ void SpinBoxWatcher::emitValueChangeBegan(QAbstractSpinBox* spinBox)
         m_spinBoxChanging = spinBox;
         emit azDoubleSpinBox->valueChangeBegan();
     }
+
 }
 
 void SpinBoxWatcher::emitValueChangeEnded(QAbstractSpinBox* spinBox)
@@ -801,6 +804,7 @@ void SpinBoxWatcher::emitValueChangeEnded(QAbstractSpinBox* spinBox)
         emit azDoubleSpinBox->valueChangeEnded();
         m_spinBoxChanging.clear();
     }
+
 }
 
 void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox)
@@ -1094,6 +1098,10 @@ void SpinBox::setButtonSymbolsForStyle(QAbstractSpinBox* spinBox)
 SpinBox::SpinBox(QWidget* parent)
     : QSpinBox(parent)
 {
+    // Use StrongFocus so that mouse wheel alone cannot grant focus to the spinbox.
+    // This prevents scroll hijacking when the cursor passes over spinboxes in scrollable containers.
+    setFocusPolicy(Qt::StrongFocus);
+
 #if !defined(AZ_PLATFORM_LINUX)
 #if QT_VERSION < QT_VERSION_CHECK(5,11,1)
     setShiftIncreasesStepRate(true);
@@ -1103,6 +1111,16 @@ SpinBox::SpinBox(QWidget* parent)
     m_lineEdit = new internal::SpinBoxLineEdit(this);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalUndoTriggered, this, &SpinBox::globalUndoTriggered);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalRedoTriggered, this, &SpinBox::globalRedoTriggered);
+    connect(m_lineEdit, &internal::SpinBoxLineEdit::editCancelTriggered, this, [this]()
+    {
+        if (value() != m_valueOnFocusIn)
+        {
+            // Let valueChanged fire so the component/reflection system
+            // reverts whatever the in-progress edit had changed.
+            QSpinBox::setValue(m_valueOnFocusIn);
+        }
+        clearFocus();
+    });
     connect(this, &SpinBox::cutTriggered, this, [this]()
     {
         setInitialValueWasSetting(true);
@@ -1144,6 +1162,11 @@ QSize SpinBox::minimumSizeHint() const
     return size;
 }
 
+bool SpinBox::hasInProgressEdit() const
+{
+    return value() != m_valueOnFocusIn;
+}
+
 bool SpinBox::isUndoAvailable() const
 {
     return lineEdit()->isUndoAvailable();
@@ -1156,6 +1179,12 @@ bool SpinBox::isRedoAvailable() const
 
 void SpinBox::focusInEvent(QFocusEvent* event)
 {
+    // Store current value so Ctrl+Z can revert the entire edit.
+    if (event->reason() != Qt::PopupFocusReason)
+    {
+        m_valueOnFocusIn = value();
+    }
+
     // Remove the suffix while editing. Check focus reason so we don't clash
     // with context menus
     if (event->reason() != Qt::PopupFocusReason)
@@ -1319,6 +1348,10 @@ DoubleSpinBox::DoubleSpinBox(QWidget* parent)
     : QDoubleSpinBox(parent)
     , m_displayDecimals(g_decimalDisplayPrecisionDefault)
 {
+    // Use StrongFocus so that mouse wheel alone cannot grant focus to the spinbox.
+    // This prevents scroll hijacking when the cursor passes over spinboxes in scrollable containers.
+    setFocusPolicy(Qt::StrongFocus);
+
 #if !defined(AZ_PLATFORM_LINUX)
 #if QT_VERSION < QT_VERSION_CHECK(5,11,1)
     setShiftIncreasesStepRate(true);
@@ -1328,6 +1361,16 @@ DoubleSpinBox::DoubleSpinBox(QWidget* parent)
     m_lineEdit = new internal::SpinBoxLineEdit(this);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalUndoTriggered, this, &DoubleSpinBox::globalUndoTriggered);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalRedoTriggered, this, &DoubleSpinBox::globalRedoTriggered);
+    connect(m_lineEdit, &internal::SpinBoxLineEdit::editCancelTriggered, this, [this]()
+    {
+        if (!qFuzzyCompare(value(), m_valueOnFocusIn))
+        {
+            // Let valueChanged fire so the component/reflection system
+            // reverts whatever the in-progress edit had changed.
+            QDoubleSpinBox::setValue(m_valueOnFocusIn);
+        }
+        clearFocus();
+    });
     connect(this, &DoubleSpinBox::cutTriggered, this, [this]()
     {
         setInitialValueWasSetting(true);
@@ -1375,6 +1418,11 @@ QSize DoubleSpinBox::minimumSizeHint() const
     QSize size = QDoubleSpinBox::sizeHint();
     size.setWidth(minimumWidth());
     return size;
+}
+
+bool DoubleSpinBox::hasInProgressEdit() const
+{
+    return !qFuzzyCompare(value(), m_valueOnFocusIn);
 }
 
 bool DoubleSpinBox::isUndoAvailable() const
@@ -1438,12 +1486,18 @@ QString DoubleSpinBox::textFromValue(double value) const
 
 void DoubleSpinBox::focusInEvent(QFocusEvent* event)
 {
-    // We need to set the special value text to an empty string, which
-    // effectively makes no change, but actually triggers the line edit
-    // display value to be updated so that when we receive focus to
-    // begin editing, we display the full decimal precision instead of
-    // the truncated display value
+    // Store current value so Ctrl+Z can revert the entire edit.
+    if (event->reason() != Qt::PopupFocusReason)
+    {
+        m_valueOnFocusIn = value();
+    }
+
+    // Trigger the line edit to display full decimal precision instead of the
+    // truncated display value. Block signals to prevent the text update from
+    // firing valueChanged and creating spurious undo entries.
+    const bool blocked = blockSignals(true);
     setSpecialValueText(QString());
+    blockSignals(blocked);
 
     // Remove the suffix while editing. Check focus reason so we don't clash
     // with context menus
@@ -1502,14 +1556,55 @@ namespace internal
     {
         switch (ev->type())
         {
+            case QEvent::ShortcutOverride:
+            {
+                auto keyEvent = static_cast<QKeyEvent*>(ev);
+
+                // Claim the Escape key so the MainWindow's escape action
+                // (entity deselect) does not fire while editing a spinbox.
+                if (keyEvent->key() == Qt::Key_Escape)
+                {
+                    ev->accept();
+                    return true;
+                }
+
+                // Only claim Ctrl+Z if the parent spinbox has a local edit
+                // to cancel. Otherwise let it propagate to the global editor
+                // undo system. Return true in both branches to prevent
+                // QLineEdit from also claiming the shortcut.
+                if (keyEvent->matches(QKeySequence::Undo))
+                {
+                    bool localEdit = false;
+                    if (auto* sb = qobject_cast<SpinBox*>(parent()))
+                        localEdit = sb->hasInProgressEdit();
+                    else if (auto* dsb = qobject_cast<DoubleSpinBox*>(parent()))
+                        localEdit = dsb->hasInProgressEdit();
+
+                    if (localEdit)
+                    {
+                        ev->accept();
+                    }
+                    else
+                    {
+                        ev->ignore();
+                    }
+                    return true;
+                }
+            }
+            break;
+
             case QEvent::FocusOut:
             {
-                // Explicitly set the text again on focusOut, so that the undo/redo queue for the line edit clears and the global undo/redo can kick in
+                // Clear the line edit's internal undo/redo queue so the global undo/redo can kick in.
+                // Block signals to prevent setText from re-triggering valueChanged/editingFinished,
+                // which would create spurious undo entries and prefab override markers.
                 if (const auto focusEvent = static_cast<QFocusEvent*>(ev))
                 {
                     if (focusEvent->reason() != Qt::PopupFocusReason)
                     {
+                        const bool blocked = blockSignals(true);
                         setText(text());
+                        blockSignals(blocked);
                     }
                 }
             }
@@ -1521,18 +1616,38 @@ namespace internal
 
     void SpinBoxLineEdit::keyPressEvent(QKeyEvent* ev)
     {
-        if (overrideUndoRedo())
+        // Escape always cancels the current edit and clears focus.
+        if (ev->key() == Qt::Key_Escape)
         {
-            // QLineEdit overrides the key press event handler
-            // so we have to trap that too, directly, without assuming
-            // that QAction's with shortcuts will do it.
-            if (ev->matches(QKeySequence::Undo))
+            Q_EMIT editCancelTriggered();
+            ev->accept();
+            return;
+        }
+
+        // Ctrl+Z cancels a local edit. When there is no local edit the
+        // ShortcutOverride handler already declined the key so this path
+        // normally won't be reached, but guard it here as well.
+        if (ev->matches(QKeySequence::Undo))
+        {
+            bool localEdit = false;
+            if (auto* sb = qobject_cast<SpinBox*>(parent()))
+                localEdit = sb->hasInProgressEdit();
+            else if (auto* dsb = qobject_cast<DoubleSpinBox*>(parent()))
+                localEdit = dsb->hasInProgressEdit();
+
+            if (localEdit)
             {
-                Q_EMIT globalUndoTriggered();
+                Q_EMIT editCancelTriggered();
                 ev->accept();
                 return;
             }
-            else if (ev->matches(QKeySequence::Redo))
+            ev->ignore();
+            return;
+        }
+
+        if (overrideUndoRedo())
+        {
+            if (ev->matches(QKeySequence::Redo))
             {
                 Q_EMIT globalRedoTriggered();
                 ev->accept();

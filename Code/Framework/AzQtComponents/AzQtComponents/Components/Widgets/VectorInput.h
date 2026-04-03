@@ -231,6 +231,8 @@ namespace AzQtComponents
         void valueChanged(double);
         void valueAtIndexChanged(int elementIndex, double newValue);
         void editingFinished();
+        void valueChangeBegan();
+        void valueChangeEnded();
 
     public Q_SLOTS:
         QWidget* GetFirstInTabOrder();
