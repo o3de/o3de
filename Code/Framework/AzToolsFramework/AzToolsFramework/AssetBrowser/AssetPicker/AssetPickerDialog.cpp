@@ -279,10 +279,29 @@ namespace AzToolsFramework
 
         void AssetPickerDialog::DoubleClickedSlot(const QModelIndex& index)
         {
-            AZ_UNUSED(index);
             if (EvaluateSelection())
             {
                 QDialog::accept();
+                return;
+            }
+
+            // If selection failed (e.g. source/parent entry selected but filter requires product),
+            // try selecting the first child product so the user doesn't have to manually expand.
+            if (index.isValid() && index.model()->hasChildren(index))
+            {
+                QModelIndex firstChild = index.model()->index(0, 0, index);
+                if (firstChild.isValid())
+                {
+                    auto* treeView = m_ui->m_assetBrowserTreeViewWidget;
+                    treeView->expand(index);
+                    treeView->selectionModel()->select(firstChild, QItemSelectionModel::ClearAndSelect);
+                    treeView->setCurrentIndex(firstChild);
+
+                    if (EvaluateSelection())
+                    {
+                        QDialog::accept();
+                    }
+                }
             }
         }
 
