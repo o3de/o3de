@@ -38,8 +38,10 @@ namespace AzToolsFramework
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
                         "Size/diameter of the brush stamp in meters.")
-                        ->Attribute(AZ::Edit::Attributes::Min, &PaintBrushSettings::GetSizeMin)
-                        ->Attribute(AZ::Edit::Attributes::Max, &PaintBrushSettings::GetSizeMax)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, &PaintBrushSettings::GetSizeMin)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, &PaintBrushSettings::GetSizeMax)
+                        ->Attribute(AZ::Edit::Attributes::Max, 65536.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, &PaintBrushSettings::GetSizeStep)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 2)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
@@ -220,55 +222,56 @@ namespace AzToolsFramework
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
-        // The following settings aren't visible in Eyedropper mode, but are available in Paint / Smooth modes
+        // -------------------------------------------------------------------------
+        // Visibility overrides — all brush settings are always visible.
+        // Users can see and adjust every parameter regardless of brush mode.
+        // -------------------------------------------------------------------------
 
     bool GlobalPaintBrushSettings::GetSizeVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     bool GlobalPaintBrushSettings::GetHardnessVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     bool GlobalPaintBrushSettings::GetFlowVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     bool GlobalPaintBrushSettings::GetDistanceVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
 
     bool GlobalPaintBrushSettings::GetBlendModeVisibility() const
     {
-        return (m_brushMode != PaintBrushMode::Eyedropper);
+        return true;
     }
-
-    // The following settings are only visible in Smooth mode
 
     bool GlobalPaintBrushSettings::GetSmoothingRadiusVisibility() const
     {
-        return (m_brushMode == PaintBrushMode::Smooth);
+        return true;
     }
 
     bool GlobalPaintBrushSettings::GetSmoothModeVisibility() const
     {
-        return (m_brushMode == PaintBrushMode::Smooth);
+        return true;
     }
 
-    // The color / intensity settings have their visibility controlled by both the color mode and the brush mode.
+    // Color vs Intensity visibility is determined by color mode only (not brush mode).
 
     bool GlobalPaintBrushSettings::GetColorVisibility() const
     {
-        return (m_colorMode != PaintBrushColorMode::Greyscale) && (m_brushMode != PaintBrushMode::Smooth);
+        return (m_colorMode != PaintBrushColorMode::Greyscale);
     }
 
     bool GlobalPaintBrushSettings::GetIntensityVisibility() const
     {
-        return (m_colorMode == PaintBrushColorMode::Greyscale) && (m_brushMode != PaintBrushMode::Smooth);
+        return (m_colorMode == PaintBrushColorMode::Greyscale);
     }
 
     void GlobalPaintBrushSettings::SetBrushMode(PaintBrushMode brushMode)
