@@ -2856,6 +2856,17 @@ namespace AzToolsFramework
         addAction(m_actionToPasteComponents);
         m_entityComponentActions.push_back(m_actionToPasteComponents);
 
+        m_actionToDuplicateComponents = new QAction(tr("Duplicate component"), this);
+        m_actionToDuplicateComponents->setShortcut(QKeySequence("Ctrl+D"));
+        m_actionToDuplicateComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        connect(m_actionToDuplicateComponents, &QAction::triggered, this, [this]()
+        {
+            CopyComponents();
+            PasteComponents();
+        });
+        addAction(m_actionToDuplicateComponents);
+        m_entityComponentActions.push_back(m_actionToDuplicateComponents);
+
         QAction* seperator2 = new QAction(this);
         seperator2->setSeparator(true);
         addAction(seperator2);
@@ -2926,6 +2937,7 @@ namespace AzToolsFramework
         m_actionToCutComponents->setEnabled(allowRemove && allowCopy);
         m_actionToCopyComponents->setEnabled(allowCopy);
         m_actionToPasteComponents->setEnabled(allowAnyComponentModification && !m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities());
+        m_actionToDuplicateComponents->setEnabled(allowCopy && allowAnyComponentModification && !m_selectedEntityIds.empty());
         m_actionToMoveComponentsUp->setEnabled(allowRemove && IsMoveComponentsUpAllowed());
         m_actionToMoveComponentsDown->setEnabled(allowRemove && IsMoveComponentsDownAllowed());
         m_actionToMoveComponentsTop->setEnabled(allowRemove && IsMoveComponentsUpAllowed());

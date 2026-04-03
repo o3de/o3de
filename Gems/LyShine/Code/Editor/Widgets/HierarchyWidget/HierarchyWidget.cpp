@@ -1208,6 +1208,12 @@ void HierarchyWidget::PasteAsChild()
     HierarchyClipboard::CreateElementsFromClipboard(this, selectedItems(), true);
 }
 
+void HierarchyWidget::Duplicate()
+{
+    Copy();
+    PasteAsSibling();
+}
+
 void HierarchyWidget::SetEditorOnlyForSelectedItems(bool editorOnly)
 {
     QTreeWidgetItemRawPtrQList selection = selectedItems();

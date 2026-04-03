@@ -91,6 +91,7 @@ public slots:
     void Copy();
     void PasteAsSibling();
     void PasteAsChild();
+    void Duplicate();
     void SetEditorOnlyForSelectedItems(bool editorOnly);
 
 signals:

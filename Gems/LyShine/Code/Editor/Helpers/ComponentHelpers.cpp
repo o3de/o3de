@@ -1054,6 +1054,94 @@ namespace ComponentHelpers
         action->setEnabled(canPasteAll);
     }
 
+    QAction* CreateDuplicateComponentsAction(QWidget* parent)
+    {
+        QAction* action = new QAction("Duplicate component", parent);
+        action->setShortcut(QKeySequence("Ctrl+D"));
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        QObject::connect(action,
+            &QAction::triggered,
+            []()
+        {
+            // Duplicate = Copy + Paste
+            AZ::Entity::ComponentArrayType componentsToCopy;
+            UiEditorInternalRequestBus::BroadcastResult(componentsToCopy, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
+            AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCopy);
+            if (copyableComponents.empty())
+            {
+                return;
+            }
+            Internal::CopyComponents(copyableComponents);
+
+            // Now paste
+            bool isCanvasSelected = false;
+            AzToolsFramework::EntityIdList selectedEntities = Internal::GetSelectedEntities(&isCanvasSelected);
+            if (Internal::CanPasteComponentsToEntities(selectedEntities, isCanvasSelected))
+            {
+                const QMimeData* mimeData = AzToolsFramework::ComponentMimeData::GetComponentMimeDataFromClipboard();
+                AzToolsFramework::ComponentMimeData::ComponentDataContainer componentsToAdd;
+                AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
+
+                AzToolsFramework::ComponentTypeMimeData::ClassDataContainer classDataForComponentsToAdd;
+                AzToolsFramework::ComponentTypeMimeData::Get(mimeData, classDataForComponentsToAdd);
+                if (componentsToAdd.size() == classDataForComponentsToAdd.size())
+                {
+                    UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
+
+                    for (const AZ::EntityId& entityId : selectedEntities)
+                    {
+                        AZ::Entity* entity = AzToolsFramework::GetEntityById(entityId);
+                        AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
+                        if (!entity)
+                        {
+                            continue;
+                        }
+
+                        bool reactivate = false;
+                        if (entity->GetState() == AZ::Entity::State::Active)
+                        {
+                            reactivate = true;
+                            entity->Deactivate();
+                        }
+
+                        for (int componentIndex = 0; componentIndex < componentsToAdd.size(); ++componentIndex)
+                        {
+                            AZ::Component* component = componentsToAdd[componentIndex];
+                            if (component)
+                            {
+                                entity->AddComponent(component);
+                            }
+                        }
+
+                        if (reactivate)
+                        {
+                            entity->Activate();
+                        }
+                    }
+
+                    UiEditorInternalNotificationBus::Broadcast(
+                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "duplicate component");
+
+                    Internal::HandleSelectedEntitiesPropertiesChanged();
+                }
+            }
+        });
+
+        return action;
+    }
+
+    void UpdateDuplicateComponentsAction(QAction* action)
+    {
+        AZ::Entity::ComponentArrayType componentsToCopy;
+        UiEditorInternalRequestBus::BroadcastResult(componentsToCopy, &UiEditorInternalRequestBus::Events::GetSelectedComponents);
+        AZ::Entity::ComponentArrayType copyableComponents = Internal::GetCopyableComponents(componentsToCopy);
+
+        action->setText(copyableComponents.size() > 1 ? "Duplicate components" : "Duplicate component");
+
+        bool canDuplicate = !copyableComponents.empty() && Internal::AreComponentsAddableByUser(copyableComponents);
+        action->setEnabled(canDuplicate);
+    }
+
     bool CanAddComponentsToSelectedEntities(const AZStd::vector<AZ::TypeId>& componentTypes, EntityComponentPair* firstIncompatibleComponentType)
     {
         bool isCanvasSelected = false;

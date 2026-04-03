@@ -383,6 +383,7 @@ namespace AzToolsFramework
         QAction* m_actionToCutComponents = nullptr;
         QAction* m_actionToCopyComponents = nullptr;
         QAction* m_actionToPasteComponents = nullptr;
+        QAction* m_actionToDuplicateComponents = nullptr;
         QAction* m_actionToEnableComponents = nullptr;
         QAction* m_actionToDisableComponents = nullptr;
         QAction* m_actionToMoveComponentsUp = nullptr;
