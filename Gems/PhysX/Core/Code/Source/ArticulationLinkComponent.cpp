@@ -522,17 +522,6 @@ namespace PhysX
             }
         }
 
-        // // set up sensors
-        // for (const auto& sensorConfig : articulationLinkConfiguration.m_sensorConfigs)
-        // {
-        //     const AZ::Transform sensorTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
-        //         AZ::Quaternion::CreateFromEulerAnglesDegrees(sensorConfig.m_localRotation), sensorConfig.m_localPosition);
-        //     auto* sensor = thisPxLink->getArticulation().createSensor(thisPxLink, PxMathConvert(sensorTransform));
-        //     sensor->setFlag(physx::PxArticulationSensorFlag::eFORWARD_DYNAMICS_FORCES, sensorConfig.m_includeForwardDynamicsForces);
-        //     sensor->setFlag(physx::PxArticulationSensorFlag::eCONSTRAINT_SOLVER_FORCES, sensorConfig.m_includeConstraintSolverForces);
-        //     sensor->setFlag(physx::PxArticulationSensorFlag::eWORLD_FRAME, sensorConfig.m_useWorldFrame);
-        // }
-
         m_articulationLinksByEntityId.insert(EntityIdArticulationLinkPair{ articulationLinkConfiguration.m_entityId, thisPxLink });
 
         for (const auto& childLink : thisLinkData.m_childLinks)

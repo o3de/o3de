@@ -206,7 +206,7 @@ namespace PhysX
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Articulation Cache")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")
+                    ->DataElement(0, &ArticulationLinkConfiguration::m_articulationCacheConfig, "Cache Configuration", "Cache Configuration")
                     ->EndGroup()
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Joint Offset")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -218,7 +218,6 @@ namespace PhysX
                            "for prismatic joints the value is in meters. Limits, drive targets, and reported "
                            "positions are all expressed relative to this offset.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
-                    ->DataElement(0, &ArticulationLinkConfiguration::m_articulationCacheConfig, "Cache Configuration", "Cache Configuration")
                     ->EndGroup();
             }
         }
