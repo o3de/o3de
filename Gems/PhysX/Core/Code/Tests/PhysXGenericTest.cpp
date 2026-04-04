@@ -466,7 +466,7 @@ namespace PhysX
         AzPhysics::RigidBody* box = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 2.0f));
 
         PhysX::MaterialConfiguration materialConfiguration;
-        materialConfiguration.m_compliantContactMode.m_enabled = false;
+        // materialConfiguration.m_compliantContactMode.m_enabled = false; // TODO: Remove
         box->GetShape(0)->SetMaterial(PhysX::Material::CreateMaterialWithRandomId(materialConfiguration.CreateMaterialAsset()));
 
         for (AZ::u32 step = 0; step < 300; ++step)
@@ -489,7 +489,8 @@ namespace PhysX
         AzPhysics::RigidBody* box = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 2.0f));
 
         PhysX::MaterialConfiguration materialConfiguration;
-        materialConfiguration.m_compliantContactMode.m_enabled = true;
+        materialConfiguration.m_restitution = -0.5f; // New CompliantContact is enabled via negative restitution in PhysX 5.6.1
+        // materialConfiguration.m_compliantContactMode.m_enabled = true; // TODO: Remove
         box->GetShape(0)->SetMaterial(PhysX::Material::CreateMaterialWithRandomId(materialConfiguration.CreateMaterialAsset()));
 
         bool penetratedFloor = false;
