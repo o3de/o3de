@@ -865,7 +865,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                             tableView->MoveEntries();
                         }
                     });
-                // Open in another Asset Browser — navigate to the folder
+                // Open in another Asset Browser - navigate to the folder
                 menu->addAction(
                     QObject::tr("Open in another Asset Browser"),
                     [fullFilePath, thumbnailView, tableView]()

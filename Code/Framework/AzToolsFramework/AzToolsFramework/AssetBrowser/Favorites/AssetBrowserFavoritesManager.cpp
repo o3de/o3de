@@ -250,7 +250,7 @@ namespace AzToolsFramework
                     const auto itFile = EntryCache::GetInstance()->m_absolutePathToFileId.find(filePath);
                     if (itFile == EntryCache::GetInstance()->m_absolutePathToFileId.end())
                     {
-                        // Cache not populated yet — save the path so we don't lose it on next save
+                        // Cache not populated yet - save the path so we don't lose it on next save
                         m_unresolvedFavoritePaths.push_back(filePath);
                         continue;
                     }
