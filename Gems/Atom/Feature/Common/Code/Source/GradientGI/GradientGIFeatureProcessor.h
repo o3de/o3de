@@ -135,14 +135,6 @@ namespace AZ::Render
 
         //! Cache scene SRG indices (extracted for reuse during runtime mode switches).
         void CacheSceneSrgIndices();
-
-        // =====================================================================
-        // Diagnostic Flags (log-once guards to avoid per-frame spam)
-        // =====================================================================
-
-        bool m_diagnosticLogSimulateSkip = true;
-        bool m_diagnosticLogRenderSkip   = true;
-        bool m_diagnosticLogWriteSrg     = true;
     };
 
 } // namespace AZ::Render

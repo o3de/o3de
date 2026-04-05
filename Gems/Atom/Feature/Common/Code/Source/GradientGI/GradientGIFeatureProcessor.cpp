@@ -46,14 +46,10 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::Activate()
     {
-        AZ_TracePrintf("GradientGI", "=== FP::Activate() BEGIN === updateMode=%d\n",
-            static_cast<int>(m_updateMode));
-
         m_iblFeatureProcessor =
             GetParentScene()->GetFeatureProcessor<ImageBasedLightFeatureProcessorInterface>();
         AZ_Error("GradientGI", m_iblFeatureProcessor,
             "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
-        AZ_TracePrintf("GradientGI", "  IBL FP ptr = %p\n", m_iblFeatureProcessor);
 
         // If Dynamic mode was requested, check platform support; fall back to Static if needed.
         if (m_updateMode == UpdateMode::Dynamic && !GradientGICubemapPass::IsGpuComputeSupported())
@@ -70,7 +66,6 @@ namespace AZ::Render
         // Static mode: trigger an immediate CPU rebuild.
         if (m_updateMode == UpdateMode::Static)
         {
-            AZ_TracePrintf("GradientGI", "  Static mode: scheduling CPU rebuild\n");
             m_needsRebuild = true;
         }
 
@@ -79,9 +74,6 @@ namespace AZ::Render
         {
             CacheSceneSrgIndices();
         }
-
-        AZ_TracePrintf("GradientGI", "=== FP::Activate() END === active=%d, needsRebuild=%d, sceneSrg=%p, srgCached=%d\n",
-            m_active, m_needsRebuild, m_sceneSrg.get(), m_sceneSrgIndicesCached);
     }
 
     void GradientGIFeatureProcessor::SafeRemoveDynamicPass()
@@ -93,12 +85,7 @@ namespace AZ::Render
             // still has a parent; otherwise just release our reference.
             if (m_gradientPassPtr->GetParent())
             {
-                AZ_TracePrintf("GradientGI", "  SafeRemoveDynamicPass: queuing removal (parent valid)\n");
                 m_gradientPassPtr->QueueForRemoval();
-            }
-            else
-            {
-                AZ_TracePrintf("GradientGI", "  SafeRemoveDynamicPass: pass orphaned (parent null), releasing reference\n");
             }
             m_gradientPassPtr = nullptr;
             m_gradientPass    = nullptr;
@@ -110,7 +97,6 @@ namespace AZ::Render
         // Check for orphaned pass (parent null after pipeline rebuild)
         if (m_gradientPassPtr && !m_gradientPassPtr->GetParent())
         {
-            AZ_TracePrintf("GradientGI", "  EnsureDynamicPass: orphaned, releasing\n");
             m_gradientPassPtr = nullptr;
             m_gradientPass    = nullptr;
         }
@@ -120,7 +106,6 @@ namespace AZ::Render
             auto defaultPipeline = GetParentScene()->GetDefaultRenderPipeline();
             if (defaultPipeline)
             {
-                AZ_TracePrintf("GradientGI", "  EnsureDynamicPass: recreating pass\n");
                 CreateAndInjectPass(defaultPipeline.get());
             }
         }
@@ -128,16 +113,12 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::Deactivate()
     {
-        AZ_TracePrintf("GradientGI", "=== FP::Deactivate() === updateMode=%d, active=%d, pass=%p\n",
-            static_cast<int>(m_updateMode), m_active, m_gradientPass);
-
         // Remove the GPU pass from the pipeline, then drop our reference.
         SafeRemoveDynamicPass();
 
         // Reset IBL slots for Static mode.
         if (m_active && m_iblFeatureProcessor && m_updateMode == UpdateMode::Static)
         {
-            AZ_TracePrintf("GradientGI", "  Resetting IBL FP (Static cleanup)\n");
             m_iblFeatureProcessor->Reset();
         }
 
@@ -157,21 +138,16 @@ namespace AZ::Render
     void GradientGIFeatureProcessor::CacheSceneSrgIndices()
     {
         m_sceneSrg = GetParentScene()->GetShaderResourceGroup();
-        AZ_TracePrintf("GradientGI", "  CacheSceneSrgIndices: sceneSrg=%p\n", m_sceneSrg.get());
         if (m_sceneSrg)
         {
             m_specularEnvMapIndex = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_specularEnvMap"));
             m_diffuseEnvMapIndex  = m_sceneSrg->FindShaderInputImageIndex(AZ::Name("m_diffuseEnvMap"));
             m_iblExposureIndex    = m_sceneSrg->FindShaderInputConstantIndex(AZ::Name("m_iblExposure"));
             m_sceneSrgIndicesCached = true;
-            AZ_TracePrintf("GradientGI", "  SRG indices: specular=%d (valid=%d), diffuse=%d (valid=%d), exposure=%d (valid=%d)\n",
-                m_specularEnvMapIndex.GetIndex(), m_specularEnvMapIndex.IsValid(),
-                m_diffuseEnvMapIndex.GetIndex(), m_diffuseEnvMapIndex.IsValid(),
-                m_iblExposureIndex.GetIndex(), m_iblExposureIndex.IsValid());
         }
         else
         {
-            AZ_Error("GradientGI", false, "  CacheSceneSrgIndices: scene SRG is NULL! Dynamic mode cannot write IBL slots.");
+            AZ_Error("GradientGI", false, "Scene SRG is NULL! Dynamic mode cannot write IBL slots.");
         }
     }
 
@@ -185,32 +161,19 @@ namespace AZ::Render
 
         if (m_updateMode != UpdateMode::Static || !m_needsRebuild || !m_iblFeatureProcessor)
         {
-            // Log once per mode switch (avoid spamming every frame)
-            if (m_diagnosticLogSimulateSkip)
-            {
-                AZ_TracePrintf("GradientGI", "FP::Simulate() SKIP: mode=%d, needsRebuild=%d, iblFP=%p\n",
-                    static_cast<int>(m_updateMode), m_needsRebuild, m_iblFeatureProcessor);
-                m_diagnosticLogSimulateSkip = false;
-            }
             return;
         }
-
-        AZ_TracePrintf("GradientGI", "FP::Simulate() REBUILDING static cubemap (res=%u)\n", m_faceResolution);
 
         // Rebuild the CPU cubemap and delegate to the IBL FP (sole owner of scene SRG IBL slots).
         m_cubemapImage = BuildGradientCubemap();
         m_active       = (m_cubemapImage != nullptr);
         m_needsRebuild = false;
 
-        AZ_TracePrintf("GradientGI", "  BuildGradientCubemap result: image=%p, active=%d, assetValid=%d\n",
-            m_cubemapImage.get(), m_active, m_imageAsset.GetId().IsValid());
-
         if (m_active && m_imageAsset.GetId().IsValid())
         {
             m_iblFeatureProcessor->SetSpecularImage(m_imageAsset);
             m_iblFeatureProcessor->SetDiffuseImage(m_imageAsset);
             m_iblFeatureProcessor->SetExposure(m_exposure);
-            AZ_TracePrintf("GradientGI", "  Delegated cubemap to IBL FP (specular+diffuse+exposure=%.2f)\n", m_exposure);
         }
     }
 
@@ -220,19 +183,14 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
     {
-        AZ_TracePrintf("GradientGI", "FP::AddRenderPasses() called: mode=%d, passPtr=%p, pipeline=%p\n",
-            static_cast<int>(m_updateMode), m_gradientPassPtr.get(), renderPipeline);
-
         if (m_updateMode != UpdateMode::Dynamic)
         {
-            AZ_TracePrintf("GradientGI", "  SKIP: not in Dynamic mode\n");
             return;
         }
 
         // Detect orphaned pass (detached from pipeline tree by a rebuild).
         if (m_gradientPassPtr && !m_gradientPassPtr->GetParent())
         {
-            AZ_TracePrintf("GradientGI", "  Pass orphaned by pipeline rebuild, releasing\n");
             m_gradientPassPtr = nullptr;
             m_gradientPass    = nullptr;
         }
@@ -240,7 +198,6 @@ namespace AZ::Render
         // Only create one pass (for the first pipeline that registers with this FP).
         if (m_gradientPassPtr)
         {
-            AZ_TracePrintf("GradientGI", "  SKIP: pass already exists\n");
             return;
         }
 
@@ -249,13 +206,9 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::CreateAndInjectPass(RPI::RenderPipeline* renderPipeline)
     {
-        AZ_TracePrintf("GradientGI", "=== FP::CreateAndInjectPass() BEGIN ===\n");
-
         RPI::PassDescriptor passDescriptor(AZ::Name("GradientGICubemapPass"));
         m_gradientPassPtr = aznew GradientGICubemapPass(passDescriptor);
         m_gradientPass    = m_gradientPassPtr.get();
-
-        AZ_TracePrintf("GradientGI", "  Pass created: %p\n", m_gradientPass);
 
         // Push current gradient state into the pass before it starts running.
         m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
@@ -265,8 +218,6 @@ namespace AZ::Render
         renderPipeline->AddPassBefore(m_gradientPassPtr, AZ::Name("DepthPrePass"));
 
         m_active = true;
-
-        AZ_TracePrintf("GradientGI", "=== FP::CreateAndInjectPass() END === active=%d\n", m_active);
     }
 
     // =========================================================================
@@ -279,15 +230,6 @@ namespace AZ::Render
 
         if (m_updateMode != UpdateMode::Dynamic || !m_gradientPass || !m_sceneSrg)
         {
-            // Log once per mode switch
-            if (m_diagnosticLogRenderSkip)
-            {
-                AZ_TracePrintf("GradientGI", "FP::Render() SKIP: mode=%d, pass=%p, sceneSrg=%p, srgCached=%d\n",
-                    static_cast<int>(m_updateMode), m_gradientPass, m_sceneSrg.get(), m_sceneSrgIndicesCached);
-                AZ_TracePrintf("GradientGI", "  specularIdx.IsValid=%d, diffuseIdx.IsValid=%d, exposureIdx.IsValid=%d\n",
-                    m_specularEnvMapIndex.IsValid(), m_diffuseEnvMapIndex.IsValid(), m_iblExposureIndex.IsValid());
-                m_diagnosticLogRenderSkip = false;
-            }
             return;
         }
 
@@ -299,12 +241,6 @@ namespace AZ::Render
         auto cubemapImage = m_gradientPass->GetCubemapImage();
         if (!cubemapImage)
         {
-            // Log once
-            if (m_diagnosticLogWriteSrg)
-            {
-                AZ_TracePrintf("GradientGI", "FP::WriteSceneSrgFromPass() SKIP: cubemapImage is NULL (pass not built yet?)\n");
-                m_diagnosticLogWriteSrg = false;
-            }
             return;
         }
 
@@ -312,17 +248,6 @@ namespace AZ::Render
         // after all Simulate() jobs have completed, so there is no race with the IBL FP.
         // The cubemap SRV (default view set at image creation) is used for sampling.
         const RHI::ImageView* cubemapView = cubemapImage->GetImageView();
-
-        if (m_diagnosticLogWriteSrg)
-        {
-            AZ_TracePrintf("GradientGI", "FP::WriteSceneSrgFromPass() WRITING: cubemapImage=%p, imageView=%p\n",
-                cubemapImage.get(), cubemapView);
-            AZ_TracePrintf("GradientGI", "  specularIdx=%d, diffuseIdx=%d, exposureIdx=%d, exposure=%.2f\n",
-                m_specularEnvMapIndex.GetIndex(), m_diffuseEnvMapIndex.GetIndex(),
-                m_iblExposureIndex.GetIndex(), m_exposure);
-            m_diagnosticLogWriteSrg = false;
-        }
-
         m_sceneSrg->SetImageView(m_specularEnvMapIndex, cubemapView);
         m_sceneSrg->SetImageView(m_diffuseEnvMapIndex,  cubemapView);
         m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
@@ -382,40 +307,24 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetUpdateMode(UpdateMode mode)
     {
-        AZ_TracePrintf("GradientGI", "FP::SetUpdateMode(%d) current=%d, pass=%p, sceneSrg=%p\n",
-            static_cast<int>(mode), static_cast<int>(m_updateMode), m_gradientPass, m_sceneSrg.get());
-
         if (m_updateMode == mode)
         {
             // Same mode requested. In Dynamic mode, verify the pass is still healthy.
-            // Pipeline rebuilds (e.g. game-mode exit) can orphan it, or Reset() may
-            // have cleared m_active without touching the pass. Re-establish if needed.
             if (mode == UpdateMode::Dynamic)
             {
                 EnsureDynamicPassExists();
             }
-            AZ_TracePrintf("GradientGI", "  SKIP: same mode (pass=%p)\n", m_gradientPass);
             return;
         }
 
         m_updateMode = mode;
-
-        // Reset diagnostic log flags so they fire again for the new mode
-        m_diagnosticLogSimulateSkip = true;
-        m_diagnosticLogRenderSkip   = true;
-        m_diagnosticLogWriteSrg     = true;
 
         // =================================================================
         // Switch TO Static
         // =================================================================
         if (mode == UpdateMode::Static)
         {
-            AZ_TracePrintf("GradientGI", "  Switching Dynamic->Static\n");
-
-            // Tear down dynamic pass safely. Pipeline rebuilds (e.g. during
-            // game-mode exit) can orphan injected passes, so we must check
-            // the parent pointer before queuing removal.
-            AZ_TracePrintf("GradientGI", "  Removing dynamic pass from pipeline: %p\n", m_gradientPass);
+            // Tear down dynamic pass safely.
             SafeRemoveDynamicPass();
 
             // Trigger CPU rebuild so the IBL FP picks up our cubemap again
@@ -426,9 +335,7 @@ namespace AZ::Render
         // =================================================================
         else if (mode == UpdateMode::Dynamic)
         {
-            AZ_TracePrintf("GradientGI", "  Switching Static->Dynamic\n");
-
-            // FIX 1: Check platform support
+            // Check platform support
             if (!GradientGICubemapPass::IsGpuComputeSupported())
             {
                 AZ_Warning("GradientGI", false,
@@ -437,28 +344,25 @@ namespace AZ::Render
                 return;
             }
 
-            // FIX 2: Cache scene SRG indices if not already done
+            // Cache scene SRG indices if not already done
             if (!m_sceneSrgIndicesCached)
             {
-                AZ_TracePrintf("GradientGI", "  Caching scene SRG indices (first-time Dynamic)\n");
                 CacheSceneSrgIndices();
             }
 
-            // FIX 3: Disengage the IBL FP -- clear its stale Static-mode images
+            // Disengage the IBL FP -- clear its stale Static-mode images
             // so it stops overwriting scene SRG IBL slots in its Simulate().
             if (m_iblFeatureProcessor)
             {
-                AZ_TracePrintf("GradientGI", "  Disengaging IBL FP: Reset() to clear stale images\n");
                 m_iblFeatureProcessor->Reset();
             }
 
-            // FIX 4: Create and inject the GPU compute pass at runtime
+            // Create and inject the GPU compute pass at runtime
             if (!m_gradientPassPtr)
             {
                 auto defaultPipeline = GetParentScene()->GetDefaultRenderPipeline();
                 if (defaultPipeline)
                 {
-                    AZ_TracePrintf("GradientGI", "  Creating dynamic pass (runtime injection into default pipeline)\n");
                     CreateAndInjectPass(defaultPipeline.get());
                 }
                 else

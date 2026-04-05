@@ -28,19 +28,15 @@ namespace AZ::Render
 
     /*static*/ bool GradientGICubemapPass::IsGpuComputeSupported()
     {
-        AZ_TracePrintf("GradientGI", "Pass::IsGpuComputeSupported() probing...\n");
-
         auto* imageSystem = RPI::ImageSystemInterface::Get();
         if (!imageSystem)
         {
-            AZ_TracePrintf("GradientGI", "  FAIL: ImageSystemInterface is NULL\n");
             return false;
         }
 
         auto* attachmentPool = imageSystem->GetSystemAttachmentPool().get();
         if (!attachmentPool)
         {
-            AZ_TracePrintf("GradientGI", "  FAIL: SystemAttachmentPool is NULL\n");
             return false;
         }
 
@@ -52,9 +48,7 @@ namespace AZ::Render
         auto testImage = RPI::AttachmentImage::Create(
             *attachmentPool, testDesc, AZ::Name("GradientGI_CapProbe"), nullptr, nullptr);
 
-        bool supported = (testImage != nullptr);
-        AZ_TracePrintf("GradientGI", "  Result: %s\n", supported ? "SUPPORTED" : "NOT SUPPORTED");
-        return supported;
+        return testImage != nullptr;
     }
 
     // =========================================================================
@@ -74,12 +68,6 @@ namespace AZ::Render
         const Color& low, const Color& mid, const Color& high,
         float exposure, uint32_t faceSize)
     {
-        AZ_TracePrintf("GradientGI", "Pass::SetGradientColors: low=(%.2f,%.2f,%.2f) mid=(%.2f,%.2f,%.2f) high=(%.2f,%.2f,%.2f) exp=%.2f face=%u\n",
-            low.GetR(), low.GetG(), low.GetB(),
-            mid.GetR(), mid.GetG(), mid.GetB(),
-            high.GetR(), high.GetG(), high.GetB(),
-            exposure, faceSize);
-
         m_lowColor  = low;
         m_midColor  = mid;
         m_highColor = high;
@@ -99,21 +87,15 @@ namespace AZ::Render
 
     void GradientGICubemapPass::BuildInternal()
     {
-        AZ_TracePrintf("GradientGI", "=== Pass::BuildInternal() BEGIN === faceSize=%u\n", m_faceSize);
-
         // ---- Load shader asset ----
         const char* shaderPath = "Shaders/GradientGI/GradientGICubemap.azshader";
-        AZ_TracePrintf("GradientGI", "  [1/5] Loading shader: %s\n", shaderPath);
         auto shaderAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>(shaderPath);
         if (!shaderAsset.IsReady())
         {
             AZ_Error("GradientGICubemapPass", false, "Failed to load shader: %s", shaderPath);
-            AZ_TracePrintf("GradientGI", "  FATAL: Shader asset not ready. Check Asset Processor for GradientGICubemap.\n");
             SetEnabled(false);
             return;
         }
-        AZ_TracePrintf("GradientGI", "  [1/5] Shader asset loaded OK (assetId=%s)\n",
-            shaderAsset.GetId().ToString<AZStd::string>().c_str());
 
         m_shader = RPI::Shader::FindOrCreate(shaderAsset);
         if (!m_shader)
@@ -122,10 +104,8 @@ namespace AZ::Render
             SetEnabled(false);
             return;
         }
-        AZ_TracePrintf("GradientGI", "  [1/5] Shader instance created OK\n");
 
         // ---- Build compute pipeline state ----
-        AZ_TracePrintf("GradientGI", "  [2/5] Building compute pipeline state...\n");
         auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
         RHI::PipelineStateDescriptorForDispatch pipelineDesc;
         shaderVariant.ConfigurePipelineState(pipelineDesc);
@@ -136,24 +116,17 @@ namespace AZ::Render
             SetEnabled(false);
             return;
         }
-        AZ_TracePrintf("GradientGI", "  [2/5] Pipeline state acquired OK: %p\n", m_pipelineState);
 
         // ---- Create pass SRG (SRG_PerPass = "PassSrg") ----
-        AZ_TracePrintf("GradientGI", "  [3/5] Creating PassSrg...\n");
         auto srgLayout = m_shader->FindShaderResourceGroupLayout(AZ::Name("PassSrg"));
         if (srgLayout)
         {
-            AZ_TracePrintf("GradientGI", "  [3/5] PassSrg layout found\n");
             m_passSrg = RPI::ShaderResourceGroup::Create(
                 m_shader->GetAsset(),
                 m_shader->GetSupervariantIndex(),
                 srgLayout->GetName());
 
             AZ_Error("GradientGICubemapPass", m_passSrg, "Failed to create PassSrg for GradientGICubemap.");
-            if (m_passSrg)
-            {
-                AZ_TracePrintf("GradientGI", "  [3/5] PassSrg created OK: %p\n", m_passSrg.get());
-            }
         }
         else
         {
@@ -163,8 +136,8 @@ namespace AZ::Render
         }
 
         // ---- Create persistent output cubemap AttachmentImage ----
-        AZ_TracePrintf("GradientGI", "  [4/5] Creating AttachmentImage (cubemap %ux%u, R16G16B16A16_FLOAT)...\n",
-            m_faceSize, m_faceSize);
+        // Bind flags: ShaderRead (SRV for IBL sampling) + ShaderWrite (UAV for compute output).
+        // Default view is a cubemap SRV, used when binding to the scene SRG's IBL slots.
         auto* imageSystem = RPI::ImageSystemInterface::Get();
         auto* attachmentPool = imageSystem ? imageSystem->GetSystemAttachmentPool().get() : nullptr;
         if (!attachmentPool)
@@ -179,6 +152,7 @@ namespace AZ::Render
             m_faceSize,
             RHI::Format::R16G16B16A16_FLOAT);
 
+        // Cubemap SRV as default view -- used when the FP binds this image to scene SRG slots.
         auto cubemapViewDesc = RHI::ImageViewDescriptor::CreateCubemap();
 
         m_cubemapImage = RPI::AttachmentImage::Create(
@@ -195,19 +169,8 @@ namespace AZ::Render
             SetEnabled(false);
             return;
         }
-        AZ_TracePrintf("GradientGI", "  [4/5] AttachmentImage created OK: %p, attachmentId=%s\n",
-            m_cubemapImage.get(), m_cubemapImage->GetAttachmentId().GetCStr());
-
-        // ---- Verify default image view (cubemap SRV) ----
-        const RHI::ImageView* defaultView = m_cubemapImage->GetImageView();
-        AZ_TracePrintf("GradientGI", "  [5/5] Default ImageView (cubemap SRV): %p\n", defaultView);
-        if (!defaultView)
-        {
-            AZ_Warning("GradientGI", false, "AttachmentImage has NO default ImageView! Scene SRG binding will fail.");
-        }
 
         m_dirty = true;
-        AZ_TracePrintf("GradientGI", "=== Pass::BuildInternal() END === SUCCESS\n");
     }
 
     // =========================================================================
@@ -220,25 +183,17 @@ namespace AZ::Render
 
         if (!m_cubemapImage)
         {
-            if (m_diagnosticLogFrameGraph)
-            {
-                AZ_TracePrintf("GradientGI", "Pass::SetupFrameGraphDependencies() SKIP: cubemapImage is NULL\n");
-                m_diagnosticLogFrameGraph = false;
-            }
             return;
         }
 
-        if (m_diagnosticLogFrameGraph)
-        {
-            AZ_TracePrintf("GradientGI", "Pass::SetupFrameGraphDependencies(): importing image %s, declaring UAV 2DArray[0..5]\n",
-                m_cubemapImage->GetAttachmentId().GetCStr());
-            m_diagnosticLogFrameGraph = false;
-        }
-
+        // Import the persistent attachment image into this frame's attachment database.
         frameGraph.GetAttachmentDatabase().ImportImage(
             m_cubemapImage->GetAttachmentId(),
             m_cubemapImage->GetRHIImage());
 
+        // Declare UAV (read/write) access: use a 2DArray view descriptor so the
+        // compute shader can address all 6 faces as array slices (required for UAV;
+        // cubemap-typed UAVs are not supported in DX12/Vulkan).
         RHI::ImageScopeAttachmentDescriptor uavDesc;
         uavDesc.m_attachmentId = m_cubemapImage->GetAttachmentId();
         uavDesc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(
@@ -261,14 +216,11 @@ namespace AZ::Render
     {
         if (!m_passSrg)
         {
-            AZ_TracePrintf("GradientGI", "Pass::CompileResources() SKIP: passSrg is NULL\n");
             return;
         }
 
         if (m_dirty)
         {
-            AZ_TracePrintf("GradientGI", "Pass::CompileResources() DIRTY: binding SRG constants + UAV\n");
-
             // ---- Bind gradient color constants ----
             const auto lowIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_lowColor"));
             const auto midIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_midColor"));
@@ -276,14 +228,6 @@ namespace AZ::Render
             const auto expIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_exposure"));
             const auto sizeIdx  = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_faceSize"));
             const auto imgIdx   = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputCubemap"));
-
-            AZ_TracePrintf("GradientGI", "  SRG indices: low=%d(%d) mid=%d(%d) high=%d(%d) exp=%d(%d) size=%d(%d) img=%d(%d)\n",
-                lowIdx.GetIndex(), lowIdx.IsValid(),
-                midIdx.GetIndex(), midIdx.IsValid(),
-                highIdx.GetIndex(), highIdx.IsValid(),
-                expIdx.GetIndex(), expIdx.IsValid(),
-                sizeIdx.GetIndex(), sizeIdx.IsValid(),
-                imgIdx.GetIndex(), imgIdx.IsValid());
 
             m_passSrg->SetConstant(lowIdx,  AZ::Vector3(m_lowColor.GetR(),  m_lowColor.GetG(),  m_lowColor.GetB()));
             m_passSrg->SetConstant(midIdx,  AZ::Vector3(m_midColor.GetR(),  m_midColor.GetG(),  m_midColor.GetB()));
@@ -295,15 +239,9 @@ namespace AZ::Render
             if (m_cubemapImage)
             {
                 const RHI::ImageView* uavView = context.GetImageView(m_cubemapImage->GetAttachmentId());
-                AZ_TracePrintf("GradientGI", "  UAV image view from frame graph: %p (attachmentId=%s)\n",
-                    uavView, m_cubemapImage->GetAttachmentId().GetCStr());
                 if (uavView)
                 {
                     m_passSrg->SetImageView(imgIdx, uavView);
-                }
-                else
-                {
-                    AZ_Warning("GradientGI", false, "  UAV image view is NULL! Frame graph did not provide view for attachment.");
                 }
             }
         }
@@ -319,21 +257,14 @@ namespace AZ::Render
     {
         if (!m_dirty || !m_pipelineState || !m_passSrg)
         {
-            if (m_diagnosticLogDispatch)
-            {
-                AZ_TracePrintf("GradientGI", "Pass::BuildCommandListInternal() SKIP: dirty=%d, pipeline=%p, srg=%p\n",
-                    m_dirty, m_pipelineState, m_passSrg.get());
-                m_diagnosticLogDispatch = false;
-            }
             return;
         }
 
+        // Compute group counts: shader uses [numthreads(8, 8, 1)] and dispatches
+        // over (faceSize x faceSize x 6) total threads.
         const uint32_t groupsX = (m_faceSize + 7) / 8;
         const uint32_t groupsY = (m_faceSize + 7) / 8;
         const uint32_t groupsZ = 6;
-
-        AZ_TracePrintf("GradientGI", "Pass::BuildCommandListInternal() DISPATCHING: groups=(%u,%u,%u), faceSize=%u, deviceIdx=%d\n",
-            groupsX, groupsY, groupsZ, m_faceSize, context.GetDeviceIndex());
 
         RHI::DispatchDirect directArgs;
         directArgs.m_totalNumberOfThreadsX = groupsX * 8;
@@ -348,13 +279,11 @@ namespace AZ::Render
         dispatchItem.SetPipelineState(m_pipelineState);
 
         const RHI::ShaderResourceGroup* srgRhi = m_passSrg->GetRHIShaderResourceGroup();
-        AZ_TracePrintf("GradientGI", "  RHI SRG: %p\n", srgRhi);
         dispatchItem.SetShaderResourceGroups(AZStd::span<const RHI::ShaderResourceGroup*>(&srgRhi, 1));
 
         context.GetCommandList()->Submit(
             dispatchItem.GetDeviceDispatchItem(context.GetDeviceIndex()));
 
-        AZ_TracePrintf("GradientGI", "  Dispatch submitted OK. Clearing dirty flag.\n");
         m_dirty = false;
     }
 

@@ -102,13 +102,6 @@ namespace AZ::Render
 
         // Dirty flag: true means the SRG needs recompile before next dispatch
         bool m_dirty = true;
-
-        // =====================================================================
-        // Diagnostic Flags (log-once guards to avoid per-frame spam)
-        // =====================================================================
-
-        bool m_diagnosticLogFrameGraph = true;
-        bool m_diagnosticLogDispatch   = true;
     };
 
 } // namespace AZ::Render
