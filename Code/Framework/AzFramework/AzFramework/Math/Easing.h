@@ -5,11 +5,35 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
 #include <AzCore/Math/MathUtils.h>
 
-namespace ScriptedEntityTweener
+namespace AzFramework
 {
+    enum class EasingMethod
+    {
+        None = 0,
+        Linear = None,
+        Quad, //1
+        Cubic, //2
+        Quart, //3
+        Quint, //4
+        Sine, //5
+        Expo, //6
+        Circ, //7
+        Elastic, //8
+        Back, //9
+        Bounce //10
+    };
+
+    enum class EasingType
+    {
+        In = 0,
+        Out, //1
+        InOut //2
+    };
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //! A collection of common easing/tweening equations.
     class EasingEquations
@@ -486,3 +510,4 @@ namespace ScriptedEntityTweener
         }
     };
 }
+
