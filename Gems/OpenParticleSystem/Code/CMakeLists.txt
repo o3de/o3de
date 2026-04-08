@@ -51,25 +51,6 @@ ly_add_target(
                 Include
 )
 
-ly_add_target(
-        NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            openparticlesystem_files.cmake
-            openparticlesystem_shared_files.cmake
-        INCLUDE_DIRECTORIES
-            PUBLIC
-                Source
-                Source/Runtime
-        BUILD_DEPENDENCIES
-            PUBLIC
-                ${gem_name}.API
-                Gem::SimuCoreParticleModules.Static
-                Gem::Atom_RPI.Public
-                Gem::Atom_Feature_Common.Public
-                Gem::EMotionFX.Static
-                Gem::EMotionFX_Atom.Static
-)
 
 ly_add_target(
     NAME ${gem_name}.Static STATIC
@@ -77,12 +58,29 @@ ly_add_target(
     FILES_CMAKE
         openparticlesystem_files.cmake
     INCLUDE_DIRECTORIES
-        PRIVATE
+        PUBLIC
             Source/Runtime
     BUILD_DEPENDENCIES
         PUBLIC
-            Gem::${gem_name}
+            Gem::${gem_name}.API
             Gem::Atom_Utils.Static
+            Gem::Atom_Feature_Common.Public
+            Gem::EMotionFX.Static
+            AZ::AzCore
+            SimuCoreParticleModules.Static
+)
+
+ly_add_target(
+        NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            openparticlesystem_shared_files.cmake
+        INCLUDE_DIRECTORIES
+            PUBLIC
+                Source/Runtime
+        BUILD_DEPENDENCIES
+            PRIVATE
+                ${gem_name}.Static
 )
 
 ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
@@ -97,20 +95,15 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOMOC
         FILES_CMAKE
             openparticlesystem_editor_files.cmake
-        INCLUDE_DIRECTORIES
-            PUBLIC
-                Include
-                Source
-            PRIVATE
-                Source/Runtime
-                Source/Thumbnail
         COMPILE_DEFINITIONS
             PRIVATE
                 PARTICLE_EDITOR
+        INCLUDE_DIRECTORIES
+            PUBLIC
+                Source
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::${gem_name}.Static
-                Gem::${gem_name}
                 Legacy::EditorCore
             PRIVATE
                 Gem::Atom_RPI.Edit
@@ -126,10 +119,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             openparticlesystem_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                Include
-                Source
                 Source/Runtime
-                Source/Thumbnail
         COMPILE_DEFINITIONS
             PRIVATE
                 PARTICLE_EDITOR
@@ -160,7 +150,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Edit
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Public
-                Gem::${gem_name}
     )
 
     ly_add_target(
@@ -174,7 +163,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Source/Builder
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::${gem_name}
                 Gem::${gem_name}.Builder.Static
                 AZ::SceneCore
                 AZ::AssetBuilderSDK
