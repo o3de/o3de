@@ -273,7 +273,7 @@ namespace AzFramework
         {
             timeActive = timeActive / duration;
             timeActive--;
-            return -(valueTarget - valueInitial) * (pow(timeActive, 4) - 1.0f) + valueInitial;
+            return -(valueTarget - valueInitial) * (pow(timeActive, 4.0f) - 1.0f) + valueInitial;
         }
 
         template <typename T>
@@ -281,7 +281,7 @@ namespace AzFramework
         {
             timeActive = timeActive / duration;
             timeActive--;
-            return (valueTarget - valueInitial) * (pow(timeActive, 5) + 1.0f) + valueInitial;
+            return (valueTarget - valueInitial) * (pow(timeActive, 5.0f) + 1.0f) + valueInitial;
         }
 
         template <typename T>

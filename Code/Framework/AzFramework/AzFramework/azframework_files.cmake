@@ -215,9 +215,9 @@ set(FILES
     IO/RemoteFileIO.h
     IO/RemoteStorageDrive.h
     IO/RemoteStorageDrive.cpp
-    Math/Curve.cpp
-    Math/Curve.h
     Math/Easing.h
+    Math/EasingCurve.cpp
+    Math/EasingCurve.h
     Math/InterpolationSample.h
     Metrics/MetricsPlainTextNameRegistration.h
     Network/AssetProcessorConnection.cpp
