@@ -13,7 +13,7 @@
 
 namespace AzFramework
 {
-    EasingCurve::EasingCurve()
+    void EasingCurve::SetDefaultValue()
     {
         Clear();
         Point first;
@@ -34,7 +34,9 @@ namespace AzFramework
             serialize->Class<Point>()
                 ->Version(1)
                 ->Field("time", &Point::m_time)
-                ->Field("value", &Point::m_value);
+                ->Field("value", &Point::m_value)
+                ->Field("interpMode", &Point::m_interpMode)
+                ;
         }
     }
 
@@ -57,13 +59,20 @@ namespace AzFramework
     
     EasingCurve::Point& EasingCurve::GetPoint(size_t index)
     {
-        AZ_Assert(index < m_points.size(), "Point index is out of bound of the curve!");
+        if (index >= m_points.size())
+        {
+            AZ_Error("EasingCurve", false, "Index %zu does not exist in the curve!", index);
+        }
         return m_points[index];
     }
 
-    void EasingCurve::SetPoint(size_t index, EasingCurve::Point point)
+    void EasingCurve::UpdatePoint(size_t index, EasingCurve::Point point)
     {
-        AZ_Assert(index < m_points.size(), "Point index is out of bound of the curve!");
+        if (index >= m_points.size())
+        {
+            AZ_Error("EasingCurve", false, "Index %zu does not exist in the curve!", index);
+            return;
+        }
         m_points[index] = point;
     }
     
@@ -75,7 +84,11 @@ namespace AzFramework
     
     void EasingCurve::RemovePoint(size_t index)
     {
-        AZ_Assert(index < m_points.size(), "Point index is out of bound of the curve!");
+        if (index >= m_points.size())
+        {
+            AZ_Error("EasingCurve", false, "Index %zu does not exist in the curve!", index);
+            return;
+        }
         m_points.erase(m_points.begin() + index);
     }
 
@@ -86,10 +99,30 @@ namespace AzFramework
 
     float EasingCurve::Evaluate(float time) const
     {
-        AZ_Assert(time >= 0 && time <= 1, "time is out of range between 0 and 1");
+        if (m_points.size() == 0)
+        {
+            return 0.0f;
+        }
+
+        if (m_points.size() == 1)
+        {
+            return m_points.front().m_value;
+        }
+
+        // TODO: define more extension behavior
+        if (time < 0.0f)
+        {
+            return m_points.front().m_value;
+        }
+        else if (time > 1.0f)
+        {
+            return m_points.back().m_value;
+        }
+
+        // potentially faster than binary search as elements are typically few
         for (int i = 0; i < m_points.size(); i++)
         {
-            if (m_points[i].m_time == time)
+            if (AZ::IsClose(m_points[i].m_time, time))
             {
                 return m_points[i].m_value;
             }

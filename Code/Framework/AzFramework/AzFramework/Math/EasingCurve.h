@@ -43,11 +43,12 @@ namespace AzFramework
         AZ_TYPE_INFO(EasingCurve, "{D4B7E91C-DD02-423E-B8BC-699E0DFC249B}");
         static void Reflect(AZ::ReflectContext* context);
 
-        EasingCurve();
+        EasingCurve() = default;
 
+        void SetDefaultValue();
         size_t GetNumPoints() const;
         Point& GetPoint(size_t index);
-        void SetPoint(size_t index, Point point);
+        void UpdatePoint(size_t index, Point point);
         void AddPoint(Point point);
         void RemovePoint(size_t index);
         void Clear();

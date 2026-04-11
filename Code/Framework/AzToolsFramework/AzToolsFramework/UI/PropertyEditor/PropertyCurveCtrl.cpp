@@ -109,6 +109,7 @@ namespace AzToolsFramework
         : QWidget(parent)
         , m_layout(this)
     {
+        m_currentCurve.SetDefaultValue();
         SetupUi();
     }
 
@@ -157,6 +158,7 @@ namespace AzToolsFramework
                     m_currentCurve.AddPoint(preset->m_start);
                     m_currentCurve.AddPoint(preset->m_stop);
                     update();
+                    emit curveChanged();
                 });
             m_presetCurveWidget.emplace_back(preset);
         }
@@ -311,12 +313,15 @@ namespace AzToolsFramework
         QPainterPath path;
         const float CURVE_STEP = 0.005f;
 
-        for (size_t index = 0; index < m_currentCurve.GetNumPoints() - 1; index++)
+        if (m_currentCurve.GetNumPoints() >= 2)
         {
-            keyStart = m_currentCurve.GetPoint(index);
-            keyEnd = m_currentCurve.GetPoint(index+1);
-            path = CreatePathFromCurve(keyStart, keyEnd, CURVE_STEP, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
-            painter.drawPath(path);
+            for (size_t index = 0; index < m_currentCurve.GetNumPoints() - 1; index++)
+            {
+                keyStart = m_currentCurve.GetPoint(index);
+                keyEnd = m_currentCurve.GetPoint(index+1);
+                path = CreatePathFromCurve(keyStart, keyEnd, CURVE_STEP, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
+                painter.drawPath(path);
+            }
         }
 
         QWidget::paintEvent(event);
