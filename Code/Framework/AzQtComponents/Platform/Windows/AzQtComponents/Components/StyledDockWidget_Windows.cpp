@@ -6,6 +6,10 @@
  *
  */
 
+#include <AzCore/PlatformIncl.h>
+
+#include <QTimer>
+#include <QtWinExtras/QtWin>
 #include <QWidget>
 
 namespace AzQtComponents
@@ -14,7 +18,21 @@ namespace AzQtComponents
     {
         void HandleFloatingWindow(QWidget* floatingWindow)
         {
-            (void)floatingWindow;
+            // Set the WS_EX_APPWINDOW flag on our floating window so that it can be minimized into the taskbar
+            // and will show up grouped with our application
+            HWND windowId = HWND(floatingWindow->winId());
+            QTimer::singleShot(0, [windowId] {
+                BOOL wasVisible = ::IsWindowVisible(windowId);
+                if (wasVisible)
+                {
+                    ::ShowWindow(windowId, SW_HIDE);
+                }
+                ::SetWindowLong(windowId, GWL_EXSTYLE, GetWindowLong(windowId, GWL_EXSTYLE) | WS_EX_APPWINDOW);
+                if (wasVisible)
+                {
+                    ::ShowWindow(windowId, SW_SHOW);
+                }
+            });
         }
 
         bool FloatingWindowsSupportMinimize()
