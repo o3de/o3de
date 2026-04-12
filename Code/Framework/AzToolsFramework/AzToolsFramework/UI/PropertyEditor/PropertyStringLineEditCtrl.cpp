@@ -13,6 +13,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversi
 #include <QHBoxLayout>
 #include <QFocusEvent>
 #include <QKeyEvent>
+#include <QTimer>
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
@@ -112,7 +113,10 @@ namespace AzToolsFramework
                     if (ke->key() == Qt::Key_Escape)
                     {
                         m_pLineEdit->setText(m_textOnFocusIn);
-                        clearFocus();
+                        // Defer clearFocus so it runs after the event stack unwinds.
+                        // Calling it directly inside an event filter can cause
+                        // re-entrancy that lets the global Escape action fire.
+                        QTimer::singleShot(0, this, [this]() { clearFocus(); });
                         return true;
                     }
                     if (ke->matches(QKeySequence::Undo))
@@ -120,7 +124,7 @@ namespace AzToolsFramework
                         if (m_pLineEdit->text() != m_textOnFocusIn)
                         {
                             m_pLineEdit->setText(m_textOnFocusIn);
-                            clearFocus();
+                            QTimer::singleShot(0, this, [this]() { clearFocus(); });
                             return true;
                         }
                     }

@@ -609,6 +609,7 @@ namespace AzToolsFramework
         int m_savedHorizontalScroll = -1;
 
         AZStd::string m_filterString;
+        QString m_entityNameOnFocusIn;
 
         // IDs of entities currently bound to this property editor.
         EntityIdList m_selectedEntityIds;

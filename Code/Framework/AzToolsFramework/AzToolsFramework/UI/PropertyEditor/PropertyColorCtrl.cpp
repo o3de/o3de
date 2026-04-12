@@ -22,6 +22,7 @@ AZ_POP_DISABLE_WARNING
 #include <QFocusEvent>
 #include <QKeyEvent>
 #include <QRegularExpressionValidator>
+#include <QTimer>
 
 namespace AzToolsFramework
 {
@@ -129,7 +130,7 @@ namespace AzToolsFramework
                     if (ke->key() == Qt::Key_Escape)
                     {
                         m_colorEdit->setText(m_colorTextOnFocusIn);
-                        m_colorEdit->clearFocus();
+                        QTimer::singleShot(0, this, [this]() { m_colorEdit->clearFocus(); });
                         return true;
                     }
                     if (ke->matches(QKeySequence::Undo))
@@ -137,7 +138,7 @@ namespace AzToolsFramework
                         if (m_colorEdit->text() != m_colorTextOnFocusIn)
                         {
                             m_colorEdit->setText(m_colorTextOnFocusIn);
-                            m_colorEdit->clearFocus();
+                            QTimer::singleShot(0, this, [this]() { m_colorEdit->clearFocus(); });
                             return true;
                         }
                     }

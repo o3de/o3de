@@ -25,6 +25,7 @@ AZ_POP_DISABLE_WARNING
 #include <QAction>
 #include <QKeyEvent>
 #include <QStyleOptionFrame>
+#include <QTimer>
 
 namespace AzQtComponents
 {
@@ -271,7 +272,7 @@ namespace AzQtComponents
                     if (ke->key() == Qt::Key_Escape)
                     {
                         m_data->m_lineEdit->setText(m_data->m_textOnFocusIn);
-                        clearFocus();
+                        QTimer::singleShot(0, this, [this]() { clearFocus(); });
                         return true;
                     }
                     if (ke->matches(QKeySequence::Undo))
@@ -279,7 +280,7 @@ namespace AzQtComponents
                         if (m_data->m_lineEdit->text() != m_data->m_textOnFocusIn)
                         {
                             m_data->m_lineEdit->setText(m_data->m_textOnFocusIn);
-                            clearFocus();
+                            QTimer::singleShot(0, this, [this]() { clearFocus(); });
                             return true;
                         }
                     }

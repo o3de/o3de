@@ -14,6 +14,7 @@ AZ_POP_DISABLE_WARNING
 #include "GrowTextEdit.h"
 #include "PropertyQTConstants.h"
 #include <QKeyEvent>
+#include <QTimer>
 
 namespace AzToolsFramework
 {
@@ -134,7 +135,7 @@ namespace AzToolsFramework
         {
             setPlainText(m_textOnFocusIn);
             m_textChanged = false;
-            clearFocus();
+            QTimer::singleShot(0, this, [this]() { clearFocus(); });
             return;
         }
         if (event->matches(QKeySequence::Undo))
@@ -143,7 +144,7 @@ namespace AzToolsFramework
             {
                 setPlainText(m_textOnFocusIn);
                 m_textChanged = false;
-                clearFocus();
+                QTimer::singleShot(0, this, [this]() { clearFocus(); });
                 return;
             }
         }
