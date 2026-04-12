@@ -179,7 +179,6 @@ namespace AzToolsFramework
         
         AZStd::string m_currentFilterString;
 
-        bool focusNextPrevChild(bool next) override;
         virtual void paintEvent(QPaintEvent* event) override;
         int m_updateDepth = 0;
     signals:
