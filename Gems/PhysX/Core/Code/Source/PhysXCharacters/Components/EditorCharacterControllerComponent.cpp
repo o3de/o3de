@@ -188,8 +188,8 @@ namespace PhysX
                 // draw the actual shape
                 LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
                     &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
-                    m_configuration.m_scaleCoefficient * capsuleConfig.m_radius,
-                    m_configuration.m_scaleCoefficient * capsuleConfig.m_height,
+                    capsuleConfig.m_radius,
+                    capsuleConfig.m_height,
                     16, 8,
                     m_vertexBuffer,
                     m_indexBuffer,
@@ -203,8 +203,8 @@ namespace PhysX
                 // draw the shape inflated by the contact offset
                 LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
                     &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
-                    m_configuration.m_scaleCoefficient * capsuleConfig.m_radius + m_configuration.m_contactOffset,
-                    m_configuration.m_scaleCoefficient * capsuleConfig.m_height + 2.0f * m_configuration.m_contactOffset,
+                    capsuleConfig.m_radius + m_configuration.m_contactOffset,
+                    capsuleConfig.m_height + 2.0f * m_configuration.m_contactOffset,
                     16, 8,
                     m_vertexBuffer,
                     m_indexBuffer,
@@ -222,7 +222,7 @@ namespace PhysX
                 const AZ::Transform controllerTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
                     upDirectionQuat, GetWorldTM().GetTranslation() + heightOffset * upDirectionNormalized);
 
-                const AZ::Vector3 boxHalfExtentsScaled = 0.5f * m_configuration.m_scaleCoefficient * boxConfig.m_dimensions;
+                const AZ::Vector3 boxHalfExtentsScaled = 0.5f * boxConfig.m_dimensions;
                 const AZ::Vector3 boxHalfExtentsScaledWithContactOffset = boxHalfExtentsScaled +
                     m_configuration.m_contactOffset * AZ::Vector3::CreateOne();
 
