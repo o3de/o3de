@@ -15,6 +15,20 @@ set -o errexit # exit on the first failure encountered
     ln -s -f @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/AssetProcessor /usr/local/bin/o3de.assetprocessor
     ln -s -f @CPACK_PACKAGING_INSTALL_PREFIX@/bin/Linux/profile/Default/Editor /usr/local/bin/o3de.editor
 
+    # Extract the bundled CMake into cmake/runtime/ so it is available without a system cmake.
+    CMAKE_REDIST_DIR="@CPACK_PACKAGING_INSTALL_PREFIX@/Tools/Redistributables/CMake"
+    CMAKE_RUNTIME_DIR="@CPACK_PACKAGING_INSTALL_PREFIX@/cmake/runtime"
+    CMAKE_PACKAGE_NAME="cmake-@CPACK_DESIRED_CMAKE_VERSION@-linux-x86_64"
+
+    if [ -f "${CMAKE_REDIST_DIR}/${CMAKE_PACKAGE_NAME}.tar.gz" ]; then
+        mkdir -p "${CMAKE_RUNTIME_DIR}"
+        tar -xzf "${CMAKE_REDIST_DIR}/${CMAKE_PACKAGE_NAME}.tar.gz" -C "${CMAKE_REDIST_DIR}"
+        if [ -d "${CMAKE_REDIST_DIR}/${CMAKE_PACKAGE_NAME}" ]; then
+            cp -a "${CMAKE_REDIST_DIR}/${CMAKE_PACKAGE_NAME}"/* "${CMAKE_RUNTIME_DIR}"/
+            rm -rf "${CMAKE_REDIST_DIR}/${CMAKE_PACKAGE_NAME}"
+        fi
+    fi
+
     # Generate the desktop icon
     DESKTOP_ICON_FILE=/usr/share/applications/o3de.desktop
 
