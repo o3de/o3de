@@ -20,6 +20,7 @@
 #include <QPainter>
 #include <QStyleOptionFrame>
 #include <QStylePainter>
+#include <QTimer>
 #include <QWindow>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 6, 1) && defined(Q_OS_WIN32)
@@ -229,6 +230,38 @@ namespace AzQtComponents
         if (floating)
         {
             fixFramelessFlags();
+
+            // Detach the floating window from the parent/owner chain so the OS treats it
+            // as a fully independent application window (own Alt-Tab entry, own taskbar button).
+            //
+            // Qt floating dock widgets inherit their native owner from the QWidget parent.
+            // On Windows this means all floating panels share the main editor's HWND as owner,
+            // causing Alt-Tab to cycle them as a group. The only Qt-agnostic way to clear the
+            // native owner is to destroy and recreate the window via setParent(nullptr, flags).
+            //
+            // We also swap Qt::Tool for Qt::Window because tool windows (WS_EX_TOOLWINDOW on
+            // Windows) are hidden from Alt-Tab by the OS even when they have no owner.
+            //
+            // Deferred via singleShot(0) so the native window is fully realized first.
+            QWidget* topLevel = window();
+            QTimer::singleShot(0, topLevel, [topLevel]
+            {
+                if (!topLevel->isVisible())
+                {
+                    return;
+                }
+
+                Qt::WindowFlags flags = topLevel->windowFlags();
+                if (QWindow* win = topLevel->windowHandle())
+                {
+                    flags = win->flags();
+                }
+                flags &= ~Qt::Tool;
+                flags |= Qt::Window;
+
+                topLevel->setParent(nullptr, flags);
+                topLevel->show();
+            });
 
             // Perform platform-specific handling for floating windows (e.g. minimizing into the taskbar)
             Platform::HandleFloatingWindow(window());

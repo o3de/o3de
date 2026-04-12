@@ -6,10 +6,6 @@
  *
  */
 
-#include <AzCore/PlatformIncl.h>
-
-#include <QTimer>
-#include <QtWinExtras/QtWin>
 #include <QWidget>
 
 namespace AzQtComponents
@@ -18,26 +14,7 @@ namespace AzQtComponents
     {
         void HandleFloatingWindow(QWidget* floatingWindow)
         {
-            // Set the WS_EX_APPWINDOW flag on our floating window so that it can be minimized into the taskbar
-            // and will show up grouped with our application.
-            // Also clear the Win32 owner (GWLP_HWNDPARENT) so that Windows Alt-Tab treats
-            // this floating window independently from the main editor window. Without this,
-            // all floating panels share the same owner chain and Windows cycles through them
-            // as a group, preventing Alt-Tab from reaching other applications.
-            HWND windowId = HWND(floatingWindow->winId());
-            QTimer::singleShot(0, [windowId] {
-                BOOL wasVisible = ::IsWindowVisible(windowId);
-                if (wasVisible)
-                {
-                    ::ShowWindow(windowId, SW_HIDE);
-                }
-                ::SetWindowLong(windowId, GWL_EXSTYLE, GetWindowLong(windowId, GWL_EXSTYLE) | WS_EX_APPWINDOW);
-                ::SetWindowLongPtr(windowId, GWLP_HWNDPARENT, 0);
-                if (wasVisible)
-                {
-                    ::ShowWindow(windowId, SW_SHOW);
-                }
-            });
+            (void)floatingWindow;
         }
 
         bool FloatingWindowsSupportMinimize()
