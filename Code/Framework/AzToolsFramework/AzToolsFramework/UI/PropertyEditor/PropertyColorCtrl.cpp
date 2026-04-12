@@ -19,6 +19,8 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QPainter> 
 AZ_POP_DISABLE_WARNING
 #include <QToolButton>
+#include <QFocusEvent>
+#include <QKeyEvent>
 #include <QRegularExpressionValidator>
 
 namespace AzToolsFramework
@@ -71,10 +73,82 @@ namespace AzToolsFramework
         connect(m_colorEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
         connect(m_colorEdit, SIGNAL(returnPressed()), this, SLOT(OnEditingFinished()));
         connect(m_colorEdit, SIGNAL(textEdited(const QString&)), this, SLOT(OnTextEdited(const QString&)));
+
+        m_colorEdit->installEventFilter(this);
     }
 
     PropertyColorCtrl::~PropertyColorCtrl()
     {
+    }
+
+    // =========================================================================
+    // Esc / Ctrl+Z Revert — restore focus-in text and exit color hex field
+    // =========================================================================
+    bool PropertyColorCtrl::eventFilter(QObject* watched, QEvent* event)
+    {
+        if (watched == m_colorEdit)
+        {
+            switch (event->type())
+            {
+                case QEvent::FocusIn:
+                {
+                    auto* fe = static_cast<QFocusEvent*>(event);
+                    if (fe->reason() != Qt::PopupFocusReason)
+                    {
+                        m_colorTextOnFocusIn = m_colorEdit->text();
+                    }
+                    break;
+                }
+
+                case QEvent::ShortcutOverride:
+                {
+                    auto* ke = static_cast<QKeyEvent*>(event);
+                    if (ke->key() == Qt::Key_Escape)
+                    {
+                        event->accept();
+                        return true;
+                    }
+                    if (ke->matches(QKeySequence::Undo))
+                    {
+                        if (m_colorEdit->text() != m_colorTextOnFocusIn)
+                        {
+                            event->accept();
+                        }
+                        else
+                        {
+                            event->ignore();
+                        }
+                        return true;
+                    }
+                    break;
+                }
+
+                case QEvent::KeyPress:
+                {
+                    auto* ke = static_cast<QKeyEvent*>(event);
+                    if (ke->key() == Qt::Key_Escape)
+                    {
+                        m_colorEdit->setText(m_colorTextOnFocusIn);
+                        m_colorEdit->clearFocus();
+                        return true;
+                    }
+                    if (ke->matches(QKeySequence::Undo))
+                    {
+                        if (m_colorEdit->text() != m_colorTextOnFocusIn)
+                        {
+                            m_colorEdit->setText(m_colorTextOnFocusIn);
+                            m_colorEdit->clearFocus();
+                            return true;
+                        }
+                    }
+                    break;
+                }
+
+                default:
+                    break;
+            }
+        }
+        return QWidget::eventFilter(watched, event);
     }
 
     QColor PropertyColorCtrl::value() const

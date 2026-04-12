@@ -87,11 +87,15 @@ namespace AzToolsFramework
         void OnEditingFinished();
         void OnTextEdited(const QString& newText);
 
+    protected:
+        bool eventFilter(QObject* watched, QEvent* event) override;
+
     private:
         void CreateColorDialog();
         void SetColor(QColor color, bool updateDialogColor = true);
         QColor convertFromString(const QString& string);
 
+        QString m_colorTextOnFocusIn;
         ColorEditorConfiguration m_config;
 
         AZ::Color TransformColor(const AZ::Color& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const;

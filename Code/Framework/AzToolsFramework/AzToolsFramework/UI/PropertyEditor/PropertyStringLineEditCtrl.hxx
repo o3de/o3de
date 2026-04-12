@@ -51,8 +51,10 @@ namespace AzToolsFramework
 
     protected:
         virtual void focusInEvent(QFocusEvent* e);
+        bool eventFilter(QObject* watched, QEvent* event) override;
 
         QLineEdit* m_pLineEdit;
+        QString m_textOnFocusIn;
     };
 
     class AZTF_API StringPropertyLineEditHandler

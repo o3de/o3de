@@ -23,6 +23,7 @@ AZ_POP_DISABLE_WARNING
 #include <QPushButton>
 #include <QToolTip>
 #include <QAction>
+#include <QKeyEvent>
 #include <QStyleOptionFrame>
 
 namespace AzQtComponents
@@ -34,6 +35,7 @@ namespace AzQtComponents
         QLineEdit* m_lineEdit = nullptr;
         QPushButton* m_attachedButton = nullptr;
         QString m_errorToolTip;
+        QString m_textOnFocusIn;
         bool m_hasAcceptableInput = true;
     };
 
@@ -207,10 +209,83 @@ namespace AzQtComponents
                         return true;
                     }
                     break;
+
+                // =====================================================================
+                // Focus-In: Capture text for Esc / Ctrl+Z revert
+                // =====================================================================
                 case QEvent::FocusIn:
+                {
+                    auto* fe = static_cast<QFocusEvent*>(event);
+                    if (fe->reason() != Qt::PopupFocusReason)
+                    {
+                        m_data->m_textOnFocusIn = m_data->m_lineEdit->text();
+                    }
+                    update();
+                    break;
+                }
+
                 case QEvent::FocusOut:
                     update();
                     break;
+
+                // =====================================================================
+                // ShortcutOverride: Claim Esc always, Ctrl+Z when text has changed
+                // =====================================================================
+                case QEvent::ShortcutOverride:
+                {
+                    if (isLineEditReadOnly())
+                    {
+                        break;
+                    }
+                    auto* ke = static_cast<QKeyEvent*>(event);
+                    if (ke->key() == Qt::Key_Escape)
+                    {
+                        event->accept();
+                        return true;
+                    }
+                    if (ke->matches(QKeySequence::Undo))
+                    {
+                        if (m_data->m_lineEdit->text() != m_data->m_textOnFocusIn)
+                        {
+                            event->accept();
+                        }
+                        else
+                        {
+                            event->ignore();
+                        }
+                        return true;
+                    }
+                    break;
+                }
+
+                // =====================================================================
+                // KeyPress: Esc and Ctrl+Z revert to focus-in text and exit field
+                // =====================================================================
+                case QEvent::KeyPress:
+                {
+                    if (isLineEditReadOnly())
+                    {
+                        break;
+                    }
+                    auto* ke = static_cast<QKeyEvent*>(event);
+                    if (ke->key() == Qt::Key_Escape)
+                    {
+                        m_data->m_lineEdit->setText(m_data->m_textOnFocusIn);
+                        clearFocus();
+                        return true;
+                    }
+                    if (ke->matches(QKeySequence::Undo))
+                    {
+                        if (m_data->m_lineEdit->text() != m_data->m_textOnFocusIn)
+                        {
+                            m_data->m_lineEdit->setText(m_data->m_textOnFocusIn);
+                            clearFocus();
+                            return true;
+                        }
+                    }
+                    break;
+                }
+
                 default:
                     break;
             }
