@@ -1113,12 +1113,14 @@ SpinBox::SpinBox(QWidget* parent)
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalRedoTriggered, this, &SpinBox::globalRedoTriggered);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::editCancelTriggered, this, [this]()
     {
-        if (value() != m_valueOnFocusIn)
-        {
-            // Let valueChanged fire so the component/reflection system
-            // reverts whatever the in-progress edit had changed.
-            QSpinBox::setValue(m_valueOnFocusIn);
-        }
+        // Always restore the focus-in value. When keyboardTracking is off the
+        // committed value() may still match m_valueOnFocusIn even though the
+        // user has typed a different number into the line edit. Setting the
+        // value unconditionally ensures both the committed value and the line
+        // edit text are reset before clearFocus triggers a final commit.
+        const bool blocked = blockSignals(value() == m_valueOnFocusIn);
+        QSpinBox::setValue(m_valueOnFocusIn);
+        blockSignals(blocked);
         clearFocus();
     });
     connect(this, &SpinBox::cutTriggered, this, [this]()
@@ -1164,7 +1166,15 @@ QSize SpinBox::minimumSizeHint() const
 
 bool SpinBox::hasInProgressEdit() const
 {
-    return value() != m_valueOnFocusIn;
+    // Check committed value first. When keyboardTracking is off (the default
+    // in O3DE property controls), value() is not updated while the user types,
+    // so also compare the line edit text against the display of the committed
+    // value to detect uncommitted typing.
+    if (value() != m_valueOnFocusIn)
+    {
+        return true;
+    }
+    return lineEdit()->text() != textFromValue(value());
 }
 
 bool SpinBox::isUndoAvailable() const
@@ -1363,12 +1373,14 @@ DoubleSpinBox::DoubleSpinBox(QWidget* parent)
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalRedoTriggered, this, &DoubleSpinBox::globalRedoTriggered);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::editCancelTriggered, this, [this]()
     {
-        if (!qFuzzyCompare(value(), m_valueOnFocusIn))
-        {
-            // Let valueChanged fire so the component/reflection system
-            // reverts whatever the in-progress edit had changed.
-            QDoubleSpinBox::setValue(m_valueOnFocusIn);
-        }
+        // Always restore the focus-in value. When keyboardTracking is off the
+        // committed value() may still match m_valueOnFocusIn even though the
+        // user has typed a different number into the line edit. Setting the
+        // value unconditionally ensures both the committed value and the line
+        // edit text are reset before clearFocus triggers a final commit.
+        const bool blocked = blockSignals(qFuzzyCompare(value(), m_valueOnFocusIn));
+        QDoubleSpinBox::setValue(m_valueOnFocusIn);
+        blockSignals(blocked);
         clearFocus();
     });
     connect(this, &DoubleSpinBox::cutTriggered, this, [this]()
@@ -1422,7 +1434,15 @@ QSize DoubleSpinBox::minimumSizeHint() const
 
 bool DoubleSpinBox::hasInProgressEdit() const
 {
-    return !qFuzzyCompare(value(), m_valueOnFocusIn);
+    // Check committed value first. When keyboardTracking is off (the default
+    // in O3DE property controls), value() is not updated while the user types,
+    // so also compare the line edit text against the display of the committed
+    // value to detect uncommitted typing.
+    if (!qFuzzyCompare(value(), m_valueOnFocusIn))
+    {
+        return true;
+    }
+    return lineEdit()->text() != textFromValue(value());
 }
 
 bool DoubleSpinBox::isUndoAvailable() const
