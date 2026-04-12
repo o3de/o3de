@@ -66,7 +66,7 @@ namespace AzToolsFramework
     }
 
     // =========================================================================
-    // Esc / Ctrl+Z Revert — restore focus-in text and exit field
+    // Esc / Ctrl+Z Revert -- restore focus-in text and exit field
     // =========================================================================
     bool PropertyStringLineEditCtrl::eventFilter(QObject* watched, QEvent* event)
     {

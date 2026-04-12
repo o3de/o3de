@@ -83,7 +83,7 @@ namespace AzToolsFramework
     }
 
     // =========================================================================
-    // Esc / Ctrl+Z Revert — restore focus-in text and exit color hex field
+    // Esc / Ctrl+Z Revert -- restore focus-in text and exit color hex field
     // =========================================================================
     bool PropertyColorCtrl::eventFilter(QObject* watched, QEvent* event)
     {

@@ -1454,7 +1454,7 @@ namespace AzToolsFramework
                 return true;
             }
 
-            // Not an input widget — continue hopping
+            // Not an input widget -- continue hopping
             before = after;
         }
 

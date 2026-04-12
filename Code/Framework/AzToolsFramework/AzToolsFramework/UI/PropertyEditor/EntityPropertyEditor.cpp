@@ -4083,7 +4083,7 @@ namespace AzToolsFramework
     bool EntityPropertyEditor::eventFilter(QObject* object, QEvent* event)
     {
         // =================================================================
-        // Entity Name Field — Esc / Ctrl+Z revert to focus-in text
+        // Entity Name Field -- Esc / Ctrl+Z revert to focus-in text
         // =================================================================
         if (object == m_gui->m_entityNameEditor && !m_gui->m_entityNameEditor->isReadOnly())
         {

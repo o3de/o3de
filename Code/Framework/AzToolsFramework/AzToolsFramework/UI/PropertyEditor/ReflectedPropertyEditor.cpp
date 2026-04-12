@@ -1199,7 +1199,7 @@ namespace AzToolsFramework
             QWidget* pFirst = m_impl->m_widgetsInDisplayOrder[pos]->GetFirstTabWidget();
             QWidget* pLast = m_impl->m_widgetsInDisplayOrder[pos]->GetLastTabWidget();
 
-            // Skip rows with no focusable widget — they should not appear in the
+            // Skip rows with no focusable widget -- they should not appear in the
             // tab chain. This prevents label-only rows from inserting a dead tab
             // stop between two input fields.
             if (!pFirst && !pLast)
@@ -1280,18 +1280,18 @@ namespace AzToolsFramework
 
         if (resolvedCurrent != resolvedBoundary)
         {
-            // Not at boundary — let Qt handle intra-row navigation (X->Y->Z)
+            // Not at boundary -- let Qt handle intra-row navigation (X->Y->Z)
             return QFrame::focusNextPrevChild(next);
         }
 
-        // At boundary — find the next row that has an input widget
+        // At boundary -- find the next row that has an input widget
         int targetIdx = currentRowIdx;
         while (true)
         {
             targetIdx += next ? 1 : -1;
             if (targetIdx < 0 || targetIdx >= static_cast<int>(m_impl->m_widgetsInDisplayOrder.size()))
             {
-                // Past the edge — let Qt handle it (move to next component card)
+                // Past the edge -- let Qt handle it (move to next component card)
                 return QFrame::focusNextPrevChild(next);
             }
 
