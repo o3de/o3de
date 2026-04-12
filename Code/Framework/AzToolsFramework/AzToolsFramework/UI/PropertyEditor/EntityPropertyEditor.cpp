@@ -79,8 +79,9 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 #include <AzQtComponents/Components/Widgets/ComboBox.h>
+#include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
+#include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
@@ -656,6 +657,7 @@ namespace AzToolsFramework
             SLOT(OnEntityNameChanged()));
 
         m_gui->m_entityNameEditor->installEventFilter(this);
+        new AzQtComponents::LineEditRevertHandler(m_gui->m_entityNameEditor);
 
         connect(m_gui->m_statusComboBox,
             SIGNAL(currentIndexChanged(int)),
@@ -4082,72 +4084,6 @@ namespace AzToolsFramework
     //overridden to intercept application level mouse events for component editor selection
     bool EntityPropertyEditor::eventFilter(QObject* object, QEvent* event)
     {
-        // =================================================================
-        // Entity Name Field -- Esc / Ctrl+Z revert to focus-in text
-        // =================================================================
-        if (object == m_gui->m_entityNameEditor && !m_gui->m_entityNameEditor->isReadOnly())
-        {
-            switch (event->type())
-            {
-                case QEvent::FocusIn:
-                {
-                    auto* fe = static_cast<QFocusEvent*>(event);
-                    if (fe->reason() != Qt::PopupFocusReason)
-                    {
-                        m_entityNameOnFocusIn = m_gui->m_entityNameEditor->text();
-                    }
-                    break;
-                }
-
-                case QEvent::ShortcutOverride:
-                {
-                    auto* ke = static_cast<QKeyEvent*>(event);
-                    if (ke->key() == Qt::Key_Escape)
-                    {
-                        event->accept();
-                        return true;
-                    }
-                    if (ke->matches(QKeySequence::Undo))
-                    {
-                        if (m_gui->m_entityNameEditor->text() != m_entityNameOnFocusIn)
-                        {
-                            event->accept();
-                        }
-                        else
-                        {
-                            event->ignore();
-                        }
-                        return true;
-                    }
-                    break;
-                }
-
-                case QEvent::KeyPress:
-                {
-                    auto* ke = static_cast<QKeyEvent*>(event);
-                    if (ke->key() == Qt::Key_Escape)
-                    {
-                        m_gui->m_entityNameEditor->setText(m_entityNameOnFocusIn);
-                        QTimer::singleShot(0, this, [this]() { m_gui->m_entityNameEditor->clearFocus(); });
-                        return true;
-                    }
-                    if (ke->matches(QKeySequence::Undo))
-                    {
-                        if (m_gui->m_entityNameEditor->text() != m_entityNameOnFocusIn)
-                        {
-                            m_gui->m_entityNameEditor->setText(m_entityNameOnFocusIn);
-                            QTimer::singleShot(0, this, [this]() { m_gui->m_entityNameEditor->clearFocus(); });
-                            return true;
-                        }
-                    }
-                    break;
-                }
-
-                default:
-                    break;
-            }
-        }
-
         HandleMenuEvent(object, event);
         HandleSelectionEvents(object, event);
         return false;

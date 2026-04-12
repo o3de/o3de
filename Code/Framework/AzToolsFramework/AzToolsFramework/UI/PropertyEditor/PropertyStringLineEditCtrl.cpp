@@ -8,12 +8,11 @@
 #include "PropertyStringLineEditCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/StyledLineEdit.h>
+#include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
 #include <QHBoxLayout>
 #include <QFocusEvent>
-#include <QKeyEvent>
-#include <QTimer>
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
@@ -41,7 +40,7 @@ namespace AzToolsFramework
         setFocusProxy(m_pLineEdit);
         setFocusPolicy(m_pLineEdit->focusPolicy());
 
-        m_pLineEdit->installEventFilter(this);
+        new AzQtComponents::LineEditRevertHandler(m_pLineEdit, this);
     };
 
     void PropertyStringLineEditCtrl::setValue(AZStd::string& value)
@@ -57,85 +56,8 @@ namespace AzToolsFramework
 
     void PropertyStringLineEditCtrl::focusInEvent(QFocusEvent* e)
     {
-        if (e->reason() != Qt::PopupFocusReason)
-        {
-            m_textOnFocusIn = m_pLineEdit->text();
-        }
         m_pLineEdit->event(e);
         m_pLineEdit->selectAll();
-    }
-
-    // =========================================================================
-    // Esc / Ctrl+Z Revert -- restore focus-in text and exit field
-    // =========================================================================
-    bool PropertyStringLineEditCtrl::eventFilter(QObject* watched, QEvent* event)
-    {
-        if (watched == m_pLineEdit)
-        {
-            switch (event->type())
-            {
-                case QEvent::FocusIn:
-                {
-                    auto* fe = static_cast<QFocusEvent*>(event);
-                    if (fe->reason() != Qt::PopupFocusReason)
-                    {
-                        m_textOnFocusIn = m_pLineEdit->text();
-                    }
-                    break;
-                }
-
-                case QEvent::ShortcutOverride:
-                {
-                    auto* ke = static_cast<QKeyEvent*>(event);
-                    if (ke->key() == Qt::Key_Escape)
-                    {
-                        event->accept();
-                        return true;
-                    }
-                    if (ke->matches(QKeySequence::Undo))
-                    {
-                        if (m_pLineEdit->text() != m_textOnFocusIn)
-                        {
-                            event->accept();
-                        }
-                        else
-                        {
-                            event->ignore();
-                        }
-                        return true;
-                    }
-                    break;
-                }
-
-                case QEvent::KeyPress:
-                {
-                    auto* ke = static_cast<QKeyEvent*>(event);
-                    if (ke->key() == Qt::Key_Escape)
-                    {
-                        m_pLineEdit->setText(m_textOnFocusIn);
-                        // Defer clearFocus so it runs after the event stack unwinds.
-                        // Calling it directly inside an event filter can cause
-                        // re-entrancy that lets the global Escape action fire.
-                        QTimer::singleShot(0, this, [this]() { clearFocus(); });
-                        return true;
-                    }
-                    if (ke->matches(QKeySequence::Undo))
-                    {
-                        if (m_pLineEdit->text() != m_textOnFocusIn)
-                        {
-                            m_pLineEdit->setText(m_textOnFocusIn);
-                            QTimer::singleShot(0, this, [this]() { clearFocus(); });
-                            return true;
-                        }
-                    }
-                    break;
-                }
-
-                default:
-                    break;
-            }
-        }
-        return QWidget::eventFilter(watched, event);
     }
 
     void PropertyStringLineEditCtrl::UpdateValue(const QString& newValue)
