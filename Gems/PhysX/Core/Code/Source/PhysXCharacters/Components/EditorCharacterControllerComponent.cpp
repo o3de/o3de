@@ -169,9 +169,9 @@ namespace PhysX
                 ? AZ::Vector3::CreateAxisZ()
                 : m_configuration.m_upDirection.GetNormalized();
 
-            // PhysX uses the x-axis as the height direction of the controller, and so takes the shortest arc from the 
-            // x-axis to the up direction.  To obtain the same orientation in the LY co-ordinate system (which uses z
-            // as the height direction), we need to combine a rotation from the x-axis to the up direction with a 
+            // PhysX uses the x-axis as the height direction of the controller, and so takes the shortest arc from the
+            // x-axis to the up direction. To obtain the same orientation in the O3DE co-ordinate system (which uses z
+            // as the height direction), we need to combine a rotation from the x-axis to the up direction with a
             // rotation from the z-axis to the x-axis.
             const AZ::Quaternion upDirectionQuat = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisX(),
                 upDirectionNormalized) * AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi);
