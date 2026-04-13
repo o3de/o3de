@@ -90,6 +90,8 @@ namespace OpenParticleSystemEditor
         bool AfterSpawnRotationModified(AzToolsFramework::InstanceDataNode* pNode);
         bool AfterVector3Modifed(AzToolsFramework::InstanceDataNode* pNode, AZ::u8 classIndex, AZ::u8 moduleIndex);
 
+        void CheckWarningText();
+
     private:
         AZ::SerializeContext* m_serializeContext = nullptr;
         ComboBoxWidget* m_comboBoxWidget = nullptr;

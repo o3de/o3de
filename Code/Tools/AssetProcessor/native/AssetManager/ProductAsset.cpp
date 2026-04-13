@@ -44,7 +44,7 @@ namespace AssetProcessor
             AZ_TracePrintf(
                 AssetProcessor::ConsoleChannel, "Was expecting to delete product file %s but it already appears to be gone.\n",
                 m_absolutePath.c_str());
-            return false;
+            return true;
         }
 
         if(sendNotification)

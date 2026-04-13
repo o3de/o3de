@@ -68,6 +68,8 @@ namespace OpenParticleSystemEditor
             AZ::Data::Asset<AZ::RPI::ModelAsset>* modelAsset,
             AZ::Data::Asset<AZ::RPI::ModelAsset>* skeletonModelAsset);
 
+        bool IsMeshRenderer() const;
+
     private slots:
         void OnIndexChanged(const QString& curString);
 

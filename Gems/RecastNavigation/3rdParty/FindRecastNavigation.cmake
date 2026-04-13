@@ -103,18 +103,18 @@ function(GetRecast)
     FetchContent_GetProperties(RecastNavigation BINARY_DIR recastnavigation_binary_dir)
     
     # install header files
-    ly_install(DIRECTORY ${recastnavigation_source_dir}/Recast/include DESTINATION include/recastnavigation COMPONENT CORE)
-    ly_install(DIRECTORY ${recastnavigation_source_dir}/DebugUtils/include DESTINATION include/recastnavigation COMPONENT CORE)
-    ly_install(DIRECTORY ${recastnavigation_source_dir}/Detour/include DESTINATION include/recastnavigation COMPONENT CORE)
-    ly_install(DIRECTORY ${recastnavigation_source_dir}/DetourCrowd/include DESTINATION include/recastnavigation COMPONENT CORE)
-    ly_install(DIRECTORY ${recastnavigation_source_dir}/DetourTileCache/include DESTINATION include/recastnavigation COMPONENT CORE)
+    ly_install(DIRECTORY ${recastnavigation_source_dir}/Recast/Include DESTINATION Include/recastnavigation COMPONENT CORE)
+    ly_install(DIRECTORY ${recastnavigation_source_dir}/DebugUtils/Include DESTINATION Include/recastnavigation COMPONENT CORE)
+    ly_install(DIRECTORY ${recastnavigation_source_dir}/Detour/Include DESTINATION Include/recastnavigation COMPONENT CORE)
+    ly_install(DIRECTORY ${recastnavigation_source_dir}/DetourCrowd/Include DESTINATION Include/recastnavigation COMPONENT CORE)
+    ly_install(DIRECTORY ${recastnavigation_source_dir}/DetourTileCache/Include DESTINATION Include/recastnavigation COMPONENT CORE)
 
     # note that recast also generates a version.h file, which we could copy here, but the name "version.h" is way too easy
     # and generic to conflict with others, and it does not actually use "version.h" itself in any way.  if this becomes a problem
     # in the future, we can always copy it with a unique name, or add a subfolder for it to live in.
     
     # install license file.
-    ly_install(FILES ${recastnavigation_source_dir}/License.txt DESTINATION include/recastnavigation COMPONENT CORE)
+    ly_install(FILES ${recastnavigation_source_dir}/License.txt DESTINATION Include/recastnavigation COMPONENT CORE)
     
     # signal that find_package(Recast) has succeeded.
     # we have to set it on the PARENT_SCOPE since we're in a function 

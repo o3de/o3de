@@ -36,26 +36,35 @@ function Process(context)
 
     context:SetShaderOptionValue_bool("o_opacity_useTexture", enableOpacityTexture)
 
-    local isBlended = opacityMode == OpacityMode_Blended
+    local useOpaquePath = opacityMode == OpacityMode_Opaque
+    local useBlendedPath = opacityMode == OpacityMode_Blended
+    local useForwardPath = opacityMode == OpacityMode_Cutout
 
     if context:HasShaderWithTag("forward") then
         local shader = context:GetShaderByTag("forward")
         if shader then
-            shader:SetEnabled(not isBlended)
+            shader:SetEnabled(useForwardPath)
         end
     end
 
     if context:HasShaderWithTag("depth") then
         local shader = context:GetShaderByTag("depth")
         if shader then
-            shader:SetEnabled(not isBlended)
+            shader:SetEnabled(useForwardPath)
         end
     end
 
     if context:HasShaderWithTag("transparent") then
         local shader = context:GetShaderByTag("transparent")
         if shader then
-            shader:SetEnabled(isBlended)
+            shader:SetEnabled(useBlendedPath)
+        end
+    end
+
+    if context:HasShaderWithTag("opaque") then
+        local shader = context:GetShaderByTag("opaque")
+        if shader then
+            shader:SetEnabled(useOpaquePath)
         end
     end
 end
