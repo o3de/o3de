@@ -248,22 +248,7 @@ namespace UnitTest
         EXPECT_EQ(material->GetRestitutionCombineMode(), PhysX::CombineMode::Minimum);
     }
 
-    // TEST_F(PhysXMaterialFixture, Material_GetSet_CompliantContactMode_Enabled) // TODO: Remove CompliantContactMode
-    // {
-    //     PhysX::MaterialConfiguration materialConfiguration;
-    //
-    //     AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::FindOrCreateMaterial(materialConfiguration.CreateMaterialAsset());
-    //
-    //     EXPECT_FALSE(material->IsCompliantContactModeEnabled());
-    //
-    //     material->EnableCompliantContactMode(true);
-    //     EXPECT_TRUE(material->IsCompliantContactModeEnabled());
-    //
-    //     material->EnableCompliantContactMode(false);
-    //     EXPECT_FALSE(material->IsCompliantContactModeEnabled());
-    // }
-
-    TEST_F(PhysXMaterialFixture, Material_CompliantContactModeEnabled_RestitutionRemainsUnchanged)
+    TEST_F(PhysXMaterialFixture, Material_CompliantContactModeEnabled_NegativeRestitution)
     {
         PhysX::MaterialConfiguration materialConfiguration;
         materialConfiguration.m_restitution = 1.0f;
@@ -277,7 +262,6 @@ namespace UnitTest
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 2.0f, Tolerance);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 3.0f, Tolerance);
 
-        // material->EnableCompliantContactMode(true);
         material->SetRestitution(-1.0f);
 
         EXPECT_TRUE(material->IsCompliantContactModeEnabled());
@@ -297,13 +281,11 @@ namespace UnitTest
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 245.0f, Tolerance);
 
         // Damping property is set correctly with compliant contact mode enabled
-        // material->EnableCompliantContactMode(true);
         material->SetRestitution(-1.0f); // Enables compliant contact in 5.6.1
         material->SetCompliantContactModeDamping(64.2f);
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 64.2f, Tolerance);
 
         // Damping property is set correctly with compliant contact mode disabled
-        // material->EnableCompliantContactMode(false);
         material->SetRestitution(1.0f); // Disables compliant contact in 5.6.1
         material->SetCompliantContactModeDamping(43.1f);
         EXPECT_NEAR(material->GetCompliantContactModeDamping(), 43.1f, Tolerance);
@@ -333,13 +315,11 @@ namespace UnitTest
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 245.0f, Tolerance);
 
         // Stiffness property is set correctly with compliant contact mode enabled
-        // material->EnableCompliantContactMode(true);
         material->SetRestitution(-1.0f); // Enables compliant contact in 5.6.1
         material->SetCompliantContactModeStiffness(64.2f);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 64.2f, Tolerance);
 
         // Stiffness property is set correctly with compliant contact mode disabled
-        // material->EnableCompliantContactMode(false);
         material->SetRestitution(1.0f); // Disables compliant contact in 5.6.1
         material->SetCompliantContactModeStiffness(43.1f);
         EXPECT_NEAR(material->GetCompliantContactModeStiffness(), 43.1f, Tolerance);

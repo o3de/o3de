@@ -29,12 +29,6 @@ namespace PhysX
             {
                 editContext->Class<PhysX::CompliantContactModeConfiguration>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    // ->DataElement(
-                    //     AZ::Edit::UIHandlers::Default,
-                    //     &CompliantContactModeConfiguration::m_enabled,
-                    //     "Enable",
-                    //     "When enabled the normal force of the contact is computed using an implicit spring. Restitution properties are not used when enabled.")
-                    // ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &CompliantContactModeConfiguration::m_damping,
@@ -128,7 +122,6 @@ namespace PhysX
             {MaterialConstants::DensityName, m_density},
             {MaterialConstants::RestitutionCombineModeName, static_cast<AZ::u32>(m_restitutionCombine)},
             {MaterialConstants::FrictionCombineModeName, static_cast<AZ::u32>(m_frictionCombine)},
-            // {MaterialConstants::CompliantContactModeEnabledName, m_compliantContactMode.m_enabled}, // TODO: Remove CompliantContactMode
             {MaterialConstants::CompliantContactModeDampingName, m_compliantContactMode.m_damping},
             {MaterialConstants::CompliantContactModeStiffnessName, m_compliantContactMode.m_stiffness},
             {MaterialConstants::DebugColorName, m_debugColor}

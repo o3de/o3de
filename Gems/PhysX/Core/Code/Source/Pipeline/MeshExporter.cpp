@@ -405,16 +405,6 @@ namespace PhysX
             // Use by default 3.4 since 3.3 is being deprecated (despite being default)
             physx::PxMeshMidPhase::Enum ret = physx::PxMeshMidPhase::eBVH34;
 
-// TODO: remove
-// #if (PX_PHYSICS_VERSION_MAJOR < 5)
-//             // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
-//             // Also fall back to 3.3 for Linux, since linux may support both x86 and arm64, and ARM64 does not support SSE2.
-//             if (platformIdentifier == "android" || platformIdentifier == "ios" || platformIdentifier == "linux")
-//             {
-//                 ret = physx::PxMeshMidPhase::eBVH33;
-//             }
-// #endif
-
             return ret;
         }
 
@@ -499,7 +489,6 @@ namespace PhysX
                 SET_BITS(convexDesc.flags, convexAssetParams.GetCheckZeroAreaTriangles(), physx::PxConvexFlag::eCHECK_ZERO_AREA_TRIANGLES);
                 SET_BITS(convexDesc.flags, convexAssetParams.GetQuantizeInput(), physx::PxConvexFlag::eQUANTIZE_INPUT);
                 SET_BITS(convexDesc.flags, convexAssetParams.GetUsePlaneShifting(), physx::PxConvexFlag::ePLANE_SHIFTING);
-                // SET_BITS(convexDesc.flags, convexAssetParams.GetBuildGpuData(), physx::PxConvexFlag::eGPU_COMPATIBLE); // TODO: No longer a flag
                 SET_BITS(convexDesc.flags, convexAssetParams.GetShiftVertices(), physx::PxConvexFlag::eSHIFT_VERTICES);
 
                 physx::PxConvexMeshCookingResult::Enum convexCookingResultCode = physx::PxConvexMeshCookingResult::eSUCCESS;
