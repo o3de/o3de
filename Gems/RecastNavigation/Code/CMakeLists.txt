@@ -34,6 +34,7 @@ ly_add_target(
             AZ::AzCore
             3rdParty::RecastNavigation::Recast
             3rdParty::RecastNavigation::Detour
+            3rdParty::RecastNavigation::DetourCrowd
 )
 
 # The ${gem_name}.Private.Object target is an internal target
@@ -57,6 +58,7 @@ ly_add_target(
             3rdParty::RecastNavigation::DebugUtils
             3rdParty::RecastNavigation::Detour
             3rdParty::RecastNavigation::Recast
+            3rdParty::RecastNavigation::DetourCrowd
             Gem::LmbrCentral.Static
             Gem::DebugDraw.API
 )
