@@ -8,6 +8,7 @@
 
 #include <RecastNavigation/DetourCrowdAgentParams.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <DetourCrowd.h>
@@ -56,10 +57,10 @@ namespace RecastNavigation
 
     void DetourCrowdAgentParams::Reflect(AZ::ReflectContext* context)
     {
+        using Self = DetourCrowdAgentParams;
+
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            using Self = DetourCrowdAgentParams;
-
             serialize->Class<Self>()
                 ->Version(1)
                 ->Field("Radius", &Self::m_radius)
@@ -137,6 +138,26 @@ namespace RecastNavigation
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Max, DT_CROWD_MAX_QUERY_FILTER_TYPE);
             }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Self>("DetourCrowdAgentParams")
+                ->Constructor<>()
+                ->Property("radius", BehaviorValueProperty(&Self::m_radius))
+                ->Property("height", BehaviorValueProperty(&Self::m_height))
+                ->Property("maxAcceleration", BehaviorValueProperty(&Self::m_maxAcceleration))
+                ->Property("maxSpeed", BehaviorValueProperty(&Self::m_maxSpeed))
+                ->Property("collisionQueryRange", BehaviorValueProperty(&Self::m_collisionQueryRange))
+                ->Property("pathOptimizationRange", BehaviorValueProperty(&Self::m_pathOptimizationRange))
+                ->Property("separationWeight", BehaviorValueProperty(&Self::m_separationWeight))
+                ->Property("anticipateTurns", BehaviorValueProperty(&Self::m_anticipateTurns))
+                ->Property("obstacleAvoidance", BehaviorValueProperty(&Self::m_obstacleAvoidance))
+                ->Property("separation", BehaviorValueProperty(&Self::m_separation))
+                ->Property("optimizeVisibility", BehaviorValueProperty(&Self::m_optimizeVisibility))
+                ->Property("optimizeTopology", BehaviorValueProperty(&Self::m_optimizeTopology))
+                ->Property("obstacleAvoidanceType", BehaviorValueProperty(&Self::m_obstacleAvoidanceType))
+                ->Property("queryFilterType", BehaviorValueProperty(&Self::m_queryFilterType));
         }
     }
 } // namespace RecastNavigation

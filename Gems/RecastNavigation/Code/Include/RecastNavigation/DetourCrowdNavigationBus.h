@@ -22,13 +22,17 @@ namespace RecastNavigation
     {
     public:
         //! Adds an agent entity with the crowd component.
-        virtual AZ::Outcome<void, AZStd::string> AddAgent(AZ::EntityId agentEntityId, const DetourCrowdAgentParams& agentParams) = 0;
+        virtual AZ::Outcome<void, AZStd::string> AddAgent(
+            const AZ::EntityId& agentEntityId, const AZ::Vector3& worldPosition, const DetourCrowdAgentParams& agentParams) = 0;
 
         //! Removes a previously added agent entity.
         virtual AZ::Outcome<void, AZStd::string> RemoveAgent(AZ::EntityId agentEntityId) = 0;
 
         //! Sets the movement target for an agent in the crowd.
         virtual AZ::Outcome<void, AZStd::string> SetAgentMoveTarget(AZ::EntityId agentEntityId, const AZ::Vector3& targetPosition) = 0;
+
+        //! Clears the movement target for an agent in the crowd.
+        virtual AZ::Outcome<void, AZStd::string> ResetAgentMoveTarget(AZ::EntityId agentEntityId) = 0;
     };
 
     //! Request EBus for a crowd navigation component.

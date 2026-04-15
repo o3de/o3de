@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace RecastNavigation
 {
@@ -25,4 +26,19 @@ namespace RecastNavigation
 
     //! Notification EBus addressed by agent entity id.
     using DetourCrowdAgentNotificationBus = AZ::EBus<DetourCrowdAgentNotifications>;
+
+    //! Scripting reflection helper for @DetourCrowdAgentNotificationBus.
+    class DetourCrowdAgentNotificationHandler
+        : public DetourCrowdAgentNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            DetourCrowdAgentNotificationHandler, "{AF6C3767-8ADD-45AD-8086-67ACF732E7C4}", AZ::SystemAllocator, OnAgentPositionUpdated);
+
+        void OnAgentPositionUpdated(const AZ::Vector3& worldPosition, const AZ::Vector3& worldVelocity) override
+        {
+            Call(FN_OnAgentPositionUpdated, worldPosition, worldVelocity);
+        }
+    };
 } // namespace RecastNavigation

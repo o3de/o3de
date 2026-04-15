@@ -8,6 +8,7 @@
 
 #include <RecastNavigation/DetourObstacleAvoidanceParams.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <DetourObstacleAvoidance.h>
@@ -72,82 +73,65 @@ namespace RecastNavigation
 
     void DetourObstacleAvoidanceParams::Reflect(AZ::ReflectContext* context)
     {
+        using Self = DetourObstacleAvoidanceParams;
+
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            using DetourObstacleAvoidanceParams = DetourObstacleAvoidanceParams;
-
-            serialize->Class<DetourObstacleAvoidanceParams>()
+            serialize->Class<Self>()
                 ->Version(1)
-                ->Field("Vel Bias", &DetourObstacleAvoidanceParams::m_velBias)
-                ->Field("Weight Desired Velocity", &DetourObstacleAvoidanceParams::m_weightDesVel)
-                ->Field("Weight Current Velocity", &DetourObstacleAvoidanceParams::m_weightCurVel)
-                ->Field("Weight Side", &DetourObstacleAvoidanceParams::m_weightSide)
-                ->Field("Weight Time Of Impact", &DetourObstacleAvoidanceParams::m_weightToi)
-                ->Field("Horizon Time", &DetourObstacleAvoidanceParams::m_horizTime)
-                ->Field("Grid Size", &DetourObstacleAvoidanceParams::m_gridSize)
-                ->Field("Adaptive Divisions", &DetourObstacleAvoidanceParams::m_adaptiveDivs)
-                ->Field("Adaptive Rings", &DetourObstacleAvoidanceParams::m_adaptiveRings)
-                ->Field("Adaptive Depth", &DetourObstacleAvoidanceParams::m_adaptiveDepth);
+                ->Field("Vel Bias", &Self::m_velBias)
+                ->Field("Weight Desired Velocity", &Self::m_weightDesVel)
+                ->Field("Weight Current Velocity", &Self::m_weightCurVel)
+                ->Field("Weight Side", &Self::m_weightSide)
+                ->Field("Weight Time Of Impact", &Self::m_weightToi)
+                ->Field("Horizon Time", &Self::m_horizTime)
+                ->Field("Grid Size", &Self::m_gridSize)
+                ->Field("Adaptive Divisions", &Self::m_adaptiveDivs)
+                ->Field("Adaptive Rings", &Self::m_adaptiveRings)
+                ->Field("Adaptive Depth", &Self::m_adaptiveDepth);
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext
-                    ->Class<DetourObstacleAvoidanceParams>(
-                        "Detour Obstacle Avoidance Params", "Configuration parameters for obstacle avoidance.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DetourObstacleAvoidanceParams::m_velBias, "Vel Bias", "Velocity bias.")
+                editContext->Class<Self>("Detour Obstacle Avoidance Params", "Configuration parameters for obstacle avoidance.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Self::m_velBias, "Vel Bias", "Velocity bias.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DetourObstacleAvoidanceParams::m_weightDesVel,
-                        "Weight Desired Velocity",
-                        "Desired velocity weight.")
+                        AZ::Edit::UIHandlers::Default, &Self::m_weightDesVel, "Weight Desired Velocity", "Desired velocity weight.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DetourObstacleAvoidanceParams::m_weightCurVel,
-                        "Weight Current Velocity",
-                        "Current velocity weight.")
+                        AZ::Edit::UIHandlers::Default, &Self::m_weightCurVel, "Weight Current Velocity", "Current velocity weight.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DetourObstacleAvoidanceParams::m_weightSide,
-                        "Weight Side",
-                        "Preferred side weight.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Self::m_weightSide, "Weight Side", "Preferred side weight.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DetourObstacleAvoidanceParams::m_weightToi,
-                        "Weight Time Of Impact",
-                        "Collision time weight.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Self::m_weightToi, "Weight Time Of Impact", "Collision time weight.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DetourObstacleAvoidanceParams::m_horizTime,
-                        "Horizon Time",
-                        "Avoidance horizon time.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Self::m_horizTime, "Horizon Time", "Avoidance horizon time.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DetourObstacleAvoidanceParams::m_gridSize, "Grid Size", "Sampling grid size.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Self::m_gridSize, "Grid Size", "Sampling grid size.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DetourObstacleAvoidanceParams::m_adaptiveDivs,
-                        "Adaptive Divisions",
-                        "Adaptive divisions count.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Self::m_adaptiveDivs, "Adaptive Divisions", "Adaptive divisions count.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DetourObstacleAvoidanceParams::m_adaptiveRings,
-                        "Adaptive Rings",
-                        "Adaptive rings count.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Self::m_adaptiveRings, "Adaptive Rings", "Adaptive rings count.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &DetourObstacleAvoidanceParams::m_adaptiveDepth,
-                        "Adaptive Depth",
-                        "Adaptive depth count.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Self::m_adaptiveDepth, "Adaptive Depth", "Adaptive depth count.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1);
             }
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Self>("DetourObstacleAvoidanceParams")
+                ->Constructor<>()
+                ->Property("velBias", BehaviorValueProperty(&Self::m_velBias))
+                ->Property("weightDesVel", BehaviorValueProperty(&Self::m_weightDesVel))
+                ->Property("weightCurVel", BehaviorValueProperty(&Self::m_weightCurVel))
+                ->Property("weightSide", BehaviorValueProperty(&Self::m_weightSide))
+                ->Property("weightToi", BehaviorValueProperty(&Self::m_weightToi))
+                ->Property("horizTime", BehaviorValueProperty(&Self::m_horizTime))
+                ->Property("gridSize", BehaviorValueProperty(&Self::m_gridSize))
+                ->Property("adaptiveDivs", BehaviorValueProperty(&Self::m_adaptiveDivs))
+                ->Property("adaptiveRings", BehaviorValueProperty(&Self::m_adaptiveRings))
+                ->Property("adaptiveDepth", BehaviorValueProperty(&Self::m_adaptiveDepth));
         }
     }
 } // namespace RecastNavigation

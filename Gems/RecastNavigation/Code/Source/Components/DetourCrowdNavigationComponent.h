@@ -32,18 +32,26 @@ namespace RecastNavigation
     public:
         AZ_COMPONENT(DetourCrowdNavigationComponent, "{FECA2921-AF33-4968-9E3C-802965F0E7A2}");
 
+        DetourCrowdNavigationComponent();
+
         static void Reflect(AZ::ReflectContext* context);
 
         // DetourCrowdNavigationRequestBus overrides
-        AZ::Outcome<void, AZStd::string> AddAgent(AZ::EntityId agentEntityId, const DetourCrowdAgentParams& agentParams) override;
+        AZ::Outcome<void, AZStd::string> AddAgent(
+            const AZ::EntityId& agentEntityId, const AZ::Vector3& worldPosition, const DetourCrowdAgentParams& agentParams) override;
         AZ::Outcome<void, AZStd::string> RemoveAgent(AZ::EntityId agentEntityId) override;
         AZ::Outcome<void, AZStd::string> SetAgentMoveTarget(AZ::EntityId agentEntityId, const AZ::Vector3& targetPosition) override;
+        AZ::Outcome<void, AZStd::string> ResetAgentMoveTarget(AZ::EntityId agentEntityId) override;
 
         void Activate() override;
         void Deactivate() override;
 
     private:
         bool InitializeCrowd();
+        AZ::Crc32 GetAdvancedObstacleAvoidanceParamsVisibility() const;
+        static AZStd::vector<DetourObstacleAvoidanceParams> CreateDefaultObstacleAvoidanceParams();
+
+        AZ::Outcome<AZ::u32, AZStd::string> GetCrowdIndexForAgent(AZ::EntityId agentEntityId) const;
 
         // AZ::TickBus::Handler overrides.
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -55,11 +63,8 @@ namespace RecastNavigation
         AZ::EntityId m_navQueryEntityId;
         int m_maxAgents = 100;
         float m_maxAgentRadius = 0.6f;
-        // TODO: fix these quality settings, as they multiply in the editor
-        AZStd::vector<DetourObstacleAvoidanceParams> m_obstacleAvoidanceParams = { DetourObstacleAvoidanceParams::CreateLowQuality(),
-                                                                                   DetourObstacleAvoidanceParams::CreateMediumQuality(),
-                                                                                   DetourObstacleAvoidanceParams::CreateGoodQuality(),
-                                                                                   DetourObstacleAvoidanceParams::CreateHighQuality() };
+        bool m_useAdvancedObstacleAvoidanceParams = false;
+        AZStd::vector<DetourObstacleAvoidanceParams> m_obstacleAvoidanceParams;
 
         AZStd::unordered_map<AZ::EntityId, AZ::u32> m_agentEntityToCrowdIndex;
         AZStd::unordered_map<AZ::u32, AZ::EntityId> m_crowdIndexToAgentEntity;
