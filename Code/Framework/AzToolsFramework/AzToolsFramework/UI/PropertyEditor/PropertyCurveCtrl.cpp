@@ -152,7 +152,7 @@ namespace AzToolsFramework
                 start.first.GetX(), start.first.GetY(), ConvertStringToInterpMode(start.second),
                 stop.first.GetX(), stop.first.GetY(), ConvertStringToInterpMode(stop.second));
             m_layout.addWidget(preset);
-            connect(preset, &PresetCurveWidget::OnClicked, this, [this, preset]()
+            connect(preset, &PresetCurveWidget::onClick, this, [this, preset]()
                 {
                     m_currentCurve.Clear();
                     m_currentCurve.AddPoint(preset->m_start);
@@ -178,16 +178,6 @@ namespace AzToolsFramework
     {
         m_currentCurve = curve;
         update();
-    }
-
-    float CurveEditor::GetCurrentKeyPointTime()
-    {
-        return m_currentKeyPointTime;
-    }
-
-    float CurveEditor::GetCurrentKeyPointValue()
-    {
-        return m_currentKeyPointValue;
     }
 
     void CurveEditor::CheckMinMax(float& value, float min, float max) const
@@ -232,9 +222,6 @@ namespace AzToolsFramework
     void CurveEditor::DrawGrid(QPainter& painter) const
     {
         // CONSTANTS
-        const int PART_TWO = 2;
-        const int PART_THREE = 3;
-        const int PART_FOUR = 4;
         const AZStd::string_view AXIS_INFO_ONE = "1.0";
         const AZStd::string_view AXIS_INFO_ZERO = "0.0";
         const AZStd::string_view AXIS_INFO_Y = "0.5";
@@ -245,14 +232,14 @@ namespace AzToolsFramework
         painter.setPen(QColor(43, 43, 43));
         // horizon
         painter.drawLine(
-            m_scaleWidth, m_mainRect.height() / PART_TWO + m_mainRect.top(), m_mainRect.right(),
-            m_mainRect.height() / PART_TWO + m_mainRect.top());
+            m_scaleWidth, m_mainRect.height() / 2 + m_mainRect.top(), m_mainRect.right(),
+            m_mainRect.height() / 2 + m_mainRect.top());
         // vertical
-        float width = static_cast<float>(m_mainRect.width() / static_cast<float>(PART_FOUR));
+        float width = static_cast<float>(m_mainRect.width()) / 4.0f;
 
         QPointF begin;
         QPointF end;
-        for (int i = 0; i < PART_THREE; i++)
+        for (int i = 0; i < 3; i++)  // draw a line every 25% of the widget width
         {
             begin.setX(m_mainRect.left() + width * (i + 1));
             begin.setY(m_mainRect.top());
@@ -262,10 +249,10 @@ namespace AzToolsFramework
         }
 
         QPen pen(Qt::gray);
-        int offset = m_scaleWidth / PART_TWO;
+        int offset = m_scaleWidth / 2;
         painter.setPen(pen);
         painter.drawText(0, m_mainRect.top() + 12, AXIS_INFO_ONE.data());
-        painter.drawText(0, m_mainRect.top() + m_mainRect.height() / PART_TWO + offset / PART_TWO, AXIS_INFO_Y.data());
+        painter.drawText(0, m_mainRect.top() + m_mainRect.height() / 2 + offset / 2, AXIS_INFO_Y.data());
         painter.drawText(0, m_mainRect.bottom(), AXIS_INFO_ZERO.data());
 
         painter.drawText(m_scaleWidth, rect().bottom(), AXIS_INFO_ZERO.data());
@@ -289,20 +276,15 @@ namespace AzToolsFramework
         QPen unselectedPen = QPen(Qt::gray);
         QPen selectedPen = QPen(Qt::yellow);
         painter.setPen(pen);
-        for (size_t index = 0; index < m_currentCurve.GetNumPoints(); index++)
+        for (int64_t index = 0; index < m_currentCurve.GetNumPoints(); index++)
         {
-            AzFramework::EasingCurve::Point& keyPoint = m_currentCurve.GetPoint(index);
+            AzFramework::EasingCurve::Point keyPoint = m_currentCurve.GetPoint(index);
             QPoint center = TransformPointToScreen(
                 keyPoint.m_time, keyPoint.m_value, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
             QRect rc = CenterPointToRect(center);
             painter.setPen((m_currentKeyIndex == index) ? selectedPen : unselectedPen);
             painter.setBrush(QBrush(Qt::gray));
             painter.drawRect(rc);
-            if (m_currentKeyIndex == index)
-            {
-                m_currentKeyPointTime = keyPoint.m_time;
-                m_currentKeyPointValue = keyPoint.m_value;
-            }
         }
 
         // draw curves
@@ -315,7 +297,7 @@ namespace AzToolsFramework
 
         if (m_currentCurve.GetNumPoints() >= 2)
         {
-            for (size_t index = 0; index < m_currentCurve.GetNumPoints() - 1; index++)
+            for (int64_t index = 0; index < m_currentCurve.GetNumPoints() - 1; index++)
             {
                 keyStart = m_currentCurve.GetPoint(index);
                 keyEnd = m_currentCurve.GetPoint(index+1);
@@ -329,7 +311,7 @@ namespace AzToolsFramework
 
     void CurveEditor::mouseMoveEvent(QMouseEvent* event)
     {
-        if (m_buttonPressed)
+        if (m_keyPointSelected)
         {
             auto localPos = event->pos();
             UpdateCurveKey(localPos);
@@ -341,21 +323,19 @@ namespace AzToolsFramework
     void CurveEditor::mousePressEvent(QMouseEvent* event)
     {
         QPoint currPos = event->pos();
-        for (size_t index = 0; index < m_currentCurve.GetNumPoints(); index++)
+        for (int64_t index = 0; index < m_currentCurve.GetNumPoints(); index++)
         {
             AzFramework::EasingCurve::Point k = m_currentCurve.GetPoint(index);
             QPoint center = TransformPointToScreen(k.m_time, k.m_value, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
             QRect rc = CenterPointToRect(center);
             if (rc.contains(currPos))
             {
-                m_buttonPressed = true;
+                m_keyPointSelected = true;
                 m_currentKeyIndex = (int)index;
                 AZStd::string toolTip = AZStd::string::format("time:%f\nvalue:%f\nmode:%s",
                     k.m_time, k.m_value, ConvertInterpModeToString(k.m_interpMode).c_str());
                 setToolTip(toolTip.c_str());
 
-                m_currentKeyPointTime = k.m_time;
-                m_currentKeyPointValue = k.m_value;
                 update();
                 break;
             }
@@ -368,63 +348,44 @@ namespace AzToolsFramework
         QWidget::mousePressEvent(event);
     }
 
-    void CurveEditor::SimulateLeftButtonPressDragRelease(float oldTime, float oldValue, float newTime, float newValue, bool needMove)
+
+    void CurveEditor::mouseReleaseEvent(QMouseEvent* event)
     {
-        // when the point is at the edge of the curve editor,
-        // we move the click point a little bit to make sure we can click at it
-        if (AZ::IsClose(oldTime, 0))
+        if (m_keyPointSelected)
         {
-            oldTime += EPSILON;
-        }
-        if (AZ::IsClose(oldTime, 1))
-        {
-            oldTime -= EPSILON;
-        }
-        if (AZ::IsClose(oldValue, 0))
-        {
-            oldValue += EPSILON;
-        }
-        if (AZ::IsClose(oldValue, 1))
-        {
-            oldValue -= EPSILON;
-        }
-        auto oldPoint = TransformPointToScreen(oldTime, oldValue, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
-        auto newPoint = TransformPointToScreen(newTime, newValue, m_mainRect.width(), m_mainRect.height(), m_scaleWidth, m_mainRect.top());
-        QMouseEvent* pressEvent = nullptr;
-        QMouseEvent* releaseEvent = nullptr;
-        QMouseEvent* moveEvent = nullptr;
+            if (m_keyPointDragged)
+            {
+                m_keyPointDragged = false;
 
-        pressEvent = new QMouseEvent(QEvent::MouseButtonPress, oldPoint, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
-        QCoreApplication::postEvent(this, pressEvent);
-
-        if (needMove)
-        {
-            moveEvent = new QMouseEvent(QEvent::MouseMove, newPoint, Qt::NoButton, Qt::MouseButtons(Qt::LeftButton), Qt::NoModifier);
-            QCoreApplication::postEvent(this, moveEvent);
+                AzFramework::EasingCurve::Point keyPoint = m_currentCurve.GetPoint(m_currentKeyIndex);
+                AZStd::string toolTip = AZStd::string::format("time:%f\nvalue:%f\nmode:%s",
+                    keyPoint.m_time, keyPoint.m_value, ConvertInterpModeToString(keyPoint.m_interpMode).c_str());
+                setToolTip(toolTip.c_str());
+                update();
+                emit curveChanged();
+            }
+            m_keyPointSelected = false;
         }
 
-        releaseEvent = new QMouseEvent(QEvent::MouseButtonRelease, newPoint, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
-        QCoreApplication::postEvent(this, releaseEvent);
+        QWidget::mouseReleaseEvent(event);
+        emit mouseRelease();
     }
 
     void CurveEditor::AddKey(QPoint pos)
     {
         QPointF pt = TransformPointFromScreen(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
         auto keyNew = ToKeyPoint(pt, AzFramework::EasingCurve::PointInterpolationMode::CUBIC_IN);
-        m_currentCurve.AddPoint(keyNew);
+        m_currentKeyIndex = m_currentCurve.AddPoint(keyNew);
         emit curveChanged();
-
-        // to change the key point editor's target to current added key point
-        SimulateLeftButtonPressDragRelease(keyNew.m_time, keyNew.m_value, keyNew.m_time, keyNew.m_value);
     }
 
     void CurveEditor::UpdateMenu(QPoint pos)
     {
         QMenu menu;
         QMenu subMenu;
-        if (m_buttonPressed)
+        if (m_keyPointSelected)
         {
-            m_buttonPressed = false;
+            m_keyPointSelected = false;
             menu.addAction(tr("Delete Key"), this, &CurveEditor::DeleteKey);
             subMenu.setTitle(tr("Interpolation Mode"));
             subMenu.addAction(INTERPMODE_LINEAR.data(), this, &CurveEditor::UpdateKeyInterpMode);
@@ -449,6 +410,7 @@ namespace AzToolsFramework
     void CurveEditor::DeleteKey()
     {
         m_currentCurve.RemovePoint(m_currentKeyIndex);
+        m_currentKeyIndex = 0;
         emit curveChanged();
     }
 
@@ -457,33 +419,12 @@ namespace AzToolsFramework
         QAction* action = (QAction*)sender();
 
         auto interpMode = action->text();
-        auto& keyPoint = m_currentCurve.GetPoint(m_currentKeyIndex);
+        auto keyPoint = m_currentCurve.GetPoint(m_currentKeyIndex);
         keyPoint.m_interpMode = ConvertStringToInterpMode(interpMode.toStdString().c_str());
+        m_currentCurve.UpdatePoint(m_currentKeyIndex, keyPoint);
+
         emit curveChanged();
         update();
-    }
-
-    void CurveEditor::mouseReleaseEvent(QMouseEvent* event)
-    {
-        if (m_buttonPressed)
-        {
-            if (m_buttonDragged)
-            {
-                m_buttonDragged = false;
-
-                AzFramework::EasingCurve::Point keyPoint = m_currentCurve.GetPoint(m_currentKeyIndex);
-                m_currentKeyPointTime = keyPoint.m_time;
-                m_currentKeyPointValue = keyPoint.m_value;
-                AZStd::string toolTip = AZStd::string::format("time:%f\nvalue:%f\nmode:%s",
-                    keyPoint.m_time, keyPoint.m_value, ConvertInterpModeToString(keyPoint.m_interpMode).c_str());
-                setToolTip(toolTip.c_str());
-                update();
-            }
-            m_buttonPressed = false;
-        }
-
-        QWidget::mouseReleaseEvent(event);
-        emit mouseRelease();
     }
 
     void CurveEditor::resizeEvent(QResizeEvent* event)
@@ -498,12 +439,13 @@ namespace AzToolsFramework
 
     void CurveEditor::UpdateCurveKey(QPointF pos)
     {
-        AzFramework::EasingCurve::Point& keyPoint = m_currentCurve.GetPoint(m_currentKeyIndex);
+        AzFramework::EasingCurve::Point keyPoint = m_currentCurve.GetPoint(m_currentKeyIndex);
         QPointF pt = TransformPointFromScreen(static_cast<float>(pos.x()), static_cast<float>(pos.y()));
         keyPoint.m_time = static_cast<float>(pt.x());
         keyPoint.m_value = static_cast<float>(pt.y());
-        emit curveChanged();
-        m_buttonDragged = true;
+        m_currentKeyIndex = m_currentCurve.UpdatePoint(m_currentKeyIndex, keyPoint);
+        // update m_currentKeyIndex since the point index might have changed
+        m_keyPointDragged = true;
 
         update();
     }
@@ -558,7 +500,7 @@ namespace AzToolsFramework
     {
         m_pressed = true;
         update();
-        emit OnClicked();
+        emit onClick();
         QWidget::mousePressEvent(event);
     }
 

@@ -10,6 +10,7 @@
 #include <AzFramework/Math/Easing.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Math/EasingCurve.h>
+#include "EasingCurve.h"
 
 namespace AzFramework
 {
@@ -52,41 +53,85 @@ namespace AzFramework
         }
     }
 
-    size_t EasingCurve::GetNumPoints() const
+    EasingCurve::EasingCurve(AZStd::initializer_list<Point> points)
     {
-        return m_points.size();
+        for (const auto& point : points)
+        {
+            AddPoint(point);
+        }
+    }
+
+    int64_t EasingCurve::GetNumPoints() const
+    {
+        return aznumeric_cast<int64_t>(m_points.size());
     }
     
-    EasingCurve::Point& EasingCurve::GetPoint(size_t index)
+    EasingCurve::Point EasingCurve::GetPoint(int64_t index)
     {
-        if (index >= m_points.size())
+        if (index < 0 || index >= aznumeric_cast<int64_t>(m_points.size()))
         {
-            AZ_Error("EasingCurve", false, "Index %zu does not exist in the curve!", index);
+            AZ_Error("EasingCurve", false, "Index %d does not exist in the curve!", index);
+            return Point();
         }
         return m_points[index];
     }
 
-    void EasingCurve::UpdatePoint(size_t index, EasingCurve::Point point)
+    int64_t EasingCurve::UpdatePoint(int64_t index, EasingCurve::Point point)
     {
-        if (index >= m_points.size())
+        if (index < 0 || index >= aznumeric_cast<int64_t>(m_points.size()))
         {
-            AZ_Error("EasingCurve", false, "Index %zu does not exist in the curve!", index);
-            return;
+            AZ_Error("EasingCurve", false, "Index %d does not exist in the curve!", index);
+            return -1;
         }
-        m_points[index] = point;
-    }
-    
-    void EasingCurve::AddPoint(EasingCurve::Point point)
-    {
-        m_points.emplace_back(point);
-        SortPoints();
-    }
-    
-    void EasingCurve::RemovePoint(size_t index)
-    {
-        if (index >= m_points.size())
+
+        if (point.m_time < 0.0f || point.m_time > 1.0f)
         {
-            AZ_Error("EasingCurve", false, "Index %zu does not exist in the curve!", index);
+            AZ_Error("EasingCurve", false, "Point time must be between 0 and 1!");
+            return  -1;
+        }
+
+        if (point.m_value < 0.0f || point.m_value > 1.0f)
+        {
+            AZ_Error("EasingCurve", false, "Point value must be between 0 and 1!");
+            return -1;
+        }
+
+        m_points.erase(m_points.begin() + index);
+        return AddPoint(point);
+    }
+    
+    int64_t EasingCurve::AddPoint(EasingCurve::Point point)
+    {
+        
+        if (point.m_time < 0.0f || point.m_time > 1.0f)
+        {
+            AZ_Error("EasingCurve", false, "Point time must be between 0 and 1!");
+            return -1;
+        }
+
+        if (point.m_value < 0.0f || point.m_value > 1.0f)
+        {
+            AZ_Error("EasingCurve", false, "Point value must be between 0 and 1!");
+            return -1;
+        }
+        if (m_points.empty())
+        {
+            m_points.emplace_back(point);
+            return 0;
+        }
+
+        auto iter = AZStd::lower_bound(m_points.begin(), m_points.end(), point.m_time,
+            [](Point& point, float time) {
+                return point.m_time < time;
+            });
+        return AZStd::distance(m_points.begin(), m_points.emplace(iter, point));
+    }
+    
+    void EasingCurve::RemovePoint(int64_t index)
+    {
+        if (index < 0 || index >= aznumeric_cast<int64_t>(m_points.size()))
+        {
+            AZ_Error("EasingCurve", false, "Index %d does not exist in the curve!", index);
             return;
         }
         m_points.erase(m_points.begin() + index);
@@ -134,14 +179,6 @@ namespace AzFramework
         return 0.0f;
     }
 
-    void EasingCurve::SortPoints()
-    {
-        AZStd::sort(m_points.begin(), m_points.end(),
-            [](Point& left, Point& right) {
-                return left.m_time < right.m_time;
-            });
-    }
-
     float EasingCurve::Interpolate(const Point& start, const Point& end, float time)
     {
         EasingMethod easeMethod = EasingMethod::Linear;
@@ -187,11 +224,11 @@ namespace AzFramework
         return EasingEquations::GetEasingResult(easeMethod, easeType, timeActive, duration, start.m_value, end.m_value);
     }
 
-    EasingCurve::Point& EasingCurve::GetClosetPoint(float time, float value)
+    int64_t EasingCurve::GetClosetPoint(float time, float value)
     {
-        size_t min_index = AZStd::numeric_limits<size_t>::max();
+        int64_t min_index = AZStd::numeric_limits<int64_t>::max();
         float min_sqdistance = AZStd::numeric_limits<float>::max();
-        for (size_t index = 0; index < m_points.size(); index++)
+        for (int64_t index = 0; index < aznumeric_cast<int64_t>(m_points.size()); index++)
         {
             float delta_time = time - m_points[index].m_time;
             float delta_value = value - m_points[index].m_value;
@@ -202,7 +239,11 @@ namespace AzFramework
                 min_sqdistance = sqdistance;
             }
         }
-        return m_points[min_index];
+        if (min_index == AZStd::numeric_limits<int64_t>::max())
+        {
+            min_index = -1;
+        }
+        return min_index;
     }
 }
 

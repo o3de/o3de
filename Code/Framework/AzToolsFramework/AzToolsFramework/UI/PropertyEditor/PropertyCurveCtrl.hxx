@@ -49,7 +49,7 @@ namespace AzToolsFramework
         AzFramework::EasingCurve::Point m_stop;
 
     Q_SIGNALS:
-        void OnClicked();
+        void onClick();
 
     protected:
         bool m_pressed;
@@ -73,9 +73,6 @@ namespace AzToolsFramework
         void SetCurrentCurve(const AzFramework::EasingCurve& curve);
         void UpdateKeyInterpMode();
         void DeleteKey();
-        float GetCurrentKeyPointTime();
-        float GetCurrentKeyPointValue();
-        void SimulateLeftButtonPressDragRelease(float oldX, float oldY, float newX, float newY, bool needMove = true);
 
     signals:
         void mouseRelease();
@@ -92,12 +89,10 @@ namespace AzToolsFramework
 
         void DrawGrid(QPainter& painter) const;
 
-        bool m_buttonPressed = false;
-        bool m_buttonDragged = false;
+        bool m_keyPointSelected = false;
+        bool m_keyPointDragged = false;
 
-        int m_currentKeyIndex = 0;
-        float m_currentKeyPointTime = 0.f;
-        float m_currentKeyPointValue = 0.f;
+        int64_t m_currentKeyIndex = 0;
         AzFramework::EasingCurve m_currentCurve;
 
         QRect m_mainRect;
