@@ -31,9 +31,14 @@ REM If cmake is not found on path, try a known location at LY_CMAKE_PATH
 where /Q cmake
 IF NOT !ERRORLEVEL!==0 (
     IF "%LY_CMAKE_PATH%"=="" (
-        ECHO ERROR: CMake was not found on the PATH and LY_CMAKE_PATH is not defined.
-        ECHO Please ensure CMake is on the path or set LY_CMAKE_PATH.
-        EXIT /b 1
+        REM Check for the bundled cmake that ships with the installer at <engineRoot>\cmake\runtime\bin
+        IF EXIST "%CMD_DIR%\..\cmake\runtime\bin\cmake.exe" (
+            SET "LY_CMAKE_PATH=%CMD_DIR%\..\cmake\runtime\bin"
+        ) ELSE (
+            ECHO ERROR: CMake was not found on the PATH and LY_CMAKE_PATH is not defined.
+            ECHO Please ensure CMake is on the path or set LY_CMAKE_PATH.
+            EXIT /b 1
+        )
     )
 
     PATH !LY_CMAKE_PATH!;!PATH!
