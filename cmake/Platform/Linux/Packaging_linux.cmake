@@ -35,7 +35,8 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     # Define all the debian package dependencies needed to build and run
     set(package_dependencies
         # Required Tools
-        "cmake (>=3.24)"                        # Cmake required (minimum version 3.24.0)
+        # CMake is bundled with the package and extracted during post-install
+        # into cmake/runtime/. Users may override via LY_CMAKE_PATH or PATH.
         "clang (>=12.0)"                        # Clang required (minimum version 12.0)
         ninja-build
         # Build Libraries

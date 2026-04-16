@@ -195,24 +195,99 @@ namespace AzToolsFramework
             // Add Create New Asset menu and populate it with all asset types that have GenericAssetHandler
             m_newAssetMenu = fileMenu->addMenu(tr("&New"));
 
+            // ----------------------------------------------------------------
+            // Build nested submenus from asset group strings
+            // e.g. "GS/Core" -> [GS] -> [Core] -> [assets]
+            // Single-entry groups are collapsed into their parent menu.
+            // ----------------------------------------------------------------
+
+            // Pass 1: Collect asset entries with their resolved group paths
+            struct NewMenuEntry
+            {
+                AZ::Data::AssetType assetType;
+                QString displayName;
+                QStringList groupSegments;
+            };
+            QVector<NewMenuEntry> menuEntries;
+
             for (const auto& assetType : m_genericAssetTypes)
             {
                 QString assetTypeName;
                 AZ::AssetTypeInfoBus::EventResult(assetTypeName, assetType, &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
-
-                if (!assetTypeName.isEmpty())
+                if (assetTypeName.isEmpty())
                 {
-                    QAction* newAssetAction = m_newAssetMenu->addAction(assetTypeName);
-                    connect(
-                        newAssetAction,
-                        &QAction::triggered,
-                        this,
-                        [assetType, this]()
-                        {
-                            CreateAsset(assetType, AZ::Uuid::CreateNull());
-                        }
-                    );
+                    continue;
                 }
+
+                const char* groupRaw = nullptr;
+                AZ::AssetTypeInfoBus::EventResult(groupRaw, assetType, &AZ::AssetTypeInfo::GetGroup);
+                QString group = groupRaw ? QString(groupRaw).trimmed() : QString();
+
+                NewMenuEntry entry;
+                entry.assetType = assetType;
+                entry.displayName = assetTypeName;
+                entry.groupSegments = group.isEmpty()
+                    ? QStringList()
+                    : group.split('/', Qt::SkipEmptyParts);
+                menuEntries.push_back(entry);
+            }
+
+            // Pass 2: Count how many entries share each group prefix.
+            // A prefix path maps to the total number of entries underneath it.
+            QMap<QString, int> prefixCounts;
+            for (const auto& entry : menuEntries)
+            {
+                QString path;
+                for (const QString& seg : entry.groupSegments)
+                {
+                    if (!path.isEmpty())
+                    {
+                        path += '/';
+                    }
+                    path += seg;
+                    prefixCounts[path]++;
+                }
+            }
+
+            // Pass 3: Build menus, skipping group levels that contain only 1 entry
+            QMap<QString, QMenu*> groupMenuCache;
+
+            for (const auto& entry : menuEntries)
+            {
+                QMenu* targetMenu = m_newAssetMenu;
+
+                QString path;
+                for (const QString& segment : entry.groupSegments)
+                {
+                    if (!path.isEmpty())
+                    {
+                        path += '/';
+                    }
+                    path += segment;
+
+                    // Only create a submenu if this group level has more than 1 entry
+                    if (prefixCounts.value(path) <= 1)
+                    {
+                        continue;
+                    }
+
+                    if (!groupMenuCache.contains(path))
+                    {
+                        groupMenuCache[path] = targetMenu->addMenu(segment);
+                    }
+                    targetMenu = groupMenuCache[path];
+                }
+
+                QAction* newAssetAction = targetMenu->addAction(entry.displayName);
+                connect(
+                    newAssetAction,
+                    &QAction::triggered,
+                    this,
+                    [assetType = entry.assetType, this]()
+                    {
+                        CreateAsset(assetType, AZ::Uuid::CreateNull());
+                    }
+                );
             }
 
             QAction* openAssetAction = fileMenu->addAction("&Open...");

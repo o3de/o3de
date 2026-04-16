@@ -14,6 +14,7 @@
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MotionInstance.h>
+#include <EMotionFX/Source/MotionSystem.h>
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Components/AnimGraphComponent.h>
 #include <Integration/Components/SimpleMotionComponent.h>
@@ -248,6 +249,37 @@ namespace EMotionFX
 
         const MotionInstance* motionInstanceAfterPlayMotion = m_simpleMotionComponent->GetMotionInstance();
         EXPECT_NE(motionInstanceAfterPlayMotion, nullptr);
+    }
+
+    // Test PlayMotion
+    TEST_F(SimpleMotionComponentBusTests, PlayMotionRestartsExistingMotionInstance)
+    {
+        const float expectedPlayTime = 1.5f;
+        const float errMargin = 0.001f;
+        const MotionInstance* initialMotionInstance = m_simpleMotionComponent->GetMotionInstance();
+        ASSERT_NE(initialMotionInstance, nullptr);
+        ASSERT_NE(initialMotionInstance->GetActorInstance(), nullptr);
+        MotionSystem* motionSystem = initialMotionInstance->GetActorInstance()->GetMotionSystem();
+        ASSERT_NE(motionSystem, nullptr);
+
+        Integration::SimpleMotionComponentRequestBus::Event(
+            m_entityId, &Integration::SimpleMotionComponentRequestBus::Events::PlayTime, expectedPlayTime);
+
+        float playTime = 0.0f;
+        Integration::SimpleMotionComponentRequestBus::EventResult(
+            playTime, m_entityId, &Integration::SimpleMotionComponentRequestBus::Events::GetPlayTime);
+        EXPECT_NEAR(playTime, expectedPlayTime, errMargin);
+
+        Integration::SimpleMotionComponentRequestBus::Event(m_entityId, &Integration::SimpleMotionComponentRequestBus::Events::PlayMotion);
+
+        const MotionInstance* replayedMotionInstance = m_simpleMotionComponent->GetMotionInstance();
+        EXPECT_NE(replayedMotionInstance, nullptr);
+        EXPECT_EQ(replayedMotionInstance->GetActorInstance()->GetMotionSystem(), motionSystem);
+
+        Integration::SimpleMotionComponentRequestBus::EventResult(
+            playTime, m_entityId, &Integration::SimpleMotionComponentRequestBus::Events::GetPlayTime);
+        EXPECT_NEAR(playTime, 0.0f, errMargin);
+        EXPECT_EQ(motionSystem->GetNumMotionInstances(), 1);
     }
 
     // Test MirrorMotion
