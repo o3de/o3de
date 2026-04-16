@@ -109,6 +109,7 @@ namespace AzToolsFramework
         : QWidget(parent)
         , m_layout(this)
     {
+        setFixedHeight(200);
         m_currentCurve.SetDefaultValue();
         SetupUi();
     }
@@ -315,9 +316,9 @@ namespace AzToolsFramework
         {
             auto localPos = event->pos();
             UpdateCurveKey(localPos);
+            update();
         }
-
-        QWidget::mouseMoveEvent(event);
+        event->accept(); 
     }
 
     void CurveEditor::mousePressEvent(QMouseEvent* event)
@@ -344,8 +345,7 @@ namespace AzToolsFramework
         {
             UpdateMenu(event->pos());
         }
-
-        QWidget::mousePressEvent(event);
+        event->accept(); 
     }
 
 
@@ -367,7 +367,7 @@ namespace AzToolsFramework
             m_keyPointSelected = false;
         }
 
-        QWidget::mouseReleaseEvent(event);
+        event->accept(); 
         emit mouseRelease();
     }
 
@@ -518,7 +518,6 @@ namespace AzToolsFramework
     QWidget* PropertyCurveEditHandler::CreateGUI(QWidget* pParent)
     {
         CurveEditor* newCtrl = aznew CurveEditor(pParent);
-        newCtrl->setFixedHeight(256);
         connect(
             newCtrl,
             &CurveEditor::curveChanged,
