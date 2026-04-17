@@ -10,7 +10,6 @@
 #include <AzFramework/Math/Easing.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Math/EasingCurve.h>
-#include "EasingCurve.h"
 
 namespace AzFramework
 {
@@ -144,7 +143,7 @@ namespace AzFramework
 
     float EasingCurve::Evaluate(float time) const
     {
-        if (m_points.size() == 0)
+        if (m_points.empty())
         {
             return 0.0f;
         }
@@ -155,17 +154,17 @@ namespace AzFramework
         }
 
         // TODO: define more extension behavior
-        if (time < 0.0f)
+        if (time < m_points.front().m_time)
         {
             return m_points.front().m_value;
         }
-        else if (time > 1.0f)
+        else if (time > m_points.back().m_time)
         {
             return m_points.back().m_value;
         }
 
         // potentially faster than binary search as elements are typically few
-        for (int i = 0; i < m_points.size(); i++)
+        for (AZStd::size_t i = 0; i < m_points.size(); i++)
         {
             if (AZ::IsClose(m_points[i].m_time, time))
             {
@@ -226,9 +225,9 @@ namespace AzFramework
 
     int64_t EasingCurve::GetClosetPoint(float time, float value)
     {
-        int64_t min_index = AZStd::numeric_limits<int64_t>::max();
+        AZStd::size_t min_index = AZStd::numeric_limits<AZStd::size_t>::max();
         float min_sqdistance = AZStd::numeric_limits<float>::max();
-        for (int64_t index = 0; index < aznumeric_cast<int64_t>(m_points.size()); index++)
+        for (AZStd::size_t index = 0; index < m_points.size(); index++)
         {
             float delta_time = time - m_points[index].m_time;
             float delta_value = value - m_points[index].m_value;
@@ -239,11 +238,11 @@ namespace AzFramework
                 min_sqdistance = sqdistance;
             }
         }
-        if (min_index == AZStd::numeric_limits<int64_t>::max())
+        if (min_index == AZStd::numeric_limits<AZStd::size_t>::max())
         {
-            min_index = -1;
+            return -1;
         }
-        return min_index;
+        return aznumeric_cast<int64_t>(min_index);
     }
 }
 

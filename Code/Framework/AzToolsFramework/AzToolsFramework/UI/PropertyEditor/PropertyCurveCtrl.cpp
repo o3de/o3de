@@ -6,10 +6,6 @@
  *
  */
 
-#include <QToolTip>
-#include <QMenu>
-#include <QSpacerItem>
-#include <QApplication>
 
 #include "PropertyCurveCtrl.hxx"
 #include <AzCore/Math/MathUtils.h>
@@ -18,6 +14,9 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/tuple.h>
 #include <AzCore/std/sort.h>
+
+#include <QMenu>
+#include <QSpacerItem>
 
 namespace AzToolsFramework
 {
@@ -562,4 +561,3 @@ namespace AzToolsFramework
 } // namespace AzToolsFramework
 
 #include "UI/PropertyEditor/moc_PropertyCurveCtrl.cpp"
-

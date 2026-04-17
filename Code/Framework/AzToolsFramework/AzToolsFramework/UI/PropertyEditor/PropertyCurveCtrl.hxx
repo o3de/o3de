@@ -25,6 +25,7 @@
 #include <QPainter>
 #include <QHBoxLayout>
 #endif
+
 namespace AzToolsFramework
 {
     class AZTF_API PresetCurveWidget : public QWidget
@@ -48,7 +49,7 @@ namespace AzToolsFramework
         AzFramework::EasingCurve::Point m_start;
         AzFramework::EasingCurve::Point m_stop;
 
-    Q_SIGNALS:
+    signals:
         void onClick();
 
     protected:
@@ -122,6 +123,5 @@ namespace AzToolsFramework
         virtual bool ReadValuesIntoGUI(size_t index, CurveEditor* GUI, const property_t& instance, InstanceDataNode* node)  override;
     };
 
-    void RegisterCurveEditHandler();
+    AZTF_API void RegisterCurveEditHandler();
 }
-
