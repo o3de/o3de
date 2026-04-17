@@ -10,19 +10,13 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/base.h>
 
 struct dtObstacleAvoidanceParams;
 
-namespace AZ
-{
-    class ReflectContext;
-}
-
 namespace RecastNavigation
 {
-    class DetourCrowdNavigationComponent;
-
     //! Serializable/editable representation of Detour's dtObstacleAvoidanceParams.
     class DetourObstacleAvoidanceParams final
     {
@@ -37,6 +31,8 @@ namespace RecastNavigation
         static DetourObstacleAvoidanceParams CreateGoodQuality();
         static DetourObstacleAvoidanceParams CreateHighQuality();
 
+        dtObstacleAvoidanceParams ToDetourObstacleAvoidanceParams() const;
+
         float m_velBias = 0.4f;
         float m_weightDesVel = 2.0f;
         float m_weightCurVel = 0.75f;
@@ -47,10 +43,5 @@ namespace RecastNavigation
         AZ::u8 m_adaptiveDivs = 7;
         AZ::u8 m_adaptiveRings = 2;
         AZ::u8 m_adaptiveDepth = 5;
-
-    private:
-        friend class DetourCrowdNavigationComponent;
-
-        dtObstacleAvoidanceParams ToDetourObstacleAvoidanceParams() const;
     };
 } // namespace RecastNavigation

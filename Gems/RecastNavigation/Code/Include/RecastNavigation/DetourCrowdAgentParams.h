@@ -10,19 +10,13 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/base.h>
 
 struct dtCrowdAgentParams;
 
-namespace AZ
-{
-    class ReflectContext;
-}
-
 namespace RecastNavigation
 {
-    class DetourCrowdNavigationComponent;
-
     //! Serializable/editable representation of Detour's dtCrowdAgentParams.
     class DetourCrowdAgentParams final
     {
@@ -31,6 +25,8 @@ namespace RecastNavigation
         AZ_TYPE_INFO(DetourCrowdAgentParams, "{626D6EFE-4E5D-4028-BF41-EEC95342D79A}");
 
         static void Reflect(AZ::ReflectContext* context);
+
+        dtCrowdAgentParams ToDetourCrowdAgentParams() const;
 
         float m_radius = 0.6f;
         float m_height = 2.0f;
@@ -46,10 +42,5 @@ namespace RecastNavigation
         bool m_optimizeTopology = false;
         AZ::u8 m_obstacleAvoidanceType = 0;
         AZ::u8 m_queryFilterType = 0;
-
-    private:
-        friend class DetourCrowdNavigationComponent;
-
-        dtCrowdAgentParams ToDetourCrowdAgentParams() const;
     };
 } // namespace RecastNavigation

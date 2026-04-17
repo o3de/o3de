@@ -6,7 +6,6 @@
  *
  */
 
-#include "RecastNavigation/NavMeshQuery.h"
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -72,7 +71,6 @@ namespace RecastNavigation
         }
 
         m_agentEntityToCrowdIndex.clear();
-        m_crowdIndexToAgentEntity.clear();
 
         // Choose parameter set based on mode
         const AZStd::vector<DetourObstacleAvoidanceParams> simpleObstacleAvoidanceParams = CreateDefaultObstacleAvoidanceParams();
@@ -97,6 +95,7 @@ namespace RecastNavigation
             m_crowd->setObstacleAvoidanceParams(static_cast<int>(profileIndex), &detourParams);
         }
 
+        m_crowdInitialized = true;
         return true;
     }
 
@@ -107,7 +106,8 @@ namespace RecastNavigation
 
     void DetourCrowdNavigationComponent::OnNavigationMeshUpdated(AZ::EntityId navigationMeshEntity)
     {
-        if (navigationMeshEntity == m_navQueryEntityId)
+        // Only init if the crowd hasn't been set up yet. The dtNavMesh is updated in-place during recalculation.
+        if (navigationMeshEntity == m_navQueryEntityId && !m_crowdInitialized)
         {
             InitializeCrowd();
         }
@@ -149,30 +149,20 @@ namespace RecastNavigation
     }
 
     AZ::Outcome<void, AZStd::string> DetourCrowdNavigationComponent::AddAgent(
-        const AZ::EntityId& agentEntityId, const AZ::Vector3& worldPosition, const DetourCrowdAgentParams& agentParams)
+        AZ::EntityId agentEntityId, const AZ::Vector3& worldPosition, const DetourCrowdAgentParams& agentParams)
     {
         if (!agentEntityId.IsValid())
         {
-            // TODO: remove debug
-            AZ_Error("DetourCrowdNavigationComponent", false, "Cannot add agent: invalid entity id.");
             return AZ::Failure(AZStd::string("Cannot add agent: invalid entity id."));
         }
 
         if (!m_crowd)
         {
-            // TODO: remove debug
-            AZ_Error("DetourCrowdNavigationComponent", false, "Cannot add agent: crowd is not initialized.");
             return AZ::Failure(AZStd::string("Cannot add agent: crowd is not initialized."));
         }
 
         if (m_agentEntityToCrowdIndex.find(agentEntityId) != m_agentEntityToCrowdIndex.end())
         {
-            // TODO: remove debug
-            AZ_Error(
-                "DetourCrowdNavigationComponent",
-                false,
-                "Cannot add agent: entity '%s' is already registered.",
-                agentEntityId.ToString().c_str());
             return AZ::Failure(
                 AZStd::string::format("Cannot add agent: entity '%s' is already registered.", agentEntityId.ToString().c_str()));
         }
@@ -180,15 +170,11 @@ namespace RecastNavigation
         const int maxAgents = m_crowd->getAgentCount();
         if (maxAgents <= 0)
         {
-            // TODO: remove debug
-            AZ_Error("DetourCrowdNavigationComponent", false, "Cannot add agent: crowd has invalid max agent count.");
             return AZ::Failure(AZStd::string("Cannot add agent: crowd has invalid max agent count."));
         }
 
         if (m_agentEntityToCrowdIndex.size() >= static_cast<size_t>(maxAgents))
         {
-            // TODO: remove debug
-            AZ_Error("DetourCrowdNavigationComponent", false, "Cannot add agent: crowd is full (%d agents).", maxAgents);
             return AZ::Failure(AZStd::string::format("Cannot add agent: crowd is full (%d agents).", maxAgents));
         }
 
@@ -200,36 +186,10 @@ namespace RecastNavigation
         const int crowdIndex = m_crowd->addAgent(recastPos.GetData(), &detourParams);
         if (crowdIndex < 0)
         {
-            // TODO: remove debug
-            AZ_Error("DetourCrowdNavigationComponent", false, "Cannot add agent: dtCrowd::addAgent failed.");
             return AZ::Failure(AZStd::string("Cannot add agent: dtCrowd::addAgent failed."));
         }
 
-        const AZ::u32 crowdIndexAsU32 = static_cast<AZ::u32>(crowdIndex);
-        const auto [agentToIndexIt, insertedAgentToIndex] = m_agentEntityToCrowdIndex.emplace(agentEntityId, crowdIndexAsU32);
-        if (!insertedAgentToIndex)
-        {
-            m_crowd->removeAgent(crowdIndex);
-            // TODO: remove debug
-            AZ_Error(
-                "DetourCrowdNavigationComponent",
-                false,
-                "Cannot add agent: failed to register entity '%s' mapping.",
-                agentEntityId.ToString().c_str());
-            return AZ::Failure(
-                AZStd::string::format("Cannot add agent: failed to register entity '%s' mapping.", agentEntityId.ToString().c_str()));
-        }
-
-        const auto [indexToAgentIt, insertedIndexToAgent] = m_crowdIndexToAgentEntity.emplace(crowdIndexAsU32, agentEntityId);
-        if (!insertedIndexToAgent)
-        {
-            m_agentEntityToCrowdIndex.erase(agentToIndexIt);
-            m_crowd->removeAgent(crowdIndex);
-            // TODO: remove debug
-            AZ_Error("DetourCrowdNavigationComponent", false, "Cannot add agent: crowd index %d is already tracked.", crowdIndex);
-            return AZ::Failure(AZStd::string::format("Cannot add agent: crowd index %d is already tracked.", crowdIndex));
-        }
-
+        m_agentEntityToCrowdIndex.emplace(agentEntityId, static_cast<AZ::u32>(crowdIndex));
         return AZ::Success();
     }
 
@@ -264,8 +224,6 @@ namespace RecastNavigation
 
         const AZ::u32 crowdIndex = crowdIndexOutcome.GetValue();
         m_agentEntityToCrowdIndex.erase(agentEntityId);
-        m_crowdIndexToAgentEntity.erase(crowdIndex);
-
         m_crowd->removeAgent(crowdIndex);
 
         return AZ::Success();
@@ -441,7 +399,7 @@ namespace RecastNavigation
         RecastNavigationMeshNotificationBus::Handler::BusDisconnect();
         DetourCrowdNavigationRequestBus::Handler::BusDisconnect();
         m_agentEntityToCrowdIndex.clear();
-        m_crowdIndexToAgentEntity.clear();
         m_crowd = nullptr;
+        m_crowdInitialized = false;
     }
 } // namespace RecastNavigation

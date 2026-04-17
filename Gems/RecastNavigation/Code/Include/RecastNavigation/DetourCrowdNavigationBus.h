@@ -10,10 +10,10 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 #include <RecastNavigation/DetourCrowdAgentParams.h>
-#include <AzCore/Math/Vector3.h>
 
 namespace RecastNavigation
 {
@@ -23,7 +23,7 @@ namespace RecastNavigation
     public:
         //! Adds an agent entity with the crowd component.
         virtual AZ::Outcome<void, AZStd::string> AddAgent(
-            const AZ::EntityId& agentEntityId, const AZ::Vector3& worldPosition, const DetourCrowdAgentParams& agentParams) = 0;
+            AZ::EntityId agentEntityId, const AZ::Vector3& worldPosition, const DetourCrowdAgentParams& agentParams) = 0;
 
         //! Removes a previously added agent entity.
         virtual AZ::Outcome<void, AZStd::string> RemoveAgent(AZ::EntityId agentEntityId) = 0;

@@ -16,8 +16,7 @@
 namespace RecastNavigation
 {
     //! Notification interface for per-agent crowd simulation events.
-    class DetourCrowdAgentNotifications
-        : public AZ::ComponentBus
+    class DetourCrowdAgentNotifications : public AZ::ComponentBus
     {
     public:
         //! Notifies that an agent position has been updated by crowd simulation.

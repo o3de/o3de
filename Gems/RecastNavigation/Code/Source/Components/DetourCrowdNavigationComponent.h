@@ -8,16 +8,16 @@
 
 #pragma once
 
-#include "AzCore/Component/EntityId.h"
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <DetourCrowd.h>
-#include <RecastNavigation/DetourObstacleAvoidanceParams.h>
 #include <RecastNavigation/DetourCrowdNavigationBus.h>
+#include <RecastNavigation/DetourObstacleAvoidanceParams.h>
 #include <RecastNavigation/RecastNavigationMeshBus.h>
 #include <RecastNavigation/RecastSmartPointer.h>
 
@@ -38,7 +38,7 @@ namespace RecastNavigation
 
         // DetourCrowdNavigationRequestBus overrides
         AZ::Outcome<void, AZStd::string> AddAgent(
-            const AZ::EntityId& agentEntityId, const AZ::Vector3& worldPosition, const DetourCrowdAgentParams& agentParams) override;
+            AZ::EntityId agentEntityId, const AZ::Vector3& worldPosition, const DetourCrowdAgentParams& agentParams) override;
         AZ::Outcome<void, AZStd::string> RemoveAgent(AZ::EntityId agentEntityId) override;
         AZ::Outcome<void, AZStd::string> SetAgentMoveTarget(AZ::EntityId agentEntityId, const AZ::Vector3& targetPosition) override;
         AZ::Outcome<void, AZStd::string> ResetAgentMoveTarget(AZ::EntityId agentEntityId) override;
@@ -66,8 +66,8 @@ namespace RecastNavigation
         bool m_useAdvancedObstacleAvoidanceParams = false;
         AZStd::vector<DetourObstacleAvoidanceParams> m_obstacleAvoidanceParams;
 
+        bool m_crowdInitialized = false;
         AZStd::unordered_map<AZ::EntityId, AZ::u32> m_agentEntityToCrowdIndex;
-        AZStd::unordered_map<AZ::u32, AZ::EntityId> m_crowdIndexToAgentEntity;
 
         RecastPointer<dtCrowd> m_crowd = nullptr;
     };
