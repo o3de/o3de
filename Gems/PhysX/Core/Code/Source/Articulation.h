@@ -33,7 +33,7 @@ namespace physx
 namespace PhysX
 {
     //! Maximum number of articulation links in a single articulation.
-    constexpr size_t MaxArticulationLinks = 64;
+    constexpr size_t MaxArticulationLinks = 64; // TODO: consider a way to expand this if needed
 
     //! Configuration data for an articulation link. Contains references to child links.
     struct ArticulationLinkData 
