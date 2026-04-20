@@ -178,6 +178,12 @@ namespace AZ
 
         void MaterialComponentController::OnSystemTick()
         {
+            if (m_queuedLoadMaterials)
+            {
+                m_queuedLoadMaterials = false;
+                LoadMaterials();
+            }
+
             while (!m_notifiedMaterialAssets.empty())
             {
                 auto materialAsset = m_notifiedMaterialAssets.front();
@@ -185,11 +191,6 @@ namespace AZ
                 InitializeNotifiedMaterialAsset(materialAsset);
             }
 
-            if (m_queuedLoadMaterials)
-            {
-                m_queuedLoadMaterials = false;
-                LoadMaterials();
-            }
 
             if (m_queuedMaterialsCreatedNotification)
             {
