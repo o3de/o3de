@@ -857,10 +857,6 @@ namespace AzToolsFramework
         AZ_Assert(m_initialized, "You must initialize a container before you can embed a child widget");
         m_childWidget = pChild;
 
-        // Remove wrapper from tab chain -- actual input widgets are chained by RecreateTabOrder.
-        // Wrappers use setFocusProxy to delegate, so they don't need their own tab stop.
-        pChild->setFocusPolicy(Qt::NoFocus);
-
         m_middleLayout->insertWidget(0, pChild, 1);
         pChild->show();
 
