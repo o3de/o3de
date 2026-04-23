@@ -936,8 +936,8 @@ namespace OpenParticle
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelConcentrate::centre, "Centre",
-                        "The centre of the Concentrate.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelConcentrate::centre, "Center",
+                        "The center of the Concentrate.")
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelConcentrate::rateObject, "Rate",
                         "The rate of Concentrate.")
