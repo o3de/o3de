@@ -174,7 +174,7 @@ namespace PhysX
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_linkForces,
                         "Include Link Forces",
-                        "An external force applied to the link’s center of mass.\n"
+                        "An external force applied to the link center of mass.\n"
                         "N = getNbLinks()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
