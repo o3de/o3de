@@ -1,0 +1,220 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/ColorGradient.h>
+#include <AzCore/Math/MathReflection.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
+
+using namespace AZ;
+
+namespace UnitTest
+{
+    // =======================================================================
+    // Helpers
+    // =======================================================================
+
+    namespace GradientTestHelpers
+    {
+        ColorGradientMarker MakeColorMarker(const Color& c, float p)
+        {
+            ColorGradientMarker m;
+            m.markerColor = c;
+            m.markerPosition = p;
+            return m;
+        }
+
+        AlphaGradientMarker MakeAlphaMarker(float a, float p)
+        {
+            AlphaGradientMarker m;
+            m.markerAlpha = a;
+            m.markerPosition = p;
+            return m;
+        }
+
+        bool GradientsEqual(const ColorGradient& a, const ColorGradient& b)
+        {
+            if (a.colorSlider.size() != b.colorSlider.size()) return false;
+            if (a.alphaSlider.size() != b.alphaSlider.size()) return false;
+            for (size_t i = 0; i < a.colorSlider.size(); ++i)
+            {
+                if (a.colorSlider[i].markerPosition != b.colorSlider[i].markerPosition) return false;
+                if (!(a.colorSlider[i].markerColor == b.colorSlider[i].markerColor)) return false;
+            }
+            for (size_t i = 0; i < a.alphaSlider.size(); ++i)
+            {
+                if (a.alphaSlider[i].markerPosition != b.alphaSlider[i].markerPosition) return false;
+                if (a.alphaSlider[i].markerAlpha != b.alphaSlider[i].markerAlpha) return false;
+            }
+            return true;
+        }
+    }
+
+    // =======================================================================
+    // ColorGradient Sampling
+    // =======================================================================
+
+    TEST(MATH_ColorGradient, EvaluateColor_EmptyReturnsZero)
+    {
+        ColorGradient g;
+        EXPECT_THAT(g.EvaluateColor(0.5f), IsClose(Color::CreateZero()));
+    }
+
+    TEST(MATH_ColorGradient, EvaluateColor_SingleStopIsConstant)
+    {
+        ColorGradient g;
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.2f, 0.4f, 0.6f, 1.f), 0.5f));
+        EXPECT_THAT(g.EvaluateColor(0.f),  IsClose(Color(0.2f, 0.4f, 0.6f, 1.f)));
+        EXPECT_THAT(g.EvaluateColor(0.5f), IsClose(Color(0.2f, 0.4f, 0.6f, 1.f)));
+        EXPECT_THAT(g.EvaluateColor(1.f),  IsClose(Color(0.2f, 0.4f, 0.6f, 1.f)));
+    }
+
+    TEST(MATH_ColorGradient, EvaluateColor_LerpsBetweenTwoStops)
+    {
+        ColorGradient g;
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(1.f, 0.f, 0.f, 1.f), 0.f));
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 0.f, 1.f, 1.f), 1.f));
+        const Color mid = g.EvaluateColor(0.5f);
+        EXPECT_NEAR(mid.GetR(), 0.5f, Constants::Tolerance);
+        EXPECT_NEAR(mid.GetG(), 0.0f, Constants::Tolerance);
+        EXPECT_NEAR(mid.GetB(), 0.5f, Constants::Tolerance);
+        EXPECT_NEAR(mid.GetA(), 1.0f, Constants::Tolerance);
+    }
+
+    TEST(MATH_ColorGradient, EvaluateColor_ClampsOutsideRange)
+    {
+        ColorGradient g;
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.1f, 0.2f, 0.3f, 1.f), 0.25f));
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.7f, 0.8f, 0.9f, 1.f), 0.75f));
+        EXPECT_THAT(g.EvaluateColor(-1.f), IsClose(Color(0.1f, 0.2f, 0.3f, 1.f)));
+        EXPECT_THAT(g.EvaluateColor(2.f),  IsClose(Color(0.7f, 0.8f, 0.9f, 1.f)));
+    }
+
+    TEST(MATH_ColorGradient, EvaluateColor_AlwaysOpaque)
+    {
+        ColorGradient g;
+        // Even if user stored a translucent color on the color track, EvaluateColor forces A=1.
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(1.f, 0.5f, 0.25f, 0.0f), 0.5f));
+        EXPECT_NEAR(g.EvaluateColor(0.5f).GetA(), 1.0f, Constants::Tolerance);
+    }
+
+    TEST(MATH_ColorGradient, EvaluateAlpha_EmptyReturnsOne)
+    {
+        ColorGradient g;
+        EXPECT_NEAR(g.EvaluateAlpha(0.5f), 1.f, Constants::Tolerance);
+    }
+
+    TEST(MATH_ColorGradient, EvaluateAlpha_LerpsBetweenTwoStops)
+    {
+        ColorGradient g;
+        g.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(0.f, 0.f));
+        g.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(1.f, 1.f));
+        EXPECT_NEAR(g.EvaluateAlpha(0.25f), 0.25f, Constants::Tolerance);
+        EXPECT_NEAR(g.EvaluateAlpha(0.75f), 0.75f, Constants::Tolerance);
+    }
+
+    TEST(MATH_ColorGradient, EvaluateGradient_CombinesColorAndAlpha)
+    {
+        ColorGradient g;
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 1.f, 0.f, 1.f), 0.f));
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 0.f, 0.f, 1.f), 1.f));
+        g.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(0.2f, 0.f));
+        g.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(0.8f, 1.f));
+
+        const Color at25 = g.EvaluateGradient(0.25f);
+        EXPECT_NEAR(at25.GetR(), 0.0f,  Constants::Tolerance);
+        EXPECT_NEAR(at25.GetG(), 0.75f, Constants::Tolerance);
+        EXPECT_NEAR(at25.GetB(), 0.0f,  Constants::Tolerance);
+        EXPECT_NEAR(at25.GetA(), 0.35f, Constants::Tolerance);
+
+        const Color at75 = g.EvaluateGradient(0.75f);
+        EXPECT_NEAR(at75.GetG(), 0.25f, Constants::Tolerance);
+        EXPECT_NEAR(at75.GetA(), 0.65f, Constants::Tolerance);
+    }
+
+    TEST(MATH_ColorGradient, SortGradients_HandlesOutOfOrderInsertion)
+    {
+        ColorGradient g;
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(1.f, 0.f, 0.f, 1.f), 1.f));
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 1.f, 0.f, 1.f), 0.5f));
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 0.f, 1.f, 1.f), 0.f));
+        g.SortGradients();
+        EXPECT_NEAR(g.colorSlider[0].markerPosition, 0.f,  Constants::Tolerance);
+        EXPECT_NEAR(g.colorSlider[1].markerPosition, 0.5f, Constants::Tolerance);
+        EXPECT_NEAR(g.colorSlider[2].markerPosition, 1.f,  Constants::Tolerance);
+    }
+
+    TEST(MATH_ColorGradient, SampleWithoutSort_FirstEvaluateAutoSorts)
+    {
+        ColorGradient g;
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 0.f, 1.f, 1.f), 1.f));
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(1.f, 0.f, 0.f, 1.f), 0.f));
+        ASSERT_FALSE(g.sorted);
+        const Color mid = g.EvaluateColor(0.5f);
+        EXPECT_TRUE(g.sorted);
+        EXPECT_NEAR(mid.GetR(), 0.5f, Constants::Tolerance);
+        EXPECT_NEAR(mid.GetB(), 0.5f, Constants::Tolerance);
+    }
+
+    // =======================================================================
+    // ColorGradientRGB Sampling
+    // =======================================================================
+
+    TEST(MATH_ColorGradientRGB, EvaluateColor_BehavesLikeColorTrack)
+    {
+        ColorGradientRGB g;
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(1.f, 0.f, 0.f, 1.f), 0.f));
+        g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 0.f, 1.f, 1.f), 1.f));
+        EXPECT_NEAR(g.EvaluateColor(0.5f).GetR(), 0.5f, Constants::Tolerance);
+        EXPECT_NEAR(g.EvaluateColor(0.5f).GetA(), 1.0f, Constants::Tolerance);
+    }
+
+    // =======================================================================
+    // Reflection Round-trip
+    // =======================================================================
+
+    class ColorGradientReflectionFixture : public ::UnitTest::LeakDetectionFixture
+    {
+    public:
+        void SetUp() override
+        {
+            UnitTest::LeakDetectionFixture::SetUp();
+            m_context = AZStd::make_unique<SerializeContext>();
+            MathReflect(m_context.get());
+        }
+
+        void TearDown() override
+        {
+            m_context.reset();
+            UnitTest::LeakDetectionFixture::TearDown();
+        }
+
+        AZStd::unique_ptr<SerializeContext> m_context;
+    };
+
+    TEST_F(ColorGradientReflectionFixture, SerializeRoundTrip_PreservesMarkers)
+    {
+        ColorGradient original;
+        original.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.1f, 0.2f, 0.3f, 1.f), 0.0f));
+        original.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.7f, 0.8f, 0.9f, 1.f), 1.0f));
+        original.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(0.25f, 0.0f));
+        original.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(0.75f, 1.0f));
+
+        AZStd::vector<char> buffer;
+        IO::ByteContainerStream<decltype(buffer)> stream(&buffer);
+        EXPECT_TRUE(Utils::SaveObjectToStream(stream, DataStream::ST_BINARY, &original, m_context.get()));
+
+        stream.Seek(0, IO::GenericStream::ST_SEEK_BEGIN);
+        ColorGradient restored;
+        EXPECT_TRUE(Utils::LoadObjectFromStreamInPlace(stream, restored, m_context.get()));
+
+        EXPECT_TRUE(GradientTestHelpers::GradientsEqual(original, restored));
+    }
+}

@@ -550,6 +550,8 @@ set(FILES
     UI/PropertyEditor/PropertyCheckBoxCtrl.cpp
     UI/PropertyEditor/PropertyColorCtrl.hxx
     UI/PropertyEditor/PropertyColorCtrl.cpp
+    UI/PropertyEditor/PropertyColorGradientCtrl.hxx
+    UI/PropertyEditor/PropertyColorGradientCtrl.cpp
     UI/PropertyEditor/PropertyDoubleSliderCtrl.hxx
     UI/PropertyEditor/PropertyDoubleSliderCtrl.cpp
     UI/PropertyEditor/PropertyDoubleSpinCtrl.hxx
