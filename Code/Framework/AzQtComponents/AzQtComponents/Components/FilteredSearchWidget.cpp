@@ -11,6 +11,7 @@
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
+#include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
 #include <AzQtComponents/Utilities/ScreenUtilities.h>
 
 #include <AzQtComponents/Components/ui_FilteredSearchWidget.h>
@@ -743,7 +744,12 @@ namespace AzQtComponents
 
         m_ui->textSearch->setContextMenuPolicy(Qt::CustomContextMenu);
 
-        
+        // Esc reverts the filter text to its focus-in value and exits the field,
+        // consistent with every other keyboard-editable input. Without this, Esc
+        // propagates up to the MainWindow and can mutate editor state while the
+        // user is typing in the search bar.
+        new LineEditRevertHandler(m_ui->textSearch, this);
+
         connect(m_ui->textSearch, &QLineEdit::textChanged, this, &FilteredSearchWidget::OnTextChanged);
         // QLineEdit's clearButton only triggers a textEdited, not a textChanged, so we special case that
         connect(m_ui->textSearch, &QLineEdit::textEdited, this, [this](const QString& newText) {

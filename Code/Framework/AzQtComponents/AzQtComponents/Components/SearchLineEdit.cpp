@@ -9,6 +9,7 @@
 
 #include <AzQtComponents/Components/SearchLineEdit.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
+#include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
 
 #include <QIcon>
 #include <QAction>
@@ -27,6 +28,12 @@ SearchLineEdit::SearchLineEdit(QWidget* parent)
     m_searchAction = new QAction(QIcon(":/stylesheet/img/search.svg"), QString(), this);
     m_searchAction->setEnabled(false);
     addAction(m_searchAction, QLineEdit::LeadingPosition);
+
+    // Esc reverts the search text to its focus-in value and exits the field,
+    // consistent with every other keyboard-editable input. Without this, Esc
+    // propagates up to the MainWindow and can mutate editor state (e.g.
+    // deselect the active entity) while the user is typing in a filter.
+    new LineEditRevertHandler(this);
 }
 
 bool SearchLineEdit::errorState() const
