@@ -44,6 +44,9 @@ namespace AzToolsFramework
             std::sort(results.values.begin(), results.values.end(),
                 [](const QString& a, const QString& b) { return QString::compare(a, b, Qt::CaseInsensitive) < 0; });
 
+            // Build nested submenus from "/" in group strings (e.g. "GS/Core" -> [GS] -> [Core])
+            QMap<QString, QMenu*> groupMenuCache;
+
             for (QString& group : results.values)
             {
                 // Group "Other" should be in the end of the list, and "Hidden" should not be on the list at all
@@ -51,7 +54,33 @@ namespace AzToolsFramework
                 {
                     continue;
                 }
-                AddAssetTypeGroup(menu, group);
+
+                // Determine which menu to add the checkbox to
+                QMenu* targetMenu = menu;
+                int lastSlash = group.lastIndexOf('/');
+                if (lastSlash >= 0)
+                {
+                    QString parentPath = group.left(lastSlash);
+                    QStringList segments = parentPath.split('/', Qt::SkipEmptyParts);
+                    QString cacheKey;
+
+                    for (const QString& segment : segments)
+                    {
+                        if (!cacheKey.isEmpty())
+                        {
+                            cacheKey += '/';
+                        }
+                        cacheKey += segment;
+
+                        if (!groupMenuCache.contains(cacheKey))
+                        {
+                            groupMenuCache[cacheKey] = targetMenu->addMenu(segment);
+                        }
+                        targetMenu = groupMenuCache[cacheKey];
+                    }
+                }
+
+                AddAssetTypeGroup(targetMenu, group);
             }
             AddAssetTypeGroup(menu, "Other");
             menu->setLayoutDirection(Qt::LeftToRight);
@@ -111,7 +140,10 @@ namespace AzToolsFramework
 
             if (!results.values.empty())
             {
-                QCheckBox* checkbox = new QCheckBox(group, menu);
+                // Show only the leaf segment as the checkbox label (e.g. "Core" from "GS/Core")
+                int lastSlash = group.lastIndexOf('/');
+                QString displayLabel = (lastSlash >= 0) ? group.mid(lastSlash + 1) : group;
+                QCheckBox* checkbox = new QCheckBox(displayLabel, menu);
                 QWidgetAction* action = new QWidgetAction(menu);
                 action->setDefaultWidget(checkbox);
                 menu->addAction(action);

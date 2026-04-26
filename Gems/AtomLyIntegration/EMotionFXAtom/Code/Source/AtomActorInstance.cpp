@@ -379,7 +379,7 @@ namespace AZ::Render
 
     void AtomActorInstance::SetRayTracingEnabled(bool enabled)
     {
-        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        if (m_meshHandle && m_meshHandle->IsValid() && m_meshFeatureProcessor)
         {
             m_rayTracingEnabled = enabled;
             m_meshFeatureProcessor->SetRayTracingEnabled(*m_meshHandle, m_rayTracingEnabled);
@@ -388,7 +388,7 @@ namespace AZ::Render
 
     bool AtomActorInstance::GetRayTracingEnabled() const
     {
-        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        if (m_meshHandle && m_meshHandle->IsValid() && m_meshFeatureProcessor)
         {
             return m_meshFeatureProcessor->GetRayTracingEnabled(*m_meshHandle);
         }
@@ -397,7 +397,7 @@ namespace AZ::Render
 
     void AtomActorInstance::SetExcludeFromReflectionCubeMaps(bool enabled)
     {
-        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        if (m_meshHandle && m_meshHandle->IsValid() && m_meshFeatureProcessor)
         {
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(*m_meshHandle, enabled);
         }
@@ -405,7 +405,7 @@ namespace AZ::Render
 
     bool AtomActorInstance::GetExcludeFromReflectionCubeMaps() const
     {
-        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        if (m_meshHandle && m_meshHandle->IsValid() && m_meshFeatureProcessor)
         {
             return m_meshFeatureProcessor->GetExcludeFromReflectionCubeMaps(*m_meshHandle);
         }
@@ -549,7 +549,7 @@ namespace AZ::Render
 
     void AtomActorInstance::OnUpdateSkinningMatrices()
     {
-        if (m_skinnedMeshHandle.IsValid())
+        if (m_skinnedMeshHandle.IsValid() && IsVisible())
         {
             AZStd::vector<float> boneTransforms;
             GetBoneTransformsFromActorInstance(m_actorInstance, boneTransforms, GetSkinningMethod());

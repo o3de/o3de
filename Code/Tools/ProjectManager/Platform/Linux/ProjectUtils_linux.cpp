@@ -94,9 +94,15 @@ namespace O3DE::ProjectManager
             return AZ::Success(QString{ cmakeInstalledPath });
         }
 
-        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform([[maybe_unused]] const ProjectInfo& projectInfo)
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform(const ProjectInfo& projectInfo)
         {
-            // Query the version of cmake that is installed
+            // Validate that cmake is installed
+            auto cmakeProcessEnvResult = SetupCommandLineProcessEnvironment();
+            if (!cmakeProcessEnvResult.IsSuccess())
+            {
+                return AZ::Failure(cmakeProcessEnvResult.GetError());
+            }
+
             if (auto queryCmakeVersionQuery = FindSupportedCMake(); !queryCmakeVersionQuery.IsSuccess())
             {
                 return queryCmakeVersionQuery;

@@ -233,7 +233,15 @@ namespace AZ::Render
 
     void StarsComponentController::SetStarsExposure(float exposure)
     {
-        m_configuration.m_exposure = exposure;
+        if (exposure >= 0.f)
+        {
+            m_configuration.m_exposure = exposure;
+        }
+        else
+        {
+            m_configuration.m_exposure = 0.f;
+        }
+
         m_starsFeatureProcessor->SetExposure(m_configuration.m_exposure);
     }
 
@@ -244,7 +252,15 @@ namespace AZ::Render
 
     void StarsComponentController::SetStarsRadiusFactor(float radiusFactor)
     {
-        m_configuration.m_radiusFactor = radiusFactor;
+        if (radiusFactor >= 0.f)
+        {
+            m_configuration.m_radiusFactor = radiusFactor;
+        }
+        else
+        {
+            m_configuration.m_radiusFactor = 0.f;
+        }
+
         m_starsFeatureProcessor->SetRadiusFactor(m_configuration.m_radiusFactor);
     }
 
@@ -255,7 +271,15 @@ namespace AZ::Render
 
     void StarsComponentController::SetStarsTwinkleRate(float twinkleRate)
     {
-        m_configuration.m_twinkleRate = twinkleRate;
+        if (twinkleRate >= 0.f)
+        {
+            m_configuration.m_twinkleRate = twinkleRate;
+        }
+        else
+        {
+            m_configuration.m_twinkleRate = 0.f;
+        }
+
         m_starsFeatureProcessor->SetTwinkleRate(m_configuration.m_twinkleRate);
     }
 }

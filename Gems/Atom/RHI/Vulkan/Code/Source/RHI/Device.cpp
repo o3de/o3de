@@ -153,15 +153,25 @@ namespace AZ
             {
                 const VkQueueFamilyProperties& familyProperties = m_queueFamilyProperties[familyIndex];
 
-                // There should be at least one queue family supporting both graphics and compute (as well as copying, but that might not be
-                // exposed)
+                VkQueueFlags effectiveFlags = familyProperties.queueFlags;
+                if (AZ::RHI::CheckBitsAny(effectiveFlags, static_cast<VkFlags>(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)))
+                {
+                    // according to the Vulkan spec, if a queue supports graphics or compute, transfer bit is implied and does not
+                    // need to actually be set.  See https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkQueueFlagBits.html
+                    effectiveFlags |= VK_QUEUE_TRANSFER_BIT;
+                }
+
+                // There should be at least one queue family supporting both graphics and compute. Quoting the above registry link:
+                // > If an implementation exposes any queue family that supports graphics operations, at least one queue family of at least
+                // > one physical device exposed by the implementation must support both graphics and compute operations.
                 if ((graphicsFamilyIndex == -1) &&
-                    AZ::RHI::CheckBitsAll(familyProperties.queueFlags, static_cast<VkFlags>(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)))
+                    AZ::RHI::CheckBitsAll(effectiveFlags, static_cast<VkFlags>(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)))
                 {
                     graphicsFamilyIndex = familyIndex;
                 }
 
-                if (AZ::RHI::CheckBitsAny(familyProperties.queueFlags, static_cast<VkFlags>(VK_QUEUE_COMPUTE_BIT)))
+                // if there is a compute queue that doesn't support graphics, we prefer it over one that supports both:
+                if (AZ::RHI::CheckBitsAny(effectiveFlags, static_cast<VkFlags>(VK_QUEUE_COMPUTE_BIT)))
                 {
                     if (computeFamilyIndex == -1)
                     {
@@ -171,15 +181,18 @@ namespace AZ
                     {
                         // We take the queue family that supports the least amount of features, but still supports compute. That way we
                         // likely get an async compute queue.
-                        if (AZ::RHI::CountBitsSet(familyProperties.queueFlags) <
-                            AZ::RHI::CountBitsSet(m_queueFamilyProperties[computeFamilyIndex].queueFlags))
+                        VkQueueFlags currentFlags = familyProperties.queueFlags;
+                        VkQueueFlags existingFlags = m_queueFamilyProperties[computeFamilyIndex].queueFlags;
+                        if (currentFlags < existingFlags)
                         {
                             computeFamilyIndex = familyIndex;
                         }
                     }
                 }
 
-                if (AZ::RHI::CheckBitsAny(familyProperties.queueFlags, static_cast<VkFlags>(VK_QUEUE_TRANSFER_BIT)))
+                // Look for a dedicated transfer queue, if one is availalble.  Same process as above, prefer queues that
+                // support less features, as they are more likely to be async.
+                if (AZ::RHI::CheckBitsAny(effectiveFlags, static_cast<VkFlags>(VK_QUEUE_TRANSFER_BIT)))
                 {
                     if (transferFamilyIndex == -1)
                     {
@@ -187,10 +200,9 @@ namespace AZ
                     }
                     else
                     {
-                        // We take the queue family that supports the least amount of features, but still supports copying. That way we
-                        // likely get an async copy queue.
-                        if (AZ::RHI::CountBitsSet(familyProperties.queueFlags) <
-                            AZ::RHI::CountBitsSet(m_queueFamilyProperties[transferFamilyIndex].queueFlags))
+                        VkQueueFlags currentFlags = familyProperties.queueFlags;
+                        VkQueueFlags existingFlags = m_queueFamilyProperties[transferFamilyIndex].queueFlags;
+                        if (currentFlags < existingFlags)
                         {
                             transferFamilyIndex = familyIndex;
                         }
