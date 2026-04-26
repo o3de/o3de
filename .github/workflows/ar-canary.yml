@@ -194,7 +194,7 @@ jobs:
       type: profile
       last_artifact: false
       clang_version: "19"
-      gcc_version: "12"
+      gcc_version: "14"
       cmake_version: *cmake_version
 
   Linux-Ubuntu22-Clang19-Asset:
@@ -315,7 +315,7 @@ jobs:
       type: asset_profile
       last_artifact: false
       cmake_version: *cmake_version
-      
+
   #### Windows Canary - use latest installed v143 toolset on each runner image ####
   Windows-2025-Profile:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
