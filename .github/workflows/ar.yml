@@ -149,7 +149,7 @@ jobs:
       platform: Linux
       type: profile
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
-      clang_version: "14"
+      clang_version: "18"
       cmake_version: *cmake_version
 
   Linux-Asset:
@@ -162,7 +162,7 @@ jobs:
       image: ubuntu-24.04
       platform: Linux
       type: asset_profile
-      clang_version: "14"
+      clang_version: "18"
       cmake_version: *cmake_version
 
   Linux-Test:
@@ -176,7 +176,7 @@ jobs:
       platform: Linux
       type: test_profile
       desktop: true
-      clang_version: "14"
+      clang_version: "18"
       cmake_version: *cmake_version
 
 #### Mac Build ####
