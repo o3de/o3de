@@ -145,11 +145,12 @@ jobs:
     with:
       compiler: clang
       config: profile
-      image: ubuntu-24.04
+      image: ubuntu-22.04
       platform: Linux
       type: profile
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
       clang_version: "18"
+      gcc_version: "12"
       cmake_version: *cmake_version
 
   Linux-Asset:
@@ -159,10 +160,11 @@ jobs:
     with:
       compiler: clang
       config: profile
-      image: ubuntu-24.04
+      image: ubuntu-22.04
       platform: Linux
       type: asset_profile
       clang_version: "18"
+      gcc_version: "12"
       cmake_version: *cmake_version
 
   Linux-Test:
@@ -172,11 +174,12 @@ jobs:
     with:
       compiler: clang
       config: profile
-      image: ubuntu-24.04
+      image: ubuntu-22.04
       platform: Linux
       type: test_profile
       desktop: true
       clang_version: "18"
+      gcc_version: "12"
       cmake_version: *cmake_version
 
 #### Mac Build ####

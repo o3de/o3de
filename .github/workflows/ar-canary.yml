@@ -148,6 +148,7 @@ jobs:
       type: profile
       last_artifact: false
       clang_version: "19"
+      gcc_version: "14"
       cmake_version: *cmake_version
 
   Linux-Ubuntu24-Clang19-Asset:
@@ -162,6 +163,7 @@ jobs:
       type: asset_profile
       last_artifact: false
       clang_version: "19"
+      gcc_version: "14"
       cmake_version: *cmake_version
 
   Linux-Ubuntu24-Clang19-Test:
@@ -177,6 +179,7 @@ jobs:
       last_artifact: false
       desktop: true
       clang_version: "19"
+      gcc_version: "14"
       cmake_version: *cmake_version
 
   #### Linux Canary - ubuntu-22.04 ####
@@ -191,6 +194,7 @@ jobs:
       type: profile
       last_artifact: false
       clang_version: "19"
+      gcc_version: "12"
       cmake_version: *cmake_version
 
   Linux-Ubuntu22-Clang19-Asset:
@@ -205,6 +209,7 @@ jobs:
       type: asset_profile
       last_artifact: false
       clang_version: "19"
+      gcc_version: "12"
       cmake_version: *cmake_version
 
   Linux-Ubuntu22-Clang19-Test:
@@ -220,6 +225,7 @@ jobs:
       last_artifact: false
       desktop: true
       clang_version: "19"
+      gcc_version: "12"
       cmake_version: *cmake_version
 
   #### Mac Canary - macos-15 Apple Silicon ####
