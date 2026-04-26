@@ -183,7 +183,7 @@ jobs:
         # ubuntu-24.04 ships gcc-12/13/14; ubuntu-22.04 ships gcc-9/10/11/12.
         if: ${{ inputs.gcc_version }}
         run: |
-          sudp apt-get install -y gcc-${{ inputs.gcc_version }} g++-${{ inputs.gcc_version }}
+          sudo apt-get install -y gcc-${{ inputs.gcc_version }} g++-${{ inputs.gcc_version }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ inputs.gcc_version }} 100
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${{ inputs.gcc_version }} 100
 
