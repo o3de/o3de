@@ -286,20 +286,30 @@ namespace AzToolsFramework
             }
 
             // If selection failed (e.g. source/parent entry selected but filter requires product),
-            // try selecting the first child product so the user doesn't have to manually expand.
+            // walk every child product and pick the first one that satisfies the active filter.
+            // A source can produce multiple outputs and the first child is not guaranteed to
+            // match the type the picker is browsing for.
             if (index.isValid() && index.model()->hasChildren(index))
             {
-                QModelIndex firstChild = index.model()->index(0, 0, index);
-                if (firstChild.isValid())
+                auto* treeView = m_ui->m_assetBrowserTreeViewWidget;
+                treeView->expand(index);
+
+                const int childCount = index.model()->rowCount(index);
+                for (int row = 0; row < childCount; ++row)
                 {
-                    auto* treeView = m_ui->m_assetBrowserTreeViewWidget;
-                    treeView->expand(index);
-                    treeView->selectionModel()->select(firstChild, QItemSelectionModel::ClearAndSelect);
-                    treeView->setCurrentIndex(firstChild);
+                    const QModelIndex childIndex = index.model()->index(row, 0, index);
+                    if (!childIndex.isValid())
+                    {
+                        continue;
+                    }
+
+                    treeView->selectionModel()->select(childIndex, QItemSelectionModel::ClearAndSelect);
+                    treeView->setCurrentIndex(childIndex);
 
                     if (EvaluateSelection())
                     {
                         QDialog::accept();
+                        return;
                     }
                 }
             }
