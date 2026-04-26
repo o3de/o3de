@@ -51,7 +51,6 @@ jobs:
       platform: Android
       type: profile
       last_artifact: false
-      clang_version: "19"
       ndk_version: "28.0.12433566"
       gradle_version: "8.13"
       cmake_version: *cmake_version
@@ -67,7 +66,6 @@ jobs:
       platform: Android
       type: asset_profile
       last_artifact: false
-      clang_version: "19"
       ndk_version: "28.0.12433566"
       gradle_version: "8.13"
       cmake_version: *cmake_version
@@ -83,7 +81,6 @@ jobs:
       platform: Android
       type: gradle
       last_artifact: false
-      clang_version: "19"
       ndk_version: "28.0.12433566"
       gradle_version: "8.13"
       cmake_version: *cmake_version
@@ -99,7 +96,6 @@ jobs:
       platform: Android
       type: profile
       last_artifact: false
-      clang_version: "19"
       ndk_version: "28.0.12433566"
       gradle_version: "8.13"
       cmake_version: *cmake_version
@@ -115,7 +111,6 @@ jobs:
       platform: Android
       type: asset_profile
       last_artifact: false
-      clang_version: "19"
       ndk_version: "28.0.12433566"
       gradle_version: "8.13"
       cmake_version: *cmake_version
@@ -131,7 +126,6 @@ jobs:
       platform: Android
       type: gradle
       last_artifact: false
-      clang_version: "19"
       ndk_version: "28.0.12433566"
       gradle_version: "8.13"
       cmake_version: *cmake_version
@@ -209,7 +203,7 @@ jobs:
       type: asset_profile
       last_artifact: false
       clang_version: "19"
-      gcc_version: "12"
+      gcc_version: "14"
       cmake_version: *cmake_version
 
   Linux-Ubuntu22-Clang19-Test:
@@ -225,7 +219,7 @@ jobs:
       last_artifact: false
       desktop: true
       clang_version: "19"
-      gcc_version: "12"
+      gcc_version: "14"
       cmake_version: *cmake_version
 
   #### Mac Canary - macos-15 Apple Silicon ####
