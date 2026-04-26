@@ -164,20 +164,25 @@ namespace EMotionFX
                 return;
             }
 
-            // In case of existing motion instance, play it.
+            if (SimpleMotionComponent::CheckMotionInstance(m_lastMotionInstance))
+            {
+                RemoveMotionInstanceFromActor(m_lastMotionInstance);
+                m_lastMotionInstance = nullptr;
+            }
+
             if (SimpleMotionComponent::CheckMotionInstance(m_motionInstance))
             {
-                auto motionInstance = SimpleMotionComponent::StartMotionInternal(m_motionInstance, m_configuration);
-                if (SimpleMotionComponent::CheckMotionInstance(motionInstance) && (motionInstance != m_motionInstance))
+                if (m_configuration.m_blendOutTime > 0.0f)
                 {
-                    if (SimpleMotionComponent::CheckMotionInstance(m_lastMotionInstance))
-                    {
-                        RemoveMotionInstanceFromActor(m_lastMotionInstance);
-                    }
+                    m_lastMotionInstance = m_motionInstance;
+                    m_lastMotionInstance->Stop(m_configuration.m_blendOutTime);
                 }
-                m_lastMotionInstance = m_motionInstance;
-                m_motionInstance = motionInstance;
-                return;
+                else
+                {
+                    RemoveMotionInstanceFromActor(m_motionInstance);
+                }
+
+                m_motionInstance = nullptr;
             }
 
             // The Editor allows scrubbing back and forth on animation blending transitions, so don't delete  motion instances if it's blend weight is zero.
