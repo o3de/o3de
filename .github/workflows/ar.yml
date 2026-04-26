@@ -145,7 +145,7 @@ jobs:
     with:
       compiler: clang
       config: profile
-      image: ubuntu-22.04
+      image: ubuntu-24.04
       platform: Linux
       type: profile
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
@@ -159,7 +159,7 @@ jobs:
     with:
       compiler: clang
       config: profile
-      image: ubuntu-22.04
+      image: ubuntu-24.04
       platform: Linux
       type: asset_profile
       clang_version: "14"
@@ -172,7 +172,7 @@ jobs:
     with:
       compiler: clang
       config: profile
-      image: ubuntu-22.04
+      image: ubuntu-24.04
       platform: Linux
       type: test_profile
       desktop: true
