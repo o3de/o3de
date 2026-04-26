@@ -45,7 +45,7 @@ namespace AzToolsFramework
             bool m_enabled = false;
         };
 
-        //! One favorite slot. Acts as a discriminated union — m_isSearch
+        //! One favorite slot. Acts as a discriminated union -- m_isSearch
         //! selects which fields are meaningful (entry path vs. search filter).
         struct AZTF_API FavoriteRecord
         {

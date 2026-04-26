@@ -271,37 +271,7 @@ namespace AzToolsFramework
 
             for (const FavoriteRecord& record : projectSettings.m_items)
             {
-<<<<<<< Updated upstream
-                settings.setArrayIndex(index);
-
-                QString path = settings.value("entryPath", "").toString();
-                if (!path.isEmpty())
-                {
-                    AZStd::string filePath = AZ::IO::PathView(path.toUtf8().data()).LexicallyNormal().String();
-
-                    const auto itFile = EntryCache::GetInstance()->m_absolutePathToFileId.find(filePath);
-                    if (itFile == EntryCache::GetInstance()->m_absolutePathToFileId.end())
-                    {
-                        // Cache not populated yet - save the path so we don't lose it on next save
-                        m_unresolvedFavoritePaths.push_back(filePath);
-                        continue;
-                    }
-
-                    const auto itABEntry = EntryCache::GetInstance()->m_fileIdMap.find(itFile->second);
-                    if (itABEntry == EntryCache::GetInstance()->m_fileIdMap.end())
-                    {
-                        m_unresolvedFavoritePaths.push_back(filePath);
-                        continue;
-                    }
-
-                    AddFavoriteAsset(itABEntry->second);
-                }
-
-                bool isSearch = settings.value("favoriteSearch", false).toBool();
-                if (isSearch)
-=======
                 if (record.m_isSearch)
->>>>>>> Stashed changes
                 {
                     SearchAssetBrowserFavoriteItem* search = aznew SearchAssetBrowserFavoriteItem();
                     search->LoadFromRecord(record);
@@ -370,26 +340,9 @@ namespace AzToolsFramework
             AssetBrowserFavoritesProjectSettings projectSettings;
             projectSettings.m_items.reserve(m_favorites.size());
 
-<<<<<<< Updated upstream
-            int arrayIndex = 0;
-
-=======
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-            for (size_t index = 0; index < m_favorites.size(); index++)
-            {
-                AssetBrowserFavoriteItem* entry = m_favorites.at(index);
-
-<<<<<<< Updated upstream
-                settings.setArrayIndex(arrayIndex++);
-=======
-                settings.setArrayIndex(aznumeric_cast<int>(index));
-=======
             for (AssetBrowserFavoriteItem* entry : m_favorites)
             {
                 FavoriteRecord& record = projectSettings.m_items.emplace_back();
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
                 if (entry->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
                 {
@@ -404,22 +357,6 @@ namespace AzToolsFramework
                 }
             }
 
-<<<<<<< Updated upstream
-            // Preserve any favorite paths that could not be resolved during load
-            // (e.g. because the asset cache was not fully populated yet).
-            // This prevents favorites from being silently lost between sessions.
-            for (const auto& unresolvedPath : m_unresolvedFavoritePaths)
-            {
-                settings.setArrayIndex(arrayIndex++);
-                settings.setValue("entryPath", unresolvedPath.c_str());
-            }
-
-            settings.endArray();
-            settings.sync();
-=======
-<<<<<<< Updated upstream
-            settings.endArray();
-=======
             projectSettings.m_unresolvedPaths = m_unresolvedFavoritePaths;
 
             const AZStd::string registryPath = BuildFavoritesRegistryPath(GetProjectName());
@@ -436,8 +373,6 @@ namespace AzToolsFramework
             // Flush editorpreferences.setreg through the editor settings API so
             // the per-project user folder reflects the change immediately.
             EditorSettingsAPIBus::Broadcast(&EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
             AssetBrowserFavoritesNotificationBus::Broadcast(&AssetBrowserFavoritesNotificationBus::Events::FavoritesChanged);
         }
