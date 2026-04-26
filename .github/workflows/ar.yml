@@ -92,7 +92,6 @@ jobs:
       image: ubuntu-22.04
       platform: Android
       type: asset_profile
-      clang_version: "14"
       ndk_version: "25.1.8937393"
       gradle_version: "8.12"
       cmake_version: *cmake_version
