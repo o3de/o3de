@@ -40,7 +40,7 @@ env:
   CMAKE_VERSION: &cmake_version "4.2.3"
 
 jobs:
-  #### Android Canary — ubuntu-24.04 + NDK r28 + host Clang 19 ####
+  #### Android Canary - ubuntu-24.04 ####
   Android-Ubuntu24-Profile:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
     uses: ./.github/workflows/android-build.yml
@@ -88,7 +88,7 @@ jobs:
       gradle_version: "8.13"
       cmake_version: *cmake_version
 
-  #### Android Canary — ubuntu-22.04 + NDK r28 + host Clang 19 ####
+  #### Android Canary - ubuntu-22.04 ####
   Android-Ubuntu22-Profile:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
     uses: ./.github/workflows/android-build.yml
@@ -136,51 +136,7 @@ jobs:
       gradle_version: "8.13"
       cmake_version: *cmake_version
 
-  #### iOS Canary — macos-15 Apple Silicon ####
-  iOS-macOS15-Profile:
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios_build }}
-    uses: ./.github/workflows/ios-build.yml
-    with:
-      config: profile
-      image: macos-15
-      type: profile
-      last_artifact: false
-      cmake_version: *cmake_version
-
-  iOS-macOS15-Asset:
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios_build }}
-    needs: iOS-macOS15-Profile
-    uses: ./.github/workflows/ios-build.yml
-    with:
-      config: profile
-      image: macos-15
-      type: asset_profile
-      last_artifact: false
-      cmake_version: *cmake_version
-
-  #### iOS Canary — macos-15-intel ####
-  iOS-macOS15Intel-Profile:
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios_build }}
-    uses: ./.github/workflows/ios-build.yml
-    with:
-      config: profile
-      image: macos-15-intel
-      type: profile
-      last_artifact: false
-      cmake_version: *cmake_version
-
-  iOS-macOS15Intel-Asset:
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios_build }}
-    needs: iOS-macOS15Intel-Profile
-    uses: ./.github/workflows/ios-build.yml
-    with:
-      config: profile
-      image: macos-15-intel
-      type: asset_profile
-      last_artifact: false
-      cmake_version: *cmake_version
-
-  #### Linux Canary — ubuntu-24.04 + Clang 19 ####
+  #### Linux Canary - ubuntu-24.04 ####
   Linux-Ubuntu24-Clang19-Profile:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
     uses: ./.github/workflows/linux-build.yml
@@ -223,7 +179,7 @@ jobs:
       clang_version: "19"
       cmake_version: *cmake_version
 
-  #### Linux Canary — ubuntu-22.04 + Clang 19 ####
+  #### Linux Canary - ubuntu-22.04 ####
   Linux-Ubuntu22-Clang19-Profile:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
     uses: ./.github/workflows/linux-build.yml
@@ -266,7 +222,7 @@ jobs:
       clang_version: "19"
       cmake_version: *cmake_version
 
-  #### Mac Canary — macos-15 Apple Silicon ####
+  #### Mac Canary - macos-15 Apple Silicon ####
   Mac-macOS15-Profile:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.mac_build }}
     uses: ./.github/workflows/mac-build.yml
@@ -288,7 +244,7 @@ jobs:
       last_artifact: false
       cmake_version: *cmake_version
 
-  #### Mac Canary — macos-15-intel ####
+  #### Mac Canary - macos-15-intel ####
   Mac-macOS15Intel-Profile:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.mac_build }}
     uses: ./.github/workflows/mac-build.yml
@@ -310,7 +266,51 @@ jobs:
       last_artifact: false
       cmake_version: *cmake_version
 
-  #### Windows Canary — use latest installed v143 toolset on each runner image ####
+#### iOS Canary - macos-15 Apple Silicon ####
+  iOS-macOS15-Profile:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios_build }}
+    uses: ./.github/workflows/ios-build.yml
+    with:
+      config: profile
+      image: macos-15
+      type: profile
+      last_artifact: false
+      cmake_version: *cmake_version
+
+  iOS-macOS15-Asset:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios_build }}
+    needs: iOS-macOS15-Profile
+    uses: ./.github/workflows/ios-build.yml
+    with:
+      config: profile
+      image: macos-15
+      type: asset_profile
+      last_artifact: false
+      cmake_version: *cmake_version
+
+  #### iOS Canary - macos-15-intel ####
+  iOS-macOS15Intel-Profile:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios_build }}
+    uses: ./.github/workflows/ios-build.yml
+    with:
+      config: profile
+      image: macos-15-intel
+      type: profile
+      last_artifact: false
+      cmake_version: *cmake_version
+
+  iOS-macOS15Intel-Asset:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.ios_build }}
+    needs: iOS-macOS15Intel-Profile
+    uses: ./.github/workflows/ios-build.yml
+    with:
+      config: profile
+      image: macos-15-intel
+      type: asset_profile
+      last_artifact: false
+      cmake_version: *cmake_version
+      
+  #### Windows Canary - use latest installed v143 toolset on each runner image ####
   Windows-2025-Profile:
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
     uses: ./.github/workflows/windows-build.yml
