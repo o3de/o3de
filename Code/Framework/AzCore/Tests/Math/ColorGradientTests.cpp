@@ -6,10 +6,13 @@
  *
  */
 
+#include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/ColorGradient.h>
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 
@@ -82,10 +85,10 @@ namespace UnitTest
         g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(1.f, 0.f, 0.f, 1.f), 0.f));
         g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 0.f, 1.f, 1.f), 1.f));
         const Color mid = g.EvaluateColor(0.5f);
-        EXPECT_NEAR(mid.GetR(), 0.5f, Constants::Tolerance);
-        EXPECT_NEAR(mid.GetG(), 0.0f, Constants::Tolerance);
-        EXPECT_NEAR(mid.GetB(), 0.5f, Constants::Tolerance);
-        EXPECT_NEAR(mid.GetA(), 1.0f, Constants::Tolerance);
+        EXPECT_NEAR(mid.GetR(), 0.5f, 0.001f);
+        EXPECT_NEAR(mid.GetG(), 0.0f, 0.001f);
+        EXPECT_NEAR(mid.GetB(), 0.5f, 0.001f);
+        EXPECT_NEAR(mid.GetA(), 1.0f, 0.001f);
     }
 
     TEST(MATH_ColorGradient, EvaluateColor_ClampsOutsideRange)
@@ -102,13 +105,13 @@ namespace UnitTest
         ColorGradient g;
         // Even if user stored a translucent color on the color track, EvaluateColor forces A=1.
         g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(1.f, 0.5f, 0.25f, 0.0f), 0.5f));
-        EXPECT_NEAR(g.EvaluateColor(0.5f).GetA(), 1.0f, Constants::Tolerance);
+        EXPECT_NEAR(g.EvaluateColor(0.5f).GetA(), 1.0f, 0.001f);
     }
 
     TEST(MATH_ColorGradient, EvaluateAlpha_EmptyReturnsOne)
     {
         ColorGradient g;
-        EXPECT_NEAR(g.EvaluateAlpha(0.5f), 1.f, Constants::Tolerance);
+        EXPECT_NEAR(g.EvaluateAlpha(0.5f), 1.f, 0.001f);
     }
 
     TEST(MATH_ColorGradient, EvaluateAlpha_LerpsBetweenTwoStops)
@@ -116,8 +119,8 @@ namespace UnitTest
         ColorGradient g;
         g.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(0.f, 0.f));
         g.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(1.f, 1.f));
-        EXPECT_NEAR(g.EvaluateAlpha(0.25f), 0.25f, Constants::Tolerance);
-        EXPECT_NEAR(g.EvaluateAlpha(0.75f), 0.75f, Constants::Tolerance);
+        EXPECT_NEAR(g.EvaluateAlpha(0.25f), 0.25f, 0.001f);
+        EXPECT_NEAR(g.EvaluateAlpha(0.75f), 0.75f, 0.001f);
     }
 
     TEST(MATH_ColorGradient, EvaluateGradient_CombinesColorAndAlpha)
@@ -129,14 +132,14 @@ namespace UnitTest
         g.alphaSlider.push_back(GradientTestHelpers::MakeAlphaMarker(0.8f, 1.f));
 
         const Color at25 = g.EvaluateGradient(0.25f);
-        EXPECT_NEAR(at25.GetR(), 0.0f,  Constants::Tolerance);
-        EXPECT_NEAR(at25.GetG(), 0.75f, Constants::Tolerance);
-        EXPECT_NEAR(at25.GetB(), 0.0f,  Constants::Tolerance);
-        EXPECT_NEAR(at25.GetA(), 0.35f, Constants::Tolerance);
+        EXPECT_NEAR(at25.GetR(), 0.0f,  0.001f);
+        EXPECT_NEAR(at25.GetG(), 0.75f, 0.001f);
+        EXPECT_NEAR(at25.GetB(), 0.0f,  0.001f);
+        EXPECT_NEAR(at25.GetA(), 0.35f, 0.001f);
 
         const Color at75 = g.EvaluateGradient(0.75f);
-        EXPECT_NEAR(at75.GetG(), 0.25f, Constants::Tolerance);
-        EXPECT_NEAR(at75.GetA(), 0.65f, Constants::Tolerance);
+        EXPECT_NEAR(at75.GetG(), 0.25f, 0.001f);
+        EXPECT_NEAR(at75.GetA(), 0.65f, 0.001f);
     }
 
     TEST(MATH_ColorGradient, SortGradients_HandlesOutOfOrderInsertion)
@@ -146,9 +149,9 @@ namespace UnitTest
         g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 1.f, 0.f, 1.f), 0.5f));
         g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 0.f, 1.f, 1.f), 0.f));
         g.SortGradients();
-        EXPECT_NEAR(g.colorSlider[0].markerPosition, 0.f,  Constants::Tolerance);
-        EXPECT_NEAR(g.colorSlider[1].markerPosition, 0.5f, Constants::Tolerance);
-        EXPECT_NEAR(g.colorSlider[2].markerPosition, 1.f,  Constants::Tolerance);
+        EXPECT_NEAR(g.colorSlider[0].markerPosition, 0.f,  0.001f);
+        EXPECT_NEAR(g.colorSlider[1].markerPosition, 0.5f, 0.001f);
+        EXPECT_NEAR(g.colorSlider[2].markerPosition, 1.f,  0.001f);
     }
 
     TEST(MATH_ColorGradient, SampleWithoutSort_FirstEvaluateAutoSorts)
@@ -159,8 +162,8 @@ namespace UnitTest
         ASSERT_FALSE(g.sorted);
         const Color mid = g.EvaluateColor(0.5f);
         EXPECT_TRUE(g.sorted);
-        EXPECT_NEAR(mid.GetR(), 0.5f, Constants::Tolerance);
-        EXPECT_NEAR(mid.GetB(), 0.5f, Constants::Tolerance);
+        EXPECT_NEAR(mid.GetR(), 0.5f, 0.001f);
+        EXPECT_NEAR(mid.GetB(), 0.5f, 0.001f);
     }
 
     // =======================================================================
@@ -172,8 +175,8 @@ namespace UnitTest
         ColorGradientRGB g;
         g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(1.f, 0.f, 0.f, 1.f), 0.f));
         g.colorSlider.push_back(GradientTestHelpers::MakeColorMarker(Color(0.f, 0.f, 1.f, 1.f), 1.f));
-        EXPECT_NEAR(g.EvaluateColor(0.5f).GetR(), 0.5f, Constants::Tolerance);
-        EXPECT_NEAR(g.EvaluateColor(0.5f).GetA(), 1.0f, Constants::Tolerance);
+        EXPECT_NEAR(g.EvaluateColor(0.5f).GetR(), 0.5f, 0.001f);
+        EXPECT_NEAR(g.EvaluateColor(0.5f).GetA(), 1.0f, 0.001f);
     }
 
     // =======================================================================
