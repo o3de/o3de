@@ -52,11 +52,11 @@ For the latest details and system requirements, refer to [System Requirements](h
 
 #### Windows
 
-*   Visual Studio 2019 latest (All editions supported, including Community): [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
+*   Visual Studio 2022 latest (All editions supported, including Community): [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
     *   Install the following workloads:
         *   Game Development with C++
-        *   MSVC v142 - VS 2019 C++ x64/x86
-        *   C++ 2019 redistributable update
+        *   MSVC v142 - VS 2019 C++ x64/x86 minimum
+        *   C++ 2019 redistributable update (C++ 2022 redistributable recommended)
 *   CMake 3.30 minimum: [https://cmake.org/download/#latest](https://cmake.org/download/#latest) (Release Candidate versions are not supported)
     *   CMake 3.30 is currently a soft requirement and will become a hard requirement after release 26.05.
     *   CMake 4.2.3 is bundled with the [prebuilt installer](https://o3debinaries.org/download/windows.html).
