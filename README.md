@@ -2,11 +2,22 @@
 
 O3DE (Open 3D Engine) is an open-source, real-time, multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.
 
+## Documentation
+
+For the full O3DE documentation, visit [https://o3de.org/docs/](https://o3de.org/docs/).
+
 ## Contribute
 For information about contributing to Open 3D Engine, visit [https://o3de.org/docs/contributing/](https://o3de.org/docs/contributing/).
 
 ## Roadmap
 For information about upcoming work and features, please visit [https://o3de.org/roadmap](https://o3de.org/roadmap). Progress against the roadmap is tracked [here](https://github.com/orgs/o3de/projects/56/views/2).
+
+## Prebuilt Installer
+
+If you don't want to build the engine from source, prebuilt installers are available:
+
+*   [Windows](https://o3debinaries.org/download/windows.html)
+*   [Linux](https://o3debinaries.org/download/linux.html)
 
 ## Download and Install
 
@@ -39,13 +50,21 @@ For the latest details and system requirements, refer to [System Requirements](h
 
 #### Windows
 
-*   Visual Studio 2019 16.9.2 minimum (All editions supported, including Community): [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
-    *   Check [System Requirements](https://o3de.org/docs/welcome-guide/requirements/) for other supported versions.
+*   Visual Studio 2019 latest (All editions supported, including Community): [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
     *   Install the following workloads:
         *   Game Development with C++
         *   MSVC v142 - VS 2019 C++ x64/x86
         *   C++ 2019 redistributable update
-*   CMake 3.24.0 minimum: [https://cmake.org/download/#latest](https://cmake.org/download/#latest) (Release Candidate versions are not supported)
+*   CMake 3.30 minimum: [https://cmake.org/download/#latest](https://cmake.org/download/#latest) (Release Candidate versions are not supported)
+    *   CMake 3.30 is currently a soft requirement and will become a hard requirement after release 26.05.
+    *   CMake 4.2.3 is bundled with the [prebuilt installer](https://o3debinaries.org/download/windows.html).
+
+#### Linux
+
+*   Clang 14 minimum
+*   CMake 3.30 minimum: [https://cmake.org/download/#latest](https://cmake.org/download/#latest) (Release Candidate versions are not supported)
+    *   CMake 3.30 is currently a soft requirement and will become a hard requirement after release 26.05.
+    *   CMake 4.2.3 is bundled with the [prebuilt installer](https://o3debinaries.org/download/linux.html).
 
 #### Optional
 
