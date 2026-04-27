@@ -166,7 +166,9 @@ class CommandContext:
                  variables: Dict[str, Any],
                  logger: Callable[[str], None],
                  engine_path: Path,
-                 copy_files: Optional[List] = None):
+                 copy_files: Optional[List] = None,
+                 template_path: Optional[Path] = None,
+                 stage_dir: Optional[Path] = None):
         self.dest_root = dest_root
         self.namespace = namespace
         self.component_name = component_name
@@ -177,6 +179,16 @@ class CommandContext:
         # List of (resolved_path: str, CopyFileDef) for active (condition-passing) files.
         # Commands use this to derive actual file paths rather than assuming Source/.
         self.copy_files: List = copy_files or []
+        # Path to the source template directory (the folder that contains template.json
+        # and the Template/ subfolder). Commands that need to read template-side
+        # source files outside the staging pipeline -- for example asset files
+        # routed to a non-Code destination -- consume this directly.
+        self.template_path: Optional[Path] = template_path
+        # Path to the live staging directory, valid for the duration of the
+        # process_commands phase. Files marked excludeFromMerge=True in the
+        # template's copyFiles list are still present here. copy_file_to and
+        # copy_glob_to read from this. Cleared after process_commands finish.
+        self.stage_dir: Optional[Path] = stage_dir
 
     def log(self, message: str):
         """Log a message using the provided logger"""
