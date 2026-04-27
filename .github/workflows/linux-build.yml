@@ -199,7 +199,7 @@ jobs:
           wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
           chmod +x /tmp/llvm.sh
           sudo /tmp/llvm.sh ${{ inputs.clang_version }}
-          sudo apt-get install -y lld-${{ inputs.clang_version }}
+          sudo apt-get install -y lld-${{ inputs.clang_version }} clang-tools-${{ inputs.clang_version }}
           echo "CC=$(which clang-${{ inputs.clang_version }})" >> $GITHUB_ENV
           echo "CXX=$(which clang++-${{ inputs.clang_version }})" >> $GITHUB_ENV
 
