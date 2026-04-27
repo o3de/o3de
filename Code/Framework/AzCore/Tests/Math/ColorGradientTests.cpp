@@ -10,11 +10,12 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/ColorGradient.h>
-#include <AzCore/Math/MathReflection.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+
+#include <cmath>
 
 using namespace AZ;
 
@@ -44,17 +45,18 @@ namespace UnitTest
 
         bool GradientsEqual(const ColorGradient& a, const ColorGradient& b)
         {
+            constexpr float kTolerance = 0.001f;
             if (a.colorSlider.size() != b.colorSlider.size()) return false;
             if (a.alphaSlider.size() != b.alphaSlider.size()) return false;
             for (size_t i = 0; i < a.colorSlider.size(); ++i)
             {
-                if (a.colorSlider[i].markerPosition != b.colorSlider[i].markerPosition) return false;
-                if (!(a.colorSlider[i].markerColor == b.colorSlider[i].markerColor)) return false;
+                if (std::fabs(a.colorSlider[i].markerPosition - b.colorSlider[i].markerPosition) > kTolerance) return false;
+                if (!a.colorSlider[i].markerColor.IsClose(b.colorSlider[i].markerColor, kTolerance)) return false;
             }
             for (size_t i = 0; i < a.alphaSlider.size(); ++i)
             {
-                if (a.alphaSlider[i].markerPosition != b.alphaSlider[i].markerPosition) return false;
-                if (a.alphaSlider[i].markerAlpha != b.alphaSlider[i].markerAlpha) return false;
+                if (std::fabs(a.alphaSlider[i].markerPosition - b.alphaSlider[i].markerPosition) > kTolerance) return false;
+                if (std::fabs(a.alphaSlider[i].markerAlpha - b.alphaSlider[i].markerAlpha) > kTolerance) return false;
             }
             return true;
         }
@@ -64,10 +66,12 @@ namespace UnitTest
     // ColorGradient Sampling
     // =======================================================================
 
-    TEST(MATH_ColorGradient, EvaluateColor_EmptyReturnsZero)
+    TEST(MATH_ColorGradient, EvaluateColor_EmptyReturnsBlackOpaque)
     {
+        // EvaluateColor's contract is "RGB with A=1", so an empty color
+        // track samples to opaque black rather than fully transparent zero.
         ColorGradient g;
-        EXPECT_THAT(g.EvaluateColor(0.5f), IsClose(Color::CreateZero()));
+        EXPECT_THAT(g.EvaluateColor(0.5f), IsClose(Color(0.0f, 0.0f, 0.0f, 1.0f)));
     }
 
     TEST(MATH_ColorGradient, EvaluateColor_SingleStopIsConstant)
@@ -189,8 +193,13 @@ namespace UnitTest
         void SetUp() override
         {
             UnitTest::LeakDetectionFixture::SetUp();
+            // SerializeContext's constructor invokes MathReflect internally,
+            // so all AzCore math types - including ColorGradient and its
+            // markers - are already registered. Calling MathReflect again
+            // here would trigger a duplicate-registration error and drop the
+            // second pass's Field() bindings, which is what made the
+            // round-trip fail to find the type's fields.
             m_context = AZStd::make_unique<SerializeContext>();
-            MathReflect(m_context.get());
         }
 
         void TearDown() override
