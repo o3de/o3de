@@ -126,6 +126,19 @@ namespace PhysX
             if (auto* physXSystem = GetPhysXSystem())
             {
                 sceneDesc.cpuDispatcher = physXSystem->GetPxCpuDispathcher();
+
+                // Get our system config limits and set them for this scene. These don't live on the SceneConfiguration as they are not hard limits or commonly altered.
+                const PhysX::PhysXSystemConfiguration& systemConfig = physXSystem->GetPhysXConfiguration();
+                sceneDesc.sanityBounds = physx::PxBounds3(-PxMathConvert(systemConfig.m_limitsConfiguration.m_sanityBoundsHalfExtents), PxMathConvert(systemConfig.m_limitsConfiguration.m_sanityBoundsHalfExtents));
+                sceneDesc.limits.maxNbActors = systemConfig.m_limitsConfiguration.m_maxActors;
+                sceneDesc.limits.maxNbBodies = systemConfig.m_limitsConfiguration.m_maxDynamicBodies;
+                sceneDesc.limits.maxNbStaticShapes = systemConfig.m_limitsConfiguration.m_maxStaticShapes;
+                sceneDesc.limits.maxNbDynamicShapes = systemConfig.m_limitsConfiguration.m_maxDynamicShapes;
+                sceneDesc.limits.maxNbAggregates = systemConfig.m_limitsConfiguration.m_maxAggregates;
+                sceneDesc.limits.maxNbConstraints = systemConfig.m_limitsConfiguration.m_maxConstraintShaders;
+                sceneDesc.limits.maxNbRegions = systemConfig.m_limitsConfiguration.m_maxBroadphaseRegions;
+                sceneDesc.limits.maxNbBroadPhaseOverlaps = systemConfig.m_limitsConfiguration.m_maxBroadphaseOverlaps;
+
                 if (physx::PxScene * pxScene = physXSystem->GetPxPhysics()->createScene(sceneDesc))
                 {
                     if (physx::PxPvdSceneClient* pvdClient = pxScene->getScenePvdClient())
@@ -494,6 +507,10 @@ namespace PhysX
             }
             //register for future changes to the buffer sizes.
             physXSystem->RegisterSystemConfigurationChangedEvent(m_physicsSystemConfigChanged);
+
+            // Store scratch buffer location and size for use in StartSimulation()
+            m_scratchBuffer = physXSystem->GetScratchBuffer();
+            m_bufferSize = physXSystem->GetScratchBufferSize();
         }
 
         PhysXScene::s_rayCastBuffer = {};
@@ -515,6 +532,7 @@ namespace PhysX
         s_overlapBuffer = {};
         s_rayCastBuffer = {};
         s_sweepBuffer = {};
+
 
         for (auto& simulatedBody : m_simulatedBodies)
         {
@@ -563,7 +581,8 @@ namespace PhysX
         m_currentDeltaTime = deltatime;
 
         PHYSX_SCENE_WRITE_LOCK(m_pxScene);
-        m_pxScene->simulate(deltatime);
+        // m_pxScene->simulate(deltatime);
+        m_pxScene->simulate(deltatime, /*completionTask*/ NULL, m_scratchBuffer, m_bufferSize, /*controlSimulation*/ true);
     }
 
     void PhysXScene::FinishSimulation()

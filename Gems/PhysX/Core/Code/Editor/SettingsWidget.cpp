@@ -41,6 +41,7 @@ namespace PhysX
             m_propertyEditor->AddInstance(&m_defaultSceneConfiguration);
             m_propertyEditor->AddInstance(&m_debugDisplayData);
             m_propertyEditor->AddInstance(&m_physxSystemConfiguration.m_windConfiguration);
+            m_propertyEditor->AddInstance(&m_physxSystemConfiguration.m_limitsConfiguration);
             m_propertyEditor->InvalidateAll();
             blockSignals(false);
         }

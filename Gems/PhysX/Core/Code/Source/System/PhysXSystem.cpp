@@ -152,6 +152,11 @@ namespace PhysX
             m_systemConfig = *physXConfig;
         }
 
+        // Initialize the simulation scratch buffer. It must be in increments of 16K and 16-byte aligned.
+        m_scratchBuffer.m_scratchBufferSize = 16 * 1024 * m_systemConfig.m_limitsConfiguration.m_numScratchBufferBlocks;
+        m_scratchBuffer.m_scratchBufferAddress = AZ::AllocatorInstance<PhysXAllocator>::Get().allocate(m_scratchBuffer.m_scratchBufferSize, 16);
+        AZ_Assert((reinterpret_cast<size_t>(m_scratchBuffer.m_scratchBufferAddress) & 15) == 0, "PhysX requires 16-byte aligned memory allocations.");
+
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
     }
@@ -170,6 +175,9 @@ namespace PhysX
         }
 
         RemoveAllScenes();
+
+        // Deallocate the scratch buffer
+        AZ::AllocatorInstance<PhysXAllocator>::Get().deallocate(m_scratchBuffer.m_scratchBufferAddress, m_scratchBuffer.m_scratchBufferSize, 16);
 
         m_accumulatedTime = 0.0f;
         m_state = State::Shutdown;
