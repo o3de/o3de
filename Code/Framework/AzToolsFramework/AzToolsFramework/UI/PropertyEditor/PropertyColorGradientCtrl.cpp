@@ -642,6 +642,7 @@ namespace AzToolsFramework
         m_positionSpin->setSingleStep(1.0);
         m_positionSpin->setDecimals(1);
 
+        inspector->addStretch(1);
         inspector->addWidget(m_valueLabel);
         inspector->addWidget(m_colorField);
         inspector->addWidget(m_alphaSpin);
