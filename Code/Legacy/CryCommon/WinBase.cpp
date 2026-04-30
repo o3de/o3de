@@ -203,16 +203,6 @@ size_t wcsnlen(const wchar_t* str, size_t maxLen)
     return length;
 }
 
-char* stpcpy(char* dest, const char* str)
-{
-    while (*str != '\0')
-    {
-        *dest++ = *str++;
-    }
-    *dest = '\0';
-
-    return dest;
-}
 #endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)

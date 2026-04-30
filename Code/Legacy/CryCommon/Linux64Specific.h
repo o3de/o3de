@@ -64,7 +64,6 @@ typedef long LONG_PTR, * PLONG_PTR, * PLONG;
 typedef unsigned long ULONG_PTR, * PULONG_PTR;
 
 typedef uint8               BYTE;
-//typedef uint16              WORD;
 typedef void*               HWND;
 typedef UINT_PTR            WPARAM;
 typedef LONG_PTR            LPARAM;
