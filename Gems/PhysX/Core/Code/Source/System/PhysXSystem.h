@@ -82,8 +82,8 @@ namespace PhysX
             return m_cpuDispatcher;
         }
         //! Accessor to get scratch buffer for use in scene->simulate.
-        void* GetScratchBuffer() { return m_scratchBuffer.m_scratchBufferAddress; }
-        AZ::u32 GetScratchBufferSize() { return static_cast<AZ::u32>(m_scratchBuffer.m_scratchBufferSize); }
+        void* GetScratchBuffer() { return m_scratchBufferAddress; }
+        AZ::u32 GetScratchBufferSize() { return static_cast<AZ::u32>(m_scratchBufferSize); }
 
         void SetCollisionLayerName(int index, const AZStd::string& layerName);
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group);
@@ -118,12 +118,9 @@ namespace PhysX
         PxAzErrorCallback m_physXErrorCallback;
         PxAzProfilerCallback m_pxAzProfilerCallback;
 
-        struct ScratchBuffer // TODO: remove, as it can't be accessed directly anyways
-        {
-            void* m_scratchBufferAddress = nullptr;
-            size_t m_scratchBufferSize = 0;
-        };
-        ScratchBuffer m_scratchBuffer;
+        // Scratch memory buffer to use for work during simulation run to reduce dynamic allocation.
+        void* m_scratchBufferAddress = nullptr;
+        size_t m_scratchBufferSize = 0;
 
         physx::PxCpuDispatcher* m_cpuDispatcher = nullptr;
 

@@ -508,7 +508,7 @@ namespace PhysX
             //register for future changes to the buffer sizes.
             physXSystem->RegisterSystemConfigurationChangedEvent(m_physicsSystemConfigChanged);
 
-            // Store scratch buffer location and size for use in StartSimulation()
+            // Cache the scratch buffer location and size
             m_scratchBuffer = physXSystem->GetScratchBuffer();
             m_bufferSize = physXSystem->GetScratchBufferSize();
         }
@@ -1401,6 +1401,7 @@ namespace PhysX
 
         {
             AZ_PROFILE_SCOPE(Physics, "Sync Setup");
+            
 
             size_t batchSize = physx_parallelTransformSyncBatchSize;
             size_t fullSize = m_packedIndices.size();

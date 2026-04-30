@@ -112,30 +112,22 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_maxActors, "Max Actors",
                         "This includes Articulation Links and derived physics body types.\n"
                         "A reasonable value might be 10240. 0 indicates no limit.")
-                        ->Attribute(AZ::Edit::Attributes::Max, UINT_MAX)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_maxDynamicBodies, "Max Dynamic Bodies",
                         "A reasonable value might be 256-512. Note, all bodies are actors. 0 indicates no limit.")
-                        ->Attribute(AZ::Edit::Attributes::Max, UINT_MAX)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_maxStaticShapes, "Max Static Shapes",
                         "A reasonable value might be 2048-4096 for a more densily populated static world.\n"
                         "Note, not all actors/bodies have shapes. Bodies can have compound shapes. 0 indicates no limit.")
-                        ->Attribute(AZ::Edit::Attributes::Max, UINT_MAX)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_maxDynamicShapes, "Max Dynamic Shapes",
                         "This should be slightly higher than your max dynamic bodies. Note, not all actors/bodies have shapes. Bodies can have compound shapes. 0 indicates no limit.")
-                        ->Attribute(AZ::Edit::Attributes::Max, UINT_MAX)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_maxAggregates, "Max Aggregates",
                         "This is cluster of bodies which act/move together, such as a Ragdoll. 0 indicates no limit.")
-                        ->Attribute(AZ::Edit::Attributes::Max, UINT_MAX)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_maxConstraintShaders, "Max Constraints",
                         "This can vary significantly depending on game or simulation requirements. 0 indicates no limit.")
-                        ->Attribute(AZ::Edit::Attributes::Max, UINT_MAX)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_maxBroadphaseRegions, "Max Broadphase Regions",
                         "Broadphases are expensive to compute, and the limit should be kept low. 0 indicates no limit.")
-                        ->Attribute(AZ::Edit::Attributes::Max, UINT_MAX)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_maxBroadphaseOverlaps, "Max Broadphase Overlaps",
                         "Number of overlapping bodies colliding in broadphase.\n"
                         "A reasonable value might be 1024, but will need to be adjusted depending on game/simulation requirements. 0 indicates no limit.")
-                        ->Attribute(AZ::Edit::Attributes::Max, UINT_MAX)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LimitsConfiguration::m_numScratchBufferBlocks, "Scratch Buffer Blocks",
                         "Number of 16K memory blocks to size the temporary scratch buffer used during physics simulation.\n"
                         "Default is 2048 (16K * 2048 = 32MB)")
