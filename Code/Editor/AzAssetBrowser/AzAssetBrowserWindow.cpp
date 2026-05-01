@@ -15,6 +15,8 @@
 
 // AzToolsFramework
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -36,6 +38,8 @@
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
 #include "LyViewPaneNames.h"
 
+#include <QSettings>
+
 AZ_CVAR_API_EXTERNED(AZTF_API, bool, ed_useNewAssetBrowserListView);
 
 AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the in-progress new Asset Browser design");
@@ -46,6 +50,8 @@ static constexpr int s_narrowModeThreshold = 700;
 static constexpr int MinimumWidth = 328;
 
 using namespace AzToolsFramework::AssetBrowser;
+
+int AzAssetBrowserWindow::s_nextInstanceId = 0;
 
 namespace
 {
@@ -373,12 +379,78 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
     m_ui->m_thumbnailView->SetIsAssetBrowserMainView();
     m_ui->m_tableView->SetIsAssetBrowserMainView();
+
+    // Each browser instance gets a unique ID for saving/restoring its folder
+    m_instanceId = s_nextInstanceId++;
+
+    // Navigate to startup folder once asset cache is populated
+    AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusConnect();
+
+    // If the cache is already ready (window opened after initial load), navigate now
+    bool isReady = false;
+    AzToolsFramework::AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(
+        isReady, &AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests::AreEntriesReady);
+    if (isReady)
+    {
+        QTimer::singleShot(0, this, [this]() { NavigateToStartupFolder(); });
+    }
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
 {
+    AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
+
+    // Save this browser's current folder for next session resume
+    QString visiblePath = m_ui->m_pathBreadCrumbs->currentPath();
+    if (!visiblePath.isEmpty())
+    {
+        QSettings settings;
+        settings.beginGroup("AssetBrowser");
+        settings.setValue(GetSettingsKey(), visiblePath);
+        settings.endGroup();
+        settings.sync();
+    }
+
     m_assetBrowserModel->DisableTickBus();
     m_ui->m_assetBrowserTreeViewWidget->SaveState();
+}
+
+void AzAssetBrowserWindow::OnAssetBrowserComponentReady()
+{
+    // Defer to allow the model/filter to finish updating after entries are populated
+    QTimer::singleShot(0, this, [this]() { NavigateToStartupFolder(); });
+}
+
+QString AzAssetBrowserWindow::GetSettingsKey() const
+{
+    return QString("LastFolder_%1").arg(m_instanceId);
+}
+
+void AzAssetBrowserWindow::NavigateToStartupFolder()
+{
+    // Try 1: Resume this browser's last session folder
+    QSettings settings;
+    settings.beginGroup("AssetBrowser");
+    QString lastFolder = settings.value(GetSettingsKey(), "").toString();
+    settings.endGroup();
+
+    if (!lastFolder.isEmpty())
+    {
+        // Use breadcrumbs-style path navigation which works for all folders
+        // including Gems and engine folders (not just project folders).
+        m_ui->m_assetBrowserTreeViewWidget->SelectFolderFromBreadcrumbsPath(lastFolder.toUtf8().constData());
+        if (m_ui->m_assetBrowserTreeViewWidget->selectionModel()->hasSelection())
+        {
+            return;
+        }
+    }
+
+    // Try 2: Navigate to Project/Assets
+    AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+    AZ::IO::FixedMaxPath assetsPath = projectPath / "Assets";
+    m_ui->m_assetBrowserTreeViewWidget->SelectFolder(assetsPath.c_str());
+
+    // If that also fails, we stay at root (default behavior)
 }
 
 void AzAssetBrowserWindow::AddCreateMenu()
@@ -650,6 +722,16 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     {
         m_ui->m_assetBrowserListViewWidget->setVisible(hasFilter);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
+    }
+
+    // When searching, switch the folder filter to Up propagation so that
+    // source files (which have folder ancestors) pass the folder filter.
+    // This allows folders containing matching files to remain visible in
+    // the sidebar tree.  Restore Down propagation when the search clears.
+    if (auto folderFilter = m_ui->m_searchWidget->GetFolderFilter())
+    {
+        using Dir = AzAssetBrowser::AssetBrowserEntryFilter::PropagateDirection;
+        folderFilter->SetFilterPropagation(hasFilter ? Dir::Up : Dir::Down);
     }
 
     if (hasFilter)

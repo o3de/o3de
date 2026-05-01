@@ -897,7 +897,14 @@ namespace AzQtComponents
 
         if (m_showSearchResultsMode || !rootIndex().isValid())
         {
-            updateGeometriesInternal(model()->index(0, 0, {}), x, y);
+            // Iterate all top-level entries (scan folders). The model's invisible
+            // root has scan folders as direct children, so we must visit each one
+            // to show search results from every scope (project + gems).
+            const int topLevelCount = model()->rowCount({});
+            for (int i = 0; i < topLevelCount; ++i)
+            {
+                updateGeometriesInternal(model()->index(i, 0, {}), x, y);
+            }
         }
         else
         {
@@ -938,7 +945,7 @@ namespace AzQtComponents
                 continue;
             }
 
-            if (row > 0 && x + itemSize.width() > viewportWidth)
+            if (x + itemSize.width() > viewportWidth && x > m_config.viewportPadding)
             {
                 x = m_config.viewportPadding;
                 y += rowHeight;

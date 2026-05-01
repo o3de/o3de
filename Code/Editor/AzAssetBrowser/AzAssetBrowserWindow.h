@@ -10,6 +10,8 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+
 #include <QWidget>
 #include <QMenu>
 #endif
@@ -48,7 +50,9 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-class AzAssetBrowserWindow : public QWidget
+class AzAssetBrowserWindow
+    : public QWidget
+    , private AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler
 {
     Q_OBJECT
 public:
@@ -107,11 +111,23 @@ private:
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
     AzToolsFramework::AssetBrowser::AssetBrowserMode m_currentMode = AzToolsFramework::AssetBrowser::AssetBrowserMode::ThumbnailView;
 
+    //////////////////////////////////////////////////////////////////////////
+    // AssetBrowserComponentNotificationBus::Handler
+    //////////////////////////////////////////////////////////////////////////
+    void OnAssetBrowserComponentReady() override;
+
+    //! Navigates to the startup folder using per-instance saved path > Project/Assets > root.
+    void NavigateToStartupFolder();
+    //! Returns the QSettings key for this browser instance's saved folder path.
+    QString GetSettingsKey() const;
+
     //! Updates breadcrumbs with the selectedEntry relative path if it's a folder or with the
     //! relative path of the first folder parent of the passed entry.
     //! Clears breadcrumbs if nullptr is passed or there's no folder parent.
     void UpdateBreadcrumbs(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const;
     bool m_inNarrowMode = false;
+    int m_instanceId = 0;
+    static int s_nextInstanceId;
 
 private Q_SLOTS:
     void CurrentIndexChangedSlot(const QModelIndex& idx) const;

@@ -14,9 +14,16 @@
 
 #include <QList>
 #include <QString>
-#include <QSettings>
 #endif
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+
+namespace AzToolsFramework
+{
+    namespace AssetBrowser
+    {
+        struct FavoriteRecord;
+    }
+}
 
 namespace AzToolsFramework
 {
@@ -49,8 +56,10 @@ namespace AzToolsFramework
             void SetupFromSearchWidget(SearchWidget* searchWidget);
             void WriteToSearchWidget(SearchWidget* searchWidget);
 
-            void LoadSettings(QSettings& settings);
-            void SaveSettings(QSettings& settings);
+            //! Hydrate this favorite from a serialized record (registry-backed persistence).
+            void LoadFromRecord(const FavoriteRecord& record);
+            //! Serialize this favorite into a record for registry persistence.
+            void SaveToRecord(FavoriteRecord& record) const;
 
             QString GetDefaultName();
         private:

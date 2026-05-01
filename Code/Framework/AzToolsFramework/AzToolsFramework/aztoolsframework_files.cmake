@@ -834,6 +834,8 @@ set(FILES
     AssetBrowser/Favorites/AssetBrowserFavoritesManager.h
     AssetBrowser/Favorites/AssetBrowserFavoritesModel.cpp
     AssetBrowser/Favorites/AssetBrowserFavoritesModel.h
+    AssetBrowser/Favorites/AssetBrowserFavoritesSettings.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoritesSettings.h
     AssetBrowser/Favorites/AssetBrowserFavoriteItem.cpp
     AssetBrowser/Favorites/AssetBrowserFavoriteItem.h
     AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.cpp
