@@ -321,7 +321,7 @@ void TUiAnimSplineTrack<Vec2>::GetKeyInfo(int index, const char*& description, f
     description = str;
     assert(index >= 0 && index < GetNumKeys());
     Spline::key_type& k = m_spline->key(index);
-    azsprintf(str, "%.2f", k.value.y);
+    azsnprintf(str, sizeof(str), "%.2f", k.value.y);
 }
 
 //////////////////////////////////////////////////////////////////////////
