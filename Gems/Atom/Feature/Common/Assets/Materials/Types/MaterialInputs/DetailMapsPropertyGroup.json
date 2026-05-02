@@ -167,16 +167,32 @@
                                 "translateXProperty": "offsetU",
                                 "translateYProperty": "offsetV",
                                 "rotateDegreesProperty": "rotateDegrees",
-                                "float3x3ShaderInput": "m_detailUvMatrix",
-                                "float3x3InverseShaderInput": "m_detailUvMatrixInverse",
+                                "float3x3ShaderInput": "m_detailUvMatrixRow0",
+                                "float3x3InverseShaderInput": "m_detailUvMatrixInverseRow0",
                                 "shaderParameters": [
                                     {
-                                        "name": "m_detailUvMatrix",
-                                        "type": "float3x3"
+                                        "name": "m_detailUvMatrixRow0",
+                                        "type": "float4"
                                     },
                                     {
-                                        "name": "m_detailUvMatrixInverse",
-                                        "type": "float3x3"
+                                        "name": "m_detailUvMatrixRow1",
+                                        "type": "float4"
+                                    },
+                                    {
+                                        "name": "m_detailUvMatrixRow2",
+                                        "type": "float4"
+                                    },
+                                    {
+                                        "name": "m_detailUvMatrixInverseRow0",
+                                        "type": "float4"
+                                    },
+                                    {
+                                        "name": "m_detailUvMatrixInverseRow1",
+                                        "type": "float4"
+                                    },
+                                    {
+                                        "name": "m_detailUvMatrixInverseRow2",
+                                        "type": "float4"
                                     }
                                 ]
                             }

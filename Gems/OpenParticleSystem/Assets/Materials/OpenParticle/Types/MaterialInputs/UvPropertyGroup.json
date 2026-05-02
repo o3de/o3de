@@ -77,16 +77,32 @@
                 "translateXProperty": "offsetU",
                 "translateYProperty": "offsetV",
                 "rotateDegreesProperty": "rotateDegrees",
-                "float3x3ShaderInput": "m_uvMatrix",
-                "float3x3InverseShaderInput": "m_uvMatrixInverse",
+                "float3x3ShaderInput": "m_uvMatrixRow0",
+                "float3x3InverseShaderInput": "m_uvMatrixInverseRow0",
                 "shaderParameters": [
                     {
-                        "name": "m_uvMatrix",
-                        "type": "float3x3"
+                        "name": "m_uvMatrixRow0",
+                        "type": "float4"
                     },
                     {
-                        "name": "m_uvMatrixInverse",
-                        "type": "float3x3"
+                        "name": "m_uvMatrixRow1",
+                        "type": "float4"
+                    },
+                    {
+                        "name": "m_uvMatrixRow2",
+                        "type": "float4"
+                    },
+                    {
+                        "name": "m_uvMatrixInverseRow0",
+                        "type": "float4"
+                    },
+                    {
+                        "name": "m_uvMatrixInverseRow1",
+                        "type": "float4"
+                    },
+                    {
+                        "name": "m_uvMatrixInverseRow2",
+                        "type": "float4"
                     }
                 ]
             }
