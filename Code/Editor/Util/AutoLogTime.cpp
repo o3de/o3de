@@ -22,5 +22,5 @@ CAutoLogTime::CAutoLogTime(const char* what)
 CAutoLogTime::~CAutoLogTime()
 {
     m_t1 = time(0);
-    CLogFile::FormatLine("---- End: %s (%d seconds)", m_what, (m_t1 - m_t0));
+    CLogFile::FormatLine("---- End: %s (%lld seconds)", m_what, (m_t1 - m_t0));
 }
