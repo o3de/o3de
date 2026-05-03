@@ -20,7 +20,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<Transform2DFunctorSourceData, RPI::MaterialFunctorSourceData>()
-                    ->Version(4) // added base class
+                    ->Version(4)
                     ->Field("transformOrder", &Transform2DFunctorSourceData::m_transformOrder)
                     ->Field("centerProperty", &Transform2DFunctorSourceData::m_center)
                     ->Field("scaleProperty", &Transform2DFunctorSourceData::m_scale)
