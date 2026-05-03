@@ -18,6 +18,9 @@ struct MaterialParameters {
     float m_outlineSize;
     float m_padding0;
     float3x3 m_uvMatrix;
+    float4 m_uvMatrixRow0;
+    float4 m_uvMatrixRow1;
+    float4 m_uvMatrixRow2;
 };
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
@@ -27,6 +30,13 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 
 const MaterialParameters GetMaterialParameters()
 {
-    return MaterialSrg::m_params;
+    MaterialParameters params = MaterialSrg::m_params;
+
+    // Maintain compatibility with BasePBR vertex eval, which now consumes row-based UV matrix inputs.
+    params.m_uvMatrixRow0 = float4(params.m_uvMatrix[0][0], params.m_uvMatrix[0][1], params.m_uvMatrix[0][2], 0.0);
+    params.m_uvMatrixRow1 = float4(params.m_uvMatrix[1][0], params.m_uvMatrix[1][1], params.m_uvMatrix[1][2], 0.0);
+    params.m_uvMatrixRow2 = float4(params.m_uvMatrix[2][0], params.m_uvMatrix[2][1], params.m_uvMatrix[2][2], 0.0);
+
+    return params;
 }
 
