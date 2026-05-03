@@ -796,7 +796,7 @@ def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
     #         {'gem_name':'gem2', 'version':'2.0.0'},
     #     ],
     # }
-    utils.replace_dict_keys_with_value_key(all_gems_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
+    utils.replace_dict_keys_with_value_key(all_gems_json_data, value_keys=['gem_name', 'gem_alt_name'], replaced_key_name='path', place_values_in_list=True)
 
     return all_gems_json_data
 
