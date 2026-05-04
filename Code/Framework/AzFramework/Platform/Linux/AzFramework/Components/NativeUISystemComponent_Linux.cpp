@@ -23,6 +23,10 @@
 #include <AzFramework/WaylandNativeWindow.h>
 #include <AzFramework/WaylandInputDeviceMouse.h>
 #include <AzFramework/WaylandInputDeviceKeyboard.h>
+
+#include <AzCore/Console/IConsole.h>
+//Used so Qt can force us to use xcb and lets users also change the behavior.
+AZ_CVAR(bool, wl_enable, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Try to use Wayland when applicable");
 #endif
 
 // libevdev could be used for other devices in the future (Can do keyboard, mouse, etc), so it doesn't belong in the gamepad
@@ -171,7 +175,7 @@ namespace AzFramework
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB && PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
         //Check for a Wayland env var if we also support X11
         const char* waylandEnvVar = getenv("WAYLAND_DISPLAY");
-        if (waylandEnvVar != nullptr && strlen(waylandEnvVar) > 0)
+        if (wl_enable && waylandEnvVar != nullptr && strlen(waylandEnvVar) > 0)
         {
             g_useWayland = true;
             AZ_Printf("NativeUISystemComponent", "Using Wayland, found WAYLAND_DISPLAY env var.");
@@ -179,6 +183,10 @@ namespace AzFramework
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND && !PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         //Only supports Wayland.
         g_useWayland = true;
+        if (!wl_enable)
+        {
+            AZ_Warning("NativeUISystemComponent", false, "Requested Wayland to be disabled, but only Wayland is supported. Continuing with Wayland anyway, expect issues.");
+        }
 #endif
 
         m_applicationImplFactory = AZStd::make_unique<LinuxApplicationImplFactory>();
