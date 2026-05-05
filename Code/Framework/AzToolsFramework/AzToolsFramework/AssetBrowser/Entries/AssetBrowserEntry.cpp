@@ -451,6 +451,27 @@ namespace AzToolsFramework
                 return false;
             }
 
+            // Project folder should always appear before other folders.
+            // The tree view sorts with Qt::DescendingOrder and the name
+            // comparator uses "> 0", so lessThan(project, other) must return
+            // false (not true) to place the project first in descending order.
+            if (GetEntryType() == AssetEntryType::Folder && other->GetEntryType() == AssetEntryType::Folder)
+            {
+                auto* leftFolder = azrtti_cast<const FolderAssetBrowserEntry*>(this);
+                auto* rightFolder = azrtti_cast<const FolderAssetBrowserEntry*>(other);
+                if (leftFolder && rightFolder)
+                {
+                    if (leftFolder->IsProjectFolder() && !rightFolder->IsProjectFolder())
+                    {
+                        return false;
+                    }
+                    if (!leftFolder->IsProjectFolder() && rightFolder->IsProjectFolder())
+                    {
+                        return true;
+                    }
+                }
+            }
+
             switch (sortMode)
             {
             case AssetEntrySortMode::FileType:

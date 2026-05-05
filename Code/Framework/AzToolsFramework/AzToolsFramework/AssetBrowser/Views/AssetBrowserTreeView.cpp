@@ -43,6 +43,8 @@
 #include <AzQtComponents/Components/Widgets/MessageBox.h>
 #include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
+#include <QApplication>
+#include <QClipboard>
 #include <QDir>
 #include <QMenu>
 #include <QFile>
@@ -123,6 +125,25 @@ namespace AzToolsFramework
                     DuplicateEntries();
                 });
             addAction(duplicateAction);
+
+            QAction* copyPathAction = new QAction("Copy Path Action", this);
+            copyPathAction->setShortcut(QKeySequence::Copy);
+            copyPathAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(
+                copyPathAction, &QAction::triggered, this, [this]()
+                {
+                    auto selectedAssets = GetSelectedAssets();
+                    if (!selectedAssets.empty())
+                    {
+                        QStringList paths;
+                        for (const auto* entry : selectedAssets)
+                        {
+                            paths.append(entry->GetFullPath().c_str());
+                        }
+                        QApplication::clipboard()->setText(paths.join("\n"));
+                    }
+                });
+            addAction(copyPathAction);
 
             connect(this, &QAbstractItemView::clicked, this, &AssetBrowserTreeView::itemClicked);
         }

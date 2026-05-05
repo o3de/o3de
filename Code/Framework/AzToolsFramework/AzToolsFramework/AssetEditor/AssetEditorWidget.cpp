@@ -102,18 +102,28 @@ namespace AzToolsFramework
                 absolutePath = AZStd::string::format("%s/%s", projectPath, recentPath.c_str());
             }
 
-            const auto& it = m_recentPathPerAssetType.find(assetType);
-            if (it != m_recentPathPerAssetType.end())
+            // Normalize the path (consistent separators, no double slashes, resolved case)
+            // to ensure reliable deduplication and lookup via GetSourceInfoBySourcePath.
+            AZ::StringFunc::Path::Normalize(absolutePath);
+
+            // Only store the recent folder path if it is within the project directory.
+            // Paths pointing to the Cache or other non-project locations should not be
+            // used as defaults for Save As dialogs.
+            if (AZ::StringFunc::StartsWith(folderPath, projectPath, false))
             {
-                // Case insensitive compare, the asset path passed in may come from the asset hint which is lowercase
-                if (!AZ::StringFunc::Equal(folderPath, it->second, false))
+                const auto& it = m_recentPathPerAssetType.find(assetType);
+                if (it != m_recentPathPerAssetType.end())
                 {
-                    m_recentPathPerAssetType.insert_or_assign(assetType, folderPath.c_str());
+                    // Case insensitive compare, the asset path passed in may come from the asset hint which is lowercase
+                    if (!AZ::StringFunc::Equal(folderPath, it->second, false))
+                    {
+                        m_recentPathPerAssetType.insert_or_assign(assetType, folderPath.c_str());
+                    }
                 }
-            }
-            else
-            {
-                m_recentPathPerAssetType.insert_or_assign(assetType, folderPath);
+                else
+                {
+                    m_recentPathPerAssetType.insert_or_assign(assetType, folderPath);
+                }
             }
 
             auto item = AZStd::find_if(m_recentFiles.begin(), m_recentFiles.end(), [&absolutePath](const AZStd::string& path)
@@ -446,13 +456,23 @@ namespace AzToolsFramework
                 return;
             }
 
-            bool hasResult = false;
-            AZStd::string fullPath;
+            // Resolve the source path via the source UUID so that the stored path
+            // round-trips through GetSourceInfoBySourcePath (used by Open Recent).
+            AZ::Data::AssetInfo sourceInfo;
+            AZStd::string watchFolder;
+            bool sourceFound = false;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                hasResult,
-                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath,
-                typeInfo.m_relativePath,
-                fullPath);
+                sourceFound,
+                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourceUUID,
+                asset.GetId().m_guid,
+                sourceInfo,
+                watchFolder);
+
+            AZStd::string fullPath;
+            if (sourceFound)
+            {
+                AzFramework::StringFunc::Path::Join(watchFolder.c_str(), sourceInfo.m_relativePath.c_str(), fullPath);
+            }
 
             AZStd::string fileName = typeInfo.m_relativePath;
 
@@ -461,7 +481,10 @@ namespace AzToolsFramework
                 AzFramework::StringFunc::Path::StripPath(fileName);
             }
 
-            AddRecentPath(asset.GetType(), fullPath.c_str());
+            if (!fullPath.empty())
+            {
+                AddRecentPath(asset.GetType(), fullPath.c_str());
+            }
 
             AssetEditorTab* tab = FindTabForAsset(asset.GetId());
             if (tab)
@@ -502,41 +525,100 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::OpenAssetFromPath(const AZStd::string& assetPath)
         {
+            // ----------------------------------------------------------------
+            // Step 1: Resolve the path to an asset ID and type.
+            //         Try as a source path first. If that fails, treat it as
+            //         a product/cache path (legacy recent entries stored cache
+            //         paths before the fix).
+            // ----------------------------------------------------------------
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetType assetType;
+
+            // Try source path resolution.
             bool hasResult = false;
-            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetInfo sourceInfo;
             AZStd::string watchFolder;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                 hasResult,
                 &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
                 assetPath.c_str(),
-                assetInfo,
+                sourceInfo,
                 watchFolder);
 
             if (hasResult)
             {
-                AZStd::string fileName = assetPath;
-
-                if (AzFramework::StringFunc::Path::Normalize(fileName))
-                {
-                    AzFramework::StringFunc::Path::StripPath(fileName);
-                }
-
-                AZ::Data::AssetInfo typeInfo;
+                AZ::Data::AssetInfo productInfo;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    typeInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetInfo.m_assetId);
+                    productInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, sourceInfo.m_assetId);
 
-                AssetEditorTab* tab = FindTabForAsset(assetInfo.m_assetId);
-                if (tab)
+                if (!productInfo.m_assetType.IsNull())
                 {
-                    // This asset is already open, just switch to the correct tab.
-                    m_tabs->setCurrentWidget(tab);
+                    assetId = sourceInfo.m_assetId;
+                    assetType = productInfo.m_assetType;
                 }
-                else
+            }
+
+            // Fallback: treat the path as a product/cache path.
+            if (assetId.IsValid() == false)
+            {
+                AZStd::string relativePath;
+                bool productResult = false;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    productResult,
+                    &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath,
+                    assetPath,
+                    relativePath);
+
+                if (productResult && !relativePath.empty())
                 {
-                    AssetEditorTab* newTab = MakeNewTab(fileName.c_str());
-                    newTab->LoadAsset(assetInfo.m_assetId, typeInfo.m_assetType, fileName.c_str());
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetId,
+                        &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                        relativePath.c_str(),
+                        AZ::Data::s_invalidAssetType,
+                        false);
+
+                    if (assetId.IsValid())
+                    {
+                        AZ::Data::AssetInfo catalogInfo;
+                        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                            catalogInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+                        assetType = catalogInfo.m_assetType;
+                    }
                 }
-                
+            }
+
+            if (!assetId.IsValid() || assetType.IsNull())
+            {
+                AZ_Warning("AssetEditor", false, "Open Recent: could not resolve asset for path '%s'.", assetPath.c_str());
+                return;
+            }
+
+            if (!IsValidAssetType(assetType))
+            {
+                AZ_Warning("AssetEditor", false, "Open Recent: asset type %s is not editable (path: %s).",
+                    assetType.ToFixedString().c_str(), assetPath.c_str());
+                return;
+            }
+
+            // ----------------------------------------------------------------
+            // Step 2: Open the asset.
+            // ----------------------------------------------------------------
+            AZStd::string fileName = assetPath;
+            if (AzFramework::StringFunc::Path::Normalize(fileName))
+            {
+                AzFramework::StringFunc::Path::StripPath(fileName);
+            }
+
+            AssetEditorTab* tab = FindTabForAsset(assetId);
+            if (tab)
+            {
+                m_tabs->setCurrentWidget(tab);
+            }
+            else
+            {
+                AssetEditorTab* newTab = MakeNewTab(fileName.c_str());
+                newTab->LoadAsset(assetId, assetType, fileName.c_str());
             }
         }
 
@@ -793,6 +875,7 @@ namespace AzToolsFramework
 
                 for (const AZStd::string& recentFile : m_userSettings.GetRecentFiles())
                 {
+                    // Try to get a short display name from the product path.
                     bool hasResult = false;
                     AZStd::string relativePath;
                     AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
@@ -801,18 +884,26 @@ namespace AzToolsFramework
                         recentFile,
                         relativePath);
 
-                    if (hasResult)
+                    if (!hasResult)
                     {
-                        QAction* action = m_recentFileMenu->addAction(relativePath.c_str());
-                        connect(
-                            action,
-                            &QAction::triggered,
-                            this,
-                            [recentFile, this]()
-                            {
-                                this->OpenAssetFromPath(recentFile);
-                            });
+                        // Fall back to the filename portion of the stored path.
+                        relativePath = recentFile;
+                        AzFramework::StringFunc::Path::StripPath(relativePath);
+                        if (relativePath.empty())
+                        {
+                            continue;
+                        }
                     }
+
+                    QAction* action = m_recentFileMenu->addAction(relativePath.c_str());
+                    connect(
+                        action,
+                        &QAction::triggered,
+                        this,
+                        [recentFile, this]()
+                        {
+                            this->OpenAssetFromPath(recentFile);
+                        });
                 }
             }
         }
