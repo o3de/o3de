@@ -245,22 +245,22 @@ namespace PhysX
         const auto& rootLinkConfiguration = m_articulationLinkData->m_articulationLinkConfiguration;
         SetRootSpecificProperties(rootLinkConfiguration);
 
-
         CreateChildArticulationLinks(nullptr, *m_articulationLinkData);
-
-        // Caches need to be released and recreated if a link is added or removed
-        m_articulationCache->release();
 
         // Add articulation to the scene
         AzPhysics::Scene* scene = sceneInterface->GetScene(m_attachedSceneHandle);
         auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
-
+        
         PHYSX_SCENE_WRITE_LOCK(pxScene);
         pxScene->addArticulation(*m_articulation);
+        
+        // Articulation needs to be in a scene before we can create a cache or copy it's state
+        // Caches need to be released and recreated if a link is added or removed
+        m_articulationCache = m_articulation->createCache();
 
-        // Articulation needs to be in a scene before we can copy it's state
+        // Initialize an empty cache
         m_articulation->copyInternalStateToCache(*m_articulationCache, rootLinkConfiguration.m_articulationCacheConfig.GetPxCacheFlags());
-
+        
         const AZ::u32 numLinks = m_articulation->getNbLinks();
         for (AZ::u32 linkIndex = 0; linkIndex < numLinks; linkIndex++)
         {
@@ -272,6 +272,9 @@ namespace PhysX
                 const auto entityId = linkActorData->GetEntityId();
                 if (auto iterator = m_linkIndicesByEntityId.find(entityId); iterator != m_linkIndicesByEntityId.end())
                 {
+                    // TODO: Need to do collect joint Dof as well for accessing their cache data
+                    // link->getInboundJointDof();
+
                     iterator->second.push_back(link->getLinkIndex()); // The low-level index does not necessarily follow order of creation
                 }
                 else
@@ -544,6 +547,7 @@ namespace PhysX
 
         physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
         PHYSX_SCENE_WRITE_LOCK(pxScene);
+        m_articulationCache->release();
         m_articulation->release();
         m_articulation = nullptr;
         m_linkIndicesByEntityId.clear();
@@ -571,9 +575,10 @@ namespace PhysX
             return;
         }
 
+        // TODO: the cache doesn't appear to be created
         // It's safe to update the cache here now that the simulation is finished. Cache can always be accessed because it's a copy.
-        const auto& rootLinkConfiguration = m_articulationLinkData->m_articulationLinkConfiguration;
-        m_articulation->copyInternalStateToCache(*m_articulationCache, rootLinkConfiguration.m_articulationCacheConfig.GetPxCacheFlags());
+        // const auto& rootLinkConfiguration = m_articulationLinkData->m_articulationLinkConfiguration;
+        // m_articulation->copyInternalStateToCache(*m_articulationCache, rootLinkConfiguration.m_articulationCacheConfig.GetPxCacheFlags());
 
         physx::PxArticulationLink* links[MaxArticulationLinks] = { 0 };
         m_articulation->getLinks(links, MaxArticulationLinks);

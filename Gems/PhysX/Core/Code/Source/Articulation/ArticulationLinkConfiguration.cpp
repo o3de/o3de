@@ -104,82 +104,85 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<ArticulationCacheConfiguration>("PhysX Articulation Cache Configuration", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_jointVelocities,
-                        "Include Joint Velocities",
+                        "Joint Velocities",
                         "The articulation joint DOF velocities.\n"
                         "N = getDofs()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_jointAccelerations,
-                        "Include Joint Accelerations",
+                        "Joint Accelerations",
                         "The articulation joint DOF Accelerations.\n"
                         "N = getDofs()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_jointPositions,
-                        "Include Joint Positions",
+                        "Joint Positions",
                         "The articulation joint DOF Positions.\n"
                         "N = getDofs()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_jointForces,
-                        "Include Joint Forces",
+                        "Joint Forces",
                         "The articulation joint DOF Forces.\n"
                         "N = getDofs()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_linkVelocities,
-                        "Include Link Spacial Velocities",
+                        "Link Spacial Velocities",
                         "Link Spacial Velocity.\n"
                         "N = getNbLinks()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_linkAccelerations,
-                        "Include Link Accelerations",
+                        "Link Accelerations",
                         "Link Classical Acceleration.\n"
                         "N = getNbLinks()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_rootLinkTransform,
-                        "Include Root Link Transform",
+                        "Root Link Transform",
                         "Root Link Transform.\n"
                         "N = 1")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_rootLinkVelocities,
-                        "Include Link Accelerations",
+                        "Link Accelerations",
                         "The root link velocities (read/write) and accelerations (read).\n"
                         "N = 1")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_linkIncomingJointForces,
-                        "Include Link Incoming Joint Forces",
+                        "Link Incoming Joint Forces",
                         "The total force transmitted from the parent link to this link.\n"
                         "N = getNbLinks()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_jointTargetPositions,
-                        "Include Joint Target Positions",
+                        "Joint Target Positions",
                         "The articulation joint drive target positions.\n"
                         "N = getDofs()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_jointTargetVelocities,
-                        "Include Root Link Transform",
+                        "Root Link Transform",
                         "The articulation joint drive target velocities.\n"
                         "N = getDofs()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_linkForces,
-                        "Include Link Forces",
+                        "Link Forces",
                         "An external force applied to the link center of mass.\n"
                         "N = getNbLinks()")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_linkTorques,
-                        "Include Link Torques",
+                        "Link Torques",
                         "An external torque applied to the link.\n"
                         "N = getNbLinks()");
             }

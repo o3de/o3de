@@ -42,7 +42,7 @@ namespace PhysX
         bool m_linkAccelerations = false; //!< The link accelerations, see PxArticulationCache::linkAcceleration.
         bool m_rootLinkTransform = false; //!< The root link transform, see PxArticulationCache::rootLinkData.
         bool m_rootLinkVelocities = false; //!< The root link velocities (read/write) and accelerations (read), see PxArticulationCache::rootLinkData.
-        bool m_linkIncomingJointForces = true; //!< The link incoming joint forces, see PxArticulationCache::linkIncomingJointForce.
+        bool m_linkIncomingJointForces = false; //!< The link incoming joint forces, see PxArticulationCache::linkIncomingJointForce.
         bool m_jointTargetPositions = false; //!< The joint target positions, see PxArticulationCache::jointTargetPositions.
         bool m_jointTargetVelocities = false; //!< The joint target velocities, see PxArticulationCache::jointTargetVelocities.
         bool m_linkForces = true; //!< The link forces, see PxArticulationCache::linkForce.

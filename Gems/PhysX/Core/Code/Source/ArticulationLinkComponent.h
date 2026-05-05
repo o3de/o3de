@@ -79,7 +79,7 @@ namespace PhysX
         float GetJointVelocity(ArticulationJointAxis jointAxis) const override;
         bool IsRootArticulation() const override;
 
-        // ArticulationCacheRequestBus overrides ...
+        // ArticulationCacheRequestBus overrides ... // TODO:
         AZ::Vector3 GetForce(AZ::u32 linkIndex) const override;
         AZ::Vector3 GetTorque(AZ::u32 linkIndex) const override;
         const AzPhysics::SimulatedBody* GetSimulatedBodyConst() const;
@@ -131,6 +131,7 @@ namespace PhysX
         //! A copy of the internal state of the entire articulation, members are indexed by linkIndex
         //! Data that is copied is set via configuration flags. Cache is updated upon simulation completion
         physx::PxArticulationCache* m_articulationCache = nullptr;
+        bool m_shouldApplyCache = false; //!< When the cache should be updated by user outside of simulation
         physx::PxArticulationLink* m_link = nullptr;
         physx::PxArticulationJointReducedCoordinate* m_driveJoint = nullptr;
 
