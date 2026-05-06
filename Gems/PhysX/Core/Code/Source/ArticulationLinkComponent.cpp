@@ -921,7 +921,7 @@ namespace PhysX
         return static_cast<const ArticulationLinkComponent&>(*this).GetInternalLinkIndex(linkIndex);
     }
 
-    AZ::Vector3 GetLinkLinearVelocity(AZ::u32 linkIndex) const
+    AZ::Vector3 ArticulationLinkComponent::GetLinkLinearVelocity(AZ::u32 linkIndex) const
     {
         if (m_articulationCache)
         {
@@ -930,7 +930,7 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
-    AZ::Vector3 GetLinkAngularVelocity(AZ::u32 linkIndex) const
+    AZ::Vector3 ArticulationLinkComponent::GetLinkAngularVelocity(AZ::u32 linkIndex) const
     {
         if (m_articulationCache)
         {
@@ -939,7 +939,7 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
-    AZ::Vector3 GetLinkLinearAcceleration(AZ::u32 linkIndex) const
+    AZ::Vector3 ArticulationLinkComponent::GetLinkLinearAcceleration(AZ::u32 linkIndex) const
     {
         if (m_articulationCache)
         {
@@ -948,7 +948,7 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
-    AZ::Vector3 GetLinkAngularAcceleration(AZ::u32 linkIndex) const
+    AZ::Vector3 ArticulationLinkComponent::GetLinkAngularAcceleration(AZ::u32 linkIndex) const
     {
         if (m_articulationCache)
         {
@@ -957,29 +957,29 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
-    AZ::Transform GetRootLinkTransform() const
+    AZ::Transform ArticulationLinkComponent::GetRootLinkTransform() const
     {
         if (m_articulationCache)
         {
-            return PxMathConvert(m_articulationCache->rootLinkData.transform)
+            return PxMathConvert(m_articulationCache->rootLinkData->transform);
         }
         return AZ::Transform::CreateIdentity();
     }
 
-    AZ::Vector3 GetRootLinkLinearVelocity() const
+    AZ::Vector3 ArticulationLinkComponent::GetRootLinkLinearVelocity() const
     {
         if (m_articulationCache)
         {
-            return PxMathConvert(m_articulationCache->rootLinkData.worldLinVel)
+            return PxMathConvert(m_articulationCache->rootLinkData->worldLinVel);
         }
         return AZ::Vector3::CreateZero();
     }
 
-    AZ::Vector3 GetRootLinkAngularVelocity() const
+    AZ::Vector3 ArticulationLinkComponent::GetRootLinkAngularVelocity() const
     {
         if (m_articulationCache)
         {
-            return PxMathConvert(m_articulationCache->rootLinkData.worldAngVel)
+            return PxMathConvert(m_articulationCache->rootLinkData->worldAngVel);
         }
         return AZ::Vector3::CreateZero();
     }
@@ -992,6 +992,8 @@ namespace PhysX
         }
         return AZ::Vector3::CreateZero();
     }
+
+
 
     AZ::Vector3 ArticulationLinkComponent::GetLinkTorque(AZ::u32 linkIndex) const
     {
