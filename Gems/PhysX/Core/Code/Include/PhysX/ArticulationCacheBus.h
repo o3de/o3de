@@ -22,15 +22,40 @@ namespace PhysX
     class ArticulationCacheRequests : public AZ::ComponentBus
     {
     public:
-        // TODO: Add additional getters
+        // TODO: Add additional getters for joints (may require degree of freedom helper function)
+
+        //! Get the linear velocity for a link recorded to the articulation cache.
+        //! The link index differs from the per-actuation indices used internally by PhysX.
+        virtual AZ::Vector3 GetLinkLinearVelocity(AZ::u32 linkIndex) const = 0;
+
+        //! Get the angular velocity for a link recorded to the articulation cache.
+        //! The link index differs from the per-actuation indices used internally by PhysX.
+        virtual AZ::Vector3 GetLinkAngularVelocity(AZ::u32 linkIndex) const = 0;
+        
+        //! Get the linear acceleration for a link recorded to the articulation cache.
+        //! The link index differs from the per-actuation indices used internally by PhysX.
+        virtual AZ::Vector3 GetLinkLinearAcceleration(AZ::u32 linkIndex) const = 0;
+
+        //! Get the angular acceleration for a link recorded to the articulation cache.
+        //! The link index differs from the per-actuation indices used internally by PhysX.
+        virtual AZ::Vector3 GetLinkAngularAcceleration(AZ::u32 linkIndex) const = 0;
+
+        //! Get the root link transform recorded to the articulation cache.
+        virtual AZ::Transform GetRootLinkTransform() const = 0;
+
+        //! Get the root link linear velocity recorded to the articulation cache.
+        virtual AZ::Vector3 GetRootLinkLinearVelocity() const = 0;
+
+        //! Get the root link angular velocity recorded to the articulation cache.
+        virtual AZ::Vector3 GetRootLinkAngularVelocity() const = 0;
 
         //! Get the force for a link recorded to the articulation cache.
         //! The link index differs from the per-actuation indices used internally by PhysX.
-        virtual AZ::Vector3 GetForce(AZ::u32 linkIndex) const = 0;
+        virtual AZ::Vector3 GetLinkForce(AZ::u32 linkIndex) const = 0;
 
         //! Get the torque reported recorded to the articulation cache.
         //! The link index differs from the per-actuation indices used internally by PhysX.
-        virtual AZ::Vector3 GetTorque(AZ::u32 linkIndex) const = 0;
+        virtual AZ::Vector3 GetLinkTorque(AZ::u32 linkIndex) const = 0;
     };
 
     using ArticulationCacheRequestBus = AZ::EBus<ArticulationCacheRequests>;

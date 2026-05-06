@@ -38,8 +38,8 @@ namespace PhysX
         bool m_jointAccelerations = false; //!< The joint accelerations, see PxArticulationCache::jointAcceleration.
         bool m_jointPositions = false; //!< The joint positions, see PxArticulationCache::jointPosition.
         bool m_jointForces = false; //!< The joint forces, see PxArticulationCache::jointForce.
-        bool m_linkVelocities = false; //!< The link velocities, see PxArticulationCache::linkVelocity. Link velocities cannot be set except for the root link velocity via  PxArticulationCache::rootLinkData.
-        bool m_linkAccelerations = false; //!< The link accelerations, see PxArticulationCache::linkAcceleration.
+        bool m_linkVelocities = false; //!< The link velocities, including read-only root link, see PxArticulationCache::linkVelocity. Link velocities cannot be set except for the root link velocity via PxArticulationCache::rootLinkData.
+        bool m_linkAccelerations = false; //!< The link accelerations, including read-only root link, see PxArticulationCache::linkAcceleration.
         bool m_rootLinkTransform = false; //!< The root link transform, see PxArticulationCache::rootLinkData.
         bool m_rootLinkVelocities = false; //!< The root link velocities (read/write) and accelerations (read), see PxArticulationCache::rootLinkData.
         bool m_linkIncomingJointForces = false; //!< The link incoming joint forces, see PxArticulationCache::linkIncomingJointForce.

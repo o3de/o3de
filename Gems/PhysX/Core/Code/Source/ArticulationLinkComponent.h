@@ -79,9 +79,16 @@ namespace PhysX
         float GetJointVelocity(ArticulationJointAxis jointAxis) const override;
         bool IsRootArticulation() const override;
 
-        // ArticulationCacheRequestBus overrides ... // TODO:
-        AZ::Vector3 GetForce(AZ::u32 linkIndex) const override;
-        AZ::Vector3 GetTorque(AZ::u32 linkIndex) const override;
+        // ArticulationCacheRequestBus overrides ... // TODO: 
+        AZ::Vector3 GetLinkLinearVelocity(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetLinkAngularVelocity(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetLinkLinearAcceleration(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetLinkAngularAcceleration(AZ::u32 linkIndex) const override;
+        AZ::Transform GetRootLinkTransform() const override;
+        AZ::Vector3 GetRootLinkLinearVelocity() const override;
+        AZ::Vector3 GetRootLinkAngularVelocity() const override;
+        AZ::Vector3 GetLinkForce(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetLinkTorque(AZ::u32 linkIndex) const override;
         const AzPhysics::SimulatedBody* GetSimulatedBodyConst() const;
         void FillSimulatedBodyHandle();
 
