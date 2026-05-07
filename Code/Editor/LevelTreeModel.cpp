@@ -12,9 +12,7 @@
 
 // Editor
 #include "LevelFileDialog.h"
-
-// Folder in which levels are stored
-static const char kLevelsFolder[] = "Levels";
+#include "LevelRoots.h"
 
 LevelTreeModelFilter::LevelTreeModelFilter(QObject* parent)
     : QSortFilterProxyModel(parent)
@@ -100,22 +98,44 @@ QVariant LevelTreeModel::data(const QModelIndex& index, int role) const
     return QStandardItemModel::data(index, role);
 }
 
-void LevelTreeModel::ReloadTree(bool recurseIfNoLevels)
+void LevelTreeModel::ReloadTree(bool recurseIfNoLevels, LevelRoots::Mode mode)
 {
     clear();
 
-    QString levelsFolder = QString("%1/%2").arg(Path::GetEditingGameDataFolder().c_str()).arg(kLevelsFolder);
-    QStandardItem* root = new QStandardItem(kLevelsFolder);
-    root->setData(levelsFolder, FullPathRole);
-    root->setEditable(false);
-    invisibleRootItem()->appendRow(root);
-    ReloadTree(root, recurseIfNoLevels);
+    // One top-level root per "Levels" container we discovered: the project,
+    // followed by every active gem matching the requested mode.
+    const QVector<LevelRoots::Root> roots = LevelRoots::Enumerate(mode);
+    for (const LevelRoots::Root& rootInfo : roots)
+    {
+        QStandardItem* rootItem = new QStandardItem(rootInfo.displayName);
+        rootItem->setData(rootInfo.absolutePath, FullPathRole);
+        rootItem->setData(rootInfo.absolutePath, RootPathRole);
+        rootItem->setData(rootInfo.isProject, IsProjectRootRole);
+        rootItem->setEditable(false);
+        invisibleRootItem()->appendRow(rootItem);
+        ReloadTree(rootItem, recurseIfNoLevels);
+    }
+}
+
+void LevelTreeModel::ReloadTreeFromRoot(bool recurseIfNoLevels, const LevelRoots::Root& root)
+{
+    clear();
+
+    QStandardItem* rootItem = new QStandardItem(root.displayName);
+    rootItem->setData(root.absolutePath, FullPathRole);
+    rootItem->setData(root.absolutePath, RootPathRole);
+    rootItem->setData(root.isProject, IsProjectRootRole);
+    rootItem->setEditable(false);
+    invisibleRootItem()->appendRow(rootItem);
+    ReloadTree(rootItem, recurseIfNoLevels);
 }
 
 void LevelTreeModel::ReloadTree(QStandardItem* root, bool recurseIfNoLevels)
 {
     QStringList levelFiles;
     const QString parentFullPath = root->data(FullPathRole).toString();
+    const QString rootPath = root->data(RootPathRole).toString();
+    const bool isProjectRoot = root->data(IsProjectRootRole).toBool();
     const bool isLevelFolder = CLevelFileDialog::CheckLevelFolder(parentFullPath, &levelFiles);
     root->setData(isLevelFolder, IsLevelFolderRole);
 
@@ -131,6 +151,8 @@ void LevelTreeModel::ReloadTree(QStandardItem* root, bool recurseIfNoLevels)
         {
             auto child = new QStandardItem(subFolder);
             child->setData(parentFullPath + "/" + subFolder, FullPathRole);
+            child->setData(rootPath, RootPathRole);
+            child->setData(isProjectRoot, IsProjectRootRole);
             child->setEditable(false);
             root->appendRow(child);
             ReloadTree(child, recurseIfNoLevels);
@@ -146,6 +168,8 @@ void LevelTreeModel::ReloadTree(QStandardItem* root, bool recurseIfNoLevels)
             {
                 auto child = new QStandardItem(levelFile);
                 child->setData(root->data(FullPathRole).toString() + "/" + levelFile, FullPathRole);
+                child->setData(rootPath, RootPathRole);
+                child->setData(isProjectRoot, IsProjectRootRole);
                 child->setData(false, IsLevelFolderRole);
                 child->setEditable(false);
                 root->appendRow(child);
@@ -164,6 +188,8 @@ void LevelTreeModel::AddItem(const QString& name, const QModelIndex& parent)
     {
         const QString parentPath = parent.data(FullPathRole).toString();
         item->setData(parentPath + "/" + name, FullPathRole);
+        item->setData(parent.data(RootPathRole).toString(), RootPathRole);
+        item->setData(parent.data(IsProjectRootRole).toBool(), IsProjectRootRole);
         parentItem->appendRow(item);
     }
 }

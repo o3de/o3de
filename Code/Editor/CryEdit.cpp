@@ -2522,7 +2522,7 @@ void CCryEditApp::OnUpdatePlayGame(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */)
+CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */, const QString& levelsRootAbsolutePath /* ={} */)
 {
     // If we are creating a new level and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
@@ -2551,7 +2551,18 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& template
     }
 
     QString cryFileName = levelName.mid(levelName.lastIndexOf('/') + 1, levelName.length() - levelName.lastIndexOf('/') + 1);
-    QString levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
+    // Compose the absolute level folder. When the caller specifies a root
+    // (e.g. a gem root), use it directly; otherwise fall back to the
+    // project's "Levels" folder for backwards compatibility.
+    QString levelPath;
+    if (!levelsRootAbsolutePath.isEmpty())
+    {
+        levelPath = QStringLiteral("%1/%2/").arg(levelsRootAbsolutePath, levelName);
+    }
+    else
+    {
+        levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
+    }
     fullyQualifiedLevelName = levelPath + cryFileName + EditorUtils::LevelFile::GetDefaultFileExtension();
 
     //_MAX_PATH includes null terminator, so we actually want to cap at _MAX_PATH-1
@@ -2719,7 +2730,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     GetIEditor()->StartLevelErrorReportRecording();
 
     QString fullyQualifiedLevelName;
-    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName);
+    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName, dlg.GetLevelsFolder());
 
     if (result == ECLR_ALREADY_EXISTS)
     {

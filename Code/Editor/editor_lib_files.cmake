@@ -256,6 +256,8 @@ set(FILES
     StartupTraceHandler.h
     LevelTreeModel.cpp
     LevelTreeModel.h
+    LevelRoots.cpp
+    LevelRoots.h
     Include/Command.h
     Include/HitContext.h
     Include/ICommandManager.h
