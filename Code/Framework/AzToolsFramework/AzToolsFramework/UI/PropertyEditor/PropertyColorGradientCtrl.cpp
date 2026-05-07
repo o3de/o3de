@@ -190,7 +190,7 @@ namespace AzToolsFramework
 
     float GradientStopsTrack::stopPositionAt(size_t index) const
     {
-        return m_kind == Kind::Color ? m_colorStops[index].markerPosition : m_alphaStops[index].markerPosition;
+        return m_kind == Kind::Color ? m_colorStops[index].m_markerPosition : m_alphaStops[index].m_markerPosition;
     }
 
     int GradientStopsTrack::positionToPixel(float position) const
@@ -250,7 +250,7 @@ namespace AzToolsFramework
     AZ::Color GradientStopsTrack::sampleColorAt(float t) const
     {
         AZ::ColorGradient tmp;
-        tmp.colorSlider = m_colorStops;
+        tmp.m_colorSlider = m_colorStops;
         tmp.SortGradients();
         return tmp.EvaluateColor(t);
     }
@@ -258,7 +258,7 @@ namespace AzToolsFramework
     float GradientStopsTrack::sampleAlphaAt(float t) const
     {
         AZ::ColorGradient tmp;
-        tmp.alphaSlider = m_alphaStops;
+        tmp.m_alphaSlider = m_alphaStops;
         tmp.SortGradients();
         return tmp.EvaluateAlpha(t);
     }
@@ -269,16 +269,16 @@ namespace AzToolsFramework
         if (m_kind == Kind::Color)
         {
             AZ::ColorGradientMarker m;
-            m.markerColor = sampleColorAt(t);
-            m.markerPosition = t;
+            m.m_markerColor = sampleColorAt(t);
+            m.m_markerPosition = t;
             m_colorStops.push_back(m);
             m_selected = m_colorStops.size() - 1;
         }
         else
         {
             AZ::AlphaGradientMarker m;
-            m.markerAlpha = sampleAlphaAt(t);
-            m.markerPosition = t;
+            m.m_markerAlpha = sampleAlphaAt(t);
+            m.m_markerPosition = t;
             m_alphaStops.push_back(m);
             m_selected = m_alphaStops.size() - 1;
         }
@@ -292,8 +292,8 @@ namespace AzToolsFramework
     {
         if (!m_selected.has_value()) { return; }
         t = std::clamp(t, 0.f, 1.f);
-        if (m_kind == Kind::Color) { m_colorStops[*m_selected].markerPosition = t; }
-        else                       { m_alphaStops[*m_selected].markerPosition = t; }
+        if (m_kind == Kind::Color) { m_colorStops[*m_selected].m_markerPosition = t; }
+        else                       { m_alphaStops[*m_selected].m_markerPosition = t; }
         // No consolidation here: a moving marker must pass freely through
         // other stops without consuming them. The evaluator handles coincident
         // positions deterministically.
@@ -305,7 +305,7 @@ namespace AzToolsFramework
     {
         if (m_kind != Kind::Color || !m_selected.has_value()) { return; }
         AZ::Color opaque(rgb.GetR(), rgb.GetG(), rgb.GetB(), 1.f);
-        m_colorStops[*m_selected].markerColor = opaque;
+        m_colorStops[*m_selected].m_markerColor = opaque;
         update();
         emit stopsChanged();
     }
@@ -313,7 +313,7 @@ namespace AzToolsFramework
     void GradientStopsTrack::setSelectedAlpha(float alpha)
     {
         if (m_kind != Kind::Alpha || !m_selected.has_value()) { return; }
-        m_alphaStops[*m_selected].markerAlpha = std::clamp(alpha, 0.f, 1.f);
+        m_alphaStops[*m_selected].m_markerAlpha = std::clamp(alpha, 0.f, 1.f);
         update();
         emit stopsChanged();
     }
@@ -325,14 +325,14 @@ namespace AzToolsFramework
         if (m_kind == Kind::Color)
         {
             auto src = m_colorStops[*m_selected];
-            src.markerPosition = std::clamp(src.markerPosition + offset, 0.f, 1.f);
+            src.m_markerPosition = std::clamp(src.m_markerPosition + offset, 0.f, 1.f);
             m_colorStops.push_back(src);
             m_selected = m_colorStops.size() - 1;
         }
         else
         {
             auto src = m_alphaStops[*m_selected];
-            src.markerPosition = std::clamp(src.markerPosition + offset, 0.f, 1.f);
+            src.m_markerPosition = std::clamp(src.m_markerPosition + offset, 0.f, 1.f);
             m_alphaStops.push_back(src);
             m_selected = m_alphaStops.size() - 1;
         }
@@ -393,7 +393,7 @@ namespace AzToolsFramework
             QColor triFill;
             if (m_kind == Kind::Color)
             {
-                const AZ::Color& c = m_colorStops[i].markerColor;
+                const AZ::Color& c = m_colorStops[i].m_markerColor;
                 triFill.setRedF(static_cast<qreal>(c.GetR()));
                 triFill.setGreenF(static_cast<qreal>(c.GetG()));
                 triFill.setBlueF(static_cast<qreal>(c.GetB()));
@@ -446,7 +446,7 @@ namespace AzToolsFramework
                 painter.fillRect(QRect(cubeInner.left(),        cubeInner.top() + half, half, half), dark);
                 painter.fillRect(QRect(cubeInner.left() + half, cubeInner.top() + half, half, half), light);
 
-                QColor whiteOverlay(255, 255, 255, static_cast<int>(m_alphaStops[i].markerAlpha * 255.f));
+                QColor whiteOverlay(255, 255, 255, static_cast<int>(m_alphaStops[i].m_markerAlpha * 255.f));
                 painter.fillRect(cubeInner, whiteOverlay);
             }
 
@@ -531,9 +531,9 @@ namespace AzToolsFramework
             // Use the standard AzQtComponents color picker so the double-click
             // affordance matches the inline inspector swatch experience.
             const AZ::Color initial(
-                m_colorStops[*m_selected].markerColor.GetR(),
-                m_colorStops[*m_selected].markerColor.GetG(),
-                m_colorStops[*m_selected].markerColor.GetB(),
+                m_colorStops[*m_selected].m_markerColor.GetR(),
+                m_colorStops[*m_selected].m_markerColor.GetG(),
+                m_colorStops[*m_selected].m_markerColor.GetB(),
                 1.f);
             const AZ::Color picked = AzQtComponents::ColorPicker::getColor(
                 AzQtComponents::ColorPicker::Configuration::RGB,
@@ -605,7 +605,7 @@ namespace AzToolsFramework
 
         // Alpha track (top).
         m_alphaTrack = new GradientStopsTrack(GradientStopsTrack::Kind::Alpha, this);
-        m_alphaTrack->setAlphaStops(m_working.alphaSlider);
+        m_alphaTrack->setAlphaStops(m_working.m_alphaSlider);
         m_alphaTrack->setVisible(m_alphaEnabled);
         root->addWidget(m_alphaTrack);
 
@@ -618,7 +618,7 @@ namespace AzToolsFramework
 
         // Color track (bottom).
         m_colorTrack = new GradientStopsTrack(GradientStopsTrack::Kind::Color, this);
-        m_colorTrack->setColorStops(m_working.colorSlider);
+        m_colorTrack->setColorStops(m_working.m_colorSlider);
         root->addWidget(m_colorTrack);
 
         // Inspector row.
@@ -722,9 +722,9 @@ namespace AzToolsFramework
 
     void ColorGradientEditorDialog::rebuildFromTracks()
     {
-        m_working.colorSlider = m_colorTrack->colorStops();
-        m_working.alphaSlider = m_alphaTrack->alphaStops();
-        m_working.sorted = false;
+        m_working.m_colorSlider = m_colorTrack->colorStops();
+        m_working.m_alphaSlider = m_alphaTrack->alphaStops();
+        m_working.m_sorted = false;
         m_working.SortGradients();
         refreshPreview();
     }
@@ -767,7 +767,7 @@ namespace AzToolsFramework
             m_colorField->setVisible(true);
             m_alphaSpin->setVisible(false);
 
-            const AZ::Color& cur = m_activeTrack->colorStops()[idx].markerColor;
+            const AZ::Color& cur = m_activeTrack->colorStops()[idx].m_markerColor;
             QColor q;
             q.setRedF(static_cast<qreal>(cur.GetR()));
             q.setGreenF(static_cast<qreal>(cur.GetG()));
@@ -776,7 +776,7 @@ namespace AzToolsFramework
             m_colorField->setValue(q);
 
             m_positionSpin->blockSignals(true);
-            m_positionSpin->setValue(m_activeTrack->colorStops()[idx].markerPosition * 100.0);
+            m_positionSpin->setValue(m_activeTrack->colorStops()[idx].m_markerPosition * 100.0);
             m_positionSpin->blockSignals(false);
         }
         else
@@ -785,10 +785,10 @@ namespace AzToolsFramework
             m_colorField->setVisible(false);
             m_alphaSpin->setVisible(true);
             m_alphaSpin->blockSignals(true);
-            m_alphaSpin->setValue(static_cast<double>(m_activeTrack->alphaStops()[idx].markerAlpha));
+            m_alphaSpin->setValue(static_cast<double>(m_activeTrack->alphaStops()[idx].m_markerAlpha));
             m_alphaSpin->blockSignals(false);
             m_positionSpin->blockSignals(true);
-            m_positionSpin->setValue(m_activeTrack->alphaStops()[idx].markerPosition * 100.0);
+            m_positionSpin->setValue(m_activeTrack->alphaStops()[idx].m_markerPosition * 100.0);
             m_positionSpin->blockSignals(false);
         }
     }
@@ -1015,16 +1015,16 @@ namespace AzToolsFramework
                        top.colorStops.begin(), top.colorStops.end(),
                        snap.colorStops.begin(),
                        [](const AZ::ColorGradientMarker& a, const AZ::ColorGradientMarker& b) {
-                           return a.markerPosition == b.markerPosition
-                               && a.markerColor == b.markerColor;
+                           return a.m_markerPosition == b.m_markerPosition
+                               && a.m_markerColor == b.m_markerColor;
                        });
             const bool sameAlpha = top.alphaStops.size() == snap.alphaStops.size()
                 && std::equal(
                        top.alphaStops.begin(), top.alphaStops.end(),
                        snap.alphaStops.begin(),
                        [](const AZ::AlphaGradientMarker& a, const AZ::AlphaGradientMarker& b) {
-                           return a.markerPosition == b.markerPosition
-                               && a.markerAlpha == b.markerAlpha;
+                           return a.m_markerPosition == b.m_markerPosition
+                               && a.m_markerAlpha == b.m_markerAlpha;
                        });
             if (sameColor && sameAlpha) { return; }
         }
@@ -1080,9 +1080,9 @@ namespace AzToolsFramework
             m_activeTrack = m_colorTrack;
         }
 
-        m_working.colorSlider = m_colorTrack->colorStops();
-        m_working.alphaSlider = m_alphaTrack->alphaStops();
-        m_working.sorted = false;
+        m_working.m_colorSlider = m_colorTrack->colorStops();
+        m_working.m_alphaSlider = m_alphaTrack->alphaStops();
+        m_working.m_sorted = false;
         m_working.SortGradients();
 
         refreshPreview();
@@ -1156,19 +1156,19 @@ namespace AzToolsFramework
     {
         // Only flag when a subsequent instance diverges from the first one we
         // read. Structural comparison is enough for the indicator.
-        auto sameColor = instance.colorSlider.size() == m_value.colorSlider.size()
+        auto sameColor = instance.m_colorSlider.size() == m_value.m_colorSlider.size()
                       && std::equal(
-                             instance.colorSlider.begin(), instance.colorSlider.end(),
-                             m_value.colorSlider.begin(),
+                             instance.m_colorSlider.begin(), instance.m_colorSlider.end(),
+                             m_value.m_colorSlider.begin(),
                              [](const AZ::ColorGradientMarker& a, const AZ::ColorGradientMarker& b) {
-                                 return a.markerPosition == b.markerPosition && a.markerColor == b.markerColor;
+                                 return a.m_markerPosition == b.m_markerPosition && a.m_markerColor == b.m_markerColor;
                              });
-        auto sameAlpha = instance.alphaSlider.size() == m_value.alphaSlider.size()
+        auto sameAlpha = instance.m_alphaSlider.size() == m_value.m_alphaSlider.size()
                       && std::equal(
-                             instance.alphaSlider.begin(), instance.alphaSlider.end(),
-                             m_value.alphaSlider.begin(),
+                             instance.m_alphaSlider.begin(), instance.m_alphaSlider.end(),
+                             m_value.m_alphaSlider.begin(),
                              [](const AZ::AlphaGradientMarker& a, const AZ::AlphaGradientMarker& b) {
-                                 return a.markerPosition == b.markerPosition && a.markerAlpha == b.markerAlpha;
+                                 return a.m_markerPosition == b.m_markerPosition && a.m_markerAlpha == b.m_markerAlpha;
                              });
         if (!sameColor || !sameAlpha)
         {
@@ -1197,19 +1197,19 @@ namespace AzToolsFramework
         {
             QString out(kClipboardHeader);
             out.append(QLatin1Char('\n'));
-            for (const auto& c : g.colorSlider)
+            for (const auto& c : g.m_colorSlider)
             {
                 out.append(QStringLiteral("C %1 %2 %3 %4\n")
-                    .arg(static_cast<qreal>(c.markerColor.GetR()), 0, 'g', 7)
-                    .arg(static_cast<qreal>(c.markerColor.GetG()), 0, 'g', 7)
-                    .arg(static_cast<qreal>(c.markerColor.GetB()), 0, 'g', 7)
-                    .arg(static_cast<qreal>(c.markerPosition), 0, 'g', 7));
+                    .arg(static_cast<qreal>(c.m_markerColor.GetR()), 0, 'g', 7)
+                    .arg(static_cast<qreal>(c.m_markerColor.GetG()), 0, 'g', 7)
+                    .arg(static_cast<qreal>(c.m_markerColor.GetB()), 0, 'g', 7)
+                    .arg(static_cast<qreal>(c.m_markerPosition), 0, 'g', 7));
             }
-            for (const auto& a : g.alphaSlider)
+            for (const auto& a : g.m_alphaSlider)
             {
                 out.append(QStringLiteral("A %1 %2\n")
-                    .arg(static_cast<qreal>(a.markerAlpha), 0, 'g', 7)
-                    .arg(static_cast<qreal>(a.markerPosition), 0, 'g', 7));
+                    .arg(static_cast<qreal>(a.m_markerAlpha), 0, 'g', 7)
+                    .arg(static_cast<qreal>(a.m_markerPosition), 0, 'g', 7));
             }
             return out;
         }
@@ -1230,16 +1230,16 @@ namespace AzToolsFramework
                 if (tokens[0] == QLatin1String("C") && tokens.size() == 5)
                 {
                     AZ::ColorGradientMarker m;
-                    m.markerColor = AZ::Color(tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat(), 1.f);
-                    m.markerPosition = tokens[4].toFloat();
-                    parsed.colorSlider.push_back(m);
+                    m.m_markerColor = AZ::Color(tokens[1].toFloat(), tokens[2].toFloat(), tokens[3].toFloat(), 1.f);
+                    m.m_markerPosition = tokens[4].toFloat();
+                    parsed.m_colorSlider.push_back(m);
                 }
                 else if (tokens[0] == QLatin1String("A") && tokens.size() == 3)
                 {
                     AZ::AlphaGradientMarker m;
-                    m.markerAlpha = tokens[1].toFloat();
-                    m.markerPosition = tokens[2].toFloat();
-                    parsed.alphaSlider.push_back(m);
+                    m.m_markerAlpha = tokens[1].toFloat();
+                    m.m_markerPosition = tokens[2].toFloat();
+                    parsed.m_alphaSlider.push_back(m);
                 }
             }
             parsed.SortGradients();
@@ -1345,15 +1345,15 @@ namespace AzToolsFramework
     {
         // RGB-only: extract only the color slider, drop alpha track.
         AZ::ColorGradient full = GUI->value();
-        instance.colorSlider = full.colorSlider;
-        instance.sorted = false;
+        instance.m_colorSlider = full.m_colorSlider;
+        instance.m_sorted = false;
         instance.SortGradients();
     }
 
     bool AZColorGradientRGBPropertyHandler::ReadValuesIntoGUI(size_t index, PropertyColorGradientCtrl* GUI, const property_t& instance, InstanceDataNode* /*node*/)
     {
         AZ::ColorGradient wrapper;
-        wrapper.colorSlider = instance.colorSlider;
+        wrapper.m_colorSlider = instance.m_colorSlider;
         wrapper.SortGradients();
         if (index == 0) { GUI->beginReadPass(wrapper); }
         else            { GUI->addReadInstance(wrapper); }

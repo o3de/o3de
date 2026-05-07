@@ -26,15 +26,15 @@ namespace AZ
     // a position in [0, 1].
 
     //! Pins an RGB color at a normalized position along a ColorGradient.
-    //! The alpha channel of markerColor is carried for Qt/ColorPicker
+    //! The alpha channel of m_markerColor is carried for Qt/ColorPicker
     //! convenience but is forced opaque when sampled.
     struct AZCORE_API ColorGradientMarker
     {
         AZ_TYPE_INFO(ColorGradientMarker, "{3F2A8E14-5B9C-4D7E-A123-6E8F9B0C1D2E}");
         AZ_CLASS_ALLOCATOR(ColorGradientMarker, AZ::SystemAllocator);
 
-        AZ::Color markerColor = AZ::Color::CreateOne();
-        float     markerPosition = 0.f;
+        AZ::Color m_markerColor = AZ::Color::CreateOne();
+        float     m_markerPosition = 0.f;
 
         static void Reflect(ReflectContext* context);
     };
@@ -45,8 +45,8 @@ namespace AZ
         AZ_TYPE_INFO(AlphaGradientMarker, "{7C4D1F62-9A3B-4E58-B821-5D6A9C0F3E4F}");
         AZ_CLASS_ALLOCATOR(AlphaGradientMarker, AZ::SystemAllocator);
 
-        float markerAlpha = 1.f;
-        float markerPosition = 0.f;
+        float m_markerAlpha = 1.f;
+        float m_markerPosition = 0.f;
 
         static void Reflect(ReflectContext* context);
     };
@@ -62,11 +62,11 @@ namespace AZ
         AZ_TYPE_INFO(ColorGradient, "{E1B5D837-2C94-4A6F-9D73-1F8A4B7E5C90}");
         AZ_CLASS_ALLOCATOR(ColorGradient, AZ::SystemAllocator);
 
-        AZStd::vector<ColorGradientMarker> colorSlider;
-        AZStd::vector<AlphaGradientMarker> alphaSlider;
-        bool sorted = false;
+        AZStd::vector<ColorGradientMarker> m_colorSlider;
+        AZStd::vector<AlphaGradientMarker> m_alphaSlider;
+        bool m_sorted = false;
 
-        //! Sorts both tracks ascending by markerPosition.
+        //! Sorts both tracks ascending by m_markerPosition.
         void SortGradients();
 
         //! Samples the Color track at t in [0, 1]. Returns RGB with A = 1.
@@ -92,8 +92,8 @@ namespace AZ
         AZ_TYPE_INFO(ColorGradientRGB, "{A9D4C672-8B31-4F5E-9A47-2E5B8D1C3F04}");
         AZ_CLASS_ALLOCATOR(ColorGradientRGB, AZ::SystemAllocator);
 
-        AZStd::vector<ColorGradientMarker> colorSlider;
-        bool sorted = false;
+        AZStd::vector<ColorGradientMarker> m_colorSlider;
+        bool m_sorted = false;
 
         void SortGradients();
         AZ::Color EvaluateColor(float t);
