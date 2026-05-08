@@ -263,7 +263,7 @@ namespace AzQtComponents
                 topLevel->show();
 
                 // setParent(nullptr) detaches us from the editor main window, which breaks
-                // FancyDocking::QueueUpdateFloatingWindowTitle — it locates the floating
+                // FancyDocking::QueueUpdateFloatingWindowTitle - it locates the floating
                 // wrapper via m_mainWindow->findChild<>() against the editor main window,
                 // which now returns nullptr. Without that update the new native window has
                 // no title and the OS falls back to QApplication::applicationName()
