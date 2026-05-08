@@ -10,6 +10,7 @@
 #include "PropertyColorCtrl.hxx"
 #include "PropertyQTConstants.h"
 
+#include <AzCore/Debug/Trace.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 
@@ -32,7 +33,9 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
+#include <QKeySequence>
 #include <QMenu>
+#include <QShortcut>
 #include <QString>
 #include <QStringList>
 AZ_POP_DISABLE_WARNING
@@ -291,13 +294,17 @@ namespace AzToolsFramework
 
     void GradientStopsTrack::setSelectedPosition(float t)
     {
-        if (!m_selected.has_value()) { return; }
+        if (!m_selected.has_value())
+        {
+            AZ_Printf("GradientCtrl", "setSelectedPosition: NO SELECTION - skip");
+            return;
+        }
         t = std::clamp(t, 0.f, 1.f);
+        AZ_Printf("GradientCtrl",
+            "setSelectedPosition: kind=%d index=%zu t=%f",
+            static_cast<int>(m_kind), *m_selected, t);
         if (m_kind == Kind::Color) { m_colorStops[*m_selected].m_markerPosition = t; }
         else                       { m_alphaStops[*m_selected].m_markerPosition = t; }
-        // No consolidation here: a moving marker must pass freely through
-        // other stops without consuming them. The evaluator handles coincident
-        // positions deterministically.
         update();
         emit stopsChanged();
     }
@@ -460,12 +467,19 @@ namespace AzToolsFramework
 
     void GradientStopsTrack::mousePressEvent(QMouseEvent* event)
     {
+        AZ_Printf("GradientCtrl",
+            "Track::mousePressEvent: ENTRY kind=%d (about to setFocus, prev focus=%p)",
+            static_cast<int>(m_kind), (void*)QApplication::focusWidget());
         setFocus();
+        AZ_Printf("GradientCtrl",
+            "Track::mousePressEvent: AFTER setFocus, focus=%p",
+            (void*)QApplication::focusWidget());
         if (event->button() == Qt::LeftButton)
         {
             auto hit = hitTest(event->pos());
             if (hit.has_value())
             {
+                AZ_Printf("GradientCtrl", "Track::mousePressEvent: HIT existing marker idx=%zu", *hit);
                 m_selected = hit;
                 m_dragging = true;
                 update();
@@ -473,6 +487,7 @@ namespace AzToolsFramework
             }
             else
             {
+                AZ_Printf("GradientCtrl", "Track::mousePressEvent: MISS - adding new stop");
                 addStopAt(pixelToPosition(event->pos().x()));
                 m_dragging = true;
             }
@@ -584,6 +599,12 @@ namespace AzToolsFramework
         , m_working(initial)
         , m_alphaEnabled(alphaEnabled)
     {
+        // Allow setFocus(this) to actually grab focus on the dialog itself.
+        // QDialog's default focusPolicy is NoFocus, which would silently
+        // discard our setFocus calls and leave focus null - which prevents
+        // WidgetWithChildrenShortcut shortcuts from activating.
+        setFocusPolicy(Qt::StrongFocus);
+
         setWindowTitle(multiEdit
             ? QStringLiteral("Color Gradient Editor (multi-edit: applies to all selected)")
             : QStringLiteral("Color Gradient Editor"));
@@ -707,10 +728,22 @@ namespace AzToolsFramework
         // Commit-point wiring for the in-dialog undo stack. Granular steps are
         // pushed here; the outer RPE is only notified once, when the dialog
         // closes.
-        connect(m_alphaTrack, &GradientStopsTrack::editCommitted, this, &ColorGradientEditorDialog::pushUndoSnapshot);
-        connect(m_colorTrack, &GradientStopsTrack::editCommitted, this, &ColorGradientEditorDialog::pushUndoSnapshot);
-        connect(m_positionSpin, &QDoubleSpinBox::editingFinished, this, &ColorGradientEditorDialog::pushUndoSnapshot);
-        connect(m_alphaSpin,    &QDoubleSpinBox::editingFinished, this, &ColorGradientEditorDialog::pushUndoSnapshot);
+        connect(m_alphaTrack, &GradientStopsTrack::editCommitted, this, [this]() {
+            AZ_Printf("GradientCtrl", "alphaTrack::editCommitted FIRED -> pushUndoSnapshot");
+            pushUndoSnapshot();
+        });
+        connect(m_colorTrack, &GradientStopsTrack::editCommitted, this, [this]() {
+            AZ_Printf("GradientCtrl", "colorTrack::editCommitted FIRED -> pushUndoSnapshot");
+            pushUndoSnapshot();
+        });
+        connect(m_positionSpin, &QDoubleSpinBox::editingFinished, this, [this]() {
+            AZ_Printf("GradientCtrl", "m_positionSpin::editingFinished FIRED -> pushUndoSnapshot");
+            pushUndoSnapshot();
+        });
+        connect(m_alphaSpin, &QDoubleSpinBox::editingFinished, this, [this]() {
+            AZ_Printf("GradientCtrl", "m_alphaSpin::editingFinished FIRED -> pushUndoSnapshot");
+            pushUndoSnapshot();
+        });
 
         m_activeTrack = m_colorTrack;
         refreshInspector();
@@ -719,6 +752,57 @@ namespace AzToolsFramework
         // the way back to how the dialog appeared.
         m_undoStack.push_back(captureSnapshot());
         m_undoCursor = 0;
+
+        // Widget-scoped shortcuts. These take priority over the editor's
+        // global Ctrl+Z / Ctrl+Y QActions while the dialog or any of its
+        // children own focus, so the keystrokes actually reach our handlers
+        // instead of being eaten by the main-window menu actions.
+        auto installShortcut = [this](const QKeySequence& seq, auto slot)
+        {
+            auto* sc = new QShortcut(seq, this);
+            // WindowShortcut fires whenever the dialog is the active top-level
+            // window, regardless of which descendant (or none) has focus. This
+            // is what we want: while the modal gradient editor is open, the
+            // user's Ctrl+Z should always go to OUR undo, not to any global
+            // editor QAction.
+            sc->setContext(Qt::WindowShortcut);
+            connect(sc, &QShortcut::activated, this, slot);
+        };
+
+        installShortcut(QKeySequence(QKeySequence::Undo), [this]() {
+            AZ_Printf("GradientCtrl", "Shortcut Undo activated focused=%p", (void*)QApplication::focusWidget());
+            // If a line edit inside the dialog has focus, defer to its own
+            // text-undo so typing can be reverted.
+            if (auto* le = qobject_cast<QLineEdit*>(QApplication::focusWidget()))
+            {
+                AZ_Printf("GradientCtrl", "Shortcut Undo: line edit -> text undo");
+                le->undo();
+                return;
+            }
+            undo();
+        });
+        installShortcut(QKeySequence(QKeySequence::Redo), [this]() {
+            AZ_Printf("GradientCtrl", "Shortcut Redo activated");
+            if (auto* le = qobject_cast<QLineEdit*>(QApplication::focusWidget()))
+            {
+                le->redo();
+                return;
+            }
+            redo();
+        });
+        installShortcut(QKeySequence(static_cast<int>(Qt::CTRL) | static_cast<int>(Qt::SHIFT) | static_cast<int>(Qt::Key_Z)), [this]() {
+            AZ_Printf("GradientCtrl", "Shortcut Ctrl+Shift+Z activated");
+            if (auto* le = qobject_cast<QLineEdit*>(QApplication::focusWidget()))
+            {
+                le->redo();
+                return;
+            }
+            redo();
+        });
+        installShortcut(QKeySequence(static_cast<int>(Qt::CTRL) | static_cast<int>(Qt::Key_D)), [this]() {
+            AZ_Printf("GradientCtrl", "Shortcut Ctrl+D activated");
+            if (m_activeTrack) { m_activeTrack->duplicateSelected(); }
+        });
     }
 
     void ColorGradientEditorDialog::rebuildFromTracks()
@@ -801,6 +885,12 @@ namespace AzToolsFramework
 
     void ColorGradientEditorDialog::onPositionChanged(double normalized)
     {
+        AZ_Printf("GradientCtrl",
+            "onPositionChanged: ENTRY normalized=%f activeTrack=%p activeTrack.selected=%s",
+            normalized, (void*)m_activeTrack,
+            (m_activeTrack && m_activeTrack->selectedIndex().has_value())
+                ? AZStd::to_string(*m_activeTrack->selectedIndex()).c_str()
+                : "(none)");
         if (!m_activeTrack) { return; }
         m_activeTrack->setSelectedPosition(static_cast<float>(normalized / 100.0));
     }
@@ -882,6 +972,17 @@ namespace AzToolsFramework
 
         if (event->type() == QEvent::KeyPress)
         {
+            // Diagnostic: log every key event the filter sees so we can tell
+            // when Ctrl+Z / Enter / etc. are reaching us vs being consumed
+            // upstream by another widget's built-in shortcut.
+            {
+                auto* keyEvent = static_cast<QKeyEvent*>(event);
+                AZ_Printf("GradientCtrl",
+                    "eventFilter KeyPress: key=%d mods=%d watched=%p focused=%p (modal=%p this=%p)",
+                    keyEvent->key(), static_cast<int>(keyEvent->modifiers()),
+                    (void*)watched, (void*)QApplication::focusWidget(),
+                    (void*)QApplication::activeModalWidget(), (void*)this);
+            }
             // Intercept undo / redo at the application level so child widgets
             // like QLineEdit (inside PropertyColorCtrl) do not consume Ctrl+Z
             // for their own text-undo before the dialog gets a chance.
@@ -896,6 +997,53 @@ namespace AzToolsFramework
                     // colour text field) reverts the typed value and exits
                     // the field, leaving the dialog open. Outside any editor
                     // it falls through to QDialog's default reject().
+                    if (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter)
+                    {
+                        QWidget* focused = QApplication::focusWidget();
+                        AZ_Printf("GradientCtrl",
+                            "eventFilter Enter: watched=%p focused=%p (this=%p posSpin=%p alphaSpin=%p colorField=%p)",
+                            (void*)watched, (void*)focused, (void*)this,
+                            (void*)m_positionSpin, (void*)m_alphaSpin, (void*)m_colorField);
+                        QAbstractSpinBox* spin = nullptr;
+                        for (QWidget* p = focused; p; p = p->parentWidget())
+                        {
+                            if (auto* s = qobject_cast<QAbstractSpinBox*>(p)) { spin = s; break; }
+                        }
+                        AZ_Printf("GradientCtrl",
+                            "eventFilter Enter: walk found spin=%p", (void*)spin);
+                        if (spin == m_positionSpin)
+                        {
+                            AZ_Printf("GradientCtrl", "eventFilter Enter: position spin path - commit + grab dialog focus + push");
+                            spin->interpretText();
+                            onPositionChanged(m_positionSpin->value());
+                            spin->clearFocus();
+                            // Explicitly grab focus on the dialog so subsequent
+                            // Ctrl+Z events arrive at the dialog (and our app
+                            // event filter) rather than at the line edit, which
+                            // would consume them as text-undo.
+                            this->setFocus(Qt::OtherFocusReason);
+                            AZ_Printf("GradientCtrl",
+                                "eventFilter Enter: post-handoff focused=%p (this=%p)",
+                                (void*)QApplication::focusWidget(), (void*)this);
+                            pushUndoSnapshot();
+                            return true;
+                        }
+                        if (spin == m_alphaSpin)
+                        {
+                            AZ_Printf("GradientCtrl", "eventFilter Enter: alpha spin path - commit + grab dialog focus + push");
+                            spin->interpretText();
+                            onAlphaSpinChanged(m_alphaSpin->value());
+                            spin->clearFocus();
+                            this->setFocus(Qt::OtherFocusReason);
+                            AZ_Printf("GradientCtrl",
+                                "eventFilter Enter: post-handoff focused=%p (this=%p)",
+                                (void*)QApplication::focusWidget(), (void*)this);
+                            pushUndoSnapshot();
+                            return true;
+                        }
+                        AZ_Printf("GradientCtrl", "eventFilter Enter: falling through (not in our spin)");
+                    }
+
                     if (ke->key() == Qt::Key_Escape)
                     {
                         QWidget* focused = QApplication::focusWidget();
@@ -967,22 +1115,95 @@ namespace AzToolsFramework
                     accept();
                     return true;
                 }
-                // Click on a non-focusable child (dialog background, labels)
-                // does not change focus on its own in Qt. Commit any active
-                // editor by clearing its focus so editingFinished fires and
-                // the inspector visibly deselects.
-                if (w->focusPolicy() == Qt::NoFocus)
+
+                auto isInside = [](QWidget* container, QWidget* candidate)
                 {
+                    if (!container || !candidate) { return false; }
+                    for (QWidget* p = candidate; p; p = p->parentWidget())
+                    {
+                        if (p == container) { return true; }
+                    }
+                    return false;
+                };
+
+                const bool inField = isInside(m_positionSpin, w)
+                                  || isInside(m_alphaSpin, w)
+                                  || isInside(m_colorField, w);
+                const bool inTrack = isInside(m_colorTrack, w)
+                                  || isInside(m_alphaTrack, w);
+
+                if (!inField && !inTrack)
+                {
+                    // Empty-area click: behave like Tab-out from the active
+                    // editor (clear focus -> editingFinished -> commit) AND
+                    // deselect any highlighted marker so the inspector
+                    // clears. Anything that is neither a track nor a field
+                    // counts as empty space (preview bar, labels, dialog
+                    // background, button bar).
                     QWidget* focused = QApplication::focusWidget();
                     if (focused && focused != w && isDescendantOfDialog(focused))
                     {
                         focused->clearFocus();
                     }
+                    if (m_colorTrack) { m_colorTrack->setSelectedIndex(AZStd::nullopt); }
+                    if (m_alphaTrack) { m_alphaTrack->setSelectedIndex(AZStd::nullopt); }
                 }
             }
         }
 
         return QDialog::eventFilter(watched, event);
+    }
+
+    void ColorGradientEditorDialog::mousePressEvent(QMouseEvent* event)
+    {
+        // Mouse presses that land on a focusable child (track / spin / color
+        // field / button) are accepted by that child and never reach this
+        // override. Anything that bubbles up to the dialog itself - the
+        // gradient bar, dialog background, labels, layout gaps - is "blank
+        // space" by definition.
+        //
+        // Staged blur:
+        //   Step 1) If a child of the dialog currently has focus, blur it
+        //           (Tab-out). This commits any active editor without
+        //           clearing the highlighted marker.
+        //   Step 2) If no descendant has focus, drop the marker selection.
+        // A second blank click is therefore needed to fully deselect when
+        // the user was mid-edit.
+        QWidget* focused = QApplication::focusWidget();
+        bool focusedDescendant = false;
+        if (focused && focused != this)
+        {
+            for (QWidget* p = focused; p; p = p->parentWidget())
+            {
+                if (p == this) { focusedDescendant = true; break; }
+            }
+        }
+
+        AZ_Printf("GradientCtrl",
+            "dialog::mousePressEvent: ENTRY focused=%p focusedDescendant=%d",
+            (void*)focused, focusedDescendant);
+
+        if (focusedDescendant)
+        {
+            AZ_Printf("GradientCtrl", "dialog::mousePressEvent: STAGE 1 - clearFocus + grab dialog focus + push");
+            focused->clearFocus();
+            // Hand focus to the dialog itself so subsequent Ctrl+Z reaches our
+            // event filter instead of being absorbed by a still-listening line
+            // edit's text-undo shortcut.
+            this->setFocus(Qt::OtherFocusReason);
+            AZ_Printf("GradientCtrl",
+                "dialog::mousePressEvent: post-handoff focused=%p",
+                (void*)QApplication::focusWidget());
+            pushUndoSnapshot();
+        }
+        else
+        {
+            AZ_Printf("GradientCtrl", "dialog::mousePressEvent: STAGE 2 - deselecting markers");
+            if (m_colorTrack) { m_colorTrack->setSelectedIndex(AZStd::nullopt); }
+            if (m_alphaTrack) { m_alphaTrack->setSelectedIndex(AZStd::nullopt); }
+        }
+
+        QDialog::mousePressEvent(event);
     }
 
     void ColorGradientEditorDialog::reject()
@@ -1037,15 +1258,21 @@ namespace AzToolsFramework
         if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
         {
             QWidget* focused = focusWidget();
-            if (auto* spin = qobject_cast<QAbstractSpinBox*>(focused))
+
+            // focusWidget() may return the spin's internal QLineEdit (focus
+            // proxy) rather than the QAbstractSpinBox itself, so the direct
+            // qobject_cast can fail. Walk parents to find an enclosing spin
+            // reliably for both routes.
+            QAbstractSpinBox* spin = qobject_cast<QAbstractSpinBox*>(focused);
+            if (!spin)
             {
-                // Commit typed text into the spin's value, then EXPLICITLY
-                // apply that value to the marker through the matching change
-                // handler. This avoids any dependency on valueChanged vs
-                // editingFinished signal order, which is keyboardTracking-
-                // sensitive and can leave m_working out of sync when Enter
-                // fires. After that, clear focus for the visible deselect and
-                // push the snapshot.
+                for (QWidget* p = focused; p; p = p->parentWidget())
+                {
+                    if (auto* s = qobject_cast<QAbstractSpinBox*>(p)) { spin = s; break; }
+                }
+            }
+            if (spin == m_positionSpin || spin == m_alphaSpin)
+            {
                 spin->interpretText();
                 if (spin == m_positionSpin) { onPositionChanged(m_positionSpin->value()); }
                 else if (spin == m_alphaSpin) { onAlphaSpinChanged(m_alphaSpin->value()); }
@@ -1108,11 +1335,22 @@ namespace AzToolsFramework
         snap.alphaStops = m_alphaTrack->alphaStops();
         snap.selectedKind = m_activeTrack ? m_activeTrack->kind() : GradientStopsTrack::Kind::Color;
         snap.selectedIndex = m_activeTrack ? m_activeTrack->selectedIndex() : AZStd::nullopt;
+        AZ_Printf("GradientCtrl",
+            "captureSnapshot: colorStops=%zu alphaStops=%zu activeKind=%d selectedIndex=%s",
+            snap.colorStops.size(), snap.alphaStops.size(),
+            static_cast<int>(snap.selectedKind),
+            snap.selectedIndex.has_value()
+                ? AZStd::to_string(*snap.selectedIndex).c_str()
+                : "(none)");
         return snap;
     }
 
     void ColorGradientEditorDialog::pushUndoSnapshot()
     {
+        AZ_Printf("GradientCtrl",
+            "pushUndoSnapshot: ENTRY stack.size=%zu cursor=%zu",
+            m_undoStack.size(), m_undoCursor);
+
         UndoSnapshot snap = captureSnapshot();
 
         // Coalesce identical-stops snapshots so a no-op editingFinished does
@@ -1137,7 +1375,16 @@ namespace AzToolsFramework
                            return a.m_markerPosition == b.m_markerPosition
                                && a.m_markerAlpha == b.m_markerAlpha;
                        });
-            if (sameColor && sameAlpha) { return; }
+            AZ_Printf("GradientCtrl",
+                "pushUndoSnapshot: coalesce check sameColor=%d sameAlpha=%d (top.color=%zu snap.color=%zu top.alpha=%zu snap.alpha=%zu)",
+                sameColor, sameAlpha,
+                top.colorStops.size(), snap.colorStops.size(),
+                top.alphaStops.size(), snap.alphaStops.size());
+            if (sameColor && sameAlpha)
+            {
+                AZ_Printf("GradientCtrl", "pushUndoSnapshot: SKIP (coalesced - state unchanged)");
+                return;
+            }
         }
 
         // Discard any "future" redo states beyond the cursor before pushing.
@@ -1147,24 +1394,46 @@ namespace AzToolsFramework
         }
         m_undoStack.push_back(std::move(snap));
         m_undoCursor = m_undoStack.size() - 1;
+        AZ_Printf("GradientCtrl",
+            "pushUndoSnapshot: PUSHED stack.size=%zu cursor=%zu",
+            m_undoStack.size(), m_undoCursor);
     }
 
     void ColorGradientEditorDialog::undo()
     {
-        if (m_undoCursor == 0) { return; }
+        AZ_Printf("GradientCtrl",
+            "undo: ENTRY stack.size=%zu cursor=%zu",
+            m_undoStack.size(), m_undoCursor);
+        if (m_undoCursor == 0)
+        {
+            AZ_Printf("GradientCtrl", "undo: AT BOTTOM, no-op");
+            return;
+        }
         --m_undoCursor;
+        AZ_Printf("GradientCtrl", "undo: stepping to cursor=%zu", m_undoCursor);
         applyUndoSnapshot(m_undoStack[m_undoCursor]);
     }
 
     void ColorGradientEditorDialog::redo()
     {
-        if (m_undoCursor + 1 >= m_undoStack.size()) { return; }
+        AZ_Printf("GradientCtrl",
+            "redo: ENTRY stack.size=%zu cursor=%zu",
+            m_undoStack.size(), m_undoCursor);
+        if (m_undoCursor + 1 >= m_undoStack.size())
+        {
+            AZ_Printf("GradientCtrl", "redo: AT TOP, no-op");
+            return;
+        }
         ++m_undoCursor;
+        AZ_Printf("GradientCtrl", "redo: stepping to cursor=%zu", m_undoCursor);
         applyUndoSnapshot(m_undoStack[m_undoCursor]);
     }
 
     void ColorGradientEditorDialog::applyUndoSnapshot(const UndoSnapshot& snapshot)
     {
+        AZ_Printf("GradientCtrl",
+            "applyUndoSnapshot: ENTRY snapshot.colorStops=%zu snapshot.alphaStops=%zu",
+            snapshot.colorStops.size(), snapshot.alphaStops.size());
         // Preserve the user's CURRENT selection across undo - undo steps the
         // data, not the pointer to which marker the user is working on. If
         // the currently-selected index no longer exists in the restored
