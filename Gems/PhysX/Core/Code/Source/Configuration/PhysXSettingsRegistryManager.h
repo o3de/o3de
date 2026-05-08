@@ -55,8 +55,8 @@ namespace PhysX
         virtual void SaveDebugConfiguration(const Debug::DebugConfiguration& config, const OnPhysXDebugConfigSaveComplete& saveCallback) const;
 
     protected:
-        AZStd::string m_settingsRegistryPath;
-        AZStd::string m_defaultSceneConfigSettingsRegistryPath;
-        AZStd::string m_debugSettingsRegistryPath;
+        AZStd::vector<AZStd::string> m_settingsRegistryPath;
+        AZStd::vector<AZStd::string> m_defaultSceneConfigSettingsRegistryPath;
+        AZStd::vector<AZStd::string> m_debugSettingsRegistryPath;
     };
 }
