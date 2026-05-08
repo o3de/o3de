@@ -18,7 +18,7 @@ void EvaluateStandardSurface(
     // ------- Normal -------
 
     float2 normalUv = uv[params.m_normalMapUvIndex];
-    float3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? params.m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
+    float3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? GetUvMatrix(params) : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
     // custom uv derivatives not used, pass a default value
     float4 defaultUvDxDy = float4(0.0f, 0.0f, 0.0f, 0.0f);
     surface.normal = GetNormalInputWS(GetMaterialTexture(params.m_normalMap), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, isFrontFace, vertexNormal,
@@ -65,7 +65,7 @@ void EvaluateStandardSurface(
     {
         if(o_clearCoat_enabled)
         {
-            float3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? params.m_uvMatrix : CreateIdentity3x3();
+            float3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? GetUvMatrix(params) : CreateIdentity3x3();
             GetClearCoatInputs(GetMaterialTexture(params.m_clearCoatInfluenceMap), uv[params.m_clearCoatInfluenceMapUvIndex], params.m_clearCoatFactor, o_clearCoat_factor_useTexture,
                                GetMaterialTexture(params.m_clearCoatRoughnessMap), uv[params.m_clearCoatRoughnessMapUvIndex], params.m_clearCoatRoughness, o_clearCoat_roughness_useTexture,
                                GetMaterialTexture(params.m_clearCoatNormalMap),    uv[params.m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, params.m_clearCoatNormalStrength,

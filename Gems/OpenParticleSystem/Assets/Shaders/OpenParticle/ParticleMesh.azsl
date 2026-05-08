@@ -83,7 +83,7 @@ struct VSOutput
 
 void TransformUvs(in float2 IN[UvSetCount], out float2 OUT[UvSetCount])
 {
-    OUT[0] = mul(GetMaterialParameters().m_uvMatrix, float3(IN[0], 1.0)).xy;
+    OUT[0] = MulUvMatrix(GetMaterialParameters(), IN[0]);
     OUT[1] = IN[1];
 }
 
