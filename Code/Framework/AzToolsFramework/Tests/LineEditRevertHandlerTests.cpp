@@ -40,9 +40,11 @@ namespace UnitTest
             m_lineEdit = new QLineEdit(m_dummyWidget.get());
             m_lineEdit->setFocusPolicy(Qt::StrongFocus);
 
-            // Handler parents itself to the line edit. Clear-focus target is
-            // the dummy widget so the deferred clearFocus has a real target.
-            new AzQtComponents::LineEditRevertHandler(m_lineEdit, m_dummyWidget.get());
+            // Default the clear-focus target to the line edit itself. In real
+            // consumers a parent widget can be passed when it owns the focus
+            // (typically via setFocusProxy), but in this fixture the line edit
+            // is what actually holds focus, so clearing it is what unfocuses.
+            new AzQtComponents::LineEditRevertHandler(m_lineEdit);
         }
 
         void TearDownEditorFixtureImpl() override
