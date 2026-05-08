@@ -156,6 +156,13 @@ namespace AzToolsFramework
         void hideEvent(QHideEvent* event) override;
         bool eventFilter(QObject* watched, QEvent* event) override;
 
+    public Q_SLOTS:
+        // Override to intercept the "cancel" action regardless of trigger
+        // path (Esc keypress, Esc shortcut on Cancel button, X close, etc.).
+        // When a spin or line-edit field inside the dialog has focus, revert
+        // its typed value and release focus instead of closing the dialog.
+        void reject() override;
+
     private slots:
         void onAlphaTrackChanged();
         void onColorTrackChanged();

@@ -20,6 +20,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QDoubleSpinBox>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QLineEdit>
 #include <QLinearGradient>
 #include <QMouseEvent>
 #include <QPainter>
@@ -891,6 +892,53 @@ namespace AzToolsFramework
             {
                 if (isDescendantOfDialog(w))
                 {
+                    // Escape inside a focused text editor (spin box or the
+                    // colour text field) reverts the typed value and exits
+                    // the field, leaving the dialog open. Outside any editor
+                    // it falls through to QDialog's default reject().
+                    if (ke->key() == Qt::Key_Escape)
+                    {
+                        QWidget* focused = QApplication::focusWidget();
+
+                        // focusWidget() can return the spin's internal QLineEdit
+                        // (focus proxy) OR the spin itself depending on Qt's
+                        // focus-routing path. Walk parents from both the focused
+                        // widget and the event recipient (w) so either case
+                        // resolves to the spin.
+                        QAbstractSpinBox* spin = nullptr;
+                        for (QWidget* p = focused; p; p = p->parentWidget())
+                        {
+                            if (auto* s = qobject_cast<QAbstractSpinBox*>(p)) { spin = s; break; }
+                        }
+                        if (!spin)
+                        {
+                            for (QWidget* p = w; p; p = p->parentWidget())
+                            {
+                                if (auto* s = qobject_cast<QAbstractSpinBox*>(p)) { spin = s; break; }
+                            }
+                        }
+                        if (spin && isDescendantOfDialog(spin))
+                        {
+                            // QAbstractSpinBox::lineEdit() is protected;
+                            // findChild reaches it through the public API.
+                            if (auto* le = spin->findChild<QLineEdit*>()) { le->undo(); }
+                            spin->clearFocus();
+                            return true;
+                        }
+
+                        // Plain QLineEdit (PropertyColorCtrl's text field).
+                        if (auto* le = qobject_cast<QLineEdit*>(focused))
+                        {
+                            if (isDescendantOfDialog(le))
+                            {
+                                le->undo();
+                                le->clearFocus();
+                                return true;
+                            }
+                        }
+                        // No focused editor: fall through to QDialog default.
+                    }
+
                     const bool isUndo = ctrl && !shift && ke->key() == Qt::Key_Z;
                     const bool isRedo = (ctrl && ke->key() == Qt::Key_Y)
                                      || (ctrl && shift && ke->key() == Qt::Key_Z);
@@ -937,6 +985,50 @@ namespace AzToolsFramework
         return QDialog::eventFilter(watched, event);
     }
 
+    void ColorGradientEditorDialog::reject()
+    {
+        // If a field inside the dialog is currently being edited, treat the
+        // cancel as a field-revert instead of a dialog-cancel. This catches
+        // every path that leads to reject() including the Cancel button's
+        // implicit Esc shortcut (a QEvent::Shortcut that the KeyPress-only
+        // event filter does not see).
+        QWidget* focused = QApplication::focusWidget();
+
+        auto isInside = [](QWidget* container, QWidget* candidate)
+        {
+            if (!container || !candidate) { return false; }
+            for (QWidget* p = candidate; p; p = p->parentWidget())
+            {
+                if (p == container) { return true; }
+            }
+            return false;
+        };
+
+        if (isInside(m_positionSpin, focused))
+        {
+            if (auto* le = m_positionSpin->findChild<QLineEdit*>()) { le->undo(); }
+            m_positionSpin->clearFocus();
+            return;
+        }
+        if (isInside(m_alphaSpin, focused))
+        {
+            if (auto* le = m_alphaSpin->findChild<QLineEdit*>()) { le->undo(); }
+            m_alphaSpin->clearFocus();
+            return;
+        }
+        if (isInside(m_colorField, focused))
+        {
+            if (auto* le = m_colorField->findChild<QLineEdit*>())
+            {
+                le->undo();
+                le->clearFocus();
+            }
+            return;
+        }
+
+        QDialog::reject();
+    }
+
     void ColorGradientEditorDialog::keyPressEvent(QKeyEvent* event)
     {
         // Staged Enter: if focus is in a spin box, let the field commit its value
@@ -962,6 +1054,25 @@ namespace AzToolsFramework
                 event->accept();
                 return;
             }
+
+            // Enter inside the colour text field: QLineEdit's returnPressed
+            // already fired and PropertyColorCtrl::OnEditingFinished committed
+            // the value through the existing signal chain. Just consume the
+            // event so the dialog does not also approve, and release focus
+            // for visual consistency with the spin path.
+            if (m_colorField)
+            {
+                for (QWidget* p = focused; p; p = p->parentWidget())
+                {
+                    if (p == m_colorField)
+                    {
+                        if (auto* le = m_colorField->findChild<QLineEdit*>()) { le->clearFocus(); }
+                        event->accept();
+                        return;
+                    }
+                }
+            }
+
             accept();
             return;
         }
