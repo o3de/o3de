@@ -261,6 +261,56 @@ namespace AzQtComponents
 
                 topLevel->setParent(nullptr, flags);
                 topLevel->show();
+
+                // setParent(nullptr) detaches us from the editor main window, which breaks
+                // FancyDocking::QueueUpdateFloatingWindowTitle — it locates the floating
+                // wrapper via m_mainWindow->findChild<>() against the editor main window,
+                // which now returns nullptr. Without that update the new native window has
+                // no title and the OS falls back to QApplication::applicationName()
+                // ("O3DE Editor"). Replicate FancyDocking's title logic here: dig into our
+                // inner DockMainWindow for the top-left visible dock widget and use its
+                // title. Use a second deferred timer so the inner dock widgets have time
+                // to be moved into the wrapper before we read them.
+                QTimer::singleShot(0, topLevel, [topLevel]
+                {
+                    QString title = topLevel->windowTitle();
+
+                    if (QDockWidget* wrapper = qobject_cast<QDockWidget*>(topLevel))
+                    {
+                        if (QMainWindow* innerMain = qobject_cast<QMainWindow*>(wrapper->widget()))
+                        {
+                            const QDockWidget* topLeftWidget = nullptr;
+                            int topLeftDist = 0;
+                            const auto children = innerMain->findChildren<QDockWidget*>(QString(), Qt::FindDirectChildrenOnly);
+                            for (QDockWidget* child : children)
+                            {
+                                if (!child->isVisible())
+                                {
+                                    continue;
+                                }
+                                int dist = child->pos().manhattanLength();
+                                if (!topLeftWidget || dist < topLeftDist)
+                                {
+                                    topLeftWidget = child;
+                                    topLeftDist = dist;
+                                }
+                            }
+                            if (topLeftWidget)
+                            {
+                                title = topLeftWidget->windowTitle();
+                            }
+                        }
+                    }
+
+                    if (!title.isEmpty())
+                    {
+                        topLevel->setWindowTitle(title);
+                        if (QWindow* win = topLevel->windowHandle())
+                        {
+                            win->setTitle(title);
+                        }
+                    }
+                });
             });
 
             // Perform platform-specific handling for floating windows (e.g. minimizing into the taskbar)
