@@ -119,8 +119,6 @@ extern int wcsnicmp (const wchar_t* s1, const wchar_t* s2, size_t count);
 #undef wcsnlen
 extern size_t wcsnlen(const wchar_t* str, size_t maxLen);
 
-#undef stpcpy
-extern char* stpcpy(char* dest, const char* str);
 // end android-19
 
 

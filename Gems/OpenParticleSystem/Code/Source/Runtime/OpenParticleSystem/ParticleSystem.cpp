@@ -679,6 +679,20 @@ namespace OpenParticle
         EmitterInstance& instance, AZ::RPI::View& view, int meshIndex)
     {
         AZ_PROFILE_SCOPE(AzCore, "ParticleSystem::RenderParticle");
+        if (!instance.m_objSrg)
+        {
+            // note that sprite and mesh particles use the instance.m_objSrg, but the
+            // ribbon does not.
+            if (drawParam.item.drawArgs.type == SimuCore::ParticleCore::DrawType::LINEAR)
+            {
+                return; // this is a sprite particle
+            }
+            if (meshIndex >= 0)
+            {
+                return; // this is a mesh particle.
+            }
+        }
+
         auto& efd = instance.m_emitterForDrawPair[drawParam.shader.get()];
         auto pipeline = m_particleFp->Fetch(GetPipelineKey(drawParam.item.type));
         AZ::RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;

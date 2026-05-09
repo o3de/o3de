@@ -76,9 +76,6 @@ namespace AzFramework
         void InternalUpdateBufferScale();
         void InternalUpdateScaleFactor(float newScale);
 
-        void SetPointerFocus(WaylandInputDeviceMouse* pointer);
-        void SetKeyboardFocus(WaylandInputDeviceKeyboard* keyboard);
-
     private:
         static void SurfaceEnter(void* data, wl_surface* wl_surface, wl_output* output);
         static void SurfaceLeave(void* data, wl_surface* wl_surface, wl_output* output);
@@ -115,9 +112,6 @@ namespace AzFramework
 
         WindowSize m_recommendedGeoBounds = {};
         wl_output* m_currentEnteredOutput = nullptr;
-
-        WaylandInputDeviceMouse* m_focusedCursor = nullptr;
-        WaylandInputDeviceKeyboard* m_focusedKeyboard = nullptr;
 
         uint32_t m_currentRefreshMhz = 0;
         float m_dpiScaleFactor = 1.0f;

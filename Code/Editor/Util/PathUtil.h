@@ -73,61 +73,77 @@ namespace Path
     //! Extract extension from full specified file path.
     inline QString GetExt(const QString& filepath)
     {
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), 0, 0, 0, 0, 0, 0, ext, AZ_ARRAY_SIZE(ext));
-#else
-        _splitpath(filepath.toUtf8().data(), 0, 0, 0, ext);
-#endif
-        if (ext[0] == '.')
-        {
-            return ext + 1;
-        }
+        AZStd::string ext;
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        nullptr, /* AZStd::string* pDstDriveOut */
+                                        nullptr, /* AZStd::string* pDstFolderPathOut */
+                                        nullptr, /* AZStd::string* pDstNameOut */
+                                        &ext     /* AZStd::string* pDstExtensionOut */
+                                        );
+        AZ_Assert(ret, "Failed to get extension from path: %s", filepath.toUtf8().data());
 
-        return ext;
+        if (!ext.empty() && ext[0] == '.')
+        {
+            return QString::fromUtf8(ext.c_str() + 1);
+        }
+        return QString::fromUtf8(ext.c_str());
     }
 
     //! Extract path from full specified file path.
     inline QString GetPath(const QString& filepath)
     {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), 0, 0, 0, 0);
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-#else
-        _splitpath(filepath.toUtf8().data(), drive, dir, 0, 0);
-        _makepath(path_buffer, drive, dir, 0, 0);
-#endif
-        return CaselessPaths(path_buffer);
+        AZStd::string drive;
+        AZStd::string dir;
+
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        &drive,  /* AZStd::string* pDstDriveOut */
+                                        &dir,    /* AZStd::string* pDstFolderPathOut */
+                                        nullptr, /* AZStd::string* pDstNameOut */
+                                        nullptr  /* AZStd::string* pDstExtensionOut */
+                                        );
+        AZ_Assert(ret, "Failed to get path from full filepath: %s", filepath.toUtf8().data());
+
+        QString root = QString::fromUtf8(drive.c_str()) + QString::fromUtf8(dir.c_str());
+        return CaselessPaths(root);
     }
 
     //! Extract file name with extension from full specified file path.
     inline QString GetFile(const QString& filepath)
     {
-        char path_buffer[_MAX_PATH];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), 0, 0, 0, 0, fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), 0, 0, fname, ext);
-#else
-        _splitpath(filepath.toUtf8().data(), 0, 0, fname, ext);
-        _makepath(path_buffer, 0, 0, fname, ext);
-#endif
-        return CaselessPaths(path_buffer);
+        AZStd::string filename;
+        AZStd::string ext;
+
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        nullptr,   /* AZStd::string* pDstDriveOut */
+                                        nullptr,   /* AZStd::string* pDstFolderPathOut */
+                                        &filename, /* AZStd::string* pDstNameOut */
+                                        &ext       /* AZStd::string* pDstExtensionOut */
+                                        );
+        AZ_Assert(ret, "Failed to get file from full filepath: %s", filepath.toUtf8().data());
+
+        AZStd::string path;
+        AZ::StringFunc::Path::Join(filename.c_str(), ext.c_str(), path);
+        return CaselessPaths(QString::fromUtf8(path.c_str()));
     }
 
     //! Extract file name without extension from full specified file path.
     inline QString GetFileName(const QString& filepath)
     {
-        char fname[_MAX_FNAME];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), 0, 0, 0, 0, fname, AZ_ARRAY_SIZE(fname), 0, 0);
-#else
-        _splitpath(filepath.toUtf8().data(), 0, 0, fname, 0);
-#endif
+        AZStd::string filename;
+
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        nullptr,   /* AZStd::string* pDstDriveOut */
+                                        nullptr,   /* AZStd::string* pDstFolderPathOut */
+                                        &filename, /* AZStd::string* pDstNameOut */
+                                        nullptr    /* AZStd::string* pDstExtensionOut */
+                                        );
+        AZ_Assert(ret, "Failed to get file name from full filepath: %s", filepath.toUtf8().data());
+
+        QString fname = QString::fromUtf8(filename.c_str());
         return fname;
     }
 
@@ -216,7 +232,7 @@ namespace Path
     inline QString ReplaceExtension(const QString& filepath, const QString& ext)
     {
         AZStd::string newPath = filepath.toUtf8().data();
-        AzFramework::StringFunc::Path::ReplaceExtension(newPath, ext.toUtf8().data());
+        AZ::StringFunc::Path::ReplaceExtension(newPath, ext.toUtf8().data());
         QString returnString(newPath.c_str());
         return CaselessPaths(returnString);
     }
@@ -224,30 +240,31 @@ namespace Path
     //! Replace extension for given file.
     inline QString RemoveExtension(const QString& filepath)
     {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), 0, 0);
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, fname, 0);
-#else
-        _splitpath(filepath.toUtf8().data(), drive, dir, fname, 0);
-        _makepath(path_buffer, drive, dir, fname, 0);
-#endif
-        return path_buffer;
+        AZStd::string drive;
+        AZStd::string dir;
+        AZStd::string filename;
+
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(filepath.toUtf8().data(),
+                                        &drive,  /* AZStd::string* pDstDriveOut */
+                                        &dir, /* AZStd::string* pDstFolderPathOut */
+                                        &filename, /* AZStd::string* pDstNameOut */
+                                        nullptr /* AZStd::string* pDstExtensionOut */
+                                        );
+        AZ_Assert(ret, "Failed to get file name from full filepath: %s", filepath.toUtf8().data());
+        AZStd::string rootPath = drive + dir;
+        AZStd::string path;
+        AZ::StringFunc::Path::ConstructFull(rootPath.c_str(), filename.c_str(), path);
+
+        return QString::fromUtf8(path.c_str());
     }
 
     //! Makes a fully specified file path from path and file name.
     inline QString Make(const QString& dir, const QString& filename, const QString& ext)
     {
-        char path_buffer[_MAX_PATH];
-#ifdef AZ_COMPILER_MSVC
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), nullptr, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
-#else
-        _makepath(path_buffer, nullptr, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
-#endif
-        return CaselessPaths(path_buffer);
+        AZStd::string path;
+        AZ::StringFunc::Path::ConstructFull(dir.toUtf8().data(), filename.toUtf8().data(), path);
+        return CaselessPaths(ReplaceExtension(QString::fromUtf8(path.c_str()), ext));
     }
 
     //////////////////////////////////////////////////////////////////////////

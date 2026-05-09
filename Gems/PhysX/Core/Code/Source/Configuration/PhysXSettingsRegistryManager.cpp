@@ -21,29 +21,32 @@ namespace PhysX
 
     PhysXSettingsRegistryManager::PhysXSettingsRegistryManager()
     {
-        m_settingsRegistryPath = AZStd::string::format("%s/Gems/" PHYSX_SETREG_GEM_NAME "/PhysXSystemConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-        m_defaultSceneConfigSettingsRegistryPath = AZStd::string::format("%s/Gems/" PHYSX_SETREG_GEM_NAME "/DefaultSceneConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-        m_debugSettingsRegistryPath = AZStd::string::format("%s/Gems/" PHYSX_SETREG_GEM_NAME "/Debug/PhysXDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
+        const char* physXGemNames[] = { "PhysX5", "PhysX" };
+        for (const char* gemName : physXGemNames) 
+        {
+            m_settingsRegistryPath.push_back(AZStd::string::format("%s/Gems/%s/PhysXSystemConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, gemName));
+            m_defaultSceneConfigSettingsRegistryPath.push_back(AZStd::string::format("%s/Gems/%s/DefaultSceneConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, gemName));
+            m_debugSettingsRegistryPath.push_back(AZStd::string::format("%s/Gems/%s/Debug/PhysXDebugConfiguration", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, gemName));
+        }
     }
 
     AZStd::optional<PhysXSystemConfiguration> PhysXSettingsRegistryManager::LoadSystemConfiguration() const
     {
         PhysXSystemConfiguration systemConfig;
 
-        bool configurationRead = false;
-        
         AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         if (settingsRegistry)
         {
-            configurationRead = settingsRegistry->GetObject(systemConfig, m_settingsRegistryPath);
-        }
-
-        if (configurationRead)
-        {
-            AZ_TracePrintf("PhysXSystem", R"(PhysXConfiguration was read from settings registry at pointer path)"
-                R"( "%s)" "\n",
-                m_settingsRegistryPath.c_str());
-            return systemConfig;
+            for (const auto& path : m_settingsRegistryPath) 
+            {
+                if (settingsRegistry->GetObject(systemConfig, path))
+                {
+                    AZ_Printf("PhysXSystem", R"(PhysXConfiguration was read from settings registry at pointer path)"
+                                             R"( "%s)" "\n",
+                                             path.c_str());
+                    return systemConfig;
+                }
+            }
         }
         return AZStd::nullopt;
     }
@@ -51,21 +54,22 @@ namespace PhysX
     AZStd::optional<AzPhysics::SceneConfiguration> PhysXSettingsRegistryManager::LoadDefaultSceneConfiguration() const
     {
         AzPhysics::SceneConfiguration sceneConfig;
-        bool configurationRead = false;
 
         AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         if (settingsRegistry)
         {
-            configurationRead = settingsRegistry->GetObject(sceneConfig, m_defaultSceneConfigSettingsRegistryPath);
+            for (const auto& path : m_defaultSceneConfigSettingsRegistryPath)
+            {
+                if (settingsRegistry->GetObject(sceneConfig, path))
+                {
+                    AZ_Printf("PhysXSystem", R"(Default Scene Configuration was read from settings registry at pointer path)"
+                                             R"( "%s)" "\n",
+                                             path.c_str());
+                    return sceneConfig;
+                }
+            }
         }
 
-        if (configurationRead)
-        {
-            AZ_TracePrintf("PhysXSystem", R"(Default Scene Configuration was read from settings registry at pointer path)"
-                R"("%s)" "\n",
-                m_defaultSceneConfigSettingsRegistryPath.c_str());
-            return sceneConfig;
-        }
         return AZStd::nullopt;
     }
 
@@ -73,20 +77,19 @@ namespace PhysX
     {
         Debug::DebugConfiguration systemConfig;
 
-        bool configurationRead = false;
-
         AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
         if (settingsRegistry)
         {
-            configurationRead = settingsRegistry->GetObject(systemConfig, m_debugSettingsRegistryPath);
-        }
-
-        if (configurationRead)
-        {
-            AZ_TracePrintf("PhysXSystem", R"(Debug::DebugConfiguration was read from settings registry at pointer path)"
-                R"( "%s)" "\n",
-                m_debugSettingsRegistryPath.c_str());
-            return systemConfig;
+            for (const auto& path : m_debugSettingsRegistryPath)
+            {
+                if (settingsRegistry->GetObject(systemConfig, path))
+                {
+                    AZ_Printf("PhysXSystem", R"(Debug::DebugConfiguration was read from settings registry at pointer path)"
+                                             R"( "%s)" "\n",
+                                             path.c_str());
+                    return systemConfig;
+                }
+            }
         }
         return AZStd::nullopt;
     }

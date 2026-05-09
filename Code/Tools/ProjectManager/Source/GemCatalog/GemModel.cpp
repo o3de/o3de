@@ -218,6 +218,10 @@ namespace O3DE::ProjectManager
                 indexesChanged.append(modelIndex);
 
                 m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+                if (!gemInfo.m_altname.isEmpty())
+                {
+                    m_nameToIndexMap[gemInfo.m_altname] = modelIndex;
+                }
             }
         }
 
@@ -307,6 +311,10 @@ namespace O3DE::ProjectManager
             GemModel::SetIsAdded(*this, modelIndex, true);
 
             m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+            if (!gemInfo.m_altname.isEmpty())
+            {
+                m_nameToIndexMap[gemInfo.m_altname] = modelIndex;
+            }
 
             AZ_Warning("ProjectManager::GemCatalog", false,
                 "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",

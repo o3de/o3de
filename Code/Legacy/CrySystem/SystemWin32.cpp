@@ -180,14 +180,6 @@ int CSystem::GetApplicationLogInstance([[maybe_unused]] const char* logFilePath)
 }
 
 //////////////////////////////////////////////////////////////////////////
-struct CryDbgModule
-{
-    HANDLE heap;
-    WIN_HMODULE handle;
-    AZStd::string name;
-    DWORD dwSize;
-};
-
 #ifdef WIN32
 
 //////////////////////////////////////////////////////////////////////////

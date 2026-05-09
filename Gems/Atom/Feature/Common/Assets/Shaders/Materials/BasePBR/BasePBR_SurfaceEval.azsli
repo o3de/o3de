@@ -55,7 +55,7 @@ Surface EvaluateSurface_BasePBR(
     surface.vertexNormal = vertexNormal;
     float2 normalUv = uvs[params.m_normalMapUvIndex];
 
-    real3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real(); // By design, only UV0 is allowed to apply transforms.
+    real3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? real3x3(params.m_uvMatrixRow0.xyz, params.m_uvMatrixRow1.xyz, params.m_uvMatrixRow2.xyz) : CreateIdentity3x3_real(); // By design, only UV0 is allowed to apply transforms.
     if (customDerivatives)
     {
         surface.normal = GetNormalInputWS(GetMaterialTexture(params.m_normalMap), GetMaterialTextureSampler(), normalUv, params.m_flipNormalX, params.m_flipNormalY, isFrontFace, vertexNormal,

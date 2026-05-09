@@ -291,7 +291,7 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
         const ICVar* pShowErrorDialogOnLoad = gEnv->pConsole->GetCVar("ed_showErrorDialogOnLoad");
         CErrorsRecorder errorsRecorder(pShowErrorDialogOnLoad && (pShowErrorDialogOnLoad->GetIVal() != 0));
 
-        int t0 = GetTickCount();
+        time_t start = time(nullptr);
 
         // Load level-specific audio data.
         AZStd::string levelFileName{ fileName.toUtf8().constData() };
@@ -314,7 +314,9 @@ void CCryEditDoc::Load(TDocMultiArchive& /* arrXmlAr */, const QString& szFilena
             }
         }
 
-        LogLoadTime(GetTickCount() - t0);
+        time_t elapsed = time(nullptr) - start;
+        LogLoadTime(static_cast<int>(elapsed));
+
         // Loaded with success, remove event from log file
         GetIEditor()->GetSettingsManager()->UnregisterEvent(loadEvent);
     }
@@ -1274,7 +1276,7 @@ void CCryEditDoc::LogLoadTime(int time) const
     QString filename = Path::Make(exePath, "LevelLoadTime.log");
     QString level = GetIEditor()->GetGameEngine()->GetLevelPath();
 
-    CLogFile::FormatLine("[LevelLoadTime] Level %s loaded in %d seconds", level.toUtf8().data(), time / 1000);
+    CLogFile::FormatLine("[LevelLoadTime] Level %s loaded in %d seconds", level.toUtf8().data(), time);
 #if defined(AZ_PLATFORM_WINDOWS)
     SetFileAttributesW(filename.toStdWString().c_str(), FILE_ATTRIBUTE_ARCHIVE);
 #endif
@@ -1287,8 +1289,6 @@ void CCryEditDoc::LogLoadTime(int time) const
 
     char version[50];
     GetIEditor()->GetFileVersion().ToShortString(version, AZ_ARRAY_SIZE(version));
-
-    time = time / 1000;
     QString text = QStringLiteral("\n[%1] Level %2 loaded in %3 seconds").arg(version, level).arg(time);
     file.write(text.toUtf8());
 }
@@ -1329,7 +1329,7 @@ bool CCryEditDoc::DoFileSave()
     if (QString::compare(GetIEditor()->GetLevelName(), temporaryLevelName) == 0)
     {
         QString filename;
-        if (CCryEditApp::instance()->GetDocManager()->DoPromptFileName(filename, ID_FILE_SAVE_AS, 0, false, nullptr)
+        if (CCryEditApp::instance()->GetDocManager()->DoPromptFileName(filename, false)
             && !filename.isEmpty() && !QFileInfo(filename).exists())
         {
             if (SaveLevel(filename))

@@ -169,9 +169,9 @@ namespace PhysX
                 ? AZ::Vector3::CreateAxisZ()
                 : m_configuration.m_upDirection.GetNormalized();
 
-            // PhysX uses the x-axis as the height direction of the controller, and so takes the shortest arc from the 
-            // x-axis to the up direction.  To obtain the same orientation in the LY co-ordinate system (which uses z
-            // as the height direction), we need to combine a rotation from the x-axis to the up direction with a 
+            // PhysX uses the x-axis as the height direction of the controller, and so takes the shortest arc from the
+            // x-axis to the up direction. To obtain the same orientation in the O3DE co-ordinate system (which uses z
+            // as the height direction), we need to combine a rotation from the x-axis to the up direction with a
             // rotation from the z-axis to the x-axis.
             const AZ::Quaternion upDirectionQuat = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisX(),
                 upDirectionNormalized) * AZ::Quaternion::CreateRotationY(AZ::Constants::HalfPi);
@@ -188,8 +188,8 @@ namespace PhysX
                 // draw the actual shape
                 LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
                     &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
-                    m_configuration.m_scaleCoefficient * capsuleConfig.m_radius,
-                    m_configuration.m_scaleCoefficient * capsuleConfig.m_height,
+                    capsuleConfig.m_radius,
+                    capsuleConfig.m_height,
                     16, 8,
                     m_vertexBuffer,
                     m_indexBuffer,
@@ -203,8 +203,8 @@ namespace PhysX
                 // draw the shape inflated by the contact offset
                 LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
                     &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
-                    m_configuration.m_scaleCoefficient * capsuleConfig.m_radius + m_configuration.m_contactOffset,
-                    m_configuration.m_scaleCoefficient * capsuleConfig.m_height + 2.0f * m_configuration.m_contactOffset,
+                    capsuleConfig.m_radius + m_configuration.m_contactOffset,
+                    capsuleConfig.m_height + 2.0f * m_configuration.m_contactOffset,
                     16, 8,
                     m_vertexBuffer,
                     m_indexBuffer,
@@ -222,7 +222,7 @@ namespace PhysX
                 const AZ::Transform controllerTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
                     upDirectionQuat, GetWorldTM().GetTranslation() + heightOffset * upDirectionNormalized);
 
-                const AZ::Vector3 boxHalfExtentsScaled = 0.5f * m_configuration.m_scaleCoefficient * boxConfig.m_dimensions;
+                const AZ::Vector3 boxHalfExtentsScaled = 0.5f * boxConfig.m_dimensions;
                 const AZ::Vector3 boxHalfExtentsScaledWithContactOffset = boxHalfExtentsScaled +
                     m_configuration.m_contactOffset * AZ::Vector3::CreateOne();
 

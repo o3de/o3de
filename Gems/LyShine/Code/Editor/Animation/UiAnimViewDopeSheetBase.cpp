@@ -2340,11 +2340,11 @@ void CUiAnimViewDopeSheetBase::DrawKeys(CUiAnimViewTrack* pTrack, QPainter* pain
                     // Show its time or frame number additionally.
                     if (GetTickDisplayMode() == eUiAVTickMode_InSeconds)
                     {
-                        sprintf_s(keydesc, "%.3f, {", time);
+                        azsprintf(keydesc, "%.3f, {", time);
                     }
                     else
                     {
-                        sprintf_s(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
+                        azsprintf(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
                     }
                 }
                 else

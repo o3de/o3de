@@ -20,7 +20,7 @@ public:
     void Release() override;
     void ShowAbout() override {}
     const char* GetPluginGUID() override { return "{11B0041C-BC34-4827-A3E4-AB7458FFF678}"; }
-    DWORD GetPluginVersion() override { return 1; }
+    AZ::u32 GetPluginVersion() override { return 1; }
     const char* GetPluginName() override { return "ComponentEntityEditor"; }
     bool CanExitNow() override { return true; }
     void OnEditorNotify([[maybe_unused]] EEditorNotifyEvent aEventId) override {}

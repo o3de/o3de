@@ -24,9 +24,9 @@ static toff_t libtiffDummySeekProc (thandle_t fd, toff_t off, int i);
 // Structure used to pass state to our in-memory TIFF file callbacks
 struct MemImage
 {
-    uint8 *buffer;
-    uint32 offset;
-    uint32 size;
+    uint8_t *buffer;
+    uint32_t offset;
+    uint32_t size;
 };
 
 
@@ -60,7 +60,7 @@ libtiffDummyReadProc (thandle_t fd, tdata_t buf, tsize_t size)
 
     memcpy(buf, &memImage->buffer[memImage->offset], size);
 
-    memImage->offset += static_cast<uint32>(size);
+    memImage->offset += static_cast<uint32_t>(size);
 
     // Return the amount of data read
     return size;
@@ -79,19 +79,19 @@ libtiffDummySeekProc (thandle_t fd, toff_t off, int i)
     switch (i)
     {
     case SEEK_SET:
-        memImage->offset = static_cast<uint32>(off);
+        memImage->offset = static_cast<uint32_t>(off);
         break;
 
     case SEEK_CUR:
-        memImage->offset += static_cast<uint32>(off);
+        memImage->offset += static_cast<uint32_t>(off);
         break;
 
     case SEEK_END:
-        memImage->offset = static_cast<uint32>(memImage->size - off);
+        memImage->offset = static_cast<uint32_t>(memImage->size - off);
         break;
 
     default:
-        memImage->offset = static_cast<uint32>(off);
+        memImage->offset = static_cast<uint32_t>(off);
         break;
     }
 
@@ -117,9 +117,9 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
 
     MemImage memImage;
 
-    std::vector<uint8> data;
+    std::vector<uint8_t> data;
 
-    memImage.size = static_cast<uint32>(file.GetLength());
+    memImage.size = static_cast<uint32_t>(file.GetLength());
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];
@@ -139,9 +139,9 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
 
     if (tif)
     {
-        uint32 dwWidth, dwHeight;
+        uint32_t dwWidth, dwHeight;
         size_t npixels;
-        uint32* raster;
+        uint32_t* raster;
         char* dccfilename = nullptr;
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &dwWidth);
@@ -150,7 +150,7 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
 
         npixels = dwWidth * dwHeight;
 
-        raster = (uint32*)_TIFFmalloc((tsize_t)(npixels * sizeof(uint32)));
+        raster = (uint32_t*)_TIFFmalloc((tsize_t)(npixels * sizeof(uint32_t)));
 
         if (raster)
         {
@@ -159,9 +159,9 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
                 if (outImage.Allocate(dwWidth, dwHeight))
                 {
                     char* dest = (char*)outImage.GetData();
-                    uint32 dwPitch = dwWidth * 4;
+                    uint32_t dwPitch = dwWidth * 4;
 
-                    for (uint32 dwY = 0; dwY < dwHeight; ++dwY)
+                    for (uint32_t dwY = 0; dwY < dwHeight; ++dwY)
                     {
                         char* src2 = (char*)&raster[(dwHeight - 1 - dwY) * dwWidth];
                         char* dest2 = &dest[dwPitch * dwY];
@@ -208,7 +208,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
 
     MemImage memImage;
 
-    std::vector<uint8> data;
+    std::vector<uint8_t> data;
 
     memImage.size = static_cast<int>(file.GetLength());
 
@@ -230,8 +230,8 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
 
     if (tif)
     {
-        uint32 width = 0, height = 0;
-        uint16 spp = 0, bpp = 0, format = 0;
+        uint32_t width = 0, height = 0;
+        uint16_t spp = 0, bpp = 0, format = 0;
         char* dccfilename = nullptr;
 
         TIFFGetField(tif, TIFFTAG_IMAGEDESCRIPTION, &dccfilename);
@@ -251,7 +251,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
         float pixelValueScale = 1.0f;
 
         // Check to see if it's a GeoTIFF, and if so, whether or not it has the ZScale parameter.
-        uint32 tagCount = 0;
+        uint32_t tagCount = 0;
         double *pixelScales = nullptr;
         if (TIFFGetField(tif, GEOTIFF_MODELPIXELSCALE_TAG, &tagCount, &pixelScales) == 1)
         {
@@ -262,15 +262,15 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
             }
         }
 
-        uint32 linesize = static_cast<uint32>(TIFFScanlineSize(tif));
-        uint8* linebuf = static_cast<uint8*>(_TIFFmalloc(linesize));
+        uint32_t linesize = static_cast<uint32_t>(TIFFScanlineSize(tif));
+        uint8_t* linebuf = static_cast<uint8_t*>(_TIFFmalloc(linesize));
 
         // We assume that a scanline has all of the samples in it.  Validate the assumption.
         assert(linesize == (width * (bpp / 8) * spp));
 
         // Aliases for linebuf to make it easier to pull different types out of the scanline.
-        uint16* linebufUint16 = reinterpret_cast<uint16*>(linebuf);
-        uint32* linebufUint32 = reinterpret_cast<uint32*>(linebuf);
+        uint16_t* linebufUint16 = reinterpret_cast<uint16_t*>(linebuf);
+        uint32_t* linebufUint32 = reinterpret_cast<uint32_t*>(linebuf);
         float* linebufFloat = reinterpret_cast<float*>(linebuf);
 
         if (linebuf)
@@ -282,7 +282,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
 
                 float maxPixelValue = 0.0f;
 
-                for (uint32 y = 0; y < height; y++)
+                for (uint32_t y = 0; y < height; y++)
                 {
                     TIFFReadScanline(tif, linebuf, y);
 
@@ -292,30 +292,30 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
                     // 32-bit values may or may not need to scale down, depending on the intended authoring range.  Our assumption
                     // is that they were most likely authored with the intent of 1:1 value translations.
 
-                    for (uint32 x = 0; x < width; x++)
+                    for (uint32_t x = 0; x < width; x++)
                     {
                         switch (bpp)
                         {
                             case 8:
                                 // Scale 0-255 to 0.0 - 1.0
-                                dest[(y * width) + x] = static_cast<float>(linebuf[x * spp]) / static_cast<float>(std::numeric_limits<uint8>::max());
+                                dest[(y * width) + x] = static_cast<float>(linebuf[x * spp]) / static_cast<float>(std::numeric_limits<uint8_t>::max());
                                 break;
                             case 16:
                                 // Scale 0-65535 to 0.0 - 1.0
-                                dest[(y * width) + x] = static_cast<float>(linebufUint16[x * spp]) / static_cast<float>(std::numeric_limits<uint16>::max());
+                                dest[(y * width) + x] = static_cast<float>(linebufUint16[x * spp]) / static_cast<float>(std::numeric_limits<uint16_t>::max());
                                 break;
                             case 32:
                                 // 32-bit values could be ints or floats.
 
                                 if (format == SAMPLEFORMAT_INT)
                                 {
-                                    // Scale 0-max int32 to 0.0 - 1.0
-                                    dest[(y * width) + x] = clamp_tpl(static_cast<float>(linebufUint32[x * spp]) / static_cast<float>(std::numeric_limits<int32>::max()), 0.0f, 1.0f);
+                                    // Scale 0-max int32_t to 0.0 - 1.0
+                                    dest[(y * width) + x] = clamp_tpl(static_cast<float>(linebufUint32[x * spp]) / static_cast<float>(std::numeric_limits<int32_t>::max()), 0.0f, 1.0f);
                                 }
                                 else if (format == SAMPLEFORMAT_UINT)
                                 {
-                                    // Scale 0-max uint32 to 0.0 - 1.0
-                                    dest[(y * width) + x] = clamp_tpl(static_cast<float>(linebufUint32[x * spp]) / static_cast<float>(std::numeric_limits<uint32>::max()), 0.0f, 1.0f);
+                                    // Scale 0-max uint32_t to 0.0 - 1.0
+                                    dest[(y * width) + x] = clamp_tpl(static_cast<float>(linebufUint32[x * spp]) / static_cast<float>(std::numeric_limits<uint32_t>::max()), 0.0f, 1.0f);
                                 }
                                 else if (format == SAMPLEFORMAT_IEEEFP)
                                 {
@@ -345,9 +345,9 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
                 // If this is a GeoTIFF using 32-bit floats, we will end up outside the 0.0 - 1.0 range.  Let's scale it back down to 0.0 - 1.0.
                 if (maxPixelValue > 1.0f)
                 {
-                    for (uint32 y = 0; y < height; y++)
+                    for (uint32_t y = 0; y < height; y++)
                     {
-                        for (uint32 x = 0; x < width; x++)
+                        for (uint32_t x = 0; x < width; x++)
                         {
                             dest[(y * width) + x] = dest[(y * width) + x] / maxPixelValue;
                         }
@@ -450,7 +450,7 @@ bool CImageTIF::SaveRAW(const QString& fileName, const void* pData, int width, i
 
 const char* CImageTIF::GetPreset(const QString& fileName)
 {
-    std::vector<uint8> data;
+    std::vector<uint8_t> data;
     CCryFile file;
     if (!file.Open(fileName.toUtf8().data(), "rb"))
     {
@@ -460,7 +460,7 @@ const char* CImageTIF::GetPreset(const QString& fileName)
 
     MemImage memImage;
 
-    memImage.size = static_cast<uint32>(file.GetLength());
+    memImage.size = static_cast<uint32_t>(file.GetLength());
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];

@@ -396,7 +396,6 @@ private:
     const QMetaObject* m_documentClass = nullptr;
 };
 
-class CDocTemplate;
 class CCryDocManager
 {
     CCrySingleDocTemplate* m_pDefTemplate = nullptr;
@@ -406,8 +405,7 @@ public:
     CCrySingleDocTemplate* SetDefaultTemplate(CCrySingleDocTemplate* pNew);
     // Copied from MFC to get rid of the silly ugly unoverridable doc-type pick dialog
     virtual void OnFileNew();
-    virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
-        DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
+    virtual bool DoPromptFileName(QString& fileName, bool bOpenFileDialog);
     virtual CCryEditDoc* OpenDocumentFile(const char* filename, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;

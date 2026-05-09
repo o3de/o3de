@@ -265,8 +265,7 @@ void CCryDocManager::OnFileNew()
     m_pDefTemplate->OpenDocumentFile(nullptr);
     // if returns NULL, the user has already been alerted
 }
-bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT nIDSTitle,
-    [[maybe_unused]] DWORD lFlags, bool bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
+bool CCryDocManager::DoPromptFileName(QString& fileName, bool bOpenFileDialog)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
     levelFileDialog.show();
@@ -2732,9 +2731,9 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
         QByteArray windowsErrorMessage(ERROR_LEN, 0);
         QByteArray cwd(ERROR_LEN, 0);
-        DWORD dw = GetLastError();
 
 #ifdef WIN32
+        DWORD dw = GetLastError();
         wchar_t windowsErrorMessageW[ERROR_LEN];
         windowsErrorMessageW[0] = L'\0';
         FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -2746,7 +2745,8 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         _getcwd(cwd.data(), cwd.length());
         AZStd::to_string(windowsErrorMessage.data(), ERROR_LEN, windowsErrorMessageW);
 #else
-        windowsErrorMessage = strerror(dw);
+        int errorNum = errno;
+        windowsErrorMessage = strerror(errorNum);
         cwd = QDir::currentPath().toUtf8();
 #endif
 
@@ -3495,7 +3495,21 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             registry, Editor::GetBuildTargetName());
 
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
+        AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+        console->PerformCommand("sv_isDedicated false");
+#ifdef AZ_PLATFORM_LINUX
+        //Ensure we don't use Wayland implementations when Qt is using Xcb.
+        auto platformName = QGuiApplication::platformName();
+        if (platformName == "wayland")
+        {
+            //If a user already disabled it, we should re-enable it.
+            console->PerformCommand("wl_enable 1");
+        }
+        else
+        {
+            console->PerformCommand("wl_enable 0");
+        }
+#endif
 
         if (!AZToolsApp.Start())
         {
