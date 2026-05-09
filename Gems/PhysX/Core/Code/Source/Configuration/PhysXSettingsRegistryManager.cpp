@@ -14,11 +14,6 @@
 
 namespace PhysX
 {
-
-#if !defined(PHYSX_SETREG_GEM_NAME)
-    #error "Missing required PHYSX_SETREG_GEM_NAME definition"
-#endif //!defined(PHYSX_SETREG_GEM_NAME)
-
     PhysXSettingsRegistryManager::PhysXSettingsRegistryManager()
     {
         const char* physXGemNames[] = { "PhysX5", "PhysX" };
