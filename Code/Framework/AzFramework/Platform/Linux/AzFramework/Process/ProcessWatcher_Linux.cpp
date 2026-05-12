@@ -333,6 +333,30 @@ namespace AzFramework
         {
             if (processLaunchInfo.m_tetherLifetime)
             {
+                // NOTE: prctl(PR_SET_PDEATHSIG) binds the death signal to
+                // the THREAD that called fork(), NOT to the parent
+                // PROCESS. From prctl(2):
+                //
+                //   "The 'parent' in this case is considered to be the
+                //    thread that created this process using fork(2). In
+                //    other words, the signal is sent when the thread
+                //    terminates, not when the entire parent process
+                //    terminates."
+                //
+                // m_tetherLifetime is therefore only safe to use when
+                // LaunchProcess is called from a long-lived thread (e.g.,
+                // the engine's main UI thread). Callers that invoke this
+                // from a short-lived worker thread (task pool, QRunnable,
+                // std::async, etc.) will have their freshly-spawned child
+                // SIGTERM'd within milliseconds of fork, as the launching
+                // thread retires.
+                //
+                // For callers that cannot guarantee a long-lived launching
+                // thread, prefer a child-side parent-death watchdog
+                // instead. See AssetBuilder's StartParentDeathWatchdog
+                // (Code/Tools/AssetProcessor/AssetBuilder/main.cpp) for a
+                // reference implementation using a getppid() polling
+                // thread inside the spawned child process.
                 prctl(PR_SET_PDEATHSIG, SIGTERM);
                 if (getppid() != parentPid)
                 {
