@@ -267,14 +267,12 @@ namespace PhysX
             physx::PxArticulationLink* link = nullptr;
             m_articulation->getLinks(&link, 1, linkIndex);
 
+            // We're mapping link EntityIds to their internal low-level link index. Each Entity can only have one link
             if (const ActorData* linkActorData = Utils::GetUserData(link))
             {
                 const auto entityId = linkActorData->GetEntityId();
                 if (auto iterator = m_linkIndicesByEntityId.find(entityId); iterator != m_linkIndicesByEntityId.end())
                 {
-                    // TODO: Need to do collect joint Dof as well for accessing their cache data
-                    // link->getInboundJointDof();
-
                     iterator->second.push_back(link->getLinkIndex()); // The low-level index does not necessarily follow order of creation
                 }
                 else
@@ -310,9 +308,8 @@ namespace PhysX
 
         m_articulation->setSolverIterationCounts(
             rootLinkConfiguration.m_solverPositionIterations, rootLinkConfiguration.m_solverVelocityIterations);
-        // TODO: Expose these in the configuration (This may be solved with PxArticulationCache change)
+        // TODO: Expose these in the configuration
         //      eDRIVE_LIMITS_ARE_FORCES //!< Limits for drive effort are forces and torques rather than impulses
-        //      eCOMPUTE_JOINT_FORCES //!< Enable in order to be able to query joint solver .
     }
 
     void setInboundJointDriveParams(
@@ -575,10 +572,33 @@ namespace PhysX
             return;
         }
 
-        // TODO: the cache doesn't appear to be created
         // It's safe to update the cache here now that the simulation is finished. Cache can always be accessed because it's a copy.
-        // const auto& rootLinkConfiguration = m_articulationLinkData->m_articulationLinkConfiguration;
-        // m_articulation->copyInternalStateToCache(*m_articulationCache, rootLinkConfiguration.m_articulationCacheConfig.GetPxCacheFlags());
+        const auto& rootLinkConfiguration = m_articulationLinkData->m_articulationLinkConfiguration;
+        m_articulation->copyInternalStateToCache(*m_articulationCache, rootLinkConfiguration.m_articulationCacheConfig.GetPxCacheFlags());
+
+        // Test printing of link cache values
+        const AZ::u32 numLinks = m_articulation->getNbLinks();
+        for (AZ::u32 linkIndex = 0; linkIndex < numLinks; linkIndex++)
+        {
+            physx::PxArticulationLink* link = nullptr;
+            m_articulation->getLinks(&link, 1, linkIndex);
+
+            AZ::Vector3 linVel = PxMathConvert(m_articulationCache->linkVelocity[link->getLinkIndex()].linear);
+            AZ::Vector3 angVel = PxMathConvert(m_articulationCache->linkVelocity[link->getLinkIndex()].angular);
+            AZ::Vector3 linAcc = PxMathConvert(m_articulationCache->linkAcceleration[link->getLinkIndex()].linear);
+            AZ::Vector3 angAcc = PxMathConvert(m_articulationCache->linkAcceleration[link->getLinkIndex()].angular);
+            AZ::Vector3 force = PxMathConvert(m_articulationCache->linkForce[link->getLinkIndex()]);
+            AZ::Vector3 torque = PxMathConvert(m_articulationCache->linkTorque[link->getLinkIndex()]);
+
+            AZ_Printf(
+                "PostPhysicsTick Link Values",
+                "Linear Vel: %f %f %f, Angular Vel: %f %f %f, Linear Acc: %f %f %f, Angular Acc: %f %f %f, Force: %f %f %f, Torque: %f %f %f",
+                linVel.GetX(), linVel.GetY(), linVel.GetZ(), angVel.GetX(), angVel.GetY(), angVel.GetZ(),
+                linAcc.GetX(), linAcc.GetY(), linAcc.GetZ(), angAcc.GetX(), angAcc.GetY(), angAcc.GetZ(),
+                force.GetX(), force.GetY(), force.GetZ(), torque.GetX(), torque.GetY(), torque.GetZ()
+            )
+        }
+        // Test printing of link cache values
 
         physx::PxArticulationLink* links[MaxArticulationLinks] = { 0 };
         m_articulation->getLinks(links, MaxArticulationLinks);
@@ -983,8 +1003,26 @@ namespace PhysX
         }
         return AZ::Vector3::CreateZero();
     }
+    
+    AZ::Vector3 ArticulationLinkComponent::GetLinkIncomingJointForce(AZ::u32 linkIndex) const
+    {
+        if (m_articulationCache)
+        {
+            return PxMathConvert(m_articulationCache->linkIncomingJointForce[GetInternalLinkIndex(linkIndex)].force);
+        }
+        return AZ::Vector3::CreateZero();
+    }
 
-    AZ::Vector3 ArticulationLinkComponent::GetLinkForce(AZ::u32 linkIndex) const
+    AZ::Vector3 ArticulationLinkComponent::GetLinkIncomingJointTorque(AZ::u32 linkIndex) const
+    {
+        if (m_articulationCache)
+        {
+            return PxMathConvert(m_articulationCache->linkIncomingJointForce[GetInternalLinkIndex(linkIndex)].torque);
+        }
+        return AZ::Vector3::CreateZero();
+    }
+    
+    AZ::Vector3 ArticulationLinkComponent::GetLinkExternalForce(AZ::u32 linkIndex) const
     {
         if (m_articulationCache)
         {
@@ -993,9 +1031,7 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
-
-
-    AZ::Vector3 ArticulationLinkComponent::GetLinkTorque(AZ::u32 linkIndex) const
+    AZ::Vector3 ArticulationLinkComponent::GetLinkExternalTorque(AZ::u32 linkIndex) const
     {
         if (m_articulationCache)
         {

@@ -34,17 +34,20 @@ namespace PhysX
 
         ArticulationCacheConfiguration() = default;
 
+        // Joint functionality is currently implemented by direct querying via the ArticulationJointBus, so these remain hidden and disabled for now
         bool m_jointVelocities = false; //!< The joint velocities, see PxArticulationCache::jointVelocity.
         bool m_jointAccelerations = false; //!< The joint accelerations, see PxArticulationCache::jointAcceleration.
         bool m_jointPositions = false; //!< The joint positions, see PxArticulationCache::jointPosition.
         bool m_jointForces = false; //!< The joint forces, see PxArticulationCache::jointForce.
+        bool m_jointTargetPositions = false; //!< The joint target positions, see PxArticulationCache::jointTargetPositions.
+        bool m_jointTargetVelocities = false; //!< The joint target velocities, see PxArticulationCache::jointTargetVelocities.
+        
+        // These data replace the old ArticulationSensor
         bool m_linkVelocities = false; //!< The link velocities, including read-only root link, see PxArticulationCache::linkVelocity. Link velocities cannot be set except for the root link velocity via PxArticulationCache::rootLinkData.
         bool m_linkAccelerations = false; //!< The link accelerations, including read-only root link, see PxArticulationCache::linkAcceleration.
         bool m_rootLinkTransform = false; //!< The root link transform, see PxArticulationCache::rootLinkData.
         bool m_rootLinkVelocities = false; //!< The root link velocities (read/write) and accelerations (read), see PxArticulationCache::rootLinkData.
-        bool m_linkIncomingJointForces = false; //!< The link incoming joint forces, see PxArticulationCache::linkIncomingJointForce.
-        bool m_jointTargetPositions = false; //!< The joint target positions, see PxArticulationCache::jointTargetPositions.
-        bool m_jointTargetVelocities = false; //!< The joint target velocities, see PxArticulationCache::jointTargetVelocities.
+        bool m_linkIncomingJointForces = true; //!< The link incoming joint forces, see PxArticulationCache::linkIncomingJointForce.
         bool m_linkForces = true; //!< The link forces, see PxArticulationCache::linkForce.
         bool m_linkTorques = true; //!< The link torques, see PxArticulationCache::linkTorque.
 

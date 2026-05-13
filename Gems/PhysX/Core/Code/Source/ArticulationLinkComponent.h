@@ -87,8 +87,10 @@ namespace PhysX
         AZ::Transform GetRootLinkTransform() const override;
         AZ::Vector3 GetRootLinkLinearVelocity() const override;
         AZ::Vector3 GetRootLinkAngularVelocity() const override;
-        AZ::Vector3 GetLinkForce(AZ::u32 linkIndex) const override;
-        AZ::Vector3 GetLinkTorque(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetLinkIncomingJointForce(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetLinkIncomingJointTorque(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetLinkExternalForce(AZ::u32 linkIndex) const override;
+        AZ::Vector3 GetLinkExternalTorque(AZ::u32 linkIndex) const override;
         const AzPhysics::SimulatedBody* GetSimulatedBodyConst() const;
         void FillSimulatedBodyHandle();
 
@@ -125,6 +127,7 @@ namespace PhysX
 
         void AddCollisionShape(const ArticulationLinkData& thisLinkData, ArticulationLink* articulationLink);
 
+        //! Only called on the Root link Entity
         void PostPhysicsTick(float fixedDeltaTime);
 
         // AZ::Component overrides ...
