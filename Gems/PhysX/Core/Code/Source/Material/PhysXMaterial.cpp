@@ -211,10 +211,6 @@ namespace PhysX
         {
             SetFrictionCombineMode(static_cast<CombineMode>(value.GetValue<AZ::u32>()));
         }
-        // else if (propertyName == MaterialConstants::CompliantContactModeEnabledName)
-        // {
-        //     EnableCompliantContactMode(value.GetValue<bool>());
-        // }
         else if (propertyName == MaterialConstants::CompliantContactModeDampingName)
         {
             SetCompliantContactModeDamping(value.GetValue<float>());
@@ -271,7 +267,7 @@ namespace PhysX
 
         m_restitution = AZ::GetMin(restitution, 1.0f);
 
-        // Restitution property in a PxMaterial is reused for spring stiffness and enables contact mode.
+        // Restitution property in a PxMaterial is reused for spring stiffness and enables compliant contact mode.
         m_pxMaterial->setRestitution(m_restitution);
     }
 
@@ -314,23 +310,6 @@ namespace PhysX
         return m_pxMaterial->getRestitution() < 0.0f;
     }
 
-    // void Material::EnableCompliantContactMode([[maybe_unused]] bool enabled)
-    // {
-    //     m_pxMaterial->setFlag(physx::PxMaterialFlag::eCOMPLIANT_CONTACT, enabled);
-    //     if (enabled)
-    //     {
-    //         m_pxMaterial->setDamping(m_compliantContactModeDamping);
-    //         // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
-    //         m_pxMaterial->setRestitution(-m_compliantContactModeStiffness);
-    //     }
-    //     else
-    //     {
-    //         m_pxMaterial->setDamping(0.0f);
-    //         // Restores restitution value when Compliant Contact Modde is disabled
-    //         m_pxMaterial->setRestitution(m_restitution);
-    //     }
-    // }
-
     float Material::GetCompliantContactModeDamping() const
     {
         return m_compliantContactModeDamping;
@@ -360,11 +339,8 @@ namespace PhysX
 
         m_compliantContactModeStiffness = AZ::GetMax(0.0f, stiffness);
 
-        if (IsCompliantContactModeEnabled())
-        {
-            // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
-            m_pxMaterial->setRestitution(-m_compliantContactModeStiffness);
-        }
+        // PxMaterial uses negative values in the restitution property for the stiffness of Compliant Contacts
+        SetRestitution(-m_compliantContactModeStiffness);
     }
 
     const AZ::Color& Material::GetDebugColor() const

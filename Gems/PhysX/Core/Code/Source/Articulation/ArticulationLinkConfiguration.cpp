@@ -162,7 +162,7 @@ namespace PhysX
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationCacheConfiguration::m_linkVelocities,
-                        "Link Spacial Velocities",
+                        "Link Velocities",
                         "Link spacial linear and angular velocities.\n"
                         "N = total number of links.")
                     ->DataElement(

@@ -576,29 +576,32 @@ namespace PhysX
         const auto& rootLinkConfiguration = m_articulationLinkData->m_articulationLinkConfiguration;
         m_articulation->copyInternalStateToCache(*m_articulationCache, rootLinkConfiguration.m_articulationCacheConfig.GetPxCacheFlags());
 
-        // Test printing of link cache values
-        const AZ::u32 numLinks = m_articulation->getNbLinks();
-        for (AZ::u32 linkIndex = 0; linkIndex < numLinks; linkIndex++)
-        {
-            physx::PxArticulationLink* link = nullptr;
-            m_articulation->getLinks(&link, 1, linkIndex);
+        // // Test printing of link cache values
+        // const AZ::u32 numLinks = m_articulation->getNbLinks();
+        // for (AZ::u32 linkIndex = 0; linkIndex < numLinks; linkIndex++)
+        // {
+        //     physx::PxArticulationLink* link = nullptr;
+        //     m_articulation->getLinks(&link, 1, linkIndex);
 
-            AZ::Vector3 linVel = PxMathConvert(m_articulationCache->linkVelocity[link->getLinkIndex()].linear);
-            AZ::Vector3 angVel = PxMathConvert(m_articulationCache->linkVelocity[link->getLinkIndex()].angular);
-            AZ::Vector3 linAcc = PxMathConvert(m_articulationCache->linkAcceleration[link->getLinkIndex()].linear);
-            AZ::Vector3 angAcc = PxMathConvert(m_articulationCache->linkAcceleration[link->getLinkIndex()].angular);
-            AZ::Vector3 force = PxMathConvert(m_articulationCache->linkForce[link->getLinkIndex()]);
-            AZ::Vector3 torque = PxMathConvert(m_articulationCache->linkTorque[link->getLinkIndex()]);
+        //     AZ::Vector3 linVel = PxMathConvert(m_articulationCache->linkVelocity[link->getLinkIndex()].linear);
+        //     AZ::Vector3 angVel = PxMathConvert(m_articulationCache->linkVelocity[link->getLinkIndex()].angular);
+        //     AZ::Vector3 linAcc = PxMathConvert(m_articulationCache->linkAcceleration[link->getLinkIndex()].linear);
+        //     AZ::Vector3 angAcc = PxMathConvert(m_articulationCache->linkAcceleration[link->getLinkIndex()].angular);
+        //     AZ::Vector3 incForce = PxMathConvert(m_articulationCache->linkIncomingJointForce[link->getLinkIndex()].force);
+        //     AZ::Vector3 incTorque = PxMathConvert(m_articulationCache->linkIncomingJointForce[link->getLinkIndex()].torque);
+        //     AZ::Vector3 extForce = PxMathConvert(m_articulationCache->linkForce[link->getLinkIndex()]);
+        //     AZ::Vector3 extTorque = PxMathConvert(m_articulationCache->linkTorque[link->getLinkIndex()]);
 
-            AZ_Printf(
-                "PostPhysicsTick Link Values",
-                "Linear Vel: %f %f %f, Angular Vel: %f %f %f, Linear Acc: %f %f %f, Angular Acc: %f %f %f, Force: %f %f %f, Torque: %f %f %f",
-                linVel.GetX(), linVel.GetY(), linVel.GetZ(), angVel.GetX(), angVel.GetY(), angVel.GetZ(),
-                linAcc.GetX(), linAcc.GetY(), linAcc.GetZ(), angAcc.GetX(), angAcc.GetY(), angAcc.GetZ(),
-                force.GetX(), force.GetY(), force.GetZ(), torque.GetX(), torque.GetY(), torque.GetZ()
-            )
-        }
-        // Test printing of link cache values
+        //     AZ_Printf(
+        //         "PostPhysicsTick Link Values",
+        //         "Linear Vel: %f %f %f, Angular Vel: %f %f %f, Linear Acc: %f %f %f, Angular Acc: %f %f %f, Inc Force: %f %f %f, Inc Torque: %f %f %f, Ext Force: %f %f %f, Ext Torque: %f %f %f",
+        //         linVel.GetX(), linVel.GetY(), linVel.GetZ(), angVel.GetX(), angVel.GetY(), angVel.GetZ(),
+        //         linAcc.GetX(), linAcc.GetY(), linAcc.GetZ(), angAcc.GetX(), angAcc.GetY(), angAcc.GetZ(),
+        //         incForce.GetX(), incForce.GetY(), incForce.GetZ(), incTorque.GetX(), incTorque.GetY(), incTorque.GetZ(),
+        //         extForce.GetX(), extForce.GetY(), extForce.GetZ(), extTorque.GetX(), extTorque.GetY(), extTorque.GetZ()
+        //     )
+        // }
+        // // Test printing of link cache values
 
         physx::PxArticulationLink* links[MaxArticulationLinks] = { 0 };
         m_articulation->getLinks(links, MaxArticulationLinks);

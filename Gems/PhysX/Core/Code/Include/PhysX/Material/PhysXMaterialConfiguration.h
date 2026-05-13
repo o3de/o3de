@@ -25,9 +25,6 @@ namespace PhysX
 
         float m_damping = 1.0f;
         float m_stiffness = 0.0f;
-
-    private:
-        bool ReadOnlyProperties() const;
     };
 
     //! Properties of a PhysX material.
@@ -59,7 +56,7 @@ namespace PhysX
         static float GetMinDensityLimit();
         static float GetMaxDensityLimit();
 
-        bool IsRestitutionReadOnly() const;
         AZ::Crc32 GetCompliantConstantModeVisibility() const;
+        AZ::u32 RestitutionChangeNotify();
     };
 } // namespace PhysX
