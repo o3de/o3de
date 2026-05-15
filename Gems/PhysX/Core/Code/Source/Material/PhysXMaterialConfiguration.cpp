@@ -20,7 +20,7 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PhysX::CompliantContactModeConfiguration>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Damping", &CompliantContactModeConfiguration::m_damping)
                 ->Field("Stiffness", &CompliantContactModeConfiguration::m_stiffness);
 
