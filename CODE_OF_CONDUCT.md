@@ -28,12 +28,3 @@ Hyrax Engine must not be Vibe Coded, Hyrax Engine must be used to make cool stuf
 
 
 
-### 3. Temporary Ban
-
-
-### 4. Permanent Ban
-
-
-
-## Attribution
-
