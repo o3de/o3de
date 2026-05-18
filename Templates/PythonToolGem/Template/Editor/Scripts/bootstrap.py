@@ -5,14 +5,14 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
-"""${SanitizedCppName}\\editor\\scripts\\boostrap.py
+"""${SanitizedCppName}\\editor\\scripts\\bootstrap.py
 Generated from O3DE PythonToolGem Template"""
 
 import az_qt_helpers
 from ${SanitizedNameLower}_dialog import ${SanitizedCppName}Dialog
 
 if __name__ == "__main__":
-    print("${SanitizedCppName}.boostrap, Generated from O3DE PythonToolGem Template")
+    print("${SanitizedCppName}.bootstrap, Generated from O3DE PythonToolGem Template")
 
     try:
         import azlmbr.editor as editor
