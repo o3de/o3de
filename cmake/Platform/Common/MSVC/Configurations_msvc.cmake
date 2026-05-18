@@ -77,6 +77,10 @@ else()
     set(O3DE_MSVC_DEBUG_INFORMATION_FORMAT /Zi)
 endif()
 
+# The VSCompat file is force-included to handle compatibility workarounds.  If this file is ever emptied out, we can remove this.
+set(VSCOMPAT_FILE ${LY_ROOT_FOLDER}/Code/Framework/AzCore/Platform/Common/VisualStudio/AzCore/Compat/VSCompat.h)
+cmake_path(NATIVE_PATH VSCOMPAT_FILE NORMALIZE VSCOMPAT_FILE)
+
 ly_append_configurations_options(
     DEFINES
         _ENABLE_EXTENDED_ALIGNED_STORAGE # Enables support for extended alignment for the MSVC std::aligned_storage class
@@ -90,7 +94,10 @@ ly_append_configurations_options(
         /WX             # Warnings as errors
         /permissive-    # Conformance with standard
         /Zc:preprocessor # Forces preprocessor into conformance mode:  https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-170
-
+       
+        # The VSCompat file is force-included to handle compatibility workarounds.  If this file is ever emptied out, we can remove this line.
+        /FI${VSCOMPAT_FILE}
+        
         ###################
         # Disabled warnings (please do not disable any others without first consulting sig-build)
         ###################
