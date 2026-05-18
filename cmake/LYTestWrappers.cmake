@@ -404,7 +404,7 @@ function(ly_add_googletest)
         endif()
 
         # If command is not supplied attempts, uses the AzTestRunner to run googletest on the supplied NAME
-        set(full_test_command $<TARGET_FILE:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunUnitTests)
+        set(full_test_command $<TARGET_FILE_DIR:${build_target}>/$<TARGET_FILE_NAME:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunUnitTests)
         # Add AzTestRunner as a build dependency
         ly_add_dependencies(${build_target} AZ::AzTestRunner)
         # Start the test target params and dd the command runner command
@@ -499,7 +499,7 @@ function(ly_add_googlebenchmark)
         endif()
 
         # If command is not supplied attempts, uses the AzTestRunner to run googlebenchmarks on the supplied TARGET
-        set(full_test_command $<TARGET_FILE:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunBenchmarks ${output_format_args})
+        set(full_test_command $<TARGET_FILE_DIR:${build_target}>/$<TARGET_FILE_NAME:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunBenchmarks ${output_format_args})
         # Start the test target params and dd the command runner command
         # Ideally, we would populate the full command procedurally but the generator expressions won't be expanded by the time we need this data
         set(LY_TEST_PARAMS "AzRunUnitTests")
