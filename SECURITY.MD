@@ -1,5 +1,5 @@
-# O3DE Security Policy
-
+# HyraxEngine Security Policy
+it is up to you if you want to report the Security Vunurability to O3DE or to HyraxEngine.
 ## Reporting a Vulnerability
 If you have information about a security issue or vulnerability in O3DE, please send the vulnerability report via e-mail to [security@o3de.org](mailto:security@o3de.org). 
 
