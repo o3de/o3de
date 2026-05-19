@@ -91,7 +91,7 @@ namespace Benchmark
     BENCHMARK_F(BM_MathTransform, CreateRotationX)(benchmark::State& state)
     {
         for ([[maybe_unused]] auto _ : state)
-        {   
+        {
             for (auto& testData : m_testDataArray)
             {
                 AZ::Transform result = AZ::Transform::CreateRotationX(testData.value[0]);
@@ -276,7 +276,7 @@ namespace Benchmark
             for (auto& testData : m_testDataArray)
             {
                 AZ::Vector3 basis[4];
-                testData.t1.GetBasisAndTranslation(&basis[0], &basis[1], &basis[2], &basis[3]);
+                testData.t1.GetBasisAndTranslation(basis[0], basis[1], basis[2], basis[3]);
                 benchmark::DoNotOptimize(basis[0]);
                 benchmark::DoNotOptimize(basis[1]);
                 benchmark::DoNotOptimize(basis[2]);
