@@ -59,12 +59,12 @@ Surface EvaluateSurface_EnhancedPBR(
     
     surface.vertexNormal = real3(normalWS);
     float2 normalUv = uvs[params.m_normalMapUvIndex];
-    real3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real(); // By design, only UV0 is allowed to apply transforms.
+    real3x3 uvMatrix = params.m_normalMapUvIndex == 0 ? real3x3(params.m_uvMatrixRow0.xyz, params.m_uvMatrixRow1.xyz, params.m_uvMatrixRow2.xyz) : CreateIdentity3x3_real(); // By design, only UV0 is allowed to apply transforms.
     real detailLayerNormalFactor = real(params.m_detail_normal_factor) * detailLayerBlendFactor;
     float3 normal = GetDetailedNormalInputWS(
         isFrontFace, normalWS,
         tangents[params.m_normalMapUvIndex],      bitangents[params.m_normalMapUvIndex],      GetMaterialTexture(params.m_normalMap),             GetMaterialTextureSampler(), normalUv, params.m_normalFactor,  params.m_flipNormalX,         params.m_flipNormalY,         uvMatrix,                         o_normal_useTexture,
-        tangents[params.m_detail_allMapsUvIndex], bitangents[params.m_detail_allMapsUvIndex], GetMaterialTexture(params.m_detail_normal_texture), GetMaterialTextureSampler(), detailUv, detailLayerNormalFactor,      params.m_detail_normal_flipX, params.m_detail_normal_flipY, real3x3(params.m_detailUvMatrix), o_detail_normal_useTexture,
+        tangents[params.m_detail_allMapsUvIndex], bitangents[params.m_detail_allMapsUvIndex], GetMaterialTexture(params.m_detail_normal_texture), GetMaterialTextureSampler(), detailUv, detailLayerNormalFactor,      params.m_detail_normal_flipX, params.m_detail_normal_flipY, real3x3(params.m_detailUvMatrixRow0.xyz, params.m_detailUvMatrixRow1.xyz, params.m_detailUvMatrixRow2.xyz), o_detail_normal_useTexture,
         uvDxDy, customDerivatives);
 
     surface.normal = real3(normal);
@@ -160,7 +160,7 @@ Surface EvaluateSurface_EnhancedPBR(
     {
         if(o_clearCoat_enabled)
         {
-            real3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real();
+            real3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? real3x3(params.m_uvMatrixRow0.xyz, params.m_uvMatrixRow1.xyz, params.m_uvMatrixRow2.xyz) : CreateIdentity3x3_real();
             GetClearCoatInputs(GetMaterialTexture(params.m_clearCoatInfluenceMap), uvs[params.m_clearCoatInfluenceMapUvIndex], real(params.m_clearCoatFactor), o_clearCoat_factor_useTexture,
                                GetMaterialTexture(params.m_clearCoatRoughnessMap), uvs[params.m_clearCoatRoughnessMapUvIndex], real(params.m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
                                GetMaterialTexture(params.m_clearCoatNormalMap),    uvs[params.m_clearCoatNormalMapUvIndex], normalWS, o_clearCoat_normal_useTexture, real(params.m_clearCoatNormalStrength),

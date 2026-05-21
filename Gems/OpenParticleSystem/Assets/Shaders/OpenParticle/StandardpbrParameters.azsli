@@ -54,7 +54,14 @@ struct MaterialParameters {
     float    m_opacityFactor;
     float    m_opacityAffectsSpecularFactor;
     float    m_emissiveIntensity;
-    float3x3 m_uvMatrix;
-    float3x3 m_uvMatrixInverse;
+    // NOTE: float3x3 is NOT used here due to a Vulkan/row_major bug with matrices inside structured buffers (ByteAddressBuffer).
+    // Instead, each matrix is stored as 3 explicit row_major float4 rows (w component unused).
+    // Use MulUvMatrix(params, uv) / MulUvMatrixInverse(params, uv) instead of direct mul().
+    float4 m_uvMatrixRow0;
+    float4 m_uvMatrixRow1;
+    float4 m_uvMatrixRow2;
+    float4 m_uvMatrixInverseRow0;
+    float4 m_uvMatrixInverseRow1;
+    float4 m_uvMatrixInverseRow2;
 }; 
 
