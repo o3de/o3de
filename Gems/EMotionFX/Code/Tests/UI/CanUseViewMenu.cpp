@@ -104,7 +104,7 @@ namespace EMotionFX
         EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
 
         QList<QAction*> actions = viewMenu->findChildren<QAction*>();
-        int numActions = actions.size() - 1;// -1 as we don't want to include the view menu action itself.
+        int numActions = static_cast<int>(actions.size()) - 1;// -1 as we don't want to include the view menu action itself.
 
         int visiblePlugins = 0;
 
