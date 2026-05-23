@@ -24,7 +24,7 @@ namespace AssetProcessor
     {
         // If the search was changed, clear the asset that had visibility forced.
         m_pathToForceVisibleAsset.clear();
-        setFilterRegExp(newFilter);
+        setFilterRegularExpression(newFilter);
         setFilterCaseSensitivity(Qt::CaseInsensitive);
         invalidateFilter();
     }
