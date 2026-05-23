@@ -1308,10 +1308,10 @@ void MainWindow::OnRemoveConnection(bool /*checked*/)
 void MainWindow::OnConnectionSelectionChanged(const QItemSelection& /*selected*/, const QItemSelection& /*deselected*/)
 {
     auto selectedIndices = ui->connectionTreeView->selectionModel()->selectedRows();
-    int selectionCount = selectedIndices.count();
+    auto selectionCount = selectedIndices.count();
 
     bool anyUserConnectionsSelected = false;
-    for (int i = 0; i < selectionCount; i++)
+    for (decltype(selectionCount) i = 0; i < selectionCount; i++)
     {
         QModelIndex selectedIndex = selectedIndices[i];
         if (selectedIndex.data(ConnectionManager::UserConnectionRole).toBool())
@@ -1747,7 +1747,7 @@ void MainWindow::SetContextLogDetails(const QMap<QString, QString>& details)
 
     if (!details.isEmpty())
     {
-        int tableRows = details.size();
+        auto tableRows = static_cast<int>(details.size());
         if(tableRows > m_config.contextDetailsTableMaximumRows)
         {
             tableRows = m_config.contextDetailsTableMaximumRows;
