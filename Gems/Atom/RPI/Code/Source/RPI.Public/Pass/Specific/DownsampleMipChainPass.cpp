@@ -72,17 +72,18 @@ namespace AZ
             if (attachment != nullptr)
             {
                 // Check if we need to rebuild children because the number of mips has changed
-                m_needToRebuildChildren = m_needToRebuildChildren || (m_mipLevels != attachment->m_descriptor.m_image.m_mipLevels);
+                const auto& imageDesc = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
+                m_needToRebuildChildren = m_needToRebuildChildren || (m_mipLevels != imageDesc.m_mipLevels);
 
                 // Check if we need to update children because the image dimensions have changed
-                m_needToUpdateChildren |= (m_inputWidth != attachment->m_descriptor.m_image.m_size.m_width);
-                m_needToUpdateChildren |= (m_inputHeight != attachment->m_descriptor.m_image.m_size.m_height);
+                m_needToUpdateChildren |= (m_inputWidth != imageDesc.m_size.m_width);
+                m_needToUpdateChildren |= (m_inputHeight != imageDesc.m_size.m_height);
                 m_needToUpdateChildren |= m_needToRebuildChildren;
 
                 // Get parameters from the image descriptor
-                m_mipLevels = attachment->m_descriptor.m_image.m_mipLevels;
-                m_inputWidth = attachment->m_descriptor.m_image.m_size.m_width;
-                m_inputHeight = attachment->m_descriptor.m_image.m_size.m_height;
+                m_mipLevels = imageDesc.m_mipLevels;
+                m_inputWidth = imageDesc.m_size.m_width;
+                m_inputHeight = imageDesc.m_size.m_height;
             }
         }
 

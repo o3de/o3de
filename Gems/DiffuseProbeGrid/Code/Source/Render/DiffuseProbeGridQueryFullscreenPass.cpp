@@ -219,7 +219,7 @@ namespace AZ
                 AZ_Assert(outputAttachment != nullptr, "[DiffuseProbeGridQueryFullscreenPass '%s']: A fullscreen DiffuseProbeGridQuery pass must have a valid output or input/output.", GetPathName().GetCStr());
                 AZ_Assert(outputAttachment->GetAttachmentType() == RHI::AttachmentType::Image, "[DiffuseProbeGridQueryFullscreenPass '%s']: The output of a fullscreen DiffuseProbeGridQuery pass must be an image.", GetPathName().GetCStr());
 
-                RHI::Size imageSize = outputAttachment->m_descriptor.m_image.m_size;
+                RHI::Size imageSize = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
 
                 // submit DispatchItem
                 const uint8_t srgCount = 3;
