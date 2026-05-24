@@ -80,11 +80,11 @@ namespace AZ
 
             if (attachment != nullptr)
             {
-                m_paramsUpdated |= (m_inputWidth != attachment->m_descriptor.m_image.m_size.m_width);
-                m_paramsUpdated |= (m_inputHeight != attachment->m_descriptor.m_image.m_size.m_height);
+                m_paramsUpdated |= (m_inputWidth != attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_width);
+                m_paramsUpdated |= (m_inputHeight != attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_height);
 
-                m_inputWidth = attachment->m_descriptor.m_image.m_size.m_width;
-                m_inputHeight = attachment->m_descriptor.m_image.m_size.m_height;
+                m_inputWidth = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_width;
+                m_inputHeight = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_height;
             }
             else
             {
@@ -276,7 +276,7 @@ namespace AZ
             m_kernelRadiusData.clear();
 
             RPI::PassAttachment* inOutAttachment = GetInputOutputBinding(0).GetAttachment().get();
-            uint32_t imageWidth = inOutAttachment->m_descriptor.m_image.m_size.m_width;
+            uint32_t imageWidth = inOutAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_width;
 
             // Horizontal & vertical pass shared the same kernel
             for (uint32_t i = 0; i < Render::Bloom::MaxStageCount; ++i)

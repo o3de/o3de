@@ -64,7 +64,7 @@ namespace AZ
             // display mapper parameters.
             if (m_pipelineOutput && m_pipelineOutput->GetAttachment())
             {
-                m_displayBufferFormat = m_pipelineOutput->GetAttachment()->m_descriptor.m_image.m_format;
+                m_displayBufferFormat = m_pipelineOutput->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_format;
             }
 
             if (m_displayBufferFormat != RHI::Format::Unknown)
