@@ -136,8 +136,6 @@ struct VsSystemValues_DeferredPass
     uint m_instanceId;
     uint m_lightingChannelMask;
     uint m_objectId;
-    int m_materialTypeId;
-    int m_materialInstanceId;
     uint m_uvStreamTangentBitmask;
 };
 

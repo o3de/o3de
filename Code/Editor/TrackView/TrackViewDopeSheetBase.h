@@ -127,7 +127,7 @@ private slots:
 
 private:
     void UpdateColorKey(const QColor& color, bool addToUndo);
-    void UpdateColorKeyHelper(const ColorF& color);
+    void UpdateColorKeyHelper(const AZ::Color& color);
     void AddKeys(const QPoint& point, const bool bTryAddKeysInGroup);
 
     void ShowKeyPropertyCtrlOnSpot(int x, int y, bool bMultipleKeysSelected, bool bKeyChangeInSameTrack);

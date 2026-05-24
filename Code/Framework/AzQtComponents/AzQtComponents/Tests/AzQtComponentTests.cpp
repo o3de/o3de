@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Math/Color.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker/Palette.h>
+#include <AzQtComponents/Components/Widgets/ColorPicker/QtMetaTypes.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <QLocale>
 
@@ -19,7 +20,8 @@ public:
     AzQtComponentsTestEnvironment()
     {
         // needed for the controller tests - only ever needs to be run once
-        AzQtComponents::registerMetaTypes();
+        qRegisterMetaType<AZ::Color>();
+        qRegisterMetaType<AzQtComponents::Palette>();
     }
 
     ~AzQtComponentsTestEnvironment() override {}

@@ -26,18 +26,24 @@ namespace AZ
         ;
     }
 
-    AZ_MATH_INLINE Color::Color(float r, float g, float b, float a)
+    template<typename T> requires AZStd::is_floating_point_v<T>
+    AZ_MATH_INLINE Color::Color(T r, T g, T b, T a)
         : m_color(r, g, b, a)
     {
         ;
     }
 
-    AZ_MATH_INLINE Color::Color(u8 r, u8 g, u8 b, u8 a)
+    template<typename T> requires AZStd::is_integral_v<T>
+    AZ_MATH_INLINE Color::Color(T r, T g, T b, T a)
     {
-        SetR8(r);
-        SetG8(g);
-        SetB8(b);
-        SetA8(a);
+        AZ_MATH_ASSERT(r >= 0 && r <= 255, "R component must be in the range [0..255]");
+        AZ_MATH_ASSERT(g >= 0 && g <= 255, "G component must be in the range [0..255]");
+        AZ_MATH_ASSERT(b >= 0 && b <= 255, "B component must be in the range [0..255]");
+        AZ_MATH_ASSERT(a >= 0 && a <= 255, "A component must be in the range [0..255]");
+        SetR8(static_cast<u8>(r));
+        SetG8(static_cast<u8>(g));
+        SetB8(static_cast<u8>(b));
+        SetA8(static_cast<u8>(a));
     }
 
 
@@ -382,6 +388,18 @@ namespace AZ
     AZ_MATH_INLINE float Color::ConvertSrgbLinearToGamma(float x)
     {
         return x <= 0.0031308 ? 12.92f * x : static_cast<float>(1.055 * pow(static_cast<double>(x), 1.0 / 2.4) - 0.055);
+    }
+
+    AZ_MATH_INLINE void Color::Saturate()
+    {
+        m_color = m_color.GetClamp(Vector4(0.f), Vector4(1.f));
+    }
+
+    AZ_MATH_INLINE Color Color::GetSaturated() const
+    {
+        Color copy(*this);
+        copy.Saturate();
+        return copy;
     }
 
     AZ_MATH_INLINE Color Color::LinearToGamma() const

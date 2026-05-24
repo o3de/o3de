@@ -41,7 +41,7 @@ CUiAnimAzEntityNode::CUiAnimAzEntityNode(const int id)
 
     m_pos(0, 0, 0);
     m_scale(1, 1, 1);
-    m_rotate.SetIdentity();
+    m_rotate = AZ::Quaternion::CreateIdentity();
 
     m_visible = true;
 

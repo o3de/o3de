@@ -9,6 +9,7 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexTangentData.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include "MeshVertexTangentData.h"
 
 namespace AZ::SceneData::GraphData
 {
@@ -76,6 +77,16 @@ namespace AZ::SceneData::GraphData
         output.Write("Tangents", m_tangents);
         output.Write("GenerationMethod", aznumeric_cast<int64_t>(m_generationMethod));
         output.Write("SetIndex", aznumeric_cast<uint64_t>(m_setIndex));
+    }
+
+    AZStd::vector<AZ::Vector4>& MeshVertexTangentData::GetTangents()
+    {
+        return m_tangents;
+    }
+
+    const AZStd::vector<AZ::Vector4>& MeshVertexTangentData::GetTangents() const
+    {
+        return m_tangents;
     }
 
     void MeshVertexTangentData::SetTangent(size_t vertexIndex, const AZ::Vector4& tangent)

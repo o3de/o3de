@@ -50,7 +50,7 @@ namespace O3DE::ProjectManager
                 {
                     QCheckBox* optionCheckBox = new QCheckBox(option);
                     optionLayout->addWidget(optionCheckBox);
-                    connect(optionCheckBox, &QCheckBox::clicked, this, [=, this](bool checked){
+                    connect(optionCheckBox, &QCheckBox::clicked, this, [this, option](bool checked){
                         if(checked)
                         {
                             Enable(option);

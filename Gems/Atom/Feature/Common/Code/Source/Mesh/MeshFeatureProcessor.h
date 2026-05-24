@@ -8,7 +8,10 @@
 
 #pragma once
 
+#include <Atom/Feature/DeferredMaterial/DeferredMaterialFeatureProcessorInterface.h>
+#include <Atom/Feature/Material/FallbackPBRMaterial.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <Atom/Feature/Mesh/MeshInfo.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/RHI/TagBitRegistry.h>
 #include <Atom/RPI.Public/Culling.h>
@@ -19,6 +22,8 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <Material/FallbackPBRMaterialManager.h>
+#include <Mesh/MeshInfoManager.h>
 #include <Mesh/MeshInstanceManager.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 #include <TransformService/TransformServiceFeatureProcessor.h>
@@ -46,6 +51,11 @@ namespace AZ
             {
                 return m_model;
             }
+            const Data::Asset<RPI::ModelAsset>& GetProductModelAsset() override
+            {
+                return m_descriptor.m_productModelAsset;
+            }
+
             const RPI::Cullable& GetCullable() override
             {
                 return m_cullable;
@@ -55,6 +65,9 @@ namespace AZ
             {
                 return m_lightingChannelMask;
             }
+
+            MeshInfoHandle GetMeshInfoHandle(size_t modelLodIndex, size_t meshIndex) const override;
+            int32_t GetMeshInfoIndex(size_t modelLodIndex, size_t meshIndex) const override;
 
             using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
 
@@ -66,6 +79,11 @@ namespace AZ
             const AZ::Uuid& GetRayTracingUuid() const override
             {
                 return m_rayTracingUuid;
+            }
+
+            const TransformServiceFeatureProcessorInterface::ObjectId GetObjectId() const override
+            {
+                return m_objectId;
             }
 
             void HandleDrawPacketUpdate(uint32_t lodIndex, uint32_t meshIndex, RPI::MeshDrawPacket& meshDrawPacket) override;
@@ -112,19 +130,16 @@ namespace AZ
             void ReInit(MeshFeatureProcessor* meshFeatureProcessor);
             void QueueInit(const Data::Instance<RPI::Model>& model);
             void Init(MeshFeatureProcessor* meshFeatureProcessor);
+            void UpdateMeshInfo(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex);
+            void RemoveMeshInfo(MeshFeatureProcessor* meshFeatureProcessor);
             void BuildDrawPacketList(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex);
             void SetRayTracingData(MeshFeatureProcessor* meshFeatureProcessor);
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
-            void SetIrradianceData(
-                RayTracingFeatureProcessor::SubMesh& subMesh,
-                const Data::Instance<RPI::Material> material,
-                const Data::Instance<RPI::Image> baseColorImage);
-            void SetRayTracingReflectionProbeData(
-                MeshFeatureProcessor* meshFeatureProcessor, 
-                RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe);
             void SetSortKey(MeshFeatureProcessor* meshFeatureProcessor, RHI::DrawItemSortKey sortKey);
+            void SetDeferredMaterialData(MeshFeatureProcessor* meshFeatureProcessor);
+            void RemoveDeferredMaterialData(MeshFeatureProcessor* meshFeatureProcessor);
             RHI::DrawItemSortKey GetSortKey() const;
-            void SetLightingChannelMask(uint32_t lightingChannelMask);
+            void SetLightingChannelMask(MeshFeatureProcessor* meshFeatureProcessor, uint32_t lightingChannelMask);
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
             void UpdateDrawPackets(bool forceUpdate = false);
@@ -136,6 +151,9 @@ namespace AZ
 
             // When instancing is disabled, draw packets are owned by the ModelDataInstance
             RPI::MeshDrawPacketLods m_meshDrawPacketListsByLod;
+
+            using MeshInfoIndicesLods = AZStd::fixed_vector<MeshInfoHandleList, RPI::ModelLodAsset::LodCountMax>;
+            MeshInfoIndicesLods m_meshInfoIndicesByLod;
             
             // When instancing is enabled, draw packets are owned by the MeshInstanceManager,
             // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles,
@@ -282,6 +300,7 @@ namespace AZ
             // Quick functions to get other relevant feature processors that have already been cached by the MeshFeatureProcessor
             // without needing to go through the RPI's list of feature processors
             RayTracingFeatureProcessor* GetRayTracingFeatureProcessor() const;
+            DeferredMaterialFeatureProcessorInterface* GetDeferredMaterialFeatureProcessor() const;
             ReflectionProbeFeatureProcessor* GetReflectionProbeFeatureProcessor() const;
             TransformServiceFeatureProcessor* GetTransformServiceFeatureProcessor() const;
 
@@ -292,6 +311,19 @@ namespace AZ
 
             const Data::Instance<RPI::ShaderResourceGroup>& GetDrawSrg(const MeshHandle& meshHandle, uint32_t lodIndex, uint32_t subMeshIndex,
                 RHI::DrawListTag drawListTag, RHI::DrawFilterMask materialPipelineMask) const override;
+
+            const RHI::Ptr<MeshInfoEntry> GetMeshInfoEntry(const MeshInfoHandle handle) override;
+            MeshInfoHandle AcquireMeshInfoEntry() override;
+            void ReleaseMeshInfoEntry(const MeshInfoHandle handle) override;
+            void UpdateMeshInfoEntry(const MeshInfoHandle handle, AZStd::function<bool(MeshInfoEntry*)> updateFunction) override;
+            const Data::Instance<RPI::Buffer>& GetMeshInfoBuffer() const override;
+            MeshInfoManager& GetMeshInfoManager();
+
+            const RHI::Ptr<FallbackPBR::MaterialEntry> GetFallbackPBRMaterialEntry(const MeshInfoHandle handle) override;
+            void UpdateFallbackPBRMaterialEntry(
+                const MeshInfoHandle handle, AZStd::function<bool(FallbackPBR::MaterialEntry*)> updateFunction) override;
+            const Data::Instance<RPI::Buffer>& GetFallbackPBRMaterialBuffer() const override;
+            FallbackPBR::MaterialManager& GetFallbackPBRMaterialManager();
 
         private:
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
@@ -331,6 +363,8 @@ namespace AZ
             StableDynamicArray<ModelDataInstance> m_modelData;
 
             MeshInstanceManager m_meshInstanceManager;
+            MeshInfoManager m_meshInfoManager;
+            FallbackPBR::MaterialManager m_fallbackMaterialManager;
 
             // SortInstanceData represents the data needed to do the sorting (sort by instance group, then by depth)
             // as well as the data being sorted (ObjectId)
@@ -376,6 +410,7 @@ namespace AZ
             
             TransformServiceFeatureProcessor* m_transformService = nullptr;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
+            DeferredMaterialFeatureProcessorInterface* m_deferredMaterialFeatureProcessor = nullptr;
             ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;

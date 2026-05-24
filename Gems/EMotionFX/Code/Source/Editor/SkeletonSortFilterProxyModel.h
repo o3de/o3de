@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
-#include <QtCore/QSortFilterProxyModel>
+#include <QSortFilterProxyModel>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #endif
 

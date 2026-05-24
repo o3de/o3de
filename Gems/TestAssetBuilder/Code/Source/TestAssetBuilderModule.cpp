@@ -13,6 +13,8 @@
 #include <Builder/TestIntermediateAssetBuilderComponent.h>
 #include <Builder/TestDependencyBuilderComponent.h>
 
+extern AZ::ComponentDescriptor* TestGenericAssetBuilderComponent_CreateDescriptor();
+
 namespace TestAssetBuilder
 {
     class TestAssetBuilderModule
@@ -25,12 +27,23 @@ namespace TestAssetBuilder
         TestAssetBuilderModule()
             : AZ::Module()
         {
+            auto genericAssetBuilderComponentDescriptor = TestGenericAssetBuilderComponent_CreateDescriptor();
             m_descriptors.insert(m_descriptors.end(), {
                 TestAssetBuilderComponent::CreateDescriptor(),
                 TestIntermediateAssetBuilderComponent::CreateDescriptor(),
                 TestDependencyBuilderComponent::CreateDescriptor(),
+                genericAssetBuilderComponentDescriptor,
             });
+
+            m_reqComponents = { genericAssetBuilderComponentDescriptor->GetUuid() };
         }
+
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        {
+            return m_reqComponents;
+        }
+
+        AZ::ComponentTypeList m_reqComponents;
     };
 }
 

@@ -451,7 +451,12 @@ namespace AZ
                     PreprocessorData output;
                     auto preprocessorArguments = AppendIncludePathsToArgumentList(buildArgsManager.GetCurrentArguments().m_preprocessorArguments, projectIncludePaths);
                     const bool preprocessorSuccess = PreprocessFile(prependedAzslFilePath, output, preprocessorArguments,  true);
-                    RHI::ReportMessages(ShaderAssetBuilderName, output.diagnostics, !preprocessorSuccess);
+                    if (RHI::ReportMessages(ShaderAssetBuilderName, output.diagnostics, !preprocessorSuccess))
+                    {
+                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                        return;
+                    }
+
                     // Dump the preprocessed string as a flat AZSL file with extension .azslin, which will be given to AZSLc to generate the HLSL file.
                     AZStd::string superVariantAzslinStemName = shaderFileName;
                     if (!supervariantInfo.m_name.IsEmpty())

@@ -23,7 +23,7 @@ class DragAndDropPage
 
 public:
     explicit DragAndDropPage(QWidget* parent = nullptr);
-    ~DragAndDropPage() override = default;
+    ~DragAndDropPage() override;
 
 private:
     QScopedPointer<Ui::DragAndDropPage> ui;

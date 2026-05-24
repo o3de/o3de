@@ -14,7 +14,7 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphSortFilterProxyModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NavigateWidget.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/SelectionProxyModel.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphSelectionProxyModel.h>
 #include <QHeaderView>
 #include <QKeyEvent>
 #include <QTreeView>
@@ -28,7 +28,7 @@ namespace EMStudio
         , m_plugin(plugin)
     {
         QVBoxLayout* mainLayout = new QVBoxLayout();
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setSpacing(2);
         setLayout(mainLayout);
         mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
@@ -72,7 +72,7 @@ namespace EMStudio
         m_treeView->setItemDelegate(new AnimGraphItemDelegate(m_treeView));
 
         // tree's selection model
-        m_selectionProxyModel = new SelectionProxyModel(&plugin->GetAnimGraphModel().GetSelectionModel(), m_filterProxyModel, m_treeView);
+        m_selectionProxyModel = new AnimGraphSelectionProxyModel(&plugin->GetAnimGraphModel().GetSelectionModel(), m_filterProxyModel, m_treeView);
         m_treeView->setSelectionModel(m_selectionProxyModel);
         m_treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
         m_treeView->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);

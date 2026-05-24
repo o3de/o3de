@@ -397,16 +397,21 @@ namespace AZ
         return a + (b - a) * t;
     }
 
-    //! Returns a value t where Lerp(a, b, t) == value (or 0 if a == b).
+    // note that the following functions may raise C4723 on some compilers (potential divide by zero)
+    // but this is an erroneous warning as the function guards against this case by checking that
+    // a and b are close to epsilon before performing the division.
+    AZ_PUSH_DISABLE_WARNING(4723, "-Wunknown-warning-option") // potential divide by 0 (needs to wrap the function)
     inline float LerpInverse(float a, float b, float value)
     {
         return IsClose(a, b, AZStd::numeric_limits<float>::epsilon()) ? 0.0f : (value - a) / (b - a);
+        
     }
 
     inline double LerpInverse(double a, double b, double value)
     {
         return IsClose(a, b, AZStd::numeric_limits<double>::epsilon()) ? 0.0 : (value - a) / (b - a);
     }
+    AZ_POP_DISABLE_WARNING
 
     //! Smooths a value towards a target using a critically damped spring system.
     //! This function adjusts `value` towards `target` while maintaining continuity of `value` and its rate of change (`valueRate`).

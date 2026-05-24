@@ -5,9 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZFRAMEWORK_ASSET_GENERICASSETHANDLER_H
-#define AZFRAMEWORK_ASSET_GENERICASSETHANDLER_H
-
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
@@ -15,7 +12,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/IO/FileIO.h>
@@ -45,7 +41,11 @@ namespace AzFramework
      *      if (serialize)
      *      {
      *          serialize->Class<MyAsset>()
-     *              ->Field("SomeField", &MyAsset::m_someField)
+     *              ->Version(0)
+     *              ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true) // optional:  automatically show in "create new" menu in Asset Editor
+     *              ->Field("SomeField", &MyAsset::m_someField) // a plain old data field (example)
+     *              ->Field("myAsset", &MyAsset::m_myAsset)     // assignment of some other asset we depend on (example)
+     *              
      *              ;
      *
      *          AZ::EditContext* edit = serialize->GetEditContext();
@@ -53,30 +53,70 @@ namespace AzFramework
      *          {
      *              edit->Class<MyAsset>("My Asset", "Asset for representing X, Y, and Z")
      *                  ->DataElement(0, &MyAsset::m_someField, "Some data field", "It's a float")
+     *                  ->DataElement(0, &MyAsset::m_myAsset, "Some Asset To Use", "It's a reference to some other asset")
      *                  ;
      *          }
      *      }
      *  }
      *
      *  float m_someField;
+     *  Asset<SomeType> m_myAsset { AZ::Data::AssetLoadBehavior::PreLoad }; // example, can choose a different auto load behavior here if you want
      * };
      *
      *
      * using MyAssetHandler = GenericAssetHandler<MyAsset>;
      *
+     * // Note that you must still register the actual asset handler instance on startup and tear it down on shutdown, using a system component or other
+     * // singleton.
+     * // Alternatively you can set autoprocess later:
+     * s_myAssetHandler = new MyAssetHandler("My Asset Friendly Display Name", "My Asset Group (ie, Graphics, Audio ...)", "my_file_extension_without_dot");
+     * s_myAssetHandler->SetAutoProcessToCache(true); // if you want the system to register, build and copy it to cache and extract deps for you.
+     * s_myAssetHandler->Register();
+     *
+     * // Registration timing is important.  Your component must activate and register its type before the system component that auto builds
+     * // asset checks for registration.  You do this by making sure your singleton / system component providing the above registration emits
+     * // AzFramework::s_GenericAssetRegistrar as one of its Provided Services, which will cause it to activate before the system
+     * // that depends on that service.
+     *
+     * Example:
+     * 
+     * void MySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided) override
+     * {
+     *     provided.push_back(AzFramework::s_GenericAssetRegistrar); // Activate me before things that need these registrations.
+     * }
      */
+
 
     /** 
     * Just a base class to assign concrete RTTI to these classes - Don't derive from this - use GenericAssetHandler<T> instead.
     * This being in the heirarchy allows you to easily ask whether a particular handler derives from this type and thus is a
     * GenericAssetHandler.
     */
-    class GenericAssetHandlerBase : public AZ::Data::AssetHandler
+    class AZF_API GenericAssetHandlerBase : public AZ::Data::AssetHandler
     {
     public:
         AZ_RTTI(GenericAssetHandlerBase, "{B153B8B5-25CC-4BB7-A2BD-9A47ECF4123C}", AZ::Data::AssetHandler);
         virtual ~GenericAssetHandlerBase() = default;
+
+        // This function is called when an asset is requested but not found in the catalog.
+        // This default implementation will block until the asset is compiled by the asset system (This has no
+        // effect in release builds or if the asset is already compiled).
+        // Overriding this function will allow you to do more complex things like returning a fallback or placeholder
+        // asset, or a different asset to indicate different kinds of problems with the data, or to allow async background
+        // compilation.  See the body of this function for more information.
+        AZ::Data::AssetId AssetMissingInCatalog(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
+
+        //! Overridden in GenericAssetHandler to return whether or not the asset should be auto processed into the cache.
+        //! This is based on what the constructor sets.
+        virtual bool AutoBuildAssetToCache() = 0;
     };
+
+    // Important:  If you want your generic asset to automatically be processed by asset processor, and dependencies auto extracted
+    // you must make the system component which registers your generic asset handler emit the following in its GetProvidedServices
+    // that it is is activated before the system component that checks all existing handlers and registers the auto builder for them:
+    constexpr const AZ::Crc32 s_GenericAssetRegistrar = AZ_CRC_CE("GenericAssetRegistrar");
+    // Remember to also add ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true) // as an attribute in your asset's
+    // reflection if you want it to show up in the asset editor "create new" / "open existing" dialogs automatically.
 
     template <typename AssetType>
     class GenericAssetHandler
@@ -87,18 +127,31 @@ namespace AzFramework
         AZ_CLASS_ALLOCATOR(GenericAssetHandler<AssetType>, AZ::SystemAllocator);
         AZ_RTTI(GenericAssetHandler<AssetType>, "{8B36B3E8-8C0B-4297-BDA2-1648C155C78E}", GenericAssetHandlerBase);
 
+        //! Construct your generic asset handler.
+        //! @param displayName The name of the asset type to show in the user-facing guis and logs
+        //! @param extension The file extension to associate with this asset type.  JUST the extension without a dot.
+        //! @param componentTypeId If this asset type is meant to be automatically added as a component to entities
+        //!                        when dragged and dropped into the level, specify the component typeid here.
+        //!                        This should be the typeid of the component that should be added.
+        //! @param streamType The type of stream to use when saving this asset. (Default is ObjectStream XML)
+        //! @param autoProcessToCache If true, the asset system will automatically process this asset into the cache
+        //!                           using the asset processor, and automatically extract dependencies for it.
+        //!                           if False, you're expected to do that work yourself, by either making a RC COPY rule in the
+        //!                           asset processor setreg, or make your own Asset Builder (Custom) to handle extreme custom cases.
         GenericAssetHandler(const char* displayName,
             const char* group,
             const char* extension,
             const AZ::Uuid& componentTypeId = AZ::Uuid::CreateNull(),
             AZ::SerializeContext* serializeContext = nullptr,
-            const AZ::DataStream::StreamType streamType = AZ::ObjectStream::ST_XML)
+            const AZ::DataStream::StreamType streamType = AZ::ObjectStream::ST_XML,
+            const bool autoProcessToCache = false) 
             : m_displayName(displayName)
             , m_group(group)
             , m_extension(extension)
             , m_componentTypeId(componentTypeId)
             , m_serializeContext(serializeContext)
             , m_streamType(streamType)
+            , m_autoProcessAsset(autoProcessToCache)
         {
             AZ_Assert(extension, "Extension is required.");
             if (extension[0] == '.')
@@ -117,9 +170,19 @@ namespace AzFramework
             AZ::AssetTypeInfoBus::Handler::BusConnect(AZ::AzTypeInfo<AssetType>::Uuid());
         }
 
-        ~GenericAssetHandler()
+        virtual ~GenericAssetHandler()
         {
             AZ::AssetTypeInfoBus::Handler::BusDisconnect();
+        }
+
+        bool AutoBuildAssetToCache() override
+        {
+            return m_autoProcessAsset;
+        }
+
+        void SetAutoBuildAssetToCache(bool autoBuild)
+        {
+            m_autoProcessAsset = autoBuild;
         }
 
         AZ::Data::AssetPtr CreateAsset(const AZ::Data::AssetId& /*id*/, const AZ::Data::AssetType& /*type*/) override
@@ -236,6 +299,7 @@ namespace AzFramework
         AZStd::string m_displayName;
         AZStd::string m_group;
         AZStd::string m_extension;
+        bool m_autoProcessAsset = false;
         AZ::Uuid m_componentTypeId = AZ::Uuid::CreateNull();
         AZ::SerializeContext* m_serializeContext;
         AZ::DataStream::StreamType m_streamType;
@@ -243,4 +307,3 @@ namespace AzFramework
     };
 } // namespace AzFramework
 
-#endif // AZFRAMEWORK_ASSET_GENERICASSETHANDLER_H

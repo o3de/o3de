@@ -25,7 +25,7 @@ set(CPACK_GENERATOR WIX)
 
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
-set(CPACK_CMAKE_PACKAGE_HASH "b1ad8c2dbf0778e3efcc9fd61cd4a962e5c1af40aabdebee3d5074bcff2e103c")
+set(CPACK_CMAKE_PACKAGE_HASH "eb4ebf5155dbb05436d675706b2a08189430df58904257ae5e91bcba4c86933c")
 
 # workaround for shortening the path cpack installs to by stripping the platform directory
 set(CPACK_TOPLEVEL_TAG "")

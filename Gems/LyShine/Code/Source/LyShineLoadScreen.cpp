@@ -147,7 +147,7 @@ namespace LyShine
 #if 0
         if (m_isPlaying && gEnv && AZ::Interface<ILyShine>::Get() && gEnv->pRenderer)
         {
-            AZ_Assert(GetCurrentThreadId() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
+            AZ_Assert(AZStd::this_thread::get_id() == gEnv->mMainThreadId, "UpdateAndRender should only be called from the main thread");
 
             // update the animation system
             AZ::Interface<ILyShine>::Get()->Update(deltaTimeInSeconds);

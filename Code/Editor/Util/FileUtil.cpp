@@ -448,7 +448,7 @@ bool CFileUtil::SelectFiles(const QString& fileSpec, const QString& searchFolder
     if (dlg.exec())
     {
         const QStringList selected = dlg.selectedFiles();
-        foreach(const QString&file, selected)
+        for (const QString& file : selected)
         {
             files.push_back(file);
         }

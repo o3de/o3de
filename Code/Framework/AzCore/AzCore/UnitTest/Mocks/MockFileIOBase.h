@@ -26,7 +26,7 @@ namespace AZ
             : public FileIOBase
         {
         public:
-            static const AZ::IO::HandleType FakeFileHandle = AZ::IO::HandleType(1234);
+            static inline const AZ::IO::HandleType FakeFileHandle = AZ::IO::HandleType(1234);
 
             MOCK_METHOD3(Open,  Result(const char* filePath, OpenMode mode, HandleType & fileHandle));
             MOCK_METHOD1(Close, Result(HandleType fileHandle));

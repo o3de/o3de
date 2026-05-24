@@ -13,6 +13,7 @@
 #include <QMutex>
 #include <QString>
 #include <QSet>
+#include <QWidgetAction>
 
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 

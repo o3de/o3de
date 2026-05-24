@@ -10,9 +10,9 @@
 
 #include <qglobal.h>
 
-#include <qrect.h>
-#include <qpoint.h>
-#include <qcolor.h>
+#include <QRect>
+#include <QPoint>
+#include <QColor>
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector2.h>

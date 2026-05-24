@@ -16,6 +16,7 @@
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/string/wildcard.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Gem/GemInfo.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
@@ -1175,8 +1176,8 @@ namespace AssetProcessor
                 auto scanFolderMatch = [watchFolderQt = QString::fromUtf8(scanFolderEntry.m_watchPath.c_str(),
                     aznumeric_cast<int>(scanFolderEntry.m_watchPath.Native().size()))](const QString& scanFolderPattern)
                 {
-                    QRegExp nameMatch(scanFolderPattern, Qt::CaseInsensitive, QRegExp::Wildcard);
-                    return nameMatch.exactMatch(watchFolderQt);
+                    const bool match = AZStd::wildcard_match(qPrintable(scanFolderPattern), qPrintable(watchFolderQt));
+                    return match;
                 };
                 if (!scanFolderPatterns.empty() && AZStd::none_of(scanFolderPatterns.begin(), scanFolderPatterns.end(), scanFolderMatch))
                 {
@@ -1688,7 +1689,7 @@ namespace AssetProcessor
         QString posixRelativeName = QDir::fromNativeSeparators(relativeName);
 
         QStringList returnList;
-        QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
+
         QDirIterator dirIterator(
             sourceFolderDir.path(), QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot,
             recursiveSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
@@ -1701,7 +1702,7 @@ namespace AssetProcessor
                 continue;
             }
             QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
-            if (nameMatch.exactMatch(pathMatch))
+            if (AZStd::wildcard_match(qPrintable(posixRelativeName), qPrintable(pathMatch)))
             {
                 returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
             }
@@ -1726,7 +1727,7 @@ namespace AssetProcessor
         QString posixRelativeName = QDir::fromNativeSeparators(relativeName);
 
         QStringList returnList;
-        QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
+
         AZStd::stack<QString> dirs;
         dirs.push(sourceFolderDir.absolutePath());
 
@@ -1760,7 +1761,7 @@ namespace AssetProcessor
                 }
 
                 QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
-                if (nameMatch.exactMatch(pathMatch))
+                if (AZStd::wildcard_match(qPrintable(posixRelativeName), qPrintable(pathMatch)))
                 {
                     returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
                 }

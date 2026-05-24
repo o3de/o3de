@@ -106,5 +106,10 @@ set(FILES
     Source/Builders/LuaBuilder/LuaBuilderWorker.h
     Source/Builders/LuaBuilder/LuaHelpers.cpp
     Source/Builders/LuaBuilder/LuaHelpers.h
+    Source/Builders/GenericAssetBuilder/GenericAssetBuilderComponent.cpp
+    Source/Builders/GenericAssetBuilder/GenericAssetBuilderComponent.h
+    Source/Builders/GenericAssetBuilder/GenericAssetBuilderWorker.cpp
+    Source/Builders/GenericAssetBuilder/GenericAssetBuilderWorker.h
+    Source/Builders/GenericAssetBuilder/GenericAssetBuilderCommon.h
 
 )

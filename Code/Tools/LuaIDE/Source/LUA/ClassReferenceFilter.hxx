@@ -12,9 +12,9 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <QtCore/QSortFilterProxyModel>
-#include <QtWidgets/QMainWindow>
-#include <QtCore/QSet>
+#include <QSortFilterProxyModel>
+#include <QMainWindow>
+#include <QSet>
 
 
 class ClassReferenceFilterModel : public QSortFilterProxyModel

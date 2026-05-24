@@ -972,7 +972,7 @@ namespace AZ::Render
         const EMotionFX::Node* motionExtractionNode = actor->GetMotionExtractionNode();
         const uint32 particleSampleRate = 30;
         const float minLengthEstimate = 0.0001f;
-        const float maxdeltaRot = 0.99;
+        const float maxdeltaRot = 0.99f;
         const uint32 maxNumberParticles = 50;
         if (motionExtractionNode)
         {

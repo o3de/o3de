@@ -10,9 +10,9 @@
 
 #include <QDesktopServices>
 
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QPushButton>
+#include <QHBoxLayout>
+#include <QMenu>
+#include <QPushButton>
 
 namespace AzToolsFramework
 {

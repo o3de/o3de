@@ -16,6 +16,7 @@
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 
 // Editor
+#include "MathConversion.h"
 #include "Settings.h"
 
 
@@ -154,8 +155,7 @@ void CCommentNodeAnimator::Render(CTrackViewAnimNode* pNode, [[maybe_unused]] co
 
         if (!cc->m_strComment.empty())
         {
-            Vec3 color(cc->m_color.GetR(), cc->m_color.GetG(), cc->m_color.GetB());
-            DrawText(cc->m_strFont, cc->m_size, cc->m_unitPos, color, cc->m_strComment.c_str(), cc->m_align);
+            DrawText(cc->m_strFont, cc->m_size, cc->m_unitPos, cc->m_color, cc->m_strComment.c_str(), cc->m_align);
         }
     }
 }
@@ -166,7 +166,7 @@ Vec2 CCommentNodeAnimator::GetScreenPosFromNormalizedPos(const Vec2&)
     return Vec2(0, 0);
 }
 
-void CCommentNodeAnimator::DrawText(const char* szFontName, float fSize, const Vec2& unitPos, const ColorF col, const char* szText, int align)
+void CCommentNodeAnimator::DrawText(const char* szFontName, float fSize, const Vec2& unitPos, const AZ::Color col, const char* szText, int align)
 {
     IFFont* pFont = gEnv->pCryFont->GetFont(szFontName);
     if (!pFont)

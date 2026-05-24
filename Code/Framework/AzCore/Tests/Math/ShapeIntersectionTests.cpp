@@ -134,7 +134,7 @@ namespace UnitTest
         AZ::Vector3 rotationAxis = AZ::Vector3(1.0f, 1.0f, 1.0f);
         rotationAxis.Normalize();
         float rotation = 0.0f;
-        for(int i = 0; i < 50; ++i, rotation += (2.0f*3.1415/50.0f))
+        for(int i = 0; i < 50; ++i, rotation += (2.0f*3.1415f/50.0f))
         {
             AZ::Quaternion rot = AZ::Quaternion::CreateFromAxisAngle(rotationAxis, rotation);
             AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(
@@ -955,7 +955,7 @@ namespace UnitTest
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, shortCapsule));
 
         // wide perpendicular capsule miss
-        capsule = AZ::Capsule(AZ::Vector3(0.0f, -10.0f, 6.1f), AZ::Vector3(0.0f, 10.0f, 6.1), 5.0f);
+        capsule = AZ::Capsule(AZ::Vector3(0.0f, -10.0f, 6.1f), AZ::Vector3(0.0f, 10.0f, 6.1f), 5.0f);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, longCapsule));
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, shortCapsule));
 

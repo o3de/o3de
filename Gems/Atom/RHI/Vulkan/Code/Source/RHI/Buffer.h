@@ -74,6 +74,8 @@ namespace AZ
 
             VkSharingMode GetSharingMode() const;
 
+            uint64_t GetDeviceAddress() const override;
+
         private:
             Buffer() = default;
             RHI::ResultCode Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, const BufferMemoryView& memoryView);

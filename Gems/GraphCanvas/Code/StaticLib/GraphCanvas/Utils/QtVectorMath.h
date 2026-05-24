@@ -10,7 +10,7 @@
 #include <cmath>
 #include <AzCore/Math/MathUtils.h>
 
-#include <qpoint.h>
+#include <QPoint>
 
 namespace GraphCanvas
 {

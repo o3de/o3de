@@ -14,6 +14,7 @@
 #include <QIntValidator>
 #include <QLineEdit>
 #include <QSignalBlocker>
+#include <QRegularExpression>
 
 namespace AzQtComponents
 {
@@ -145,7 +146,7 @@ namespace AzQtComponents
             // it for us
             QChar zeroDigit = locale().zeroDigit();
             QString trailingZeros = QString("%1+$").arg(zeroDigit);
-            stringValue.remove(QRegExp(trailingZeros));
+            stringValue.remove(QRegularExpression(trailingZeros));
 
             // It's possible we could be left with a decimal point on the end
             // if we stripped the trailing zeros, so if that's the case, then

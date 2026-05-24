@@ -10,7 +10,7 @@
 #include <AzCore/PlatformDef.h>
 // qvariant.h(457) : error C2220 : warning treated as error - no 'object' file generated
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
-#include <qabstractitemmodel.h>
+#include <QAbstractItemModel>
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Memory/SystemAllocator.h>

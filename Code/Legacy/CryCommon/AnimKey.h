@@ -17,11 +17,15 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Component/EntityId.h>
 
+#include "MathConversion.h"
+
 enum EAnimKeyFlags
 {
     AKEY_SELECTED = 0x01,       //! This key is selected in track view.
     AKEY_SORT_MARKER = 0x02     //! Internal use to locate a key after a sort.
 };
+
+const AZ::Color TrackviewDefaultColor(0.187820792f, 0.187820792f, 1.0f);
 
 //! Interface to animation key.
 //! Not real interface though...
@@ -87,17 +91,14 @@ struct ITcbKey
         fval[1] = val.y;
         fval[2] = val.z;
     };
-    void SetQuat(const Quat& val)
+    void SetQuat(const AZ::Quaternion& val)
     {
-        fval[0] = val.v.x;
-        fval[1] = val.v.y;
-        fval[2] = val.v.z;
-        fval[3] = val.w;
+        val.StoreToFloat4(fval);
     };
 
     ILINE void SetValue(float val)       { SetFloat(val); }
     ILINE void SetValue(const Vec3& val) { SetVec3(val); }
-    ILINE void SetValue(const Quat& val) { SetQuat(val); }
+    ILINE void SetValue(const AZ::Quaternion& val) { SetQuat(val); }
 
     float GetFloat() const { return *((float*)fval); };
     Vec3 GetVec3() const
@@ -108,18 +109,13 @@ struct ITcbKey
         vec.z = fval[2];
         return vec;
     };
-    Quat GetQuat() const
+    AZ::Quaternion GetQuat() const
     {
-        Quat quat;
-        quat.v.x = fval[0];
-        quat.v.y = fval[1];
-        quat.v.z = fval[2];
-        quat.w = fval[3];
-        return quat;
+        return AZ::Quaternion::CreateFromFloat4(fval);
     };
     ILINE void GetValue(float& val) { val = GetFloat(); };
     ILINE void GetValue(Vec3& val)  { val = GetVec3(); };
-    ILINE void GetValue(Quat& val)  { val = GetQuat(); };
+    ILINE void GetValue(AZ::Quaternion& val)  { val = GetQuat(); };
 };
 
 struct IEventKey
@@ -243,7 +239,7 @@ struct ISoundKey
     ISoundKey()
         : fDuration(0.0f)
     {
-        customColor.Set(Col_TrackviewDefault.r, Col_TrackviewDefault.g, Col_TrackviewDefault.b);
+        customColor = AZColorToLYVec3(TrackviewDefaultColor);
     }
 
     AZStd::string sStartTrigger;

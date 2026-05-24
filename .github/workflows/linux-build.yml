@@ -14,43 +14,63 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      compiler: 
+      compiler:
         required: true
         type: string
-      config: 
+      config:
         required: true
         type: string
-      image: 
+      image:
         required: true
         type: string
-      platform: 
+      platform:
         required: true
         type: string
-      type: 
+      type:
         required: true
         type: string
-      last_artifact: 
+      last_artifact:
         required: false
         type: boolean
       desktop:
         required: false
         type: boolean
+      clang_version:
+        required: false
+        type: string
+      cmake_version:
+        required: false
+        type: string
 
 run-name: ${{ inputs.platform }} - ${{ inputs.type }}
 
-# Note: All 3P Github Actions use the commit hash for security reasons 
+# Note: All 3P Github Actions use the commit hash for security reasons
 # Avoid using the tag version, which is vulnerable to supply chain attacks
 
 jobs:
   Build:
-    strategy:
-      fail-fast: false
-
     runs-on: ${{ inputs.image }}
 
     steps:
+      - name: Check disk space
+        # Check if the workspace has enough free space, otherwise flag the disk for resizing
+        env:
+          MIN_FREE_DISK: 70 # in GB
+        id: check-disk
+        run: |
+          AVAIL_GB=$(df ${{ github.workspace }} --output=avail --block-size=1G | tail -1 | tr -d ' ')
+          echo "Workspace has ${AVAIL_GB}GB available"
+          if [ "$AVAIL_GB" -lt ${{ env.MIN_FREE_DISK }} ]; then
+            echo "needs_resize=true" >> $GITHUB_OUTPUT
+            echo "Workspace has less than ${{ env.MIN_FREE_DISK }}GB available, resizing disk"
+          else
+            echo "needs_resize=false" >> $GITHUB_OUTPUT
+            echo "Workspace has enough free space, skipping disk resize"
+          fi
+
       - name: Maximize build space
-        # Resize and combine disks as LVM in order to maximize the amount of space for builds
+        # Resize and combine disks as LVM to maximize space for builds, if below the minimum free space
+        if: steps.check-disk.outputs.needs_resize == 'true'
         uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c # v10
         with:
           root-reserve-mb: 8000
@@ -59,7 +79,7 @@ jobs:
           remove-haskell: true
           remove-codeql: true
           remove-docker-images: true
-            
+
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -76,7 +96,7 @@ jobs:
           mkdir -p .o3de build 3rdParty && ln -sf "$(pwd)/.o3de" ~/.o3de
 
       - name: Setup ccache
-        uses: Chocobo1/setup-ccache-action@f84f86840109403e0fe0ded8b0766c9633affa16 # v1.4.7
+        uses: chocobo1/setup-ccache-action@37c3347f8a7738e82aab7a06f276f7a12e3008fb # v1.5.3
         continue-on-error: true
         if: always()
         with:
@@ -84,9 +104,9 @@ jobs:
           store_cache: false
           restore_cache: false
           ccache_options: |
-            max_size=10G
-            hash_dir=false
             cache_dir=${{ github.workspace }}/.ccache
+            hash_dir=false
+            max_size=10G
 
       - name: Check for rerun
         id: check-rerun
@@ -115,7 +135,7 @@ jobs:
           check_artifacts: true
           name: O3DE-${{ inputs.platform }}-${{ inputs.config }}-build
           dry_run: true
-                  
+
       - name: Set artifact run ID
         # Set the run ID of the artifact to be used for the download step
         id: set-artifact-run-id
@@ -124,7 +144,7 @@ jobs:
           runId=${{ fromJSON(steps.last-run-id.outputs.artifacts)[0].workflow_run.id }}
           echo "artifact_run_id=$runId" >> $GITHUB_OUTPUT
           echo "Using artifacts from previous run: $runId"
-      
+
       - name: Restore artifact cache
         # Restore the artifact from the "Get last run" step or from the current run
         id: restore-artifact-cache
@@ -149,9 +169,18 @@ jobs:
 
       - name: Setup cmake
         # Pin the version of cmake
-        uses: lukka/get-cmake@56d043d188c3612951d8755da8f4b709ec951ad6 # v3.31.6
+        if: ${{ inputs.cmake_version }}
+        uses: lukka/get-cmake@f176ccd3f28bda569c43aae4894f06b2435a3375 # v4.2.3
         with:
-          cmakeVersion: "~3.30.0"
+          cmakeVersion: "${{ inputs.cmake_version }}"
+
+      - name: Install specific clang version
+        if: ${{ inputs.compiler == 'clang' && inputs.clang_version }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-${{ inputs.clang_version }} lld-${{ inputs.clang_version }}
+          echo "CC=$(which clang-${{ inputs.clang_version }})" >> $GITHUB_ENV
+          echo "CXX=$(which clang++-${{ inputs.clang_version }})" >> $GITHUB_ENV
 
       - name: Configure environment
         # Install dependencies. The desktop packages are for tests and assetprocessor
@@ -174,16 +203,17 @@ jobs:
           sudo apt -y autoclean
           sudo apt clean
           df -h
-          
+
       - name: Build ${{ inputs.type }}
         # Builds with presets in ../scripts/build/Platform/Linux/build_config.json
         timeout-minutes: 330
+        env:
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          LY_3RDPARTY_PATH: ${{ github.workspace }}/3rdParty
+          LY_PACKAGE_SERVER_URLS: "https://d1gg6ket0m44ly.cloudfront.net;https://d3t6xeg4fgfoum.cloudfront.net"
         run: |
-          export LY_3RDPARTY_PATH=${{ github.workspace }}/3rdParty
-          export CC=${{ inputs.compiler == 'gcc' && 'gcc' || 'clang'   }}
-          export CXX=${{ inputs.compiler == 'gcc' && 'g++' || 'clang++' }}
-          export CMAKE_C_COMPILER_LAUNCHER=ccache
-          export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+          export EXTRA_CMAKE_OPTIONS="-DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX"
           export DISPLAY=:0
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           if [ "${{ inputs.desktop }}" == "true" ]; then 

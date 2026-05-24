@@ -92,16 +92,10 @@ namespace SceneProcessing
 
             auto mesh = AZStd::make_unique<AZ::SceneData::GraphData::MeshData>();
 
-            int i = 0;
             for (const AZ::Vector3& position : planeVertexPositions)
             {
                 mesh->AddPosition(position);
                 mesh->AddNormal(AZ::Vector3::CreateAxisY());
-
-                // This assumes that the data coming from the import process gives a unique control point
-                // index to every vertex. This follows the behavior of the AssImp library.
-                mesh->SetVertexIndexToControlPointIndexMap(i, i);
-                ++i;
             }
 
             mesh->AddFace({0, 1, 2}, 0);

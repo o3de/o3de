@@ -36,8 +36,8 @@ namespace UnitTest
         AZStd::unordered_set<AZ::s16> m_s16Set {-4,-8};
         AZStd::unordered_set<AZ::s32> m_s32Set {-16,-32};
         AZStd::unordered_set<AZ::s64> m_s64Set {-64,-128};
-        AZStd::unordered_set<double> m_floatSet {1.0f, 2.0f};
-        AZStd::unordered_set<float> m_doubleSet {0.1, 0.2};
+        AZStd::unordered_set<double> m_floatSet {1.0, 2.0};
+        AZStd::unordered_set<float> m_doubleSet {0.1f, 0.2f};
         AZStd::unordered_set<AZStd::string> m_stringSet {"one", "two"};
 
         void Reflect(AZ::ReflectContext* context)

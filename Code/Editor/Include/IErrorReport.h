@@ -12,7 +12,6 @@
 #pragma once
 
 // forward declarations.
-class CParticleItem;
 class CErrorRecord;
 class QString;
 

@@ -682,13 +682,16 @@ namespace LUAEditor
         QTextCharFormat spaceFormat = QTextCharFormat();
         spaceFormat.setForeground(colors->GetTextWhitespaceColor());
 
-        QRegExp tabsAndSpaces("( |\t)+");
-        int index = tabsAndSpaces.indexIn(text);
-        while (index >= 0)
+        QRegularExpression tabsAndSpaces("( |\t)+");
+        QRegularExpressionMatch match = tabsAndSpaces.match(text);
+        int index = match.capturedStart();
+        while (match.hasMatch())
         {
-            int length = tabsAndSpaces.matchedLength();
+            const int length = match.capturedLength();
             setFormat(index, length, spaceFormat);
-            index = tabsAndSpaces.indexIn(text, index + length);
+
+            match = tabsAndSpaces.match(text, index + length);
+            index = match.capturedStart();
         }
 
         QTBlockState prevState;
@@ -743,7 +746,7 @@ namespace LUAEditor
 
                 // Special case to allow to lint methods via regex
                 const int nextCharPos = position + length;
-                const bool nextCharNeededForRegEx = text.at(nextCharPos) == '(' || text.at(nextCharPos) == ':';
+                const bool nextCharNeededForRegEx = (nextCharPos < text.size()) && (text.at(nextCharPos) == '(' || text.at(nextCharPos) == ':');
 
                 const QString dhText = nextCharNeededForRegEx ? text.mid(position, length + 1) : text.mid(position, length);
                 for (const HighlightingRule& rule : m_highlightingRules)

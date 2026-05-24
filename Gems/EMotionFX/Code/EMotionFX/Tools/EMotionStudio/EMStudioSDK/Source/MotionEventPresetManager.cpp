@@ -153,9 +153,9 @@ namespace EMStudio
         EMotionFX::EventDataPtr leftFootData = EMotionFX::GetEventManager().FindOrCreateEventData<EMotionFX::TwoStringEventData>("LeftFoot", "", "RightFoot");
         EMotionFX::EventDataPtr rightFootData = EMotionFX::GetEventManager().FindOrCreateEventData<EMotionFX::TwoStringEventData>("RightFoot", "", "LeftFoot");
         MotionEventPreset* leftFootPreset =
-            aznew MotionEventPreset("LeftFoot", { AZStd::move(leftFootData) }, AZ::Color(AZ::u8(255), 0, 0, 255), "");
+            aznew MotionEventPreset("LeftFoot", { AZStd::move(leftFootData) }, AZ::Color(255, 0, 0, 255), "");
         MotionEventPreset* rightFootPreset =
-            aznew MotionEventPreset("RightFoot", { AZStd::move(rightFootData) }, AZ::Color(AZ::u8(0), 255, 0, 255), "");
+            aznew MotionEventPreset("RightFoot", { AZStd::move(rightFootData) }, AZ::Color(0, 255, 0, 255), "");
         leftFootPreset->SetIsDefault(true);
         rightFootPreset->SetIsDefault(true);
         m_eventPresets.emplace(m_eventPresets.begin(), leftFootPreset);

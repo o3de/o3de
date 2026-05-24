@@ -40,7 +40,7 @@ namespace
 {
     struct StyleMatch
     {
-        GraphCanvas::Styling::Style* style;
+        AZStd::shared_ptr<GraphCanvas::Styling::Style> style;
         int complexity;
 
         bool operator<(const StyleMatch& o) const
@@ -862,12 +862,6 @@ namespace GraphCanvas
     void StyleManager::ClearStyles()
     {
         StyleManagerNotificationBus::Event(m_editorId, &StyleManagerNotifications::OnStylesUnloaded);
-
-        for (auto style : m_styles)
-        {
-            delete style;
-        }
-
         m_styles.clear();
     }
 

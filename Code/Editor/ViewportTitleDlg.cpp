@@ -15,8 +15,8 @@
 
 // Qt
 #include <QCheckBox>
-#include <QLabel>
 #include <QInputDialog>
+#include <QLabel>
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
@@ -36,13 +36,13 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <Editor/EditorSettingsAPIBus.h>
 #include <EditorModeFeedback/EditorStateRequestsBus.h>
 
@@ -50,34 +50,6 @@
 
 #include "ui_ViewportTitleDlg.h"
 #endif //! defined(Q_MOC_RUN)
-
-// CViewportTitleDlg dialog
-
-namespace
-{
-    class CViewportTitleDlgDisplayInfoHelper
-        : public QObject
-        , public AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler
-    {
-        Q_OBJECT
-
-    public:
-        CViewportTitleDlgDisplayInfoHelper(CViewportTitleDlg* parent)
-            : QObject(parent)
-        {
-            AZ::AtomBridge::AtomViewportInfoDisplayNotificationBus::Handler::BusConnect();
-        }
-
-    signals:
-        void ViewportInfoStatusUpdated(int newIndex);
-
-    private:
-        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
-        {
-            emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
-        }
-    };
-} // end anonymous namespace
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
@@ -304,7 +276,7 @@ inline double Round(double fVal, double fStep)
     return fVal;
 }
 
- namespace
+namespace
 {
     void PyToggleHelpers()
     {
@@ -351,5 +323,4 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#include "ViewportTitleDlg.moc"
 #include <moc_ViewportTitleDlg.cpp>

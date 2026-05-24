@@ -88,9 +88,15 @@ fi
 
 if ! [ -x "$(command -v cmake)" ]; then
     if [ -z ${LY_CMAKE_PATH} ]; then
-        echo "ERROR: Could not find cmake on the PATH and LY_CMAKE_PATH is not defined, cannot continue."
-        echo "Please add cmake to your PATH, or define LY_CMAKE_PATH"
-        exit 1
+        # Check for the bundled cmake that ships with the installer at <engineRoot>/cmake/runtime/bin
+        BUNDLED_CMAKE_PATH="$DIR/../cmake/runtime/bin"
+        if [ -x "${BUNDLED_CMAKE_PATH}/cmake" ]; then
+            export LY_CMAKE_PATH="${BUNDLED_CMAKE_PATH}"
+        else
+            echo "ERROR: Could not find cmake on the PATH and LY_CMAKE_PATH is not defined, cannot continue."
+            echo "Please add cmake to your PATH, or define LY_CMAKE_PATH"
+            exit 1
+        fi
     fi
 
     export PATH=$LY_CMAKE_PATH:$PATH

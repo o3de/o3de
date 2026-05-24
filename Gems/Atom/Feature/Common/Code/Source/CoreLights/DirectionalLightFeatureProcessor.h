@@ -260,7 +260,7 @@ namespace AZ
 
             // This is currently fixed, but could be exposed to allow for user configuration
             // See DirectionalLightShadowCalculator.azsli : DirectionalShadowCalculator::CalculateCascadeBlendAmount()
-            static constexpr const float CascadeBlendArea = 0.015;
+            static constexpr const float CascadeBlendArea = 0.015f;
 
             // RPI::SceneNotificationBus::Handler overrides...
             void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;

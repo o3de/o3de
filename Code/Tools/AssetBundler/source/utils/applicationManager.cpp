@@ -716,7 +716,10 @@ namespace AssetBundler
             return AZ::Failure(AZStd::string::format("Invalid command: \"--%s\" must have exactly one value.", IntersectionCountArg));
         }
 
-        params.m_intersectionCount = AZStd::stoi(parser->GetSwitchValue(IntersectionCountArg, 0));
+        if (parser->HasSwitch(IntersectionCountArg))
+        {
+            params.m_intersectionCount = AZStd::stoi(parser->GetSwitchValue(IntersectionCountArg, 0));
+        }
 
         size_t numTokenNames = parser->GetNumSwitchValues(ComparisonTokenNameArg);
 
@@ -1023,7 +1026,11 @@ namespace AssetBundler
                 FilePath path = FilePath(value);
                 value = path.AbsolutePath();
             }
-            params.m_printComparisons.emplace_back(AZStd::move(value));
+
+            if (!value.empty())
+            {
+                params.m_printComparisons.emplace_back(AZStd::move(value));
+            }
         }
 
         params.m_printLast = parser->HasSwitch(ComparePrintArg) && params.m_printComparisons.empty();
@@ -1929,6 +1936,12 @@ namespace AssetBundler
                     {
                         comparisonOperations.SetFirstInput(idx, params.m_firstCompareFile.at(idx));
                     }
+                    else
+                    {
+                        // if its not the "default token" then make sure to update the actual entry to have the `_platname` wart at the end
+                        FilePath updatedPath(comparisonOperations.GetComparisonList().at(idx).m_firstInput, platformName);
+                        comparisonOperations.SetFirstInput(idx, updatedPath.AbsolutePath());
+                    }
 
                     // Set the second input (if needed)
                     if (comparisonOperations.GetComparisonList().at(idx).m_comparisonType != AssetFileInfoListComparison::ComparisonType::FilePattern)
@@ -1944,6 +1957,12 @@ namespace AssetBundler
                         if (!IsDefaultToken(params.m_secondCompareFile.at(secondInputIdx)))
                         {
                             comparisonOperations.SetSecondInput(idx, params.m_secondCompareFile.at(secondInputIdx));
+                        }
+                        else
+                        {
+                            // if its not the "default token" then make sure to update the actual entry to have the `_platname` wart at the
+                            FilePath updatedPath(comparisonOperations.GetComparisonList().at(idx).m_secondInput, platformName);
+                            comparisonOperations.SetSecondInput(idx, updatedPath.AbsolutePath());
                         }
 
                         ++secondInputIdx;
@@ -1961,6 +1980,12 @@ namespace AssetBundler
                     if (!IsDefaultToken(params.m_outputs.at(idx)))
                     {
                         comparisonOperations.SetOutput(idx, params.m_outputs.at(idx));
+                    }
+                    else
+                    {
+                        // if its not the "default token" then make sure to update the actual entry to have the `_platname` wart at the
+                        FilePath updatedPath(comparisonOperations.GetComparisonList().at(idx).m_output, platformName);
+                        comparisonOperations.SetOutput(idx, updatedPath.AbsolutePath());
                     }
                 }
             }

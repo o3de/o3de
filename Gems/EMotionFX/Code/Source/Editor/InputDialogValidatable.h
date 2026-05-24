@@ -13,7 +13,8 @@
 #include <QDialog>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
+class QRegularExpression;
+class QDialogButtonBox;
 
 namespace EMStudio
 {
@@ -24,7 +25,7 @@ namespace EMStudio
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        InputDialogValidatable(QWidget* parent, const QString& labelText, const QRegExp regExp = LineEditValidatable::s_defaultRegExp);
+        InputDialogValidatable(QWidget* parent, const QString& labelText, const QRegularExpression& regExp = LineEditValidatable::s_defaultRegExp);
         // When destructing clear the Validator which sets the LineEdit Validator to stop lambda validates being called
         ~InputDialogValidatable() { SetValidatorFunc(nullptr); }
 

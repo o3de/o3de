@@ -28,6 +28,7 @@
 
 #include <ILocalizationManager.h>
 
+#include "MathConversion.h"
 #include "UiSerialize.h"
 #include "TextMarkup.h"
 #include "UiTextComponentOffsetsSelector.h"
@@ -1791,7 +1792,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
     // makes sense to not mark the render cache dirty on most fades or alpha changes.
     if (m_drawBatchLines.m_fontEffectHasTransparency)
     {
-        if (!m_renderCache.m_batches.empty() && m_renderCache.m_batches[0]->m_color.a != finalAlphaByte)
+        if (!m_renderCache.m_batches.empty() && m_renderCache.m_batches[0]->m_color.GetA8() != finalAlphaByte)
         {
             MarkRenderCacheDirty();
         }
@@ -1874,8 +1875,6 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     // Render the text batches
 
-    STextDrawContext fontContext(m_renderCache.m_fontContext);
-
     for (RenderCacheBatch* batch : m_renderCache.m_batches)
     {
         AZ::FFont* font = static_cast<AZ::FFont*>(batch->m_font); // LYSHINE_ATOM_TODO - move IFont.h out of CryCommon/engine code
@@ -1886,14 +1885,14 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             // We never do this if any font effect used has transparency since in that case
             // not all of the verts will have the same alpha. We handle that case above
             // by regenerating the render cache in that case.
-            if (!m_drawBatchLines.m_fontEffectHasTransparency && batch->m_color.a != finalAlphaByte)
+            if (!m_drawBatchLines.m_fontEffectHasTransparency && batch->m_color.GetA8() != finalAlphaByte)
             {
                 for (int i=0; i < batch->m_cachedPrimitive.m_numVertices; ++i)
                 {
                     batch->m_cachedPrimitive.m_vertices[i].color.a = finalAlphaByte;
                 }
 
-                batch->m_color.a = finalAlphaByte;
+                batch->m_color.SetA8(finalAlphaByte);
             }
 
             // We always use wrap mode for text (isClamp false). This is historically what was done
@@ -3965,8 +3964,9 @@ void UiTextComponent::RenderToCache(float alpha)
     STextDrawContext fontContext(GetTextDrawContextPrototype(requestFontSize, drawBatchLines.fontSizeScale));
     fontContext.SetOverrideViewProjMatrices(false);
 
-    ColorF color = LyShine::MakeColorF(m_overrideColor.GetAsVector3(), alpha);
-    color.srgb2rgb();   // the colors are specified in sRGB but we want linear colors in the shader
+    AZ::Color color(m_overrideColor);
+    color.SetA(alpha);
+    color = color.GammaToLinear(); // the colors are specified in sRGB but we want linear colors in the shader
     fontContext.SetColor(color);
 
     // FFont.cpp uses the alpha value of the color to decide whether to use the color, if the alpha value is zero
@@ -3977,7 +3977,7 @@ void UiTextComponent::RenderToCache(float alpha)
     // cache to modify the alpha values of.
     if (!fontContext.IsColorOverridden())
     {
-        color.a = 1.0f;
+        color.SetA(1.f);
         fontContext.SetColor(color);
     }
 
@@ -4009,11 +4009,7 @@ void UiTextComponent::RenderToCache(float alpha)
     AZ::Matrix4x4 transform;
     UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transform);
 
-    float transFloats[16];
-    transform.StoreToRowMajorFloat16(transFloats);
-    Matrix34 transform34(transFloats[0], transFloats[1], transFloats[2], transFloats[3],
-        transFloats[4], transFloats[5], transFloats[6], transFloats[7],
-        transFloats[8], transFloats[9], transFloats[10], transFloats[11]);
+    AZ::Matrix3x4 transform34 = AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(transform);
     fontContext.SetTransform(transform34);
 
     // Get the rect that positions the text prior to scale and rotate. The scale and rotate transform
@@ -4052,7 +4048,7 @@ void UiTextComponent::RenderDrawBatchLines(
     // by the font size
     float newlinePosYIncrement = 0.0f;
 
-    const ColorB origColor(fontContext.m_colorOverride);
+    const AZ::Color origColor(fontContext.m_colorOverride);
 
     for (const DrawBatchLine& drawBatchLine : drawBatchLines.batchLines)
     {
@@ -4084,12 +4080,13 @@ void UiTextComponent::RenderDrawBatchLines(
                 Vec2 textSize(drawBatch.size.GetX(), drawBatch.size.GetY());
                 xDrawPosOffset = textSize.x;
 
-                ColorB batchColor = origColor;
+                AZ::Color batchColor = origColor;
                 const bool drawBatchHasColorAssigned = drawBatch.color != TextMarkup::ColorInvalid;
                 if (drawBatchHasColorAssigned)
                 {
-                    ColorF color = LyShine::MakeColorF(drawBatch.color, 1.0f);  // need ColorF to do srgb conversion
-                    color.srgb2rgb();   // the colors are specified in markup in sRGB but we want linear colors in the shader
+                    AZ::Color color(drawBatch.color);
+                    color.SetA(1.f);
+                    color = color.GammaToLinear(); // the colors are specified in markup in sRGB but we want linear colors in the shader
                     batchColor = color;
                 }
 

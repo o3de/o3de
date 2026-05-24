@@ -575,7 +575,7 @@ namespace UnitTest
             }
 
             AZ_TEST_START_TRACE_SUPPRESSION;
-            uint64_t data;
+            uint64_t data = 0;
             writer->SetRootConstants(reinterpret_cast<uint8_t*>(&data), sizeof(data));
             AZ_TEST_STOP_TRACE_SUPPRESSION(DeviceCount);
         }

@@ -209,12 +209,12 @@ namespace ScriptCanvasEditor
     void SystemComponent::OpenScriptCanvasEditor(const AZStd::string& sourcePath)
     {
         QStringList arguments;
-        arguments.append(sourcePath.c_str());
+        arguments.append(QString(R"("%1")").arg(sourcePath.c_str()));
 
         AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
         if (!projectPath.empty())
         {
-            arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+            arguments.append(QString(R"(--project-path="%1")").arg(projectPath.c_str()));
         }
 
         AZ_TracePrintf("ScriptCanvasApplication", "Launching Script Canvas Editor");
@@ -222,7 +222,7 @@ namespace ScriptCanvasEditor
         AZ_Assert(!engineRoot.empty(), "Cannot query Engine Path");
 
         AZ::IO::FixedMaxPath launchPath =
-            AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / (QString("ScriptCanvasApplication") + AZ_TRAIT_OS_EXECUTABLE_EXTENSION).toUtf8().constData();
+            AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "ScriptCanvasApplication" AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
 
         QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }

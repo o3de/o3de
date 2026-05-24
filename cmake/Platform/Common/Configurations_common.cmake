@@ -16,6 +16,10 @@ set(O3DE_EXTRA_C_FLAGS ""       CACHE STRING "Additional C Compiler flags to app
 set(O3DE_EXTRA_CXX_FLAGS ""     CACHE STRING "Additional Cxx Compiler flags to apply globally")
 set(O3DE_EXTRA_LINK_OPTIONS ""  CACHE STRING "Additional link options to apply globally")
 
+# If you turn fast math on, beware, as all floating point operations that result or involve NaN or Inf
+# will be undefined behavior and cannot be detected or dealt with.
+set(USE_FAST_MATH OFF CACHE BOOL "Use fp:precise (MSVC) or -ffast-math (Clang/GCC) to allow aggressive, lossy floating-point optimizations")
+
 ly_set(CMAKE_C_FLAGS "${O3DE_EXTRA_C_FLAGS}")
 ly_set(CMAKE_CXX_FLAGS "${O3DE_EXTRA_CXX_FLAGS}")
 ly_set(LINK_OPTIONS "${O3DE_EXTRA_LINK_OPTIONS}")
@@ -69,6 +73,16 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
         set_property(GLOBAL APPEND PROPERTY JOB_POOLS link_job_pool=${LY_PARALLEL_LINK_JOBS})
         ly_set(CMAKE_JOB_POOL_LINK link_job_pool)
     endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "21")
+    # Workaround for a googletest bug with char conversions recognized by Clang 21+
+    # See https://github.com/google/googletest/issues/4762
+    # TODO: remove when googletest is updated
+    ly_append_configurations_options(
+        COMPILATION
+            -Wno-character-conversion
+    )
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)

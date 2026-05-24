@@ -518,12 +518,12 @@ void CTrackViewTrack::GetKeyValueRange(float& min, float& max) const
     }
 }
 
-ColorB CTrackViewTrack::GetCustomColor() const
+AZ::Color CTrackViewTrack::GetCustomColor() const
 {
-    return (m_pAnimTrack) ? m_pAnimTrack->GetCustomColor() : ColorB();
+    return (m_pAnimTrack) ? m_pAnimTrack->GetCustomColor() : AZ::Color();
 }
 
-void CTrackViewTrack::SetCustomColor(ColorB color)
+void CTrackViewTrack::SetCustomColor(const AZ::Color& color)
 {
     if (!m_pAnimTrack)
     {

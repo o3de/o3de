@@ -15,19 +15,19 @@
 struct AffineParts
 {
     Vec3 pos;               //!< Translation components
-    Quat rot;           //!< Essential rotation.
-    Quat rotScale;  //!< Stretch rotation.
+    AZ::Quaternion rot;      //!< Essential rotation.
+    AZ::Quaternion rotScale; //!< Stretch rotation.
     Vec3 scale;         //!< Stretch factors.
     float fDet;         //!< Sign of determinant.
 
     /** Decompose matrix to its affine parts.
     */
-    void Decompose(const Matrix34& mat);
+    void Decompose(const AZ::Matrix3x4& mat);
 
     /** Decompose matrix to its affine parts.
             Assume there`s no stretch rotation.
     */
-    void SpectralDecompose(const Matrix34& mat);
+    void SpectralDecompose(const AZ::Matrix3x4& mat);
 };
 
 #endif // CRYINCLUDE_EDITOR_UTIL_AFFINEPARTS_H

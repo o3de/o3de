@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
-#include <QtCore/QString>
+#include <QString>
 #include <MCore/Source/Config.h>
 
 // when we use DLL files, setup the EMFX_API macro

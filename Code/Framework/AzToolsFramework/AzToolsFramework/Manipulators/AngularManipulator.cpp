@@ -122,6 +122,8 @@ namespace AzToolsFramework
         return action;
     }
 
+    AngularManipulator::~AngularManipulator() = default;
+
     AZStd::shared_ptr<AngularManipulator> AngularManipulator::MakeShared(const AZ::Transform& worldFromLocal)
     {
         return AZStd::shared_ptr<AngularManipulator>(aznew AngularManipulator(worldFromLocal));

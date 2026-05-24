@@ -19,6 +19,7 @@
 #endif
 
 #include <QIcon>
+#include <QObject>
 
 class QAction;
 

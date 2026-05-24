@@ -202,7 +202,6 @@ namespace AZ
                             context.m_sourceSceneSystem.ConvertUnit(vertex);
 
                             blendShapeData->AddPosition(vertex);
-                            blendShapeData->SetVertexIndexToControlPointIndexMap(vertIdx + vertexOffset, vertIdx + vertexOffset);
 
                             // Add normals
                             if (aiAnimMesh->HasNormals())
@@ -285,12 +284,12 @@ namespace AZ
                         context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
 
                     Events::ProcessingResult blendShapeResult;
-                    AssImpSceneAttributeDataPopulatedContext dataPopulated(context, blendShapeData, newIndex, nodeName);
-                    blendShapeResult = Events::Process(dataPopulated);
+                    auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(context, blendShapeData, newIndex, nodeName);
+                    blendShapeResult = Events::Process(*dataPopulated);
 
                     if (blendShapeResult != Events::ProcessingResult::Failure)
                     {
-                        blendShapeResult = AddAttributeDataNodeWithContexts(dataPopulated);
+                        blendShapeResult = AddAttributeDataNodeWithContexts(*dataPopulated);
                     }
                     combinedBlendShapeResult += blendShapeResult;
                 }

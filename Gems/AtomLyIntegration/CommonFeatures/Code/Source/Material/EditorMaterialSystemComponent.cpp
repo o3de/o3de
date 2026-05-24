@@ -112,7 +112,6 @@ namespace AZ
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
             AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
             // All material previews use the same model and lighting preset assets
@@ -134,7 +133,6 @@ namespace AZ
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
             AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect(); 
             AZ::SystemTickBus::Handler::BusDisconnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 
             m_materialBrowserInteractions.reset();
@@ -146,7 +144,7 @@ namespace AZ
         void EditorMaterialSystemComponent::OpenMaterialEditor(const AZStd::string& sourcePath)
         {
             QStringList arguments;
-            arguments.append(sourcePath.c_str());
+            arguments.append(QString(R"("%1")").arg(sourcePath.c_str()));
 
             // Use the same RHI as the main editor
             AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
@@ -158,7 +156,7 @@ namespace AZ
             AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
             if (!projectPath.empty())
             {
-                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+                arguments.append(QString(R"(--project-path="%1")").arg(projectPath.c_str()));
             }
 
             AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
@@ -168,7 +166,7 @@ namespace AZ
         void EditorMaterialSystemComponent::OpenMaterialCanvas(const AZStd::string& sourcePath)
         {
             QStringList arguments;
-            arguments.append(sourcePath.c_str());
+            arguments.append(QString(R"("%1")").arg(sourcePath.c_str()));
 
             // Use the same RHI as the main Canvas
             AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
@@ -180,7 +178,7 @@ namespace AZ
             AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
             if (!projectPath.empty())
             {
-                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+                arguments.append(QString(R"(--project-path="%1")").arg(projectPath.c_str()));
             }
 
             AZ_TracePrintf("MaterialComponent", "Launching Material Canvas");
@@ -233,6 +231,18 @@ namespace AZ
 
         void EditorMaterialSystemComponent::OnSystemTick()
         {
+            if (m_materialPreviewModelAsset.GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
+            {
+                m_materialPreviewModelAsset.QueueLoad();
+                return;
+            }
+
+            if (m_materialPreviewLightingPresetAsset.GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded)
+            {
+                m_materialPreviewModelAsset.QueueLoad();
+                return;
+            }
+
             auto previewRenderer = AZ::Interface<AtomToolsFramework::PreviewRendererInterface>::Get();
             if (!previewRenderer || !m_materialPreviewModelAsset.IsReady() || !m_materialPreviewLightingPresetAsset.IsReady())
             {
@@ -301,12 +311,6 @@ namespace AZ
             AZ::SystemTickBus::Handler::BusDisconnect();
         }
 
-        void EditorMaterialSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
-        {
-            m_materialPreviewModelAsset.QueueLoad();
-            m_materialPreviewLightingPresetAsset.QueueLoad();
-        }
-
         void EditorMaterialSystemComponent::OnRenderMaterialPreviewRendered(
             [[maybe_unused]] const AZ::EntityId& entityId,
             [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
@@ -316,7 +320,7 @@ namespace AZ
             // the handling code to be executed on the main thread. This prevents any non
             // thread-safe code, such as Qt updates, from running on alternate threads
             AZ::SystemTickBus::QueueFunction(
-                [=, this]()
+                [this, pixmap, entityId, materialAssignmentId]()
                 {
                     PurgePreviews();
 

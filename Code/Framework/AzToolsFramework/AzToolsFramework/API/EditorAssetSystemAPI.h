@@ -15,6 +15,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/PlatformDef.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AZ
@@ -140,6 +141,23 @@ namespace AzToolsFramework
             */
             virtual bool ClearFingerprintForAsset(const AZStd::string& sourcePath) = 0;
         };
+
+        //! Given a file name and expected asset type, try to find the asset id for it using a heuristic approach.
+        //! * First, it will try to look for an exact known match in the catalog for that actual file name.
+        //! * If that fails, it will look for a source file with that name and see if it produces assets of the given type.
+        //!   If that succeeds, it will check the returned list of assets and find the one that best matches with the given
+        //!   file name and type.
+        //! This function should only be used to convert legacy data that used file names to refer to assets.
+        //! It is not necessary to use this function if you already have an asset id or uuid, and asset references
+        //! should always be preferred if possible, since this function can fail, especially if the file name requested
+        //! is unrelated to the actual source file name that produces this asset (for example, a passing in a product file
+        //! name like "sphere.azmodel" when the actual source file is "shapes.fbx", there simply is not enough information
+        //! in just that string to know what the source file is unless it has already been compiled and is in the catalog).
+        //! @param fileName The file name to look for.  Source file, product file, use relative paths though.
+        //! @param assetTypeId The expected type of the asset.  A null typeid will accept any asset type.
+        //!        If you specify a typeId, it will only return a valid asset id if the type matches, even if it finds an asset
+        //!        in the catalog with the exact name.
+        AZTF_API AZ::Data::AssetId FindAssetIdFromFileName(AZStd::string_view fileName, AZ::Data::AssetType assetTypeId);
 
         //! AssetSystemBusTraits
         //! This bus is for events that concern individual assets and is addressed by file extension

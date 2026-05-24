@@ -23,12 +23,22 @@ namespace AzFramework
     class AZF_API SocketConnection
     {
     public:
+        // implementations may call this periodically when in long blocking waits.  One per application instance.
+        // It may be called on any thread.
+        using KeepAliveCallback = AZStd::function<void(bool /*operation is complete*/)>;
+
         AZ_RTTI(SocketConnection, "{CF95282C-B514-4AB8-8C72-6063AD03725B}");
         virtual ~SocketConnection() {};
 
         //! Utility functions to get or set the one global instance of a SocketConnection
         static SocketConnection* GetInstance();
         static void SetInstance(SocketConnection* instance);
+
+        //! Utility functions to get or set the one global keep-alive callback that will be periodically invoked
+        //! during SendMessage.  Non-blocking calls like SendMsg will not call it.
+        //! It is up to the application to manage the lifetime of the callback function.
+        static KeepAliveCallback GetKeepAliveCallback();
+        static void SetKeepAliveCallback(KeepAliveCallback callback);
 
         //! Connect to an address with this connection. Takes a null-terminated string address and a port
         //! Currently this blocks until connected
@@ -60,7 +70,8 @@ namespace AzFramework
         //! Callback parameters: Message ID, Serial, Data Buffer, Data Length
         //! Note that if the message is a request and it failed because of a protocol error (engine is shutting down for example)
         //! It is still guaranteed to be called, but will be called with 0, nullptr
-        typedef AZStd::function<void(AZ::u32, AZ::u32, const void*, AZ::u32)> TMessageCallback;
+        using TMessageCallback = AZStd::function<void(AZ::u32, AZ::u32, const void*, AZ::u32)>;
+
         typedef AZ::u32 TMessageCallbackHandle;
         static const TMessageCallbackHandle s_invalidCallbackHandle = 0;
 

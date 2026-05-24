@@ -1,0 +1,36 @@
+{
+    "Shader": "Shaders/OpenParticle/ParticleSprite.shader",
+    "Variants": [
+        {
+            "StableId": 1,
+            "Options": {
+                "o_facingMode": "FacingMode::CameraPos"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options": {
+                "o_facingMode": "FacingMode::CameraSquare"
+            }
+        },
+        {
+            "StableId": 3,
+            "Options": {
+                "o_facingMode": "FacingMode::CameraRectangle"
+            }
+        },
+        {
+            "StableId": 4,
+            "Options": {
+                "o_facingMode": "FacingMode::Velocity"
+            }
+        },
+        {
+            "StableId": 5,
+            "Options": {
+                "o_facingMode": "FacingMode::Custom"
+            }
+        }
+    ]
+}
+

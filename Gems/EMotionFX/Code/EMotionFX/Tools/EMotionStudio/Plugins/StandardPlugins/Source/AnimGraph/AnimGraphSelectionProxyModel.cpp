@@ -6,21 +6,27 @@
  *
  */
 
-#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/SelectionProxyModel.h>
-#include <QtCore/QSortFilterProxyModel>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphSelectionProxyModel.h>
+#include <QSortFilterProxyModel>
 
 
 namespace EMStudio
 {
 
-    SelectionProxyModel::SelectionProxyModel(QItemSelectionModel* sourceSelectionModel, QAbstractProxyModel* proxyModel, QObject* parent)
+    AnimGraphSelectionProxyModel::AnimGraphSelectionProxyModel(
+        QItemSelectionModel* sourceSelectionModel, QAbstractProxyModel* proxyModel, QObject* parent)
         : QItemSelectionModel(proxyModel, parent)
         , m_sourceSelectionModel(sourceSelectionModel)
     {
-        connect(sourceSelectionModel, &QItemSelectionModel::selectionChanged, this, &SelectionProxyModel::OnSourceSelectionChanged);
-        connect(sourceSelectionModel, &QItemSelectionModel::currentChanged, this, &SelectionProxyModel::OnSourceSelectionCurrentChanged);
+        connect(
+            sourceSelectionModel, &QItemSelectionModel::selectionChanged, this, &AnimGraphSelectionProxyModel::OnSourceSelectionChanged);
+        connect(
+            sourceSelectionModel,
+            &QItemSelectionModel::currentChanged,
+            this,
+            &AnimGraphSelectionProxyModel::OnSourceSelectionCurrentChanged);
         
-        connect(proxyModel, &QAbstractItemModel::rowsInserted, this, &SelectionProxyModel::OnProxyModelRowsInserted);
+        connect(proxyModel, &QAbstractItemModel::rowsInserted, this, &AnimGraphSelectionProxyModel::OnProxyModelRowsInserted);
 
         // Find the chain of proxy models
         QAbstractProxyModel* sourceProxyModel = proxyModel;
@@ -37,43 +43,43 @@ namespace EMStudio
         QItemSelectionModel::setCurrentIndex(currentModelIndex, QItemSelectionModel::Current | QItemSelectionModel::ClearAndSelect);
     }
 
-    SelectionProxyModel::~SelectionProxyModel()
+    AnimGraphSelectionProxyModel::~AnimGraphSelectionProxyModel()
     {}
 
-    void SelectionProxyModel::setCurrentIndex(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
+    void AnimGraphSelectionProxyModel::setCurrentIndex(const QModelIndex& index, QItemSelectionModel::SelectionFlags command)
     {
         const QModelIndex sourcetIndex = mapToSource(index);
         m_sourceSelectionModel->setCurrentIndex(sourcetIndex, command);
     }
 
-    void SelectionProxyModel::select(const QModelIndex &index, QItemSelectionModel::SelectionFlags command)
+    void AnimGraphSelectionProxyModel::select(const QModelIndex& index, QItemSelectionModel::SelectionFlags command)
     {
         const QModelIndex sourceIndex = mapToSource(index);
         m_sourceSelectionModel->select(sourceIndex, command);
     }
 
-    void SelectionProxyModel::select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
+    void AnimGraphSelectionProxyModel::select(const QItemSelection& selection, QItemSelectionModel::SelectionFlags command)
     {
         const QItemSelection sourceSelection = mapToSource(selection);
         m_sourceSelectionModel->select(sourceSelection, command);
     }
 
-    void SelectionProxyModel::clear()
+    void AnimGraphSelectionProxyModel::clear()
     {
         m_sourceSelectionModel->clear();
     }
 
-    void SelectionProxyModel::reset()
+    void AnimGraphSelectionProxyModel::reset()
     {
         m_sourceSelectionModel->reset();
     }
 
-    void SelectionProxyModel::clearCurrentIndex()
+    void AnimGraphSelectionProxyModel::clearCurrentIndex()
     {
         m_sourceSelectionModel->clearCurrentIndex();
     }
 
-    void SelectionProxyModel::OnSourceSelectionCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
+    void AnimGraphSelectionProxyModel::OnSourceSelectionCurrentChanged(const QModelIndex& current, const QModelIndex& previous)
     {
         AZ_UNUSED(previous);
 
@@ -81,7 +87,7 @@ namespace EMStudio
         QItemSelectionModel::setCurrentIndex(targetCurrent, QItemSelectionModel::Current | QItemSelectionModel::NoUpdate);
     }
 
-    void SelectionProxyModel::OnSourceSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+    void AnimGraphSelectionProxyModel::OnSourceSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
     {
         QItemSelection targetSelected = mapFromSource(selected);
         QItemSelection targetDeselected = mapFromSource(deselected);
@@ -90,7 +96,8 @@ namespace EMStudio
         QItemSelectionModel::select(targetDeselected, QItemSelectionModel::Current | QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
     }
 
-    void SelectionProxyModel::OnProxyModelRowsInserted([[maybe_unused]] const QModelIndex& parent, [[maybe_unused]] int first, [[maybe_unused]] int last)
+    void AnimGraphSelectionProxyModel::OnProxyModelRowsInserted(
+        [[maybe_unused]] const QModelIndex& parent, [[maybe_unused]] int first, [[maybe_unused]] int last)
     {
         QModelIndex sourceIndex = m_sourceSelectionModel->currentIndex();
         QModelIndex targetIndex = mapFromSource(sourceIndex);
@@ -107,7 +114,7 @@ namespace EMStudio
         }
     }
 
-    QModelIndex SelectionProxyModel::mapFromSource(const QModelIndex& sourceIndex)
+    QModelIndex AnimGraphSelectionProxyModel::mapFromSource(const QModelIndex& sourceIndex)
     {
         QModelIndex mappedIndex = sourceIndex;
         for (AZStd::vector<QAbstractProxyModel*>::const_reverse_iterator itProxy = m_proxyModels.rbegin(); itProxy != m_proxyModels.rend(); ++itProxy) {
@@ -116,7 +123,7 @@ namespace EMStudio
         return mappedIndex;
     }
 
-    QItemSelection SelectionProxyModel::mapFromSource(const QItemSelection& sourceSelection)
+    QItemSelection AnimGraphSelectionProxyModel::mapFromSource(const QItemSelection& sourceSelection)
     {
         QItemSelection mappedSelection = sourceSelection;
         for (AZStd::vector<QAbstractProxyModel*>::const_reverse_iterator itProxy = m_proxyModels.rbegin(); itProxy != m_proxyModels.rend(); ++itProxy) {
@@ -125,7 +132,7 @@ namespace EMStudio
         return mappedSelection;
     }
 
-    QModelIndex SelectionProxyModel::mapToSource(const QModelIndex& targetIndex)
+    QModelIndex AnimGraphSelectionProxyModel::mapToSource(const QModelIndex& targetIndex)
     {
         QModelIndex mappedIndex = targetIndex;
         for (AZStd::vector<QAbstractProxyModel*>::const_iterator itProxy = m_proxyModels.begin(); itProxy != m_proxyModels.end(); ++itProxy) {
@@ -134,7 +141,7 @@ namespace EMStudio
         return mappedIndex;
     }
 
-    QItemSelection SelectionProxyModel::mapToSource(const QItemSelection& targetSelection)
+    QItemSelection AnimGraphSelectionProxyModel::mapToSource(const QItemSelection& targetSelection)
     {
         QItemSelection mappedSelection = targetSelection;
         for (AZStd::vector<QAbstractProxyModel*>::const_iterator itProxy = m_proxyModels.begin(); itProxy != m_proxyModels.end(); ++itProxy) {
@@ -145,4 +152,4 @@ namespace EMStudio
 
 } // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/moc_SelectionProxyModel.cpp>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/moc_AnimGraphSelectionProxyModel.cpp>

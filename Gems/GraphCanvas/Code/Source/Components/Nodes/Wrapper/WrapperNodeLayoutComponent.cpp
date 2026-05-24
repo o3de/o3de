@@ -11,7 +11,7 @@
 #include <QGraphicsLayoutItem>
 #include <QGraphicsGridLayout>
 #include <QGraphicsScene>
-#include <qgraphicssceneevent.h>
+#include <QGraphicsSceneEvent>
 
 #include <AzCore/RTTI/TypeInfo.h>
 

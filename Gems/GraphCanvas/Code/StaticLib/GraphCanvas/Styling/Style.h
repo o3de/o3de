@@ -67,7 +67,7 @@ namespace GraphCanvas
             friend GraphCanvas::StyleManager;
         };
 
-        using StyleVector = AZStd::vector<Style*>;
+        using StyleVector = AZStd::vector<AZStd::shared_ptr<Style>>;
 
 
         class ComputedStyle

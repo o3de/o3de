@@ -43,9 +43,6 @@ namespace AZ::RHI
     private:
         using DeviceResourcePool::InitResource;
 
-        /// Returns whether there are any mapped buffers.
-        bool ValidateNoMappedBuffers() const;
-
         /// Debug reference count used to track map / unmap operations across all buffers in the pool.
         AZStd::atomic_uint m_mapRefCount = {0};
     };

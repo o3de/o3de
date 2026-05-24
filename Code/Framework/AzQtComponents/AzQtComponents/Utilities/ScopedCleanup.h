@@ -9,7 +9,7 @@
 #ifndef SCOPEDCLEANUP_H
 #define SCOPEDCLEANUP_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 /**
  * RAII-style class that executes a lambda when it goes out of scope.

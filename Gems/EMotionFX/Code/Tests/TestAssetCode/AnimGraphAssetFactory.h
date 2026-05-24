@@ -19,11 +19,7 @@ namespace EMotionFX
     class AnimGraphAssetFactory
     {
     public:
-        static AZ::Data::Asset<EMotionFX::Integration::AnimGraphAsset> Create(const AZ::Data::AssetId id, AZStd::unique_ptr<AnimGraph> animGraph)
-        {
-            auto asset = AZ::Data::AssetManager::Instance().CreateAsset<Integration::AnimGraphAsset>(id);
-            asset->SetData(animGraph.release());
-            return asset;
-        }
+        static AZ::Data::Asset<EMotionFX::Integration::AnimGraphAsset> Create(
+            const AZ::Data::AssetId id, AZStd::unique_ptr<AnimGraph> animGraph);
     };
 } // namespace EMotionFX

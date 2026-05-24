@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <QCoreApplication>
 #include <QElapsedTimer>
+#include <QRegularExpression>
 
 #include <AzCore/Casting/lossy_cast.h>
 
@@ -5989,7 +5990,7 @@ namespace AssetProcessor
         {
             // Remove invalid characters
             QString sourcePath = entry.c_str();
-            sourcePath.remove(QRegExp("[\\n\\r]"));
+            sourcePath.remove(QRegularExpression("[\\n\\r]"));
 
             QString scanFolderName;
             QString relativePathToFile;

@@ -17,12 +17,13 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AtomCore/Instance/InstanceData.h>
 
-#include <Atom/RPI.MultiDeviceStreamBufferViewclude <Atom/RPI.Public/Model/Model.h>
+#include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <Atom/RHI/DrawPacketBuilder.h>
 
-#include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
 
-#include "../../External/meshoptimizer.h"
+#include <meshoptimizer.h>
 
 #include <SharedBuffer.h>
 #include <MeshletsDispatchItem.h>

@@ -135,7 +135,7 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_private_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {

@@ -80,7 +80,7 @@ namespace UnitTest
     {
         AZ_TYPE_INFO(PythonReflectionContainerSimpleTypes, "{378AD363-467D-4285-BE40-4D1CB1A09A19}");
 
-        AZStd::vector<float> m_floatValues{ 1.0, 2.2, 3.3, 4.4 };
+        AZStd::vector<float> m_floatValues{ 1.0f, 2.2f, 3.3f, 4.4f };
 
         AZStd::vector<float>& ReturnVectorOfFloats()
         {
@@ -92,7 +92,7 @@ namespace UnitTest
             m_floatValues.assign(values.begin(), values.end());
         }
 
-        AZStd::vector<double> m_doubleValues{ 1.0, 2.2, 3.3, 4.4 };
+        AZStd::vector<double> m_doubleValues{ 1.0f, 2.2f, 3.3f, 4.4f };
 
         AZStd::vector<double>& ReturnVectorOfDoubles()
         {

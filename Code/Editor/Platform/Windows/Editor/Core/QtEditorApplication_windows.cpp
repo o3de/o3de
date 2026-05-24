@@ -101,10 +101,10 @@ namespace Editor
 
                 [[maybe_unused]] const UINT bytesCopied =
                     GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
-                CRY_ASSERT(bytesCopied == rawInputSize);
+                AZ_Assert(bytesCopied == rawInputSize, "bytesCopied (%d) must be equal to rawInputSize (%d)", bytesCopied, rawInputSize);
 
                 RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
-                CRY_ASSERT(rawInput);
+                AZ_Assert(rawInput, "rawInput is null");
 
                 AzFramework::RawInputNotificationBusWindows::Broadcast(
                     &AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);

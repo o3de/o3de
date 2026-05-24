@@ -178,5 +178,16 @@ namespace AZ
 
             return m_memoryView.GetAllocation()->GetSharingMode();
         }
+
+        uint64_t Buffer::GetDeviceAddress() const
+        {
+            VkBufferDeviceAddressInfo addressInfo = {};
+            addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+            addressInfo.pNext = nullptr;
+            addressInfo.buffer = GetBufferMemoryView()->GetNativeBuffer();
+
+            auto& device = static_cast<Device&>(GetDevice());
+            return device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo) + GetBufferMemoryView()->GetOffset();
+        }
     }
 }

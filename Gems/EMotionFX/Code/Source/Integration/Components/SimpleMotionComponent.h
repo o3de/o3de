@@ -84,7 +84,6 @@ namespace EMotionFX
             }
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
-                incompatible.push_back(AZ_CRC_CE("EMotionFXAnimGraphService"));
                 incompatible.push_back(AZ_CRC_CE("EMotionFXSimpleMotionService"));
                 incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }

@@ -80,7 +80,7 @@ namespace AZStd
 // When using -ffast-math flag INFs and NaNs are not handled and
 // it is expected that std::isinf() and std::isnan() have undefined behaviour.
 // In this case we will provide a replacement following IEEE 754 standard.
-#ifdef __FAST_MATH__
+#ifdef O3DE_USING_FAST_MATH
     constexpr bool isinf(float f) noexcept
     {
         union { float f; uint32_t x; } u = { f };

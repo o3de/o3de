@@ -433,7 +433,7 @@ namespace GraphCanvas
             AZStd::string result("Computed:\n");
             result += "\tObject selectors: " + m_objectSelectorsAsString + "\n";
             result += "\tStyles:\n";
-            for (const Style* style : m_styles)
+            for (const auto& style : m_styles)
             {
                 if (style)
                 {
@@ -448,7 +448,7 @@ namespace GraphCanvas
         bool ComputedStyle::HasAttribute(AZ::u32 attribute) const
         {
             Attribute typedAttribute = static_cast<Attribute>(attribute);
-            return std::any_of(m_styles.cbegin(), m_styles.cend(), [=](const Style* s) {
+            return std::any_of(m_styles.cbegin(), m_styles.cend(), [=](const AZStd::shared_ptr<Style>& s) {
                 return s && s->HasAttribute(typedAttribute);
             });
         }
@@ -456,7 +456,7 @@ namespace GraphCanvas
         QVariant ComputedStyle::GetAttribute(AZ::u32 attribute) const
         {
             Attribute typedAttribute = static_cast<Attribute>(attribute);
-            for (const Style* style : m_styles)
+            for (const auto& style : m_styles)
             {
                 if (style && style->HasAttribute(typedAttribute))
                 {

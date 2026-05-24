@@ -36,7 +36,8 @@ namespace AZ
             );
 
             m_dispatchItem.SetArguments(dispatchArgs);
-            m_dispatchItem.SetShaderResourceGroups({meshletsDataSrg->GetRHIShaderResourceGroup(), 1});       // Per pass srg can be added by the individual passes
+            AZStd::array<const RHI::ShaderResourceGroup*, 1> srgs { meshletsDataSrg->GetRHIShaderResourceGroup() };
+            m_dispatchItem.SetShaderResourceGroups(srgs);       // Per pass srg can be added by the individual passes
             m_meshletsDataSrg = meshletsDataSrg;    // can also be retrieve directly from the m_dispatchItem
 
             m_shader = shader;

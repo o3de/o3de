@@ -49,8 +49,6 @@
 
 #if !defined(PLATFORM_64BIT)
 #error "IOS build only supports the 64bit architecture"
-#else
-typedef uint64_t threadID;
 #endif
 
 #endif // CRYINCLUDE_CRYCOMMON_IOSSPECIFIC_H

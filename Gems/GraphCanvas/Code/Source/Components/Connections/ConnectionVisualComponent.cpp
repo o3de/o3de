@@ -6,7 +6,7 @@
  *
  */
 
-#include <qevent.h>
+#include <QEvent>
 #include <QtMath>
 #include <QPainter>
 #include <QGraphicsSceneContextMenuEvent>

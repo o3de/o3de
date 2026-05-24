@@ -9,6 +9,7 @@
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
+#include <RHI/ImageView.h>
 #include <RHI/RenderPassBuilder.h>
 #include <RHI/Scope.h>
 

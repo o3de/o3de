@@ -109,7 +109,7 @@ namespace AZ
                 fenceToSignal = &fence;
             }
 
-            m_copyQueue->QueueCommand([=](void* queue)
+            m_copyQueue->QueueCommand([=, this](void* queue)
             {
                 AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
                 size_t pendingByteOffset = 0;
@@ -170,7 +170,7 @@ namespace AZ
 
             uint64_t queueValue = m_uploadFence.Increment();
             
-            CommandQueue::Command command = [=](void* queue)
+            CommandQueue::Command command = [=, this](void* queue)
             {
                 CommandQueue* commandQueue = static_cast<CommandQueue*>(queue);
                 FramePacket* framePacket = BeginFramePacket(commandQueue);

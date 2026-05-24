@@ -224,6 +224,13 @@ namespace AZ
             return nullptr;
         }
 
+        RHI::Ptr<RHI::DeviceRayTracingClusterBlas> SystemComponent::CreateRayTracingClusterBlas()
+        {
+            // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
+
         RHI::Ptr<RHI::DeviceRayTracingTlas> SystemComponent::CreateRayTracingTlas()
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing

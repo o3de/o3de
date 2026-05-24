@@ -509,6 +509,18 @@ namespace AZ
         );
     }
 
+    AZ_MATH_INLINE Vector4& Matrix3x4::operator[](const size_t row)
+    {
+        AZ_MATH_ASSERT(row < RowCount, "Accessing index out of bound!");
+        return m_rows[row];
+    }
+
+    AZ_MATH_INLINE const Vector4& Matrix3x4::operator[](const size_t row) const
+    {
+        AZ_MATH_ASSERT(row < RowCount, "Accessing index out of bound!");
+        return m_rows[row];
+    }
+
     AZ_MATH_INLINE Vector3 Matrix3x4::Multiply3x3(const Vector3& rhs) const
     {
         return Vector3

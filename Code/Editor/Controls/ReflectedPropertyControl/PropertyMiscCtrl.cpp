@@ -12,10 +12,10 @@
 
 // Qt
 #include <QHBoxLayout>
-#include <QtWidgets/QLabel>
+#include <QLabel>
 #include <QLineEdit>
-#include <QtWidgets/QToolButton>
-#include <QtCore/QTimer>
+#include <QToolButton>
+#include <QTimer>
 #include <QtUtilWin.h>
 
 // Editor

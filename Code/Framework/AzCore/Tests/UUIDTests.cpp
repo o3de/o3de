@@ -410,24 +410,36 @@ namespace UnitTest
         void SetUp(::benchmark::State& st) override
         {
             AllocatorsBenchmarkFixture::SetUp(st);
-            SetUpInternal();
+            if (st.thread_index() == 0)
+            {
+                SetUpInternal();
+            }
         }
 
         void SetUp(const ::benchmark::State& st) override
         {
             AllocatorsBenchmarkFixture::SetUp(st);
-            SetUpInternal();
+            if (st.thread_index() == 0)
+            {
+                SetUpInternal();
+            }
         }
 
         void TearDown(::benchmark::State& st) override
         {
-            TearDownInternal();
+            if (st.thread_index() == 0)
+            {
+                TearDownInternal();
+            }
             AllocatorsBenchmarkFixture::TearDown(st);
         }
 
         void TearDown(const ::benchmark::State& st) override
         {
-            TearDownInternal();
+            if (st.thread_index() == 0)
+            {
+                TearDownInternal();
+            }
             AllocatorsBenchmarkFixture::TearDown(st);
         }
 

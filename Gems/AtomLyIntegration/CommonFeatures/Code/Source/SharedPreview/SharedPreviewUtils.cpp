@@ -42,7 +42,7 @@ namespace AZ
                 AZStd::vector<AZ::Data::AssetInfo> productsAssetInfo;
 
                 // if it's a source thumbnail key, find first product with a matching asset type
-                auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.data());
+                auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(key.get());
                 if (sourceKey)
                 {
                     bool foundIt = false;
@@ -52,7 +52,7 @@ namespace AZ
                 }
 
                 // if it's a product thumbnail key just return its assetInfo
-                auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.data());
+                auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(key.get());
                 if (productKey)
                 {
                     AZ::Data::AssetInfo assetInfo;

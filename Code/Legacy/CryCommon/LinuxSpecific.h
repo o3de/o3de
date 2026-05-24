@@ -85,23 +85,6 @@ typedef float FLOAT;
 
 #define _PACK __attribute__ ((packed))
 
-// Safe memory freeing
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(p)          { if (p) { delete (p);       (p) = NULL; } \
-}
-#endif
-
-#ifndef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY(p)    { if (p) { delete[] (p);     (p) = NULL; } \
-}
-#endif
-
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p)         { if (p) { (p)->Release();   (p) = NULL; } \
-}
-#endif
-
-
 #define MAKEWORD(a, b)      ((WORD)(((BYTE)((DWORD_PTR)(a) & 0xff)) | ((WORD)((BYTE)((DWORD_PTR)(b) & 0xff))) << 8))
 #define MAKELONG(a, b)      ((LONG)(((WORD)((DWORD_PTR)(a) & 0xffff)) | ((DWORD)((WORD)((DWORD_PTR)(b) & 0xffff))) << 16))
 #define LOWORD(l)           ((WORD)((DWORD_PTR)(l) & 0xffff))
@@ -167,8 +150,6 @@ typedef uint32 __uint32;
 typedef int64 __int64;
 typedef uint64 __uint64;
 #endif
-
-typedef unsigned long int threadID;
 
 #define TRUE 1
 #define FALSE 0
@@ -336,25 +317,6 @@ typedef struct _SECURITY_ATTRIBUTES
 #ifdef __cplusplus
 extern bool QueryPerformanceCounter(LARGE_INTEGER*);
 extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
-
-static pthread_mutex_t mutex_t;
-template<typename T>
-const volatile T InterlockedIncrement(volatile T* pT)
-{
-    pthread_mutex_lock(&mutex_t);
-    ++(*pT);
-    pthread_mutex_unlock(&mutex_t);
-    return *pT;
-}
-
-template<typename T>
-const volatile T InterlockedDecrement(volatile T* pT)
-{
-    pthread_mutex_lock(&mutex_t);
-    --(*pT);
-    pthread_mutex_unlock(&mutex_t);
-    return *pT;
-}
 
 #if 0
 template<typename S, typename T>

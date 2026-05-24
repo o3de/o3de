@@ -451,6 +451,18 @@ namespace AZ
         return !(*this == rhs);
     }
 
+    AZ_MATH_INLINE Vector3& Matrix3x3::operator[](const size_t row)
+    {
+        AZ_MATH_ASSERT(row < RowCount, "Accessing index out of bound!");
+        return m_rows[row];
+    }
+
+    AZ_MATH_INLINE const Vector3& Matrix3x3::operator[](const size_t row) const
+    {
+        AZ_MATH_ASSERT(row < RowCount, "Accessing index out of bound!");
+        return m_rows[row];
+    }
+
     AZ_MATH_INLINE Matrix3x3 Matrix3x3::GetTranspose() const
     {
         Matrix3x3 result;

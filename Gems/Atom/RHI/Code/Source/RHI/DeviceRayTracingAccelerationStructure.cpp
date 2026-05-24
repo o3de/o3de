@@ -45,6 +45,24 @@ namespace AZ::RHI
         return resultCode;
     }
 
+
+    RHI::Ptr<RHI::DeviceRayTracingClusterBlas> DeviceRayTracingClusterBlas::CreateRHIRayTracingClusterBlas()
+    {
+        RHI::Ptr<RHI::DeviceRayTracingClusterBlas> rayTracingBlas = RHI::Factory::Get().CreateRayTracingClusterBlas();
+        AZ_Error("DeviceRayTracingClusterBlas", rayTracingBlas.get(), "Failed to create RHI::DeviceRayTracingClusterBlas");
+        return rayTracingBlas;
+    }
+
+    ResultCode DeviceRayTracingClusterBlas::CreateBuffers(Device& device, const RHI::DeviceRayTracingClusterBlasDescriptor* descriptor, const DeviceRayTracingBufferPools& rayTracingBufferPools)
+    {
+        ResultCode resultCode = CreateBuffersInternal(device, descriptor, rayTracingBufferPools);
+        if (resultCode == ResultCode::Success)
+        {
+            DeviceObject::Init(device);
+        }
+        return resultCode;
+    }
+
     RHI::Ptr<RHI::DeviceRayTracingTlas> DeviceRayTracingTlas::CreateRHIRayTracingTlas()
     {
         RHI::Ptr<RHI::DeviceRayTracingTlas> rayTracingTlas = RHI::Factory::Get().CreateRayTracingTlas();

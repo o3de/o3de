@@ -28,6 +28,8 @@ namespace AZ::RHI
         AZ_RTTI(DeviceBuffer, "{3C918323-F39C-4DC6-BEE9-BC220DBA9414}", DeviceResource);
         virtual ~DeviceBuffer() = default;
 
+        static constexpr uint64_t InvalidDeviceAddress = static_cast<uint64_t>(-1);
+
         const BufferDescriptor& GetDescriptor() const;
             
         //! This implementation estimates memory usage using the descriptor. Platforms may
@@ -37,10 +39,15 @@ namespace AZ::RHI
         /// Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
-        Ptr<DeviceBufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<DeviceBufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor) const;
 
         // Get the hash associated with the DeviceBuffer
         const HashValue64 GetHash() const;
+
+        virtual uint64_t GetDeviceAddress() const
+        {
+            return InvalidDeviceAddress;
+        }
 
     protected:
         DeviceBuffer() = default;

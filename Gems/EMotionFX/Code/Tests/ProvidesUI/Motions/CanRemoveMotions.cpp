@@ -12,7 +12,7 @@
 #include <QAction>
 #include <QtTest>
 #include <QTableWidget>
-#include <qtoolbar.h>
+#include <QToolBar>
 
 #include <Tests/UI/UIFixture.h>
 #include <Tests/UI/ModalPopupHandler.h>

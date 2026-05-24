@@ -77,5 +77,5 @@ private:
     bool m_bUnloadingLevel;
 
     // Used to handle object attach/detach
-    AZStd::unordered_map<CTrackViewNode*, Matrix34> m_prevTransforms;
+    AZStd::unordered_map<CTrackViewNode*, AZ::Matrix3x4> m_prevTransforms;
 };

@@ -69,7 +69,7 @@ public:
     void PrecacheDynamic(float time) override;
 
     Vec3 GetPos() { return m_pos; };
-    Quat GetRotate() { return m_rotate; };
+    AZ::Quaternion GetRotate() { return m_rotate; };
     Vec3 GetScale() { return m_scale; };
 
     void Activate(bool bActivate) override;
@@ -126,7 +126,7 @@ protected:
 
 protected:
     Vec3 m_pos;
-    Quat m_rotate;
+    AZ::Quaternion m_rotate;
     Vec3 m_scale;
 
 private:

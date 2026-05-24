@@ -11,8 +11,12 @@
 #include "EditorCoreAPI.h"
 #include "IUndoManagerListener.h"
 #include "IUndoObject.h"
+
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/vector.h>
 #include <CryCommon/StlUtils.h>
+#include <vector>
 
 struct IUndoObject;
 class CSuperUndoStep;
@@ -253,10 +257,10 @@ private: // ---------------------------------------------------------------
 
     AssetManagerUndoInterruptor* m_assetManagerUndoInterruptor;
 
-    std::list<CUndoStep*>      m_undoStack;
-    std::list<CUndoStep*>      m_redoStack;
+    AZStd::list<CUndoStep*>      m_undoStack;
+    AZStd::list<CUndoStep*>      m_redoStack;
 
-    std::vector<IUndoManagerListener*> m_listeners;
+    AZStd::vector<IUndoManagerListener*> m_listeners;
 };
 
 class CScopedSuspendUndo

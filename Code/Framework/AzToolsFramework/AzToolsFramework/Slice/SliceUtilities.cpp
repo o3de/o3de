@@ -57,17 +57,17 @@
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
                                                                // 4244: 'argument': conversion from 'int' to 'float', possible loss of data
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QWidgetAction>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QDialog>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QErrorMessage>
-#include <QtWidgets/QVBoxLayout>
-#include <QtCore/QThread>
+#include <QApplication>
+#include <QWidget>
+#include <QWidgetAction>
+#include <QMenu>
+#include <QDialog>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QErrorMessage>
+#include <QVBoxLayout>
+#include <QThread>
 #include <QDialogButtonBox>
 AZ_POP_DISABLE_WARNING
 

@@ -62,7 +62,6 @@ namespace AZ::RPI
         bool UpdateSharedSamplerStates();
         void PrepareMaterialParameterBuffers();
         void UpdateChangedMaterialParameters();
-        void CreateTextureSamplers(const AZStd::vector<RHI::SamplerState>& samplers, Data::Instance<ShaderResourceGroup> srg);
 
         //  Data::AssetBus Interface
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;

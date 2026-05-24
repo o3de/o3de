@@ -41,9 +41,14 @@ namespace AZ
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingBlas& rayTracingBlas) override {}
             void UpdateBottomLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingBlas& rayTracingBlas) override {}
+            void BuildClusterAccelerationStructures([[maybe_unused]] const RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas) override {};
+            void BuildClusterBottomLevelAccelerationStructures([[maybe_unused]] const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList) override {};
             void QueryBlasCompactionSizes(const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>&) override {}
             void CompactBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas&, const RHI::DeviceRayTracingBlas&) override {}
-            void BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingTlas& rayTracingTlas, [[maybe_unused]] const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList) override {}
+            void BuildTopLevelAccelerationStructure(
+                [[maybe_unused]] const RHI::DeviceRayTracingTlas& rayTracingTlas,
+                [[maybe_unused]] const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList,
+                [[maybe_unused]] const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& changedClusterBlasList) override {}
             void SetFragmentShadingRate(
                 [[maybe_unused]] RHI::ShadingRate rate,
                 [[maybe_unused]] const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override {}

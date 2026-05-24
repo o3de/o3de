@@ -15,9 +15,12 @@
 #include <QApplication>
 #include <QIcon>
 
+#include "ScriptCanvasApplication_Traits_Platform.h"
+
 #if defined(EXTERNAL_CRASH_REPORTING)
 #include <ToolsCrashHandler.h>
 #endif
+
 
 // This has to live outside of any namespaces due to issues on Linux with calls to Q_INIT_RESOURCE if they are inside a namespace
 void InitScriptCanvasApplicationResources()
@@ -27,6 +30,9 @@ void InitScriptCanvasApplicationResources()
 
 namespace ScriptCanvas
 {
+
+    AZ_DEFINE_BUDGET(ScriptCanvasApplication)
+
     static const char* GetBuildTargetName()
     {
 #if !defined(LY_CMAKE_TARGET)
@@ -80,13 +86,39 @@ namespace ScriptCanvas
         }
 #endif
 
+        m_exitMainLoopRequested = false;
+
         InitMainWindow();
     }
 
     void ScriptCanvasApplication::Destroy()
     {
         m_window.reset();
+
+#if SCRIPTCANVASAPPLICATION_TRAIT_SKIP_APP_DESTROY
+        ::_exit(0);
+#else
         Base::Destroy();
+#endif
+
+    }
+
+    void ScriptCanvasApplication::RunMainLoop()
+    {
+        AZ_PROFILE_SCOPE(ScriptCanvasApplication, "ScriptCanvasApplication::RunMainLoop");
+
+        while (!m_exitMainLoopRequested)
+        {
+            PumpSystemEventLoopUntilEmpty();
+
+            TickSystem();
+            Tick();
+        }
+    }
+
+    void ScriptCanvasApplication::ExitMainLoop()
+    {
+        m_exitMainLoopRequested = true;
     }
 
     QWidget* ScriptCanvasApplication::GetAppMainWindow()

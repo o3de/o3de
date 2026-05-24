@@ -8,6 +8,8 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/TickBus.h>
@@ -59,9 +61,9 @@ namespace AzToolsFramework
             bool m_ready = false;
         };
 
-        typedef QSharedPointer<ThumbnailKey> SharedThumbnailKey;
+        typedef AZStd::shared_ptr<ThumbnailKey> SharedThumbnailKey;
 
-#define MAKE_TKEY(type, ...) QSharedPointer<type>(new type(__VA_ARGS__))
+#define MAKE_TKEY(type, ...) AZStd::make_shared<type>(__VA_ARGS__)
 
         //! Thumbnail is the base class in thumbnailer system.
         /*
@@ -128,7 +130,7 @@ namespace AzToolsFramework
             virtual const char* GetProviderName() const = 0;
         };
 
-        typedef QSharedPointer<ThumbnailProvider> SharedThumbnailProvider;
+        typedef AZStd::shared_ptr<ThumbnailProvider> SharedThumbnailProvider;
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
 
@@ -151,7 +153,7 @@ namespace AZStd
             const AzToolsFramework::Thumbnailer::SharedThumbnailKey& left,
             const AzToolsFramework::Thumbnailer::SharedThumbnailKey& right) const
         {
-            return left->Equals(right.data());
+            return left->Equals(right.get());
         }
     };
 } // namespace AZStd
@@ -184,10 +186,8 @@ namespace AzToolsFramework
             virtual bool IsSupportedThumbnail(SharedThumbnailKey key) const = 0;
         };
 
-        #define MAKE_TCACHE(cacheType, ...) QSharedPointer<cacheType>(new cacheType(__VA_ARGS__))
+        #define MAKE_TCACHE(cacheType, ...) AZStd::make_shared<cacheType>(__VA_ARGS__)
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
-
-Q_DECLARE_METATYPE(AzToolsFramework::Thumbnailer::SharedThumbnailKey)
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.inl>

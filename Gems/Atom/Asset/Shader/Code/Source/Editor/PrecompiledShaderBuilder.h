@@ -34,9 +34,6 @@ namespace AZ
         // AssetBuilderSDK::AssetBuilderCommandBus interface
         void ShutDown() override;
 
-        /// Register to builder and listen to builder command
-        void RegisterBuilder();
-
     private:
         template<typename T>
         T* LoadSourceAsset(SerializeContext* context, const AZStd::string& shaderAssetPath) const;

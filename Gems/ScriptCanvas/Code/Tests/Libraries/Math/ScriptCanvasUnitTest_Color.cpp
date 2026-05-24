@@ -80,9 +80,9 @@ namespace ScriptCanvasUnitTest
 
     TEST_F(ScriptCanvasUnitTestColorFunctions, MultiplyByNumber_Call_GetExpectedResult)
     {
-        AZ::Color a = AZ::Color::CreateFromVector3(AZ::Vector3(0.1, 0.1, 0.1));
+        AZ::Color a = AZ::Color::CreateFromVector3(AZ::Vector3(0.1f, 0.1f, 0.1f));
         auto actualResult = ColorFunctions::MultiplyByNumber(a, 5);
-        EXPECT_EQ(actualResult, AZ::Color::CreateFromVector3AndFloat(AZ::Vector3(0.5, 0.5, 0.5), 5));
+        EXPECT_EQ(actualResult, AZ::Color::CreateFromVector3AndFloat(AZ::Vector3(0.5f, 0.5f, 0.5f), 5));
     }
 
     TEST_F(ScriptCanvasUnitTestColorFunctions, One_Call_GetExpectedResult)

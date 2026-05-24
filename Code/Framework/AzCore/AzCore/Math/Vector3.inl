@@ -546,6 +546,18 @@ namespace AZ
         return *this;
     }
 
+    AZ_MATH_INLINE float& Vector3::operator[](const size_t i)
+    {
+        AZ_MATH_ASSERT(i < 3, "Accessing index out of bound!");
+        return m_values[i];
+    }
+
+    AZ_MATH_INLINE const float& Vector3::operator[](const size_t i) const
+    {
+        AZ_MATH_ASSERT(i < 3, "Accessing index out of bound!");
+        return m_values[i];
+    }
+
     AZ_MATH_INLINE Vector3 Vector3::GetSin() const
     {
         return Vector3(Simd::Vec3::Sin(m_value));

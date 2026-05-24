@@ -1,0 +1,106 @@
+{
+    "name": "ParticleSystem",
+    "systemConfig": {
+        "loop": true,
+        "parallel": true
+    },
+    "emitters": [
+        {
+            "name": "Emitter",
+            "config": {
+                "type": "CPU",
+                "maxSize": 500,
+                "startTime": 0.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": {
+                "assetId": {
+                    "guid": "{EBE3E883-8FE6-5A24-BE49-729E3AD42668}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlemesh.azmaterial"
+            },
+            "model": {
+                "assetId": {
+                    "guid": "{B991E03B-F50D-552E-9E2D-64FA6DAB1CCB}",
+                    "subId": 285127096
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materialeditor/viewportmodels/cube.fbx.azmodel"
+            },
+            "OpenParticle::MeshConfig": {
+                "facing": "CAMERA_RECTANGLE",
+                "sortId": 0
+            },
+            "OpenParticle::EmitSpawn": {
+                "isProcessSpawnRate": true,
+                "spawnRateObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 5.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocBox": {
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    5.0,
+                    5.0,
+                    5.0
+                ]
+            },
+            "OpenParticle::SpawnRotation": {
+                "initAxis": [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                "rotateAxis": [
+                    0.0,
+                    1.0,
+                    1.0
+                ],
+                "initAngleObject": {
+                    "dataValue": 0.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                },
+                "rotateSpeedObject": {
+                    "dataValue": 100.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            }
+        }
+    ],
+    "LODs": [],
+    "distribution": {
+        "randoms": [],
+        "curves": []
+    }
+}

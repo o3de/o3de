@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Base.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/RTTI/RTTI.h>
 
@@ -15,7 +16,7 @@ namespace AZ
 {
     namespace Render
     {
-        struct SkyBoxFogSettings final
+        struct ATOM_FEATURE_COMMON_API SkyBoxFogSettings final
         {
             AZ_RTTI(AZ::Render::SkyBoxFogSettings, "{DB13027C-BA92-4E46-B428-BB77C2A80C51}");
             
@@ -27,8 +28,8 @@ namespace AZ
 
             AZ::Color m_color = AZ::Color::CreateOne();
             bool m_enable = false;
-            float m_topHeight = 0.01;
-            float m_bottomHeight = 0.0;
+            float m_topHeight = 0.01f;
+            float m_bottomHeight = 0.0f;
         };
     }
 }

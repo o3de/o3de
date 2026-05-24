@@ -11,39 +11,36 @@
 
 #pragma once
 
-#include "IEditor.h"
-#include "MainWindow.h"
-
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-
-#include <memory> // for shared_ptr
-#include <QMap>
-#include <QApplication>
-#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
-#include <AzCore/std/string/string.h>
-
 #include "Commands/CommandManager.h"
-
-#include "Include/IErrorReport.h"
 #include "ErrorReport.h"
+#include "IEditor.h"
+#include "Include/IErrorReport.h"
+#include "MainWindow.h"
+#include "Util/XmlTemplate.h"
 
-class QMenu;
+#include <AzCore/std/string/string.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
+#include <QApplication>
+#include <QMap>
 
 #define GET_PLUGIN_ID_FROM_MENU_ID(ID) (((ID) & 0x000000FF))
 #define GET_UI_ELEMENT_ID_FROM_MENU_ID(ID) ((((ID) & 0x0000FF00) >> 8))
 
-class CUndoManager;
-class CGameEngine;
-class CErrorsDlg;
-class CTrackViewSequenceManager;
-class CEditorFileMonitor;
-class AzAssetWindow;
-class AzAssetBrowserRequestHandler;
-class AssetEditorRequestsHandler;
-struct IEditorFileMonitor;
-class CVegetationMap;
 
+class AssetEditorRequestsHandler;
+class AzAssetBrowserRequestHandler;
+class AzAssetWindow;
+class CEditorFileMonitor;
+class CErrorsDlg;
+class CGameEngine;
+class CTrackViewSequenceManager;
+class CUndoManager;
+class CVegetationMap;
+class QMenu;
+struct IConsoleCmdArgs;
+struct IEditorFileMonitor;
 
 namespace Editor
 {
@@ -87,8 +84,8 @@ public:
     bool IsInitialized() const override{ return m_bInitialized; }
     bool SaveDocument() override;
     ISystem* GetSystem() override;
-    void WriteToConsole(const char* string) override { CLogFile::WriteLine(string); };
-    void WriteToConsole(const QString& string) override { CLogFile::WriteLine(string); };
+    void WriteToConsole(const char* string) override;
+    void WriteToConsole(const QString& string) override;
     // Change the message in the status bar
     void SetStatusText(const QString& pszString) override;
     IMainStatusBar* GetMainStatusBar() override;

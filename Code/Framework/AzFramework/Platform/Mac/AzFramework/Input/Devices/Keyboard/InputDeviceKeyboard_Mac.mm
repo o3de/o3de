@@ -704,7 +704,7 @@ namespace AzFramework
         {
             // Mac swaps these two key codes for keyboards that use an ISO mechanical layout,
             // so we have to swap them back.
-            keyCode = (kVK_ISO_Section + kVK_ANSI_Grave) - keyCode;
+            keyCode = (static_cast<AZ::u32>(kVK_ISO_Section) + static_cast<AZ::u32>(kVK_ANSI_Grave)) - keyCode;
         }
 
         const InputChannelId* channelId = (keyCode < InputChannelIdByKeyCodeTable.size()) ?

@@ -737,7 +737,7 @@ struct Matrix34_tpl
     */
     ILINE void SetScale(const Vec3_tpl<F>& s, const Vec3_tpl<F>& t = Vec3(ZERO))
     {
-        *this = Matrix33::CreateScale(s);
+        *this = Matrix33_tpl<F>::CreateScale(s);
         this->SetTranslation(t);
     }
 
@@ -798,6 +798,8 @@ struct Matrix34_tpl
 // Typedefs                                                                  //
 ///////////////////////////////////////////////////////////////////////////////
 
+// O3DE_DEPRECATION_NOTICE(GHI-19491) - Use AZ::Matrix3x4
+AZ_DEPRECATED_MESSAGE("Matrix34 is deprecated, use AZ::Matrix3x4 instead.")
 typedef Matrix34_tpl<f32>  Matrix34; //always 32 bit
 
 //----------------------------------------------------------------------------------

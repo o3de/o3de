@@ -1,0 +1,141 @@
+{
+    "name": "ParticleSystem",
+    "systemConfig": {
+        "loop": true,
+        "parallel": true
+    },
+    "emitters": [
+        {
+            "name": "Emitter",
+            "config": {
+                "type": "CPU",
+                "maxSize": 500,
+                "startTime": 0.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": {
+                "assetId": {
+                    "guid": "{CAD0A32B-2303-5C68-92A7-F648257BEFAF}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlesprite.azmaterial"
+            },
+            "OpenParticle::SpriteConfig": {
+                "facing": "CUSTOM",
+                "sortId": 0,
+                "subImage": [
+                    1.0,
+                    1.0
+                ]
+            },
+            "OpenParticle::EmitSpawn": {
+                "isProcessSpawnRate": true,
+                "spawnRateObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 10.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocBox": {
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "size": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "OpenParticle::SpawnRotation": {
+                "initAxis": [
+                    1.0,
+                    0.0,
+                    0.0
+                ],
+                "rotateAxis": [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                "initAngleObject": {
+                    "dataValue": 0.0,
+                    "isUniform": false,
+                    "distType": "Curve",
+                    "distIndex": [
+                        1
+                    ]
+                },
+                "rotateSpeedObject": {
+                    "dataValue": 0.0,
+                    "isUniform": false,
+                    "distType": "Curve",
+                    "distIndex": [
+                        2
+                    ]
+                }
+            }
+        }
+    ],
+    "LODs": [],
+    "distribution": {
+        "randoms": [],
+        "curves": [
+            {
+                "leftExtrapMode": "Cycle",
+                "rightExtrapMode": "Cycle",
+                "valueFactor": 150.0,
+                "timeFactor": 2.0,
+                "tickMode": "EmitDuration",
+                "keyPoint": [
+                    {
+                        "time": 0.05882352963089943,
+                        "value": 0.0357142873108387,
+                        "interpMode": "Linear"
+                    },
+                    {
+                        "time": 1.0,
+                        "value": 1.0,
+                        "interpMode": "Linear"
+                    }
+                ]
+            },
+            {
+                "leftExtrapMode": "Cycle",
+                "rightExtrapMode": "Cycle",
+                "valueFactor": 360.0,
+                "timeFactor": 2.0,
+                "tickMode": "EmitDuration",
+                "keyPoint": [
+                    {
+                        "time": 0.0,
+                        "value": 0.0,
+                        "interpMode": "Linear"
+                    },
+                    {
+                        "time": 1.0,
+                        "value": 1.0,
+                        "interpMode": "Linear"
+                    }
+                ]
+            }
+        ]
+    }
+}

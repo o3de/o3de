@@ -19,7 +19,6 @@ ly_add_target(
     NAME AssetProcessor.Static STATIC
     NAMESPACE AZ
     AUTOMOC
-    AUTORCC
     FILES_CMAKE
         assetprocessor_static_files.cmake
         Platform/${PAL_PLATFORM_NAME}/assetprocessor_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

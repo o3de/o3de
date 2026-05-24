@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <Atom/Feature/Base.h>
 #include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -19,7 +20,7 @@ namespace AZ
     {
 
         // This helper class manages a re-sizable structured or typed buffer which is (only) used for a shader's SRV
-        class GpuBufferHandler
+        class ATOM_FEATURE_COMMON_API GpuBufferHandler
         {
         public:
 

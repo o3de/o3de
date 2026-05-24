@@ -216,6 +216,8 @@ namespace AZ
         Vector2 operator*(float multiplier) const;
         Vector2 operator/(float divisor) const;
         Vector2 operator/(const Vector2& rhs) const;
+        float& operator[](const size_t i);
+        const float& operator[](const size_t i) const;
 
         //! Gets the sine of each component.
         Vector2 GetSin() const;

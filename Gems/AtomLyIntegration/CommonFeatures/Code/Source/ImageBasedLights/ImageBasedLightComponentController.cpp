@@ -40,6 +40,8 @@ namespace AZ
                     ->Event("GetSpecularImageAssetPath", &ImageBasedLightComponentRequestBus::Events::GetSpecularImageAssetPath)
                     ->Event("SetDiffuseImageAssetPath", &ImageBasedLightComponentRequestBus::Events::SetDiffuseImageAssetPath)
                     ->Event("GetDiffuseImageAssetPath", &ImageBasedLightComponentRequestBus::Events::GetDiffuseImageAssetPath)
+                    ->Event("SetExposure", &ImageBasedLightComponentRequestBus::Events::SetExposure)
+                    ->Event("GetExposure", &ImageBasedLightComponentRequestBus::Events::GetExposure)
                     ->VirtualProperty("SpecularImageAssetId", "GetSpecularImageAssetId", "SetSpecularImageAssetId")
                     ->VirtualProperty("DiffuseImageAssetId", "GetDiffuseImageAssetId", "SetDiffuseImageAssetId")
                     ->VirtualProperty("SpecularImageAssetPath", "GetSpecularImageAssetPath", "SetSpecularImageAssetPath")
@@ -146,7 +148,7 @@ namespace AZ
             // 9. The "Seconday Copy Queue" thread deadlocks and never completes the work.
             // 10. Main thread is also deadlocked waiting for "Seconday Copy Queue" to complete.
             // The solution is to enqueue texture update on the next tick.
-            auto postTickLambda = [=, this]()
+            auto postTickLambda = [this, updatedAsset]()
             {
                 if (m_configuration.m_specularImageAsset.GetId() == updatedAsset.GetId())
                 {

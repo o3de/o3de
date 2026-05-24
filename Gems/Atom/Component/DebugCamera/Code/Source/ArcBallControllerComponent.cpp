@@ -134,7 +134,7 @@ namespace AZ
 
         bool ArcBallControllerComponent::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
         {
-            static const float PixelToDegree = 1.0 / 360.0f;
+            static const float PixelToDegree = 1.0f / 360.0f;
 
             uint32_t handledChannels = ArcBallControllerChannel_None;
 

@@ -193,6 +193,12 @@ namespace AZ
         bool operator==(const Matrix3x3& rhs) const;
         bool operator!=(const Matrix3x3& rhs) const;
 
+        //! Access the row vector.
+        //! @{
+        Vector3& operator[](const size_t row);
+        const Vector3& operator[](const size_t row) const;
+        //! @}
+
         //! Transpose calculation, flips the rows and columns.
         //! @{
         Matrix3x3 GetTranspose() const;

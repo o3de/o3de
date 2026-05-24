@@ -637,6 +637,8 @@ struct Matrix44_tpl
 // Typedefs                                                                  //
 ///////////////////////////////////////////////////////////////////////////////
 
+// O3DE_DEPRECATION_NOTICE(GHI-19470) - Use AZ::Matrix4x4
+AZ_DEPRECATED_MESSAGE("Matrix44 is deprecated, use AZ::Matrix4x4 instead. ")
 typedef Matrix44_tpl<f32>  Matrix44;   //always 32 bit
 
 //----------------------------------------------------------------------------------

@@ -66,7 +66,7 @@ namespace EMStudio
 
         // create the default layout
         m_layout = new QVBoxLayout();
-        m_layout->setMargin(0);
+        m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setSpacing(0);
 
         // create the initial text
@@ -74,7 +74,7 @@ namespace EMStudio
         m_initialText->setAlignment(Qt::AlignCenter);
         m_initialText->setTextFormat(Qt::RichText);
         m_initialText->setMaximumSize(10000, 10000);
-        m_initialText->setMargin(0);
+        m_initialText->setContentsMargins(0, 0, 0, 0);
         m_initialText->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
         // add the initial text in the layout
@@ -121,7 +121,7 @@ namespace EMStudio
         if (animGraph == nullptr)
         {
             // set the layout params
-            m_layout->setMargin(0);
+            m_layout->setContentsMargins(0, 0, 0, 0);
             m_layout->setSpacing(0);
 
             // set the widget visible or not
@@ -131,7 +131,7 @@ namespace EMStudio
         else
         {
             // set the layout params
-            m_layout->setMargin(2);
+            m_layout->setContentsMargins(2, 2, 2, 2);
             m_layout->setSpacing(2);
 
             // set the widget visible or not

@@ -12,7 +12,7 @@
  
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
-#include <QtCore/QSortFilterProxyModel>
+#include <QSortFilterProxyModel>
 #include <AzCore/Memory/SystemAllocator.h>
 #endif
 

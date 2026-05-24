@@ -192,7 +192,7 @@ namespace AtomToolsFramework
             m_thumbnailKeys[pathWithAlias] = thumbnailKey;
 
             connect(
-                thumbnailKey.data(), &AzToolsFramework::Thumbnailer::ThumbnailKey::ThumbnailUpdated, this,
+                thumbnailKey.get(), &AzToolsFramework::Thumbnailer::ThumbnailKey::ThumbnailUpdated, this,
                 [this, pathWithAlias]() { QueueUpdateThumbnail(pathWithAlias); });
 
             QueueUpdateThumbnail(pathWithAlias);

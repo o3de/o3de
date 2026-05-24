@@ -19,10 +19,14 @@ enum class RayTracingDebugViewMode
 {
     InstanceIndex,
     InstanceID,
+    ClusterID,
     PrimitiveIndex,
     Barycentrics,
     Normals,
     UVs,
+    BaseColor,
+    EmissiveColor,
+    IrradianceColor,
 };
 
 RayTracingDebugViewMode GetRayTracingDebugViewMode()

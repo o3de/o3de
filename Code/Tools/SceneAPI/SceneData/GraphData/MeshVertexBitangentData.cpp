@@ -9,6 +9,7 @@
 #include <SceneAPI/SceneData/GraphData/MeshVertexBitangentData.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include "MeshVertexBitangentData.h"
 
 namespace AZ::SceneData::GraphData
 {
@@ -100,5 +101,15 @@ namespace AZ::SceneData::GraphData
     {
         output.Write("Bitangents", m_bitangents);
         output.Write("GenerationMethod", aznumeric_cast<int64_t>(m_generationMethod));
+    }
+
+    AZStd::vector<AZ::Vector3>& MeshVertexBitangentData::GetBitangents()
+    {
+        return m_bitangents;
+    }
+
+    const AZStd::vector<AZ::Vector3>& MeshVertexBitangentData::GetBitangents() const
+    {
+        return m_bitangents;
     }
 } // AZ::SceneData::GraphData

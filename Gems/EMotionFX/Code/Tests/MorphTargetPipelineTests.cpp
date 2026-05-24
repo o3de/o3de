@@ -43,6 +43,7 @@ namespace EMotionFX
     using MorphTargetPipelineFixtureBase = InitSceneAPIFixture<
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AzToolsFramework::Components::PropertyManagerComponent,
         EMotionFX::Integration::SystemComponent,
@@ -84,9 +85,6 @@ namespace EMotionFX
             meshData->AddNormal(AZ::Vector3(0.0f, 0.0f, 1.0f));
             meshData->AddNormal(AZ::Vector3(0.0f, 0.0f, 1.0f));
             meshData->AddNormal(AZ::Vector3(0.0f, 0.0f, 1.0f));
-            meshData->SetVertexIndexToControlPointIndexMap(0, 0);
-            meshData->SetVertexIndexToControlPointIndexMap(1, 1);
-            meshData->SetVertexIndexToControlPointIndexMap(2, 2);
             meshData->AddFace(0, 1, 2);
             AZ::SceneAPI::Containers::SceneGraph::NodeIndex meshNodeIndex = graph.AddChild(graph.GetRoot(), "testMesh", meshData);
 
@@ -116,7 +114,6 @@ namespace EMotionFX
                 {
                     blendShapeData->AddPosition(verticesForThisMorph.at(vertexIndex));
                     blendShapeData->AddNormal(AZ::Vector3::CreateAxisZ());
-                    blendShapeData->SetVertexIndexToControlPointIndexMap(vertexIndex, vertexIndex);
                 }
                 blendShapeData->AddFace({{0, 1, 2}});
                 AZStd::string morphTargetName("testMorphTarget");
@@ -248,7 +245,7 @@ namespace EMotionFX
             numVertices = meshData->GetVertexCount();
             for (uint vertexNum = 0; vertexNum < numVertices; ++vertexNum)
             {
-                expectedUnmorphedVertices.emplace_back(meshData->GetPosition(meshData->GetControlPointIndex(vertexNum)));
+                expectedUnmorphedVertices.emplace_back(meshData->GetPosition(vertexNum));
             }
             EXPECT_EQ(gotUnmorphedVertices, expectedUnmorphedVertices);
 
@@ -279,7 +276,7 @@ namespace EMotionFX
             numVertices = morphTargetData->GetVertexCount();
             for (uint vertexNum = 0; vertexNum < numVertices; ++vertexNum)
             {
-                expectedMorphedVertices.emplace_back(morphTargetData->GetPosition(morphTargetData->GetControlPointIndex(vertexNum)));
+                expectedMorphedVertices.emplace_back(morphTargetData->GetPosition(vertexNum));
             }
             EXPECT_EQ(gotMorphedVertices, expectedMorphedVertices);
 

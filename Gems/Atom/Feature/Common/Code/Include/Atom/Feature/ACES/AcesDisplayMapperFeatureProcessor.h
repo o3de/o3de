@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
+#include <Atom/Feature/Base.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h>
 #include <ACES/Aces.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
@@ -52,7 +53,7 @@ namespace AZ
          *  This class create display mapper shader input parameters by using
          *  the ACES reference implementation.
          */
-        class AcesDisplayMapperFeatureProcessor final
+        class ATOM_FEATURE_COMMON_API AcesDisplayMapperFeatureProcessor final
             : public DisplayMapperFeatureProcessorInterface
         {
         public:

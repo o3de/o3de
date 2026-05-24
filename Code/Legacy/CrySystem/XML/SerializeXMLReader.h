@@ -147,7 +147,7 @@ private:
     void DefaultValue(Vec2& v) const { v.x = 0; v.y = 0; }
     void DefaultValue(Vec3& v) const { v.x = 0; v.y = 0; v.z = 0; }
     void DefaultValue(Ang3& v) const { v.x = 0; v.y = 0; v.z = 0; }
-    void DefaultValue(Quat& v) const { v.w = 1.0f; v.v.x = 0; v.v.y = 0; v.v.z = 0; }
+    void DefaultValue(AZ::Quaternion& v) const { v = AZ::Quaternion::CreateIdentity(); }
     void DefaultValue(CTimeValue& v) const { v.SetValue(0); }
     void DefaultValue(AZStd::string& str) const { str = ""; }
     void DefaultValue([[maybe_unused]] const AZStd::string& str) const {}

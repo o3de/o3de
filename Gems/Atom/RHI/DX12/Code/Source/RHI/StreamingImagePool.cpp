@@ -604,7 +604,7 @@ namespace AZ
 
             // Create new expend request and append callback from the StreamingImagePool
             RHI::DeviceStreamingImageExpandRequest newRequest = request;
-            newRequest.m_completeCallback = [=, this]()
+            newRequest.m_completeCallback = [this, request, residentMipLevelBefore, residentMipLevelAfter]()
             {
                 Image& dxImage = static_cast<Image&>(*request.m_image);
                 dxImage.FinalizeAsyncUpload(residentMipLevelAfter);

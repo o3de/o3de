@@ -24,12 +24,12 @@
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
-#include <QtWidgets/QMainWindow>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QFileDialog>
-#include <QtCore/QTimer>
+#include <QMainWindow>
+#include <QApplication>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QFileDialog>
+#include <QTimer>
 
 #pragma once
 

@@ -15,6 +15,7 @@
 #include <QTextCursor>
 #include <QTextDocument>
 
+
 namespace AzQtComponents
 {
     ElidingLabel::ElidingLabel(const QString& text, QWidget* parent /* = nullptr */)
@@ -205,7 +206,7 @@ namespace AzQtComponents
     void ElidingLabel::setFilter(const QString& filter)
     {
         m_filterString = filter;
-        m_filterRegex = QRegExp(m_filterString, Qt::CaseInsensitive);
+        m_filterRegex = QRegularExpression(m_filterString, QRegularExpression::PatternOption::CaseInsensitiveOption);
     }
 
     bool ElidingLabel::TextMatchesFilter() const

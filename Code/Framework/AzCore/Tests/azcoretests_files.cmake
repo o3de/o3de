@@ -254,6 +254,7 @@ set(FILES
     Streamer/IStreamerMock.h
     Streamer/IStreamerTypesMock.h
     Streamer/ReadSplitterTests.cpp
+    Streamer/RecentlyUsedIndexTests.cpp
     Streamer/SchedulerTests.cpp
     Streamer/StreamStackEntryConformityTests.h
     Streamer/StreamStackEntryMock.h

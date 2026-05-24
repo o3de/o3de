@@ -517,7 +517,6 @@ enum type_identity
 #include "Cry_Vector4.h"
 #include "Cry_Matrix33.h"
 #include "Cry_Matrix34.h"
-#include "Cry_Matrix44.h"
 #include "Cry_Quat.h"
 
 // function for safe comparsion of floating point  values

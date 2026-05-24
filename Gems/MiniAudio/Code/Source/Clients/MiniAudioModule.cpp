@@ -18,8 +18,5 @@ namespace MiniAudio
     };
 } // namespace MiniAudio
 
-#if defined(O3DE_GEM_NAME)
-AZ_DECLARE_MODULE_CLASS(AZ_JOIN(Gem_, O3DE_GEM_NAME), MiniAudio::MiniAudioModule)
-#else
-AZ_DECLARE_MODULE_CLASS(Gem_MiniAudio, MiniAudio::MiniAudioModule)
-#endif
+// this must match the actual name of the gem module target from CMakeLists.txt
+AZ_DECLARE_MODULE_CLASS(Gem_O3DEMiniAudio, MiniAudio::MiniAudioModule)

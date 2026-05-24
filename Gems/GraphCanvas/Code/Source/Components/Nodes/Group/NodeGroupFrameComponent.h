@@ -8,7 +8,7 @@
 #pragma once
 
 #include <QGraphicsWidget>
-#include <qgraphicslinearlayout.h>
+#include <QGraphicsLinearLayout>
 
 #include <AzCore/Math/Color.h>
 

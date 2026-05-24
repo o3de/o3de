@@ -8,6 +8,7 @@
 #ifndef AZSTD_BITSET_H
 #define AZSTD_BITSET_H
 
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZStd
@@ -293,27 +294,38 @@ namespace AZStd
         template<class Element, class Traits>
         inline basic_string<Element, Traits, AZStd::allocator> to_string(Element zero = (Element)'0') const
         {
-            basic_string<Element, Traits, AZStd::allocator> str;
-            AZStd::size_t pos;
-            str.reserve(NumBits);
-            for (pos = NumBits; 0 < pos; )
-            {
-                str += (Element)(zero + (int)test(--pos));
-            }
-            return str;
+            return to_string<Element, Traits, AZStd::allocator>(zero);
         }
 
         template<class Element>
         inline basic_string<Element, AZStd::char_traits<Element>, AZStd::allocator> to_string(Element zero = (Element)'0') const
         {
-            basic_string<Element, AZStd::char_traits<Element>, AZStd::allocator> str;
-            AZStd::size_t pos;
-            str.reserve(NumBits);
-            for (pos = NumBits; 0 < pos; )
+            return to_string<Element, AZStd::char_traits<Element>, AZStd::allocator>(zero);
+        }
+
+        template<class Element, class Traits, class Allocator>
+        inline basic_string<Element, Traits, Allocator> to_hex_string() const
+        {
+            basic_string<Element, Traits, Allocator> str;
+            str.reserve(NumWords * 4 + 1);
+            for (const auto& word : m_bits)
             {
-                str += (Element)(zero + (int)test(--pos));
+                auto text = AZStd::basic_string<Element, Traits, Allocator>::format("%04x", word);
+                str.append(text);
             }
             return str;
+        }
+
+        template<class Element, class Traits>
+        inline basic_string<Element, Traits, AZStd::allocator> to_hex_string() const
+        {
+            return to_hex_string<Element, Traits, AZStd::allocator>();
+        }
+
+        template<class Element>
+        inline basic_string<Element, AZStd::char_traits<Element>, AZStd::allocator> to_hex_string() const
+        {
+            return to_hex_string<Element, AZStd::char_traits<Element>, AZStd::allocator>();
         }
 
         inline AZStd::size_t count() const

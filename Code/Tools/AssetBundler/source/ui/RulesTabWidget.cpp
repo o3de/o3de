@@ -244,30 +244,25 @@ namespace AssetBundler
                 AssetFileInfoListComparison::ComparisonData comparisonStep = currentFileCopy.GetComparisonList()[comparisonStepIndex];
                 if (comparisonStep.m_firstInput.empty())
                 {
-                    if (comparisonStep.m_cachedFirstInputPath.empty())
-                    {
-                        AZ_Error("AssetBundler", false,
-                            "Unable to run Rule: Comparison Step #%u has no specified first input.", comparisonStepIndex);
-                        return;
-                    }
-
-                    FilePath firstInput = FilePath(comparisonStep.m_cachedFirstInputPath, platformName);
-                    currentFileCopy.SetFirstInput(comparisonStepIndex, firstInput.AbsolutePath());
+                    
+                    AZ_Error("AssetBundler", false,
+                        "Unable to run Rule: Comparison Step #%u has no specified first input.", comparisonStepIndex);
+                    return;
                 }
 
                 if (comparisonStep.m_comparisonType != AssetFileInfoListComparison::ComparisonType::FilePattern
                     && comparisonStep.m_secondInput.empty())
                 {
-                    if (comparisonStep.m_cachedSecondInputPath.empty())
-                    {
-                        AZ_Error("AssetBundler", false,
-                            "Unable to run Rule: Comparison Step #%u has no specified second input.", comparisonStepIndex);
-                        return;
-                    }
-
-                    FilePath secondInput = FilePath(comparisonStep.m_cachedSecondInputPath, platformName);
-                    currentFileCopy.SetSecondInput(comparisonStepIndex, secondInput.AbsolutePath());
+                    AZ_Error("AssetBundler", false,
+                        "Unable to run Rule: Comparison Step #%u has no specified second input.", comparisonStepIndex);
+                    return;
                 }
+
+                // update the paths to use
+                FilePath firstInput = FilePath(comparisonStep.m_firstInput, platformName);
+                currentFileCopy.SetFirstInput(comparisonStepIndex, firstInput.AbsolutePath());
+                FilePath secondInput = FilePath(comparisonStep.m_secondInput, platformName);
+                currentFileCopy.SetSecondInput(comparisonStepIndex, secondInput.AbsolutePath());
             }
 
             // Set the output location of the Asset List file that will be generated
@@ -429,12 +424,12 @@ namespace AssetBundler
 
         QAction* moveUpAction = new QAction(tr("Move Up"), this);
         moveUpAction->setEnabled(comparisonDataIndex > 0);
-        connect(moveUpAction, &QAction::triggered, this, [=, this]() { MoveComparisonStep(comparisonDataIndex, comparisonDataIndex - 1); });
+        connect(moveUpAction, &QAction::triggered, this, [this, comparisonDataIndex]() { MoveComparisonStep(comparisonDataIndex, comparisonDataIndex - 1); });
         menu.addAction(moveUpAction);
 
         QAction* moveDownAction = new QAction(tr("Move Down"), this);
         moveDownAction->setEnabled(comparisonDataIndex < m_selectedComparisonRules->GetNumComparisonSteps() - 1);
-        connect(moveDownAction, &QAction::triggered, this, [=, this]() { MoveComparisonStep(comparisonDataIndex, comparisonDataIndex + 2); });
+        connect(moveDownAction, &QAction::triggered, this, [this, comparisonDataIndex]() { MoveComparisonStep(comparisonDataIndex, comparisonDataIndex + 2); });
         menu.addAction(moveDownAction);
 
         QAction* separator = new QAction(this);
@@ -442,7 +437,7 @@ namespace AssetBundler
         menu.addAction(separator);
 
         QAction* deleteAction = new QAction(tr("Remove Comparison Step"), this);
-        connect(deleteAction, &QAction::triggered, this, [=, this]() { RemoveComparisonStep(comparisonDataIndex); });
+        connect(deleteAction, &QAction::triggered, this, [this, comparisonDataIndex]() { RemoveComparisonStep(comparisonDataIndex); });
         menu.addAction(deleteAction);
 
         menu.exec(position);

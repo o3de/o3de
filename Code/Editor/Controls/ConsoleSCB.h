@@ -14,6 +14,8 @@
 #if !defined(Q_MOC_RUN)
 
 #include "Settings.h"
+#include "IConsole.h"
+#include "IEditor.h"
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
 #include <QLineEdit>

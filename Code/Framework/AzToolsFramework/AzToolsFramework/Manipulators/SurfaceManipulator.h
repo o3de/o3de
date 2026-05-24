@@ -36,7 +36,7 @@ namespace AzToolsFramework
         SurfaceManipulator(const SurfaceManipulator&) = delete;
         SurfaceManipulator& operator=(const SurfaceManipulator&) = delete;
 
-        ~SurfaceManipulator() = default;
+        ~SurfaceManipulator();
 
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<SurfaceManipulator> MakeShared(const AZ::Transform& worldFromLocal);
@@ -109,7 +109,7 @@ namespace AzToolsFramework
 
         StartInternal m_startInternal; //!< Internal initial state recorded/created in OnMouseDown.
 
-        AZStd::unique_ptr<ManipulatorView> m_manipulatorView = nullptr; //!< Look of manipulator.
+        AZStd::unique_ptr<ManipulatorView> m_manipulatorView; //!< Look of manipulator.
 
         MouseActionCallback m_onLeftMouseDownCallback = nullptr;
         MouseActionCallback m_onLeftMouseUpCallback = nullptr;

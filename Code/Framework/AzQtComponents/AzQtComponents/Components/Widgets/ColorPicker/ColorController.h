@@ -9,6 +9,8 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
+#include <AzQtComponents/Components/Widgets/ColorPicker/ColorValidator.h>
+#include <AzQtComponents/Components/Widgets/ColorPicker/QtMetaTypes.h>
 #include <QObject>
 #include <AzCore/Math/Color.h>
 #include <QColor>
@@ -17,8 +19,6 @@
 
 namespace AzQtComponents
 {
-    class ColorValidator;
-
     namespace Internal
     {
         /**

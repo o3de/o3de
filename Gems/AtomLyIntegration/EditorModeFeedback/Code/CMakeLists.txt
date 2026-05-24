@@ -28,7 +28,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
-        AUTORCC
         FILES_CMAKE
             editormodefeedback_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
