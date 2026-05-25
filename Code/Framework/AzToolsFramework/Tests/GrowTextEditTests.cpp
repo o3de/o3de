@@ -30,12 +30,18 @@ namespace UnitTest
     public:
         void SetUpEditorFixtureImpl() override
         {
+            // Qt6 will not deliver QEvent::FocusIn to a widget whose top-level
+            // has never been shown, even on the offscreen platform. Show before
+            // activating so focus events reach the child correctly.
             m_dummyWidget = AZStd::make_unique<QWidget>();
             m_dummyWidget->winId();
-            m_dummyWidget->activateWindow();
 
             m_textEdit = AZStd::make_unique<GrowTextEdit>(m_dummyWidget.get());
             m_textEdit->setFocusPolicy(Qt::StrongFocus);
+
+            m_dummyWidget->show();
+            m_dummyWidget->activateWindow();
+            QApplication::processEvents();
         }
 
         void TearDownEditorFixtureImpl() override

@@ -38,7 +38,6 @@ namespace UnitTest
             m_dummyWidget = AZStd::make_unique<QWidget>();
             // Give the test window a valid windowHandle. SpinBox code uses this to access the QScreen
             m_dummyWidget->winId();
-            m_dummyWidget->activateWindow();
 
             m_intSpinBox = AZStd::make_unique<AzQtComponents::SpinBox>();
             m_doubleSpinBox = AZStd::make_unique<AzQtComponents::DoubleSpinBox>();
@@ -54,6 +53,13 @@ namespace UnitTest
                 spinBox->setFocusPolicy(Qt::StrongFocus);
                 spinBox->clearFocus();
             }
+
+            // Qt6 will not deliver QEvent::FocusIn to a widget whose top-level
+            // has never been shown, even on the offscreen platform. Show after
+            // parenting children so they inherit visibility.
+            m_dummyWidget->show();
+            m_dummyWidget->activateWindow();
+            QApplication::processEvents();
         }
 
         void TearDownEditorFixtureImpl() override

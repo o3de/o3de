@@ -32,10 +32,11 @@ namespace UnitTest
     public:
         void SetUpEditorFixtureImpl() override
         {
-            // Must have an active top-level window for focus events to fire.
+            // Must have an active, visible top-level window for focus events
+            // to fire. Qt6 will not deliver QEvent::FocusIn to a widget whose
+            // top-level has never been shown, even on the offscreen platform.
             m_dummyWidget = AZStd::make_unique<QWidget>();
             m_dummyWidget->winId();
-            m_dummyWidget->activateWindow();
 
             m_lineEdit = new QLineEdit(m_dummyWidget.get());
             m_lineEdit->setFocusPolicy(Qt::StrongFocus);
@@ -45,6 +46,10 @@ namespace UnitTest
             // (typically via setFocusProxy), but in this fixture the line edit
             // is what actually holds focus, so clearing it is what unfocuses.
             new AzQtComponents::LineEditRevertHandler(m_lineEdit);
+
+            m_dummyWidget->show();
+            m_dummyWidget->activateWindow();
+            QApplication::processEvents();
         }
 
         void TearDownEditorFixtureImpl() override
