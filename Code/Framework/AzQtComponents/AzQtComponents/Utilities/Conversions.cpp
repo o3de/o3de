@@ -43,8 +43,25 @@ namespace AzQtComponents
 
     QString toString(double value, int numDecimals, const QLocale& locale, bool showGroupSeparator, bool round)
     {
-        const QString decimalPoint = locale.decimalPoint();
-        const QString zeroDigit = locale.zeroDigit();
+        // Qt6 changed QLocale::toString(double, 'f', precision) to honour
+        // numberOptions() OmitGroupSeparator. In Qt5 the group separator was
+        // always emitted and stripped after the fact below. Set the option
+        // explicitly on a working copy so the behaviour matches the caller's
+        // intent regardless of the locale's incoming numberOptions.
+        QLocale workingLocale = locale;
+        QLocale::NumberOptions opts = workingLocale.numberOptions();
+        if (showGroupSeparator)
+        {
+            opts &= ~QLocale::OmitGroupSeparator;
+        }
+        else
+        {
+            opts |= QLocale::OmitGroupSeparator;
+        }
+        workingLocale.setNumberOptions(opts);
+
+        const QString decimalPoint = workingLocale.decimalPoint();
+        const QString zeroDigit = workingLocale.zeroDigit();
         const int numToStringDecimals = AZStd::max(numDecimals, 20);
         QString retValue;
 
@@ -52,11 +69,11 @@ namespace AzQtComponents
         // so we can remove the last values otherwise we allow rounding
         if (round)
         {
-            retValue = locale.toString(value, 'f', (numDecimals > 0) ? numDecimals : 0);
+            retValue = workingLocale.toString(value, 'f', (numDecimals > 0) ? numDecimals : 0);
         }
         else
         {
-            retValue = locale.toString(value, 'f', (numDecimals > 0) ? numToStringDecimals : 0);
+            retValue = workingLocale.toString(value, 'f', (numDecimals > 0) ? numToStringDecimals : 0);
         }
 
         // Handle special cases when we have decimals in our value
