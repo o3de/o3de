@@ -38,10 +38,17 @@ namespace UnitTest
 
             m_textEdit = AZStd::make_unique<GrowTextEdit>(m_dummyWidget.get());
             m_textEdit->setFocusPolicy(Qt::StrongFocus);
+            // ensurePolished() forces full internal-state initialization on the
+            // child. Without it, Linux offscreen QPA does not deliver
+            // QEvent::FocusIn to a freshly created QTextEdit subclass.
+            m_textEdit->ensurePolished();
 
             m_dummyWidget->show();
             m_dummyWidget->activateWindow();
-            QApplication::processEvents();
+            // qWaitForWindowExposed is the canonical Qt synchronization for
+            // "window is ready for input". Required on Linux offscreen where
+            // processEvents() alone is not enough for show() to fully expose.
+            QTest::qWaitForWindowExposed(m_dummyWidget.get());
         }
 
         void TearDownEditorFixtureImpl() override

@@ -40,6 +40,10 @@ namespace UnitTest
 
             m_lineEdit = new QLineEdit(m_dummyWidget.get());
             m_lineEdit->setFocusPolicy(Qt::StrongFocus);
+            // ensurePolished() forces full internal-state initialization on the
+            // child. Without it, Linux offscreen QPA does not deliver
+            // QEvent::FocusIn to a freshly created QLineEdit's event filter.
+            m_lineEdit->ensurePolished();
 
             // Default the clear-focus target to the line edit itself. In real
             // consumers a parent widget can be passed when it owns the focus
@@ -49,7 +53,10 @@ namespace UnitTest
 
             m_dummyWidget->show();
             m_dummyWidget->activateWindow();
-            QApplication::processEvents();
+            // qWaitForWindowExposed is the canonical Qt synchronization for
+            // "window is ready for input". Required on Linux offscreen where
+            // processEvents() alone is not enough for show() to fully expose.
+            QTest::qWaitForWindowExposed(m_dummyWidget.get());
         }
 
         void TearDownEditorFixtureImpl() override
