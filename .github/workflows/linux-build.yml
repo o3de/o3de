@@ -219,7 +219,7 @@ jobs:
           # If desktop is true, install desktop and x11 packages, otherwise install base packages
           [[ "${{ inputs.desktop }}" == "true" ]] && \
            sudo apt-get install -qq ubuntu-desktop libreoffice- thunderbird- xorg mesa-utils vulkan-tools libevdev-dev libevdev2 -y || \
-           sudo apt-get install -qq libevdev-dev libevdev2 -y
+           sudo apt-get install -qq libevdev-dev libevdev2 libxcb-cursor0 -y
           sudo apt -y autoremove --purge
           sudo apt -y autoclean
           sudo apt clean
