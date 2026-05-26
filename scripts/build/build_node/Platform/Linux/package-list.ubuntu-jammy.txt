@@ -23,6 +23,8 @@ libxcb-xinput-dev                       # For mouse input
 libxcb-image0-dev                       # For xcb image support
 libxcb-randr0-dev                       # For xcb display info
 libxcb-keysyms1-dev                     # For xcb query keymap
+libxcb-cursor0
+
 xxd
 zlib1g-dev
 mesa-common-dev
