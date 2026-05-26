@@ -48,7 +48,9 @@ namespace UnitTest
             // qWaitForWindowExposed is the canonical Qt synchronization for
             // "window is ready for input". Required on Linux offscreen where
             // processEvents() alone is not enough for show() to fully expose.
-            QTest::qWaitForWindowExposed(m_dummyWidget.get());
+            // Return is [[nodiscard]] in Qt6; offscreen QPA may legitimately
+            // return false, so the value is discarded rather than asserted.
+            (void)QTest::qWaitForWindowExposed(m_dummyWidget.get());
         }
 
         void TearDownEditorFixtureImpl() override
