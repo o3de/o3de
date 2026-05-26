@@ -38,6 +38,12 @@ namespace UnitTest
             m_dummyWidget = AZStd::make_unique<QWidget>();
             // Give the test window a valid windowHandle. SpinBox code uses this to access the QScreen
             m_dummyWidget->winId();
+            // Fixed parent geometry + non-zero origin so mouse-drag tests have
+            // room to move in both directions without the cursor leaving the
+            // top-level bounds. Linux offscreen QPA otherwise reports drag
+            // deltas inconsistently when the cursor crosses x=0 going left.
+            m_dummyWidget->setFixedSize(QSize(800, 600));
+            m_dummyWidget->move(100, 100);
 
             m_intSpinBox = AZStd::make_unique<AzQtComponents::SpinBox>();
             m_doubleSpinBox = AZStd::make_unique<AzQtComponents::DoubleSpinBox>();

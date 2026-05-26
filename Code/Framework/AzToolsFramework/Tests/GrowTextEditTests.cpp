@@ -51,6 +51,13 @@ namespace UnitTest
             // Return is [[nodiscard]] in Qt6; offscreen QPA may legitimately
             // return false, so the value is discarded rather than asserted.
             (void)QTest::qWaitForWindowExposed(m_dummyWidget.get());
+            // Some QPA plugins (including Linux offscreen) auto-focus the
+            // first focusable child when the top-level is shown, firing
+            // FocusIn before the test body can set the value it expects to
+            // capture. Clear focus so each test body's setFocus() delivers a
+            // fresh FocusIn against the just-set text.
+            m_textEdit->clearFocus();
+            QApplication::processEvents();
         }
 
         void TearDownEditorFixtureImpl() override
