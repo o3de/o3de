@@ -32,19 +32,40 @@ namespace UnitTest
     public:
         void SetUpEditorFixtureImpl() override
         {
-            // Must have an active top-level window for focus events to fire.
+            // Must have an active, visible top-level window for focus events
+            // to fire. Qt6 will not deliver QEvent::FocusIn to a widget whose
+            // top-level has never been shown, even on the offscreen platform.
             m_dummyWidget = AZStd::make_unique<QWidget>();
             m_dummyWidget->winId();
-            m_dummyWidget->activateWindow();
 
             m_lineEdit = new QLineEdit(m_dummyWidget.get());
             m_lineEdit->setFocusPolicy(Qt::StrongFocus);
+            // ensurePolished() forces full internal-state initialization on the
+            // child. Without it, Linux offscreen QPA does not deliver
+            // QEvent::FocusIn to a freshly created QLineEdit's event filter.
+            m_lineEdit->ensurePolished();
 
             // Default the clear-focus target to the line edit itself. In real
             // consumers a parent widget can be passed when it owns the focus
             // (typically via setFocusProxy), but in this fixture the line edit
             // is what actually holds focus, so clearing it is what unfocuses.
             new AzQtComponents::LineEditRevertHandler(m_lineEdit);
+
+            m_dummyWidget->show();
+            m_dummyWidget->activateWindow();
+            // qWaitForWindowExposed is the canonical Qt synchronization for
+            // "window is ready for input". Required on Linux offscreen where
+            // processEvents() alone is not enough for show() to fully expose.
+            // Return is [[nodiscard]] in Qt6; offscreen QPA may legitimately
+            // return false, so the value is discarded rather than asserted.
+            (void)QTest::qWaitForWindowExposed(m_dummyWidget.get());
+            // Some QPA plugins (including Linux offscreen) auto-focus the
+            // first focusable child when the top-level is shown, firing
+            // FocusIn before the test body can set the value it expects to
+            // capture. Clear focus so each test body's setFocus() delivers a
+            // fresh FocusIn against the just-set text.
+            m_lineEdit->clearFocus();
+            QApplication::processEvents();
         }
 
         void TearDownEditorFixtureImpl() override
