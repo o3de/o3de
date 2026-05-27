@@ -42,10 +42,13 @@ namespace AZ::RHI
         //! Returns the buffer frame attachment if the buffer is currently attached.
         const BufferFrameAttachment* GetFrameAttachment() const;
 
-        Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor);
+        Ptr<BufferView> GetBufferView(const BufferViewDescriptor& bufferViewDescriptor) const;
 
         //! Get the hash associated with the Buffer
         const HashValue64 GetHash() const;
+
+        //! Returns the GPU address of this Buffer for each device
+        AZStd::unordered_map<int, uint64_t> GetDeviceAddress() const;
 
         //! Shuts down the resource by detaching it from its parent pool.
         void Shutdown() override final;

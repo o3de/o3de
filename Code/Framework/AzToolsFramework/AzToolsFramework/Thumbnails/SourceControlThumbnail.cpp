@@ -86,7 +86,7 @@ namespace AzToolsFramework
         void SourceControlThumbnail::FileStatusChanged(const char* filename)
         {
             // when file status is changed, force instant update
-            auto sourceControlKey = azrtti_cast<const SourceControlThumbnailKey*>(m_key.data());
+            auto sourceControlKey = azrtti_cast<const SourceControlThumbnailKey*>(m_key.get());
             AZ_Assert(sourceControlKey, "Incorrect key type, excpected SourceControlThumbnailKey");
 
             AZStd::string myFileName(sourceControlKey->GetFileName());
@@ -99,7 +99,7 @@ namespace AzToolsFramework
 
         void SourceControlThumbnail::RequestSourceControlStatus()
         {
-            auto sourceControlKey = azrtti_cast<const SourceControlThumbnailKey*>(m_key.data());
+            auto sourceControlKey = azrtti_cast<const SourceControlThumbnailKey*>(m_key.get());
             AZ_Assert(sourceControlKey, "Incorrect key type, excpected SourceControlThumbnailKey");
 
             bool isSourceControlActive = false;
@@ -160,7 +160,7 @@ namespace AzToolsFramework
 
         bool SourceControlThumbnailCache::IsSupportedThumbnail(SharedThumbnailKey key) const
         {
-            return azrtti_istypeof<const SourceControlThumbnailKey*>(key.data());
+            return azrtti_istypeof<const SourceControlThumbnailKey*>(key.get());
         }
 
     } // namespace Thumbnailer

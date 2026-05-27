@@ -260,6 +260,12 @@ namespace AZ
         //! Operator for transforming a Vector4.
         [[nodiscard]] Vector4 operator*(const Vector4& rhs) const;
 
+        //! Access the row vector.
+        //! @{
+        [[nodiscard]] Vector4& operator[](const size_t row);
+        [[nodiscard]] const Vector4& operator[](const size_t row) const;
+        //! @}
+
         //! Post-multiplies the matrix by a vector, using only the 3x3 part of the matrix.
         [[nodiscard]] Vector3 Multiply3x3(const Vector3& rhs) const;
 

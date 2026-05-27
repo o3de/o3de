@@ -39,6 +39,10 @@ namespace UnitTest
         // Four individual uint8s constructor
         const Color colorFronUints((u8)0x7F, (u8)0x9F, (u8)0xBF, (u8)0xFF);
         EXPECT_EQ(colorFronUints.ToU32(), 0xFFBF9F7F);
+
+        // Four individual ints constructor
+        const Color colorFromInts(0x7F, 0x9F,  0xBF,  0xFF);
+        EXPECT_EQ(colorFromInts.ToU32(), 0xFFBF9F7F);
     }
 
     TEST(MATH_Color, StaticConstruction)
@@ -353,6 +357,21 @@ namespace UnitTest
         Color ColorfromVec3;
         ColorfromVec3 = Vector3(0.3f, 0.4f, 0.5f);
         EXPECT_THAT(ColorfromVec3.GetAsVector4(), IsClose(Vector4(0.3f, 0.4f, 0.5f, 1.0f)));
+    }
+
+    TEST(MATH_Color, Saturate)
+    {
+        // Values above 1 should be clamped to 1
+        Color overexposedColor(1.13f, 1.40f, 2.4f, 2.6f);
+        EXPECT_THAT(overexposedColor.GetSaturated(), IsCloseTolerance(Color::CreateOne(), 1e-6f));
+
+        // Values below 0 should be clamped to 0
+        Color negativeColor(-0.13f, -1.40f, -2.4f, -1.f);
+        EXPECT_THAT(negativeColor.GetSaturated(), IsCloseTolerance(Color::CreateZero(), 1e-6f));
+
+        // Values outside of [0..1] should be clamped to this range
+        Color mixedColor(-0.13f, 1.40f, 0.3f, 0.8f);
+        EXPECT_THAT(mixedColor.GetSaturated(), IsCloseTolerance(Color(0.f, 1.f, 0.3f, 0.8f), 1e-6f));
     }
 
     TEST(MATH_Color, LinearToGamma)

@@ -61,7 +61,7 @@ namespace AzToolsFramework
         {
             m_state = State::Loading;
 
-            auto productKey = azrtti_cast<const ProductThumbnailKey*>(m_key.data());
+            auto productKey = azrtti_cast<const ProductThumbnailKey*>(m_key.get());
             AZ_Assert(productKey, "Incorrect key type, excpected ProductThumbnailKey");
 
             QString iconPath;
@@ -116,7 +116,7 @@ namespace AzToolsFramework
 
         bool ProductThumbnailCache::IsSupportedThumbnail(Thumbnailer::SharedThumbnailKey key) const
         {
-            return azrtti_istypeof<const ProductThumbnailKey*>(key.data());
+            return azrtti_istypeof<const ProductThumbnailKey*>(key.get());
         }
 
     } // namespace AssetBrowser

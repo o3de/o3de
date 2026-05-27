@@ -14,8 +14,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 
-#include <QtCore/QSet>
-#include <QtCore/QString>
+#include <QSet>
+#include <QString>
 
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
 #include <native/AssetManager/SourceAssetReference.h>

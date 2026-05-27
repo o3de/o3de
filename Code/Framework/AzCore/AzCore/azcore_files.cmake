@@ -46,6 +46,9 @@ set(FILES
     Component/ComponentExport.h
     Component/Entity.cpp
     Component/Entity.h
+    Component/EntityActiveSystemBus.h
+    Component/EntityActiveSystemComponent.cpp
+    Component/EntityActiveSystemComponent.h
     Component/EntityBus.cpp
     Component/EntityBus.h
     Component/EntityId.h
@@ -206,6 +209,8 @@ set(FILES
     IO/Streamer/FullFileDecompressor.cpp
     IO/Streamer/ReadSplitter.h
     IO/Streamer/ReadSplitter.cpp
+    IO/Streamer/RecentlyUsedIndex.h
+    IO/Streamer/RecentlyUsedIndex.inl
     IO/Streamer/RequestPath.h
     IO/Streamer/RequestPath.cpp
     IO/Streamer/Scheduler.h

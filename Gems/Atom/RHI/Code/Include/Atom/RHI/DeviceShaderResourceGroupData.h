@@ -563,8 +563,14 @@ namespace AZ::RHI
             // For any other type the buffer view's element size should match the stride.
             if (shaderInputBuffer.m_strideSize != bufferViewDescriptor.m_elementSize)
             {
-                AZ_Error("DeviceShaderResourceGroupData", false, "Buffer Input '%s[%d]': Does not match expected stride size %d",
-                    shaderInputBuffer.m_name.GetCStr(), arrayIndex, bufferViewDescriptor.m_elementSize);
+                AZ_Error(
+                    "DeviceShaderResourceGroupData",
+                    false,
+                    "Buffer Input '%s[%d]': Does not match expected stride size. Buffer has stride size %d. SRG expects stride size %d",
+                    shaderInputBuffer.m_name.GetCStr(),
+                    arrayIndex,
+                    bufferViewDescriptor.m_elementSize,
+                    shaderInputBuffer.m_strideSize);
                 return false;
             }
         }

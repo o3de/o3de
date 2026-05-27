@@ -43,6 +43,10 @@ namespace PhysX
                 this, &EditorWindow::SaveConfiguration);
         }
 
+        EditorWindow::~EditorWindow()
+        {
+        }
+
         void EditorWindow::RegisterViewClass()
         {
             AzToolsFramework::ViewPaneOptions options;

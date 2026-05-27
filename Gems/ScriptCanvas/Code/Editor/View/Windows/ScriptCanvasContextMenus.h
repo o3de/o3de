@@ -23,7 +23,13 @@
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuAction.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SlotMenuActions/SlotContextMenuAction.h>
 #include <GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuAction.h>
+#include <ScriptCanvas/Core/Slot.h>
 #endif
+
+namespace AzToolsFramework::AssetBrowser
+{
+    class AssetBrowserFilterModel;
+}
 
 namespace ScriptCanvasEditor
 {

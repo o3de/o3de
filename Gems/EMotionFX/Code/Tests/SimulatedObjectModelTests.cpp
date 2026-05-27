@@ -14,7 +14,7 @@
 #include "EMotionFX/Source/Skeleton.h"
 #include "EMotionStudio/EMStudioSDK/Source/EMStudioManager.h"
 #include "Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h"
-#include <QtWidgets/QApplication>
+#include <QApplication>
 
 #include <Editor/SimulatedObjectModel.h>
 #include <AzTest/AzTest.h>

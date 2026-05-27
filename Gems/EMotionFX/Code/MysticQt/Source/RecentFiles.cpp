@@ -13,10 +13,10 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
-#include <QtCore/QFileInfo>
-#include <QtCore/QSettings>
-#include <QtGui/QHelpEvent>
-#include <QtWidgets/QToolTip>
+#include <QFileInfo>
+#include <QSettings>
+#include <QHelpEvent>
+#include <QToolTip>
 
 namespace MysticQt
 {

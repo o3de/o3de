@@ -926,7 +926,7 @@ namespace Profiler
                 m_timedRegionFilter.Build();
             }
             // Hovering outline
-            drawList->AddRect(startPoint, endPoint, ImGui::GetColorU32({ 1, 1, 1, 1 }), 0.0, 0, 1.5);
+            drawList->AddRect(startPoint, endPoint, ImGui::GetColorU32({ 1, 1, 1, 1 }), 0.0f, 0, 1.5f);
 
             ImGui::BeginTooltip();
             ImGui::Text("%s::%s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName.GetCStr());
@@ -950,7 +950,7 @@ namespace Profiler
         const float r = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
         const float g = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
         const float b = AZStd::clamp(rand.GetRandomFloat(), .1f, .9f);
-        const ImVec4 randomColor = {r, g, b, .8};
+        const ImVec4 randomColor = {r, g, b, .8f};
         m_regionColorMap.emplace(key, randomColor);
         return ImGui::GetColorU32(randomColor);
     }
@@ -1077,7 +1077,7 @@ namespace Profiler
     {
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         const auto [wx, wy] = ImGui::GetWindowPos();
-        const ImU32 orange = ImGui::GetColorU32({ 1, .7, 0, 1 });
+        const ImU32 orange = ImGui::GetColorU32({ 1, .7f, 0, 1 });
         const ImU32 red = ImGui::GetColorU32({ 1, 0, 0, 1 });
 
         const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
@@ -1102,7 +1102,7 @@ namespace Profiler
         const float rightViewportPixel = ConvertTickToPixelSpace(m_viewportEndTick, leftHistogramBound, rightHistogramBound);
         const ImVec2 topLeftPos = { leftViewportPixel, wy };
         const ImVec2 botRightPos = { rightViewportPixel, wy + ImGui::GetWindowHeight() };
-        const ImU32 gray = ImGui::GetColorU32({ 1, 1, 1, .3 });
+        const ImU32 gray = ImGui::GetColorU32({ 1, 1, 1, .3f });
         drawList->AddRectFilled(topLeftPos, botRightPos, gray);
 
         // Find the first onscreen frame execution time
@@ -1124,17 +1124,17 @@ namespace Profiler
             const ImVec2 lineBottom = { framePixelPos, ImGui::GetWindowHeight() + wy };
             const ImVec2 lineTop = { framePixelPos, ImGui::GetWindowHeight() + wy - frameTimeMs };
 
-            ImU32 lineColor = ImGui::GetColorU32({ .3, .3, .3, 1 }); // Gray
+            ImU32 lineColor = ImGui::GetColorU32({ .3f, .3f, .3f, 1 }); // Gray
             if (frameTimeMs > HighFrameTimeLimit)
             {
                 lineColor = ImGui::GetColorU32({1, 0, 0, 1}); // Red
             }
             else if (frameTimeMs > MediumFrameTimeLimit)
             {
-                lineColor = ImGui::GetColorU32({1, .7, 0, 1}); // Orange
+                lineColor = ImGui::GetColorU32({1, .7f, 0, 1}); // Orange
             }
 
-            drawList->AddLine(lineBottom, lineTop, lineColor, 3.0);
+            drawList->AddLine(lineBottom, lineTop, lineColor, 3.0f);
 
             lastFrameEndTick = frameEndTick;
         }

@@ -32,8 +32,8 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
                                                                     // 4800 'QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
 #include <QAbstractTextDocumentLayout>
 AZ_POP_DISABLE_WARNING
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QApplication>
+#include <QLabel>
+#include <QApplication>
 
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
@@ -698,8 +698,7 @@ namespace AzToolsFramework
             m_painterLabel = new QLabel(pParent);
             m_painterLabel->setTextFormat(Qt::RichText);
             m_painterLabel->setAutoFillBackground(false);
-            m_painterLabel->setContentsMargins(4, 0, 4, 0);
-            m_painterLabel->setMargin(0);
+            m_painterLabel->setContentsMargins(0, 0, 0, 0);
             m_painterLabel->setIndent(0);
             m_painterLabel->hide();
         }

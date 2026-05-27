@@ -11,7 +11,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
-#include <QtWidgets/QVBoxLayout>
+#include <QVBoxLayout>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>

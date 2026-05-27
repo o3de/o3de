@@ -23,7 +23,7 @@ namespace AZ
             struct SkinRuleSettings
             {
                 AZ::u32 m_maxInfluencesPerVertex = 8;
-                float m_weightThreshold = 0.001;
+                float m_weightThreshold = 0.001f;
             };
 
             inline SkinRuleSettings GetDefaultSkinRuleSettings()

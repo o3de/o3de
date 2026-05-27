@@ -196,6 +196,10 @@ namespace AZ
                     Name{ "roughness.factor" }, aznumeric_cast<float>(pow(2.0f / (materialData.GetShininess() + 2.0f), 0.25)));
             }
 
+            if (!materialData.GetEmissiveColor().IsZero())
+            {
+                sourceData.SetPropertyValue(Name{ "emissive.enable" }, true);
+            }
             handleTexture("emissive", "textureMap", SceneAPI::DataTypes::IMaterialData::TextureMapType::Emissive);
             sourceData.SetPropertyValue(Name{"emissive.color"}, toColor(materialData.GetEmissiveColor()));
             applyOptionalPropertiesFunc("emissive", "intensity", materialData.GetEmissiveIntensity());

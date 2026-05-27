@@ -6,11 +6,10 @@
  *
  */
 
-#ifndef CRYINCLUDE_CRYCOMMON_ILOG_H
-#define CRYINCLUDE_CRYCOMMON_ILOG_H
 #pragma once
 
 #include <IMiniLog.h> // <> required for Interfuscator
+#include <AzCore/std/string/string_view.h>
 
 // enable this define to support log scopes to provide more context information for log lines
 // this code is disable by default due it's runtime cost
@@ -247,13 +246,7 @@ public:
 
 #define ILOG_CONCAT_IMPL(x, y) x##y
 #define ILOG_CONCAT_MACRO(x, y) ILOG_CONCAT_IMPL(x, y)
-#define INDENT_LOG_DURING_SCOPE(...) CLogIndenter ILOG_CONCAT_MACRO(indentMe, __LINE__) ((CryGetCurrentThreadId() == gEnv->mMainThreadId) ? gEnv->pLog : NULL); ILOG_CONCAT_MACRO(indentMe, __LINE__).Enable(__VA_ARGS__)
+#define INDENT_LOG_DURING_SCOPE(...) CLogIndenter ILOG_CONCAT_MACRO(indentMe, __LINE__) ((AZStd::this_thread::get_id() == gEnv->mMainThreadId) ? gEnv->pLog : NULL); ILOG_CONCAT_MACRO(indentMe, __LINE__).Enable(__VA_ARGS__)
 
 #define CRY_DEFINE_ASSET_SCOPE(sAssetType, sAssetName) CLogAssetScopeName __asset_scope_name(gEnv->pLog, sAssetType, sAssetName);
 #endif
-
-
-#endif // CRYINCLUDE_CRYCOMMON_ILOG_H
-
-
-

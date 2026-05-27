@@ -38,84 +38,65 @@
 
 namespace GradientSignal::ImageCreatorUtils
 {
-    //! CreateImageDialog allows the user to specify a set of image creation parameters for use in creating a new image asset.
-    class CreateImageDialog : public QDialog
-    {
-        Q_OBJECT
-    public:
-        AZ_CLASS_ALLOCATOR(CreateImageDialog, AZ::SystemAllocator);
-
-        CreateImageDialog(QWidget* parent = nullptr)
-            : QDialog(parent)
-        {
-            setModal(true);
-            setMinimumWidth(300);
-            resize(300, 100);
-            setWindowTitle("Create New Image");
-
-            // Create the layout for all the widgets to be stacked vertically.
-            auto verticalLayout = new QVBoxLayout();
-
-            // Create the width and height widgets
-
-            m_width = new AzQtComponents::SpinBox();
-            m_width->setRange(MinPixels, MaxPixels);
-            m_width->setValue(DefaultPixels);
-
-            m_height = new AzQtComponents::SpinBox();
-            m_height->setRange(MinPixels, MaxPixels);
-            m_height->setValue(DefaultPixels);
-
-            QGridLayout* dimensionsLayout = new QGridLayout();
-            dimensionsLayout->addWidget(new QLabel("Width:"), 0, 0);
-            dimensionsLayout->addWidget(m_width, 0, 1);
-            dimensionsLayout->addWidget(new QLabel("Height:"), 0, 2);
-            dimensionsLayout->addWidget(m_height, 0, 3);
-
-            verticalLayout->addLayout(dimensionsLayout);
-
-            // Connect ok and cancel buttons and change "ok" to "next".
-            auto buttonBox = new QDialogButtonBox(this);
-            buttonBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
-            buttonBox->setOrientation(Qt::Horizontal);
-            buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
-            QObject::connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
-            QObject::connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-            verticalLayout->addWidget(buttonBox);
-
-            // We set this to "Next" instead of "OK" because after the dialog box completes, a standard native file picker dialog
-            // will appear to select the save location for the created image, so the entire process appears as two steps to the end user.
-            buttonBox->button(QDialogButtonBox::Ok)->setText("Next");
-
-            auto gridLayout = new QGridLayout(this);
-            gridLayout->addLayout(verticalLayout, 0, 0, 1, 1);
-
-            adjustSize();
-        }
-
-        ~CreateImageDialog() = default;
-
-        int GetWidth()
-        {
-            return m_width->value();
-        }
-
-        int GetHeight()
-        {
-            return m_height->value();
-        }
-
-    private:
-        // Min/max/default values for the image dimensions
-        static inline constexpr int MinPixels = 1;
-        static inline constexpr int MaxPixels = 8192;
-        static inline constexpr int DefaultPixels = 512;
-
-        AzQtComponents::SpinBox* m_width = nullptr;
-        AzQtComponents::SpinBox* m_height = nullptr;
-    };
-
     AZ_ENUM_DEFINE_REFLECT_UTILITIES(PaintableImageAssetAutoSaveMode);
+
+    CreateImageDialog::CreateImageDialog(QWidget* parent)
+        : QDialog(parent)
+    {
+        setModal(true);
+        setMinimumWidth(300);
+        resize(300, 100);
+        setWindowTitle("Create New Image");
+
+        // Create the layout for all the widgets to be stacked vertically.
+        auto verticalLayout = new QVBoxLayout();
+
+        // Create the width and height widgets
+
+        m_width = new AzQtComponents::SpinBox();
+        m_width->setRange(MinPixels, MaxPixels);
+        m_width->setValue(DefaultPixels);
+
+        m_height = new AzQtComponents::SpinBox();
+        m_height->setRange(MinPixels, MaxPixels);
+        m_height->setValue(DefaultPixels);
+
+        QGridLayout* dimensionsLayout = new QGridLayout();
+        dimensionsLayout->addWidget(new QLabel("Width:"), 0, 0);
+        dimensionsLayout->addWidget(m_width, 0, 1);
+        dimensionsLayout->addWidget(new QLabel("Height:"), 0, 2);
+        dimensionsLayout->addWidget(m_height, 0, 3);
+
+        verticalLayout->addLayout(dimensionsLayout);
+
+        // Connect ok and cancel buttons and change "ok" to "next".
+        auto buttonBox = new QDialogButtonBox(this);
+        buttonBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+        buttonBox->setOrientation(Qt::Horizontal);
+        buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+        QObject::connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+        QObject::connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+        verticalLayout->addWidget(buttonBox);
+
+        // We set this to "Next" instead of "OK" because after the dialog box completes, a standard native file picker dialog
+        // will appear to select the save location for the created image, so the entire process appears as two steps to the end user.
+        buttonBox->button(QDialogButtonBox::Ok)->setText("Next");
+
+        auto gridLayout = new QGridLayout(this);
+        gridLayout->addLayout(verticalLayout, 0, 0, 1, 1);
+
+        adjustSize();
+    }
+
+    int CreateImageDialog::GetWidth()
+    {
+        return m_width->value();
+    }
+
+    int CreateImageDialog::GetHeight()
+    {
+        return m_height->value();
+    }
 
     void PaintableImageAssetHelperBase::Reflect(AZ::ReflectContext* context)
     {
@@ -610,5 +591,3 @@ namespace GradientSignal::ImageCreatorUtils
         return createdAsset;
     }
 } // namespace GradientSignal::ImageCreatorUtils
-
-#include "PaintableImageAssetHelper.moc"

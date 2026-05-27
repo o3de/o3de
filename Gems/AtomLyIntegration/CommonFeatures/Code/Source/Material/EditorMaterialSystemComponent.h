@@ -18,7 +18,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -42,7 +41,6 @@ namespace AZ
             , public AzToolsFramework::EditorEvents::Bus::Handler
             , public AzToolsFramework::ToolsApplicationNotificationBus::Handler
             , public AZ::SystemTickBus::Handler
-            , public AzFramework::AssetCatalogEventBus::Handler
             , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
         {
         public:
@@ -78,9 +76,6 @@ namespace AZ
 
             //! AZ::SystemTickBus::Handler interface overrides...
             void OnSystemTick() override;
-
-            // AzFramework::AssetCatalogEventBus::Handler overrides...
-            void OnCatalogLoaded(const char* catalogFile) override;
 
             //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
             void OnRenderMaterialPreviewRendered(

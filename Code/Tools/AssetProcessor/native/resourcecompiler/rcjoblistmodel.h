@@ -104,7 +104,7 @@ namespace AssetProcessor
         void EraseJobs(const SourceAssetReference& sourceAssetReference, AZStd::vector<RCJob*>& pendingJobs);
 
         //! This happens when a new source file appears in the intermediate assets folder.
-        //! Returns true if any jobs were unblocked by this.
+        //! Returnst true if any jobs were unblocked by this.
         bool UpdateMissingSourceDependencies(const QString& sourceFileName);
 
     private:

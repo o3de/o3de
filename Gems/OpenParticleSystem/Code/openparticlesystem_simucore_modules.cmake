@@ -1,0 +1,74 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+set(FILES
+    SimuCore/modules/particle/core/include/particle/core/Particle.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleCurve.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleDataPool.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleDelegate.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleDistribution.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleDriver.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleEffector.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleEmitter.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleHelper.h
+    SimuCore/modules/particle/core/include/particle/core/ParticlePool.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleRandom.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleRender.h
+    SimuCore/modules/particle/core/include/particle/core/ParticleSystem.h
+    SimuCore/modules/particle/core/include/particle/emit/ParticleEmit.h
+    SimuCore/modules/particle/core/include/particle/emit/ParticleEventHandler.h
+    SimuCore/modules/particle/core/include/particle/spawn/SpawnColor.h
+    SimuCore/modules/particle/core/include/particle/spawn/SpawnEvent.h
+    SimuCore/modules/particle/core/include/particle/spawn/SpawnLifetime.h
+    SimuCore/modules/particle/core/include/particle/spawn/SpawnLightEffect.h
+    SimuCore/modules/particle/core/include/particle/spawn/SpawnLocation.h
+    SimuCore/modules/particle/core/include/particle/spawn/SpawnRotation.h
+    SimuCore/modules/particle/core/include/particle/spawn/SpawnSize.h
+    SimuCore/modules/particle/core/include/particle/spawn/SpawnVelocity.h
+    SimuCore/modules/particle/core/include/particle/update/ParticleCollision.h
+    SimuCore/modules/particle/core/include/particle/update/UpdateColor.h
+    SimuCore/modules/particle/core/include/particle/update/UpdateEvent.h
+    SimuCore/modules/particle/core/include/particle/update/UpdateForce.h
+    SimuCore/modules/particle/core/include/particle/update/UpdateKill.h
+    SimuCore/modules/particle/core/include/particle/update/UpdateRotateAroundPoint.h
+    SimuCore/modules/particle/core/include/particle/update/UpdateSize.h
+    SimuCore/modules/particle/core/include/particle/update/UpdateSubUv.h
+    SimuCore/modules/particle/core/include/particle/update/UpdateVelocity.h
+    SimuCore/modules/particle/core/src/core/ParticleMeshRender.h
+    SimuCore/modules/particle/core/src/core/ParticleRibbonRender.h
+    SimuCore/modules/particle/core/src/core/ParticleSpriteRender.h
+    SimuCore/modules/particle/core/src/core/ParticleCurve.cpp
+    SimuCore/modules/particle/core/src/core/ParticleDataPool.cpp
+    SimuCore/modules/particle/core/src/core/ParticleDriver.cpp
+    SimuCore/modules/particle/core/src/core/ParticleEmitter.cpp
+    SimuCore/modules/particle/core/src/core/ParticleMeshRender.cpp
+    SimuCore/modules/particle/core/src/core/ParticlePool.cpp
+    SimuCore/modules/particle/core/src/core/ParticleRandom.cpp
+    SimuCore/modules/particle/core/src/core/ParticleRibbonRender.cpp
+    SimuCore/modules/particle/core/src/core/ParticleSpriteRender.cpp
+    SimuCore/modules/particle/core/src/core/ParticleSystem.cpp
+    SimuCore/modules/particle/core/src/emit/ParticleEmit.cpp
+    SimuCore/modules/particle/core/src/emit/ParticleEventHandler.cpp
+    SimuCore/modules/particle/core/src/spawn/SpawnColor.cpp
+    SimuCore/modules/particle/core/src/spawn/SpawnEvent.cpp
+    SimuCore/modules/particle/core/src/spawn/SpawnLifetime.cpp
+    SimuCore/modules/particle/core/src/spawn/SpawnLightEffect.cpp
+    SimuCore/modules/particle/core/src/spawn/SpawnLocation.cpp
+    SimuCore/modules/particle/core/src/spawn/SpawnRotation.cpp
+    SimuCore/modules/particle/core/src/spawn/SpawnSize.cpp
+    SimuCore/modules/particle/core/src/spawn/SpawnVelocity.cpp
+    SimuCore/modules/particle/core/src/update/ParticleCollision.cpp
+    SimuCore/modules/particle/core/src/update/UpdateColor.cpp
+    SimuCore/modules/particle/core/src/update/UpdateEvent.cpp
+    SimuCore/modules/particle/core/src/update/UpdateForce.cpp
+    SimuCore/modules/particle/core/src/update/UpdateKill.cpp
+    SimuCore/modules/particle/core/src/update/UpdateRotateAroundPoint.cpp
+    SimuCore/modules/particle/core/src/update/UpdateSize.cpp
+    SimuCore/modules/particle/core/src/update/UpdateSubUv.cpp
+    SimuCore/modules/particle/core/src/update/UpdateVelocity.cpp
+)

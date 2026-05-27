@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/MotionSet.h>
-#include <QtCore/QObject>
+#include <QObject>
 #include <MCore/Source/StandardHeaders.h>
 #endif
 

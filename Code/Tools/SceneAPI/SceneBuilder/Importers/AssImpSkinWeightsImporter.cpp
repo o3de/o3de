@@ -111,12 +111,13 @@ namespace AZ
                 }
 
                 Events::ProcessingResult skinWeightsResult;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, skinWeightData, weightsIndexForMesh, skinWeightName);
-                skinWeightsResult = Events::Process(dataPopulated);
+                auto dataPopulated = context.m_contextProvider->CreateSceneAttributeDataPopulatedContext(
+                    context, skinWeightData, weightsIndexForMesh, skinWeightName);
+                skinWeightsResult = Events::Process(*dataPopulated);
 
                 if (skinWeightsResult != Events::ProcessingResult::Failure)
                 {
-                    skinWeightsResult = AddAttributeDataNodeWithContexts(dataPopulated);
+                    skinWeightsResult = AddAttributeDataNodeWithContexts(*dataPopulated);
                 }
 
                 combinedSkinWeightsResult += skinWeightsResult;

@@ -8,7 +8,7 @@
  */
 // {END_LICENSE}
 
-#include <${SanitizedCppName}Component.h>
+#include "${SanitizedCppName}Component.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>

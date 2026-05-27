@@ -1571,7 +1571,7 @@ namespace internal
             return;
 
         QList<QInputMethodEvent::Attribute> attributes;
-        foreach (const QTextLayout::FormatRange& fr, formats)
+        for (const QTextLayout::FormatRange& fr : formats)
         {
             QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
             int start = fr.start;

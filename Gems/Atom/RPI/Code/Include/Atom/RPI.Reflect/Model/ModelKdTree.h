@@ -29,7 +29,11 @@ namespace AZ
             struct TriangleIndices { uint32_t index1, index2, index3; };
             using ObjectIdTriangleIndices = AZStd::tuple<AZ::u8, TriangleIndices>;
 
-            ModelKdTree() = default;
+            ModelKdTree();
+
+            ModelKdTree(ModelKdTree&&);
+
+            ~ModelKdTree();
 
             bool Build(const ModelAsset* model);
             //! Return if a ray intersected the model.
@@ -70,7 +74,7 @@ namespace AZ
 
             static constexpr int s_MinimumVertexSizeInLeafNode = 3 * 10;
             // Stop splitting the tree if more than 10% of the triangles are straddling the split axis
-            static constexpr float s_MaximumSplitAxisStraddlingTriangles = 1.1;
+            static constexpr float s_MaximumSplitAxisStraddlingTriangles = 1.1f;
             AZStd::unique_ptr<ModelKdTreeNode> m_pRootNode;
 
             struct MeshData

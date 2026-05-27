@@ -185,5 +185,10 @@ namespace AZ
             return m_readWriteIndex;
         }
 
+        uint64_t BufferView::GetDeviceAddress() const
+        {
+            return static_cast<const Buffer&>(GetBuffer()).GetDeviceAddress() +
+                GetDescriptor().m_elementOffset * GetDescriptor().m_elementSize;
+        }
     } // namespace Vulkan
 } // namespace AZ

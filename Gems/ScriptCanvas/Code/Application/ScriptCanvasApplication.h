@@ -17,6 +17,8 @@
 
 namespace ScriptCanvas
 {
+    AZ_DECLARE_BUDGET(ScriptCanvasApplication);
+
     class ScriptCanvasApplication
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
@@ -34,6 +36,8 @@ namespace ScriptCanvas
         void Reflect(AZ::ReflectContext* context) override;
         void StartCommon(AZ::Entity* systemEntity) override;
         void Destroy() override;
+        void RunMainLoop() override;
+        void ExitMainLoop() override;
         // ~AzToolsFramework::ToolsApplication
 
         // AzToolsFramework::EditorWindowRequests::Bus::Handler

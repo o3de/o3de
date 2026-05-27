@@ -8,7 +8,9 @@
 
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/containers/vector.h>
@@ -16,6 +18,13 @@
 
 #include <GradientSignal/Util.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
+#include <QDialog>
+#endif
+
+namespace AzQtComponents
+{
+    class SpinBox;
+}
 
 namespace GradientSignal::ImageCreatorUtils
 {
@@ -25,6 +34,29 @@ namespace GradientSignal::ImageCreatorUtils
         (AutoSave, 1),
         (AutoSaveWithIncrementalNames, 2)
     );
+
+    //! CreateImageDialog allows the user to specify a set of image creation parameters for use in creating a new image asset.
+    class CreateImageDialog : public QDialog
+    {
+        Q_OBJECT
+    public:
+        AZ_CLASS_ALLOCATOR(CreateImageDialog, AZ::SystemAllocator);
+
+        CreateImageDialog(QWidget* parent = nullptr);
+        ~CreateImageDialog() = default;
+
+        int GetWidth();
+        int GetHeight();
+
+    private:
+        // Min/max/default values for the image dimensions
+        static inline constexpr int MinPixels = 1;
+        static inline constexpr int MaxPixels = 8192;
+        static inline constexpr int DefaultPixels = 512;
+
+        AzQtComponents::SpinBox* m_width = nullptr;
+        AzQtComponents::SpinBox* m_height = nullptr;
+    };
 
     //! Helper class to manage all the common logic and UX for paintable image creation, editing, and saving.
     //! This is split out from PaintableImageAssetHelper so that we can minimize the amount of duplicated code caused

@@ -125,7 +125,7 @@ namespace AzToolsFramework
             auto emptyLayout = new QVBoxLayout(m_emptyLayoutWidget);
             auto emptyLabel = new QLabel(m_emptyLayoutWidget);
             emptyLabel->setWordWrap(true);
-            emptyLabel->setMargin(4);
+            emptyLabel->setContentsMargins(4, 4, 4, 4);
             emptyLabel->setText(QObject::tr("Select an asset to view its properties in the inspector."));
             emptyLayout->addWidget(emptyLabel);
             emptyLayout->addStretch(1);

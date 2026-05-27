@@ -36,7 +36,7 @@ namespace AZ::RHI
         bufferStats->m_sizeInBytes = descriptor.m_byteCount;
     }
     
-    Ptr<DeviceBufferView> DeviceBuffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
+    Ptr<DeviceBufferView> DeviceBuffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor) const
     {
         return Base::GetResourceView(bufferViewDescriptor);
     }

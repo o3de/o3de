@@ -17,7 +17,6 @@ ly_add_target(
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC
-    AUTORCC
     FILES_CMAKE
         lua_ide_files.cmake
         ${pal_dir}/lua_ide_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake

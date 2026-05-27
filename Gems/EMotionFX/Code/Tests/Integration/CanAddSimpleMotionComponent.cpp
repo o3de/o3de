@@ -27,6 +27,7 @@ namespace EMotionFX
     using CanAddSimpleMotionComponentFixture = ComponentFixture<
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AZ::UserSettingsComponent,
         AzToolsFramework::Components::PropertyManagerComponent,
@@ -82,6 +83,6 @@ namespace EMotionFX
             &AzToolsFramework::EditorComponentAPIRequests::IsComponentEnabled,
             componentOutcome.GetValue().at(0)
         );
-        EXPECT_FALSE(isActive);
+        EXPECT_TRUE(isActive);
     }
 } // namespace EMotionFX

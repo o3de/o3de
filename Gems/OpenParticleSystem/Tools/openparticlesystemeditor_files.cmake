@@ -1,0 +1,102 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+set(FILES
+    OpenParticleSystemEditor/Window/EffectorInspector.h
+    OpenParticleSystemEditor/Window/EffectorInspector.cpp
+    OpenParticleSystemEditor/Window/EffectorInspector.ui
+    OpenParticleSystemEditor/Window/EmitterInspector.h
+    OpenParticleSystemEditor/Window/EmitterInspector.cpp
+    OpenParticleSystemEditor/Window/EmitterInspector.ui
+    OpenParticleSystemEditor/Window/ExploreInspector.h
+    OpenParticleSystemEditor/Window/ExploreInspector.cpp
+    OpenParticleSystemEditor/Window/OpenParticleSystemEditorWindow.cpp
+    OpenParticleSystemEditor/Window/OpenParticleSystemEditorWindow.h
+    OpenParticleSystemEditor/Window/OpenParticleSystemEditorWindowRequests.h
+    OpenParticleSystemEditor/Window/LevelOfDetailInspector.h
+    OpenParticleSystemEditor/Window/LevelOfDetailInspector.cpp
+    OpenParticleSystemEditor/Window/LevelOfDetailInspectorNotifyBus.h
+    OpenParticleSystemEditor/Window/ViewInspector.h
+    OpenParticleSystemEditor/Window/ViewInspector.cpp
+    OpenParticleSystemEditor/Window/OpenParticleEditor.qrc
+    OpenParticleSystemEditor/Window/OpenParticleEditor.qss
+    OpenParticleSystemEditor/Window/ParticleGraphicsScence.h
+    OpenParticleSystemEditor/Window/ParticleGraphicsScence.cpp
+    OpenParticleSystemEditor/Window/ParticleGraphicsView.h
+    OpenParticleSystemEditor/Window/ParticleGraphicsView.cpp
+    OpenParticleSystemEditor/Window/ParticleItemWidget.h
+    OpenParticleSystemEditor/Window/ParticleItemWidget.cpp
+    OpenParticleSystemEditor/Window/ParticleItemWidget.ui
+    OpenParticleSystemEditor/Window/ParticleLineWidget.h
+    OpenParticleSystemEditor/Window/ParticleLineWidget.cpp
+    OpenParticleSystemEditor/Window/ParticleCommonData.h
+    OpenParticleSystemEditor/Window/LightingPresetMenu.h
+    OpenParticleSystemEditor/Window/LightingPresetMenu.cpp
+    OpenParticleSystemEditor/Window/ComboBoxWidget.h
+    OpenParticleSystemEditor/Window/ComboBoxWidget.cpp
+    OpenParticleSystemEditor/Window/PropertyEditorWidget.h
+    OpenParticleSystemEditor/Window/PropertyEditorWidget.cpp
+    OpenParticleSystemEditor/Window/EventHandlerWidget.h
+    OpenParticleSystemEditor/Window/EventHandlerWidget.cpp
+    OpenParticleSystemEditor/Window/EventHandlerWidgets.h
+    OpenParticleSystemEditor/Window/EventHandlerWidgets.cpp
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportNotificationBus.h
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportModule.h
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportSettings.h
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportRequestBus.h
+    OpenParticleSystemEditor/Viewport/PerformanceMetrics.h
+    OpenParticleSystemEditor/Viewport/PerformanceMonitorComponent.h
+    OpenParticleSystemEditor/Viewport/PerformanceMonitorComponent.cpp
+    OpenParticleSystemEditor/Viewport/PerformanceMonitorRequestBus.h
+    OpenParticleSystemEditor/Viewport/InputController/OpenParticleEditorViewportInputControllerBus.h
+    OpenParticleSystemEditor/Viewport/InputController/OpenParticleEditorViewportInputController.cpp
+    OpenParticleSystemEditor/Viewport/InputController/OpenParticleEditorViewportInputController.h
+    OpenParticleSystemEditor/Viewport/InputController/Behavior.cpp
+    OpenParticleSystemEditor/Viewport/InputController/Behavior.h
+    OpenParticleSystemEditor/Viewport/InputController/DollyCameraBehavior.cpp
+    OpenParticleSystemEditor/Viewport/InputController/DollyCameraBehavior.h
+    OpenParticleSystemEditor/Viewport/InputController/IdleBehavior.cpp
+    OpenParticleSystemEditor/Viewport/InputController/IdleBehavior.h
+    OpenParticleSystemEditor/Viewport/InputController/MoveCameraBehavior.cpp
+    OpenParticleSystemEditor/Viewport/InputController/MoveCameraBehavior.h
+    OpenParticleSystemEditor/Viewport/InputController/PanCameraBehavior.cpp
+    OpenParticleSystemEditor/Viewport/InputController/PanCameraBehavior.h
+    OpenParticleSystemEditor/Viewport/InputController/OrbitCameraBehavior.cpp
+    OpenParticleSystemEditor/Viewport/InputController/OrbitCameraBehavior.h
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportModule.cpp
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportSettings.cpp
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportComponent.cpp
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportComponent.h
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportWidget.cpp
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportWidget.h
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportWidgetRequestsBus.h
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportRenderer.cpp
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportRenderer.h
+    OpenParticleSystemEditor/Viewport/OpenParticleViewportRendererRequestsBus.h
+    OpenParticleSystemEditor/Window/Controls/CurveEditor.h
+    OpenParticleSystemEditor/Window/Controls/CurveEditor.cpp
+    OpenParticleSystemEditor/Window/Controls/InfoLineEdit.h
+    OpenParticleSystemEditor/Window/Controls/InfoLineEdit.cpp
+    OpenParticleSystemEditor/Window/Controls/InfoRadioButton.h
+    OpenParticleSystemEditor/Window/Controls/InfoRadioButton.cpp
+    OpenParticleSystemEditor/Window/Controls/PropertyDistCtrl.h
+    OpenParticleSystemEditor/Window/Controls/PropertyDistCtrl.cpp
+    OpenParticleSystemEditor/Window/Controls/GradientColorDialog.h
+    OpenParticleSystemEditor/Window/Controls/GradientColorDialog.cpp
+    OpenParticleSystemEditor/Window/Controls/GradientColorPickerWidget.h
+    OpenParticleSystemEditor/Window/Controls/GradientColorPickerWidget.cpp
+    OpenParticleSystemEditor/Window/Controls/GradientWidget.h
+    OpenParticleSystemEditor/Window/Controls/GradientWidget.cpp
+    OpenParticleSystemEditor/Window/Controls/PropertyGradientColorCtrl.h
+    OpenParticleSystemEditor/Window/Controls/PropertyGradientColorCtrl.cpp
+    OpenParticleSystemEditor/Window/Controls/DistIndexUtil.h
+    OpenParticleSystemEditor/Window/Controls/DistIndexUtil.cpp
+    OpenParticleSystemEditor/Window/Controls/CommonDefs.h
+    OpenParticleSystemEditor/Window/AssetWidget.h
+    OpenParticleSystemEditor/Window/AssetWidget.cpp
+)

@@ -16,7 +16,7 @@
 #ifdef _RELEASE
 #define CHECK_STATS_THREAD_OWNERSHIP()
 #else
-#define CHECK_STATS_THREAD_OWNERSHIP() if (m_statsThreadOwner != CryGetCurrentThreadId()) {__debugbreak(); }
+#define CHECK_STATS_THREAD_OWNERSHIP() if (m_statsThreadOwner != AZStd::this_thread::get_id()) {__debugbreak(); }
 #endif
 
 class CXmlNodePool;

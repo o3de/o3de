@@ -13,7 +13,7 @@
 
 #include <QDir>
 #include <QFile>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QTextStream>
@@ -233,14 +233,14 @@ namespace O3DE::ProjectManager
 
         // Fetch the output directory from the logs if the process was successful
         // Use regex to collect that directory, and collect the slice of the word surrounded in quotes
-        
-        QRegExp quotedDirRegex("Project exported to '([^']*)'\\.");
-        int pos = quotedDirRegex.indexIn(exportOutput);
-        if (pos > -1)
+
+        QRegularExpression quotedDirRegex("Project exported to '([^']*)'\\.");
+        QRegularExpressionMatch match = quotedDirRegex.match(exportOutput);
+        if (match.hasMatch())
         {
-            m_expectedOutputDir = quotedDirRegex.cap(1);
+            m_expectedOutputDir = match.captured(1);
         }
-        
+
         return AZ::Success();
     }
 

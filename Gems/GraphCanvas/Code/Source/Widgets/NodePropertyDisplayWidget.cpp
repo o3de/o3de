@@ -6,8 +6,8 @@
  *
  */
 
-#include <qgraphicslinearlayout.h>
-#include <qgraphicsscene.h>
+#include <QGraphicsLinearLayout>
+#include <QGraphicsScene>
 
 #include <Widgets/NodePropertyDisplayWidget.h>
 

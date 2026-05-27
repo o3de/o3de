@@ -86,20 +86,6 @@ void CDisplaySettings::SetRenderFlags(int flags)
 void CDisplaySettings::SetDebugFlags(int flags)
 {
     m_debugFlags = flags;
-
-    //
-    //SetCVar( "ai_DebugDraw",m_debugFlags&DBG_AI_DEBUGDRAW );
-    //SetCVarInt( "r_TexLog",(m_debugFlags&DBG_TEXTURE_MEMINFO) ? 2:0 );
-    //SetCVarInt( "MemStats",(m_debugFlags&DBG_MEMSTATS) ? 1000:0 );
-    //SetCVarInt( "p_draw_helpers",(m_debugFlags&DBG_PHYSICS_DEBUGDRAW) ? 5634:0 );
-
-    //SetCVar( "r_ProfileShaders",(m_debugFlags&DBG_RENDERER_PROFILESHADERS) );
-
-    SetCVarInt("r_MeasureOverdraw", (m_debugFlags & DBG_RENDERER_OVERDRAW) ? 1 : 0);   //Eric@conffx display Overdraw in Particle editor preview window
-    //SetCVarInt( "r_Stats",(m_debugFlags&DBG_RENDERER_RESOURCES) ? 4:0 );
-    //SetCVarInt( "sys_enable_budgetmonitoring",(m_debugFlags&DBG_BUDGET_MONITORING) ? 4:0 );
-
-    //SetCVarInt( "Profile",(m_debugFlags&DBG_FRAMEPROFILE) ? 1:0 );
 }
 
 //////////////////////////////////////////////////////////////////////////

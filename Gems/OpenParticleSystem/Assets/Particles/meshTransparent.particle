@@ -1,0 +1,82 @@
+{
+    "name": "ParticleSystem",
+    "systemConfig": {
+        "loop": true,
+        "parallel": true
+    },
+    "emitters": [
+        {
+            "name": "Emitter",
+            "config": {
+                "type": "CPU",
+                "maxSize": 1,
+                "startTime": 0.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": {
+                "assetId": {
+                    "guid": "{E655E65E-DF33-506E-8C3F-063AB4DE3BA3}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/mesh_transparent.azmaterial"
+            },
+            "model": {
+                "assetId": {
+                    "guid": "{B991E03B-F50D-552E-9E2D-64FA6DAB1CCB}",
+                    "subId": 285127096
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materialeditor/viewportmodels/cube.fbx.azmodel"
+            },
+            "OpenParticle::MeshConfig": {
+                "facing": "CAMERA_RECTANGLE",
+                "sortId": 0
+            },
+            "OpenParticle::EmitSpawn": {
+                "isProcessSpawnRate": true,
+                "spawnRateObject": {
+                    "dataValue": 10.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 100.0,
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocPoint": {
+                "positionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            }
+        }
+    ],
+    "LODs": [],
+    "distribution": {
+        "randoms": [],
+        "curves": []
+    }
+}

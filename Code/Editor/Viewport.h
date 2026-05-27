@@ -25,6 +25,7 @@
 #include <QtWinExtras/qwinfunctions.h>
 #endif
 
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Uuid.h>
 #include <IEditor.h>
 #endif
@@ -152,24 +153,24 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Set current view matrix,
     //! This is a matrix that transforms from world to view space.
-    virtual void SetViewTM([[maybe_unused]] const Matrix34& tm)
+    virtual void SetViewTM([[maybe_unused]] const AZ::Matrix3x4& tm)
     {
         AZ_Error("CryLegacy", false, "QtViewport::SetViewTM not implemented");
     }
 
     //! Get current view matrix.
     //! This is a matrix that transforms from world space to view space.
-    const Matrix34& GetViewTM() const override
+    const AZ::Matrix3x4& GetViewTM() const override
     {
         AZ_Error("CryLegacy", false, "QtViewport::GetViewTM not implemented");
-        static const Matrix34 m;
+        static const AZ::Matrix3x4 m = AZ::Matrix3x4::CreateZero();
         return m;
     };
 
     //////////////////////////////////////////////////////////////////////////
     //! Get current screen matrix.
     //! Screen matrix transform from World space to Screen space.
-    const Matrix34& GetScreenTM() const override
+    const AZ::Matrix3x4& GetScreenTM() const override
     {
         return m_screenTM;
     }
@@ -203,7 +204,7 @@ public:
     virtual int GetViewportId() const { return m_nCurViewportID; };
 
     // Store final Game Matrix ready for editor
-    void SetGameTM(const Matrix34& tm) { m_gameTM = tm; };
+    void SetGameTM(const AZ::Matrix3x4& tm) { m_gameTM = tm; };
 
     //////////////////////////////////////////////////////////////////////////
     // Drag and drop support on viewports.
@@ -253,10 +254,10 @@ protected:
     CLayoutViewPane* m_viewPane = nullptr;
     CViewManager* m_viewManager;
     // Screen Matrix
-    Matrix34 m_screenTM;
+    AZ::Matrix3x4 m_screenTM;
     int m_nCurViewportID;
     // Final game view matrix before dropping back to editor
-    Matrix34 m_gameTM;
+    AZ::Matrix3x4 m_gameTM;
 
     // Custom drop callback (Leroy@Conffx)
     DropCallback m_dropCallback;

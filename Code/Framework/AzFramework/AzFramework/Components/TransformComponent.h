@@ -75,9 +75,12 @@ namespace AzFramework
         //! This will use worldTM as a localTM and move the transform relative to the parent.
         void SetParentRelative(AZ::EntityId id) override;
 
+        //! Reference to what active type index position the "Parent" type is for Entity Activation Handling.
+        static size_t s_parentActiveTypeIndex;
     protected:
 
         // Component
+        void Init() override;
         void Activate() override;
         void Deactivate() override;
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
@@ -125,6 +128,8 @@ namespace AzFramework
         AZ::Vector3 GetLocalRotation() override;
         AZ::Quaternion GetLocalRotationQuaternion() override;
 
+        static size_t GetParentActiveIndex();
+
         // Scale Modifiers
         AZ::Vector3 GetLocalScale() override;
 
@@ -147,15 +152,17 @@ namespace AzFramework
 
         // EntityBus
         //! Called when the parent entity activates.
+        //! Called when the parent entity is going to be destroyed.
         void OnEntityActivated(const AZ::EntityId& parentEntityId) override;
-        //! Called when the parent entity deactivates.
         void OnEntityDeactivated(const AZ::EntityId& parentEntityId) override;
+        void OnEntityDestruction(const AZ::EntityId& parentEntityId) override;
         //! @}
 
         //////////////////////////////////////////////////////////////////////////
         // Actual Implementation Functions
         // They are protected so we can gate them when network-controlled
         void SetParentImpl(AZ::EntityId parentId, bool isKeepWorldTM);
+        void ProcessParentEntity(const AZ::EntityId& parentEntityId);
         void SetLocalTMImpl(const AZ::Transform& tm);
         void SetWorldTMImpl(const AZ::Transform& tm);
         void OnTransformChangedImpl(const AZ::Transform& parentLocalTM, const AZ::Transform& parentWorldTM);
@@ -182,6 +189,7 @@ namespace AzFramework
         AZ::Transform m_localTM = AZ::Transform::CreateIdentity(); ///< Local transform relative to parent transform (same as worldTM if no parent).
         AZ::Transform m_worldTM = AZ::Transform::CreateIdentity(); ///< World transform including parent transform (same as localTM if no parent).
 
+        AZ::EntityId m_entityId; ///< Stored for Deconstructor event/bus firing.
         AZ::EntityId m_parentId; ///< If valid, this transform is parented to m_parentId.
         AZ::TransformInterface* m_parentTM = nullptr; ///< Cached - pointer to parent transform, to avoid extra calls. Valid only when if it's present.
         AZ::TransformNotificationBus::BusPtr m_notificationBus; ///< Cached bus pointer to the notification bus.
@@ -189,6 +197,7 @@ namespace AzFramework
         bool m_parentActive = false; ///< Keeps track of the state of the parent entity.
         bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
+        
         /// Behavior for this entity's transform when its parent's transform changes.
         AZ::OnParentChangedBehavior m_onParentChangedBehavior = AZ::OnParentChangedBehavior::Update;
     };

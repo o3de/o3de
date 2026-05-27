@@ -15,8 +15,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include "PropertyEditorAPI.h"
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QFrame>
+#include <QWidget>
+#include <QFrame>
 #endif
 
 class QScrollArea;

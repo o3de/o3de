@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <qobject.h>
+#include <QObject>
 
 #include <GraphCanvas/Widgets/GraphCanvasTreeModel.h>
 

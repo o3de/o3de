@@ -188,11 +188,9 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
         m_InvertRotationInputAxisY ? m_rotation.y : -m_rotation.y);
 
     // Update rotation (not sure how to do this properly using just AZ::Quaternion)
-    const AZ::Quaternion worldOrientation = worldTransform.GetRotation();
-    const Ang3 rotation(AZQuaternionToLYQuaternion(worldOrientation));
-    const Ang3 newRotation = rotation + Ang3(DEG2RAD(invertedRotation.y), 0.f, DEG2RAD(invertedRotation.x)) * m_rotationSpeed;
-    const AZ::Quaternion newOrientation = LYQuaternionToAZQuaternion(Quat(newRotation));
-    worldTransform.SetRotation(newOrientation);
+    const Vector3 rotation = worldTransform.GetRotation().GetEulerDegreesZYX();
+    const Vector3 newRotation = rotation + Vector3(invertedRotation.y, 0.f, invertedRotation.x) * m_rotationSpeed;
+    worldTransform.SetRotation(Quaternion::CreateFromEulerDegreesZYX(newRotation));
 
     AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, worldTransform);
 }

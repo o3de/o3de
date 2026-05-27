@@ -11,6 +11,7 @@ set(FILES
     3rdParty/ACES/ACES/Aces.h
     Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
     Include/Atom/Feature/Automation/AtomAutomationBus.h
+    Include/Atom/Feature/Base.h
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CapsuleLightFeatureProcessorInterface.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
@@ -35,16 +36,19 @@ set(FILES
     Include/Atom/Feature/Debug/RenderDebugParams.inl
     Include/Atom/Feature/Debug/RenderDebugSettingsInterface.h
     Include/Atom/Feature/Decals/DecalFeatureProcessorInterface.h
+    Include/Atom/Feature/DeferredMaterial/DeferredMaterialFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h
     Include/Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h
     Include/Atom/Feature/ImGui/ImGuiUtils.h
     Include/Atom/Feature/ImGui/SystemBus.h
-    Include/Atom/Feature/ImGui/ImGuiPass.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/Material/ConvertEmissiveUnitFunctor.h
+    Include/Atom/Feature/Material/FallbackPBRMaterial.h
     Include/Atom/Feature/Mesh/MeshCommon.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessorInterface.h
+    Include/Atom/Feature/Mesh/MeshInfo.h
+    Include/Atom/Feature/Mesh/MeshInfoBus.h
     Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
     Include/Atom/Feature/Mesh/StreamBufferViewsBuilderInterface.h
     Include/Atom/Feature/MorphTargets/MorphTargetInputBuffers.h
@@ -125,7 +129,6 @@ set(FILES
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h
-    Include/Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyBoxFogSettings.h
@@ -161,5 +164,4 @@ set(FILES
     Source/Utils/GpuBufferHandler.cpp
     Source/Utils/LightingPreset.cpp
     Source/Utils/ModelPreset.cpp
-    Source/ImGui/ImGuiPass.cpp
 )

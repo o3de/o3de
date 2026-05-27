@@ -12,17 +12,17 @@
 #include "PropertyQTConstants.h"
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
-#include <QtGui/QPixmapCache>
-#include <QtGui/QMouseEvent>
-#include <QtCore/QMimeData>
-#include <QtCore/QEvent>
-#include <QtCore/QTimer>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QMenu>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QPixmapCache>
+#include <QMouseEvent>
+#include <QMimeData>
+#include <QEvent>
+#include <QTimer>
 #include <QClipboard>
 #include <QListView>
 #include <QTableView>
@@ -877,7 +877,7 @@ namespace AzToolsFramework
             }
             else if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder)
             {
-                SetFolderSelection(entry->GetRelativePath());
+                SetFolderSelection(entry->GetFullPath());
                 SetSelectedAssetID(AZ::Data::AssetId());
             }
         }
@@ -1667,14 +1667,19 @@ namespace AzToolsFramework
         (void)index;
         (void)node;
 
+        // Preserve the desired load behavior
+        AZ::Data::AssetLoadBehavior oldBehavior = instance.GetAutoLoadBehavior();
         if (!GUI->GetSelectedAssetID().IsValid())
         {
+            
             instance = property_t(AZ::Data::AssetId(), GUI->GetCurrentAssetType(), "");
         }
         else
         {
             instance = property_t(GUI->GetSelectedAssetID(), GUI->GetCurrentAssetType(), GUI->GetCurrentAssetHint());
         }
+        instance.SetAutoLoadBehavior(oldBehavior);
+
     }
 
     void AssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)

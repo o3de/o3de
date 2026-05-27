@@ -29,6 +29,7 @@
 #include <RHI/Query.h>
 #include <RHI/QueryPool.h>
 #include <RHI/RayTracingBlas.h>
+#include <RHI/RayTracingClusterBlas.h>
 #include <RHI/RayTracingBufferPools.h>
 #include <RHI/RayTracingCompactionQueryPool.h>
 #include <RHI/RayTracingPipelineState.h>
@@ -217,6 +218,11 @@ namespace AZ
         RHI::Ptr<RHI::DeviceRayTracingBlas> SystemComponent::CreateRayTracingBlas()
         {
             return RayTracingBlas::Create();
+        }
+
+        RHI::Ptr<RHI::DeviceRayTracingClusterBlas> SystemComponent::CreateRayTracingClusterBlas()
+        {
+            return RayTracingClusterBlas::Create();
         }
 
         RHI::Ptr<RHI::DeviceRayTracingTlas> SystemComponent::CreateRayTracingTlas()

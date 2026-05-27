@@ -7,6 +7,7 @@
  */
 
 #include <QAction>
+#include <QActionGroup>
 #include <QCompleter>
 #include <QEvent>
 #include <QGraphicsScene>

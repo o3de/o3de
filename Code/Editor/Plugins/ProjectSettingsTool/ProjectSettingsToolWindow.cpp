@@ -48,6 +48,11 @@ namespace ProjectSettingsTool
         const char* const AndroidSettingsJsonPath = "Platform/Android/android_project.json";
         const char* const AndroidSettingsJsonValueString = "android_settings";
 
+        const char* const WindowsSettingsJsonPath = "Platform/Windows/windows_project.json";
+        const char* const WindowsSettingsJsonValueString = "windows_settings";
+
+        const char* const RHIRegistryFilePath = "Registry/rhi.setreg";
+
         bool g_serializeRegistered = false;
     }
 
@@ -76,6 +81,11 @@ namespace ProjectSettingsTool
         if (PlatformEnabled(PlatformId::Android))
         {
             platformResources.emplace_back(PlatformId::Android, GetPlatformResource(PlatformId::Android));
+        }
+
+        if (PlatformEnabled(PlatformId::Windows))
+        {
+            platformResources.emplace_back(PlatformId::Windows, GetPlatformResource(PlatformId::Windows));
         }
 
         // Creates settings container to handle settings of all platforms
@@ -116,6 +126,11 @@ namespace ProjectSettingsTool
         {
             m_ui->platformTabs->removeTab(m_ui->platformTabs->indexOf(m_ui->androidTab));
         }
+        // Hide the Windows tab if that platform is not enabled.
+        if (!PlatformEnabled(PlatformId::Windows))
+        {
+            m_ui->platformTabs->removeTab(m_ui->platformTabs->indexOf(m_ui->windowsTab));
+        }
     }
 
     ProjectSettingsToolWindow::~ProjectSettingsToolWindow()
@@ -151,6 +166,7 @@ namespace ProjectSettingsTool
         BaseSettings::Reflect(context);
         AndroidSettings::Reflect(context);
         IosSettings::Reflect(context);
+        WindowsSettings::Reflect(context);
     }
 
     void ProjectSettingsToolWindow::RegisterHandlersAndBusses()
@@ -409,6 +425,11 @@ namespace ProjectSettingsTool
             dataForPropertyEditor = &m_platformProperties.ios;
             dataTypeID = m_platformProperties.ios.TYPEINFO_Uuid();
             break;
+        case PlatformId::Windows:
+            parent = m_ui->windowsTab;
+            dataForPropertyEditor = &m_platformProperties.windows;
+            dataTypeID = m_platformProperties.windows.TYPEINFO_Uuid();
+            break;
         default:
             AZ_Assert(false, "Cannot add unknown platform to ui.");
         }
@@ -510,6 +531,31 @@ namespace ProjectSettingsTool
             ));
             break;
         }
+        case PlatformId::Windows:
+        {
+            auto* windowsSettings = m_settingsContainer->GetPlatformData(plat);
+            if (!windowsSettings || !AZStd::holds_alternative<ProjectSettingsContainer::JsonSettings>(*windowsSettings))
+            {
+                QMessageBox::critical
+                (
+                    this,
+                    "Critical",
+                    "Windows settings is invalid. Project Settings Tool must close.",
+                    QMessageBox::Abort
+                );
+                ForceClose();
+            }
+            auto& windowsJSonSettings = AZStd::get<ProjectSettingsContainer::JsonSettings>(*windowsSettings);
+
+            m_platformPropertyEditors[platIdValue]->EnumerateInstances(AZStd::bind(
+                &ProjectSettingsToolWindow::MakeSerializerJsonNonRoot,
+                this,
+                plat,
+                AZStd::placeholders::_1,
+                windowsJSonSettings.m_document.get(),
+                ProjectSettingsContainer::GetJsonValue(*windowsJSonSettings.m_document, WindowsSettingsJsonValueString).GetValue()));
+           break;
+        }
         default:
             AZ_Assert(false, "Cannot make serializer for unknown platform.");
             break;
@@ -565,6 +611,7 @@ namespace ProjectSettingsTool
     void ProjectSettingsToolWindow::SaveSettingsFromUi()
     {
         bool anySaves = false;
+        bool requiresEditorRestart = false;
         const unsigned long long numPlatforms = static_cast<unsigned long long>(PlatformId::NumPlatformIds);
         bool needToSavePlat[numPlatforms] = {false};
 
@@ -579,6 +626,13 @@ namespace ProjectSettingsTool
                     anySaves = true;
                 }
             }
+        }
+
+        if (needToSavePlat[static_cast<int>(PlatformId::Windows)])
+        {
+            requiresEditorRestart = true;
+            AZ::IO::Path rhiRegistryFilePath = AZ::IO::Path(m_projectRoot) / RHIRegistryFilePath;
+            m_platformProperties.windows.m_graphics.SaveRHISettings(rhiRegistryFilePath);
         }
 
         if (anySaves)
@@ -618,8 +672,16 @@ namespace ProjectSettingsTool
                     ShowAllErrorsThenExitIfInvalid();
 
                     m_ui->reconfigureLog->setText("");
-                    QMessageBox::information(this, tr("Project Settings Saved"),
-                        tr("The project may need to be manually reconfigured for the new settings to be applied."));
+                    if (requiresEditorRestart)
+                    {
+                        QMessageBox::information(this, tr("Project Settings Saved"),
+                            tr("Some changes may require restarting the editor, depending on your platform."));
+                    }
+                    else
+                    {
+                        QMessageBox::information(this, tr("Project Settings Saved"),
+                            tr("The project may need to be manually reconfigured for the new settings to be applied."));
+                    }
 
                     m_ui->reloadButton->setEnabled(true);
                     m_ui->saveButton->setEnabled(true);
@@ -689,6 +751,12 @@ namespace ProjectSettingsTool
             const auto androidProjectJson = AZ::IO::FixedMaxPath(m_projectRoot) / AndroidSettingsJsonPath;
             return AZ::IO::SystemFile::Exists(androidProjectJson.c_str());
         }
+        // Windows can be disabled if the windows_project.json file is missing
+        else if (platformId == PlatformId::Windows)
+        {
+            const auto windowsProjectJson = AZ::IO::FixedMaxPath(m_projectRoot) / WindowsSettingsJsonPath;
+            return AZ::IO::SystemFile::Exists(windowsProjectJson.c_str());
+        }
 
         return true;
     }
@@ -714,6 +782,14 @@ namespace ProjectSettingsTool
             if (AZ::IO::SystemFile::Exists(androidProjectJson.c_str()))
             {
                 return androidProjectJson.LexicallyNormal().String();
+            }
+        }
+        else if (platformId == PlatformId::Windows)
+        {
+            const auto windowsProjectJson = AZ::IO::FixedMaxPath(m_projectRoot) / WindowsSettingsJsonPath;
+            if (AZ::IO::SystemFile::Exists(windowsProjectJson.c_str()))
+            {
+                return windowsProjectJson.LexicallyNormal().String();
             }
         }
 

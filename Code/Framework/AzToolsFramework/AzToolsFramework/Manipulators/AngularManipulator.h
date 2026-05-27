@@ -38,7 +38,7 @@ namespace AzToolsFramework
         AngularManipulator(const AngularManipulator&) = delete;
         AngularManipulator& operator=(const AngularManipulator&) = delete;
 
-        ~AngularManipulator() = default;
+        ~AngularManipulator();
 
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<AngularManipulator> MakeShared(const AZ::Transform& worldFromLocal);

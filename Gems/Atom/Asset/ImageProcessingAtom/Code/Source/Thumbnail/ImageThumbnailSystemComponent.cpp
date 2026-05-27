@@ -109,7 +109,7 @@ namespace ImageProcessingAtom
         void ImageThumbnailSystemComponent::RenderThumbnail(
             AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
         {
-            if (auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(thumbnailKey.data()))
+            if (auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(thumbnailKey.get()))
             {
                 bool foundIt = false;
                 AZ::Data::AssetInfo assetInfo;
@@ -127,7 +127,7 @@ namespace ImageProcessingAtom
                     );
                 }
             }
-            else if (auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(thumbnailKey.data()))
+            else if (auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(thumbnailKey.get()))
             {
                 m_imageAssetLoader->QueueAsset(
                     productKey->GetAssetId(),

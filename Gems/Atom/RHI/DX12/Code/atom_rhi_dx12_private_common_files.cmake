@@ -117,6 +117,8 @@ set(FILES
     Source/RHI/RayTracingBufferPools.h
     Source/RHI/RayTracingBlas.cpp
     Source/RHI/RayTracingBlas.h
+    Source/RHI/RayTracingClusterBlas.cpp
+    Source/RHI/RayTracingClusterBlas.h
     Source/RHI/RayTracingCompactionQueryPool.cpp
     Source/RHI/RayTracingCompactionQueryPool.h
     Source/RHI/RayTracingTlas.cpp

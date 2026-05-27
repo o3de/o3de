@@ -16,6 +16,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include "PropertyEditorAPI.h"
 #include <UI/PropertyEditor/GenericComboBoxCtrl.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <QWidget>
 #include <QToolButton>

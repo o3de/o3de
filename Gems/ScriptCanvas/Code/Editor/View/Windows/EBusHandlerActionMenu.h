@@ -11,7 +11,7 @@
 #include <QAbstractListModel>
 #include <QAbstractItemView>
 #include <QMenu>
-#include <qregexp.h>
+#include <QRegularExpression>
 #include <QSortFilterProxyModel>
 
 #include <AzCore/Component/Entity.h>
@@ -91,7 +91,7 @@ namespace ScriptCanvasEditor
     private:
         QString m_filter;
 
-        QRegExp m_regex;
+        QRegularExpression m_regex;
     };
 
     class EBusHandlerActionMenu

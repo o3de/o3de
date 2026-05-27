@@ -27,7 +27,15 @@ set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE -w)
 # This is problematic if 3rd-party libraries use such operations in header files.
 set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE -Wno-deprecated-enum-enum-conversion)
 
+# If (USE_FAST_MATH) is set, then enable fast math optimizations.
+# Some targets might need to disable fast math individually (likely 3rd Party libraries)
+# so this flag is provided to use them in a platform independent manner
+set(O3DE_COMPILE_OPTION_ENABLE_FAST_MATH -ffast-math)
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH -fno-fast-math)
 
+# Same as above, but to use inside set_target_properties for specific targets
+set(O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH})
+set(O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH})
 
 # A known bug in clang18 and below prevents __cpp_conditional_explicit from working correctly.
 # see https://github.com/llvm/llvm-project/pull/70548 and other reports.
@@ -49,6 +57,7 @@ ly_append_configurations_options(
         _FORTIFY_SOURCE=2
     DEFINES_RELEASE
         _FORTIFY_SOURCE=2
+
     COMPILATION
         -fno-exceptions
         -fvisibility=hidden
@@ -64,32 +73,23 @@ ly_append_configurations_options(
             # was done to fix all hits. Leaving this disabled until there is a matching warning in MSVC.
 
         -Wrange-loop-analysis
-        -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
+        -Wno-dllexport-explicit-instantiation-decl  # explicit instantiation declaration should not be 'dllexport'
         -Wno-parentheses
         -Wno-reorder
         -Wno-switch
         -Wno-undefined-var-template
-        -Wno-dllexport-explicit-instantiation-decl  # explicit instantiation declaration should not be 'dllexport'
-
-        ###################
-        # Enabled warnings (that are disabled by default)
-        ###################
-
+        -Wno-unknown-warning-option # used as a way to mark warnings that are MSVC only
     COMPILATION_DEBUG
         -O0                         # No optimization
         -g                          # debug symbols
         -fno-inline                 # don't inline functions
-
         -fstack-protector-all       # Enable stack protectors for all functions
         -fstack-check
-
     COMPILATION_PROFILE
         -O2
         -g                          # debug symbols
-
         -fstack-protector-all       # Enable stack protectors for all functions
         -fstack-check
-
     COMPILATION_RELEASE
         -O2
 )
@@ -99,10 +99,11 @@ if(LY_BUILD_WITH_ADDRESS_SANITIZER)
         COMPILATION_DEBUG
             -fsanitize=address
             -fno-omit-frame-pointer
+
         LINK_NON_STATIC_DEBUG
             -shared-libsan
             -fsanitize=address
     )
 endif()
-include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
 
+include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)

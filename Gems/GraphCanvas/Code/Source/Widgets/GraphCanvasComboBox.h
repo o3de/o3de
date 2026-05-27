@@ -16,6 +16,7 @@
 #include <QTableView>
 #include <QTimer>
 #include <QWidget>
+#include <QRegularExpression>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/PlatformDef.h>
@@ -53,7 +54,7 @@ namespace GraphCanvas
 
     private:
         QString m_filter;
-        QRegExp m_testRegex;
+        QRegularExpression m_testRegex;
     };
 
     class GraphCanvasComboBoxMenu

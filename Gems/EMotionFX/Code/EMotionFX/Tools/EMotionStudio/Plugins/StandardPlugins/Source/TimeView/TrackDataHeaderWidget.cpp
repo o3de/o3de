@@ -18,35 +18,22 @@
 #include <QPaintEvent>
 #include <QMenu>
 
-#include <MCore/Source/LogManager.h>
 #include <MCore/Source/Algorithms.h>
 
 #include <MysticQt/Source/MysticQtManager.h>
-
-#include <EMotionFX/Source/BlendTree.h>
-#include <EMotionFX/Source/AnimGraphMotionNode.h>
-#include <EMotionFX/Source/AnimGraphStateMachine.h>
-
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/MotionEvent.h>
-#include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/Recorder.h>
-#include <EMotionFX/Source/MotionEventTable.h>
-#include <EMotionFX/Source/MotionManager.h>
-#include <EMotionFX/Source/AnimGraphManager.h>
-#include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "../../../../EMStudioSDK/Source/MainWindow.h"
 
 
 namespace EMStudio
 {
     // the constructor
     TrackDataHeaderWidget::TrackDataHeaderWidget(TimeViewPlugin* plugin, QWidget* parent)
-        : QOpenGLWidget(parent)
-        , QOpenGLFunctions()
+        : QWidget(parent)
         , m_plugin(plugin)
         , m_lastMouseX(0)
         , m_lastMouseY(0)
@@ -101,31 +88,20 @@ namespace EMStudio
     {
     }
 
-
-    // init gl
-    void TrackDataHeaderWidget::initializeGL()
+    void TrackDataHeaderWidget::resizeEvent(QResizeEvent* event)
     {
-        initializeOpenGLFunctions();
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    }
-
-
-    // resize
-    void TrackDataHeaderWidget::resizeGL(int w, int h)
-    {
-        MCORE_UNUSED(w);
-        MCORE_UNUSED(h);
+        QWidget::resizeEvent(event);
         if (m_plugin)
         {
             m_plugin->SetRedrawFlag();
         }
     }
 
-    void TrackDataHeaderWidget::paintGL()
+    void TrackDataHeaderWidget::paintEvent(QPaintEvent* event)
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        QWidget::paintEvent(event);
 
-        // start painting
+        // start painting using standard Qt painter
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing, false);
 

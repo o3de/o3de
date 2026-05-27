@@ -283,7 +283,8 @@ namespace PhysX
             AZ_Error("RigidBodyComponent", false, "Unable to retrieve simulated rigid body");
             return;
         }
-        
+
+        m_isEntityTransformSetManually = false;
         AZ::Transform transform = rigidBody->GetTransform();
         if (m_configuration.m_interpolateMotion)
         {
@@ -297,6 +298,7 @@ namespace PhysX
             entityTransform->SetWorldTM(newWorldTransform);
         }
         m_isLastMovementFromKinematicSource = false;
+        m_isEntityTransformSetManually = true;
     }
 
     void RigidBodyComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
@@ -310,6 +312,12 @@ namespace PhysX
                 (body->IsKinematic() && !m_isLastMovementFromKinematicSource))
             {
                 body->SetKinematicTarget(world);
+            }
+            else if (body->m_simulating && (!body->IsKinematic() && m_isEntityTransformSetManually))
+            {
+                AZ_Warning("RigidBodyComponent", false, "Transform of Entity \"%s\" with simulated body was set manually. Consider using kinematic body and calling SetKinematicTarget if done frequently.",
+                    GetEntity()->GetName().c_str());
+                body->SetTransform(world);
             }
             else if (!body->m_simulating)
             {

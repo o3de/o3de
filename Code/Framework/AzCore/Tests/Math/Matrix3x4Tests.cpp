@@ -345,7 +345,7 @@ namespace UnitTest
         const AZ::Quaternion quaternion = GetParam();
         const AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromQuaternion(quaternion);
         EXPECT_THAT(matrix.GetTranslation(), IsClose(AZ::Vector3::CreateZero()));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(matrix * vector, IsClose(quaternion.TransformVector(vector)));
     }
 
@@ -355,7 +355,7 @@ namespace UnitTest
         const AZ::Vector3 translation(-2.6f, 1.7f, 0.8f);
         const AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromQuaternionAndTranslation(quaternion, translation);
         EXPECT_THAT(matrix.GetTranslation(), IsClose(translation));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(matrix * vector, IsClose(quaternion.TransformVector(vector) + translation));
     }
 
@@ -364,7 +364,7 @@ namespace UnitTest
         const AZ::Quaternion quaternion = GetParam();
         AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateIdentity();
         matrix.SetRotationPartFromQuaternion(quaternion);
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(matrix * vector, IsClose(quaternion.TransformVector(vector)));
     }
 
@@ -377,7 +377,7 @@ namespace UnitTest
         const AZ::Matrix3x3 matrix3x3 = GetParam();
         const AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromMatrix3x3(matrix3x3);
         EXPECT_THAT(matrix3x4.GetTranslation(), IsClose(AZ::Vector3::CreateZero()));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(matrix3x4.TransformVector(vector), IsClose(matrix3x3 * vector));
     }
 
@@ -387,7 +387,7 @@ namespace UnitTest
         const AZ::Vector3 translation(-2.6f, 1.7f, 0.8f);
         const AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(matrix3x3, translation);
         EXPECT_THAT(matrix3x4.GetTranslation(), IsClose(translation));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(matrix3x4 * vector, IsClose(matrix3x3 * vector + translation));
     }
 
@@ -400,9 +400,9 @@ namespace UnitTest
         const AZ::Matrix4x4 matrix4x4 = GetParam();
         const AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(matrix4x4);
         EXPECT_THAT(matrix3x4.GetTranslation(), IsClose(matrix4x4.GetTranslation()));
-        const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
+        const AZ::Vector3 vector(2.3f, -0.6f, 1.8f);
         EXPECT_THAT(matrix3x4.TransformVector(vector), IsClose((matrix4x4 * AZ::Vector4(vector, 0.0f)).GetAsVector3()));
-        const AZ::Vector3 point(12.3f, -5.6, 7.3f);
+        const AZ::Vector3 point(12.3f, -5.6f, 7.3f);
         EXPECT_THAT(matrix3x4.TransformPoint(point), IsClose((matrix4x4 * AZ::Vector4(point, 1.0f)).GetAsVector3()));
     }
 
@@ -1010,6 +1010,8 @@ namespace UnitTest
         EXPECT_NEAR(matrix2.GetTranspose3x3().GetDeterminant3x3(), expected2, 1e-3f);
     }
 
+    // use of infinity with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     // Use of INFINITY in newer Windows SDKs trigger a math overflow warning because it redefines INFINITY
     // as (huge number * huge number) instead of the previous definition of just (huge number).  The multiplication
     // operation triggers the overflow warning.
@@ -1049,4 +1051,6 @@ namespace UnitTest
         }
     }
     AZ_POP_DISABLE_WARNING
+#endif
+
 } // namespace UnitTest

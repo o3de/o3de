@@ -44,7 +44,7 @@ namespace AZ
         void CommandQueue::ExecuteWork(const RHI::ExecuteWorkRequest& rhiRequest)
         {
             const ExecuteWorkRequest& request = static_cast<const ExecuteWorkRequest&>(rhiRequest);
-            QueueCommand([=, this](void* queue)
+            QueueCommand([this, request](void* queue)
             {
                 AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
                 AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);

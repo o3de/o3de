@@ -705,6 +705,18 @@ namespace AZ
 #endif
         }
 
+        void CommandList::BuildClusterAccelerationStructures(const RHI::DeviceRayTracingClusterBlas& rayTracingClusterBlas)
+        {
+            // TODO(CLAS): Implement this
+            AZ_UNUSED(rayTracingClusterBlas);
+        }
+
+        void CommandList::BuildClusterBottomLevelAccelerationStructures(const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& clusterBlasList)
+        {
+            // TODO(CLAS): Implement this
+            AZ_UNUSED(clusterBlasList);
+        }
+
         void CommandList::QueryBlasCompactionSizes(
             const AZStd::vector<AZStd::pair<RHI::DeviceRayTracingBlas*, RHI::DeviceRayTracingCompactionQuery*>>& blasToQuery)
         {
@@ -794,7 +806,9 @@ namespace AZ
         }
 
         void CommandList::BuildTopLevelAccelerationStructure(
-            const RHI::DeviceRayTracingTlas& rayTracingTlas, const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList)
+            const RHI::DeviceRayTracingTlas& rayTracingTlas,
+            const AZStd::vector<const RHI::DeviceRayTracingBlas*>& changedBlasList,
+            const AZStd::vector<const RHI::DeviceRayTracingClusterBlas*>& changedClusterBlasList)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
@@ -816,6 +830,10 @@ namespace AZ
                     barriers.push_back(barrier);
                 }
                 commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+            }
+            if (!changedClusterBlasList.empty())
+            {
+                // TODO(CLAS): Add barriers for cluster BLAS
             }
             const RayTracingTlas& dx12RayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
             const RayTracingTlas::TlasBuffers& tlasBuffers = dx12RayTracingTlas.GetBuffers();

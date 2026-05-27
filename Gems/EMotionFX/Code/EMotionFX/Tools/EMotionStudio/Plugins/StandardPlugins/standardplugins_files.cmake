@@ -81,7 +81,7 @@ set(FILES
     Source/AnimGraph/RoleFilterProxyModel.cpp
     Source/AnimGraph/RoleFilterProxyModel.h
     Source/AnimGraph/AnimGraphSelectionProxyModel.cpp
-    Source/AnimGraph/SelectionProxyModel.h
+    Source/AnimGraph/AnimGraphSelectionProxyModel.h
     Source/AnimGraph/StateFilterSelectionWindow.cpp
     Source/AnimGraph/StateFilterSelectionWindow.h
     Source/AnimGraph/StateGraphNode.cpp

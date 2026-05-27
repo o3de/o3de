@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QCompleter>
 #include <QSortFilterProxyModel>
+#include <QRegularExpression>
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -92,6 +93,6 @@ namespace GraphCanvas
         AZStd::unordered_set<const GraphCanvas::GraphCanvasTreeItem*> m_sourceSlotFilter;
 
         QString m_filter;
-        QRegExp m_filterRegex;
+        QRegularExpression m_filterRegex;
     };
 }

@@ -303,13 +303,7 @@ namespace AZ
                 m_stride = static_cast<uint8>(stride);
             }
 
-
-
-#ifdef PARTICLE_MOTION_BLUR
-            static const uint32_t kMaxAttributes = 8;
-#else
             static const uint32_t kMaxAttributes = 10;
-#endif
             uint8 m_vertexAttributes[kMaxAttributes] = { 0 };
 
             uint8 m_attributeUsageCounts[(uint)AttributeUsage::NumUsages] = { 0 };

@@ -18,7 +18,6 @@
 #include <QWindow>
 #include <QSurfaceFormat>
 #include <QTimer>
-#include <QWindow>
 
 #include <qdrawutil.h>
 

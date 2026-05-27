@@ -8,11 +8,10 @@
 
 #pragma once
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
@@ -45,6 +44,13 @@ namespace AzToolsFramework
             virtual TemplateId LoadTemplateFromFile(AZ::IO::PathView filePath) = 0;
 
             /**
+             * Reloads Prefab Template from given file path and updates values that are changed
+             * in the source file.
+             * @param relativePath A Prefab Template relative file path.
+             */
+            virtual void ReloadTemplateFromFile(AZ::IO::PathView relativePath) = 0;
+
+            /**
              * Load Prefab Template from given content string to memory and return the id of loaded Template.
              * Converts .prefab form into Prefab Template form by expanding source path and patch info
              * into fully formed nested template info.
@@ -55,12 +61,12 @@ namespace AzToolsFramework
             virtual TemplateId LoadTemplateFromString(AZStd::string_view content, AZ::IO::PathView originPath = GeneratePath()) = 0;
 
             /**
-            * Saves a Prefab Template to the the source path registered with the template.
-            * Converts Prefab Template form into Prefab Asset form by collapsing nested Template info
-            * into a source path and patches.
-            * @param templateId Id of the template to be saved
-            * @return bool on whether the operation succeeded or not
-            */
+             * Saves a Prefab Template to the the source path registered with the template.
+             * Converts Prefab Template form into Prefab Asset form by collapsing nested Template info
+             * into a source path and patches.
+             * @param templateId Id of the template to be saved
+             * @return bool on whether the operation succeeded or not
+             */
             virtual bool SaveTemplate(TemplateId templateId) = 0;
 
             /**
@@ -74,13 +80,13 @@ namespace AzToolsFramework
             virtual bool SaveTemplateToFile(TemplateId templateId, AZ::IO::PathView absolutePath) = 0;
 
             /**
-            * Saves a Prefab Template into the provided output string.
-            * Converts Prefab Template form into .prefab form by collapsing nested Template info
-            * into a source path and patches.
-            * @param templateId Id of the template to be saved
-            * @param outputJson Will contain the serialized template json on success
-            * @return bool on whether the operation succeeded or not
-            */
+             * Saves a Prefab Template into the provided output string.
+             * Converts Prefab Template form into .prefab form by collapsing nested Template info
+             * into a source path and patches.
+             * @param templateId Id of the template to be saved
+             * @param outputJson Will contain the serialized template json on success
+             * @return bool on whether the operation succeeded or not
+             */
             virtual bool SaveTemplateToString(TemplateId templateId, AZStd::string& outputJson) = 0;
 
             //! Converts path into full absolute path. This will be used by loading/save IO operations.
@@ -97,7 +103,6 @@ namespace AzToolsFramework
             virtual void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) = 0;
 
         protected:
-
             // Generates a new path
             static AZ::IO::Path GeneratePath();
         };
@@ -108,4 +113,3 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::Prefab::SaveAllPrefabsPreference, "{7E61EA82-4DE4-4A3F-945F-C8FEDC1114B5}");
 }
-

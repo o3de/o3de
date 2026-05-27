@@ -148,13 +148,15 @@ namespace DebugDraw
 
         struct DebugDrawSphereElementWrapper : DebugDrawSphereElement
         {
-            AZ::Vector3    m_previousWorldLocation = AZ::Vector3::CreateZero();
-            float          m_previousRadius = 0;
-            uint32_t       m_localInstanceIndex = 0;
+            AZ::Render::MeshInfoHandle m_meshInfoHandle;
+            AZ::Vector3 m_previousWorldLocation = AZ::Vector3::CreateZero();
+            float m_previousRadius = 0;
+            uint32_t m_localInstanceIndex = 0;
         };
 
         struct DebugDrawObbElementWrapper : DebugDrawObbElement
         {
+            AZ::Render::MeshInfoHandle m_meshInfoHandle;
             AZ::Vector3    m_previousWorldLocation;
             AZ::Vector3    m_previousScale;
             AZ::Quaternion m_previousRotation;
@@ -166,8 +168,8 @@ namespace DebugDraw
         void AddRaytracingData(DebugDrawObbElementWrapper& element);
 
         // Removes the debug shape from the ray tracing scene if it was added before
-        void RemoveRaytracingData(const DebugDrawSphereElementWrapper& element);
-        void RemoveRaytracingData(const DebugDrawObbElementWrapper& element);
+        void RemoveRaytracingData(DebugDrawSphereElementWrapper& element);
+        void RemoveRaytracingData(DebugDrawObbElementWrapper& element);
 
         AZStd::vector<DebugDrawAabbElement> m_activeAabbs;
         AZStd::mutex m_activeAabbsMutex;
@@ -188,6 +190,7 @@ namespace DebugDraw
         AZStd::vector<AZ::Color> m_batchColors;
 
         AZ::Render::RayTracingFeatureProcessorInterface* m_rayTracingFeatureProcessor = nullptr;
+        AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
         AZ::RPI::Ptr<AZ::RPI::Buffer> m_spheresRayTracingIndicesBuffer;
         AZ::Render::RayTracingFeatureProcessorInterface::ProceduralGeometryTypeHandle m_sphereRayTracingTypeHandle;
         AZ::Render::RayTracingIndexList<1> m_spheresRayTracingIndices;

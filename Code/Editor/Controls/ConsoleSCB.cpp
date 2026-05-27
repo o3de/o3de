@@ -14,10 +14,10 @@
 // Qt
 #include <QHeaderView>
 #include <QSortFilterProxyModel>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QScrollBar>
-#include <QtWidgets/QTableView>
-#include <QtGui/QSyntaxHighlighter>
+#include <QMenu>
+#include <QScrollBar>
+#include <QTableView>
+#include <QSyntaxHighlighter>
 
 // AzQtComponents
 #include <AzQtComponents/Components/StyledLineEdit.h>

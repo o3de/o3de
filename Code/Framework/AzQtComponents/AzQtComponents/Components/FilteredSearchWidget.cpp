@@ -69,7 +69,6 @@ namespace AzQtComponents
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
-        m_frameLayout->setMargin(0);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
         m_frameLayout->setSpacing(0);
 
@@ -95,7 +94,6 @@ namespace AzQtComponents
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
-        m_frameLayout->setMargin(0);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
         m_frameLayout->setSpacing(0);
 
@@ -136,7 +134,6 @@ namespace AzQtComponents
     {
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         m_frameLayout = new QHBoxLayout(this);
-        m_frameLayout->setMargin(0);
         m_frameLayout->setContentsMargins(4, 1, 0, 1);
         m_frameLayout->setSpacing(0);
 

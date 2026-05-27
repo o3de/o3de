@@ -98,7 +98,6 @@ namespace AZ
 
                     VkRenderPassCreateInfoType createInfo{};
                     createInfo.sType = VkRenderPassCreateInfoTraits::struct_type;
-                    createInfo.pNext = nullptr;
                     createInfo.flags = 0;
                     createInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
                     createInfo.pAttachments = attachmentDescriptions.empty() ? nullptr : attachmentDescriptions.data();
@@ -106,6 +105,8 @@ namespace AZ
                     createInfo.pSubpasses = subpassDescriptions.empty() ? nullptr : subpassDescriptions.data();
                     createInfo.dependencyCount = static_cast<uint32_t>(subpassDependencies.size());
                     createInfo.pDependencies = subpassDependencies.empty() ? nullptr : subpassDependencies.data();
+
+                    StructAppender createInfoAppender{ createInfo };
 
                     // Fragment shade attachments are declared at a renderpass level (same for all subpasses), so we need to
                     // check if we have one as part of the renderpass declaration. We check if the first subpass contains the shading rate attachment,
@@ -127,7 +128,7 @@ namespace AZ
                             fdmAttachmentCreateInfo.fragmentDensityMapAttachment.attachment = fragmentDensityReference.attachment;
                             fdmAttachmentCreateInfo.fragmentDensityMapAttachment.layout = fragmentDensityReference.layout;
 
-                            AppendVkStruct(createInfo, &fdmAttachmentCreateInfo);
+                            createInfoAppender.append(fdmAttachmentCreateInfo);
                         }
                     }
 
@@ -138,8 +139,10 @@ namespace AZ
                         renderPassCreationFeedbackCreateInfo = {};
                         renderPassCreationFeedbackCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATION_FEEDBACK_CREATE_INFO_EXT;
                         renderPassCreationFeedbackCreateInfo.pRenderPassFeedback = &renderPassCreationFeedbackInfo;
-                        AppendVkStruct(createInfo, &renderPassCreationFeedbackCreateInfo);
+                        createInfoAppender.append(renderPassCreationFeedbackCreateInfo);
                     }
+
+                    createInfoAppender.finish();
 
                     RenderPassResult result = Create<VkRenderPassCreateInfoType>(createInfo);
                     if (m_collectSubpassMergeInfo)
@@ -250,7 +253,7 @@ namespace AZ
                     // in this single template member function
                     if constexpr (type == AttachmentType::Preserve)
                     {
-                        auto& subpassDescriptor = const_cast<RenderPass::SubpassDescriptor&>(m_descriptor->m_subpassDescriptors[subpassIndex]);
+                        const auto& subpassDescriptor = m_descriptor->m_subpassDescriptors[subpassIndex];
                         AZStd::vector<uint32_t>& attachmentReferenceList = subpassInfo.m_preserveAttachments;
                         attachmentReferenceList.insert(
                             attachmentReferenceList.end(),
@@ -357,7 +360,8 @@ namespace AZ
                             subpassFeedbackInfo.first.sType = VK_STRUCTURE_TYPE_RENDER_PASS_SUBPASS_FEEDBACK_CREATE_INFO_EXT;
                             subpassFeedbackInfo.second = {};
                             subpassFeedbackInfo.first.pSubpassFeedback = &subpassFeedbackInfo.second;
-                            AppendVkStruct(desc, &subpassFeedbackInfo.first);
+                            reinterpret_cast<VkBaseOutStructure*>(&desc)->pNext =
+                                reinterpret_cast<VkBaseOutStructure*>(&subpassFeedbackInfo.first);
                         }
                     }
                 }

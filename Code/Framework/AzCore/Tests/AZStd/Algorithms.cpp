@@ -599,16 +599,82 @@ namespace UnitTest
         }
     }
 
-    TEST_F(Algorithms, CopyBackwardFastCopy)
+    TEST_F(Algorithms, CopyBackwardFastCopy_SeparateArrays)
     {
-        AZStd::array<int, 3> src = {{ 1, 2, 3 }};
+        AZStd::array<int, 3> src = { { 1, 2, 3 } };
         AZStd::array<int, 3> dest;
 
         AZStd::copy_backward(src.begin(), src.end(), dest.end());
-        
+
         EXPECT_EQ(1, dest[0]);
         EXPECT_EQ(2, dest[1]);
         EXPECT_EQ(3, dest[2]);
+
+        // also make sure src is not disturbed.
+        EXPECT_EQ(1, src[0]);
+        EXPECT_EQ(2, src[1]);
+        EXPECT_EQ(3, src[2]);
+    }
+
+    TEST_F(Algorithms, CopyBackwardFastCopy_AdjacentMemory_DestAfterSrc)
+    {
+        // situation, dest is after src, $ denotes end pointer, which is always 1 past the last element.
+        //                  values[]     0  1  2  3  4  5 v$
+        //                  src,dest    s0 s1 s2 d0 d1 d2 d$
+        //                                       s$
+        AZStd::array<int, 6> values = {{ 1, 2, 3, 0, 0, 0 }};
+        AZStd::copy_backward(values.begin(), values.begin() + 3, values.end());
+        EXPECT_EQ(1, values[0]);
+        EXPECT_EQ(2, values[1]);
+        EXPECT_EQ(3, values[2]);
+        EXPECT_EQ(1, values[3]);
+        EXPECT_EQ(2, values[4]);
+        EXPECT_EQ(3, values[5]);
+    }
+
+    TEST_F(Algorithms, CopyBackwardFastCopy_AdjacentMemory_SrcAfterDest)
+    {
+        // situation, dest is before src, $ denotes end pointer, which is always 1 past the last element.
+        //                  values[]     0  1  2  3  4  5 v$
+        //                  src,dest    d0 d1 d2 s0 s1 s2 s$
+        //                                        d$
+        AZStd::array<int, 6> values = { { 0, 0, 0, 1, 2, 3 } };
+        AZStd::copy_backward(values.begin() + 3, values.end(), values.begin() + 3);
+
+        EXPECT_EQ(1, values[0]);
+        EXPECT_EQ(2, values[1]);
+        EXPECT_EQ(3, values[2]);
+        EXPECT_EQ(1, values[3]);
+        EXPECT_EQ(2, values[4]);
+        EXPECT_EQ(3, values[5]);
+    }
+
+    TEST_F(Algorithms, CopyBackwardFastCopy_OverlappingArrays_AssertsWhenUB)
+    {
+        // situation, dest overlaps src in an illegal way, where its end is inside the source range:
+        //                  values[]     0  1  2  3  4  5 v$
+        //                  src,dest    d0 d1 d2 d$
+        //                                    s0 s1 s2 s$
+        AZStd::array<int, 5> values = { { 0, 0, 1, 2, 3 } };
+        AZ_TEST_START_ASSERTTEST;
+        AZStd::copy_backward(values.begin() + 2, values.end(), values.begin() + 3);
+        AZ_TEST_STOP_ASSERTTEST(1);
+    }
+
+    TEST_F(Algorithms, CopyBackwardFastCopy_OverlappingArrays_OKWhenNotUB)
+    {
+        // situation, dest overlaps src in a legal (Non UB) way, where its end is beyond the source range:
+        //                  values[]     0  1  2  3  4  5 v$
+        //                  src,dest             d0 d1 d2 d$
+        //                              s0 s1 s2 s$
+        AZStd::array<int, 5> values = { { 1, 2, 3, 0, 0 } };
+        AZStd::copy_backward(values.begin(), values.begin() + 3, values.end());
+
+        EXPECT_EQ(1, values[0]);
+        EXPECT_EQ(2, values[1]);
+        EXPECT_EQ(1, values[2]);
+        EXPECT_EQ(2, values[3]);
+        EXPECT_EQ(3, values[4]);
     }
 
     TEST_F(Algorithms, CopyBackwardStandardCopy)

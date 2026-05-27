@@ -352,13 +352,13 @@ void CUiAnimViewTrack::GetKeyValueRange(float& min, float& max) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-ColorB CUiAnimViewTrack::GetCustomColor() const
+AZ::Color CUiAnimViewTrack::GetCustomColor() const
 {
     return m_pAnimTrack->GetCustomColor();
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CUiAnimViewTrack::SetCustomColor(ColorB color)
+void CUiAnimViewTrack::SetCustomColor(const AZ::Color& color)
 {
     m_pAnimTrack->SetCustomColor(color);
 }

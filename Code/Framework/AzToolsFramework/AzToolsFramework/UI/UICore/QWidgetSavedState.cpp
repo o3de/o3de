@@ -9,8 +9,8 @@
 #include "QWidgetSavedState.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <QtCore/QByteArray>
-#include <QtWidgets/QWidget>
+#include <QByteArray>
+#include <QWidget>
 
 namespace AzToolsFramework
 {

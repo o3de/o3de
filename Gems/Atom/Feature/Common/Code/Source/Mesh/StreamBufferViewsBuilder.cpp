@@ -259,7 +259,7 @@ namespace AZ
             for (AZ::u8 streamIdx = 0; streamIdx < streamCount; streamIdx++)
             {
                 auto shaderSemantic = streamChannels[streamIdx].m_semantic;
-                AZ::RHI::Buffer* rhiBuffer = const_cast<AZ::RHI::Buffer*>(streamIter[streamIdx].GetBuffer());
+                auto* rhiBuffer = streamIter[streamIdx].GetBuffer();
 
                 // REMARK: The reason we are not doing this, is that most RHIs need the Offset in a BufferView to be aligned to 16 bytes,
                 // which is not case for most sub meshes. To avoid this potential error, we map the whole buffer,
@@ -334,7 +334,7 @@ namespace AZ
             indexBufferDescriptor.m_elementSize = indexElementSize;
             indexBufferDescriptor.m_elementFormat =
                 indexBufferView.GetIndexFormat() == AZ::RHI::IndexFormat::Uint16 ? AZ::RHI::Format::R16_UINT : AZ::RHI::Format::R32_UINT;
-            auto* rhiBuffer = const_cast<AZ::RHI::Buffer*>(indexBufferView.GetBuffer());
+            auto* rhiBuffer = indexBufferView.GetBuffer();
 
 #if DEBUG_LOG_BUFFERVIEWS
             AZ_Printf(

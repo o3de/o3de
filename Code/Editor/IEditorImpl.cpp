@@ -334,6 +334,15 @@ ISystem* CEditorImpl::GetSystem()
     return m_pSystem;
 }
 
+void CEditorImpl::WriteToConsole(const char* string)
+{
+    CLogFile::WriteLine(string);
+}
+
+void CEditorImpl::WriteToConsole(const QString& string)
+{
+    CLogFile::WriteLine(string);
+}
 
 CCryEditDoc* CEditorImpl::GetDocument() const
 {

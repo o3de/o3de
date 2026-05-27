@@ -174,7 +174,7 @@ namespace AZ
                 inline NodeIndex GetRoot() const;
                 SCENE_CORE_API NodeIndex Find(const char* path) const;
                 SCENE_CORE_API NodeIndex Find(NodeIndex root, const char* name) const;
-                inline NodeIndex Find(const Name& name);
+                inline NodeIndex Find(const Name& name) const;
                 inline NodeIndex Find(const AZStd::string& path) const;
                 inline NodeIndex Find(NodeIndex root, const AZStd::string& name) const;
 

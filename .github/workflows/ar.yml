@@ -8,6 +8,8 @@
 
 name: AR
 
+run-name: ${{ (github.event_name == 'pull_request' && github.event.pull_request.title || format('AR - {0}', github.ref_name)) }}
+
 on:
   pull_request:
   workflow_dispatch:
@@ -44,13 +46,19 @@ jobs:
 
 # The following jobs are used to build the project for the different platforms.
 # The parameters are the following:
-# - compiler: The compiler to use (msvc, clang)
+# - compiler: The compiler to use (msvc, clang, gcc)
 # - config: The configuration to use (profile, release). This is defined by presets in ../scripts/build/Platform/<os>/build_config.json
 # - image: The image to use (windows-2022, ubuntu-22.04). The images are defined from runners images repo: https://github.com/actions/runner-images
 # - platform: The platform to use (Windows, Linux, Android)
 # - type: The type of build to use (profile, asset_profile, test_profile, test_cpu_profile, release)
 # - last_artifact: Whether to use the artifact from the last run, from the target branch if it's a pull request or its own branch if it's a push
 # - desktop: Whether to use the desktop environment for tests (Linux only)
+# - msvc_toolset_version: MSVC toolset version to install (Windows only)
+# - msvc_platform_toolset: MSVC platform toolset name, e.g. v143 (Windows only)
+# - clang_version: Clang major version to install (Linux only)
+# - ndk_version: Android NDK version to install (Android only)
+# - cmake_version: CMake version constraint to use (all platforms)
+# - gradle_version: Gradle version to use (Android only)
 
 #### Windows Build ####
     Windows-Profile:
@@ -63,6 +71,9 @@ jobs:
             platform: Windows
             type: profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }} # If CLEAN_ARTIFACTS is false, then this returns true
+            msvc_toolset_version: '14.29'
+            msvc_platform_toolset: 'v142'
+            cmake_version: '4.2.3'
     
     Windows-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -74,6 +85,9 @@ jobs:
             image: windows-2022
             platform: Windows
             type: asset_profile
+            msvc_toolset_version: '14.29'
+            msvc_platform_toolset: 'v142'
+            cmake_version: '4.2.3'
 
     Windows-Test:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -85,6 +99,9 @@ jobs:
             image: windows-2022
             platform: Windows
             type: test_cpu_profile
+            msvc_toolset_version: '14.29'
+            msvc_platform_toolset: 'v142'
+            cmake_version: '4.2.3'
 
     Windows-Release:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.windows_build }}
@@ -96,6 +113,9 @@ jobs:
             platform: Windows
             type: release
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            msvc_toolset_version: '14.29'
+            msvc_platform_toolset: 'v142'
+            cmake_version: '4.2.3'
 
 #### Linux Build ####
     Linux-Profile:
@@ -108,6 +128,8 @@ jobs:
             platform: Linux
             type: profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            clang_version: '14'
+            cmake_version: '4.2.3'
 
     Linux-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
@@ -119,6 +141,8 @@ jobs:
             image: ubuntu-22.04
             platform: Linux
             type: asset_profile
+            clang_version: '14'
+            cmake_version: '4.2.3'
 
     Linux-Test:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.linux_build }}
@@ -131,6 +155,8 @@ jobs:
             platform: Linux
             type: test_profile
             desktop: true
+            clang_version: '14'
+            cmake_version: '4.2.3'
 
 #### Android Build ####
     Android-Profile:
@@ -143,6 +169,9 @@ jobs:
             platform: Android
             type: profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            ndk_version: '25.1.8937393'
+            gradle_version: '8.12'
+            cmake_version: '4.2.3'
 
     Android-Asset:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
@@ -154,6 +183,11 @@ jobs:
             platform: Android
             type: asset_profile
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            msvc_toolset_version: '14.29'
+            msvc_platform_toolset: 'v142'
+            ndk_version: '25.1.8937393'
+            gradle_version: '8.12'
+            cmake_version: '4.2.3'
             
     Android-Gradle:
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.android_build }}
@@ -165,3 +199,6 @@ jobs:
             platform: Android
             type: gradle
             last_artifact: ${{ inputs.CLEAN_ARTIFACTS == false }}
+            ndk_version: '25.1.8937393'
+            gradle_version: '8.12'
+            cmake_version: '4.2.3'

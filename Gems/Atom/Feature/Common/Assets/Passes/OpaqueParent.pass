@@ -350,62 +350,20 @@
                     ]
                 },
                 {
-                    "Name": "SkyAtmosphereParentPass",
-                    "TemplateName": "SkyAtmosphereParentTemplate",
-                    "Enabled": true,
-                    "Connections": [
-                        {
-                            "LocalSlot": "SpecularInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "SkyBoxPass",
-                                "Attachment": "SpecularInputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "ReflectionInputOutput",
-                            "AttachmentRef": {
-                                "Pass": "SkyBoxPass",
-                                "Attachment": "ReflectionInputOutput"
-                            }
-                        },
-                        {
-                            "LocalSlot": "SkyBoxDepth",
-                            "AttachmentRef": {
-                                "Pass": "SkyBoxPass",
-                                "Attachment": "SkyBoxDepth"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DirectionalShadowmap",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DirectionalShadowmap"
-                            }
-                        },
-                        {
-                            "LocalSlot": "DirectionalESM",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DirectionalESM"
-                            }
-                        }
-                    ]
-                },
-                {
                     "Name": "ReflectionCompositePass",
                     "TemplateName": "ReflectionCompositePassTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "ReflectionInput",
                             "AttachmentRef": {
-                                "Pass": "SkyAtmosphereParentPass",
+                                "Pass": "SkyBoxPass",
                                 "Attachment": "ReflectionInputOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularInputOutput",
                             "AttachmentRef": {
-                                "Pass": "SkyAtmosphereParentPass",
+                                "Pass": "SkyBoxPass",
                                 "Attachment": "SpecularInputOutput"
                             }
                         },

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qstring.h>
+#include <QString>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Serialization/ObjectStream.h>

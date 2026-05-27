@@ -22,20 +22,16 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
-        bool AppendToPath(QString newPath)
+        QChar GetPlatformPathEnvSeparator()
         {
-            QString pathEnv = qEnvironmentVariable("Path");
-            QStringList pathEnvList = pathEnv.split(";");
-            if (!pathEnvList.contains(newPath, Qt::CaseInsensitive))
-            {
-                pathEnv += ";" + newPath;
-                if (!qputenv("Path", pathEnv.toStdString().c_str()))
-                {
-                    return false;
-                }
-            }
-            return true;
+            return QChar(';');
         }
+
+        QString GetPlatformPathEnvVariableName()
+        {
+            // Qt: do not translate this string, it is the name of an environment variable not a user facing view
+            return QString("Path"); 
+        }    
 
         AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
@@ -47,26 +43,21 @@ namespace O3DE::ProjectManager
             }
             auto engineInfo = engineInfoResult.GetValue();
 
-            // Append cmake path to the current environment PATH incase it is missing, since if
-            // we are starting CMake itself the current application needs to find it using Path
-            // This also takes affect for all child processes.
+            // prepend cmake path to the current environment PATH - we prefer to use the one we ship O3DE
+            // with since its the one we know works.
             QDir cmakePath(engineInfo.m_path);
             cmakePath.cd("cmake/runtime/bin");
-            if (!AppendToPath(cmakePath.path()))
+            if (!AddPathToPathEnv(cmakePath.path(), /*prepend=*/true))
             {
-                return AZ::Failure(QObject::tr("Failed to append the path to CMake to the PATH environment variable"));
+                return AZ::Failure(QObject::tr("Failed to add the path of the CMake binary to the PATH environment variable"));
             }
 
-            // if we don't have ninja, use one that might come with the installer
-            auto ninjaQueryResult = ExecuteCommandResult("ninja", QStringList{ "--version" });
-            if (!ninjaQueryResult.IsSuccess())
+            // if we ship with a specific version of ninja, preppend ito the PATH as well,  we prefer to use it.
+            QDir ninjaPath(engineInfo.m_path);
+            ninjaPath.cd("ninja");
+            if (!AddPathToPathEnv(ninjaPath.path(), /*prepend=*/true))
             {
-                QDir ninjaPath(engineInfo.m_path);
-                ninjaPath.cd("ninja");
-                if (!AppendToPath(ninjaPath.path()))
-                {
-                    return AZ::Failure(QObject::tr("Failed to append the path to ninja to the PATH environment variable"));
-                }
+                return AZ::Failure(QObject::tr("Failed to add the path of the ninja binary to the PATH environment variable"));
             }
 
             return AZ::Success();
@@ -127,8 +118,11 @@ namespace O3DE::ProjectManager
             {
                 if (auto ninjaVersionQueryResult = FindSupportedNinja(); !ninjaVersionQueryResult.IsSuccess())
                 {
+                    // if we FAIL to find ninja, we need to fail here and advise the user to install it.
                     return ninjaVersionQueryResult;
                 }
+                // if we ARE able to find ninja, and in script only mode, we dont need to verify anything else
+                return AZ::Success(QString());
             }
 
             // we want to help the user here, by showing a helpful error message depending on their situation

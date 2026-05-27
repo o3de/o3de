@@ -49,7 +49,6 @@ namespace AtomToolsFramework
 
         auto centralWidget = new QWidget(this);
         auto centralWidgetLayout = new QVBoxLayout(centralWidget);
-        centralWidgetLayout->setMargin(0);
         centralWidgetLayout->setContentsMargins(0, 0, 0, 0);
         centralWidget->setLayout(centralWidgetLayout);
         setCentralWidget(centralWidget);

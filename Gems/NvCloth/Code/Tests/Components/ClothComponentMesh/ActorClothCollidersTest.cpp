@@ -371,6 +371,6 @@ namespace UnitTest
         EXPECT_THAT(capsuleColliders[0].m_offsetTransform, IsCloseTolerance(capsuleColliderOffet, Tolerance));
         EXPECT_THAT(capsuleColliders[0].m_currentModelSpaceTransform, IsCloseTolerance(newJointRootTransform * newJointChildTransform * capsuleColliderOffet, Tolerance));
         EXPECT_THAT(nativeSpheres[1].GetAsVector3(), IsCloseTolerance(AZ::Vector3(7.87111f, 1.65204f, 0.0353498f), Tolerance));
-        EXPECT_THAT(nativeSpheres[2].GetAsVector3(), IsCloseTolerance(AZ::Vector3(7.51548f, 1.08291f, -7.63535), Tolerance));
+        EXPECT_THAT(nativeSpheres[2].GetAsVector3(), IsCloseTolerance(AZ::Vector3(7.51548f, 1.08291f, -7.63535f), Tolerance));
     }
 } // namespace UnitTest

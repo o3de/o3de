@@ -48,7 +48,6 @@ namespace Prop
         { IVariable::DT_USERITEMCB, "User", ePropertyUser, -1 },
         { IVariable::DT_SEQUENCE_ID, "SequenceId", ePropertySequenceId, -1 },
         { IVariable::DT_LIGHT_ANIMATION, "LightAnimation", ePropertyLightAnimation, -1 },
-        { IVariable::DT_PARTICLE_EFFECT, "ParticleEffect", ePropertyParticleName, 3 },
         { IVariable::DT_AUDIO_TRIGGER, "Audio Trigger", ePropertyAudioTrigger, 6 },
         { IVariable::DT_AUDIO_SWITCH, "Audio Switch", ePropertyAudioSwitch, 6 },
         { IVariable::DT_AUDIO_SWITCH_STATE, "Audio Switch", ePropertyAudioSwitchState, 6 },

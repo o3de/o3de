@@ -27,6 +27,8 @@
 #include <QCursor>
 #include <QTimer>
 #include <QGraphicsOpacityEffect>
+#include <QRegularExpression>
+
 #include "MainWindow.h"
 
 #include <algorithm>
@@ -1110,7 +1112,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     // This class does all kinds of behind the scenes magic to make docking / restore work, especially with groups
     // so instead of doing our special default layout attach / docking right now, we want to make it happen
     // after all of the other events have been processed.
-    QTimer::singleShot(0, [=, this]
+    QTimer::singleShot(0, [this, consoleViewPane, assetBrowserViewPane, InspectorViewPane, levelInspectorPane, entityOutlinerViewPane, resetSettings, selectedEntityIds]
     {
         // If we are using the new docking, set the right dock area to be absolute
         // so that the inspector will be to the right of the viewport and console
@@ -1218,7 +1220,7 @@ void QtViewPaneManager::SaveLayout(QString layoutName)
     layoutName = layoutName.trimmed();
 
     ViewLayoutState state;
-    foreach(const QtViewPane &pane, m_registeredPanes)
+    for (const QtViewPane& pane : m_registeredPanes)
     {
         // Include all visible and tabbed panes in our layout, since tabbed panes
         // won't be visible if they aren't the active tab, but still need to be
@@ -1340,7 +1342,7 @@ ViewLayoutState QtViewPaneManager::GetLayout() const
 {
     ViewLayoutState state;
 
-    foreach(const QtViewPane &pane, m_registeredPanes)
+    for (const QtViewPane& pane : m_registeredPanes)
     {
         // Include all visible and tabbed panes in our layout, since tabbed panes
         // won't be visible if they aren't the active tab, but still need to be
@@ -1635,15 +1637,16 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
     QString baseName = name;
 
     // Strip away any enumeration.
-    baseName = baseName.remove(QRegExp("\\([0-9]+\\)$"));
+    baseName = baseName.remove(QRegularExpression("\\([0-9]+\\)$"));
 
     // Build a regexp which will match just the name, or the name followed by a number in parentheses.
-    QRegExp pattern(name + "([ ]*\\([0-9]+\\))*");
+    QRegularExpression pattern(name + "([ ]*\\([0-9]+\\))*");
 
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)
         {
-            return pattern.exactMatch(pane.m_name) && pane.IsVisible();
+            QRegularExpressionMatch match = pattern.match(pane.m_name);
+            return match.hasMatch() && match.capturedLength() == pane.m_name.length() && pane.IsVisible();
         });
 
     QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
@@ -1651,11 +1654,14 @@ QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
     if (foundPane == nullptr)
     {
         // if we couldn't find the pane based on the name (which will be the title), look it up by saveKeyName next
-        auto optionsIt = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
+        auto optionsIt = std::find_if(
+            m_registeredPanes.begin(),
+            m_registeredPanes.end(),
             [pattern](const QtViewPane& pane)
-        {
-            return pattern.exactMatch(pane.m_options.saveKeyName) && pane.IsVisible();
-        });
+            {
+                QRegularExpressionMatch match = pattern.match(pane.m_options.saveKeyName);
+                return match.hasMatch() && match.capturedLength() == pane.m_name.length() && pane.IsVisible();
+            });
 
         foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : optionsIt);
     }

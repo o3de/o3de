@@ -11,7 +11,6 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 
@@ -32,6 +31,8 @@
 #include <ScriptCanvas/Components/EditorUtils.h>
 #include <ScriptCanvas/Core/Core.h>
 #endif
+
+#include <QScopedPointer>
 
 class QToolButton;
 namespace ScriptCanvasEditor { class FunctionPaletteTreeItem; }
@@ -146,6 +147,7 @@ namespace ScriptCanvasEditor
 
 
             ScriptCanvasNodePaletteToolbar(QWidget* parent);
+            ~ScriptCanvasNodePaletteToolbar() override;
 
         signals:
 
@@ -154,7 +156,7 @@ namespace ScriptCanvasEditor
 
         private:
 
-            AZStd::unique_ptr< Ui::ScriptCanvasNodePaletteToolbar > m_ui;
+            QScopedPointer<Ui::ScriptCanvasNodePaletteToolbar> m_ui;
         };
 
         class ScriptCanvasNodePaletteConfig

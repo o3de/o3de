@@ -129,13 +129,13 @@ namespace AzToolsFramework
 
                         // The ThumbnailUpdated signal should be sent whenever the thumbnail has loaded or failed. In both cases,
                         // disconnect from all of the signals.
-                        QObject::connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, m_placeholderObject.get(), [this, key, thumbnail, busyLabel]()
+                        QObject::connect(thumbnail.get(), &Thumbnail::ThumbnailUpdated, m_placeholderObject.get(), [this, key, thumbnail, busyLabel]()
                             {
                                 QObject::disconnect(busyLabel, nullptr, m_placeholderObject.get(), nullptr);
-                                QObject::disconnect(thumbnail.data(), nullptr, key.data(), nullptr);
+                                QObject::disconnect(thumbnail.get(), nullptr, key.get(), nullptr);
 
-                                QObject::connect(thumbnail.data(), &Thumbnail::ThumbnailUpdated, key.data(), &ThumbnailKey::ThumbnailUpdated);
-                                QObject::connect(key.data(), &ThumbnailKey::ThumbnailUpdateRequested, thumbnail.data(), &Thumbnail::Update);
+                                QObject::connect(thumbnail.get(), &Thumbnail::ThumbnailUpdated, key.get(), &ThumbnailKey::ThumbnailUpdated);
+                                QObject::connect(key.get(), &ThumbnailKey::ThumbnailUpdateRequested, thumbnail.get(), &Thumbnail::Update);
 
                                 key->SetReady(true);
                                 m_thumbnailsBeingLoaded.erase(thumbnail);

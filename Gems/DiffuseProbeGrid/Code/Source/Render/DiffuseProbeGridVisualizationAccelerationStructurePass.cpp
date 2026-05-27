@@ -175,7 +175,7 @@ namespace AZ
                 }
 
                 // build the TLAS object
-                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList);
+                context.GetCommandList()->BuildTopLevelAccelerationStructure(*diffuseProbeGrid->GetVisualizationTlas()->GetDeviceRayTracingTlas(context.GetDeviceIndex()), changedBlasList, {});
             }
         }
 

@@ -207,6 +207,17 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Sensors")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")
+                    ->EndGroup()
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Joint Offset")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                           AZ::Edit::UIHandlers::Default,
+                           &ArticulationLinkConfiguration::m_offset,
+                           "Offset",
+                           "Zero-position offset for the joint. For hinge joints the value is in degrees; "
+                           "for prismatic joints the value is in meters. Limits, drive targets, and reported "
+                           "positions are all expressed relative to this offset.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
                     ->EndGroup();
             }
         }

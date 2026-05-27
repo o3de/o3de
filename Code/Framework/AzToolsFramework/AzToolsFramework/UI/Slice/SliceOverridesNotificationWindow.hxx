@@ -9,7 +9,7 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#include <QtWidgets/QWidget>
+#include <QWidget>
 
 namespace Ui
 {

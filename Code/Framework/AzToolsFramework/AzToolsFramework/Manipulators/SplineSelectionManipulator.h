@@ -78,7 +78,7 @@ namespace AzToolsFramework
         void SetBoundsDirtyImpl() override;
 
         AZStd::weak_ptr<const AZ::Spline> m_spline;
-        AZStd::unique_ptr<ManipulatorView> m_manipulatorView = nullptr; //!< Look of manipulator and bounds for interaction.
+        AZStd::unique_ptr<ManipulatorView> m_manipulatorView; //!< Look of manipulator and bounds for interaction.
         MouseActionCallback m_onLeftMouseDownCallback = nullptr;
         MouseActionCallback m_onLeftMouseUpCallback = nullptr;
         ViewportInteraction::KeyboardModifiers

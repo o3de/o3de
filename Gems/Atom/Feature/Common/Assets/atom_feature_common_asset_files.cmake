@@ -226,14 +226,8 @@ set(FILES
     Passes/Silhouette.pass
     Passes/SilhouetteGather.pass
     Passes/Skinning.pass
-    Passes/SkyAtmosphere.pass
-    Passes/SkyAtmosphereParent.pass
     Passes/SkyBox.pass
     Passes/SkyBox_TwoOutputs.pass
-    Passes/SkyRayMarching.pass
-    Passes/SkyTransmittanceLUT.pass
-    Passes/SkyViewLUT.pass
-    Passes/SkyVolumeLUT.pass
     Passes/SlowClear.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
@@ -263,6 +257,7 @@ set(FILES
     ShaderLib/Atom/Features/Bindless.azsli
     ShaderLib/Atom/Features/BlendUtility.azsli
     ShaderLib/Atom/Features/Debug.azsli
+    ShaderLib/Atom/Features/IndirectRayTracing.azsli
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/InstancedTransforms.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
@@ -349,6 +344,13 @@ set(FILES
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassVertexData.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/Readme.md
+    ShaderLib/Atom/Features/FallbackPBRMaterial/MaterialInfo.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/MaterialInfoUtil.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRMaterial_Defines.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRMaterial.azsli
+    ShaderLib/Atom/Features/FallbackPBRMaterial/FallbackPBRStandardLighting.azsli
+    ShaderLib/Atom/Features/MeshInfo/MeshInfo.azsli
+    ShaderLib/Atom/Features/MeshInfo/MeshInfoUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
     ShaderLib/Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli
     ShaderLib/Atom/Features/PostProcessing/FullscreenPixelInfo.azsli
@@ -363,8 +365,6 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/Tonemap.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingGlobalSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingIntersectionAttributes.azsli
-    ShaderLib/Atom/Features/RayTracing/RayTracingMaterialSrg.azsli
-    ShaderLib/Atom/Features/RayTracing/RayTracingMaterialUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.azsl
@@ -697,15 +697,6 @@ set(FILES
     Shaders/SkinnedMesh/LinearSkinningCS.azsl
     Shaders/SkinnedMesh/LinearSkinningCS.shader
     Shaders/SkinnedMesh/LinearSkinningPassSRG.azsli
-    Shaders/SkyAtmosphere/SkyAtmosphereCommon.azsli
-    Shaders/SkyAtmosphere/SkyRayMarching.azsl
-    Shaders/SkyAtmosphere/SkyRayMarching.shader
-    Shaders/SkyAtmosphere/SkyTransmittanceLUT.azsl
-    Shaders/SkyAtmosphere/SkyTransmittanceLUT.shader
-    Shaders/SkyAtmosphere/SkyViewLUT.azsl
-    Shaders/SkyAtmosphere/SkyViewLUT.shader
-    Shaders/SkyAtmosphere/SkyVolumeLUT.azsl
-    Shaders/SkyAtmosphere/SkyVolumeLUT.shader
     Shaders/SkyBox/MultiViewSkyBox.shader
     Shaders/SkyBox/SkyBox.azsl
     Shaders/SkyBox/SkyBox.shader

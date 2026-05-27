@@ -193,7 +193,10 @@ namespace AZ::Data
             // the loadParams.m_assetLoadFilterCB that was passed into the AddDependentAssets() methods to use as the dependent
             // asset filter instead of this lambda function.
             AZ_UNUSED(handledAssetDependencyList); // Prevent unused warning in release builds
-            AZ_Assert(AZStd::find(handledAssetDependencyList.begin(), handledAssetDependencyList.end(), filterInfo.m_assetId) !=
+
+            // Note that when in tools builds, this could just be because the asset catalog is not up to date, we are still compiling
+            // assets, so it should not be an assert. 
+            AZ_Warning("Asset", AZStd::find(handledAssetDependencyList.begin(), handledAssetDependencyList.end(), filterInfo.m_assetId) !=
                 handledAssetDependencyList.end(),
                 "Dependent Asset ID (%s) is expected to load, but the Asset Catalog has no dependency recorded. "
                 "Examine the asset builder for the asset relying on this to ensure it is generating the correct dependencies.",
@@ -204,7 +207,9 @@ namespace AZ::Data
             // to point to the asset data once it is loaded.
             if (!Data::AssetManager::Instance().FindAsset(filterInfo.m_assetId, AZ::Data::AssetLoadBehavior::Default))
             {
-                AZ_Assert(!Data::AssetManager::Instance().FindAsset(filterInfo.m_assetId, AZ::Data::AssetLoadBehavior::Default),
+                // Note that when in tools builds, this could just be because the asset catalog is not up to date, we are still compiling
+                // assets, so it should not be an assert. 
+                AZ_Warning("Asset", !Data::AssetManager::Instance().FindAsset(filterInfo.m_assetId, AZ::Data::AssetLoadBehavior::Default),
                     "Dependent Asset ID (%s) can't be found in the AssetManager, which means the asset referencing it has probably "
                     "started loading before the dependent asset has been queued to load.  Verify that the asset dependencies have "
                     "been created correctly for the parent asset.",

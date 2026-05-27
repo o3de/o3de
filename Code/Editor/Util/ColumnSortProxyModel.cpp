@@ -200,7 +200,7 @@ void ColumnSortProxyModel::RemoveColumnWithoutSorting(int column)
 void ColumnSortProxyModel::SetColumns(const QVector<int>& columns)
 {
     m_columns.clear();
-    foreach(int col, columns)
+    for (int col : columns)
     {
         m_columns.push_back({ col, Qt::AscendingOrder });
     }
@@ -239,7 +239,7 @@ void ColumnSortProxyModel::SortModel()
         m_mappingToSource[i] = i;
     }
 
-    foreach(Column col, m_columns)
+    for (Column col : m_columns)
     {
         if (col.sortOrder == Qt::AscendingOrder)
         {

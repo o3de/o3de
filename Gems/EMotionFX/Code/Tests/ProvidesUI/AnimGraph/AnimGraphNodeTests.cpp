@@ -9,11 +9,11 @@
 #include <gtest/gtest.h>
 
 #include <QtTest>
-#include <qtoolbar.h>
+#include <QToolBar>
 #include <QWidget>
 #include <QComboBox>
 #include <QModelIndex>
-#include <qrect.h>
+#include <QRect>
 
 #include <Tests/UI/UIFixture.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>

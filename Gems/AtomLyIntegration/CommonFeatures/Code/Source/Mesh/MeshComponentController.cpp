@@ -15,6 +15,7 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -505,7 +506,17 @@ namespace AZ
 
         void MeshComponentController::SetModelAssetId(Data::AssetId modelAssetId)
         {
-            SetModelAsset(Data::Asset<RPI::ModelAsset>(modelAssetId, azrtti_typeid<RPI::ModelAsset>()));
+            AZ::Data::Asset<AZ::RPI::ModelAsset> meshAsset =
+            AZ::RPI::AssetUtils::LoadAssetById<AZ::RPI::ModelAsset>(modelAssetId, AZ::RPI::AssetUtils::TraceLevel::Error);
+            meshAsset.BlockUntilLoadComplete();
+            if(meshAsset->IsReady())
+            {
+                SetModelAsset(meshAsset);
+            }
+            else 
+            {
+                SetModelAsset(Data::Asset<RPI::ModelAsset>(modelAssetId, azrtti_typeid<RPI::ModelAsset>()));
+            }
         }
 
         void MeshComponentController::SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset)

@@ -66,7 +66,7 @@ namespace
         binaryDir.setNameFilters(QStringList() << applicationBase);
         binaryDir.setFilter(QDir::Files);
         // iterate all matching
-        foreach(QString tempFile, binaryDir.entryList())
+        for (QString tempFile : binaryDir.entryList())
         {
             binaryDir.remove(tempFile);
         }

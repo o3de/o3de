@@ -111,6 +111,10 @@ CIconListDialog::CIconListDialog(QWidget* pParent /* = nullptr */)
     m_ui->m_iconListCtrl->setModel(new IconListModel(this));
 }
 
+CIconListDialog::~CIconListDialog()
+{
+}
+
 bool CIconListDialog::GetSelectedIconPath(QString& path) const
 {
     if (!m_ui->m_iconListCtrl->currentIndex().isValid())

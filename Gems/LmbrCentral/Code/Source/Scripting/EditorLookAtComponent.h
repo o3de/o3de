@@ -81,11 +81,18 @@ namespace LmbrCentral
 
     private:
         void OnTargetChanged();
+        void OnEnabledChanged();
         void RecalculateTransform();
 
         // Serialized data
-        AZ::EntityId m_targetId;
-        AZ::Transform::Axis m_forwardAxis;
+        AZ::EntityId m_targetId = AZ::EntityId();
+        AZ::Transform::Axis m_forwardAxis = AZ::Constants::Axis::YPositive;
+        float m_strength = 1.f;
+        bool m_fixatePitch = true;
+        bool m_fixateRoll = true;
+        bool m_fixateYaw = true;
+        bool m_enabled = true;
+        bool m_applyLookAtTransform = true;
 
         // Transient data
         AZ::EntityId m_oldTargetId;

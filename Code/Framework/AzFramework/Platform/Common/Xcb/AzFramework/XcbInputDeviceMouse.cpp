@@ -427,6 +427,11 @@ namespace AzFramework
 
     void XcbInputDeviceMouse::ShowCursor(xcb_window_t window, bool show)
     {
+        if (!show && AZ::Debug::Trace::Instance().IsDebuggerPresent())
+        {
+            return;
+        }
+
         xcb_void_cookie_t cookie;
         if (show)
         {

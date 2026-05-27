@@ -24,6 +24,7 @@ ly_add_target(
             Source
             ${pal_source_dir}
             3rdParty/ACES
+            ../Assets/ShaderLib  # allow including .azsli - files from ShaderLib in c++
     COMPILE_DEFINITIONS
         PRIVATE
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -40,7 +41,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME ${gem_name}.Public STATIC
+    NAME ${gem_name}.Public ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atom_feature_common_public_files.cmake
@@ -53,11 +54,13 @@ ly_add_target(
             3rdParty/ACES
     COMPILE_DEFINITIONS
         PRIVATE
+            ATOM_FEATURE_COMMON_EXPORTS
             IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            ${gem_name}.Private.Object
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static

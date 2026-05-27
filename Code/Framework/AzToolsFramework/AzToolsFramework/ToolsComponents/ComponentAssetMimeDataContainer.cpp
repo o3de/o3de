@@ -14,7 +14,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/ObjectStream.h>
 
-#include <QtCore/QMimeData>
+#include <QMimeData>
 
 namespace AzToolsFramework
 {

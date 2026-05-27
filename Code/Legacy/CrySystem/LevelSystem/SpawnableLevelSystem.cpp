@@ -66,7 +66,7 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     SpawnableLevelSystem::SpawnableLevelSystem([[maybe_unused]] ISystem* pSystem)
     {
-        CRY_ASSERT(pSystem);
+        AZ_Assert(pSystem, "pSystem is null");
 
         m_fLastLevelLoadTime = 0;
         m_fLastTime = 0;

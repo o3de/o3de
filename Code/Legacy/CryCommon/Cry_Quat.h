@@ -847,6 +847,8 @@ struct Quat_tpl
 // Typedefs                                                                  //
 ///////////////////////////////////////////////////////////////////////////////
 
+// O3DE_DEPRECATION_NOTICE(GHI-19483) - Use AZ::Quaternion
+AZ_DEPRECATED_MESSAGE("Quat is deprecated, use AZ::Quaternion instead.")
 typedef Quat_tpl<f32>  Quat;  //always 32 bit
 
 /*!

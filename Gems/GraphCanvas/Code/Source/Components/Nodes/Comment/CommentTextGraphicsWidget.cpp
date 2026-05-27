@@ -14,7 +14,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QGraphicsGridLayout>
 #include <QGraphicsLayoutItem>
 #include <QGraphicsScene>
-#include <qgraphicssceneevent.h>
+#include <QGraphicsSceneEvent>
 #include <QGraphicsWidget>
 #include <QPainter>
 AZ_POP_DISABLE_WARNING

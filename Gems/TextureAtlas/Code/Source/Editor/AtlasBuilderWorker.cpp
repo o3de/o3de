@@ -26,10 +26,10 @@
 #include <Atom/ImageProcessing/PixelFormats.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
-#include <qimage.h>
+#include <QImage>
 #include <QString>
 #include <QDir>
-#include <qfileinfo.h>
+#include <QFileInfo>
 
 namespace TextureAtlasBuilder
 {

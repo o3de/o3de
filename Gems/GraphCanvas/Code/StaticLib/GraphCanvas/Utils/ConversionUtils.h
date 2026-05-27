@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <qcolor.h>
+#include <QColor>
 
 #include <AzCore/Math/Color.h>
 

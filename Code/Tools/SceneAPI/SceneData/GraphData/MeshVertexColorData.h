@@ -43,6 +43,9 @@ namespace AZ
                 SCENE_DATA_API void AppendColor(const AZ::SceneAPI::DataTypes::Color& color);
 
                 SCENE_DATA_API void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override;
+
+                SCENE_DATA_API AZStd::vector<AZ::SceneAPI::DataTypes::Color>& GetColors();
+                SCENE_DATA_API const AZStd::vector<AZ::SceneAPI::DataTypes::Color>& GetColors() const;
             protected:
                 AZStd::vector<AZ::SceneAPI::DataTypes::Color> m_colors;
                 AZ::Name m_customName;

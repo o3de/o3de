@@ -13,7 +13,7 @@
 #include "LUAEditorView.hxx"
 #include "LUAEditorStyleMessages.h"
 
-#include <QtWidgets/QDialog>
+#include <QDialog>
 #endif
 
 #pragma once

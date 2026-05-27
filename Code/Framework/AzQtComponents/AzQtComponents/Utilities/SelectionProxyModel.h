@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
-#include <QtCore/QItemSelectionModel>
+#include <QItemSelectionModel>
 #include <QVector>
 #endif
 

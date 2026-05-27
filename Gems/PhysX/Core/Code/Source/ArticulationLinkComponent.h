@@ -151,6 +151,7 @@ namespace PhysX
         using EntityIdSensorIndexListPair = AZStd::pair<AZ::EntityId, AZStd::vector<AZ::u32>>;
         AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::u32>> m_sensorIndicesByEntityId;
         bool m_enabled = true;
+        float m_offsetInCorrectUnits = 0.0f;
     };
 
     //! Utility function for detecting if the current entity is the root of articulation.

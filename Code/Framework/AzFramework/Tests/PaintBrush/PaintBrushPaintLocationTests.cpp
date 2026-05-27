@@ -48,7 +48,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=, this]([[maybe_unused]] const AZ::Color& color,
+                [this, TestBrushRadius]([[maybe_unused]] const AZ::Color& color,
                     const AZ::Aabb& dirtyArea,
                     AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                     AzFramework::PaintBrushNotifications::BlendFn& blendFn)
@@ -195,7 +195,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=, this]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
+                [this, TestBrushRadius]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
                           [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                           [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
@@ -208,7 +208,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=, this]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
+                [this, TestBrushSize, TestBrushRadius]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
                           [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                           [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
@@ -248,7 +248,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=, this]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
+                [this, TestBrushRadius]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
                           [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                           [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {
@@ -304,7 +304,7 @@ namespace UnitTest
 
         ON_CALL(mockHandler, OnPaint)
             .WillByDefault(
-                [=, this]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
+                [this, TestBrushRadius]([[maybe_unused]] const AZ::Color& color, const AZ::Aabb& dirtyArea,
                           [[maybe_unused]] AzFramework::PaintBrushNotifications::ValueLookupFn& valueLookupFn,
                           [[maybe_unused]] AzFramework::PaintBrushNotifications::BlendFn& blendFn)
                 {

@@ -233,7 +233,7 @@ AZ_POP_DISABLE_WARNING
     m_bJustCreated = false;
     m_levelName = "Untitled";
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
-    m_playerViewTM.SetIdentity();
+    m_playerViewTM = AZ::Matrix3x4::CreateIdentity();
     GetIEditor()->RegisterNotifyListener(this);
 }
 
@@ -307,10 +307,10 @@ static void CmdGotoEditor(IConsoleCmdArgs* pArgs)
         && azsscanf(pArgs->GetArg(5), "%f", &wy) == 1
         && azsscanf(pArgs->GetArg(6), "%f", &wz) == 1)
     {
-        Matrix34 tm = pRenderViewport->GetViewTM();
+        AZ::Matrix3x4 tm = pRenderViewport->GetViewTM();
 
-        tm.SetTranslation(Vec3(x, y, z));
-        tm.SetRotation33(Matrix33::CreateRotationXYZ(DEG2RAD(Ang3(wx, wy, wz))));
+        tm.SetTranslation(x, y, z);
+        tm.SetRotationPartFromQuaternion(AZ::Quaternion::CreateFromEulerDegreesZYX(AZ::Vector3(wx, wy, wz)));
         pRenderViewport->SetViewTM(tm);
     }
 }
@@ -696,7 +696,7 @@ void CGameEngine::SetSimulationMode(bool enabled, bool bOnlyPhysics)
     AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
 }
 
-void CGameEngine::SetPlayerViewMatrix(const Matrix34& tm, [[maybe_unused]] bool bEyePos)
+void CGameEngine::SetPlayerViewMatrix(const AZ::Matrix3x4& tm, [[maybe_unused]] bool bEyePos)
 {
     m_playerViewTM = tm;
 }

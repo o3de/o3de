@@ -122,7 +122,7 @@ namespace Maestro
             {
                 unsigned int abgr;
                 xmlNode->getAttr("CustomColor", abgr);
-                m_customColor = ColorB(abgr);
+                m_customColor.FromU32(abgr);
             }
             xmlNode->getAttr("Id", m_id);
         }
@@ -133,7 +133,7 @@ namespace Maestro
             xmlNode->setAttr("HasCustomColor", m_bCustomColorSet);
             if (m_bCustomColorSet)
             {
-                xmlNode->setAttr("CustomColor", m_customColor.pack_abgr8888());
+                xmlNode->setAttr("CustomColor", m_customColor.ToU32());
             }
             xmlNode->setAttr("Id", m_id);
         }

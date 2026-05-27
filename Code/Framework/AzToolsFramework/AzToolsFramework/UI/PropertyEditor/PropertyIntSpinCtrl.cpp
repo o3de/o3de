@@ -8,11 +8,11 @@
 #include "PropertyIntSpinCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
-#include <QtWidgets/QSlider>
+#include <QSlider>
 
 AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
                                                                // 4244: conversion from 'int' to 'float', possible loss of data
-#include <QtWidgets/QHBoxLayout>
+#include <QHBoxLayout>
 #include <QFocusEvent>
 AZ_POP_DISABLE_WARNING
 

@@ -1,0 +1,33 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "SkyAtmosphereParentTemplate",
+                "Path": "Passes/SkyAtmosphereParent.pass"
+            },
+            {
+                "Name": "SkyAtmosphereTemplate",
+                "Path": "Passes/SkyAtmosphere.pass"
+            },
+            {
+                "Name": "SkyTransmittanceLUTTemplate",
+                "Path": "Passes/SkyTransmittanceLUT.pass"
+            },
+            {
+                "Name": "SkyViewLUTTemplate",
+                "Path": "Passes/SkyViewLUT.pass"
+            },
+            {
+                "Name": "SkyVolumeLUTTemplate",
+                "Path": "Passes/SkyVolumeLUT.pass"
+            },
+            {
+                "Name": "SkyRayMarchingTemplate",
+                "Path": "Passes/SkyRayMarching.pass"
+            }
+        ]
+    }
+}

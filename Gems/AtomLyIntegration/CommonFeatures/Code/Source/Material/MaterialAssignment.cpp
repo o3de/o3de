@@ -135,12 +135,24 @@ namespace AZ
 
         bool MaterialAssignment::RequiresLoading() const
         {
-            return
-                !m_materialInstancePreCreated &&
+            if (m_materialInstancePreCreated)
+            {
+                return false; // we are not in charge of foreign material instances owned by another system.
+            }
+
+            // we only need to trigger a load on valid assets that are not already loading and not already ready.
+
+            bool myAssetRequiresLoading =
+                m_materialAsset.GetId().IsValid() &&
                 !m_materialAsset.IsReady() &&
-                !m_materialAsset.IsLoading() &&
+                !m_materialAsset.IsLoading();
+
+            bool defaultAssetRequiresLoading =
+                m_defaultMaterialAsset.GetId().IsValid() &&
                 !m_defaultMaterialAsset.IsReady() &&
                 !m_defaultMaterialAsset.IsLoading();
+
+            return myAssetRequiresLoading || defaultAssetRequiresLoading;
         }
 
         bool MaterialAssignment::ApplyProperties()

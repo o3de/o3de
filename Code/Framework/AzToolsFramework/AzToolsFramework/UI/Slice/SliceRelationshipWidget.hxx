@@ -11,7 +11,7 @@
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #if !defined(Q_MOC_RUN)
-#include <QtWidgets/QWidget>
+#include <QWidget>
 #include <AzToolsFramework/Slice/SliceDependencyBrowserBus.h>
 #include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
 #endif

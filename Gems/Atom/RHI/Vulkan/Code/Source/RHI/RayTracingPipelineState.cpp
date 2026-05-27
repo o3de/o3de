@@ -204,6 +204,15 @@ namespace AZ
             createInfo.basePipelineHandle = nullptr;
             createInfo.basePipelineIndex = 0;
 
+            VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV clasCreateInfo = {};
+            if (device.GetFeatures().m_rayTracingClas)
+            {
+                clasCreateInfo.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV;
+                clasCreateInfo.pNext = nullptr;
+                clasCreateInfo.allowClusterAccelerationStructure = true;
+                createInfo.pNext = &clasCreateInfo;
+            }
+
             [[maybe_unused]] VkResult result = device.GetContext().CreateRayTracingPipelinesKHR(
                 device.GetNativeDevice(), nullptr, nullptr, 1, &createInfo, VkSystemAllocator::Get(), &m_pipeline);
             AZ_Assert(result == VK_SUCCESS, "vkCreateRayTracingPipelinesKHR failed");

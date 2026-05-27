@@ -67,7 +67,7 @@ namespace AZ::DocumentPropertyEditor
             {
                 builder.BeginPropertyEditor<IntSpinBox>(GetMatrixValue(i, c));
                 builder.OnEditorChanged(
-                    [=, this](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
+                    [this, i, c](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
                         SetMatrixValue(i, c, aznumeric_caster(value.GetInt64()));
                         NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, value) });
@@ -97,7 +97,7 @@ namespace AZ::DocumentPropertyEditor
             builder.Label(entry.m_label);
             builder.BeginPropertyEditor(Nodes::Color::Name, AZ::Dom::Utils::ValueFromType(entry.m_node->m_color));
             builder.OnEditorChanged(
-                [=, this](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
+                [this, entry](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                 {
                     entry.m_node->m_color = AZ::Dom::Utils::ValueToType<AZ::Color>(value).value();
                     NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, value) });
@@ -111,7 +111,7 @@ namespace AZ::DocumentPropertyEditor
                 builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
                 builder.CallbackAttribute(
                     Nodes::ContainerActionButton::OnActivate,
-                    [=, this]()
+                    [this, entry]()
                     {
                         for (auto it = entry.m_node->m_parent->m_children.begin(); it != entry.m_node->m_parent->m_children.end(); ++it)
                         {
@@ -131,7 +131,7 @@ namespace AZ::DocumentPropertyEditor
             builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
             builder.CallbackAttribute(
                 Nodes::ContainerActionButton::OnActivate,
-                [=, this]()
+                [this, entry]()
                 {
                     ColorTreeNode child;
                     child.m_parent = entry.m_node;

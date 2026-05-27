@@ -7,11 +7,50 @@
  */
 
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
+#include <Atom/Feature/Utils/FrameCaptureTestBus.h>
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
 
 namespace AZ::Render
 {
+    void FrameCaptureError::Reflect(ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+        {
+            serializeContext->Class<FrameCaptureError>()
+                ->Version(1)
+                ->Field("ErrorMessage", &FrameCaptureError::m_errorMessage);
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<FrameCaptureError>("FrameCaptureError")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "utils")
+                ->Property("ErrorMessage", BehaviorValueProperty(&FrameCaptureError::m_errorMessage))
+                    ->Attribute(AZ::Script::Attributes::Alias, "error_message");
+        }
+    }
+
+    void FrameCaptureTestError::Reflect(ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+        {
+            serializeContext->Class<FrameCaptureTestError>()
+                ->Version(1)
+                ->Field("ErrorMessage", &FrameCaptureTestError::m_errorMessage);
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<FrameCaptureTestError>("FrameCaptureTestError")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "utils")
+                ->Property("ErrorMessage", BehaviorValueProperty(&FrameCaptureTestError::m_errorMessage))
+                    ->Attribute(AZ::Script::Attributes::Alias, "error_message");
+        }
+    }
+
     FrameCaptureOutputResult DdsFrameCaptureOutput(
         const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
     {

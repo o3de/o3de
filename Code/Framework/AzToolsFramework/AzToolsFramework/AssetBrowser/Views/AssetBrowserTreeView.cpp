@@ -54,7 +54,7 @@
 #include <QPainter>
 #include <QPushButton>
 #include <QTimer>
-#include <QtWidgets/QMessageBox>
+#include <QMessageBox>
 #include <QAbstractButton>
 #include <QHBoxLayout>
 

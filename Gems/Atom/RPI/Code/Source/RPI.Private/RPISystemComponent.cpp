@@ -13,6 +13,7 @@
 
 #include <RPI.Private/RPISystemComponent.h>
 
+#include <Atom/RHI/Debug.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHIUtils.h>
 
@@ -190,11 +191,18 @@ namespace AZ
         
         void RPISystemComponent::OnDeviceRemoved([[maybe_unused]] RHI::Device* device)
         {
-#if defined(AZ_FORCE_CPU_GPU_INSYNC)
-            const AZStd::string errorMessage = AZStd::string::format("GPU device was removed while working on pass %s. Check the log file for more detail.", device->GetLastExecutingScope().data());
-#else
-            const AZStd::string errorMessage = "GPU device was removed. Check the log file for more detail.";
-#endif
+            AZStd::string errorMessage;
+            if constexpr (RHI::ForceCpuGpuInSync)
+            {
+                errorMessage = AZStd::string::format(
+                    "GPU device was removed while working on pass %s. Check the log file for more detail.",
+                    device->GetLastExecutingScope().data());
+            }
+            else
+            {
+                errorMessage = "GPU device was removed. Check the log file for more detail.";
+            }
+
             if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
             {
                 nativeUI->DisplayOkDialog("O3DE Fatal Error", errorMessage.c_str(), false);

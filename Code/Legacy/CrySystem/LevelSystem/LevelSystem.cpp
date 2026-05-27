@@ -76,7 +76,7 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
     , m_pCurrentLevel(0)
     , m_pLoadingLevelInfo(0)
 {
-    CRY_ASSERT(pSystem);
+    AZ_Assert(pSystem, "pSystem is null");
 
     //if (!gEnv->IsEditor())
     Rescan(levelsFolder);
@@ -138,7 +138,7 @@ void CLevelSystem::Rescan(const char* levelsFolder)
         m_levelsFolder = levelsFolder;
     }
 
-    CRY_ASSERT(!m_levelsFolder.empty());
+    AZ_Assert(!m_levelsFolder.empty(), "m_levelsFolder cannot be empty");
     m_levelInfos.clear();
     m_levelInfos.reserve(64);
     ScanFolder(0, false);
@@ -647,7 +647,7 @@ void CLevelSystem::OnLoadingError(const char* levelName, const char* error)
     ILevelInfo* pLevelInfo = m_pLoadingLevelInfo;
     if (!pLevelInfo)
     {
-        CRY_ASSERT(false);
+        AZ_Assert(false, "pLevelInfo is null");
         return;
     }
 

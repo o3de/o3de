@@ -9,7 +9,7 @@
 
 #include "MainWindowSavedState.h"
 #include <AzCore/Serialization/SerializeContext.h>
-#include <QtCore/QByteArray>
+#include <QByteArray>
 
 namespace AzToolsFramework
 {

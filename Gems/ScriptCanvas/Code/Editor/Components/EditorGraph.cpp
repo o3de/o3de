@@ -12,7 +12,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QScopedValueRollback>
 #include <QInputDialog>
 #include <QFile>
-#include <qmimedata.h>
+#include <QMimeData>
 #include <QMessageBox>
 AZ_POP_DISABLE_WARNING
 

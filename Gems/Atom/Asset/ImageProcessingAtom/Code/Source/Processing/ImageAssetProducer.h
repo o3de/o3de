@@ -61,12 +61,6 @@ namespace ImageProcessingAtom
         bool BuildMipChainAsset(const Data::AssetId& chainAssetId, uint32_t startMip, uint32_t mipLevels,
             Data::Asset<RPI::ImageMipChainAsset>& outAsset, bool saveAsProduct);
 
-        // Generate all job products which can be used for AssetProcessor job response
-        void GenerateJobProducts();
-
-        // Save all generated assets to files
-        void SaveAssetsToFile();
-
         // Generate product assets' full path
         AZStd::string GenerateAssetFullPath(ImageAssetType assetType, uint32_t assetSubId);
 

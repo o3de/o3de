@@ -262,6 +262,12 @@ void CAbstractUndoSequenceTransaction::RemoveSequence(bool bAquireOwnership)
 }
 
 //////////////////////////////////////////////////////////////////////////
+CUndoSequenceAdd::CUndoSequenceAdd(CUiAnimViewSequence* pNewSequence)
+    : CAbstractUndoSequenceTransaction(pNewSequence)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
 void CUndoSequenceAdd::Undo(bool bUndo)
 {
     RemoveSequence(bUndo);
@@ -491,10 +497,7 @@ CUndoAnimNodeReparent::CUndoAnimNodeReparent(CUiAnimViewAnimNode* pAnimNode, CUi
     , m_pNewParent(pNewParent)
     , m_pOldParent(m_pParentNode)
 {
-#if !defined(NDEBUG)
-    CUiAnimViewSequence* pSequence =
-#endif
-        pAnimNode->GetSequence();
+    [[maybe_unused]] CUiAnimViewSequence* pSequence = pAnimNode->GetSequence();
     assert(pSequence == m_pNewParent->GetSequence() && pSequence == m_pOldParent->GetSequence());
 
     Reparent(pNewParent);

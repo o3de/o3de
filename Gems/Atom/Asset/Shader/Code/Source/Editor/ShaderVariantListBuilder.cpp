@@ -262,7 +262,7 @@ namespace AZ
                 jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = JobKey;
                 jobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
-                jobDescriptor.m_jobParameters.emplace(ShaderVariantLoadErrorParam, AZStd::string("Shader doesn't exist yet"));
+                jobDescriptor.m_jobParameters.emplace(ShaderNotReadyYetParam, AZStd::string::format("Shader doesn't exist yet: %s", shaderVariantList.m_shaderFilePath.c_str()));
                 response.m_createJobOutputs.push_back(jobDescriptor);
 
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
@@ -401,10 +401,14 @@ namespace AZ
         {
             const auto& jobParameters = request.m_jobDescription.m_jobParameters;
 
-            if (jobParameters.contains(ShaderVariantLoadErrorParam))
+            if (jobParameters.contains(ShaderNotReadyYetParam))
             {
-                AZ_Error(ShaderVariantListBuilderName, false, "Error during CreateJobs: %s", jobParameters.at(ShaderVariantLoadErrorParam).c_str());
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                // This is not an error, the shader variant list will try again later when its shader is ready.
+                // It has established a source dependency on the shader in all the places it may appear and its not an error
+                // to have a source dependency on a file that doesn't exist yet or even will never exis.  The file coming into existence
+                // will cause this job to be retriggered.
+                AZ_Info(ShaderVariantListBuilderName, "%s", jobParameters.at(ShaderNotReadyYetParam).c_str());
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }
             

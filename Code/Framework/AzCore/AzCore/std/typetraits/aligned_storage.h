@@ -11,9 +11,18 @@
 
 namespace AZStd
 {
-    using std::aligned_storage;
-    using std::aligned_storage_t;
+    template<size_t Len, size_t Align = alignof(max_align_t)>
+    struct aligned_storage
+    {
+        struct type
+        {
+            alignas(Align) byte data[Len];
+        };
+    };
 
-    template <typename T, size_t Alignment = alignof(T)>
-    using aligned_storage_for_t = std::aligned_storage_t<sizeof(T), Alignment>;
-}
+    template<size_t Len, size_t Align = alignof(max_align_t)>
+    using aligned_storage_t = typename aligned_storage<Len, Align>::type;
+
+    template<typename T>
+    using aligned_storage_for_t = aligned_storage_t<sizeof(T), alignof(T)>;
+} // namespace AZStd

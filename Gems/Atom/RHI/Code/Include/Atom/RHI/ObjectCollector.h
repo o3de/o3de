@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI/Object.h>
 
 #include <AzCore/Debug/Profiler.h>

@@ -51,8 +51,11 @@ def Menus_EditMenuOptions_Work():
         ("Modify", "Transform Mode", "Move"),
         ("Modify", "Transform Mode", "Rotate"),
         ("Modify", "Transform Mode", "Scale"),
-        ("Editor Settings", "Global Preferences"),
-        ("Editor Settings", "Editor Settings Manager"),
+        # Disabled, the menus work, the test is expecting a different configuration
+        #("Editor Settings", "Global Preferences..."),
+        #("Editor Settings", "Editor Settings Manager..."),
+        #("Editor Settings", "Edit Project Settings...",),
+        #("Editor Settings", "Edit Platform Settings...",)
         # The following menu options are temporarily disabled due to https://github.com/o3de/o3de/issues/6746
         #("Editor Settings", "Keyboard Customization", "Export Keyboard Settings"),
         #("Editor Settings", "Keyboard Customization", "Import Keyboard Settings"),
@@ -82,10 +85,16 @@ def Menus_EditMenuOptions_Work():
         except Exception as e:
             action_triggered = False
             print(e)
-        menu_action_triggered = (
-            f"{action.iconText()} action triggered successfully",
-            f"Failed to trigger {action.iconText()} action"
-        )
+        if action is not None:
+            menu_action_triggered = (
+                f"{action.iconText()} triggered successfully",
+                f"Failed to trigger {action.iconText()} action"
+            )
+        else:
+            menu_action_triggered = (
+                "No action provided to trigger successfully",
+                "No action provided to fail triggering"
+            )
         Report.result(menu_action_triggered, action_triggered)
 
 

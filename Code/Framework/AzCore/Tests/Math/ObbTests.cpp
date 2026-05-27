@@ -97,6 +97,9 @@ namespace UnitTest::ObbTests
         EXPECT_NEAR(obb.GetHalfLength(2), 5.0f, AZ::Constants::Tolerance);
     }
 
+    
+    // use of infinity with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     TEST(MATH_Obb, TestIsFinite)
     {
         Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
@@ -112,6 +115,7 @@ namespace UnitTest::ObbTests
         obb.SetHalfLengthY(infinity);
         EXPECT_FALSE(obb.IsFinite());
     }
+#endif
 
     TEST(MATH_Obb, Contains)
     {

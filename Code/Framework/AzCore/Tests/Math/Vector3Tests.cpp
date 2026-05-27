@@ -453,6 +453,9 @@ namespace UnitTest
         EXPECT_THAT(v1.GetProjectedOnNormal(AZ::Vector3(1.0f, 0.0f, 0.0f)), IsClose(AZ::Vector3(1.0f, 0.0f, 0.0f)));
     }
 
+    
+    // use of infinity with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     TEST(MATH_Vector3, TestIsFinite)
     {
         //IsFinite
@@ -460,6 +463,7 @@ namespace UnitTest
         const float infinity = std::numeric_limits<float>::infinity();
         EXPECT_FALSE(AZ::Vector3(infinity, infinity, infinity).IsFinite());
     }
+#endif
 
     struct Vector3AngleTestArgs
     {

@@ -8,7 +8,7 @@
 
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-linux-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.tar.gz")
-set(CPACK_CMAKE_PACKAGE_HASH "726f88e6598523911e4bce9b059dc20b851aa77f97e4cc5573f4e42775a5c16f")
+set(CPACK_CMAKE_PACKAGE_HASH "5bb505d5e0cca0480a330f7f27ccf52c2b8b5214c5bba97df08899f5ef650c23")
 
 set(O3DE_INCLUDE_INSTALL_IN_PACKAGE FALSE CACHE BOOL "Option to copy the contents of the most recent install from CMAKE_INSTALL_PREFIX into CPACK_PACKAGING_INSTALL_PREFIX.  Useful for including a release build in a profile SDK.")
 
@@ -35,7 +35,8 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     # Define all the debian package dependencies needed to build and run
     set(package_dependencies
         # Required Tools
-        "cmake (>=3.24)"                        # Cmake required (minimum version 3.24.0)
+        # CMake is bundled with the package and extracted during post-install
+        # into cmake/runtime/. Users may override via LY_CMAKE_PATH or PATH.
         "clang (>=12.0)"                        # Clang required (minimum version 12.0)
         ninja-build
         # Build Libraries

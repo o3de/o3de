@@ -55,7 +55,6 @@ ly_add_target(
 
     NAMESPACE Gem
     AUTOMOC
-    AUTORCC
     FILES_CMAKE
         atomtoolsframework_shared_files.cmake
     INCLUDE_DIRECTORIES

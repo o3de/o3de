@@ -177,6 +177,8 @@ namespace UnitTest
         EXPECT_FALSE(hit);
     }
 
+    // use of infinity with fast math is simply not supported
+#if !defined(O3DE_USING_FAST_MATH)
     TEST(MATH_Plane, TestIsFinite)
     {
         Plane pl;
@@ -188,6 +190,7 @@ namespace UnitTest
         AZ_MATH_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(pl.IsFinite());
     }
+#endif // !defined(O3DE_USING_FAST_MATH)
 
     TEST(MATH_Plane, CreateFromVectorCoefficients_IsEquivalentToCreateFromCoefficients)
     {

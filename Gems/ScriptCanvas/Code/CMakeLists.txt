@@ -266,6 +266,7 @@ if(SCRIPTCANVAS_BUILD_STANDALONE_APPLICATION)
             PRIVATE
                 Application
                 Editor
+                ${pal_source_dir}
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore

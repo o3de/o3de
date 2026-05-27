@@ -162,7 +162,7 @@ namespace AZ
         // Enhanced (Meshlet) Model Creation
         //----------------------------------------------------------------------
         Data::Asset<RPI::BufferAsset> MeshletsModel::CreateBufferAsset(
-            const AZStd::string& bufferName,
+            [[maybe_unused]] const AZStd::string& bufferName,
             const RHI::BufferViewDescriptor& bufferViewDescriptor,
             RHI::BufferBindFlags bufferBindFlags,
             const void* data
@@ -225,7 +225,6 @@ namespace AZ
             //-------------------------------------------
             // Start model creation
             RPI::ModelAssetCreator modelAssetCreator;
-            Uuid modelId = Uuid::CreateRandom();
             modelAssetCreator.Begin(Uuid::CreateRandom());
             modelAssetCreator.SetName(m_name);
             //-------------------------------------------

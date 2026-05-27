@@ -7,9 +7,9 @@
  */
 
 #include <QCoreApplication>
-#include <qgraphicslayoutitem.h>
-#include <qgraphicsscene.h>
-#include <qsizepolicy.h>
+#include <QGraphicsLayoutItem>
+#include <QGraphicsScene>
+#include <QSizePolicy>
 #include <QGraphicsSceneDragDropEvent>
 
 #include <AzQtComponents/Components/ToastNotification.h>

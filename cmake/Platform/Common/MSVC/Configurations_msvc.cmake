@@ -28,6 +28,16 @@ set(O3DE_COMPILE_OPTION_DISABLE_WARNINGS PRIVATE /W0)
 # This is problematic if 3rd-party libraries use such operations in header files.
 set(O3DE_COMPILE_OPTION_DISABLE_DEPRECATED_ENUM_ENUM_CONVERSION PRIVATE /Wv:18)
 
+# If (USE_FAST_MATH) is set, then enable fast math optimizations.
+# Some targets might need to disable fast math individually (likely 3rd Party libraries)
+# so this flag is provided to use them in a platform independent manner
+set(O3DE_COMPILE_OPTION_ENABLE_FAST_MATH /fp:fast)
+set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH /fp:precise)
+
+# Same as above, but to use inside set_target_properties for specific targets
+set(O3DE_TARGET_COMPILE_OPTION_ENABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_ENABLE_FAST_MATH})
+set(O3DE_TARGET_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE ${O3DE_COMPILE_OPTION_DISABLE_FAST_MATH})
+
 if (NOT O3DE_SCRIPT_ONLY)
     set(minimum_supported_toolset 142)
     if(MSVC_TOOLSET_VERSION VERSION_LESS ${minimum_supported_toolset})
@@ -38,7 +48,6 @@ endif()
 
 include(cmake/Platform/Common/Configurations_common.cmake)
 include(cmake/Platform/Common/MSVC/VisualStudio_common.cmake)
-include(cmake/Platform/Common/MSVC/CompilerCache_msvc.cmake)
 
 # Verify that it wasn't invoked with an unsupported target/host architecture. Currently only supports x64/x64
 if(CMAKE_VS_PLATFORM_NAME AND NOT CMAKE_VS_PLATFORM_NAME STREQUAL "x64")
@@ -48,12 +57,36 @@ if(CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE AND NOT CMAKE_VS_PLATFORM_TOOLSET
     message(FATAL_ERROR "${CMAKE_VS_PLATFORM_TOOLSET_HOST_ARCHITECTURE} host toolset is not supported, it must be 'x64'")
 endif()
 
+# == DEBUG INFORMATION FORMAT == #
+# /Z7 - Embedded in .obj files (required when using caching compiler launchers like ccache/sccache)
+# /Zi - Separate .pdb files (default, better IDE integration)
+# /ZI - Separate .pdb with Edit and Continue support (debug only, requires incremental linking)
+#
+# The correct flag depends on three factors:
+#   1. Caching compiler launcher active         => requires /Z7 (embedded debug info)
+#   2. Incremental linking enabled (debug only) => requires /ZI (edit and continue)
+#   3. Debug symbols in Release (optional)      => uses same format as other configurations
+#
+# Note: Incremental linking (/ZI) and caching compiler launchers (/Z7) are incompatible.
+# If both are requested, incremental linking takes priority for Debug builds.
+
+get_property(o3de_caching_compiler_launcher GLOBAL PROPERTY O3DE_CACHING_COMPILER_LAUNCHER_ENABLED)
+if(o3de_caching_compiler_launcher)
+    set(O3DE_MSVC_DEBUG_INFORMATION_FORMAT /Z7)
+else()
+    set(O3DE_MSVC_DEBUG_INFORMATION_FORMAT /Zi)
+endif()
+
+# The VSCompat file is force-included to handle compatibility workarounds.  If this file is ever emptied out, we can remove this.
+set(VSCOMPAT_FILE ${LY_ROOT_FOLDER}/Code/Framework/AzCore/Platform/Common/VisualStudio/AzCore/Compat/VSCompat.h)
+cmake_path(NATIVE_PATH VSCOMPAT_FILE NORMALIZE VSCOMPAT_FILE)
+
 ly_append_configurations_options(
     DEFINES
         _ENABLE_EXTENDED_ALIGNED_STORAGE # Enables support for extended alignment for the MSVC std::aligned_storage class
         _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING # Prevents triggering of STL4043 when checked iterators are used in 3rdParty libraries(QT and AWSNativeSDK)
+
     COMPILATION
-        /fp:fast        # allows the compiler to reorder, combine, or simplify floating-point operations to optimize floating-point code for speed and space
         /Gd             # Use _cdecl calling convention for all functions
         /MP             # Multicore compilation in Visual Studio
         /nologo         # Suppress Copyright and version number message
@@ -61,7 +94,10 @@ ly_append_configurations_options(
         /WX             # Warnings as errors
         /permissive-    # Conformance with standard
         /Zc:preprocessor # Forces preprocessor into conformance mode:  https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-170
-
+       
+        # The VSCompat file is force-included to handle compatibility workarounds.  If this file is ever emptied out, we can remove this line.
+        /FI${VSCOMPAT_FILE}
+        
         ###################
         # Disabled warnings (please do not disable any others without first consulting sig-build)
         ###################
@@ -90,7 +126,7 @@ ly_append_configurations_options(
         /we5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
         /we5233 # explicit lambda capture 'identifier' is not used
 
-        /Zc:forScope    # Force Conformance in for Loop Scope
+        /Zc:forScope    # Force conformance in for loop scope
         /diagnostics:caret # Compiler diagnostic options: includes the column where the issue was found and places a caret (^) under the location in the line of code where the issue was detected.
         /Zc:__cplusplus
         /Zc:lambda      # Use the new lambda processor (See https://developercommunity.visualstudio.com/t/A-lambda-that-binds-the-this-pointer-w/1467873 for more details)
@@ -110,57 +146,29 @@ ly_append_configurations_options(
         /O2             # Maximinize speed, equivalent to /Og /Oi /Ot /Oy /Ob2 /GF /Gy
         /Zc:inline      # Removes unreferenced functions or data that are COMDATs or only have internal linkage
         /Zc:wchar_t     # Use compiler native wchar_t
+        
+        # Profile always needs debug information 
+        ${O3DE_MSVC_DEBUG_INFORMATION_FORMAT}
     COMPILATION_RELEASE
         /Ox             # Full optimization
         /Ob2            # Inline any suitable function
         /Ot             # Favor fast code over small code
         /Oi             # Use Intrinsic Functions
         /Oy             # Omit the frame pointer
+
     LINK
-        /NOLOGO             # Suppress Copyright and version number message
-        /IGNORE:4099        # 3rdParty linking produces noise with LNK4099
+        /nologo             # Suppress Copyright and version number message
+        /ignore:4099        # 3rdParty linking produces noise with LNK4099
     LINK_NON_STATIC_PROFILE
-        /OPT:REF            # Eliminates functions and data that are never referenced
-        /OPT:ICF            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
-        /INCREMENTAL:NO
-        /DEBUG              # Generate pdbs
+        /opt:ref            # Eliminates functions and data that are never referenced
+        /opt:icf            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
+        /incremental:no
+        /debug              # Generate pdbs
     LINK_NON_STATIC_RELEASE
-        /OPT:REF # Eliminates functions and data that are never referenced
-        /OPT:ICF # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
-        /INCREMENTAL:NO
+        /opt:ref            # Eliminates functions and data that are never referenced
+        /opt:icf            # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
+        /incremental:no
 )
-
-# Look for O3DE_ENABLE_COMPILER_CACHE as a CMake flag or environment variable, then sets the appropriate compatible flags for caching
-# More details about the compiler cache can be found in CompilerCache.cmake
-
-if((O3DE_ENABLE_COMPILER_CACHE OR "$ENV{O3DE_ENABLE_COMPILER_CACHE}" STREQUAL "true") AND NOT O3DE_SCRIPT_ONLY)
-    o3de_compiler_cache_activation(cache_exe_path) # Activates the compiler cache
-
-    # Configure debug info format and compiler launcher for cache compatibility
-    cmake_policy(SET CMP0141 NEW)
-    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
-    set(CMAKE_C_COMPILER_LAUNCHER ${cache_exe_path})
-    set(CMAKE_CXX_COMPILER_LAUNCHER ${cache_exe_path})
-
-    # Fallback to compiler flags if the debug format doesn't work, which can depend on CMake version
-    ly_append_configurations_options(
-        COMPILATION_PROFILE
-            /Z7             # Use embedded debug info instead of PDB
-        COMPILATION_RELEASE
-            /Z7
-    )
-
-    # Set required VS globals for compiler cache
-    set(CMAKE_VS_GLOBALS
-        "CLToolExe=cl.exe"
-        "CLToolPath=${CMAKE_BINARY_DIR}"
-    )
-else()
-    ly_append_configurations_options(
-        COMPILATION_PROFILE
-            /Zi             # Generate debugging information (no Edit/Continue)
-    )
-endif()
 
 set(LY_BUILD_WITH_ADDRESS_SANITIZER FALSE CACHE BOOL "Builds using AddressSanitizer (ASan). Will disable Edit/Continue, Incremental building and Run-Time checks (default = FALSE)")
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)
@@ -184,6 +192,13 @@ endif()
 
 set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = FALSE)")
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)
+    if(o3de_caching_compiler_launcher)
+        message(WARNING
+            "Incremental linking and caching compiler launchers are unsupported. "
+            "Edit and Continue (/ZI) may prevent the compiler launcher from caching effectively."
+        )
+    endif()
+    
     ly_append_configurations_options(
         COMPILATION_DEBUG
             /ZI         # Enable Edit/Continue
@@ -192,11 +207,11 @@ else()
     # Disable incremental linking
     ly_append_configurations_options(
         COMPILATION_DEBUG
-            /Zi         # Generate debugging information (no Edit/Continue). Edit/Continue requires incremental linking
+            ${O3DE_MSVC_DEBUG_INFORMATION_FORMAT}
+
         LINK_NON_STATIC_DEBUG
             /DEBUG      # Despite the documentation states /Zi implies /DEBUG, without it, stack traces are not expanded
             /INCREMENTAL:NO
-
     )
 endif()
 
@@ -204,8 +219,9 @@ set(O3DE_BUILD_WITH_DEBUG_SYMBOLS_RELEASE FALSE CACHE BOOL "Add debug symbols wh
 if(O3DE_BUILD_WITH_DEBUG_SYMBOLS_RELEASE)
     ly_append_configurations_options(
         COMPILATION_RELEASE
-            /Od             # Enable debug symbols
-            /Zi             # Generate debugging information (no Edit/Continue)
+            /Od             # Disable optimizations for debugging
+            ${O3DE_MSVC_DEBUG_INFORMATION_FORMAT}
+
         LINK_NON_STATIC_RELEASE
             /DEBUG          # Generate pdbs
     )
@@ -232,9 +248,9 @@ endif()
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_unsupported.cmake)
 
 if(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION VERSION_LESS_EQUAL "10.0.19041.0")
-  # Suppresses warning C5105 which triggers with Windows 10 SDK 10.0.19041 and below when using the /Zc:preprocessor option
-  # https://developercommunity.visualstudio.com/t/stdc17-generates-warning-compiling-windowsh/1249671
-  ly_append_configurations_options(
+    # Suppresses warning C5105 which triggers with Windows 10 SDK 10.0.19041 and below when using the /Zc:preprocessor option
+    # https://developercommunity.visualstudio.com/t/stdc17-generates-warning-compiling-windowsh/1249671
+    ly_append_configurations_options(
         COMPILATION
             /wd5104
             /wd5105

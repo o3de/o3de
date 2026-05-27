@@ -83,7 +83,7 @@ ly_add_target(
             Gem::${gem_name}.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
-            Gem::PhysX.Static
+            Gem::PhysX5.Static
     AUTOGEN_RULES
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
@@ -113,7 +113,7 @@ ly_add_target(
             Gem::${gem_name}.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
-            Gem::PhysX.Static
+            Gem::PhysX5.Static
     AUTOGEN_RULES
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
@@ -143,7 +143,7 @@ ly_add_target(
             Gem::${gem_name}.Common.Static
         PRIVATE
             Gem::EMotionFXStaticLib
-            Gem::PhysX.Static
+            Gem::PhysX5.Static
     AUTOGEN_RULES
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
@@ -355,7 +355,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Gem::${gem_name}.Unified.Static
-                Gem::PhysX.Static
+                Gem::PhysX5.Static
         AUTOGEN_RULES
             *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
             *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp

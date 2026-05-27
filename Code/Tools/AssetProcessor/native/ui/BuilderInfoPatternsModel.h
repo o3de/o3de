@@ -8,14 +8,11 @@
 
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <QAbstractItemModel>
 #include <AzCore/std/containers/vector.h>
-
-namespace AssetBuilderSDK
-{
-    struct AssetBuilderDesc;
-    struct AssetBuilderPattern;
-}
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
+#endif
 
 namespace AssetProcessor
 {

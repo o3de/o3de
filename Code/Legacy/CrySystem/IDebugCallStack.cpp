@@ -218,7 +218,7 @@ void IDebugCallStack::FatalError(const char* description)
     // showing the debug screen is not safe when not called from mainthread
     // it normally leads to a infinity recursion followed by a stack overflow, preventing
     // useful call stacks, thus they are disabled
-    bShowDebugScreen = bShowDebugScreen && gEnv->mMainThreadId == CryGetCurrentThreadId();
+    bShowDebugScreen = bShowDebugScreen && gEnv->mMainThreadId == AZStd::this_thread::get_id();
     if (bShowDebugScreen)
     {
         EBUS_EVENT(AZ::NativeUI::NativeUIRequestBus, DisplayOkDialog, "Open 3D Engine Fatal Error", description, false);

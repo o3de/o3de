@@ -268,8 +268,8 @@ struct IAnimTrack
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
     // This color is used for the editor.
-    virtual ColorB GetCustomColor() const = 0;
-    virtual void SetCustomColor(ColorB color) = 0;
+    virtual AZ::Color GetCustomColor() const = 0;
+    virtual void SetCustomColor(const AZ::Color& color) = 0;
     virtual bool HasCustomColor() const = 0;
     virtual void ClearCustomColor() = 0;
 #endif
@@ -562,9 +562,9 @@ public:
     //! Get current entity position.
     virtual Vec3 GetPos() = 0;
     //! Get current entity rotation.
-    virtual Quat GetRotate() = 0;
+    virtual AZ::Quaternion GetRotate() = 0;
     //! Get entity rotation at specified time.
-    virtual Quat GetRotate(float time) = 0;
+    virtual AZ::Quaternion GetRotate(float time) = 0;
     //! Get current entity scale.
     virtual Vec3 GetScale() = 0;
 
@@ -709,7 +709,7 @@ public:
     // </interfuscator:shuffle>
 
     // Used by AnimCameraNode
-    virtual bool GetShakeRotation([[maybe_unused]] const float& time, [[maybe_unused]] Quat& rot){return false; }
+    virtual bool GetShakeRotation([[maybe_unused]] const float& time, [[maybe_unused]] AZ::Quaternion& rot){return false; }
 
     virtual void SetCameraShakeSeed([[maybe_unused]] const uint shakeSeed){};
 

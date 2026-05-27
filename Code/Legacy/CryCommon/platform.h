@@ -27,6 +27,9 @@
 #define PLATFORM_H_SECTION_15 15
 #endif
 
+
+#define ILINE AZ_FORCE_INLINE
+
 #if (defined(LINUX) && !defined(ANDROID)) || defined(APPLE)
     #define _FILE_OFFSET_BITS 64 // define large file support > 2GB
 #endif
@@ -222,12 +225,9 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 }
 
 //////////////////////////////////////////////////////////////////////////
-#ifndef DEPRECATED
-#define DEPRECATED
-#endif
 
 // Assert dialog box macros
-#include "CryAssert.h"
+#include <AzCore/Debug/Trace.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Platform dependent functions that emulate Win32 API.
@@ -326,8 +326,6 @@ void SetFlags(T& dest, U flags, bool b)
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_12
     #include AZ_RESTRICTED_FILE(platform_h)
 #endif
-
-threadID CryGetCurrentThreadId();
 
 #ifdef __GNUC__
     #define NO_INLINE __attribute__ ((noinline))

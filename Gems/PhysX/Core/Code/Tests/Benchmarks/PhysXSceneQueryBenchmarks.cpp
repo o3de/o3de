@@ -55,6 +55,14 @@ namespace PhysX::Benchmarks
         //! \state.range(1) - max radius
         void internalSetUp(const ::benchmark::State& state)
         {
+            // Note that the `this` pointer is going to be a singleton, but this function gets called once per thread
+            // and is done overlapping with other threads calling the same function on the same `this` pointer, so
+            // do things that are thread-safe here, and only initialize things once.
+            if (state.thread_index() != 0)
+            {
+                return;
+            }
+            
             PhysX::GenericPhysicsFixture::SetUpInternal();
 
             m_random = AZ::SimpleLcgRandom(SceneQueryConstants::Seed);
@@ -116,12 +124,21 @@ namespace PhysX::Benchmarks
             internalSetUp(state);
         }
 
-        void TearDown(const benchmark::State&) override
+        void TearDown(const benchmark::State& state) override
         {
+            if (state.thread_index() != 0)
+            {
+                return;
+            }
+            
             internalTearDown();
         }
-        void TearDown(benchmark::State&) override
+        void TearDown(benchmark::State& state) override
         {
+            if (state.thread_index() != 0)
+            {
+                return;
+            }
             internalTearDown();
         }
 

@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/Debug.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <RHI/CommandQueue.h>
 
@@ -94,12 +95,14 @@ namespace AZ
                         }
                  
                         NSLog(@"%@",buffer.error);
-#if !defined (AZ_FORCE_CPU_GPU_INSYNC)
-                        // When in cpu/gpu lockstep mode (i.e AZ_FORCE_CPU_GPU_INSYNC) we break in the main thread
-                        // with proper logging and a dialog box with info related to the last executing scope before the crash
-                        AZ_Assert(false, "Assert here as the app is about to abort");
-                        abort();
-#endif
+
+                        if constexpr (RHI::ForceCpuGpuInSync)
+                        {
+                            // When in cpu/gpu lockstep mode (i.e RHI::ForceCpuGpuInSync is enabled) we break in the main thread
+                            // with proper logging and a dialog box with info related to the last executing scope before the crash
+                            AZ_Assert(false, "Assert here as the app is about to abort");
+                            abort();
+                        }
                     }
                 }
             }];
@@ -149,10 +152,11 @@ namespace AZ
             if(isCommitNeeded)
             {
                 [m_mtlCommandBuffer commit];
-#if defined (AZ_FORCE_CPU_GPU_INSYNC)
-                // Wait for the gpu to finish executing the work related to the command buffer
-                [m_mtlCommandBuffer waitUntilCompleted];
-#endif
+                if constexpr (RHI::ForceCpuGpuInSync)
+                {
+                    // Wait for the gpu to finish executing the work related to the command buffer
+                    [m_mtlCommandBuffer waitUntilCompleted];
+                }
             }
             
             //Release to match the retain at creation.

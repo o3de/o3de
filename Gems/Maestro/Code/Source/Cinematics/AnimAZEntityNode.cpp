@@ -150,22 +150,22 @@ namespace Maestro
         }
     }
 
-    Quat CAnimAzEntityNode::GetRotate()
+    AZ::Quaternion CAnimAzEntityNode::GetRotate()
     {
         if (auto transformComponentNode = GetTransformComponentNode())
         {
             return transformComponentNode->GetRotate();
         }
-        return Quat::CreateIdentity();
+        return AZ::Quaternion::CreateIdentity();
     }
 
-    Quat CAnimAzEntityNode::GetRotate(float time)
+    AZ::Quaternion CAnimAzEntityNode::GetRotate(float time)
     {
         if (auto transformComponentNode = GetTransformComponentNode())
         {
             return transformComponentNode->GetRotate(time);
         }
-        return Quat::CreateIdentity();
+        return AZ::Quaternion::CreateIdentity();
     }
 
     void CAnimAzEntityNode::SetScale(float time, const AZ::Vector3& scale)

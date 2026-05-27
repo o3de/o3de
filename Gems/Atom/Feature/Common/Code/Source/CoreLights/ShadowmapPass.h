@@ -80,9 +80,6 @@ namespace AZ
             // RPI::RasterPass overrides...
             void SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t indexOffset) const override;
 
-            // Gets the number of expected draws, taking into account if this shadow is static.
-            uint32_t GetNumDraws() const;
-
             RHI::ConstPtr<RHI::DrawPacket> m_clearShadowDrawPacket;
             RHI::Handle<uint32_t> m_casterMovedBit;
             uint16_t m_arraySlice = 0;

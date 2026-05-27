@@ -202,9 +202,9 @@ namespace AZ
         */
         static EnvironmentVariable<Context> s_defaultGlobalContext;
 
-        // EBus traits should provide a valid unique name, so that handlers can 
+        // EBus traits should provide a valid unique name, so that handlers can
         // connect to the EBus across modules.
-        // This can fail on some compilers. If it fails, make sure that you give 
+        // This can fail on some compilers. If it fails, make sure that you give
         // each bus a unique name.
         static u32 GetVariableId();
     };
@@ -257,11 +257,15 @@ namespace AZ
         return globalContext;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    template<class Context>
-    u32 EBusEnvironmentStoragePolicy<Context>::GetVariableId()
-    {
-        static constexpr u32 NameCrc = Crc32(AZ_FUNCTION_SIGNATURE);
-        return NameCrc;
-    }
 } // namespace AZ
+
+// Defined outside namespace AZ so that AZ_FUNCTION_SIGNATURE (__PRETTY_FUNCTION__)
+// produces a fully qualified return type (e.g. "AZ::u32") regardless of
+// compiler version.
+// See: https://github.com/o3de/o3de/issues/19690
+template<class Context>
+AZ::u32 AZ::EBusEnvironmentStoragePolicy<Context>::GetVariableId()
+{
+    static constexpr AZ::u32 NameCrc = AZ::Crc32(AZ_FUNCTION_SIGNATURE);
+    return NameCrc;
+}

@@ -1,10 +1,9 @@
 {
     "engine_name": "o3de",
-    "restricted": "o3de",
     "O3DEVersion": "0.1.0.0",
     "O3DEBuildNumber": 0,
     "display_version": "00.00",
-    "version": "2.5.2",
+    "version": "2.6.0",
     "api_versions": {
         "editor": "1.0.0",
         "framework": "1.2.1",
@@ -12,10 +11,11 @@
         "tools": "1.1.0"
     },
     "file_version": 2,
-    "copyright_year": 2026,
+    "copyright_year": 2023,
     "build": 0,
     "external_subdirectories": [
         "Gems/Achievements",
+        "Gems/AFR",
         "Gems/Archive",
         "Gems/AssetValidation",
         "Gems/Atom",
@@ -51,6 +51,7 @@
         "Gems/LyShine",
         "Gems/LyShineExamples",
         "Gems/Maestro",
+        "Gems/Meshlets",
         "Gems/MessagePopup",
         "Gems/Microphone",
         "Gems/MiniAudio",
@@ -58,6 +59,7 @@
         "Gems/Multiplayer",
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
+        "Gems/OpenParticleSystem",
         "Gems/PhysX/Common",
         "Gems/PhysX/Core/PhysX4",
         "Gems/PhysX/Core/PhysX5",
@@ -81,6 +83,7 @@
         "Gems/ScriptCanvasTesting",
         "Gems/ScriptedEntityTweener",
         "Gems/ScriptEvents",
+        "Gems/SkyAtmosphere",
         "Gems/Stars",
         "Gems/StartingPointCamera",
         "Gems/StartingPointInput",

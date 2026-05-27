@@ -11,6 +11,7 @@
 #include <source/models/AssetBundlerAbstractFileTableModel.h>
 
 #include <QDateTime>
+#include <QRegularExpression>
 
 namespace AssetBundler
 {
@@ -23,7 +24,7 @@ namespace AssetBundler
 
     void AssetBundlerFileTableFilterModel::FilterChanged(const QString& newFilter)
     {
-        setFilterRegExp(newFilter.toLower());
+        setFilterRegularExpression(newFilter.toLower());
         invalidateFilter();
     }
 
@@ -31,7 +32,7 @@ namespace AssetBundler
     {
         // Override the default implemention since we want to define custom rules here 
         QModelIndex index = sourceModel()->index(sourceRow, m_displayNameCol, sourceParent);
-        QRegExp filter(filterRegExp());
+        QRegularExpression filter(filterRegularExpression());
 
         return sourceModel()->data(index).toString().toLower().contains(filter);
     }
@@ -48,7 +49,7 @@ namespace AssetBundler
         QVariant leftTime = sourceModel()->data(left, AssetBundlerAbstractFileTableModel::SortRole);
         QVariant rightTime = sourceModel()->data(right, AssetBundlerAbstractFileTableModel::SortRole);
 
-        if (leftTime.type() != QVariant::DateTime || rightTime.type() != QVariant::DateTime)
+        if (!leftTime.canConvert<QDateTime>() || !rightTime.canConvert<QDateTime>())
         {
             return QSortFilterProxyModel::lessThan(left, right);
         }

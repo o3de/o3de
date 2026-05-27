@@ -156,8 +156,33 @@ namespace AssetBundler
 
         // Inputs
         UpdateListOfTokenNames();
+        if (comparisonData.m_firstInput.empty())
+        {
+            m_ui->firstInputComboBox->setCurrentIndex(0);
+            SetFirstInputFileVisibility(true);
+        }
+        else
+        {
+            int firstInputIndex = m_inputTokenNameList.indexOf(RemoveTokenCharFromString(comparisonData.m_firstInput));
+            if (firstInputIndex != -1)
+            {
+                m_ui->firstInputComboBox->setCurrentIndex(firstInputIndex);
+                SetFirstInputFileVisibility(firstInputIndex == 0);
+            }
+        }
+
         m_ui->firstInputLineEdit->setText(QString(comparisonData.m_cachedFirstInputPath.c_str()));
         m_ui->secondInputLineEdit->setText(QString(comparisonData.m_cachedSecondInputPath.c_str()));
+
+        // override with hard set values
+        if (!comparisonData.m_firstInput.empty())
+        {
+            m_ui->firstInputLineEdit->setText(QString(comparisonData.m_firstInput.c_str()));
+        }
+        if (!comparisonData.m_secondInput.empty())
+        {
+            m_ui->secondInputLineEdit->setText(QString(comparisonData.m_secondInput.c_str()));
+        }
 
         // Update fields that are not always visible
         UpdateOnComparisonTypeChanged(comparisonData.m_filePatternType != AssetFileInfoListComparison::FilePatternType::Default);
@@ -343,7 +368,9 @@ namespace AssetBundler
         }
 
         m_ui->firstInputLineEdit->setText(absoluteFilePath);
+        m_comparisonList->SetFirstInput(m_comparisonDataIndex, absoluteFilePath.toUtf8().constData());
         m_comparisonList->SetCachedFirstInputPath(m_comparisonDataIndex, absoluteFilePath.toUtf8().data());
+        emit comparisonDataChanged();
     }
 
     void ComparisonDataWidget::OnSecondInputComboBoxChanged(int index)
@@ -392,6 +419,8 @@ namespace AssetBundler
 
         m_ui->secondInputLineEdit->setText(absoluteFilePath);
         m_comparisonList->SetCachedSecondInputPath(m_comparisonDataIndex, absoluteFilePath.toUtf8().data());
+        m_comparisonList->SetSecondInput(m_comparisonDataIndex, absoluteFilePath.toUtf8().constData());
+        emit comparisonDataChanged();
     }
 
     QString ComparisonDataWidget::BrowseButtonPressed()

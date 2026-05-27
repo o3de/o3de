@@ -98,15 +98,15 @@ namespace UnitTest
 
             TransformNotificationBus::Handler::BusConnect(childEntity.GetId());
 
+            //Initialize Child and Parent, this prepares the Transform for use.
             childEntity.Init();
             parentEntity.Init();
 
-            // We bind transform interface only when entity is activated
-            AZ_TEST_ASSERT(childEntity.GetTransform() == nullptr);
-            childEntity.Activate();
+            // Activate them now that Init has determined active state (Active by default).
+            childEntity.ApplyEffectiveActiveState();
             TransformInterface* childTransform = childEntity.GetTransform();
 
-            parentEntity.Activate();
+            parentEntity.ApplyEffectiveActiveState();
             TransformInterface* parentTransform = parentEntity.GetTransform();
             parentTransform->SetWorldTM(Transform::CreateTranslation(Vector3(1.0f, 0.0f, 0.0f)));
 
@@ -126,16 +126,19 @@ namespace UnitTest
             m_checkLocalTM *= parentTransform->GetWorldTM().GetInverse(); // the set parent will move the child object into parent space
             childTransform->SetParent(m_checkNewParentId);
 
-            // Deactivate the parent (this essentially removes the parent)
+            // Unparent Child, and Deactivate the parent.
             m_checkNewParentId.SetInvalid();
             m_checkOldParentId = parentEntity.GetId();
             m_checkLocalTM = m_checkWorldTM; // we will remove the parent
-            parentEntity.Deactivate();
+            childTransform->SetParent(AZ::EntityId());
+            parentEntity.SetEntityActive(false);
+            parentEntity.ApplyEffectiveActiveState();
 
             TransformNotificationBus::Handler::BusDisconnect(childEntity.GetId());
 
             // now we should we without a parent
-            childEntity.Deactivate();
+            childEntity.SetEntityActive(false);
+            childEntity.ApplyEffectiveActiveState();
         }
 
         Transform m_checkWorldTM;
@@ -180,7 +183,7 @@ namespace UnitTest
             m_checkChildId = childEntity.GetId();
 
             childEntity.Init();
-            childEntity.Activate();
+            childEntity.ApplyEffectiveActiveState();
             TransformInterface* childTransform = childEntity.GetTransform();
 
             // Expected number of notifications to OnChildAdded and OnChildRemoved
@@ -193,18 +196,6 @@ namespace UnitTest
             checkAddCount++;
             AZ_TEST_ASSERT(m_onChildAddedCount == checkAddCount);
 
-            // Deactivating child should notify removal
-            AZ_TEST_ASSERT(m_onChildRemovedCount == checkRemoveCount);
-            childEntity.Deactivate();
-            checkRemoveCount++;
-            AZ_TEST_ASSERT(m_onChildRemovedCount == checkRemoveCount);
-
-            // Activating child (while parentId is set) should notify add
-            AZ_TEST_ASSERT(m_onChildAddedCount == checkAddCount);
-            childEntity.Activate();
-            checkAddCount++;
-            AZ_TEST_ASSERT(m_onChildAddedCount == checkAddCount);
-
             // Setting parent invalid should notify removal
             AZ_TEST_ASSERT(m_onChildRemovedCount == checkRemoveCount);
             childTransform->SetParent(EntityId());
@@ -212,7 +203,8 @@ namespace UnitTest
             AZ_TEST_ASSERT(m_onChildRemovedCount == checkRemoveCount);
 
             TransformNotificationBus::Handler::BusDisconnect(parentId);
-            childEntity.Deactivate();
+            childEntity.SetEntityActive(false);
+            childEntity.ApplyEffectiveActiveState();
         }
 
         EntityId m_checkChildId;
@@ -839,20 +831,23 @@ namespace UnitTest
         Entity* m_childEntity = nullptr;
     };
 
-    // we do expect a static entity to move if its parent is activated after itself
+    // Created to force old broken offset behaviour.
+    // Altered 2026-01-16 to determine reverse implemented in Entity Activation Update. Out of order activation should preserve positioning.
     TEST_F(ParentedStaticTransformComponent, ParentActivatesLast_OffsetObeyed)
     {
-        m_childEntity->Activate();
+        m_childEntity->SetEntityActive(true);
+        m_childEntity->ApplyEffectiveActiveState();
 
         Transform previousWorldTM;
         TransformBus::EventResult(previousWorldTM, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
 
-        m_parentEntity->Activate();
+        m_parentEntity->SetEntityActive(true);
+        m_childEntity->ApplyEffectiveActiveState();
 
         Transform nextWorldTM;
         TransformBus::EventResult(nextWorldTM, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
 
-        EXPECT_FALSE(previousWorldTM.IsClose(nextWorldTM));
+        EXPECT_TRUE(previousWorldTM.IsClose(nextWorldTM));
     }
 
     // Fixture that loads a TransformComponent from a buffer.

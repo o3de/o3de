@@ -61,7 +61,7 @@ namespace AZ
                     dc.ReadArg(0, r);
                     dc.ReadArg(1, g);
                     dc.ReadArg(2, b);
-                    *thisPtr = Color(r, g, b, 1.0);
+                    *thisPtr = Color(r, g, b);
                 }
                 else
                 {

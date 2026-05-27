@@ -363,8 +363,6 @@ private: // ------------------------------------------------------
 #include AZ_RESTRICTED_FILE(System_h)
 #endif
 
-    ICVar* m_gpu_particle_physics;
-
     AZStd::string  m_sSavedRDriver;                                //!< to restore the driver when quitting the dedicated server
 
     //////////////////////////////////////////////////////////////////////////

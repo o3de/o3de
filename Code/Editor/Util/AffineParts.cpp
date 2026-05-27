@@ -9,6 +9,8 @@
 
 #include "EditorDefs.h"
 
+#include <CryCommon/MathConversion.h>
+
 /**** Decompose.h - Basic declarations ****/
 typedef struct
 {
@@ -821,34 +823,36 @@ static  void spectral_decomp_affine(HMatrix A, SAffineParts* parts)
 }
 
 // Decompose matrix to affine parts.
-void AffineParts::Decompose(const Matrix34& tm)
+void AffineParts::Decompose(const AZ::Matrix3x4& tm34)
 {
     SAffineParts parts;
 
-    Matrix44 tm44(tm);
-    HMatrix& H = *((HMatrix*)&tm44); // Treat HMatrix as a Matrix44.
+    AZ::Matrix4x4 tm44 = AZ::Matrix4x4::CreateFromMatrix3x4(tm34);
+    HMatrix H;
+    tm44.StoreToRowMajorFloat16((float*)&H);
 
     decomp_affine(H, &parts);
 
-    rot = Quat(parts.q.w, parts.q.x, parts.q.y, parts.q.z);
-    rotScale = Quat(parts.u.w, parts.u.x, parts.u.y, parts.u.z);
+    rot = AZ::Quaternion(parts.q.x, parts.q.y, parts.q.z, parts.q.w);
+    rotScale = AZ::Quaternion(parts.u.x, parts.u.y, parts.u.z, parts.u.w);
     pos = Vec3(parts.t.x, parts.t.y, parts.t.z);
     scale = Vec3(parts.k.x, parts.k.y, parts.k.z);
     fDet = parts.f;
 }
 
 // Spectral matrix decompostion to affine parts.
-void AffineParts::SpectralDecompose(const Matrix34& tm)
+void AffineParts::SpectralDecompose(const AZ::Matrix3x4& tm34)
 {
     SAffineParts parts;
 
-    Matrix44 tm44(tm);
-    HMatrix& H = *((HMatrix*)&tm44); // Treat HMatrix as a Matrix44.
+    AZ::Matrix4x4 tm44 = AZ::Matrix4x4::CreateFromMatrix3x4(tm34);
+    HMatrix H;
+    tm44.StoreToRowMajorFloat16((float*)&H);
 
     spectral_decomp_affine(H, &parts);
 
-    rot = Quat(parts.q.w, parts.q.x, parts.q.y, parts.q.z);
-    rotScale = Quat(parts.u.w, parts.u.x, parts.u.y, parts.u.z);
+    rot = AZ::Quaternion(parts.q.x, parts.q.y, parts.q.z, parts.q.w);
+    rotScale = AZ::Quaternion(parts.u.x, parts.u.y, parts.u.z, parts.u.w);
     pos = Vec3(parts.t.x, parts.t.y, parts.t.z);
     scale = Vec3(parts.k.x, parts.k.y, parts.k.z);
     fDet = parts.f;
