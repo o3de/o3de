@@ -187,7 +187,8 @@ namespace OpenParticle
                 }
 
                 if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::MeshConfig>()) &&
-                    !(materialType.GetHint().ends_with("particlemesh.azmaterialtype")))
+                    !(materialType.GetHint().ends_with("particlemesh.azmaterialtype") ||
+                      materialType.GetHint().ends_with("particlemesh_generated.azmaterialtype")))
                 {
                     AZ_Error(
                         "ParticleAssetData",

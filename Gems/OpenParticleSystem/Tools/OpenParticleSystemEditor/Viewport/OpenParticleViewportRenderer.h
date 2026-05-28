@@ -103,7 +103,8 @@ namespace OpenParticleSystemEditor
         void DrawLine2d(AZ::RPI::AuxGeomDrawPtr auxGeomPtr, const AZ::Vector2& p1, const AZ::Vector2& p2, const AZ::Color& color, float z) const;
         void Draw2dTextLabel(float x, float y, float size, const char* text, bool center, const AZ::Color& color) const;
 
-        AZStd::string m_defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
+        AZStd::string m_defaultPipelineAssetPath = "passes/ParticleEditorPipeline.azasset";
+        AZStd::string m_lowEndPipelineAssetPath = "passes/ParticleEditorLowEndPipeline.azasset";
         AZStd::shared_ptr<AZ::RPI::WindowContext> m_windowContext;
         AZ::RPI::RenderPipelinePtr m_renderPipeline;
         AZ::RPI::ScenePtr m_scene;

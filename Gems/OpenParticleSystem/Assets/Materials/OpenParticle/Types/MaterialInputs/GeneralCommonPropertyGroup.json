@@ -86,13 +86,5 @@
                 "name": "o_materialUseForwardPassIBLSpecular"
             }
         }
-    ],
-    "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "Materials/OpenParticle/Types/StandardPBR_HandleOpacityDoubleSided.lua"
-            }
-        }
     ]
 }

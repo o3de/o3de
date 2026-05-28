@@ -193,11 +193,25 @@ namespace OpenParticleSystemEditor
 
     void OpenParticleViewportRenderer::CreateAssetRenderPipeline()
     {
-        // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene
+        const AZ::RHI::MultisampleState appMsaa =
+            AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        const bool useLowEnd = (appMsaa.m_samples == 1);
+        const AZStd::string& pipelinePath = useLowEnd ? m_lowEndPipelineAssetPath : m_defaultPipelineAssetPath;
+
         AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
-            m_defaultPipelineAssetPath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
+            pipelinePath.c_str(), AZ::RPI::AssetUtils::TraceLevel::Error);
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForWindow(pipelineAsset, *m_windowContext.get());
         pipelineAsset.Release();
+
+        if (!m_renderPipeline)
+        {
+            AZ_Error("OpenParticleViewportRenderer", false, "Failed to create render pipeline. Pipeline path: %s", pipelinePath.c_str());
+            return;
+        }
+
+        m_renderPipeline->GetRenderSettings().m_multisampleState = appMsaa;
+        m_renderPipeline->MarkPipelinePassChanges(AZ::RPI::PipelinePassChanges::MultisampleStateChanged);
+
         m_scene->AddRenderPipeline(m_renderPipeline);
     }
 
