@@ -373,7 +373,6 @@ namespace OpenParticle
                         {
                             if (efd.m_drawSrg && efd.m_variantKey.value == UINT64_MAX)
                             {
-                                // First render — compile the draw SRG unconditionally
                                 if (!variant.IsFullyBaked() &&
                                     efd.m_drawSrg->GetLayout()->HasShaderVariantKeyFallbackEntry())
                                 {
@@ -908,8 +907,8 @@ namespace OpenParticle
             geometryView.SetDrawArguments(linear);
             drawPacketBuilder.SetDrawInstanceArguments(instanceArguments);
             drawPacketBuilder.AddShaderResourceGroup(instance.m_objSrg->GetRHIShaderResourceGroup());
-            AZ_Assert(instance.m_objSrg->GetRHIShaderResourceGroup(), "srg nullptr");
-            AZ_Assert(efd.m_drawSrg->GetRHIShaderResourceGroup(), "srg nullptr");
+            AZ_Assert(instance.m_objSrg->GetRHIShaderResourceGroup(), "Emitter %u: obj SRG nullptr", emitterId);
+            AZ_Assert(efd.m_drawSrg->GetRHIShaderResourceGroup(), "Emitter %u: draw SRG nullptr", emitterId);
         }
         else
         {
@@ -923,7 +922,7 @@ namespace OpenParticle
 
                 drawPacketBuilder.SetDrawInstanceArguments(instanceArguments);
                 drawPacketBuilder.AddShaderResourceGroup(instance.m_objSrg->GetRHIShaderResourceGroup());
-                AZ_Assert(instance.m_objSrg->GetRHIShaderResourceGroup(), "srg nullptr");
+                AZ_Assert(instance.m_objSrg->GetRHIShaderResourceGroup(), "Emitter %u: obj SRG nullptr", emitterId);
             }
             else
             { // ribbon particle
@@ -939,7 +938,7 @@ namespace OpenParticle
         }
         drawPacketBuilder.SetGeometryView(&geometryView);
         drawPacketBuilder.AddShaderResourceGroup(instance.m_material->GetRHIShaderResourceGroup());
-        AZ_Assert(instance.m_material->GetRHIShaderResourceGroup(), "srg nullptr");
+        AZ_Assert(instance.m_material->GetRHIShaderResourceGroup(), "Emitter %u: material SRG nullptr", emitterId);
 
         m_scene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 

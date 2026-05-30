@@ -63,3 +63,4 @@ float3 ComputeParticleWorldPosition(float3 meshLocalPos, ParticleMeshInstanceDat
     float3 worldPos = mul(objectToWorld, float4(localPos, 1.0)).xyz;
     return worldPos + d.m_offset.xyz;
 }
+

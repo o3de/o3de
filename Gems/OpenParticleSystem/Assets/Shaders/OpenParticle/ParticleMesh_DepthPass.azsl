@@ -42,3 +42,4 @@ VSDepthOutput DepthPassVS(VSInput IN, uint instanceId : SV_instanceID)
 
     return OUT;
 }
+
