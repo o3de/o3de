@@ -765,6 +765,18 @@ namespace AzToolsFramework
         {
             LSV_BEGIN(m_scriptComponent.m_context->NativeContext(), 0);
 
+            // Guard against re-entrant loads. When the assigned script asset is
+            // already in memory, QueueLoad can dispatch OnAssetReady synchronously
+            // while a LoadScript is still unwinding, re-entering this routine and
+            // letting two passes run the script and rebuild the property buffers
+            // against the same script context at once, which corrupts memory. The
+            // outer pass completes the load, so the nested call can be skipped.
+            if (m_isLoadingScript)
+            {
+                return;
+            }
+            m_isLoadingScript = true;
+
             // At this point we're loading the script to populate the properties.
             // Disable debugging during this stage as the game is not running yet.
             bool pausedBreakpoints = false;
@@ -820,6 +832,7 @@ namespace AzToolsFramework
             }
 
             m_loadingNewScript = false;
+            m_isLoadingScript = false;
         }
 
         bool ScriptEditorComponent::LoadProperties()
