@@ -51,7 +51,9 @@ namespace UnitTest
     TEST(CurveDataTests, AddPoint_RejectsNegativeTime)
     {
         CurveData curve;
+        AZ_TEST_START_TRACE_SUPPRESSION;
         const int64_t index = curve.AddPoint(MakePoint(-0.5f, 0.0f));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // the rejection emits one AZ_Error
         EXPECT_EQ(index, -1);
         EXPECT_EQ(curve.GetNumPoints(), 0);
     }

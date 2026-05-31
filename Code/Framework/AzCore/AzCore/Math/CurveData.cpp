@@ -296,11 +296,19 @@ namespace AZ
         // can aim the free arm to steer the extrapolation.
         if (time < front.m_time)
         {
-            return front.m_value + front.m_inTangent * (time - front.m_time);
+            // A broken first key aims its free incoming arm; an unified key
+            // continues along the curve's natural departure slope (outgoing arm),
+            // which is correct even for Linear/Auto ends where the free arm is
+            // computed toward a non-existent neighbour.
+            const float slope = front.m_broken ? front.m_inTangent : front.m_outTangent;
+            return front.m_value + slope * (time - front.m_time);
         }
         if (time > back.m_time)
         {
-            return back.m_value + back.m_outTangent * (time - back.m_time);
+            // A broken last key aims its free outgoing arm; an unified key
+            // continues along the curve's natural arrival slope (incoming arm).
+            const float slope = back.m_broken ? back.m_outTangent : back.m_inTangent;
+            return back.m_value + slope * (time - back.m_time);
         }
 
         // Locate the segment containing the time and evaluate it.
