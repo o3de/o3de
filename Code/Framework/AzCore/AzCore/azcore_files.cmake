@@ -290,6 +290,8 @@ set(FILES
     Math/Color.inl
     Math/ColorGradient.cpp
     Math/ColorGradient.h
+    Math/CurveData.cpp
+    Math/CurveData.h
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
     Math/Crc.cpp
@@ -423,6 +425,8 @@ set(FILES
     Math/Color.cpp
     Math/ColorGradient.h
     Math/ColorGradient.cpp
+    Math/CurveData.h
+    Math/CurveData.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
     Memory/AllocationRecords.cpp

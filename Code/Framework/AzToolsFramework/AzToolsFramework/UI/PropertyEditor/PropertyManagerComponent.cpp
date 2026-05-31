@@ -23,6 +23,7 @@ namespace AzToolsFramework
     AZTF_API void RegisterDoubleSliderHandlers();
     AZTF_API void RegisterColorPropertyHandlers();
     AZTF_API void RegisterColorGradientPropertyHandlers();
+    AZTF_API void RegisterCurveEditHandler();
     AZTF_API void RegisterStringLineEditHandler();
     AZTF_API void RegisterBoolComboBoxHandler();
     AZTF_API void RegisterCheckBoxHandlers();
@@ -233,6 +234,7 @@ namespace AzToolsFramework
             RegisterDoubleSliderHandlers();
             RegisterColorPropertyHandlers();
             RegisterColorGradientPropertyHandlers();
+            RegisterCurveEditHandler();
             RegisterStringLineEditHandler();
             RegisterBoolComboBoxHandler();
             RegisterCheckBoxHandlers();

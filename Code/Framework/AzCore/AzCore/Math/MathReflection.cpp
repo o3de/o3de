@@ -26,6 +26,7 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/ColorGradient.h>
 #include <AzCore/Math/ColorSerializer.h>
+#include <AzCore/Math/CurveData.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/TransformSerializer.h>
@@ -375,6 +376,7 @@ namespace AZ
             AlphaGradientMarker::Reflect(context);
             ColorGradient::Reflect(context);
             ColorGradientRGB::Reflect(context);
+            CurveData::Reflect(context);
             Vector2::Reflect(context);
             Vector3::Reflect(context);
             Vector4::Reflect(context);
