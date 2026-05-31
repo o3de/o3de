@@ -1121,7 +1121,6 @@ namespace AzToolsFramework
     CurveEditorDialog::CurveEditorDialog(const CurveData& initial, bool multiEdit, QWidget* parent)
         : QDialog(parent)
         , m_working(initial)
-        , m_multiEdit(multiEdit)
     {
         setFocusPolicy(Qt::StrongFocus);
         setWindowTitle(multiEdit

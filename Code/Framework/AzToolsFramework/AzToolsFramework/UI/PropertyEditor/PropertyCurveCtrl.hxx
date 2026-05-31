@@ -228,8 +228,6 @@ namespace AzToolsFramework
 
         AZStd::vector<UndoSnapshot> m_undoStack;
         size_t m_undoCursor = 0;
-
-        bool m_multiEdit = false;
     };
 
     // =====================================================================
