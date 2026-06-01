@@ -44,15 +44,12 @@ namespace OpenParticleSystemEditor
     {
         QInitResourceOpenParticleEditor();
         setObjectName("ParticleEditorWindow");
-        m_menuView = menuBar()->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&View"));
         SetupCentral();
-        SetupDocking();
         SetupMenu();
+        SetupDocking();
 
         m_statusMessage = new QLabel(statusBar());
         statusBar()->addPermanentWidget(m_statusMessage, 1);
-
-        m_dockActions.clear();
 
         m_document.reset(new ParticleDocument());
         EditorWindowRequestsBus::Handler::BusConnect();
@@ -156,16 +153,7 @@ namespace OpenParticleSystemEditor
         },
         QKeySequence::UnknownKey);
 
-        // Add all View DockWidget panes.
-        m_menuView = menuBar()->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&View"));
-        QList<QDockWidget*> list = findChildren<QDockWidget*>();
-        for (auto p : list)
-        {
-            if (p->parent() == this)
-            {
-                m_menuView->addAction(p->toggleViewAction());
-            }
-        }
+        m_menuView = m_menuBar->addMenu(QCoreApplication::translate("OpenParticleSystemEditorWindow", "&View"));
     }
 
     void OpenParticleSystemEditorWindow::SetupCentral()
@@ -200,8 +188,10 @@ namespace OpenParticleSystemEditor
             name.c_str(),
             [this, name]()
             {
-                SetDockWidgetVisible(name, !IsDockWidgetVisible(name));
+                SetDockWidgetVisible(name, m_dockActions[name]->isChecked());
             });
+        m_dockActions[name]->setCheckable(true);
+        m_dockActions[name]->setChecked(true);
     }
 
     void OpenParticleSystemEditorWindow::SetupDocking()
@@ -335,19 +325,22 @@ namespace OpenParticleSystemEditor
         SetEmitterDockWidget(newEmitter.toUtf8().data(), emitterInspector, Qt::LeftDockWidgetArea);
         Checked(newEmitter);
 
-        for (auto emitterDockWidgetPair : m_dockWidgets)
+        if (m_emitterTabWidget)
         {
-            if (emitterDockWidgetPair.second && emitterDockWidgetPair.second->findChild<EmitterInspector*>())
+            m_emitterTabWidget->addTab(m_dockWidgets[newEmitter.toUtf8().data()]);
+        }
+        else
+        {
+            for (auto emitterDockWidgetPair : m_dockWidgets)
             {
-                if (m_dockWidgets.find(newEmitter.toUtf8().data()) != m_dockWidgets.end() && 
-                        emitterDockWidgetPair.second == m_dockWidgets[newEmitter.toUtf8().data()])
+                if (emitterDockWidgetPair.second && emitterDockWidgetPair.second->findChild<EmitterInspector*>())
                 {
-                    continue;
-                }
-                else
-                {
-                    m_emitterTabWidget = m_fancyDockingManager->tabifyDockWidget(emitterDockWidgetPair.second, m_dockWidgets[newEmitter.toUtf8().data()], this);
-                    break;
+                    if (m_dockWidgets.find(newEmitter.toUtf8().data()) != m_dockWidgets.end() &&
+                            emitterDockWidgetPair.second != m_dockWidgets[newEmitter.toUtf8().data()])
+                    {
+                        m_emitterTabWidget = m_fancyDockingManager->tabifyDockWidget(emitterDockWidgetPair.second, m_dockWidgets[newEmitter.toUtf8().data()], this);
+                        break;
+                    }
                 }
             }
         }
@@ -384,9 +377,13 @@ namespace OpenParticleSystemEditor
             RemoveDockWidget(emitterInspectorTitle.c_str());
             if (m_tabWidgetDocument.empty())
             {
-                // Show default emitter tab when no document opened to keep layout
-                m_emitterTabWidget->setTabVisible(0, true);
-                // Clear detail dock
+                const auto EmitterName = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Emitter");
+                auto emitterAction = m_dockActions.find(EmitterName.toUtf8().data());
+                if (emitterAction != m_dockActions.end())
+                {
+                    emitterAction->second->setVisible(true);
+                }
+                SetDockWidgetVisible(EmitterName.toUtf8().data(), true);
                 m_effectorInspector->Init("");
             }
         });
@@ -412,8 +409,13 @@ namespace OpenParticleSystemEditor
             m_currentTabName = name.toUtf8().data();
         });
 
-        // Hide default emitter tab when any document opened
-        m_emitterTabWidget->setTabVisible(0, false);
+        const auto EmitterName = QCoreApplication::translate("OpenParticleSystemEditorWindow", "Emitter");
+        SetDockWidgetVisible(EmitterName.toUtf8().data(), false);
+        auto emitterAction = m_dockActions.find(EmitterName.toUtf8().data());
+        if (emitterAction != m_dockActions.end())
+        {
+            emitterAction->second->setVisible(false);
+        }
     }
 
     void OpenParticleSystemEditorWindow::SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area)
@@ -434,11 +436,7 @@ namespace OpenParticleSystemEditor
         }
 
         m_dockActions[name] = m_menuView->addAction(name.c_str(), [this, name]() {
-            if (m_dockActions[name]->isChecked()) {
-                m_emitterTabWidget->addTab(m_dockWidgets[name]);
-            } else {
-                m_emitterTabWidget->removeTab(m_dockWidgets[name]);
-            }
+            SetDockWidgetVisible(name, m_dockActions[name]->isChecked());
         });
         m_dockActions[name]->setCheckable(true);
     }
@@ -449,7 +447,10 @@ namespace OpenParticleSystemEditor
         {
             if (emitterDockWidgetPair.second->widget()->windowTitle() == path)
             {
-                m_emitterTabWidget->setCurrentWidget(emitterDockWidgetPair.second);
+                if (m_emitterTabWidget)
+                {
+                    m_emitterTabWidget->setCurrentWidget(emitterDockWidgetPair.second);
+                }
                 m_tabWidgetDocument[path.toStdString().c_str()]->UpdateAsset();
                 return true;
             }
@@ -521,21 +522,54 @@ namespace OpenParticleSystemEditor
     void OpenParticleSystemEditorWindow::SetDockWidgetVisible(const AZStd::string& name, bool visible)
     {
         auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
+        if (dockWidgetItr == m_dockWidgets.end())
         {
-            dockWidgetItr->second->setVisible(visible);
+            return;
+        }
+
+        QDockWidget* dockWidget = dockWidgetItr->second;
+
+        if (visible)
+        {
+            if (m_emitterTabWidget && !AzQtComponents::DockTabWidget::IsTabbed(dockWidget))
+            {
+                m_emitterTabWidget->addTab(dockWidget);
+            }
+
+            if (AzQtComponents::DockTabWidget::IsTabbed(dockWidget))
+            {
+                AzQtComponents::DockTabWidget* tabWidget = AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget);
+                if (tabWidget)
+                {
+                    int index = tabWidget->indexOf(dockWidget);
+                    if (index != -1)
+                    {
+                        tabWidget->setTabVisible(index, true);
+                    }
+                }
+            }
+
+            dockWidget->setVisible(true);
+        }
+        else
+        {
+            dockWidget->setVisible(false);
+
+            if (AzQtComponents::DockTabWidget::IsTabbed(dockWidget))
+            {
+                AzQtComponents::DockTabWidget* tabWidget = AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget);
+                if (tabWidget)
+                {
+                    int index = tabWidget->indexOf(dockWidget);
+                    if (index != -1)
+                    {
+                        tabWidget->setTabVisible(index, false);
+                    }
+                }
+            }
         }
     }
 
-    bool OpenParticleSystemEditorWindow::IsDockWidgetVisible(const AZStd::string& name) const
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            return dockWidgetItr->second->isVisible();
-        }
-        return false;
-    }
 
     bool OpenParticleSystemEditorWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area)
     {
@@ -562,9 +596,10 @@ namespace OpenParticleSystemEditor
             name.c_str(),
             [this, name]()
             {
-                SetDockWidgetVisible(name, !IsDockWidgetVisible(name));
+                SetDockWidgetVisible(name, m_dockActions[name]->isChecked());
             });
         m_dockActions[name]->setCheckable(true);
+        m_dockActions[name]->setChecked(true);
         return true;
     }
 
