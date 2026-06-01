@@ -767,7 +767,7 @@ namespace OpenParticle
 
     void ParticleSystem::RenderParticle(const AZ::RHI::DrawListTag drawListTag, const DrawParam& drawParam,
         EmitterInstance& instance, AZ::RPI::View& view, const EmitterDrawKey& drawKey,
-        AZ::u32 emitterId, int meshIndex)
+        [[maybe_unused]] AZ::u32 emitterId, int meshIndex)
     {
         AZ_PROFILE_SCOPE(AzCore, "ParticleSystem::RenderParticle");
 
