@@ -767,6 +767,43 @@ def validate_engine_path(path_str: str) -> Path:
     return engine_path
 
 
+def detect_engine_path_fallback() -> Optional[Path]:
+    """Best-effort engine path when the launch command did not supply one.
+
+    1. azlmbr.paths.engroot -- available when embedded in the O3DE Editor.
+    2. The engine tree this script lives in: <engine>/Tools/ClassCreationWizard.
+    """
+    try:
+        import azlmbr.paths
+        root = azlmbr.paths.engroot
+        if root and (Path(root) / "engine.json").exists():
+            return Path(root).resolve()
+    except Exception:
+        pass
+
+    candidate = Path(__file__).resolve().parents[2]
+    if (candidate / "engine.json").exists():
+        return candidate
+    return None
+
+
+def detect_project_path_fallback() -> Optional[Path]:
+    """Best-effort project path when the launch command did not supply one.
+
+    Uses azlmbr.paths.projectroot, available when embedded in the O3DE Editor.
+    This covers the case where AZ::Utils::GetProjectPath() returned empty and
+    the wizard was launched with an empty --project-path argument.
+    """
+    try:
+        import azlmbr.paths
+        root = azlmbr.paths.projectroot
+        if root and Path(root).is_dir():
+            return Path(root).resolve()
+    except Exception:
+        pass
+    return None
+
+
 # ============================================================================
 # CMake Analysis (imported from command_plugin.py)
 # ============================================================================
@@ -2408,6 +2445,14 @@ def main():
         except ValidationError as e:
             print(f"Error: {e}")
             return 1
+
+    # Fall back to the running editor / script location when the launch command
+    # did not supply usable paths. This handles AZ::Utils::GetProjectPath()
+    # returning empty, which arrives here as an empty (falsy) --project-path.
+    if engine_path is None:
+        engine_path = detect_engine_path_fallback()
+    if project_path is None:
+        project_path = detect_project_path_fallback()
 
     # Load command plugins from engine/project/gem directories
     if engine_path:
