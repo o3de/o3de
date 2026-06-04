@@ -47,8 +47,6 @@ if(LY_GCC_BUILD_FOR_GPROF)
     set(LY_GCC_GPROF_FLAGS "-pg")
 endif()
 
-set(O3DE_COMPILE_OPTION_DISABLE_FAST_MATH PRIVATE -fno-fast-math)
-
 ly_append_configurations_options(
     DEFINES_PROFILE
         _FORTIFY_SOURCE=2
