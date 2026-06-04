@@ -129,7 +129,7 @@ struct Matrix34_tpl
 
 
     //CONSTRUCTOR for identical float-types. It initialises a matrix34 with 12 floats.
-    ILINE Matrix34_tpl<F>(F v00, F v01, F v02, F v03, F v10, F v11, F v12, F v13, F v20, F v21, F v22, F v23)
+    ILINE Matrix34_tpl(F v00, F v01, F v02, F v03, F v10, F v11, F v12, F v13, F v20, F v21, F v22, F v23)
     {
         m00 = v00;
         m01 = v01;
@@ -146,7 +146,7 @@ struct Matrix34_tpl
     }
     //CONSTRUCTOR for different float-types. It initialises a matrix34 with 12 floats.
     template<class F1>
-    ILINE Matrix34_tpl<F>(F1 v00, F1 v01, F1 v02, F1 v03, F1 v10, F1 v11, F1 v12, F1 v13, F1 v20, F1 v21, F1 v22, F1 v23)
+    ILINE Matrix34_tpl(F1 v00, F1 v01, F1 v02, F1 v03, F1 v10, F1 v11, F1 v12, F1 v13, F1 v20, F1 v21, F1 v22, F1 v23)
     {
         m00 = F(v00);
         m01 = F(v01);
@@ -165,7 +165,7 @@ struct Matrix34_tpl
 
     //CONSTRUCTOR for identical float-types. It converts a Matrix33 into a Matrix34.
     //Matrix34(m33);
-    ILINE Matrix34_tpl<F>(const Matrix33_tpl<F>&m)
+    ILINE Matrix34_tpl(const Matrix33_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
@@ -184,7 +184,7 @@ struct Matrix34_tpl
     //CONSTRUCTOR for different float-types. It converts a Matrix33 into a Matrix34 and also converts between double/float.
     //Matrix34(Matrix33);
     template<class F1>
-    ILINE Matrix34_tpl<F>(const Matrix33_tpl<F1>&m)
+    ILINE Matrix34_tpl(const Matrix33_tpl<F1>&m)
     {
         assert(m.IsValid());
         m00 = F(m.m00);
@@ -204,7 +204,7 @@ struct Matrix34_tpl
 
     //CONSTRUCTOR for identical float-types. It converts a Matrix33 with a translation-vector into a Matrix34.
     //Matrix34(m33,Vec3(1,2,3));
-    ILINE Matrix34_tpl<F>(const Matrix33_tpl<F>&m, const Vec3_tpl<F>&t)
+    ILINE Matrix34_tpl(const Matrix33_tpl<F>&m, const Vec3_tpl<F>&t)
     {
         assert(m.IsValid());
         assert(t.IsValid());
@@ -224,7 +224,7 @@ struct Matrix34_tpl
     //CONSTRUCTOR for different float-types. It converts a Matrix33 with a translation-vector into a Matrix34 and also converts between double/float.
     //Matrix34(Matrix33r,Vec3d(1,2,3));
     template<class F1>
-    ILINE Matrix34_tpl<F>(const Matrix33_tpl<F1>&m, const Vec3_tpl<F1>&t)
+    ILINE Matrix34_tpl(const Matrix33_tpl<F1>&m, const Vec3_tpl<F1>&t)
     {
         assert(m.IsValid());
         assert(t.IsValid());
@@ -246,7 +246,7 @@ struct Matrix34_tpl
 
     //CONSTRUCTOR for identical float types
     //Matrix34 m=m34;
-    ILINE Matrix34_tpl<F>(const Matrix34_tpl<F>&m)
+    ILINE Matrix34_tpl(const Matrix34_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
@@ -265,7 +265,7 @@ struct Matrix34_tpl
     //CONSTRUCTOR for different float-types.
     //Matrix34 m=m34d;
     template<class F1>
-    ILINE Matrix34_tpl<F>(const Matrix34_tpl<F1>&m)
+    ILINE Matrix34_tpl(const Matrix34_tpl<F1>&m)
     {
         assert(m.IsValid());
         m00 = F(m.m00);
@@ -286,7 +286,7 @@ struct Matrix34_tpl
     //CONSTRUCTOR for identical float-types. It converts a Matrix44 into a Matrix34.
     //Needs to be 'explicit' because we loose the translation vector in the conversion process
     //Matrix34(m44);
-    ILINE explicit Matrix34_tpl<F>(const Matrix44_tpl<F>&m)
+    ILINE explicit Matrix34_tpl(const Matrix44_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
@@ -306,7 +306,7 @@ struct Matrix34_tpl
     //Needs to be 'explicit' because we loose the translation vector in the conversion process
     //Matrix34(m44r);
     template<class F1>
-    ILINE explicit Matrix34_tpl<F>(const Matrix44_tpl<F1>&m)
+    ILINE explicit Matrix34_tpl(const Matrix44_tpl<F1>&m)
     {
         assert(m.IsValid());
         m00 = F(m.m00);
@@ -326,7 +326,7 @@ struct Matrix34_tpl
     //CONSTRUCTOR for identical float-types. It converts a Quat into a Matrix34.
     //Needs to be 'explicit' because we loose float-precision in the conversion process
     //Matrix34(QuatT);
-    explicit ILINE Matrix34_tpl<F>(const Quat_tpl<F>&q)
+    explicit ILINE Matrix34_tpl(const Quat_tpl<F>&q)
     {
         *this = Matrix33_tpl<F>(q);
     }
@@ -334,7 +334,7 @@ struct Matrix34_tpl
     //Needs to be 'explicit' because we loose float-precision in the conversion process
     //Matrix34(QuatTd);
     template<class F1>
-    explicit ILINE Matrix34_tpl<F>(const Quat_tpl<F1>&q)
+    explicit ILINE Matrix34_tpl(const Quat_tpl<F1>&q)
     {
         *this = Matrix33_tpl<F>(q);
     }

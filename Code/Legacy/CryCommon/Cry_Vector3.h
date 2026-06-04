@@ -143,35 +143,35 @@ struct Vec3_tpl
     */
     ILINE Vec3_tpl(const Vec3_tpl& v)   {   x = v.x; y = v.y; z = v.z; }
     template<class F1>
-    ILINE  Vec3_tpl<F>(const Vec3_tpl<F1>&v)  {
+    ILINE  Vec3_tpl(const Vec3_tpl<F1>&v)  {
         x = F(v.x);
         y = F(v.y);
         z = F(v.z);
         assert(IsValid());
     }
 
-    ILINE Vec3_tpl<F>(const Vec2_tpl<F>&v) {
+    ILINE Vec3_tpl(const Vec2_tpl<F>&v) {
         x = v.x;
         y = v.y;
         z = 0;
         assert(IsValid());
     }
     template<class T>
-    ILINE Vec3_tpl<F>(const Vec2_tpl<T>&v) {
+    ILINE Vec3_tpl(const Vec2_tpl<T>&v) {
         x = F(v.x);
         y = F(v.y);
         z = 0;
         assert(IsValid());
     }
 
-    explicit ILINE Vec3_tpl<F>(const Ang3_tpl<F>&v) {
+    explicit ILINE Vec3_tpl(const Ang3_tpl<F>&v) {
         x = v.x;
         y = v.y;
         z = v.z;
         assert(IsValid());
     }
     template<class T>
-    explicit ILINE Vec3_tpl<F>(const Ang3_tpl<T>&v) {
+    explicit ILINE Vec3_tpl(const Ang3_tpl<T>&v) {
         x = v.x;
         y = v.y;
         z = v.z;
@@ -975,7 +975,7 @@ struct Ang3_tpl
     Ang3_tpl(type_zero) { x = y = z = 0; }
 
     void operator () (F vx, F vy, F vz) { x = vx; y = vy; z = vz; };
-    ILINE Ang3_tpl<F>(F vx, F vy, F vz)   {
+    ILINE Ang3_tpl(F vx, F vy, F vz)   {
         x = vx;
         y = vy;
         z = vz;

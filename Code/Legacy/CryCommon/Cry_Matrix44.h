@@ -162,7 +162,7 @@ struct Matrix44_tpl
 
     //CONSTRUCTOR for different types. It converts a Matrix33 into a Matrix44.
     //Matrix44(m33);
-    ILINE Matrix44_tpl<F>(const Matrix33_tpl<F>&m)
+    ILINE Matrix44_tpl(const Matrix33_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
@@ -185,7 +185,7 @@ struct Matrix44_tpl
     //CONSTRUCTOR for different types. It converts a Matrix33 into a Matrix44 and also converts between double/float.
     //Matrix44(Matrix33);
     template<class F1>
-    ILINE Matrix44_tpl<F>(const Matrix33_tpl<F1>&m)
+    ILINE Matrix44_tpl(const Matrix33_tpl<F1>&m)
     {
         assert(m.IsValid());
         m00 = F(m.m00);
@@ -209,7 +209,7 @@ struct Matrix44_tpl
 
     //CONSTRUCTOR for different types. It converts a Matrix34 into a Matrix44.
     //Matrix44(m34);
-    ILINE Matrix44_tpl<F>(const Matrix34_tpl<F>&m)
+    ILINE Matrix44_tpl(const Matrix34_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
@@ -232,7 +232,7 @@ struct Matrix44_tpl
     //CONSTRUCTOR for different types. It converts a Matrix34 into a Matrix44 and also converts between double/float.
     //Matrix44(Matrix34);
     template<class F1>
-    ILINE Matrix44_tpl<F>(const Matrix34_tpl<F1>&m)
+    ILINE Matrix44_tpl(const Matrix34_tpl<F1>&m)
     {
         assert(m.IsValid());
         m00 = F(m.m00);
@@ -256,7 +256,7 @@ struct Matrix44_tpl
 
     //CONSTRUCTOR for identical types
     //Matrix44 m=m44;
-    ILINE Matrix44_tpl<F>(const Matrix44_tpl<F>&m)
+    ILINE Matrix44_tpl(const Matrix44_tpl<F>&m)
     {
         assert(m.IsValid());
         m00 = m.m00;
