@@ -87,7 +87,7 @@ namespace AZ
             EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityDeactivated, m_id);
         }
 
-        m_state = state;
+        SetStateBits(state);
 
         if (state == Entity::State::Active)
         {
