@@ -131,7 +131,7 @@ namespace AZ
 
         //! Gets the state of the entity.
         //! @return The state of the entity. For example, the entity has been initialized, the entity is active, and so on.
-        State GetState() const { return m_state; }
+        State GetState() const { return static_cast<State>((m_activeStateByType & s_stateMask) >> s_stateShift); }
         
         //! Sets the "Entity" active state type to determine whether the local state of the entity should be active or inactive. This only alters the local active state factor.
         //! @param active Whether the state should be set to activated or deactivated.
@@ -156,7 +156,7 @@ namespace AZ
         //! Returns the current functional active state of the Entity. This is the evaluated combination of all the Active Type flags on this entity.
         //! If all active, then active, otherwise inactive (deactivate).
         //! @return The current "Effectively Active" state of the Entity.
-        bool IsEffectivelyActive() { return m_activeStateByType == s_allStatesOn; }
+        bool IsEffectivelyActive() { return (m_activeStateByType & s_activeStateMask) == s_activeStateMask; }
 
 
         //! Gets the ticket id used to spawn the entity.
@@ -446,32 +446,50 @@ namespace AZ
 
         u32 m_entitySpawnTicketId = 0;
 
-        //! The state of the entity.
-        State m_state;
+        // --- Bit-packed entity state word ------------------------------------------------------
+        //! m_activeStateByType packs three things that previously cost separate members. The two
+        //! bools lived in tail padding, and the State enum plus the bools together cost a full
+        //! extra 8-byte word; packing them all into one word reclaims that word:
+        //!  * Low 16 bits (s_activeStateMask) - activation layers. Index 0 is the "Entity" layer;
+        //!    further layers are handed out by EntityActiveSystemComponent (LOD, visibility, ...).
+        //!    The entity is "effectively active" only when ALL activation-layer bits are set.
+        //!  * Bits 16-23 - packed boolean entity flags (see EntityFlag).
+        //!  * Bits 24-27 - the lifecycle State enum (see s_stateShift / s_stateMask).
+        static constexpr size_t   s_maxStateFlags   = 16;          // activation-layer capacity (low half)
+        static constexpr uint32_t s_activeStateMask = 0x0000FFFFu; // low 16 bits = activation layers
 
-        //! Expanded Entity State Handling to Introduce an Active by State Type mask for up to 32 possible activeTypes registered by the
-        //! system on startup. Based on state of "entity" type is default at 0 and any other type is an index of the int mask, we determine
-        //! what the absolute desired state (Effective State) of this entity is.
+        //! Packed boolean entity flags, stored above the activation layers.
+        enum EntityFlag : uint32_t
+        {
+            RuntimeActiveByDefaultFlag = 1u << 16, ///< Entity should activate on initial creation ("Start active").
+            DependencyReadyFlag        = 1u << 17, ///< Component dependencies were evaluated and sorted successfully.
+        };
 
-        static constexpr size_t s_maxStateFlags = 32;
-        static constexpr uint32_t s_allOn32 = 0xFFFFFFFFu;
-        static constexpr uint32_t s_allStatesOn =
-                                    (s_maxStateFlags == 0)  ? 0u :
-                                    (s_maxStateFlags >= 32) ? s_allOn32 :
-                                    (s_allOn32 >> (32 - s_maxStateFlags));
+        static constexpr uint32_t s_stateShift = 24;                  ///< Lifecycle State occupies bits 24-27.
+        static constexpr uint32_t s_stateMask  = 0xFu << s_stateShift;
 
-        //! The current int carrying the masked state of all Active States by Type, each held on a defined index.
-        //! Starts all active to assure unused type indexes start active.
-        uint32_t m_activeStateByType = s_allStatesOn;
+        bool GetEntityFlag(uint32_t flag) const { return (m_activeStateByType & flag) != 0; }
+        void SetEntityFlag(uint32_t flag, bool on)
+        {
+            if (on) { m_activeStateByType |= flag; } else { m_activeStateByType &= ~flag; }
+        }
+        void SetStateBits(State state)
+        {
+            m_activeStateByType = (m_activeStateByType & ~s_stateMask)
+                | ((static_cast<uint32_t>(state) << s_stateShift) & s_stateMask);
+        }
 
-        //! Foundational entity properties/flags.
-        //! To keep AZ::Entity lightweight, one should resist the urge the add flags here unless they're extremely
-        //! common to AZ::Entity use cases, and inherently fundamental.
-        //! Furthermore, if more than 4 flags are needed, please consider using a more space-efficient container,
-        //! such as AZStd::bit_set<>. With just a couple flags, AZStd::bit_set's word-size of 32-bits will actually waste space.
-        bool m_isDependencyReady;           ///< Indicates the component dependencies have been evaluated and sorting was completed successfully.
-        bool m_isRuntimeActiveByDefault;    ///< Indicates the entity should be activated on initial creation. 
+        //! Activation layers (low half) + packed flags and lifecycle State (high half). Default:
+        //! all activation layers on, RuntimeActiveByDefault on, DependencyReady off,
+        //! State == Constructed (enum value 0, so no state bits set).
+        uint32_t m_activeStateByType = s_activeStateMask | RuntimeActiveByDefaultFlag;
     };
+
+    // FOOTPRINT PROBE (prototype): folding State + the two bools into m_activeStateByType removes a
+    // full 8-byte tail word, so sizeof(AZ::Entity) should drop by 8 vs the pre-fold layout. To read
+    // the exact size, temporarily change the assert below to "== 0"; the compiler error reports the
+    // real size. Then lock it in by setting <SIZE> to the measured value (and delete this note).
+    // static_assert(sizeof(AZ::Entity) == /*<SIZE>*/ 0, "AZ::Entity footprint changed unexpectedly");
 
     template<class ComponentType, typename... Args>
     inline ComponentType* Entity::CreateComponent(Args&&... args)

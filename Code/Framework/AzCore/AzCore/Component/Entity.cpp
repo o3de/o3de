@@ -87,9 +87,8 @@ namespace AZ
         : m_id(id)
         , m_transform(nullptr)
         , m_name{ name.empty() ? AZStd::to_string(static_cast<u64>(m_id)) : AZStd::move(name) }
-        , m_state(State::Constructed)
-        , m_isDependencyReady(false)
-        , m_isRuntimeActiveByDefault(true)
+        // State (Constructed), DependencyReady (false) and RuntimeActiveByDefault (true) are encoded
+        // in the m_activeStateByType default member initializer (see Entity.h).
     {
     }
 
@@ -100,13 +99,13 @@ namespace AZ
 
     void Entity::Reset()
     {
-        AZ_Assert(m_state != State::Activating && m_state != State::Deactivating && m_state != State::Initializing, "Unsafe to delete an entity during its state transition.");
-        if (m_state == State::Active)
+        AZ_Assert(GetState() != State::Activating && GetState() != State::Deactivating && GetState() != State::Initializing, "Unsafe to delete an entity during its state transition.");
+        if (GetState() == State::Active)
         {
             Deactivate();
         }
 
-        if (m_state == State::Init)
+        if (GetState() == State::Init)
         {
             EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityDestruction, m_id);
             EntityBus::Event(m_id, &EntityBus::Events::OnEntityDestruction, m_id);
@@ -125,7 +124,7 @@ namespace AZ
 
         m_components.clear();
 
-        if (m_state == State::Init)
+        if (GetState() == State::Init)
         {
             EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityDestroyed, m_id);
             EntityBus::Event(m_id, &EntityBus::Events::OnEntityDestroyed, m_id);
@@ -146,9 +145,9 @@ namespace AZ
             return;
         }
 
-        AZ_Assert(m_state == State::Constructed, "You may not alter the ID of an entity when it is active or initialized");
+        AZ_Assert(GetState() == State::Constructed, "You may not alter the ID of an entity when it is active or initialized");
 
-        if (m_state != State::Constructed)
+        if (GetState() != State::Constructed)
         {
             return;
         }
@@ -158,11 +157,11 @@ namespace AZ
 
     void Entity::Init()
     {
-        AZ_Assert(m_state == State::Constructed, "Component should be in Constructed state to be Initialized!");
+        AZ_Assert(GetState() == State::Constructed, "Component should be in Constructed state to be Initialized!");
         SetState(State::Initializing);
 
         //Update "Entity" Active state index. Does not change state yet. Left for the Entity handling to apply.
-        SetEntityActive(m_isRuntimeActiveByDefault);
+        SetEntityActive(IsRuntimeActiveByDefault());
 
         if (AZ::Interface<ComponentApplicationRequests>::Get() != nullptr)
         {
@@ -195,7 +194,7 @@ namespace AZ
     {
         AZ_PROFILE_FUNCTION(AzCore);
 
-        AZ_Assert(m_state == State::Init, "Entity should be in Init state to be Activated!");
+        AZ_Assert(GetState() == State::Init, "Entity should be in Init state to be Activated!");
 
         const DependencySortOutcome sortOutcome = EvaluateDependenciesGetDetails();
         if (!sortOutcome.IsSuccess())
@@ -234,7 +233,7 @@ namespace AZ
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityDeactivated, m_id);
         EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityDeactivated, m_id);
 
-        AZ_Assert(m_state == State::Active, "Component should be in Active state to be Deactivated!");
+        AZ_Assert(GetState() == State::Active, "Component should be in Active state to be Deactivated!");
         SetState(State::Deactivating);
 
         for (ComponentArrayType::reverse_iterator it = m_components.rbegin(); it != m_components.rend(); ++it)
@@ -256,10 +255,10 @@ namespace AZ
     {
         DependencySortOutcome outcome = AZ::Success();
 
-        if (!m_isDependencyReady)
+        if (!GetEntityFlag(DependencyReadyFlag))
         {
             outcome = DependencySort(m_components);
-            m_isDependencyReady = outcome.IsSuccess();
+            SetEntityFlag(DependencyReadyFlag, outcome.IsSuccess());
         }
 
         return outcome;
@@ -267,17 +266,17 @@ namespace AZ
 
     void Entity::InvalidateDependencies()
     {
-        m_isDependencyReady = false;
+        SetEntityFlag(DependencyReadyFlag, false);
     }
 
     void Entity::SetRuntimeActiveByDefault(bool activeByDefault)
     {
-        m_isRuntimeActiveByDefault = activeByDefault;
+        SetEntityFlag(RuntimeActiveByDefaultFlag, activeByDefault);
     }
 
     bool Entity::IsRuntimeActiveByDefault() const
     {
-        return m_isRuntimeActiveByDefault;
+        return GetEntityFlag(RuntimeActiveByDefaultFlag);
     }
 
     Component* Entity::CreateComponent(const Uuid& componentTypeId)
@@ -343,7 +342,7 @@ namespace AZ
 
         m_components.push_back(component);
 
-        if (m_state == State::Init)
+        if (GetState() == State::Init)
         {
             component->Init();
         }
@@ -525,7 +524,7 @@ namespace AZ
         componentToAdd->SetEntity(this);
 
         // Initialize component if necessary.
-        if (m_state == State::Init)
+        if (GetState() == State::Init)
         {
             componentToAdd->Init();
         }
@@ -656,9 +655,9 @@ namespace AZ
 
     void Entity::SetState(State state)
     {
-        State oldState = state;
-        m_state = state;
-        m_stateEvent.Signal(oldState, m_state);
+        const State oldState = GetState();
+        SetStateBits(state);
+        m_stateEvent.Signal(oldState, state);
     }
 
 #pragma region Entity Activation State Handling
@@ -708,18 +707,18 @@ namespace AZ
         bool isEffective = IsEffectivelyActive();
 
         // Avoid evaluation during irregular states.
-        if (m_state != State::Init && m_state != State::Active)
+        if (GetState() != State::Init && GetState() != State::Active)
         {
             AZ_Warning("Entity", false, "%s evaluating active state, between valid states. Exiting out.", m_name.c_str());
             return false;
         }
 
-        if (isEffective && m_state == State::Init)
+        if (isEffective && GetState() == State::Init)
         {
             Activate();
             return true;
         }
-        else if (!isEffective && m_state == State::Active)
+        else if (!isEffective && GetState() == State::Active)
         {
             Deactivate();
             return true;
@@ -746,7 +745,7 @@ namespace AZ
         // when for example, another thread is constructing a prefab.  It also prevents spam of these functions from situations where
         // inactive entities are being constructed or modified in place, such as in undo/redo or scene compilation.
         // In general, only active entities should have any bearing on the actual scene, such as showing up in the Scene Outliner.
-        if (m_state == State::Active)
+        if (GetState() == State::Active)
         {
             EntityBus::Event(GetId(), &EntityBus::Events::OnEntityNameChanged, m_name);
             EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityNameChanged, GetId(), m_name);
@@ -756,7 +755,7 @@ namespace AZ
 
     bool Entity::CanAddRemoveComponents() const
     {
-        switch (m_state)
+        switch (GetState())
         {
         case State::Constructed:
         case State::Init:
@@ -854,13 +853,19 @@ namespace AZ
         {
             serializeContext->Class<Entity>(&Serialize::StaticInstance<SerializeEntityFactory>::s_instance)
                 ->PersistentId([](const void* instance) -> u64 { return static_cast<u64>(reinterpret_cast<const Entity*>(instance)->GetId()); })
-                ->Version(2, &ConvertOldData)
+                ->Version(3, &ConvertOldData)
                 ->Field("Id", &Entity::m_id)
                     ->Attribute(Edit::Attributes::IdGeneratorFunction, &Entity::MakeId)
                 ->Field("Name", &Entity::m_name)
-                ->Field("Components", &Entity::m_components) // Component serialization can result in IsDependencyReady getting modified, so serialize Components first.
-                ->Field("IsDependencyReady", &Entity::m_isDependencyReady)
-                ->Field("IsRuntimeActive", &Entity::m_isRuntimeActiveByDefault)
+                ->Field("Components", &Entity::m_components)
+                // State, DependencyReady and RuntimeActiveByDefault are now packed into the single
+                // m_activeStateByType word, so serialize the word. NOTE (prototype): it also carries
+                // the runtime activation-layer + lifecycle State bits. Entities are serialized while
+                // inactive (State::Constructed -> 0 bits), so those load back benign; a follow-up
+                // should mask to persist only RuntimeActiveByDefault. Legacy (<v3) IsRuntimeActive /
+                // IsDependencyReady fields are not migrated here (JSON prefabs keep IsRuntimeActive via
+                // EntitySerializer); add a ConvertOldData(<3) branch if objectstream/.slice data needs it.
+                ->Field("EntityStateBits", &Entity::m_activeStateByType)
                 ;
 
             serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AZ::Component*>>();
@@ -884,10 +889,10 @@ namespace AZ
                     DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_id, "Id", "")->
                         Attribute(Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
                         Attribute(Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
-                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isDependencyReady, "IsDependencyReady", "")->
-                        Attribute(Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
-                        Attribute(Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
-                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isRuntimeActiveByDefault, "StartActive", "")->
+                    // IsDependencyReady and StartActive (RuntimeActiveByDefault) are now packed bits,
+                    // not addressable members, so they are not reflected here. The editor's entity
+                    // "Start status" dropdown drives RuntimeActiveByDefault through the
+                    // Set/IsRuntimeActiveByDefault accessors (EntityPropertyEditor), so it is unaffected.
                     DataElement("String", &Entity::m_name, "Name", "Unique name of the entity")->
                         Attribute(Edit::Attributes::ChangeNotify, &Entity::OnNameChanged)->
                     DataElement("Components", &Entity::m_components, "Components", "");
