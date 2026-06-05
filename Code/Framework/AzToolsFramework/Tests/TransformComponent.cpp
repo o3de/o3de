@@ -196,6 +196,21 @@ namespace UnitTest
             checkAddCount++;
             AZ_TEST_ASSERT(m_onChildAddedCount == checkAddCount);
 
+            // New contract (Entity Activation update, PR #19319): the TransformComponent is now
+            // "always active" - it binds at Init and unbinds at Destruct, with an empty Deactivate.
+            // So the parent/child link is preserved across entity active-state changes. Toggling the
+            // child's entity active state must NOT churn OnChildAdded/OnChildRemoved on the parent.
+            // (Replaces the pre-#19319 block that asserted deactivate->remove / activate->add, which
+            // was deleted rather than re-expressed for the new contract.)
+            childEntity.SetEntityActive(false);
+            childEntity.ApplyEffectiveActiveState();
+            AZ_TEST_ASSERT(childEntity.GetState() == AZ::Entity::State::Init);
+            AZ_TEST_ASSERT(m_onChildRemovedCount == checkRemoveCount); // no spurious removal on deactivate
+            childEntity.SetEntityActive(true);
+            childEntity.ApplyEffectiveActiveState();
+            AZ_TEST_ASSERT(childEntity.GetState() == AZ::Entity::State::Active);
+            AZ_TEST_ASSERT(m_onChildAddedCount == checkAddCount); // no spurious re-add on reactivate
+
             // Setting parent invalid should notify removal
             AZ_TEST_ASSERT(m_onChildRemovedCount == checkRemoveCount);
             childTransform->SetParent(EntityId());
@@ -810,44 +825,68 @@ namespace UnitTest
         {
             TransformComponentApplication::SetUp();
 
+            // Configure each transform BEFORE Init(). AddComponent only forwards Component::Init()
+            // when the entity is already in the Init state, so with Init() called last, the
+            // transform initializes with its real configuration (parent id + activation mode) in
+            // place - which is what establishes the parent relationship and the child's world
+            // position at Init time. (Previously Init() ran before SetConfiguration, so the
+            // transform initialized with a default no-parent config and the child was never
+            // actually parented, leaving this fixture's test vacuous.)
             m_parentEntity = aznew Entity("Parent");
-            m_parentEntity->Init();
-
             AZ::TransformConfig parentConfig{ AZ::Transform::CreateTranslation(AZ::Vector3(5.f, 5.f, 5.f)) };
             parentConfig.m_isStatic = true;
             m_parentEntity->CreateComponent<TransformComponent>()->SetConfiguration(parentConfig);
+            m_parentEntity->Init();
 
             m_childEntity = aznew Entity("Child");
-            m_childEntity->Init();
-
             AZ::TransformConfig childConfig{ AZ::Transform::CreateTranslation(AZ::Vector3(5.f, 5.f, 5.f)) };
             childConfig.m_isStatic = true;
             childConfig.m_parentId = m_parentEntity->GetId();
             childConfig.m_parentActivationTransformMode = AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform;
             m_childEntity->CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+            m_childEntity->Init();
         }
 
         Entity* m_parentEntity = nullptr;
         Entity* m_childEntity = nullptr;
     };
 
-    // Created to force old broken offset behaviour.
-    // Altered 2026-01-16 to determine reverse implemented in Entity Activation Update. Out of order activation should preserve positioning.
-    TEST_F(ParentedStaticTransformComponent, ParentActivatesLast_OffsetObeyed)
+    // Contract guard for the Entity Activation update (PR #19319): activation-order independence.
+    // TransformComponent is now "always active" - it binds the transform and establishes the
+    // child's parent-relative world position at Init(), before entity-level activation. Therefore
+    // activating the child first and the parent last must NOT move the child; its world position is
+    // fixed at Init and preserved across activation in any order. (Previously a late-activating
+    // parent would snap the child by the parent offset.)
+    //
+    // NOTE: this test encodes the feature's headline claim. The prior version was vacuous - it
+    // re-applied state to the CHILD after SetEntityActive on the PARENT, so the parent never
+    // activated and the assertion held trivially. It must be run against a real build to confirm
+    // the feature actually delivers order independence (see entity_activation audit plan).
+    TEST_F(ParentedStaticTransformComponent, ParentActivatesLast_PositionPreserved)
     {
+        // World position is established at Init (always-active transform), before any activation.
+        Transform worldAtInit;
+        TransformBus::EventResult(worldAtInit, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
+
+        // Activate the child first, while the parent is still inactive.
         m_childEntity->SetEntityActive(true);
         m_childEntity->ApplyEffectiveActiveState();
+        ASSERT_TRUE(m_childEntity->GetState() == AZ::Entity::State::Active);
 
-        Transform previousWorldTM;
-        TransformBus::EventResult(previousWorldTM, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
+        Transform worldAfterChildActive;
+        TransformBus::EventResult(worldAfterChildActive, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
 
+        // Now activate the parent last - this is the "parent activates last" case under test.
         m_parentEntity->SetEntityActive(true);
-        m_childEntity->ApplyEffectiveActiveState();
+        m_parentEntity->ApplyEffectiveActiveState();
+        ASSERT_TRUE(m_parentEntity->GetState() == AZ::Entity::State::Active);
 
-        Transform nextWorldTM;
-        TransformBus::EventResult(nextWorldTM, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
+        Transform worldAfterParentActive;
+        TransformBus::EventResult(worldAfterParentActive, m_childEntity->GetId(), &TransformBus::Events::GetWorldTM);
 
-        EXPECT_TRUE(previousWorldTM.IsClose(nextWorldTM));
+        // The child's world position is fixed at Init and unchanged by activation order.
+        EXPECT_TRUE(worldAfterChildActive.IsClose(worldAtInit));
+        EXPECT_TRUE(worldAfterParentActive.IsClose(worldAtInit));
     }
 
     // Fixture that loads a TransformComponent from a buffer.
