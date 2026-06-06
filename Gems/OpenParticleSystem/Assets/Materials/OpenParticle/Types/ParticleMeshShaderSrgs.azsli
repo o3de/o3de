@@ -17,15 +17,7 @@
 // before the material shader code is included.
 #include <Atom/Feature/Common/Assets/Materials/Types/StandardPBR_Defines.azsli>
 
-// Per-particle instance data, indexed by SV_InstanceID in the vertex shader.
-struct ParticleMeshInstanceData
-{
-    float4 m_offset;
-    float4 m_color;
-    float4 m_initRotation;
-    float4 m_rotationQuat;
-    float4 m_scale;
-};
+#include <OpenParticle/ParticleMeshCommon.azsli>
 
 // Custom DrawSrg carrying the standard draw members plus the per-particle buffer.
 ShaderResourceGroup DrawSrg : SRG_PerDraw

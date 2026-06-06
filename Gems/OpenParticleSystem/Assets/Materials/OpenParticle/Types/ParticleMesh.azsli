@@ -9,53 +9,11 @@
 #pragma once
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_MaterialInputs.azsli>
-#include <OpenParticle/ParticleCommon.azsli>
+#include <OpenParticle/ParticleMeshCommon.azsli>
 
-// Custom DrawSrg / ParticleMeshInstanceData are declared in ParticleMeshShaderSrgs.azsli.
-
-// ---------------------------------------------------------------------------
-// Shared helpers
-// ---------------------------------------------------------------------------
-
-// Loads per-particle instance data with a fallback for the Material Editor
-// preview where the StructuredBuffer is unbound (reads as all zeros).
-ParticleMeshInstanceData LoadInstanceData(uint instanceId)
-{
-    ParticleMeshInstanceData d = DrawSrg::m_particleInstanceData[instanceId];
-
-    // When the buffer is unbound (editor preview), all fields are zero.
-    // Replace with identity transforms so the mesh renders correctly.
-    if (all(d.m_scale.xyz == float3(0, 0, 0)))
-    {
-        d.m_offset        = float4(0, 0, 0, 0);
-        d.m_color         = float4(1, 1, 1, 1);
-        d.m_initRotation  = float4(0, 0, 0, 0);
-        d.m_rotationQuat  = float4(0, 0, 0, 1); // identity quaternion
-        d.m_scale         = float4(1, 1, 1, 0);
-    }
-    return d;
-}
-
-// Applies per-particle scale, initial rotation, and runtime rotation to a
-// mesh-local position, then transforms to world space and adds the per-particle
-// world offset.  When called with identity data (editor preview) this is
-// equivalent to a standard object-to-world transform.
-float3 ComputeParticleWorldPosition(float3 meshLocalPos, ParticleMeshInstanceData d, float4x4 objectToWorld)
-{
-    float3x3 initRot = AxisRadianToMatrix(d.m_initRotation);
-    float3 localPos  = mul(initRot, meshLocalPos * d.m_scale.xyz);
-
-    float4 q = d.m_rotationQuat;
-    // Guard against degenerate quaternion (shouldn't happen with LoadInstanceData, but be safe).
-    if (all(q == float4(0, 0, 0, 0)))
-    {
-        q = float4(0, 0, 0, 1);
-    }
-    localPos = mul(QuaternionToMatrix(QuatNormalize(q)), localPos);
-
-    float3 worldPos = mul(objectToWorld, float4(localPos, 1.0)).xyz;
-    return worldPos + d.m_offset.xyz;
-}
+// LoadInstanceData / ComputeParticleWorldPosition (DrawSrg is declared in
+// ParticleMeshShaderSrgs.azsli, included before this file via materialShaderDefines)
+#include <OpenParticle/ParticleMeshHelpers.azsli>
 
 // ---------------------------------------------------------------------------
 // Per-pipeline-stage vertex / pixel shader implementations

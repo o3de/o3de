@@ -71,6 +71,7 @@ namespace SimuCore::ParticleCore {
         AZ::Vector4 initRotation{ 0.f, 1.f, 0.f, 0.f }; // axis-angle
         AZ::Quaternion rotationVector{ 0.f, 0.f, 0.f, 1.f }; // quaternion
         AZ::Vector4 scale{ 1.f, 1.f, 1.f, 1.f };
+        AZ::u32 hasInstanceData = 0; // flag for shader: non-zero = valid data
     };
 
     struct ParticleRibbonVertex {

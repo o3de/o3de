@@ -33,7 +33,7 @@ namespace SimuCore::ParticleCore {
         ParticleMeshInstanceData* instanceInfo = instanceData.data();
         for (AZ::u32 i = 0; i < pool.Alive(); ++i) {
             const Particle& curr = particle[i];
-            if (!positionBuffer.empty() && curr.hasLightEffect) {
+            if (i < positionBuffer.size() && curr.hasLightEffect) {
                 positionBuffer[i] = curr.globalPosition;
             }
             const AZ::Vector3 offset = curr.globalPosition - world.emitterTransform.GetTranslation();
@@ -49,6 +49,7 @@ namespace SimuCore::ParticleCore {
             instanceInfo[i].scale = AZ::Vector4(curr.scale, 0.0f);
             instanceInfo[i].initRotation = initRotation;
             instanceInfo[i].rotationVector = rotationVector;
+            instanceInfo[i].hasInstanceData = 1;
         }
     }
 

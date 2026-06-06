@@ -11,6 +11,8 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/mutex.h>
 #include <Serializer/ParticleAssetData.h>
 
 namespace OpenParticle
@@ -170,6 +172,7 @@ namespace OpenParticle
             // Track which emitter+material combinations we've already warned about
             // to avoid spamming errors on every frame/render-tick, which can cause
             // threading conflicts with editor EBus operations.
+            static AZStd::mutex s_warnedMutex;
             static AZStd::unordered_set<AZStd::string> s_warnedMaterialTypeMismatches;
             auto warnKey = AZStd::string::format("%s_%s", emitter->m_name.c_str(), materialAsset.GetHint().c_str());
 
@@ -184,7 +187,12 @@ namespace OpenParticle
                 if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::SpriteConfig>()) &&
                     !((materialType.GetHint().ends_with("particlesprite.azmaterialtype"))))
                 {
-                    if (s_warnedMaterialTypeMismatches.insert(warnKey).second)
+                    bool alreadyWarned = false;
+                    {
+                        AZStd::lock_guard<AZStd::mutex> lock(s_warnedMutex);
+                        alreadyWarned = !s_warnedMaterialTypeMismatches.insert(warnKey).second;
+                    }
+                    if (!alreadyWarned)
                     {
                         AZ_Error(
                             "ParticleAssetData",
@@ -200,7 +208,12 @@ namespace OpenParticle
                     !(materialType.GetHint().ends_with("particlemesh.azmaterialtype") ||
                       materialType.GetHint().ends_with("particlemesh_generated.azmaterialtype")))
                 {
-                    if (s_warnedMaterialTypeMismatches.insert(warnKey).second)
+                    bool alreadyWarned = false;
+                    {
+                        AZStd::lock_guard<AZStd::mutex> lock(s_warnedMutex);
+                        alreadyWarned = !s_warnedMaterialTypeMismatches.insert(warnKey).second;
+                    }
+                    if (!alreadyWarned)
                     {
                         AZ_Error(
                             "ParticleAssetData",
@@ -215,7 +228,12 @@ namespace OpenParticle
                 if ((emitter->m_renderConfig.is<SimuCore::ParticleCore::RibbonConfig>()) &&
                     !(materialType.GetHint().ends_with("particleribbon.azmaterialtype")))
                 {
-                    if (s_warnedMaterialTypeMismatches.insert(warnKey).second)
+                    bool alreadyWarned = false;
+                    {
+                        AZStd::lock_guard<AZStd::mutex> lock(s_warnedMutex);
+                        alreadyWarned = !s_warnedMaterialTypeMismatches.insert(warnKey).second;
+                    }
+                    if (!alreadyWarned)
                     {
                         AZ_Error(
                             "ParticleAssetData",
