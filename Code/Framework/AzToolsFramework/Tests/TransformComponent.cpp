@@ -1054,6 +1054,93 @@ namespace UnitTest
         EXPECT_TRUE(defaultConfig == retrievedConfig);
     }
 
+    // Counts OnChildAdded/OnChildRemoved fired at a specific parent entity id.
+    class ChildChangeNotificationHandler
+        : public AZ::TransformNotificationBus::Handler
+    {
+    public:
+        explicit ChildChangeNotificationHandler(AZ::EntityId parentId)
+        {
+            AZ::TransformNotificationBus::Handler::BusConnect(parentId);
+        }
+        ~ChildChangeNotificationHandler() override
+        {
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
+        }
+        void OnChildAdded(AZ::EntityId /*child*/) override { ++m_added; }
+        void OnChildRemoved(AZ::EntityId /*child*/) override { ++m_removed; }
+
+        int m_added = 0;
+        int m_removed = 0;
+    };
+
+    // Always-active transform lifecycle: a child fires OnChildAdded when it enters the hierarchy
+    // (Init, parent already set) and OnChildRemoved when it leaves (destruction) - but NOT when it is
+    // merely force-deactivated/reactivated, because deactivation does not change parenting.
+    TEST_F(TransformComponentApplication, ChildEvents_FireOnCreateAndDestruct_NotOnActivateCycle)
+    {
+        AZ::Entity parent("Parent");
+        parent.CreateComponent<TransformComponent>();
+        parent.Init();
+        parent.Activate();
+
+        ChildChangeNotificationHandler handler(parent.GetId());
+
+        // Brand-new child created under the parent: OnChildAdded fires once at Init.
+        AZ::Entity* child = aznew AZ::Entity("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent.GetId();
+        child->CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        child->Init();
+        EXPECT_EQ(handler.m_added, 1);
+        EXPECT_EQ(handler.m_removed, 0);
+
+        // Force deactivate/reactivate must NOT churn child events.
+        child->Activate();
+        child->Deactivate();
+        child->Activate();
+        EXPECT_EQ(handler.m_added, 1);
+        EXPECT_EQ(handler.m_removed, 0);
+
+        // Full destruct: OnChildRemoved fires once.
+        delete child;
+        EXPECT_EQ(handler.m_added, 1);
+        EXPECT_EQ(handler.m_removed, 1);
+    }
+
+    // Reparenting is a real change, so it fires OnChildRemoved on the old parent and OnChildAdded on
+    // the new parent.
+    TEST_F(TransformComponentApplication, ChildEvents_Reparent_RemovesFromOldAddsToNew)
+    {
+        AZ::Entity parentA("ParentA");
+        parentA.CreateComponent<TransformComponent>();
+        parentA.Init();
+        parentA.Activate();
+
+        AZ::Entity parentB("ParentB");
+        parentB.CreateComponent<TransformComponent>();
+        parentB.Init();
+        parentB.Activate();
+
+        ChildChangeNotificationHandler handlerA(parentA.GetId());
+        ChildChangeNotificationHandler handlerB(parentB.GetId());
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parentA.GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        child.Init();
+        child.Activate();
+        EXPECT_EQ(handlerA.m_added, 1);
+        EXPECT_EQ(handlerA.m_removed, 0);
+        EXPECT_EQ(handlerB.m_added, 0);
+
+        // Reparent the child from A to B.
+        AZ::TransformBus::Event(child.GetId(), &AZ::TransformBus::Events::SetParent, parentB.GetId());
+        EXPECT_EQ(handlerA.m_removed, 1);
+        EXPECT_EQ(handlerB.m_added, 1);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::Components::TransformComponent
 
@@ -1209,5 +1296,29 @@ R"DELIMITER(<ObjectStream version="1">
         entity->Deactivate();
         entity->Activate();
         EXPECT_FALSE(m_transformUpdated);
+    }
+
+    // Editor TransformComponent always-active lifecycle: deactivating then reactivating a child must
+    // NOT churn OnChildAdded/OnChildRemoved on its parent - hierarchy membership now persists across
+    // active-state (matching the runtime). Regression guard for the #19816 deactivate-time removal storm.
+    TEST_F(TransformComponentActivationTest, ChildEventsAreNotChurnedWhenChildIsDeactivatedAndActivated)
+    {
+        AZ::EntityId parentId = CreateEditorEntityUnderRoot("Parent");
+        AZ::EntityId childId = CreateEditorEntityUnderRoot("Child");
+        AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParent, parentId);
+        ProcessDeferredUpdates();
+
+        // Connect after the reparent so only deactivate/reactivate churn would be counted.
+        ChildChangeNotificationHandler handler(parentId);
+
+        Entity* child = nullptr;
+        ComponentApplicationBus::BroadcastResult(child, &AZ::ComponentApplicationRequests::FindEntity, childId);
+        ASSERT_NE(child, nullptr);
+
+        child->Deactivate();
+        child->Activate();
+
+        EXPECT_EQ(handler.m_added, 0);
+        EXPECT_EQ(handler.m_removed, 0);
     }
 } // namespace UnitTest

@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityActiveSystemComponent.h>
 #include <AzCore/Serialization/Utils.h>
 
 namespace UnitTest
@@ -698,5 +699,86 @@ namespace UnitTest
             EXPECT_EQ(entity1.GetComponents().size(), 0);
             EXPECT_EQ(entity2.GetComponents().size(), 1);
         } // there will be a crash here if they go out of scope if they weren't properly moved.
+    }
+
+    // Must match Entity::s_maxStateFlags / EntityActiveSystemComponent::s_maxStateFlags. (If the
+    // 16/16 footprint fold ever lands, update this to the new activation-layer capacity.)
+    static constexpr size_t s_activationMaxStateFlags = 32;
+
+    // EntityActiveSystemComponent hands out one bitmask index per registered active-type name, with
+    // index 0 pre-reserved for "Entity". Verifies registration, the cap, and - importantly - that an
+    // already-registered name still resolves once the registry is full.
+    TEST_F(EntityTests, EntityActiveSystemComponent_RegistersTypesAndResolvesWhenFull)
+    {
+        AZ::EntityActiveSystemComponent activeSystem;
+
+        // "Entity" is pre-registered at index 0.
+        EXPECT_EQ(activeSystem.GetActiveTypeIndexByName("Entity"), 0);
+
+        // With "Entity" occupying slot 0, there are (max - 1) further slots: indices 1 .. max-1.
+        for (size_t i = 1; i < s_activationMaxStateFlags; ++i)
+        {
+            const AZStd::string name = AZStd::string::format("Active%d", static_cast<int>(i));
+            EXPECT_EQ(activeSystem.GetActiveTypeIndexByName(name), i);
+        }
+
+        // The registry is now full - registering one more NEW name must fail.
+        EXPECT_EQ(
+            activeSystem.GetActiveTypeIndexByName("ActiveOverflow"),
+            AZ::EntityActiveSystemComponent::kInvalidIndex);
+
+        // ...but every already-registered name must still resolve to its index even when full.
+        EXPECT_EQ(activeSystem.GetActiveTypeIndexByName("Entity"), 0);
+        for (size_t i = 1; i < s_activationMaxStateFlags; ++i)
+        {
+            const AZStd::string name = AZStd::string::format("Active%d", static_cast<int>(i));
+            EXPECT_EQ(activeSystem.GetActiveTypeIndexByName(name), i);
+        }
+
+        // Re-querying an existing name does not consume a slot or change its index.
+        EXPECT_EQ(activeSystem.GetActiveTypeIndexByName("Active1"), 1);
+    }
+
+    // Entity packs an "active by type" bitmask; the entity is effectively active only when every
+    // layer is set. SetEffectiveActiveLayerByTypeIndex returns whether the EFFECTIVE active state
+    // flipped (Active<->Inactive), not merely whether a bit changed.
+    TEST_F(EntityTests, Entity_ActiveLayerBitmask_EffectiveStateTransitions)
+    {
+        AZ::Entity entity;
+        EXPECT_TRUE(entity.IsEffectivelyActive()); // all layers on by default
+
+        // Toggling a single layer off then on flips effective state both ways (it is the only change).
+        for (size_t i = 0; i < s_activationMaxStateFlags; ++i)
+        {
+            EXPECT_TRUE(entity.SetEffectiveActiveLayerByTypeIndex(i, false)); // Active -> Inactive
+            EXPECT_FALSE(entity.IsEffectivelyActive());
+            EXPECT_TRUE(entity.SetEffectiveActiveLayerByTypeIndex(i, true));  // Inactive -> Active
+            EXPECT_TRUE(entity.IsEffectivelyActive());
+        }
+
+        // An index at/over the cap is rejected (no change, returns false); out-of-range reads as active.
+        // (SetEffectiveActiveLayerByTypeIndex emits an informational AZ_Warning here; it does not fail.)
+        EXPECT_FALSE(entity.SetEffectiveActiveLayerByTypeIndex(s_activationMaxStateFlags, false));
+        EXPECT_TRUE(entity.IsEffectivelyActive());
+        EXPECT_TRUE(entity.GetEffectiveActiveLayerByTypeIndex(s_activationMaxStateFlags));
+
+        // Multiple layers off: only the FIRST clear flips effective state; the rest are already inactive.
+        EXPECT_TRUE(entity.SetEffectiveActiveLayerByTypeIndex(3, false));   // Active -> Inactive
+        EXPECT_FALSE(entity.SetEffectiveActiveLayerByTypeIndex(7, false));  // still inactive
+        EXPECT_FALSE(entity.SetEffectiveActiveLayerByTypeIndex(15, false)); // still inactive
+        EXPECT_FALSE(entity.IsEffectivelyActive());
+        EXPECT_FALSE(entity.GetEffectiveActiveLayerByTypeIndex(7));
+
+        // Re-enabling: only the LAST re-enable restores effective active.
+        EXPECT_FALSE(entity.SetEffectiveActiveLayerByTypeIndex(3, true));  // 7,15 still off
+        EXPECT_FALSE(entity.SetEffectiveActiveLayerByTypeIndex(7, true));  // 15 still off
+        EXPECT_TRUE(entity.SetEffectiveActiveLayerByTypeIndex(15, true));  // now all on
+        EXPECT_TRUE(entity.IsEffectivelyActive());
+
+        // SetEntityActive is the index-0 ("Entity") wrapper.
+        EXPECT_TRUE(entity.SetEntityActive(false));
+        EXPECT_FALSE(entity.IsEffectivelyActive());
+        EXPECT_TRUE(entity.SetEntityActive(true));
+        EXPECT_TRUE(entity.IsEffectivelyActive());
     }
 } // namespace UnitTest
