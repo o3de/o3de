@@ -207,7 +207,7 @@ namespace AZ
         //! Deactivates the entity and its components.
         //! This function can be called multiple times throughout the lifetime of an
         //! entity. This function calls the Deactivate function of each component.
-        //! Low-level primitive; see Activate() for the primitive-vs-layer contract.
+        //! Low-level primitive; see Activate() for the primitive-vs-layer relationship.
         virtual void Deactivate();
 
         //! Creates a component and attaches the component to the entity. 
