@@ -204,27 +204,64 @@ namespace AzToolsFramework
 
         TransformComponent::~TransformComponent()
         {
+            // Always-on lifecycle (mirrors the runtime TransformComponent): the transform is removed
+            // from the hierarchy only at destruction (or on a reparent, see SetParentImpl) - never on
+            // deactivation, since deactivation does not change parenting. Fire the child-removal, then
+            // tear down the bus connections that were established in Init().
+            AZ::TransformNotificationBus::Event(m_parentEntityId, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
+            if (auto* parentTransform = AZ::TransformBus::FindFirstHandler(m_parentEntityId))
+            {
+                parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
+            }
+
+            AZ::EntityBus::Handler::BusDisconnect();
+            AZ::SliceEntityHierarchyRequestBus::Handler::BusDisconnect();
+            AZ::TransformBus::Handler::BusDisconnect();
+            TransformComponentMessages::Bus::Handler::BusDisconnect();
+            AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
+            AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         }
 
         void TransformComponent::Init()
         {
-            //Ensure that when we init that our previous/parent match
+            // Always-on lifecycle (mirrors the runtime TransformComponent): the transform/hierarchy
+            // buses and the parent relationship are established at Init and torn down at Destruct,
+            // rather than toggled with the entity's active state. This keeps the hierarchy intact
+            // across force deactivate/reactivate (e.g. play-in-editor), so child add/remove fire only
+            // on real changes - Init (here), reparent (SetParentImpl), Destruct - never on
+            // activate/deactivate.
             m_previousParentEntityId = m_parentEntityId;
+
+            TransformComponentMessages::Bus::Handler::BusConnect(GetEntityId());
+            AZ::TransformBus::Handler::BusConnect(GetEntityId());
+            AZ::SliceEntityHierarchyRequestBus::Handler::BusConnect(GetEntityId());
+
+            if (m_parentEntityId.IsValid())
+            {
+                // The parent's OnEntityActivated/Deactivated/Destruction drive this child.
+                AZ::EntityBus::Handler::BusConnect(m_parentEntityId);
+
+                // The child has entered the parent's hierarchy - mirror of the destructor's removal.
+                AZ::TransformNotificationBus::Event(m_parentEntityId, &AZ::TransformNotificationBus::Events::OnChildAdded, GetEntityId());
+                if (auto* parentTransform = AZ::TransformBus::FindFirstHandler(m_parentEntityId))
+                {
+                    parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Added, GetEntityId());
+                }
+            }
         }
 
         void TransformComponent::Activate()
         {
             EditorComponentBase::Activate();
 
-            TransformComponentMessages::Bus::Handler::BusConnect(GetEntityId());
-            AZ::TransformBus::Handler::BusConnect(GetEntityId());
-            AZ::SliceEntityHierarchyRequestBus::Handler::BusConnect(GetEntityId());
-
-            // for drag + drop child entity from one parent to another, undo/redo
+            // Bus connections and parent-hierarchy establishment moved to Init() (always-on
+            // lifecycle). Activation only handles the editor parent-change notification (drag/drop,
+            // undo/redo restore) and the cached world transform refresh for unparented entities -
+            // both tied to activation, not to hierarchy membership. Under the always-on lifecycle a
+            // reparent flows through SetParentImpl (which fires EntityParentChanged), so the check
+            // below is effectively a no-op safety net.
             if (m_parentEntityId.IsValid())
             {
-                AZ::EntityBus::Handler::BusConnect(m_parentEntityId);
-
                 if (m_parentEntityId != m_previousParentEntityId)
                 {
                     ToolsApplicationNotificationBus::Broadcast(
@@ -244,19 +281,9 @@ namespace AzToolsFramework
 
         void TransformComponent::Deactivate()
         {
-            AZ::TransformNotificationBus::Event(m_parentEntityId, &AZ::TransformNotificationBus::Events::OnChildRemoved, GetEntityId());
-            if (auto* parentTransform = AZ::TransformBus::FindFirstHandler(m_parentEntityId))
-            {
-                parentTransform->NotifyChildChangedEvent(AZ::ChildChangeType::Removed, GetEntityId());
-            }
-
-            AZ::EntityBus::Handler::BusDisconnect();
-            AZ::SliceEntityHierarchyRequestBus::Handler::BusDisconnect();
-            AZ::TransformBus::Handler::BusDisconnect();
-            TransformComponentMessages::Bus::Handler::BusDisconnect();
-            AZ::TransformHierarchyInformationBus::Handler::BusDisconnect();
-            AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
-
+            // Always-on lifecycle: hierarchy membership persists across deactivation. Bus disconnects
+            // and child-removal moved to the destructor; deactivation changes no parenting, so it
+            // fires no child events and leaves the transform buses connected.
             EditorComponentBase::Deactivate();
         }
 
