@@ -12,32 +12,13 @@
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
-#include <AzCore/std/containers/variant.h>
 
 namespace AZ::RHI
 {
-    struct ImageAttachment
-    {
-        ImageDescriptor m_image;
-        ImageViewDescriptor m_imageView;
-    };
-    struct BufferAttachment
-    {
-        BufferDescriptor m_buffer;
-        BufferViewDescriptor m_bufferView;
-    };
-    struct ResolveAttachment
-    {
-    };
-    struct UninitializedAttachment
-    {
-    };
     //! A unified attachment descriptor used to store either an image or a buffer descriptor.
     //! Used primarily to simplify pass attachment logic while supporting both attachment types.
     struct ATOM_RHI_REFLECT_API UnifiedAttachmentDescriptor
-        : AZStd::variant<ImageAttachment, BufferAttachment, ResolveAttachment, UninitializedAttachment>
     {
-        using Base = AZStd::variant<ImageAttachment, BufferAttachment, ResolveAttachment, UninitializedAttachment>;
         UnifiedAttachmentDescriptor();
         UnifiedAttachmentDescriptor(const BufferDescriptor& bufferDescriptor);
         UnifiedAttachmentDescriptor(const ImageDescriptor& imageDescriptor);
@@ -46,35 +27,40 @@ namespace AZ::RHI
 
         HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-        template<class T>
-        constexpr decltype(auto) get() &
-        {
-            return AZStd::get<T>(*this);
-        }
+        /// Differentiates between an image, buffer and resolve attachment
+        AttachmentType m_type = AttachmentType::Uninitialized;
 
-        template<class T>
-        constexpr decltype(auto) get() const&
-        {
-            return AZStd::get<T>(*this);
-        }
+        union Storage {
+            struct BufferAttachment
+            {
+                BufferDescriptor m_buffer;
+                BufferViewDescriptor m_bufferView;
+            } buffer;
+            struct ImageAttachment
+            {
+                ImageDescriptor m_image;
+                ImageViewDescriptor m_imageView;
+            } image;
+            Storage() : buffer{} {}
+            Storage(const BufferDescriptor& bufferDescriptor)
+                : buffer{ bufferDescriptor } {}
+            Storage(const BufferDescriptor& bufferDescriptor, const BufferViewDescriptor& bufferViewDescriptor)
+                : buffer{ bufferDescriptor, bufferViewDescriptor } {}
+            Storage(const ImageDescriptor& imageDescriptor)
+                : image{ imageDescriptor } {}
+            Storage(const ImageDescriptor& imageDescriptor, const ImageViewDescriptor& imageViewDescriptor)
+                : image{ imageDescriptor, imageViewDescriptor } {}
+        } m_storage{};
 
-        template<class T>
-        constexpr decltype(auto) get() &&
-        {
-            return AZStd::get<T>(AZStd::move(*this));
-        }
+        // The following parts of the interface shall be removed once an
+        // API breaking release is coming up:
+        BufferDescriptor& m_buffer{ m_storage.buffer.m_buffer };
+        BufferViewDescriptor& m_bufferView{ m_storage.buffer.m_bufferView };
+        ImageDescriptor& m_image{ m_storage.image.m_image };
+        ImageViewDescriptor& m_imageView{ m_storage.image.m_imageView };
 
-        template<class T>
-        constexpr decltype(auto) get() const&&
-        {
-            return AZStd::get<T>(AZStd::move(*this));
-        }
-
-        constexpr auto type() const -> AttachmentType
-        {
-            return std::array{
-                AttachmentType::Image, AttachmentType::Buffer, AttachmentType::Resolve, AttachmentType::Uninitialized
-            }[index()];
-        }
+        UnifiedAttachmentDescriptor& operator=(const BufferDescriptor& bufferDescriptor);
+        UnifiedAttachmentDescriptor& operator=(const ImageDescriptor& imageDescriptor);
+        UnifiedAttachmentDescriptor& operator=(const UnifiedAttachmentDescriptor& other);
     };
 } // namespace AZ::RHI

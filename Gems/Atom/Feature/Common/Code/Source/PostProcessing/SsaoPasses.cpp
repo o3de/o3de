@@ -180,7 +180,7 @@ namespace AZ
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "SsaoComputePass: Output binding has no attachment!");
-            RHI::Size size = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;
 
             ssaoConstants.m_outputSize[0] = size.m_width;
             ssaoConstants.m_outputSize[1] = size.m_height;

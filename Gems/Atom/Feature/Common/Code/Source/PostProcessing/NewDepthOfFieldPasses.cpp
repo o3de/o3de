@@ -119,7 +119,7 @@ namespace AZ
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "NewDepthOfFieldTileReducePass: Output binding has no attachment!");
-            RHI::Size outputSize = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            RHI::Size outputSize = outputAttachment->m_descriptor.m_image.m_size;
 
             // The algorithm outputs the min/max CoC values from a 16x16 region using 8x8 threads
             u32 targetThreadCountX = outputSize.m_width * 8;

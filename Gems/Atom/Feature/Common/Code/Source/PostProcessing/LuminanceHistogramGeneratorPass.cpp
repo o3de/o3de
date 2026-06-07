@@ -74,7 +74,7 @@ namespace AZ
             const auto& binding = GetInputBinding(0);
             AZ_Assert(binding.m_name == AZ::Name("ColorInput"), "ColorInput was expected to be the first input");
             const RPI::PassAttachment* colorBuffer = binding.GetAttachment().get();
-            return colorBuffer->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            return colorBuffer->m_descriptor.m_image.m_size;
         }
 
         void LuminanceHistogramGeneratorPass::BuildInternal()

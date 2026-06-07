@@ -112,12 +112,12 @@ namespace AZ
             // [GFX TODO][ATOM-2470] stop caring about attachment
             RPI::Ptr<RPI::PassAttachment> attachment = m_ownedAttachments.front();
             AZ_Assert(attachment, "[CascadedShadowmapsPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());
-            AZ_Assert(attachment->m_descriptor.type() == RHI::AttachmentType::Image, "[CascadedShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
+            AZ_Assert(attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[CascadedShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
 
             RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
             binding.SetAttachment(attachment);
 
-            RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
+            RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
             const uint32_t shadowmapWidth = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
             imageDescriptor.m_size = RHI::Size(shadowmapWidth, shadowmapWidth, 1);
             imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();

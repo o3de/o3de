@@ -60,12 +60,12 @@ namespace AZ
 
         void PassAttachment::ValidateDeviceFormats(const AZStd::vector<RHI::Format>& formatFallbacks, RHI::FormatCapabilities capabilities)
         {
-            if (m_descriptor.type() == RHI::AttachmentType::Image)
+            if (m_descriptor.m_type == RHI::AttachmentType::Image)
             {
-                RHI::Format format = m_descriptor.get<RHI::ImageAttachment>().m_image.m_format;
+                RHI::Format format = m_descriptor.m_image.m_format;
                 capabilities |= RHI::FormatCapabilities::Sample;
                 AZStd::string formatLocation = AZStd::string::format("PassAttachment [%s]", m_name.GetCStr());
-                m_descriptor.get<RHI::ImageAttachment>().m_image.m_format = RHI::ValidateFormat(format, formatLocation.c_str(), formatFallbacks);
+                m_descriptor.m_image.m_format = RHI::ValidateFormat(format, formatLocation.c_str(), formatFallbacks);
             }
         }
 
@@ -80,7 +80,7 @@ namespace AZ
 
         RHI::AttachmentType PassAttachment::GetAttachmentType() const
         {
-            return m_descriptor.type();
+            return m_descriptor.m_type;
         }
 
         void PassAttachment::ComputePathName(const Name& passPath)
@@ -96,11 +96,11 @@ namespace AZ
                 m_path.GetCStr());
 
             AZ_Assert(
-                m_descriptor.type() == RHI::AttachmentType::Image,
+                m_descriptor.m_type == RHI::AttachmentType::Image,
                 "Error, building a transient image descriptor for an attachment that is not an image: %s",
                 m_path.GetCStr());
 
-            return RHI::TransientImageDescriptor(GetAttachmentId(), m_descriptor.get<RHI::ImageAttachment>().m_image);
+            return RHI::TransientImageDescriptor(GetAttachmentId(), m_descriptor.m_image);
         }
 
         const RHI::TransientBufferDescriptor PassAttachment::GetTransientBufferDescriptor() const
@@ -111,16 +111,16 @@ namespace AZ
                 m_path.GetCStr());
 
             AZ_Assert(
-                m_descriptor.type() == RHI::AttachmentType::Buffer,
+                m_descriptor.m_type == RHI::AttachmentType::Buffer,
                 "Error, building a transient buffer descriptor for an attachment that is not a buffer: %s",
                 m_path.GetCStr());
 
-            return RHI::TransientBufferDescriptor(GetAttachmentId(), m_descriptor.get<RHI::BufferAttachment>().m_buffer);
+            return RHI::TransientBufferDescriptor(GetAttachmentId(), m_descriptor.m_buffer);
         }
 
         void PassAttachment::Update(bool updateImportedAttachments)
         {
-            if (m_descriptor.type() == RHI::AttachmentType::Image &&
+            if (m_descriptor.m_type == RHI::AttachmentType::Image &&
                 (m_lifetime == RHI::AttachmentLifetimeType::Transient || updateImportedAttachments == true))
             {
                 UpdateImageFormat();
@@ -130,12 +130,12 @@ namespace AZ
 
                 if (m_generateFullMipChain)
                 {
-                    uint32_t width = m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_width;
-                    uint32_t height = m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_height;
+                    uint32_t width = m_descriptor.m_image.m_size.m_width;
+                    uint32_t height = m_descriptor.m_image.m_size.m_height;
 
                     double maxDimension = static_cast<double>(AZStd::max(width, height));
                     double mipMapLevels = floor(log2(maxDimension)) + 1;
-                    m_descriptor.get<RHI::ImageAttachment>().m_image.m_mipLevels = static_cast<uint16_t>(mipMapLevels);
+                    m_descriptor.m_image.m_mipLevels = static_cast<uint16_t>(mipMapLevels);
                 }
             }
         }
@@ -145,19 +145,19 @@ namespace AZ
             // Auto-infer image and buffer bind flags...
             if (GetAttachmentType() == RHI::AttachmentType::Image)
             {
-                m_descriptor.get<RHI::ImageAttachment>().m_image.m_bindFlags |= RHI::GetImageBindFlags(binding.m_scopeAttachmentUsage, binding.GetAttachmentAccess());
+                m_descriptor.m_image.m_bindFlags |= RHI::GetImageBindFlags(binding.m_scopeAttachmentUsage, binding.GetAttachmentAccess());
             }
             else if (GetAttachmentType() == RHI::AttachmentType::Buffer)
             {
                 bool isInputAssembly = RHI::CheckBitsAny(
-                    m_descriptor.get<RHI::BufferAttachment>().m_buffer.m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly);
-                bool isConstant = RHI::CheckBitsAny(m_descriptor.get<RHI::BufferAttachment>().m_buffer.m_bindFlags, RHI::BufferBindFlags::Constant);
+                    m_descriptor.m_buffer.m_bindFlags, RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly);
+                bool isConstant = RHI::CheckBitsAny(m_descriptor.m_buffer.m_bindFlags, RHI::BufferBindFlags::Constant);
 
                 // Since InputAssembly and Constant cannot be inferred they are set manually. If those flags are set we don't want to add
                 // inferred flags on top as it may have a performance penalty
                 if (!isInputAssembly && !isConstant)
                 {
-                    m_descriptor.get<RHI::BufferAttachment>().m_buffer.m_bindFlags |=
+                    m_descriptor.m_buffer.m_bindFlags |=
                         RHI::GetBufferBindFlags(binding.m_scopeAttachmentUsage, binding.GetAttachmentAccess());
                 }
             }
@@ -173,15 +173,15 @@ namespace AZ
             m_updatingImageFormat = true;
             if (m_getFormatFromPipeline && m_renderPipelineSource)
             {
-                m_descriptor.get<RHI::ImageAttachment>().m_image.m_format = m_renderPipelineSource->GetRenderSettings().m_format;
+                m_descriptor.m_image.m_format = m_renderPipelineSource->GetRenderSettings().m_format;
             }
             else if (m_formatSource)
             {
                 auto& refAttachment = m_formatSource->GetAttachment();
-                if (refAttachment && refAttachment->m_descriptor.type() == RHI::AttachmentType::Image)
+                if (refAttachment && refAttachment->m_descriptor.m_type == RHI::AttachmentType::Image)
                 {
                     refAttachment->UpdateImageFormat();
-                    m_descriptor.get<RHI::ImageAttachment>().m_image.m_format = refAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_format;
+                    m_descriptor.m_image.m_format = refAttachment->m_descriptor.m_image.m_format;
                 }
             }
             m_updatingImageFormat = false;
@@ -197,15 +197,15 @@ namespace AZ
             m_updatingMultisampleState = true;
             if (m_getMultisampleStateFromPipeline && m_renderPipelineSource)
             {
-                m_descriptor.get<RHI::ImageAttachment>().m_image.m_multisampleState = m_renderPipelineSource->GetRenderSettings().m_multisampleState;
+                m_descriptor.m_image.m_multisampleState = m_renderPipelineSource->GetRenderSettings().m_multisampleState;
             }
             else if (m_multisampleSource)
             {
                 auto& refAttachment = m_multisampleSource->GetAttachment();
-                if (refAttachment && refAttachment->m_descriptor.type() == RHI::AttachmentType::Image)
+                if (refAttachment && refAttachment->m_descriptor.m_type == RHI::AttachmentType::Image)
                 {
                     refAttachment->UpdateImageMultisampleState();
-                    m_descriptor.get<RHI::ImageAttachment>().m_image.m_multisampleState = refAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_multisampleState;
+                    m_descriptor.m_image.m_multisampleState = refAttachment->m_descriptor.m_image.m_multisampleState;
                 }
             }
             m_updatingMultisampleState = false;
@@ -221,16 +221,16 @@ namespace AZ
             m_updatingSize = true;
             if (m_getSizeFromPipeline && m_renderPipelineSource)
             {
-                m_descriptor.get<RHI::ImageAttachment>().m_image.m_size = m_renderPipelineSource->GetRenderSettings().m_size;
+                m_descriptor.m_image.m_size = m_renderPipelineSource->GetRenderSettings().m_size;
             }
             else if (m_sizeSource)
             {
                 auto& refAttachment = m_sizeSource->GetAttachment();
-                if (refAttachment && refAttachment->m_descriptor.type() == RHI::AttachmentType::Image)
+                if (refAttachment && refAttachment->m_descriptor.m_type == RHI::AttachmentType::Image)
                 {
                     refAttachment->UpdateImageSize();
-                    RHI::Size sourceSize = refAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
-                    m_descriptor.get<RHI::ImageAttachment>().m_image.m_size = m_sizeMultipliers.ApplyModifiers(sourceSize);
+                    RHI::Size sourceSize = refAttachment->m_descriptor.m_image.m_size;
+                    m_descriptor.m_image.m_size = m_sizeMultipliers.ApplyModifiers(sourceSize);
                 }
             }
             m_updatingSize = false;
@@ -247,10 +247,10 @@ namespace AZ
             if (m_arraySizeSource)
             {
                 auto& refAttachment = m_arraySizeSource->GetAttachment();
-                if (refAttachment && refAttachment->m_descriptor.type() == RHI::AttachmentType::Image)
+                if (refAttachment && refAttachment->m_descriptor.m_type == RHI::AttachmentType::Image)
                 {
                     refAttachment->UpdateImageArraySize();
-                    m_descriptor.get<RHI::ImageAttachment>().m_image.m_arraySize = refAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_arraySize;
+                    m_descriptor.m_image.m_arraySize = refAttachment->m_descriptor.m_image.m_arraySize;
                 }
             }
             m_updatingArraySize = false;
@@ -328,11 +328,11 @@ namespace AZ
                 {
                     if (attachment->GetAttachmentType() == RHI::AttachmentType::Buffer)
                     {
-                        m_unifiedScopeDesc.SetAsBuffer(attachment->m_descriptor.get<RHI::BufferAttachment>().m_bufferView);
+                        m_unifiedScopeDesc.SetAsBuffer(attachment->m_descriptor.m_bufferView);
                     }
                     else if (attachment->GetAttachmentType() == RHI::AttachmentType::Image)
                     {
-                        m_unifiedScopeDesc.SetAsImage(attachment->m_descriptor.get<RHI::ImageAttachment>().m_imageView);
+                        m_unifiedScopeDesc.SetAsImage(attachment->m_descriptor.m_imageView);
                     }
                 }
                 else if (attachment->m_lifetime == RHI::AttachmentLifetimeType::Imported)

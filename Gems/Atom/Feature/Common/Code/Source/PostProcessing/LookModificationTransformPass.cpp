@@ -44,7 +44,7 @@ namespace AZ
             RHI::Format swapChainFormat = RHI::Format::Unknown;
             if (m_pipelineOutput && m_pipelineOutput->GetAttachment())
             {
-                swapChainFormat = m_pipelineOutput->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_format;
+                swapChainFormat = m_pipelineOutput->GetAttachment()->m_descriptor.m_image.m_format;
             }
 
             // Update the children passes

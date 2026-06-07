@@ -43,7 +43,7 @@ namespace AZ
         {
             if (m_swapChainAttachment)
             {
-                return m_swapChainAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_format;
+                return m_swapChainAttachment->m_descriptor.m_image.m_format;
             }
             return RHI::Format::Unknown;
         }

@@ -104,7 +104,7 @@ namespace AZ
             const RPI::PassAttachmentBinding* sizeSource = attachment->m_sizeSource;
             AZ_Assert(sizeSource != nullptr, "Binding sizeSource of attachment is null.");
             AZ_Assert(sizeSource->GetAttachment() != nullptr, "Attachment of sizeSource is null.");
-            AZ::RHI::Size size = sizeSource->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            AZ::RHI::Size size = sizeSource->GetAttachment()->m_descriptor.m_image.m_size;
 
             return AZ::Vector4(
                 1.0f / static_cast<float>(size.m_width),

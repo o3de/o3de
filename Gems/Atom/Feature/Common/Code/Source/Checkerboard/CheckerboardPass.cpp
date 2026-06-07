@@ -56,7 +56,7 @@ namespace AZ
             {
                 if (attachment->m_lifetime == RHI::AttachmentLifetimeType::Transient)
                 {
-                    if (attachment->m_descriptor.type() == RHI::AttachmentType::Image)
+                    if (attachment->m_descriptor.m_type == RHI::AttachmentType::Image)
                     {
                         // Force update image attachment descriptor to sync up size and format
                         attachment->Update();
@@ -64,7 +64,7 @@ namespace AZ
                         attachment->m_lifetime = RHI::AttachmentLifetimeType::Imported;
 
                         // update image descriptor to new size and samples
-                        RHI::ImageDescriptor &imageDesc = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
+                        RHI::ImageDescriptor &imageDesc = attachment->m_descriptor.m_image;
 
                         imageDesc.m_multisampleState.m_samples = 2;
                         imageDesc.m_size.m_width /= 2;
@@ -117,7 +117,7 @@ namespace AZ
             // So we can preserve the render target from current frame
             for (RPI::Ptr<RPI::PassAttachment>& attachment : m_ownedAttachments)
             {
-                if (attachment->m_descriptor.type() == RHI::AttachmentType::Image)
+                if (attachment->m_descriptor.m_type == RHI::AttachmentType::Image)
                 {
                     Data::Instance<RPI::AttachmentImage> nextAttachment = GetAttachmentImage(attachment->m_name, m_frameOffset);
                     if (nextAttachment)

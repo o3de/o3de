@@ -59,7 +59,7 @@ namespace AZ
         RHI::Size FullscreenShadowPass::GetDepthBufferDimensions()
         {
             RPI::PassAttachmentBinding* outputBinding = RPI::Pass::FindAttachmentBinding(m_outputName);
-            auto outputDim = outputBinding->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            auto outputDim = outputBinding->GetAttachment()->m_descriptor.m_image.m_size;
             AZ_Assert(outputDim.m_width > 0 && outputDim.m_height > 0, "Height and width are not valid\n");
             return outputDim;
         }
@@ -67,7 +67,7 @@ namespace AZ
         uint16_t FullscreenShadowPass::GetDepthBufferMSAACount()
         {
             RPI::PassAttachmentBinding* inputBinding = RPI::Pass::FindAttachmentBinding(m_depthInputName);
-            return inputBinding->GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_multisampleState.m_samples;
+            return inputBinding->GetAttachment()->m_descriptor.m_image.m_multisampleState.m_samples;
         }       
 
         void FullscreenShadowPass::SetConstantData()

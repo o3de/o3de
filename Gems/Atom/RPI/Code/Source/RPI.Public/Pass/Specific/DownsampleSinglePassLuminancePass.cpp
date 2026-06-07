@@ -76,7 +76,7 @@ namespace AZ::RPI
         {
             return;
         }
-        const uint32_t mipLevelCount = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_mipLevels;
+        const uint32_t mipLevelCount = attachment->m_descriptor.m_image.m_mipLevels;
         RHI::AttachmentId attachmentId = attachment->GetAttachmentId();
         const RHI::Image* rhiImage = context.GetImage(attachmentId);
         if (!rhiImage)
@@ -148,8 +148,8 @@ namespace AZ::RPI
 
         if (attachment)
         {
-            m_destinationImageSize[0] = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_width;
-            m_destinationImageSize[1] = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size.m_height;
+            m_destinationImageSize[0] = attachment->m_descriptor.m_image.m_size.m_width;
+            m_destinationImageSize[1] = attachment->m_descriptor.m_image.m_size.m_height;
 
             // m_mipLevels of the attachment has not been initialized yet, so it is calculated below:
             const uint32_t maxDimension = GetMax(m_destinationImageSize[0], m_destinationImageSize[1]);

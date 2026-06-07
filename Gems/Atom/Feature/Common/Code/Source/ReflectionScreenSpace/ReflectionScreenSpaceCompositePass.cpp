@@ -42,7 +42,7 @@ namespace AZ
 
             RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
             AZ_Assert(outputAttachment, "ReflectionScreenSpaceCompositePass: Output binding has no attachment!");
-            RHI::Size outputImageSize = outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            RHI::Size outputImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
             const SSROptions& ssrOptions = specularReflectionsFeatureProcessor->GetSSROptions();
 

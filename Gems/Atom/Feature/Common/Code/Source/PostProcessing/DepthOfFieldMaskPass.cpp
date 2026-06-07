@@ -88,7 +88,7 @@ namespace AZ
             const RPI::PassAttachmentBinding& attachmentBinding = attachmentBindings[0];
             if (attachmentBinding.GetAttachment())
             {
-                RHI::Size size = attachmentBinding.GetAttachment()->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+                RHI::Size size = attachmentBinding.GetAttachment()->m_descriptor.m_image.m_size;
                 m_inputResolutionInverse[0] = 1.0f / size.m_width;
                 m_inputResolutionInverse[1] = 1.0f / size.m_height;
             }

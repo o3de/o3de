@@ -65,7 +65,7 @@ namespace AZ
             AZ_Assert(GetInputBinding(0).m_name == AZ::Name("Depth"), "LightCullingTilePrepare: Expecting slot 0 to be the depth buffer");
 
             const RPI::PassAttachment* attachment = GetInputBinding(0).GetAttachment().get();
-            return attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            return attachment->m_descriptor.m_image.m_size;
         }
 
         AZStd::array<float, 2> LightCullingTilePreparePass::ComputeUnprojectConstants() const
@@ -115,7 +115,7 @@ namespace AZ
             AZ_Assert(GetInputBinding(0).m_name == AZ::Name("Depth"), "LightCullingTilePrepare: Expecting slot 0 to be the depth buffer");
 
             const RPI::PassAttachment* attachment = GetInputBinding(0).GetAttachment().get();
-            return attachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_multisampleState;
+            return attachment->m_descriptor.m_image.m_multisampleState;
         }
 
         AZ::RPI::ShaderOptionGroup LightCullingTilePreparePass::CreateShaderOptionGroup()

@@ -83,7 +83,7 @@ namespace AZ
             RPI::PassAttachment* m_outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             AZ_Assert(m_outputAttachment, "DiffuseProbeGridRenderPass: Output binding has no attachment!");
             
-            RHI::Size size = m_outputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            RHI::Size size = m_outputAttachment->m_descriptor.m_image.m_size;
             RHI::Viewport viewport(0.f, aznumeric_cast<float>(size.m_width), 0.f, aznumeric_cast<float>(size.m_height));
             RHI::Scissor scissor(0, 0, size.m_width, size.m_height);
             

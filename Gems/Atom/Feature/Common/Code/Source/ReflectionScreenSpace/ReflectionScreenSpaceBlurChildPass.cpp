@@ -29,7 +29,7 @@ namespace AZ
             RPI::PassAttachment* inputAttachment = GetInputBinding(0).GetAttachment().get();
             AZ_Assert(inputAttachment, "ReflectionScreenSpaceBlurChildPass: Input binding has no attachment!");
 
-            RHI::Size size = inputAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
+            RHI::Size size = inputAttachment->m_descriptor.m_image.m_size;
 
             if (m_imageSize != size)
             {

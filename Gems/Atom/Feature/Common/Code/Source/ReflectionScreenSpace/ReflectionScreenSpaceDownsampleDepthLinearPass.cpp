@@ -70,8 +70,8 @@ namespace AZ
 
             // retrieve DownsampledDepthLinear attachment
             RPI::PassAttachment* downsampledDepthLinearImageAttachment = GetInputOutputBinding(0).GetAttachment().get();
-            m_imageSize = downsampledDepthLinearImageAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_size;
-            m_mipLevels = aznumeric_cast<uint32_t>(downsampledDepthLinearImageAttachment->m_descriptor.get<RHI::ImageAttachment>().m_image.m_mipLevels);
+            m_imageSize = downsampledDepthLinearImageAttachment->m_descriptor.m_image.m_size;
+            m_mipLevels = aznumeric_cast<uint32_t>(downsampledDepthLinearImageAttachment->m_descriptor.m_image.m_mipLevels);
 
             // call ParentPass::BuildInternal() first to configure the slots and auto-add the empty bindings,
             // then we will assign attachments to the bindings

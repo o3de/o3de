@@ -199,7 +199,7 @@ namespace AZ
                         }
                         else
                         {
-                            imageDesc = attachment->m_descriptor.get<RHI::ImageAttachment>().m_image;
+                            imageDesc = attachment->m_descriptor.m_image;
                         }
                         m_viewport = RHI::Viewport(0, (float)imageDesc.m_size.m_width, 0, (float)imageDesc.m_size.m_height);
                         m_scissor = RHI::Scissor(0, 0, imageDesc.m_size.m_width, imageDesc.m_size.m_height);
