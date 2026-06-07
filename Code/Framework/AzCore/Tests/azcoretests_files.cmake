@@ -154,6 +154,7 @@ set(FILES
     Math/RayTests.cpp
     Math/LineSegmentTests.cpp
     Math/SplineTests.cpp
+    Math/CurveDataTests.cpp
     Math/TransformPerformanceTests.cpp
     Math/TransformTests.cpp
     Math/Vector2PerformanceTests.cpp

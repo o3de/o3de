@@ -256,6 +256,7 @@ namespace AZ
             const static AZ::Crc32 Color = AZ_CRC_CE("Color");
             const static AZ::Crc32 ColorGradient = AZ_CRC_CE("ColorGradient");
             const static AZ::Crc32 ColorGradientRGB = AZ_CRC_CE("ColorGradientRGB");
+            const static AZ::Crc32 Curve = AZ_CRC_CE("Curve");
             const static AZ::Crc32 ComboBox = AZ_CRC_CE("ComboBox");
             const static AZ::Crc32 RadioButton = AZ_CRC_CE("RadioButton");
             const static AZ::Crc32 EntityId = AZ_CRC_CE("EntityId");
