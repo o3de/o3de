@@ -26,7 +26,7 @@ from command_plugin import (
 )
 from commands.exclude_conditional_files import ConditionalFileExcluder
 
-from PySide6.QtCore import Qt, Signal, QTimer
+from PySide6.QtCore import Qt, Signal, QTimer, QSettings
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QComboBox, QCheckBox,
@@ -121,14 +121,18 @@ CPP_KEYWORDS = {
 # Legacy constants removed - now dynamically loaded from template.json class_wizard blocks
 # See WizardTemplateScanner for template discovery
 
+# Color/radius literals are $ClassWizard* theme tokens, substituted at apply time by
+# apply_theme_tokens() from Themes/ClassWizard/themeProperties.json (see THEMING section).
+# Every token referenced here MUST exist in that file (and in _BUILTIN_THEME_TOKENS) so a
+# missing/sparse theme can only change values, never leave a literal "$..." in the QSS.
 WINDOW_STYLESHEET = """
     QMainWindow {
-        background-color: #2b2b2b;
+        background-color: $ClassWizardWindowBackgroundColor;
     }
     QGroupBox {
-        color: #cccccc;
-        border: 1px solid #555555;
-        border-radius: 4px;
+        color: $ClassWizardTextColor;
+        border: 1px solid $ClassWizardBorderColor;
+        border-radius: $ClassWizardGroupBoxRadius;
         margin-top: 8px;
         padding-top: 8px;
         font-weight: bold;
@@ -139,7 +143,7 @@ WINDOW_STYLESHEET = """
         padding: 0 5px;
     }
     QLabel {
-        color: #cccccc;
+        color: $ClassWizardTextColor;
     }
     QLabel[formLabel="true"] {
         font-size: 9.5pt;
@@ -147,15 +151,15 @@ WINDOW_STYLESHEET = """
         max-width: 110px;
     }
     QLineEdit, QComboBox, QTextEdit {
-        background-color: #3c3c3c;
-        color: #cccccc;
-        border: 1px solid #555555;
-        border-radius: 3px;
+        background-color: $ClassWizardInputBackgroundColor;
+        color: $ClassWizardTextColor;
+        border: 1px solid $ClassWizardBorderColor;
+        border-radius: $ClassWizardControlRadius;
         padding: 5px;
         font-size: 9.5pt;
     }
     QLineEdit:focus, QComboBox:focus {
-        border: 1px solid #0078d4;
+        border: 1px solid $ClassWizardAccentColor;
     }
     QComboBox::drop-down {
         border: none;
@@ -172,38 +176,38 @@ WINDOW_STYLESHEET = """
         height: 10px;
     }
     QPushButton {
-        background-color: #0078d4;
-        color: white;
+        background-color: $ClassWizardAccentColor;
+        color: $ClassWizardOnAccentTextColor;
         border: none;
-        border-radius: 3px;
+        border-radius: $ClassWizardControlRadius;
         padding: 8px 20px;
         font-weight: bold;
     }
     QPushButton:hover {
-        background-color: #1084d8;
+        background-color: $ClassWizardAccentHoverColor;
     }
     QPushButton:pressed {
-        background-color: #006cc1;
+        background-color: $ClassWizardAccentPressedColor;
     }
     QPushButton:disabled {
-        background-color: #555555;
-        color: #888888;
+        background-color: $ClassWizardDisabledBackgroundColor;
+        color: $ClassWizardDisabledTextColor;
     }
     QCheckBox {
-        color: #cccccc;
+        color: $ClassWizardTextColor;
         spacing: 8px;
         font-size: 9.5pt;
     }
     QCheckBox::indicator {
         width: 18px;
         height: 18px;
-        border: 1px solid #555555;
-        border-radius: 3px;
-        background-color: #3c3c3c;
+        border: 1px solid $ClassWizardBorderColor;
+        border-radius: $ClassWizardControlRadius;
+        background-color: $ClassWizardInputBackgroundColor;
     }
     QCheckBox::indicator:checked {
-        background-color: #0078d4;
-        border-color: #0078d4;
+        background-color: $ClassWizardAccentColor;
+        border-color: $ClassWizardAccentColor;
     }
     QTextEdit {
         font-family: 'Courier New', monospace;
@@ -215,6 +219,178 @@ WINDOW_STYLESHEET = """
 _STATUS_STYLE_BASE = "QLabel {{ font-size: 12pt; font-weight: bold; padding: 3px; color: {color}; }}"
 _STATUS_COLOR_PENDING  = "#808080"   # grey - placeholder / not yet run
 _STATUS_COLOR_ACTIVE   = "palette(text)"  # theme text - filled summary
+
+
+# ============================================================================
+# Theming
+# ----------------------------------------------------------------------------
+# The wizard's look is driven by named $ClassWizard* tokens substituted into
+# WINDOW_STYLESHEET. Token values come from a theme file in the same format the
+# O3DE editor theming system uses (AzQtComponents/Themes/<Name>/themeProperties
+# .json), so the editor StyleManager / Theme Editor can read and author this
+# file. Resolution order, lowest to highest precedence:
+#   1. _BUILTIN_THEME_TOKENS   -- in-code mirror; last-resort safety net so the
+#                                 tool never renders a literal "$..." even if the
+#                                 JSON is missing (raw-deployment guarantee).
+#   2. DEFAULT_THEME_FILE      -- the shipped, editable default (canonical).
+#   3. selected engine theme   -- the ClassWizard group of the theme the editor
+#                                 has selected (read from disk via --engine-path).
+#   4. editor working overrides-- the editor's unsaved-but-Applied edits, persisted
+#                                 in shared QSettings. Highest precedence so that
+#                                 "Apply in editor -> relaunch wizard" reflects the
+#                                 live edits. Cleared by the editor on theme switch.
+# Layers 3-4 are no-ops when the wizard runs standalone, so it stays native.
+# ============================================================================
+
+THEME_TOKEN_PREFIX = "$"
+DEFAULT_THEME_FILE  = Path(__file__).resolve().parent / "Themes" / "ClassWizard" / "themeProperties.json"
+
+# Shared QSettings the O3DE editor writes its active theme into. PySide6's QSettings reads the
+# same native store the C++ editor uses (keyed by org/app), so this is the cross-process,
+# cross-language handshake. Matches AtomToolsApplication.cpp (Material Editor etc. follow the
+# editor theme the same way). Keep these three constants identical to the editor's.
+EDITOR_QSETTINGS_ORG   = "O3DE"
+EDITOR_QSETTINGS_APP   = "O3DE Editor"
+EDITOR_THEME_KEY       = "Settings/EditorTheme"   # value is a theme folder name, e.g. "O3DE_Dark"
+
+# Working overrides: the editor's Applied-but-unsaved theme edits, persisted by the Theme Editor.
+# Keys mirror the editor's ThemeWorkingOverrides.h contract. The base key records which theme the
+# overrides sit on, so the wizard ignores them if a different theme is now selected.
+EDITOR_WORKING_OVERRIDES_GROUP    = "ThemeWorkingOverrides"
+EDITOR_WORKING_OVERRIDES_BASE_KEY = "__baseTheme"
+
+# Engine-relative location of the theme folders the editor theming system ships.
+ENGINE_THEMES_RELPATH  = Path("Code") / "Framework" / "AzQtComponents" / "AzQtComponents" / "Themes"
+# Subtree of an engine theme that themes THIS tool. Engine themes opt in by adding this group.
+WIZARD_THEME_GROUP     = "ClassWizard"
+
+# Mirror of Themes/ClassWizard/themeProperties.json -> theme_properties.ClassWizard.
+# KEEP IN SYNC with that file. Used only when the JSON cannot be read.
+_BUILTIN_THEME_TOKENS = {
+    "ClassWizardWindowBackgroundColor": "#2b2b2b",
+    "ClassWizardInputBackgroundColor":  "#3c3c3c",
+    "ClassWizardBorderColor":           "#555555",
+    "ClassWizardTextColor":             "#cccccc",
+    "ClassWizardDisabledTextColor":     "#888888",
+    "ClassWizardOnAccentTextColor":     "#ffffff",
+    "ClassWizardAccentColor":           "#0078d4",
+    "ClassWizardAccentHoverColor":      "#1084d8",
+    "ClassWizardAccentPressedColor":    "#006cc1",
+    "ClassWizardDisabledBackgroundColor": "#555555",
+    "ClassWizardControlRadius":         "3px",
+    "ClassWizardGroupBoxRadius":        "4px",
+}
+
+
+def _flatten_theme_properties(props, prefix=""):
+    """Flatten a nested theme_properties tree into {TokenName: value} by key
+    concatenation, matching the engine StylesheetPreprocessor rule
+    ({"Radius": {"Input": "4px"}} -> "RadiusInput")."""
+    flat = {}
+    for key, value in props.items():
+        name = prefix + key
+        if isinstance(value, dict):
+            flat.update(_flatten_theme_properties(value, name))
+        else:
+            flat[name] = str(value)
+    return flat
+
+
+def _load_theme_file(path):
+    """Return flattened tokens from a themeProperties.json, or {} on any failure."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return _flatten_theme_properties(data.get("theme_properties", {}))
+    except Exception:
+        return {}
+
+
+def _read_editor_selected_theme():
+    """Return the theme folder name the editor has selected (e.g. "O3DE_Dark"),
+    or "" if no editor preference is stored. Reads the same QSettings store the
+    C++ editor writes -- this is how the wizard 'follows' the editor's choice."""
+    try:
+        settings = QSettings(EDITOR_QSETTINGS_ORG, EDITOR_QSETTINGS_APP)
+        return str(settings.value(EDITOR_THEME_KEY, "") or "")
+    except Exception:
+        return ""
+
+
+def _load_engine_theme_overlay(engine_path):
+    """Resolve the editor's active theme and return its flattened ClassWizard.*
+    tokens to overlay the shipped defaults. Returns {} (a no-op) whenever the
+    wizard runs standalone, the engine path is unknown, the theme isn't on disk,
+    or the selected theme defines no ClassWizard group -- so a missing or sparse
+    theme can only change values, never break the look."""
+    if not engine_path:
+        return {}
+    theme_name = _read_editor_selected_theme()
+    if not theme_name:
+        return {}
+    theme_file = Path(engine_path) / ENGINE_THEMES_RELPATH / theme_name / "themeProperties.json"
+    try:
+        with open(theme_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:
+        return {}
+    props = data.get("theme_properties", {})
+    tokens = {}
+    # Hand-authored themes nest the tokens under a "ClassWizard" object; the Theme Editor's
+    # "Save As" writes them flat ("ClassWizardAccentColor": ...). Accept both forms.
+    nested = props.get(WIZARD_THEME_GROUP, {})
+    if isinstance(nested, dict):
+        tokens.update(_flatten_theme_properties(nested, WIZARD_THEME_GROUP))
+    for key, value in props.items():
+        if key.startswith(WIZARD_THEME_GROUP) and not isinstance(value, dict):
+            tokens[key] = str(value)
+    return tokens
+
+
+def _load_editor_working_overrides():
+    """Return the editor's Applied-but-unsaved ClassWizard.* edits from shared
+    QSettings, or {} if none / standalone. Only honored when the overrides' base
+    theme matches the editor's currently selected theme (the editor clears them on
+    a theme switch, but this guards against any stale cross-theme bleed)."""
+    try:
+        settings = QSettings(EDITOR_QSETTINGS_ORG, EDITOR_QSETTINGS_APP)
+        selected = str(settings.value(EDITOR_THEME_KEY, "") or "")
+        settings.beginGroup(EDITOR_WORKING_OVERRIDES_GROUP)
+        try:
+            base = str(settings.value(EDITOR_WORKING_OVERRIDES_BASE_KEY, "") or "")
+            if not base or (selected and base != selected):
+                return {}
+            return {key: str(settings.value(key))
+                    for key in settings.allKeys()
+                    if key.startswith(WIZARD_THEME_GROUP)}
+        finally:
+            settings.endGroup()
+    except Exception:
+        return {}
+
+
+def resolve_theme_tokens(engine_path=None):
+    """Resolve the active {TokenName: value} map. Builtins, shipped default file,
+    the editor's selected theme, then the editor's live Applied edits -- each layer
+    overrides the last. engine_path enables the theme-file overlay; the working
+    overrides come from QSettings. Omit engine_path / run with no editor to stay
+    standalone (the upper layers are no-ops)."""
+    tokens = dict(_BUILTIN_THEME_TOKENS)
+    tokens.update(_load_theme_file(DEFAULT_THEME_FILE))
+    tokens.update(_load_engine_theme_overlay(engine_path))
+    tokens.update(_load_editor_working_overrides())
+    return tokens
+
+
+def apply_theme_tokens(qss, tokens):
+    """Substitute every $TokenName in a stylesheet with its theme value. Longest
+    names first so no token name is a prefix-collision of another."""
+    if not tokens:
+        return qss
+    pattern = re.compile(
+        "|".join(re.escape(THEME_TOKEN_PREFIX + name)
+                 for name in sorted(tokens, key=len, reverse=True)))
+    return pattern.sub(lambda m: tokens[m.group(0)[len(THEME_TOKEN_PREFIX):]], qss)
 
 
 # ============================================================================
@@ -1634,7 +1810,7 @@ class ClassWizardWindow(QMainWindow):
     def _apply_styles(self):
         """Apply stylesheet to the window"""
         icons_dir = Path(__file__).resolve().parent / "icons"
-        stylesheet = WINDOW_STYLESHEET \
+        stylesheet = apply_theme_tokens(WINDOW_STYLESHEET, resolve_theme_tokens(self.engine_path)) \
             .replace("COMBO_ARROW_URL",    (icons_dir / "combo_arrow.svg").as_posix()) \
             .replace("COMBO_ARROW_UP_URL", (icons_dir / "combo_arrow_up.svg").as_posix())
         self.setStyleSheet(stylesheet)

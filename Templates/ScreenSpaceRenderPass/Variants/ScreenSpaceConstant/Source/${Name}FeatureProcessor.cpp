@@ -108,6 +108,20 @@ namespace ${GemName}
         // Wire the pass's InputColor slot to the anchor's Output. The anchor's
         // attachment name varies by anchor pass; "Output" is correct for
         // PostProcessPass. If you change k_anchorPassName, update this too.
+        //
+        // OutputColor is intentionally NOT connected here: the .pass template
+        // owns its output (OutputColorAttachment, sized/formatted from
+        // InputColor), so the pass is a complete, schedulable render pass on its
+        // own. See Assets/Passes/${Name}.pass.
+        //
+        // VISIBILITY NOTE (sample model): because source and destination are
+        // distinct buffers, the effect is computed into OutputColorAttachment
+        // but the rest of the pipeline still reads the anchor's original Output.
+        // To make the result reach the screen you must route a downstream pass
+        // to read this pass's OutputColor (a pipeline-azasset edit), or switch
+        // the .pass to the in-place model (DeferredFog.pass shape) -- see the
+        // ${Name}.pass README. Uncomment the PROBE block in ${Name}.azsl to
+        // verify the pass runs end-to-end once that routing is in place.
         request.AddInputConnection(AZ::RPI::PassConnection{
             AZ::Name("InputColor"),
             AZ::RPI::PassAttachmentRef{ anchorName, AZ::Name("Output") }
