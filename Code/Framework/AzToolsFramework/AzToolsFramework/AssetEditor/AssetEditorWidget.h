@@ -134,6 +134,12 @@ namespace AzToolsFramework
 
             void UpdateRecentFileListState();
 
+            // Claim Ctrl+S / Ctrl+Shift+S when focus is inside the Asset Editor. The pane shares its
+            // top-level window with the main Editor's identical save shortcuts, so relying on QAction
+            // shortcut resolution is ambiguous; accepting the ShortcutOverride here wins reliably and
+            // only while a descendant has focus (level save still works when focus is elsewhere).
+            bool event(QEvent* event) override;
+
         private:
             AssetEditorTab* MakeNewTab(const QString& name);
             AssetEditorTab* FindTabForAsset(const AZ::Data::AssetId& assetId) const;

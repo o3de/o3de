@@ -57,6 +57,7 @@ AZ_POP_DISABLE_WARNING
 
 #include <QAction>
 #include <QApplication>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -316,15 +317,14 @@ namespace AzToolsFramework
             m_saveAsAssetAction->setShortcut(QKeySequence::SaveAs);
             connect(m_saveAsAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAssetAs);
 
-            // The Asset Editor is usually a docked pane sharing the main Editor's top-level window, which
-            // also binds Ctrl+S (save level). Two actions with the same sequence in one window make the
-            // shortcut ambiguous, so neither fires. Scope the save shortcuts to this widget's focus subtree
-            // and register the actions on the widget (a menu-only action is not in the focus chain) so Ctrl+S
-            // saves the asset whenever focus is inside the Asset Editor, and still reaches the level save otherwise.
+            // The shortcuts above cannot win through QAction resolution: the Asset Editor pane is parented
+            // under the main Editor window (even when floating), whose Ctrl+S (save level) is also in scope,
+            // so Qt treats both as ambiguous and fires neither. Ctrl+S is instead claimed in event() below by
+            // accepting the ShortcutOverride while focus is inside this widget. The shortcuts are kept here
+            // purely for the menu accelerator labels, and scoped to WidgetWithChildrenShortcut so that when
+            // focus is outside the Asset Editor they are not in scope and the main Editor's level save wins.
             m_saveAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             m_saveAsAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-            addAction(m_saveAssetAction);
-            addAction(m_saveAsAssetAction);
 
             m_saveAllAssetsAction = fileMenu->addAction("Save All");
             connect(m_saveAllAssetsAction, &QAction::triggered, this, &AssetEditorWidget::SaveAll);
@@ -640,6 +640,39 @@ namespace AzToolsFramework
             tab->SaveAsset();
 
             return tab->SaveAssetToPath(assetPath.data());
+        }
+
+        bool AssetEditorWidget::event(QEvent* event)
+        {
+            // Claim the save shortcuts before Qt's (ambiguous) shortcut resolution. Accepting the
+            // ShortcutOverride suppresses all shortcut matching for the key and makes Qt deliver it as a
+            // normal key press, which the KeyPress branch handles. This only runs while a descendant of the
+            // Asset Editor has focus, so Ctrl+S still saves the level when focus is elsewhere.
+            if (event->type() == QEvent::ShortcutOverride)
+            {
+                auto* keyEvent = static_cast<QKeyEvent*>(event);
+                if (keyEvent->matches(QKeySequence::Save) || keyEvent->matches(QKeySequence::SaveAs))
+                {
+                    event->accept();
+                    return true;
+                }
+            }
+            else if (event->type() == QEvent::KeyPress)
+            {
+                auto* keyEvent = static_cast<QKeyEvent*>(event);
+                if (keyEvent->matches(QKeySequence::Save))
+                {
+                    SaveAsset();
+                    return true;
+                }
+                if (keyEvent->matches(QKeySequence::SaveAs))
+                {
+                    SaveAssetAs();
+                    return true;
+                }
+            }
+
+            return QWidget::event(event);
         }
 
         void AssetEditorWidget::CommitInProgressEdit()

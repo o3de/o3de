@@ -289,6 +289,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
         QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::selectAll);
         menu->addAction(action);
         GetHierarchy()->addAction(action);
+        GetViewport()->addAction(action);
     }
 
     menu->addSeparator();
@@ -305,6 +306,9 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
         QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::Cut);
         menu->addAction(action);
         GetHierarchy()->addAction(action);
+        // Also scope the shortcut to the canvas viewport so element cut/copy/paste/duplicate work while
+        // editing directly in the canvas (where focus is on the viewport, not the hierarchy panel).
+        GetViewport()->addAction(action);
 
         m_actionsEnabledWithSelection.push_back(action);
     }
@@ -318,6 +322,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
         QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::Copy);
         menu->addAction(action);
         GetHierarchy()->addAction(action);
+        GetViewport()->addAction(action);
 
         m_actionsEnabledWithSelection.push_back(action);
     }
@@ -333,6 +338,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
             QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::PasteAsSibling);
             menu->addAction(action);
             GetHierarchy()->addAction(action);
+            GetViewport()->addAction(action);
 
             m_pasteAsSiblingAction = action;
         }
@@ -349,6 +355,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
             QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::PasteAsChild);
             menu->addAction(action);
             GetHierarchy()->addAction(action);
+            GetViewport()->addAction(action);
 
             m_pasteAsChildAction = action;
         }
@@ -363,6 +370,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
         QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::Duplicate);
         menu->addAction(action);
         GetHierarchy()->addAction(action);
+        GetViewport()->addAction(action);
 
         m_actionsEnabledWithSelection.push_back(action);
     }

@@ -676,6 +676,13 @@ void EditorWindow::CleanChanged([[maybe_unused]] bool clean)
 
 bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceAskingForFilename)
 {
+    // Step out of any in-progress field edit first: clearing focus fires the property editor's focus-out,
+    // which commits the value (and its undo entry) before the canvas is serialized below.
+    if (QWidget* focusWidget = QApplication::focusWidget(); focusWidget && isAncestorOf(focusWidget))
+    {
+        focusWidget->clearFocus();
+    }
+
     AZStd::string sourceAssetPathName = canvasMetadata.m_canvasSourceAssetPathname;
     AZStd::string assetIdPathname;
 
