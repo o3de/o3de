@@ -267,15 +267,15 @@ WIZARD_THEME_GROUP     = "ClassWizard"
 # Mirror of Themes/ClassWizard/themeProperties.json -> theme_properties.ClassWizard.
 # KEEP IN SYNC with that file. Used only when the JSON cannot be read.
 _BUILTIN_THEME_TOKENS = {
-    "ClassWizardWindowBackgroundColor": "#2b2b2b",
-    "ClassWizardInputBackgroundColor":  "#3c3c3c",
-    "ClassWizardBorderColor":           "#555555",
+    "ClassWizardWindowBackgroundColor": "#393a3c",
+    "ClassWizardInputBackgroundColor":  "#303030",
+    "ClassWizardBorderColor":           "#4E4E4E",
     "ClassWizardTextColor":             "#cccccc",
-    "ClassWizardDisabledTextColor":     "#888888",
+    "ClassWizardDisabledTextColor":     "#999999",
     "ClassWizardOnAccentTextColor":     "#ffffff",
-    "ClassWizardAccentColor":           "#0078d4",
-    "ClassWizardAccentHoverColor":      "#1084d8",
-    "ClassWizardAccentPressedColor":    "#006cc1",
+    "ClassWizardAccentColor":           "#D9822E",
+    "ClassWizardAccentHoverColor":      "#e09854",
+    "ClassWizardAccentPressedColor":    "#b26b26",
     "ClassWizardDisabledBackgroundColor": "#555555",
     "ClassWizardControlRadius":         "3px",
     "ClassWizardGroupBoxRadius":        "4px",
@@ -325,9 +325,9 @@ def _load_engine_theme_overlay(engine_path):
     theme can only change values, never break the look."""
     if not engine_path:
         return {}
-    theme_name = _read_editor_selected_theme()
-    if not theme_name:
-        return {}
+    # Fall back to the editor's default theme when no selection is stored yet, so launching with
+    # --engine-path alone still themes the wizard (the editor writes the key once settings are saved).
+    theme_name = _read_editor_selected_theme() or "O3DE_Original"
     theme_file = Path(engine_path) / ENGINE_THEMES_RELPATH / theme_name / "themeProperties.json"
     try:
         with open(theme_file, "r", encoding="utf-8") as f:
