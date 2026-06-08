@@ -184,6 +184,10 @@ namespace AzToolsFramework
 
             void PopulateGenericAssetTypes();
             void SaveSettings();
+
+            // Flush an in-progress field edit (commit its value and undo entry) before saving, so Ctrl+S
+            // while a property field is focused both applies the edit and saves it in one stroke.
+            void CommitInProgressEdit();
         };
     } // namespace AssetEditor
 } // namespace AzToolsFramework

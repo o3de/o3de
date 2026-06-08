@@ -56,6 +56,7 @@ AZ_POP_DISABLE_WARNING
 #include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <QAction>
+#include <QApplication>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -230,6 +231,16 @@ namespace AzToolsFramework
             m_saveAsAssetAction->setShortcut(QKeySequence::SaveAs);
             connect(m_saveAsAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAssetAs);
 
+            // The Asset Editor is usually a docked pane sharing the main Editor's top-level window, which
+            // also binds Ctrl+S (save level). Two actions with the same sequence in one window make the
+            // shortcut ambiguous, so neither fires. Scope the save shortcuts to this widget's focus subtree
+            // and register the actions on the widget (a menu-only action is not in the focus chain) so Ctrl+S
+            // saves the asset whenever focus is inside the Asset Editor, and still reaches the level save otherwise.
+            m_saveAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            m_saveAsAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            addAction(m_saveAssetAction);
+            addAction(m_saveAsAssetAction);
+
             m_saveAllAssetsAction = fileMenu->addAction("Save All");
             connect(m_saveAllAssetsAction, &QAction::triggered, this, &AssetEditorWidget::SaveAll);
 
@@ -286,6 +297,7 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::SaveAll()
         {
+            CommitInProgressEdit();
 
             for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
             {
@@ -473,6 +485,17 @@ namespace AzToolsFramework
             return tab->SaveAssetToPath(assetPath.data());
         }
 
+        void AssetEditorWidget::CommitInProgressEdit()
+        {
+            // Clearing focus fires the editor's focus-out, which emits editingFinished and writes the value
+            // (and its undo entry) into the model. The save below then captures the committed data.
+            QWidget* focusWidget = QApplication::focusWidget();
+            if (focusWidget && isAncestorOf(focusWidget))
+            {
+                focusWidget->clearFocus();
+            }
+        }
+
         void AssetEditorWidget::SaveAsset()
         {
             if (!m_tabs->count())
@@ -480,17 +503,21 @@ namespace AzToolsFramework
                 return;
             }
 
+            CommitInProgressEdit();
+
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
             tab->SaveAsset();
 
         }
-        
+
         void AssetEditorWidget::SaveAssetAs()
         {
             if (!m_tabs->count())
             {
                 return;
             }
+
+            CommitInProgressEdit();
 
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
             tab->SaveAsDialog();

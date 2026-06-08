@@ -95,6 +95,7 @@ namespace AtomToolsFramework
         }, QKeySequence::Save);
 
         m_actionSaveAsCopy = CreateActionAtPosition(m_menuFile, insertPostion, "Save &As...", [this]() {
+            CommitInProgressEdit();
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
             if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
@@ -110,6 +111,7 @@ namespace AtomToolsFramework
         }, QKeySequence::SaveAs);
 
         m_actionSaveAsChild = CreateActionAtPosition(m_menuFile, insertPostion, "Save As &Child...", [this]() {
+            CommitInProgressEdit();
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
             if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
@@ -187,8 +189,21 @@ namespace AtomToolsFramework
         m_menuView->insertSeparator(insertPostion);
     }
 
+    void AtomToolsDocumentMainWindow::CommitInProgressEdit()
+    {
+        // Clearing focus fires the editor's focus-out, which emits editingFinished and writes the value
+        // (and its undo entry) into the document. The save below then captures the committed data.
+        QWidget* focusWidget = QApplication::focusWidget();
+        if (focusWidget && isAncestorOf(focusWidget))
+        {
+            focusWidget->clearFocus();
+        }
+    }
+
     bool AtomToolsDocumentMainWindow::SaveDocument(const AZ::Uuid& documentId)
     {
+        CommitInProgressEdit();
+
         AZStd::string documentPath;
         AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         DocumentTypeInfo documentInfo;

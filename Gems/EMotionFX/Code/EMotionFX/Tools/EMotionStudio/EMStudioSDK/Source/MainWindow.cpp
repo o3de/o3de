@@ -32,6 +32,7 @@
 
 // include Qt related
 #include <QAbstractEventDispatcher>
+#include <QApplication>
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QDesktopServices>
@@ -1465,6 +1466,15 @@ namespace EMStudio
 
     void MainWindow::OnSaveAll()
     {
+        // Ctrl+S maps to Save All. Clearing focus first fires the focused property editor's focus-out,
+        // committing its in-progress value (and undo entry) so the edited object is marked dirty before
+        // SaveDirtyFiles decides what to save. Without this, edits like transition properties (issue #13224)
+        // are not yet applied and get skipped.
+        if (QWidget* focusWidget = QApplication::focusWidget(); focusWidget && isAncestorOf(focusWidget))
+        {
+            focusWidget->clearFocus();
+        }
+
         m_dirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, MCORE_INVALIDINDEX32, QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     }
 

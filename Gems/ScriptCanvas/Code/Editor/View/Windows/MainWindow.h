@@ -349,6 +349,8 @@ namespace ScriptCanvasEditor
         bool OnFileSaveAs();
         bool OnFileSaveCaller(){return OnFileSave();};
         bool OnFileSaveAsCaller(){return OnFileSaveAs();};
+        // Flush an in-progress field edit (commit its value and undo entry) before saving.
+        void CommitInProgressEdit();
         enum class Save
         {
             InPlace,

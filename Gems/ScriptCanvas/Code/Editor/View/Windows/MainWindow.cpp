@@ -797,9 +797,13 @@ namespace ScriptCanvasEditor
 
         connect(ui->action_Save, &QAction::triggered, this, &MainWindow::OnFileSaveCaller);
         ui->action_Save->setShortcut(QKeySequence(QKeySequence::Save));
+        // Register on the main window (as New/Open above do) so the shortcut fires even when keyboard focus
+        // is in a docked child such as the Node Inspector - i.e. exactly when a dirty field needs saving.
+        addAction(ui->action_Save);
 
         connect(ui->action_Save_As, &QAction::triggered, this, &MainWindow::OnFileSaveAsCaller);
         ui->action_Save_As->setShortcut(QKeySequence(tr("Ctrl+Shift+S", "File|Save As...")));
+        addAction(ui->action_Save_As);
 
         QObject::connect(ui->action_Close,
             &QAction::triggered,
@@ -1660,6 +1664,8 @@ namespace ScriptCanvasEditor
 
     bool MainWindow::OnFileSave()
     {
+        CommitInProgressEdit();
+
         auto metaData = m_tabBar->GetTabData(m_activeGraph);
         if (!metaData)
         {
@@ -1678,7 +1684,20 @@ namespace ScriptCanvasEditor
 
     bool MainWindow::OnFileSaveAs()
     {
+        CommitInProgressEdit();
+
         return SaveAssetImpl(m_activeGraph, Save::As);
+    }
+
+    void MainWindow::CommitInProgressEdit()
+    {
+        // Clearing focus fires the editor's focus-out, which emits editingFinished and writes the value
+        // (and its undo entry) into the model. The save below then captures the committed data.
+        QWidget* focusWidget = QApplication::focusWidget();
+        if (focusWidget && isAncestorOf(focusWidget))
+        {
+            focusWidget->clearFocus();
+        }
     }
 
     bool MainWindow::SaveAssetImpl(const SourceHandle& sourceHandleIn, Save save)
