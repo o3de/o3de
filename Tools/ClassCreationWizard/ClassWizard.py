@@ -846,10 +846,14 @@ class GemDiscovery:
             # where those gems live outside engine_root.
             user_gem_roots: set = set()
             for ext in (manifest.get_manifest_external_subdirectories() or []):
+                if not ext:
+                    continue
                 resolved = Path(ext).resolve()
                 if resolved.is_dir():
                     user_gem_roots.add(os.path.normcase(str(resolved)))
             for ext in (manifest.get_project_external_subdirectories(project_path) or []):
+                if not ext:
+                    continue
                 resolved = Path(ext).resolve()
                 if resolved.is_dir():
                     user_gem_roots.add(os.path.normcase(str(resolved)))
@@ -859,6 +863,12 @@ class GemDiscovery:
         gems = []
 
         for namespec, gem_path_str in mapping.items():
+            # The manifest can map an enabled gem to a None/empty path when the
+            # "project" is actually the engine root or a relocated prebuilt
+            # engine. Skip those rather than letting Path(None) raise
+            # "expected str, bytes or os.PathLike object, not NoneType".
+            if not gem_path_str:
+                continue
             gem_path = Path(gem_path_str).resolve()
 
             # Filter 1: skip gems that live inside the engine directory
@@ -1419,6 +1429,11 @@ class ComponentCreator:
 class ClassWizardWindow(QMainWindow):
     """Main window for the O3DE Class Creation Wizard"""
 
+    # Design size for the window. Re-asserted after show() in _do_center because
+    # embedded hosts (the O3DE Editor's QApplication) ignore the pre-show resize.
+    DEFAULT_WIDTH = 650
+    DEFAULT_HEIGHT = 900
+
     def __init__(self, engine_path: Path, project_path: Optional[Path] = None):
         super().__init__()
 
@@ -1427,7 +1442,7 @@ class ClassWizardWindow(QMainWindow):
 
         self.setWindowTitle("O3DE Class Creation Wizard")
         self.setMinimumSize(600, 800)
-        self.resize(650, 900)
+        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
 
         # Initialize data
         self.gems: List[GemInfo] = []
@@ -2102,12 +2117,40 @@ class ClassWizardWindow(QMainWindow):
         QTimer.singleShot(0, self._do_center)
     
     def _do_center(self):
-        """Actually center the window"""
+        """Finalize size + layout, center, then force the first paint.
+
+        Runs deferred (after show) to correct embedded-host quirks: the
+        pre-show resize() is ignored (window opens oversized), the central
+        layout is not computed until the first resize, and the window can stay
+        unpainted (black) until a resize event arrives.
+        """
+        # Re-assert the design size; embedded hosts override the pre-show resize.
+        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
+
+        # Force the central layout to recompute now instead of on first resize.
+        central = self.centralWidget()
+        if central and central.layout():
+            central.layout().activate()
+
+        # Center on the primary screen using the finalized frame geometry.
         screen = QApplication.primaryScreen().geometry()
         window = self.frameGeometry()
-        center = screen.center()
-        window.moveCenter(center)
+        window.moveCenter(screen.center())
         self.move(window.topLeft())
+
+        # Embedded in the editor the window can open unpainted (black) until it
+        # receives a resize event. Generate one programmatically -- the same
+        # redraw the user otherwise triggers by dragging the window edge.
+        QTimer.singleShot(0, self._force_initial_paint)
+
+    def _force_initial_paint(self):
+        """Nudge the window size by 1px and back to emit a resize event.
+
+        The nudge is split across two event-loop ticks; a same-tick resize to
+        the identical size coalesces to nothing and would not trigger a repaint.
+        """
+        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT + 1)
+        QTimer.singleShot(0, lambda: self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT))
 
 
 # ============================================================================
