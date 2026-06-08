@@ -143,11 +143,14 @@ namespace AzToolsFramework
 
             for (int currentRow = 0; currentRow < rows; ++currentRow)
             {
+                QModelIndex index = model->index(currentRow, 0, parent);
+                AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
+
+                // Only add source and product assets to the display map, subject to
+                // the display limit. But always continue traversing all scan folders
+                // so the search is complete across the entire asset database.
                 if (m_displayedItemsCounter < m_numberOfItemsDisplayed)
                 {
-                    QModelIndex index = model->index(currentRow, 0, parent);
-                    AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
-                    // We only want to see source and product assets.
                     if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source ||
                         entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
                     {
@@ -155,22 +158,20 @@ namespace AzToolsFramework
                         m_rowMap[index] = row;
                         ++row;
 
-                        // We only want to increase the displayed counter if it is a parent (Source)
-                        // so we don't cut children entries.
                         if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                         {
                             ++m_displayedItemsCounter;
                         }
                     }
-
-                    if (model->hasChildren(index))
-                    {
-                        row = BuildListModelMap(model, index, row);
-                    }
                 }
-                else
+
+                // Always recurse into children regardless of display limit.
+                // The previous break here would skip entire scan folders once
+                // the limit was reached, causing search to miss results in
+                // later gems/scan folders.
+                if (model->hasChildren(index))
                 {
-                    break;
+                    row = BuildListModelMap(model, index, row);
                 }
             }
             return row;

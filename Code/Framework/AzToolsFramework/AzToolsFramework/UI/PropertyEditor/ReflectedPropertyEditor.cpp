@@ -1185,22 +1185,126 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::RecreateTabOrder()
     {
-        // re-create the tab order, based on vertical position in the list.
+        // Re-create the tab order, based on vertical position in the list.
+        // Rows with no focusable widget (group headers, container labels) are
+        // skipped so they don't break the tab chain between input fields.
 
         QWidget* pLastWidget = nullptr;
 
         for (AZStd::size_t pos = 0; pos < m_impl->m_widgetsInDisplayOrder.size(); ++pos)
         {
-            if (pLastWidget)
+            // Always initialize internal tabbing for every row (e.g. Vector3 X->Y->Z chain).
+            m_impl->m_widgetsInDisplayOrder[pos]->UpdateWidgetInternalTabbing();
+
+            QWidget* pFirst = m_impl->m_widgetsInDisplayOrder[pos]->GetFirstTabWidget();
+            QWidget* pLast = m_impl->m_widgetsInDisplayOrder[pos]->GetLastTabWidget();
+
+            // Skip rows with no focusable widget -- they should not appear in the
+            // tab chain. This prevents label-only rows from inserting a dead tab
+            // stop between two input fields.
+            if (!pFirst && !pLast)
             {
-                QWidget* pFirst = m_impl->m_widgetsInDisplayOrder[pos]->GetFirstTabWidget();
-                setTabOrder(pLastWidget, pFirst);
-                m_impl->m_widgetsInDisplayOrder[pos]->UpdateWidgetInternalTabbing();
+                continue;
             }
 
-            pLastWidget = m_impl->m_widgetsInDisplayOrder[pos]->GetLastTabWidget();
+            if (pLastWidget && pFirst)
+            {
+                setTabOrder(pLastWidget, pFirst);
+            }
+
+            if (pLast)
+            {
+                pLastWidget = pLast;
+            }
         }
         m_impl->m_queuedTabOrderRefresh = false;
+    }
+
+    // =========================================================================
+    // Custom Tab Navigation
+    // =========================================================================
+    // Intercepts tab at row boundaries to skip directly to the next row's input.
+    // Within a row (e.g. Vector3 X->Y->Z), Qt's default chain handles it.
+    // Between rows, Qt's chain may visit wrapper widgets or other non-input
+    // widgets, creating a "blank" tab stop. This override prevents that.
+
+    bool ReflectedPropertyEditor::focusNextPrevChild(bool next)
+    {
+        QWidget* current = focusWidget();
+        if (!current || m_impl->m_widgetsInDisplayOrder.empty())
+        {
+            return QFrame::focusNextPrevChild(next);
+        }
+
+        // Helper: resolve a widget through its focus proxy chain
+        auto resolveProxy = [](QWidget* w) -> QWidget*
+        {
+            while (w && w->focusProxy())
+            {
+                w = w->focusProxy();
+            }
+            return w;
+        };
+
+        // Find which row owns the currently focused widget and whether
+        // we are at the row's tab boundary (last widget when going forward,
+        // first widget when going backward).
+        int currentRowIdx = -1;
+        for (int i = 0; i < static_cast<int>(m_impl->m_widgetsInDisplayOrder.size()); ++i)
+        {
+            PropertyRowWidget* row = m_impl->m_widgetsInDisplayOrder[i];
+            QWidget* first = row->GetFirstTabWidget();
+            if (!first)
+            {
+                continue;
+            }
+
+            // Check if the focused widget lives inside this row
+            if (row->isAncestorOf(current))
+            {
+                currentRowIdx = i;
+                break;
+            }
+        }
+
+        if (currentRowIdx < 0)
+        {
+            return QFrame::focusNextPrevChild(next);
+        }
+
+        // Check if we're at the boundary of the current row
+        PropertyRowWidget* currentRow = m_impl->m_widgetsInDisplayOrder[currentRowIdx];
+        QWidget* boundary = next ? currentRow->GetLastTabWidget() : currentRow->GetFirstTabWidget();
+        QWidget* resolvedBoundary = resolveProxy(boundary);
+        QWidget* resolvedCurrent = resolveProxy(current);
+
+        if (resolvedCurrent != resolvedBoundary)
+        {
+            // Not at boundary -- let Qt handle intra-row navigation (X->Y->Z)
+            return QFrame::focusNextPrevChild(next);
+        }
+
+        // At boundary -- find the next row that has an input widget
+        int targetIdx = currentRowIdx;
+        while (true)
+        {
+            targetIdx += next ? 1 : -1;
+            if (targetIdx < 0 || targetIdx >= static_cast<int>(m_impl->m_widgetsInDisplayOrder.size()))
+            {
+                // Past the edge -- let Qt handle it (move to next component card)
+                return QFrame::focusNextPrevChild(next);
+            }
+
+            QWidget* target = next
+                ? m_impl->m_widgetsInDisplayOrder[targetIdx]->GetFirstTabWidget()
+                : m_impl->m_widgetsInDisplayOrder[targetIdx]->GetLastTabWidget();
+
+            if (target)
+            {
+                target->setFocus(next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
+                return true;
+            }
+        }
     }
 
     void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName)

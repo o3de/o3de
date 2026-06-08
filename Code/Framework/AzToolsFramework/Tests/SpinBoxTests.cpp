@@ -189,8 +189,11 @@ namespace UnitTest
         EXPECT_NEAR(m_doubleSpinBoxWithLineEdit->value(), 10.0, 0.001);
     }
 
-    TEST_F(SpinBoxFixture, SpinBoxChangeContentsAndEscapeReturnsToPreviousValue)
+    TEST_F(SpinBoxFixture, SpinBoxChangeContentsAndEscapeReturnsToPreviousValueAndExitsField)
     {
+        // Esc cancels the in-progress edit, reverts to the focus-in value, and
+        // exits the field (clears focus). Exiting on Esc is the contract that
+        // matches the rest of the keyboard-editable input fields in the editor.
         m_doubleSpinBoxWithLineEdit->setValue(10.0);
         m_doubleSpinBoxWithLineEdit->setFocus();
         m_doubleSpinBoxWithLineEdit->GetLineEdit()->setText(QString("15"));
@@ -198,22 +201,49 @@ namespace UnitTest
         QTest::keyClick(m_doubleSpinBoxWithLineEdit.get(), Qt::Key_Escape, Qt::NoModifier);
 
         EXPECT_NEAR(m_doubleSpinBoxWithLineEdit->value(), 10.0, 0.001);
-        EXPECT_TRUE(m_doubleSpinBoxWithLineEdit->GetLineEdit()->hasSelectedText());
+        EXPECT_FALSE(m_doubleSpinBoxWithLineEdit->hasFocus());
     }
 
-    TEST_F(SpinBoxFixture, SpinBoxSelectContentsAndEscapeKeepsFocus)
+    TEST_F(SpinBoxFixture, SpinBoxEscapeExitsFieldWithoutPropagating)
     {
+        // Esc on a focused spinbox exits the field. It must also be consumed by
+        // the spinbox so it does not bubble up to the MainWindow's escape
+        // action (which would, for example, deselect the active entity).
         m_doubleSpinBox->setValue(10.0);
         m_doubleSpinBox->setFocus();
         m_doubleSpinBox->selectAll();
 
         QTest::keyClick(m_doubleSpinBox.get(), Qt::Key_Escape, Qt::NoModifier);
 
-        EXPECT_TRUE(m_doubleSpinBox->hasFocus());
+        EXPECT_FALSE(m_doubleSpinBox->hasFocus());
+        EXPECT_NEAR(m_doubleSpinBox->value(), 10.0, 0.001);
+    }
 
-        QTest::keyClick(m_doubleSpinBox.get(), Qt::Key_Escape, Qt::NoModifier);
+    TEST_F(SpinBoxFixture, SpinBoxChangeContentsAndCtrlZReturnsToPreviousValueAndExitsField)
+    {
+        // Ctrl+Z is parallel to Esc when an in-progress edit exists: revert the
+        // committed value to the focus-in value and exit the field.
+        m_doubleSpinBoxWithLineEdit->setValue(10.0);
+        m_doubleSpinBoxWithLineEdit->setFocus();
+        m_doubleSpinBoxWithLineEdit->GetLineEdit()->setText(QString("15"));
 
-        EXPECT_TRUE(m_doubleSpinBox->hasFocus());
+        QTest::keyClick(m_doubleSpinBoxWithLineEdit.get(), Qt::Key_Z, Qt::ControlModifier);
+
+        EXPECT_NEAR(m_doubleSpinBoxWithLineEdit->value(), 10.0, 0.001);
+        EXPECT_FALSE(m_doubleSpinBoxWithLineEdit->hasFocus());
+    }
+
+    TEST_F(SpinBoxFixture, SpinBoxCtrlZWithNoInProgressEditDoesNotExitField)
+    {
+        // When there is no local edit, Ctrl+Z must bubble up so the global undo
+        // stack can handle it. The spinbox stays focused.
+        m_doubleSpinBoxWithLineEdit->setValue(10.0);
+        m_doubleSpinBoxWithLineEdit->setFocus();
+
+        QTest::keyClick(m_doubleSpinBoxWithLineEdit.get(), Qt::Key_Z, Qt::ControlModifier);
+
+        EXPECT_NEAR(m_doubleSpinBoxWithLineEdit->value(), 10.0, 0.001);
+        EXPECT_TRUE(m_doubleSpinBoxWithLineEdit->hasFocus());
     }
 
     TEST_F(SpinBoxFixture, SpinBoxSuffixRemovedAndAppliedWithFocusChange)

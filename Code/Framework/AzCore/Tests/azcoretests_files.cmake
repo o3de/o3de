@@ -113,6 +113,7 @@ set(FILES
     Math/AabbTests.cpp
     Math/CapsuleTests.cpp
     Math/ColorTests.cpp
+    Math/ColorGradientTests.cpp
     Math/CrcTests.cpp
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp

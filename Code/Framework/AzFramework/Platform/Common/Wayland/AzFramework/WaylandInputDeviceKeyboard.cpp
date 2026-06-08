@@ -25,15 +25,7 @@ namespace AzFramework
         void* data, wl_keyboard*, uint32_t serial, wl_surface* surface, wl_array* keys)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
-        if (surface != nullptr)
-        {
-            if (auto wnw = static_cast<WaylandNativeWindow*>(wl_surface_get_user_data(surface)))
-            {
-                wnw->SetKeyboardFocus(self);
-                self->m_focusedWindow = wnw;
-            }
-        }
-
+        self->m_focusedWindow = static_cast<NativeWindowHandle>(surface);
         self->m_currentSerial = serial;
 
         uint32_t* key;
@@ -47,13 +39,7 @@ namespace AzFramework
                                                    wl_surface* surface)
     {
         auto self = static_cast<WaylandInputDeviceKeyboard*>(data);
-        if (surface != nullptr)
-        {
-            if (auto wnw = static_cast<WaylandNativeWindow*>(wl_surface_get_user_data(surface)))
-            {
-                wnw->SetKeyboardFocus(nullptr);
-            }
-        }
+        self->m_focusedWindow = nullptr;
 
         self->m_focusedWindow = nullptr;
         self->m_currentSerial = UINT32_MAX;

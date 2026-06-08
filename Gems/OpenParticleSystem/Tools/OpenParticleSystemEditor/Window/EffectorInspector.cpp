@@ -343,7 +343,7 @@ namespace OpenParticleSystemEditor
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_SPAWN]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_PARTICLES:
-            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particles"), QIcon(":/stylesheet/img/UI20/toolbar/particle.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particles"), QIcon(":/OpenParticleSystem/Icons/Particle.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_PARTICLES]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_LOCATION:
@@ -367,7 +367,7 @@ namespace OpenParticleSystemEditor
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_FORCE]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_LIGHT:
-            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Light"), QIcon(":/stylesheet/img/UI20/toolbar/particle.svg"));
+            SetClassName(QT_TRANSLATE_NOOP("OpenParticleSystem", "Light"), QIcon(":/stylesheet/img/UI20/toolbar/Lighting.svg"));
             ClickPropertyEditorWidget(PARTICLE_LINE_NAMES[WIDGET_LINE_LIGHT]);
             break;
         case OpenParticleSystemEditor::WIDGET_LINE_SUBUV:

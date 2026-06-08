@@ -6,7 +6,7 @@
  *
  */
 
-#include <ParticleMaterialThumbnail.h>
+#include <Thumbnail/ParticleMaterialThumbnail.h>
 
 #include <AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>

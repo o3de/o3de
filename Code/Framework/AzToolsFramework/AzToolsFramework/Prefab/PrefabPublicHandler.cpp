@@ -745,6 +745,19 @@ namespace AzToolsFramework
         {
             AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
 
+            // A root prefab (level) must be assigned before entities can be created. During an
+            // async level load the root instance already exists with a container entity but its
+            // template is reset to InvalidTemplateId (see PrefabEditorEntityOwnershipService::Reset),
+            // so the "owning instance exists" check below would pass and undo DOM generation would
+            // then crash in FindTemplateDom. Reject early, mirroring the guard InstantiatePrefab
+            // already uses, so the request fails gracefully instead.
+            auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            if (!prefabEditorEntityOwnershipInterface || !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+            {
+                return AZ::Failure(AZStd::string(
+                    "Cannot add entity because no root prefab is assigned. Entities can only be created inside a loaded level."));
+            }
+
             // If the parent is invalid, parent to the container of the currently focused prefab.
             if (!parentId.IsValid())
             {

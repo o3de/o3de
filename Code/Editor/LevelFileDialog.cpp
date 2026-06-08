@@ -14,12 +14,16 @@
 #include <AzFramework/API/ApplicationAPI.h>
 
 // Qt
-#include <QMessageBox>
+#include <QComboBox>
 #include <QInputDialog>
+#include <QLabel>
+#include <QMessageBox>
 #include <QRegularExpression>
+#include <QSignalBlocker>
 
 // Editor
 #include "LevelTreeModel.h"
+#include "LevelRoots.h"
 #include "CryEditDoc.h"
 #include "API/ToolsApplicationAPI.h"
 
@@ -68,6 +72,11 @@ CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
         ui->treeView->expandToDepth(1);
         ui->newFolderButton->setVisible(false);
         ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Open"));
+
+        // Open keeps the legacy multi-root tree, so the target combo is
+        // hidden entirely.
+        ui->targetRootLabel->setVisible(false);
+        ui->targetRootCombo->setVisible(false);
     }
     else
     {
@@ -80,13 +89,47 @@ CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
         setTabOrder(ui->nameLineEdit, ui->filterLineEdit);
 
         connect(ui->nameLineEdit, &QLineEdit::textChanged, this, &CLevelFileDialog::OnNameChanged);
+
+        // Save As exposes a target combo so the user explicitly picks the
+        // owning root before naming the level. The tree below is then
+        // filtered to that one target, which keeps "save into an empty
+        // gem" unambiguous.
+        m_saveTargetRoots = LevelRoots::Enumerate(LevelRoots::Mode::AllActive);
+        QSignalBlocker blocker(ui->targetRootCombo);
+        ui->targetRootCombo->clear();
+        for (const LevelRoots::Root& root : m_saveTargetRoots)
+        {
+            ui->targetRootCombo->addItem(root.displayName, root.absolutePath);
+        }
+        ui->targetRootCombo->setCurrentIndex(0);
+        connect(
+            ui->targetRootCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &CLevelFileDialog::OnTargetRootChanged);
     }
 
     // reject invalid file names
     ui->nameLineEdit->setValidator(new QRegularExpressionValidator(QRegularExpression("^[a-zA-Z0-9_\\-./]*$"), ui->nameLineEdit));
 
+    // Default to the project root until the user selects something. Enumerate()
+    // is guaranteed to return the project root as the first entry.
+    const QVector<LevelRoots::Root> roots = LevelRoots::Enumerate();
+    if (!roots.isEmpty())
+    {
+        m_selectedRoot = roots.front().absolutePath;
+        m_selectedRootIsProject = roots.front().isProject;
+    }
+
     ReloadTree();
-    LoadLastUsedLevelPath();
+    // Open restores the last-used level so the user lands on what they
+    // were working on. Save As intentionally does not - the user expects
+    // a clean slate (project root, empty name) so they don't accidentally
+    // overwrite the previous Save As target by reflex.
+    if (m_bOpenDialog)
+    {
+        LoadLastUsedLevelPath();
+    }
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 }
 
@@ -206,8 +249,15 @@ bool CLevelFileDialog::IsValidLevelSelected()
 QString CLevelFileDialog::GetLevelPath() const
 {
     const QString enteredPath = GetEnteredPath();
-    const QString levelPath = QString("%1/%2/%3").arg(Path::GetEditingGameDataFolder().c_str()).arg(kLevelsFolder).arg(enteredPath);
-    return levelPath;
+
+    // m_selectedRoot already points to the absolute "Levels" folder of the
+    // currently-targeted root (project by default, or whichever gem the user
+    // navigated into in the tree).
+    const QString rootPath = !m_selectedRoot.isEmpty()
+        ? m_selectedRoot
+        : QString("%1/%2").arg(Path::GetEditingGameDataFolder().c_str()).arg(kLevelsFolder);
+
+    return QStringLiteral("%1/%2").arg(rootPath, enteredPath);
 }
 
 QString CLevelFileDialog::GetEnteredPath() const
@@ -267,7 +317,19 @@ void CLevelFileDialog::OnTreeSelectionChanged()
     const QModelIndexList indexes = ui->treeView->selectionModel()->selectedIndexes();
     if (!indexes.isEmpty())
     {
-        ui->nameLineEdit->setText(NameForIndex(indexes.first()));
+        const QModelIndex selected = indexes.first();
+
+        // Update the active root before regenerating the displayed name, so
+        // GetLevelPath() and validation reflect the root the user clicked
+        // into (project vs. one of the gem roots).
+        const QString rootPath = selected.data(LevelTreeModel::RootPathRole).toString();
+        if (!rootPath.isEmpty())
+        {
+            m_selectedRoot = rootPath;
+            m_selectedRootIsProject = selected.data(LevelTreeModel::IsProjectRootRole).toBool();
+        }
+
+        ui->nameLineEdit->setText(NameForIndex(selected));
     }
 }
 
@@ -357,7 +419,42 @@ void CLevelFileDialog::OnNameChanged()
 
 void CLevelFileDialog::ReloadTree()
 {
-    m_model->ReloadTree(m_bOpenDialog);
+    if (m_bOpenDialog)
+    {
+        // Open keeps a tree with every gem that already has an
+        // Assets/Levels folder so the user can browse all of them at once.
+        m_model->ReloadTree(m_bOpenDialog, LevelRoots::Mode::ExistingOnly);
+        return;
+    }
+
+    // Save As shows only the contents of the currently-selected target
+    // root. Defaults to the first entry (the project) until the user
+    // picks something else.
+    if (m_saveTargetRoots.isEmpty())
+    {
+        m_model->ReloadTree(m_bOpenDialog, LevelRoots::Mode::AllActive);
+        return;
+    }
+
+    const int index = ui->targetRootCombo->currentIndex();
+    const int safeIndex = (index >= 0 && index < m_saveTargetRoots.size()) ? index : 0;
+    const LevelRoots::Root& root = m_saveTargetRoots[safeIndex];
+    m_model->ReloadTreeFromRoot(m_bOpenDialog, root);
+    m_selectedRoot = root.absolutePath;
+    m_selectedRootIsProject = root.isProject;
+
+    // Auto-expand the single root so the user immediately sees its
+    // contents (or its emptiness, for a fresh gem).
+    const QModelIndex rootIndex = m_filterModel->index(0, 0);
+    if (rootIndex.isValid())
+    {
+        ui->treeView->expand(rootIndex);
+    }
+}
+
+void CLevelFileDialog::OnTargetRootChanged(int /*index*/)
+{
+    ReloadTree();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -462,10 +559,15 @@ bool CLevelFileDialog::ValidateLevelPath(const QString& levelPath) const
         return false;
     }
 
-    // Make sure that no folder before the last in the name contains a level
+    // Make sure that no folder before the last in the name contains a level.
+    // Walk from the active root (project or gem) so the check matches the
+    // location the user is actually saving into.
     if (splittedPath.size() > 1)
     {
-        QString currentPath = (Path::GetEditingGameDataFolder() + "/" + kLevelsFolder).c_str();
+        QString currentPath = !m_selectedRoot.isEmpty()
+            ? m_selectedRoot
+            : QString::fromUtf8((Path::GetEditingGameDataFolder() + "/" + kLevelsFolder).c_str());
+
         for (size_t i = 0; i < splittedPath.size() - 1; ++i)
         {
             currentPath += "/" + splittedPath[static_cast<int>(i)];
@@ -486,6 +588,11 @@ void CLevelFileDialog::SaveLastUsedLevelPath()
 
     XmlNodeRef lastUsedLevelPathNode = XmlHelpers::CreateXmlNode("lastusedlevelpath");
     lastUsedLevelPathNode->setAttr("path", ui->nameLineEdit->text().toUtf8().data());
+    // Persist which root the relative "path" is anchored to, so the next
+    // session can re-open a level that lives under a gem rather than the
+    // project. Older preset files that omit this attribute are still
+    // interpreted as project-relative (legacy behaviour).
+    lastUsedLevelPathNode->setAttr("root", m_selectedRoot.toUtf8().data());
     lastUsedLevelPathNode->saveToFile(settingPath.toUtf8().data());
 }
 
@@ -502,13 +609,49 @@ void CLevelFileDialog::LoadLastUsedLevelPath()
     QString lastLoadedFileName;
     lastUsedLevelPathNode->getAttr("path", lastLoadedFileName);
 
+    QString lastUsedRoot;
+    lastUsedLevelPathNode->getAttr("root", lastUsedRoot);
+
     if (m_filterModel->rowCount() < 1)
     {
         // Defensive, doesn't happen
         return;
     }
 
-    QModelIndex currentIndex = m_filterModel->index(0, 0); // Start with "Levels/" node
+    // In Save As mode the tree is filtered to one root, so move the combo
+    // to the persisted root first; that triggers ReloadTree() and rebuilds
+    // the tree under that root before we walk it for the level entry.
+    if (!m_bOpenDialog && !lastUsedRoot.isEmpty() && !m_saveTargetRoots.isEmpty())
+    {
+        for (int i = 0; i < m_saveTargetRoots.size(); ++i)
+        {
+            if (m_saveTargetRoots[i].absolutePath.compare(lastUsedRoot, Qt::CaseInsensitive) == 0)
+            {
+                ui->targetRootCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+
+    // Locate the top-level node that matches the persisted root. Falls back
+    // to the first root (the project) for older preset files that did not
+    // record one.
+    QModelIndex currentIndex = m_filterModel->index(0, 0);
+    if (!lastUsedRoot.isEmpty())
+    {
+        for (int i = 0, n = m_filterModel->rowCount(); i < n; ++i)
+        {
+            const QModelIndex candidate = m_filterModel->index(i, 0);
+            if (candidate.data(LevelTreeModel::RootPathRole).toString().compare(lastUsedRoot, Qt::CaseInsensitive) == 0)
+            {
+                currentIndex = candidate;
+                m_selectedRoot = lastUsedRoot;
+                m_selectedRootIsProject = candidate.data(LevelTreeModel::IsProjectRootRole).toBool();
+                break;
+            }
+        }
+    }
+
     QStringList segments = Path::SplitIntoSegments(lastLoadedFileName);
     for (auto it = segments.cbegin(), end = segments.cend(); it != end; ++it)
     {

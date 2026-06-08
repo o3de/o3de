@@ -77,6 +77,10 @@ namespace AzToolsFramework
 
             AZStd::unordered_map<const AssetBrowserEntry*, AssetBrowserFavoriteItem*> m_favoriteEntriesCache;
 
+            // Paths that could not be resolved during LoadFavorites (cache not yet populated).
+            // These are preserved across saves so they are not lost between sessions.
+            AZStd::vector<AZStd::string> m_unresolvedFavoritePaths;
+
             QString GetProjectName();
             void AddFavoriteItem(AssetBrowserFavoriteItem* item);
         };

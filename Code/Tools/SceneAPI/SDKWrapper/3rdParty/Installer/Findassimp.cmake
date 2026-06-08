@@ -19,7 +19,7 @@ endif()
 
 # It is still worth notifying people that they are accepting a 3rd Party Library here, and what license it uses, and
 # where to get it.
-message(STATUS "SDKWrapper Tool uses Assimp v6.0.2 (Custom BSD-3-Clause) from https://github.com/assimp/assimp.git")
+message(STATUS "SDKWrapper Tool uses Assimp v6.0.4 (Custom BSD-3-Clause) from https://github.com/assimp/assimp.git")
 
 # By providing both an "assimp" and a "3rdParty::assimp target, we stop O3DE from doing anything automatically
 # itself, such as attempting to invoke some other install script or find script or complaining about a missing target.

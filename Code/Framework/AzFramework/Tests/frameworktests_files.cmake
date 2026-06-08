@@ -19,6 +19,7 @@ set(FILES
     CameraInputTests.cpp
     ClickDetectorTests.cpp
     CursorStateTests.cpp
+    InputDeviceMouseReflectionTests.cpp
     EntityContext.cpp
     FileIO.cpp
     FileTagTests.cpp

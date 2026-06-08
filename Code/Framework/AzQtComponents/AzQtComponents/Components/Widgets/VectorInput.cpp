@@ -296,6 +296,8 @@ VectorInput::VectorInput(QWidget* parent, int elementCount, int elementsPerRow, 
                         OnValueChangedInElement(value, elementIndex);
                     });
                 connect(m_elements[elementIndex], &VectorElement::editingFinished, this, &VectorInput::editingFinished);
+                connect(m_elements[elementIndex]->GetSpinBox(), &AzQtComponents::DoubleSpinBox::valueChangeBegan, this, &VectorInput::valueChangeBegan);
+                connect(m_elements[elementIndex]->GetSpinBox(), &AzQtComponents::DoubleSpinBox::valueChangeEnded, this, &VectorInput::valueChangeEnded);
 
                 numberOfElementsRemaining--;
             }

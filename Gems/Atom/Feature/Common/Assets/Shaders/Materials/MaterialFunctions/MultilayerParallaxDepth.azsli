@@ -25,8 +25,8 @@
      inout float depthCS,
      out bool isClipped)
 {
-    real3x3 uvMatrix = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real();
-    real3x3 uvMatrixInverse = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrixInverse) : CreateIdentity3x3_real();
+    real3x3 uvMatrix = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrixRow0.xyz, params.m_uvMatrixRow1.xyz, params.m_uvMatrixRow2.xyz) : CreateIdentity3x3_real();
+    real3x3 uvMatrixInverse = params.m_parallaxUvIndex == 0 ? real3x3(params.m_uvMatrixInverseRow0.xyz, params.m_uvMatrixInverseRow1.xyz, params.m_uvMatrixInverseRow2.xyz) : CreateIdentity3x3_real();
 
     real parallaxOverallOffset = real(params.m_displacementMax);
     real parallaxOverallFactor = real(params.m_displacementMax) - real(params.m_displacementMin);

@@ -27,7 +27,6 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
 #include <QModelIndex>
-#include <QSettings>
 
 namespace AzToolsFramework
 {

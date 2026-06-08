@@ -35,7 +35,8 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     # Define all the debian package dependencies needed to build and run
     set(package_dependencies
         # Required Tools
-        "cmake (>=3.24)"                        # Cmake required (minimum version 3.24.0)
+        # CMake is bundled with the package and extracted during post-install
+        # into cmake/runtime/. Users may override via LY_CMAKE_PATH or PATH.
         "clang (>=12.0)"                        # Clang required (minimum version 12.0)
         ninja-build
         # Build Libraries
@@ -56,6 +57,10 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         libunwind-dev
         libzstd-dev
         pkg-config
+        # Project Manager helper tools (editor bundled-Python GUI)
+        libtk8.6                                # Bundled Python tkinter: Tk 8.6 runtime (Export Settings, Android Project Generator)
+        libtcl8.6                               # Bundled Python tkinter: Tcl 8.6 runtime
+        cmake-qt-gui                            # 'Open CMake GUI' execs cmake-gui via PATH (see ProjectUtils_linux.cpp)
     )
     list(JOIN package_dependencies "," CPACK_DEBIAN_PACKAGE_DEPENDS)
 

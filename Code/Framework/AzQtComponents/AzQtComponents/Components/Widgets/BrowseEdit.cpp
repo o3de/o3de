@@ -7,6 +7,7 @@
  */
 
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
+#include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
 #include <AzQtComponents/Components/Widgets/PushButton.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
@@ -58,6 +59,7 @@ namespace AzQtComponents
         setFocusProxy(m_data->m_lineEdit);
         m_data->m_lineEdit->setObjectName("line-edit");
         m_data->m_lineEdit->installEventFilter(this);
+        new LineEditRevertHandler(m_data->m_lineEdit, this);
         LineEdit::setEnableClearButtonWhenReadOnly(m_data->m_lineEdit, true);
         boxLayout->addWidget(m_data->m_lineEdit);
 
@@ -207,10 +209,15 @@ namespace AzQtComponents
                         return true;
                     }
                     break;
+
                 case QEvent::FocusIn:
+                    update();
+                    break;
+
                 case QEvent::FocusOut:
                     update();
                     break;
+
                 default:
                     break;
             }
@@ -367,6 +374,6 @@ namespace AzQtComponents
         return true;
     }
 
-} // namespace AzQtComponents
+} // namespace AzQtComponents 
 
 #include "Components/Widgets/moc_BrowseEdit.cpp"

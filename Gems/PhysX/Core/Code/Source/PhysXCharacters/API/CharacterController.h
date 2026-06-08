@@ -40,7 +40,7 @@ namespace PhysX
 
         SlopeBehaviour m_slopeBehaviour = SlopeBehaviour::PreventClimbing; ///< Behaviour on surfaces above maximum slope.
         float m_contactOffset = 0.1f; ///< Extra distance outside the controller used to give smoother contact resolution.
-        float m_scaleCoefficient = 0.8f; ///< Scalar coefficient used to scale the controller, usually slightly smaller than 1.
+        float m_scaleCoefficient = 0.8f; ///< Scalar coefficient used to scale the internal kinematic controller, recommended to be less than 1 to prevent erratic interactions.
     };
 
     /// Manages callbacks for character controller collision filtering, collision notifications, and handling riding on objects.

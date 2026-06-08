@@ -265,8 +265,7 @@ void CCryDocManager::OnFileNew()
     m_pDefTemplate->OpenDocumentFile(nullptr);
     // if returns NULL, the user has already been alerted
 }
-bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT nIDSTitle,
-    [[maybe_unused]] DWORD lFlags, bool bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
+bool CCryDocManager::DoPromptFileName(QString& fileName, bool bOpenFileDialog)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
     levelFileDialog.show();
@@ -2522,7 +2521,7 @@ void CCryEditApp::OnUpdatePlayGame(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */)
+CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */, const QString& levelsRootAbsolutePath /* ={} */)
 {
     // If we are creating a new level and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
@@ -2551,7 +2550,18 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& template
     }
 
     QString cryFileName = levelName.mid(levelName.lastIndexOf('/') + 1, levelName.length() - levelName.lastIndexOf('/') + 1);
-    QString levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
+    // Compose the absolute level folder. When the caller specifies a root
+    // (e.g. a gem root), use it directly; otherwise fall back to the
+    // project's "Levels" folder for backwards compatibility.
+    QString levelPath;
+    if (!levelsRootAbsolutePath.isEmpty())
+    {
+        levelPath = QStringLiteral("%1/%2/").arg(levelsRootAbsolutePath, levelName);
+    }
+    else
+    {
+        levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
+    }
     fullyQualifiedLevelName = levelPath + cryFileName + EditorUtils::LevelFile::GetDefaultFileExtension();
 
     //_MAX_PATH includes null terminator, so we actually want to cap at _MAX_PATH-1
@@ -2719,7 +2729,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     GetIEditor()->StartLevelErrorReportRecording();
 
     QString fullyQualifiedLevelName;
-    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName);
+    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName, dlg.GetLevelsFolder());
 
     if (result == ECLR_ALREADY_EXISTS)
     {
@@ -2732,9 +2742,9 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
         QByteArray windowsErrorMessage(ERROR_LEN, 0);
         QByteArray cwd(ERROR_LEN, 0);
-        DWORD dw = GetLastError();
 
 #ifdef WIN32
+        DWORD dw = GetLastError();
         wchar_t windowsErrorMessageW[ERROR_LEN];
         windowsErrorMessageW[0] = L'\0';
         FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -2746,7 +2756,8 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         _getcwd(cwd.data(), cwd.length());
         AZStd::to_string(windowsErrorMessage.data(), ERROR_LEN, windowsErrorMessageW);
 #else
-        windowsErrorMessage = strerror(dw);
+        int errorNum = errno;
+        windowsErrorMessage = strerror(errorNum);
         cwd = QDir::currentPath().toUtf8();
 #endif
 
@@ -3495,7 +3506,21 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             registry, Editor::GetBuildTargetName());
 
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
+        AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+        console->PerformCommand("sv_isDedicated false");
+#ifdef AZ_PLATFORM_LINUX
+        //Ensure we don't use Wayland implementations when Qt is using Xcb.
+        auto platformName = QGuiApplication::platformName();
+        if (platformName == "wayland")
+        {
+            //If a user already disabled it, we should re-enable it.
+            console->PerformCommand("wl_enable 1");
+        }
+        else
+        {
+            console->PerformCommand("wl_enable 0");
+        }
+#endif
 
         if (!AZToolsApp.Start())
         {

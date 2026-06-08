@@ -227,6 +227,7 @@ namespace AzToolsFramework
 
         // QScrollArea overrides
         virtual QSize sizeHint() const override;
+        bool focusNextPrevChild(bool next) override;
         // ~QScrollArea overrides
 
         // IPropertyEditor overrides

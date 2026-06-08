@@ -62,6 +62,7 @@ jobs:
   # - msvc_toolset_version: MSVC toolset version to install (Windows only)
   # - msvc_platform_toolset: MSVC platform toolset name, e.g. v143 (Windows only)
   # - clang_version: Clang major version to install (Linux only)
+  # - gcc_version: gcc major version to install (Linux only)
   # - ndk_version: Android NDK version to install (Android only)
   # - cmake_version: CMake version constraint to use (all platforms)
   # - gradle_version: Gradle version to use (Android only)
@@ -91,7 +92,6 @@ jobs:
       image: ubuntu-22.04
       platform: Android
       type: asset_profile
-      clang_version: "14"
       ndk_version: "25.1.8937393"
       gradle_version: "8.12"
       cmake_version: *cmake_version
@@ -149,7 +149,8 @@ jobs:
       platform: Linux
       type: profile
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
-      clang_version: "14"
+      clang_version: "18"
+      gcc_version: "13"
       cmake_version: *cmake_version
 
   Linux-Asset:
@@ -162,7 +163,8 @@ jobs:
       image: ubuntu-22.04
       platform: Linux
       type: asset_profile
-      clang_version: "14"
+      clang_version: "18"
+      gcc_version: "13"
       cmake_version: *cmake_version
 
   Linux-Test:
@@ -176,7 +178,8 @@ jobs:
       platform: Linux
       type: test_profile
       desktop: true
-      clang_version: "14"
+      clang_version: "18"
+      gcc_version: "13"
       cmake_version: *cmake_version
 
 #### Mac Build ####

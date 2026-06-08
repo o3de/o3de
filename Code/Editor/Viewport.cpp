@@ -576,7 +576,7 @@ void QtViewport::OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect)
     float w = box.GetXExtent();
     float h = box.GetYExtent();
     char szNewStatusText[512];
-    sprintf_s(szNewStatusText, "X:%g Y:%g Z:%g  W:%g H:%g", org.x, org.y, org.z, w, h);
+    azsnprintf(szNewStatusText, AZ_ARRAY_SIZE(szNewStatusText), "X:%g Y:%g Z:%g  W:%g H:%g", org.x, org.y, org.z, w, h);
     GetIEditor()->SetStatusText(szNewStatusText);
 }
 

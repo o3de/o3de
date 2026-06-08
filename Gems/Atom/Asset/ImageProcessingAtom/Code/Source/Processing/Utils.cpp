@@ -257,12 +257,13 @@ namespace ImageProcessingAtom
 
             u32 width = imageDescriptor.m_size.m_width;
             u32 height = imageDescriptor.m_size.m_height;
+            u32 depth = imageDescriptor.m_size.m_depth;
             u32 mipLevels = imageDescriptor.m_mipLevels;
             u32 arraySize = imageDescriptor.m_arraySize;
 
             height *= arraySize;
 
-            IImageObjectPtr outputImage = IImageObjectPtr(IImageObject::CreateImage(width, height, mipLevels, format));
+            IImageObjectPtr outputImage = IImageObjectPtr(IImageObject::CreateImage(width, height, depth, mipLevels, format));
 
             if (isSRGB)
             {
@@ -272,6 +273,11 @@ namespace ImageProcessingAtom
             if (imageDescriptor.m_isCubemap)
             {
                 outputImage->AddImageFlags(EIF_Cubemap);
+            }
+
+            if (imageDescriptor.m_dimension == AZ::RHI::ImageDimension::Image3D)
+            {
+                outputImage->AddImageFlags(EIF_Volumetexture);
             }
 
             // copy image data from asset to image object

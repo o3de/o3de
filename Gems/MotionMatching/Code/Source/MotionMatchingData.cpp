@@ -29,6 +29,8 @@
 #include <KdTree.h>
 #include <MotionMatchingData.h>
 
+#include <AzCore/Jobs/Algorithms.h>
+
 namespace EMotionFX::MotionMatching
 {
     AZ_CVAR_EXTERNED(bool, mm_multiThreadedInitialization);
@@ -109,25 +111,12 @@ namespace EMotionFX::MotionMatching
             }
             else // job system
             {
-                AZ::JobCompletion jobCompletion;
-
-                // Split-up the motion database into batches of frames and extract the feature values for each batch simultaneously.
-                for (size_t batchIndex = 0; batchIndex < numBatches; ++batchIndex)
-                {
-                    const size_t startFrame = batchIndex * s_numFramesPerBatch;
-                    const size_t endFrame = AZStd::min(startFrame + s_numFramesPerBatch, numFrames);
-
-                    // Create a job for every batch and extract the features simultaneously.
-                    AZ::JobContext* jobContext = nullptr;
-                    AZ::Job* job = AZ::CreateJobFunction([this, actorInstance, startFrame, endFrame]()
+                AZ::parallel_for((size_t)0, numBatches, [this, actorInstance, numFrames](size_t batchIndex) -> void
                         {
+                            const size_t startFrame = batchIndex * s_numFramesPerBatch;
+                            const size_t endFrame = AZStd::min(startFrame + s_numFramesPerBatch, numFrames);
                             ExtractFeatureValuesRange(actorInstance, m_frameDatabase, m_featureSchema, m_featureMatrix, startFrame, endFrame);
-                        }, /*isAutoDelete=*/true, jobContext);
-                    job->SetDependent(&jobCompletion);
-                    job->Start();
-                }
-
-                jobCompletion.StartAndWaitForCompletion();
+                        });
             }
         }
         else // Single-threaded

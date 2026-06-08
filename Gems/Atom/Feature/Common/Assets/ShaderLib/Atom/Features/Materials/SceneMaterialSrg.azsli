@@ -47,6 +47,10 @@ Texture2D GetMaterialTexture(const int readIndex)
     return Bindless::GetTexture2D(localReadIndex);
 }
 
+// CAUTION: MaterialParameters structs loaded here must NOT contain float3x3/float3x4/float4x4 matrix members.
+// There is a known Vulkan/row_major bug where matrix types inside ByteAddressBuffer structs are read with
+// incorrect memory layout on Vulkan. Store matrices as separate row_major float4 rows and reconstruct
+// the float3x3 in shader code manually. See UvPropertyGroup.json and ParticleMeshMaterialParameters.azsli for an example.
 const MaterialParameters GetMaterialParameters(const int materialTypeId, const int materialInstanceId)
 {
     // The ByteAddressBuffers referenced in the SceneMaterialSrg hold the MaterialParameters for all MaterialTypes
