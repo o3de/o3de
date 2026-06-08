@@ -27,23 +27,6 @@ try:
 except:
     tkinter_installed = False
 
-# Check if tix is installed or not
-tkinter_tix_installed = True
-try:
-    # `tix` won't be detected with a simple import, it won't raise an exception until
-    # tk attempts to create an object
-    import tkinter.tix as tkp
-
-    class CheckTix(tkp.Tk):
-
-        def __init__(self):
-            super().__init__()
-
-    CheckTix().destroy()
-
-except Exception as e:
-    tkinter_tix_installed = False
-
 from typing import List
 from enum import IntEnum
 
@@ -415,17 +398,14 @@ def _run_export_script(args: argparse, passthru_args: list) -> int:
         export_script = args.export_script
     
     if args.configure:
-        if tkinter_installed and tkinter_tix_installed:
+        if tkinter_installed:
             export_config = get_export_project_config(args.project_path)
             project_info = manifest.get_project_json_data(project_path=args.project_path)
             is_o3de_sdk = project_info.get('engine') == 'o3de-sdk'
             export_project_ui.MainWindow(export_config, is_o3de_sdk).configure_settings()
             return 0
         else:
-            if not tkinter_installed:
-                print("Unable to open the configure window. Required package 'tk' is not installed on this system.")
-            else:
-                print("Unable to open the configure window. Required package 'tix' is not installed on this system.")
+            print("Unable to open the configure window. Required package 'tk' is not installed on this system.")
             return 1
     
     return _export_script(export_script, args.project_path, passthru_args)
