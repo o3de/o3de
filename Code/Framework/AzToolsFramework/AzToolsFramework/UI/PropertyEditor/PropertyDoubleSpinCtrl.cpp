@@ -15,6 +15,7 @@ AZ_POP_DISABLE_WARNING
 #include <QTimer>
 #include <cfloat>
 #include <AzCore/Math/MathUtils.h>
+
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
@@ -46,6 +47,8 @@ namespace AzToolsFramework
 
         connect(m_pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChildSpinboxValueChange(double)));
         connect(m_pSpinBox, &QDoubleSpinBox::editingFinished, this, &PropertyDoubleSpinCtrl::editingFinished);
+        connect(m_pSpinBox, &AzQtComponents::DoubleSpinBox::valueChangeBegan, this, &PropertyDoubleSpinCtrl::valueChangeBegan);
+        connect(m_pSpinBox, &AzQtComponents::DoubleSpinBox::valueChangeEnded, this, &PropertyDoubleSpinCtrl::valueChangeEnded);
 
         m_defaultDecimals = m_pSpinBox->decimals();
         m_defaultDisplayDecimals = m_pSpinBox->displayDecimals();

@@ -7,10 +7,13 @@
  */
 #include "DocumentPropertyEditor.h"
 
+#include <QAbstractSpinBox>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDialog>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QSignalBlocker>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -1403,6 +1406,60 @@ namespace AzToolsFramework
             hint.setHeight(m_layout->sizeHint().height() + margins.top() + margins.bottom());
         }
         return hint;
+    }
+
+    // =========================================================================
+    // Tab Navigation for DPE
+    // =========================================================================
+    // Skips non-input widgets (QToolButton indicators, expanders, etc.) that
+    // clutter the tab chain. Only stops on actual input widgets.
+
+    static bool IsInputWidget(QWidget* w)
+    {
+        if (!w)
+        {
+            return false;
+        }
+        // Input widgets that should receive tab focus
+        if (qobject_cast<QAbstractSpinBox*>(w))  return true;  // SpinBox, DoubleSpinBox
+        if (qobject_cast<QComboBox*>(w))          return true;
+        if (qobject_cast<QCheckBox*>(w))          return true;
+        if (qobject_cast<QLineEdit*>(w))          return true;  // EntityIdQLineEdit, BrowseEdit line
+        if (qobject_cast<QPushButton*>(w))        return true;  // Browse buttons, action buttons
+        return false;
+    }
+
+    bool DocumentPropertyEditor::focusNextPrevChild(bool next)
+    {
+        QWidget* before = focusWidget();
+
+        // Try up to 50 hops to find the next input widget, skipping
+        // QToolButtons, expanders, and other non-input widgets.
+        for (int hops = 0; hops < 50; ++hops)
+        {
+            bool result = QScrollArea::focusNextPrevChild(next);
+            if (!result)
+            {
+                return false;
+            }
+
+            QWidget* after = focusWidget();
+            if (!after || after == before)
+            {
+                return result;
+            }
+
+            if (IsInputWidget(after))
+            {
+                return true;
+            }
+
+            // Not an input widget -- continue hopping
+            before = after;
+        }
+
+        // Safety: give up after too many hops
+        return false;
     }
 
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)

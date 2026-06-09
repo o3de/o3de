@@ -17,7 +17,9 @@ struct MaterialParameters {
     float m_depthBias;
     float m_outlineSize;
     float m_padding0;
-    float3x3 m_uvMatrix;
+    float4 m_uvMatrixRow0;
+    float4 m_uvMatrixRow1;
+    float4 m_uvMatrixRow2;
 };
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
@@ -27,6 +29,8 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 
 const MaterialParameters GetMaterialParameters()
 {
-    return MaterialSrg::m_params;
+    MaterialParameters params = MaterialSrg::m_params;
+    // m_uvMatrixRow0/1/2 are read directly from the SRG (no float3x3 copy needed).
+    return params;
 }
 

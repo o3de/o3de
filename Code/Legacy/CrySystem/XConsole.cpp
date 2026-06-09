@@ -1761,7 +1761,7 @@ void CXConsole::Exit(const char* szExitComments, ...)
         // make result string
         va_list     arglist;
         va_start(arglist, szExitComments);
-        vsprintf_s(sResultMessageText, szExitComments, arglist);
+        azvsprintf(sResultMessageText, szExitComments, arglist);
         va_end(arglist);
     }
     else
@@ -2002,7 +2002,7 @@ void CXConsole::DisplayVarValue(ICVar* pVar)
             }
             else
             {
-                sprintf_s(szRealState, " RealState=%d", iRealState);
+                azsnprintf(szRealState, AZ_ARRAY_SIZE(szRealState)-1, " RealState=%d", iRealState);
             }
         }
     }
@@ -2021,8 +2021,7 @@ void CXConsole::DisplayVarValue(ICVar* pVar)
             sValue += " (";
             if (nonAlphaBits != 0)
             {
-                char nonAlphaChars[3] = { 0 };  // 1..63 + '\0'
-                azitoa(nonAlphaBits, nonAlphaChars, AZ_ARRAY_SIZE(nonAlphaChars), 10);
+                AZStd::string nonAlphaChars = AZStd::to_string(nonAlphaBits);
                 sValue += nonAlphaChars;
                 sValue += ", ";
             }

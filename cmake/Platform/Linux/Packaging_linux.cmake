@@ -57,6 +57,10 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         libunwind-dev
         libzstd-dev
         pkg-config
+        # Project Manager helper tools (editor bundled-Python GUI)
+        libtk8.6                                # Bundled Python tkinter: Tk 8.6 runtime (Export Settings, Android Project Generator)
+        libtcl8.6                               # Bundled Python tkinter: Tcl 8.6 runtime
+        cmake-qt-gui                            # 'Open CMake GUI' execs cmake-gui via PATH (see ProjectUtils_linux.cpp)
     )
     list(JOIN package_dependencies "," CPACK_DEBIAN_PACKAGE_DEPENDS)
 

@@ -25,7 +25,7 @@ namespace AZ
                     ;
 
                 serializeContext->Class<Transform2DFunctor, RPI::MaterialFunctor>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("transformOrder", &Transform2DFunctor::m_transformOrder)
                     ->Field("center", &Transform2DFunctor::m_center)
                     ->Field("scale", &Transform2DFunctor::m_scale)
@@ -34,8 +34,12 @@ namespace AZ
                     ->Field("translateX", &Transform2DFunctor::m_translateX)
                     ->Field("translateY", &Transform2DFunctor::m_translateY)
                     ->Field("rotateDegrees", &Transform2DFunctor::m_rotateDegrees)
-                    ->Field("transformMatrix", &Transform2DFunctor::m_transformMatrix)
-                    ->Field("transformMatrixInverse", &Transform2DFunctor::m_transformMatrixInverse)
+                    ->Field("transformMatrixRow0", &Transform2DFunctor::m_transformMatrixRow0)
+                    ->Field("transformMatrixRow1", &Transform2DFunctor::m_transformMatrixRow1)
+                    ->Field("transformMatrixRow2", &Transform2DFunctor::m_transformMatrixRow2)
+                    ->Field("transformMatrixInverseRow0", &Transform2DFunctor::m_transformMatrixInverseRow0)
+                    ->Field("transformMatrixInverseRow1", &Transform2DFunctor::m_transformMatrixInverseRow1)
+                    ->Field("transformMatrixInverseRow2", &Transform2DFunctor::m_transformMatrixInverseRow2)
                     ;
             }
         }
@@ -55,36 +59,49 @@ namespace AZ
 
             Matrix3x3 transform = CreateUvTransformMatrix(desc, m_transformOrder);
 
-            context.GetMaterialShaderParameter()->SetParameter(m_transformMatrix, transform);
-            if (m_transformMatrixInverse.GetIndex().IsValid())
+            // Store each matrix as 3 separate row_major float4s (w=0) to avoid the Vulkan structured buffer bug with float3x3.
+            auto SetMatrixRows = [&context](
+                MaterialShaderParameterNameIndex& row0,
+                MaterialShaderParameterNameIndex& row1,
+                MaterialShaderParameterNameIndex& row2,
+                const Matrix3x3& mat)
             {
-                context.GetMaterialShaderParameter()->SetParameter(m_transformMatrixInverse, transform.GetInverseFull());
+                context.GetMaterialShaderParameter()->SetParameter(row0, Vector4(mat.GetRow(0), 0.0f));
+                context.GetMaterialShaderParameter()->SetParameter(row1, Vector4(mat.GetRow(1), 0.0f));
+                context.GetMaterialShaderParameter()->SetParameter(row2, Vector4(mat.GetRow(2), 0.0f));
+            };
+
+            SetMatrixRows(m_transformMatrixRow0, m_transformMatrixRow1, m_transformMatrixRow2, transform);
+            if (m_transformMatrixInverseRow0.GetIndex().IsValid())
+            {
+                SetMatrixRows(m_transformMatrixInverseRow0, m_transformMatrixInverseRow1, m_transformMatrixInverseRow2, transform.GetInverseFull());
             }
         }
 
         bool Transform2DFunctor::UpdateShaderParameterConnections(const RPI::MaterialShaderParameterLayout* layout)
         {
             bool valid = true;
-            if (m_transformMatrix.ValidateOrFindIndex(layout) == false)
+            auto ValidateRow = [&](RPI::MaterialShaderParameterNameIndex& idx) -> bool
             {
-                AZ_Error(
-                    "Transform2DFunctorSourceData", false, "Could not find shader parameter '%s'", m_transformMatrix.GetName().GetCStr());
-                valid &= false;
-            }
-
-            // There are some cases where the matrix is required but the inverse is not, and the shader parameters only have the regular
-            // matrix.
-            if (!m_transformMatrixInverse.GetName().IsEmpty())
-            {
-                if (m_transformMatrixInverse.ValidateOrFindIndex(layout) == false)
+                if (idx.ValidateOrFindIndex(layout) == false)
                 {
-                    AZ_Error(
-                        "Transform2DFunctorSourceData",
-                        false,
-                        "Could not find shader parameter '%s'",
-                        m_transformMatrixInverse.GetName().GetCStr());
-                    valid &= false;
+                    AZ_Error("Transform2DFunctorSourceData", false, "Could not find shader parameter '%s'", idx.GetName().GetCStr());
+                    valid = false;
+                    return false;
                 }
+                return true;
+            };
+
+            ValidateRow(m_transformMatrixRow0);
+            ValidateRow(m_transformMatrixRow1);
+            ValidateRow(m_transformMatrixRow2);
+
+            // There are some cases where the matrix is required but the inverse is not.
+            if (!m_transformMatrixInverseRow0.GetName().IsEmpty())
+            {
+                ValidateRow(m_transformMatrixInverseRow0);
+                ValidateRow(m_transformMatrixInverseRow1);
+                ValidateRow(m_transformMatrixInverseRow2);
             }
             return valid;
         }

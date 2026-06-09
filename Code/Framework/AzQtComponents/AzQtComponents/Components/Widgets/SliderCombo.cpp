@@ -41,7 +41,7 @@ static void InitialiseSliderCombo(QWidget* sliderCombo, QHBoxLayout* layout, QAb
     spinbox->setKeyboardTracking(false);
 
     spinbox->setFocusPolicy(Qt::StrongFocus);
-    slider->setFocusPolicy(Qt::StrongFocus);
+    slider->setFocusPolicy(Qt::NoFocus);
     slider->setFocusProxy(spinbox);
     sliderCombo->setFocusPolicy(Qt::StrongFocus);
     sliderCombo->setFocusProxy(spinbox);

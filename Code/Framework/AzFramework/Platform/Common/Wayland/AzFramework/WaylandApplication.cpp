@@ -52,16 +52,29 @@ namespace AzFramework
 {
     class WaylandConnectionManagerImpl
         : public WaylandConnectionManagerBus::Handler
+        , public WaylandDisplayProvider
     {
     public:
         WaylandConnectionManagerImpl()
-            : m_waylandDisplay(wl_display_connect(nullptr))
         {
-            AZ_Error("Application", m_waylandDisplay != nullptr, "Failed to connect to Wayland Display.");
-            m_fd = wl_display_get_fd(m_waylandDisplay.get());
+            if (WaylandDisplayProviderInterface::Get() == nullptr)
+            {
+                WaylandDisplayProviderInterface::Register(this);
+                m_waylandDisplay = wl_display_connect(nullptr);
+                AZ_Error("Application", m_waylandDisplay != nullptr, "Failed to connect to Wayland Display.");
+                m_fd = wl_display_get_fd(m_waylandDisplay);
+                m_queue = nullptr;
+            }
+            else
+            {
+                m_waylandDisplay = WaylandDisplayProviderInterface::Get()->GetWaylandDisplay();
+                m_fd = WaylandDisplayProviderInterface::Get()->GetDisplayFD();
+                m_queue = wl_display_create_queue_with_name(m_waylandDisplay, "o3de-queue");
+            }
 
-            m_registry = wl_display_get_registry(m_waylandDisplay.get());
+            m_registry = wl_display_get_registry(m_waylandDisplay);
             AZ_Error("Application", m_registry != nullptr, "Failed to get Wayland Registry.");
+            wl_proxy_set_queue(reinterpret_cast<wl_proxy*>(m_registry), m_queue);
 
             m_xkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
             AZ_Error("Application", m_xkbContext != nullptr, "Failed to get XKB context.");
@@ -76,21 +89,42 @@ namespace AzFramework
             WaylandConnectionManagerBus::Handler::BusDisconnect();
             wl_registry_destroy(m_registry);
             wl_compositor_destroy(m_compositor);
+
+            if (m_queue != nullptr)
+            {
+                wl_event_queue_destroy(m_queue);
+            }
+
+            if (WaylandConnectionManagerInterface::Get() == this)
+            {
+                //We created the display
+                wl_display_disconnect(m_waylandDisplay);
+                m_waylandDisplay = nullptr;
+                m_fd = -1;
+                WaylandDisplayProviderInterface::Unregister(this);
+            }
+
         }
 
         void DoRoundtrip() const override
         {
-            wl_display_roundtrip(m_waylandDisplay.get());
+            if (m_queue)
+            {
+                wl_display_roundtrip_queue(m_waylandDisplay, m_queue);
+                return;
+            }
+
+            wl_display_roundtrip(m_waylandDisplay);
         }
 
         void CheckErrors() const override
         {
-            int errorCode = wl_display_get_error(m_waylandDisplay.get());
+            int errorCode = wl_display_get_error(m_waylandDisplay);
             if (errorCode == EPROTO)
             {
                 const wl_interface* anInterface;
                 uint32_t interfaceId;
-                auto code = wl_display_get_protocol_error(m_waylandDisplay.get(), &anInterface, &interfaceId);
+                auto code = wl_display_get_protocol_error(m_waylandDisplay, &anInterface, &interfaceId);
                 if (anInterface != nullptr)
                 {
                     WaylandInterfaceNotificationsBus::Event(
@@ -116,7 +150,12 @@ namespace AzFramework
 
         wl_display* GetWaylandDisplay() const override
         {
-            return m_waylandDisplay.get();
+            return m_waylandDisplay;
+        }
+
+        wl_event_queue* GetWaylandEventQueue() const override
+        {
+            return m_queue;
         }
 
         wl_registry* GetWaylandRegistry() const override
@@ -169,7 +208,8 @@ namespace AzFramework
 
     private:
         int m_fd = -1;
-        WaylandUniquePtr<wl_display, wl_display_disconnect> m_waylandDisplay = nullptr;
+        wl_display* m_waylandDisplay = nullptr;
+        wl_event_queue* m_queue = nullptr;
         wl_registry* m_registry = nullptr;
         wl_compositor* m_compositor = nullptr;
         xkb_context* m_xkbContext = nullptr;
@@ -238,7 +278,7 @@ namespace AzFramework
 
     bool WaylandApplication::HasEventsWaiting() const
     {
-        int fd = m_waylandConnectionManager->GetDisplayFD();
+        int fd = WaylandDisplayProviderInterface::Get()->GetDisplayFD();
         struct pollfd pfd = {fd, POLLIN};
 
         return poll(&pfd, 1, 0) > 0;
@@ -246,9 +286,52 @@ namespace AzFramework
 
     void WaylandApplication::PumpSystemEventLoopOnce()
     {
-        if (wl_display* display = m_waylandConnectionManager->GetWaylandDisplay())
+        auto display = WaylandDisplayProviderInterface::Get()->GetWaylandDisplay();
+        auto queue = WaylandConnectionManagerInterface::Get()->GetWaylandEventQueue();
+
+        if (queue)
         {
-            if (wl_display_dispatch_pending(display) == 0)
+            wl_display_dispatch_queue_pending(display, queue);
+            m_waylandConnectionManager->CheckErrors();
+            return;
+        }
+
+        if (wl_display_dispatch_pending(display) == 0)
+        {
+            // no pending events, read new events
+            wl_display_flush(display);
+            wl_display_prepare_read(display);
+
+            if (HasEventsWaiting())
+            {
+                wl_display_read_events(display);
+                wl_display_dispatch_pending(display);
+            }
+            else
+            {
+                wl_display_cancel_read(display);
+            }
+        }
+
+        m_waylandConnectionManager->CheckErrors();
+    }
+
+    void WaylandApplication::PumpSystemEventLoopUntilEmpty()
+    {
+        auto display = WaylandDisplayProviderInterface::Get()->GetWaylandDisplay();
+        auto queue = WaylandConnectionManagerInterface::Get()->GetWaylandEventQueue();
+
+        if (queue)
+        {
+            while (wl_display_dispatch_queue_pending(display, queue) > 0) {}
+            m_waylandConnectionManager->CheckErrors();
+            return;
+        }
+
+        while (true)
+        {
+            int num_dispatched_events = wl_display_dispatch_pending(display);
+            if (num_dispatched_events == 0)
             {
                 // no pending events, read new events
                 wl_display_flush(display);
@@ -262,46 +345,18 @@ namespace AzFramework
                 else
                 {
                     wl_display_cancel_read(display);
+                    break; // no events are pending
                 }
             }
-        }
-        m_waylandConnectionManager->CheckErrors();
-    }
-
-    void WaylandApplication::PumpSystemEventLoopUntilEmpty()
-    {
-        if (wl_display* display = m_waylandConnectionManager->GetWaylandDisplay())
-        {
-            while (true)
+            else if (num_dispatched_events == -1)
             {
-                int num_dispatched_events = wl_display_dispatch_pending(display);
-                if (num_dispatched_events == 0)
-                {
-                    // no pending events, read new events
-                    wl_display_flush(display);
-                    wl_display_prepare_read(display);
-
-                    if (HasEventsWaiting())
-                    {
-                        wl_display_read_events(display);
-                        wl_display_dispatch_pending(display);
-                    }
-                    else
-                    {
-                        wl_display_cancel_read(display);
-                        break; // no events are pending
-                    }
-                }
-                else if (num_dispatched_events == -1)
-                {
-                    // error
-                    m_waylandConnectionManager->CheckErrors();
-                    return;
-                }
-                else
-                {
-                    break;
-                }
+                // error
+                m_waylandConnectionManager->CheckErrors();
+                return;
+            }
+            else
+            {
+                break;
             }
         }
         m_waylandConnectionManager->CheckErrors();

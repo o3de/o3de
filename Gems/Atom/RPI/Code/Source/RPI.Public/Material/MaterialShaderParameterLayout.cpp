@@ -53,6 +53,9 @@ namespace AZ::RPI
         template<> struct StructuredBufferTypeSize<bool> { static const size_t value = sizeof(int32_t); };
         template<> struct GpuTypeName<bool> { static constexpr const char* value = "bool"; };
         
+        // CAUTION: float3x3 (and other matrices) have a known Vulkan/row_major bug when used inside structured buffers
+        // (ByteAddressBuffer / MaterialParameters struct). Avoid adding new float3x3 or float3x4 shader parameters until
+        // this is resolved. Prefer storing matrices as 3-4 explicit row_major float4 rows and performing mul() manually.
         template<> struct StructuredBufferTypeSize<AZ::Matrix3x3> { static const size_t value = sizeof(float) * AZ::Matrix3x3::RowCount * AZ::Matrix3x3::ColCount; };
         template<> struct GpuTypeName<AZ::Matrix3x3> { static constexpr const char* value = "float3x3"; };
         
@@ -132,12 +135,11 @@ namespace AZ::RPI
     {
         AZStd::string typeName{ GpuTypeName<T>::value };
         // Hack: AZSL complains about the layout of variables following a float3x3. So add a float4 as padding
-        if (!m_descriptors.empty() && m_descriptors.back().m_typeName == "float3x3" && typeName != "float3x3" &&
-            !name.starts_with("m_pad_matrix"))
-        {
-            AddMaterialParameter<Vector4>(AZStd::string::format("m_pad_matrix_%d", m_matrixPaddingIndex++), true);
-        }
-
+    if (!m_descriptors.empty() && m_descriptors.back().m_typeName == "float3x3" && typeName != "float3x3" &&
+        !name.starts_with("m_pad_matrix"))
+    {
+        AddMaterialParameter<Vector4>(AZStd::string::format("m_pad_matrix_%d", m_matrixPaddingIndex++), true);
+    }
         MaterialShaderParameterLayout::Index parameterIndex{ GetParameterIndex(name) };
         if (!parameterIndex.IsValid())
         {

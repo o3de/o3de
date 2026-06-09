@@ -20,6 +20,7 @@
 #include <QPainter>
 #include <QStyleOptionFrame>
 #include <QStylePainter>
+#include <QTimer>
 #include <QWindow>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 6, 1) && defined(Q_OS_WIN32)
@@ -229,6 +230,88 @@ namespace AzQtComponents
         if (floating)
         {
             fixFramelessFlags();
+
+            // Detach the floating window from the parent/owner chain so the OS treats it
+            // as a fully independent application window (own Alt-Tab entry, own taskbar button).
+            //
+            // Qt floating dock widgets inherit their native owner from the QWidget parent.
+            // On Windows this means all floating panels share the main editor's HWND as owner,
+            // causing Alt-Tab to cycle them as a group. The only Qt-agnostic way to clear the
+            // native owner is to destroy and recreate the window via setParent(nullptr, flags).
+            //
+            // We also swap Qt::Tool for Qt::Window because tool windows (WS_EX_TOOLWINDOW on
+            // Windows) are hidden from Alt-Tab by the OS even when they have no owner.
+            //
+            // Deferred via singleShot(0) so the native window is fully realized first.
+            QWidget* topLevel = window();
+            QTimer::singleShot(0, topLevel, [topLevel]
+            {
+                if (!topLevel->isVisible())
+                {
+                    return;
+                }
+
+                Qt::WindowFlags flags = topLevel->windowFlags();
+                if (QWindow* win = topLevel->windowHandle())
+                {
+                    flags = win->flags();
+                }
+                flags &= ~Qt::Tool;
+                flags |= Qt::Window;
+
+                topLevel->setParent(nullptr, flags);
+                topLevel->show();
+
+                // setParent(nullptr) detaches us from the editor main window, which breaks
+                // FancyDocking::QueueUpdateFloatingWindowTitle - it locates the floating
+                // wrapper via m_mainWindow->findChild<>() against the editor main window,
+                // which now returns nullptr. Without that update the new native window has
+                // no title and the OS falls back to QApplication::applicationName()
+                // ("O3DE Editor"). Replicate FancyDocking's title logic here: dig into our
+                // inner DockMainWindow for the top-left visible dock widget and use its
+                // title. Use a second deferred timer so the inner dock widgets have time
+                // to be moved into the wrapper before we read them.
+                QTimer::singleShot(0, topLevel, [topLevel]
+                {
+                    QString title = topLevel->windowTitle();
+
+                    if (QDockWidget* wrapper = qobject_cast<QDockWidget*>(topLevel))
+                    {
+                        if (QMainWindow* innerMain = qobject_cast<QMainWindow*>(wrapper->widget()))
+                        {
+                            const QDockWidget* topLeftWidget = nullptr;
+                            int topLeftDist = 0;
+                            const auto children = innerMain->findChildren<QDockWidget*>(QString(), Qt::FindDirectChildrenOnly);
+                            for (QDockWidget* child : children)
+                            {
+                                if (!child->isVisible())
+                                {
+                                    continue;
+                                }
+                                int dist = child->pos().manhattanLength();
+                                if (!topLeftWidget || dist < topLeftDist)
+                                {
+                                    topLeftWidget = child;
+                                    topLeftDist = dist;
+                                }
+                            }
+                            if (topLeftWidget)
+                            {
+                                title = topLeftWidget->windowTitle();
+                            }
+                        }
+                    }
+
+                    if (!title.isEmpty())
+                    {
+                        topLevel->setWindowTitle(title);
+                        if (QWindow* win = topLevel->windowHandle())
+                        {
+                            win->setTitle(title);
+                        }
+                    }
+                });
+            });
 
             // Perform platform-specific handling for floating windows (e.g. minimizing into the taskbar)
             Platform::HandleFloatingWindow(window());

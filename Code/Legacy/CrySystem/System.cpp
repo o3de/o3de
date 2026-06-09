@@ -505,7 +505,7 @@ void CSystem::SleepIfNeeded()
     if (sleepMS > 0)
     {
         AZ_PROFILE_FUNCTION(CrySystem);
-        Sleep(sleepMS);
+        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(sleepMS));
     }
 
     const AZ::TimeMs lastTimeMs = AZ::GetRealElapsedTimeMs();
@@ -932,7 +932,7 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
     }
 
     AZStd::fixed_string<MAX_WARNING_LENGTH> fmt;
-    vsnprintf_s(fmt.data(), MAX_WARNING_LENGTH, MAX_WARNING_LENGTH - 1, format, args);
+    azvsnprintf(fmt.data(), MAX_WARNING_LENGTH - 1, format, args);
 
     if (file && *file)
     {

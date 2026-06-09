@@ -38,13 +38,17 @@ namespace AzToolsFramework
         void setVisible(bool visible) override;
         QSize sizeHint() const override;
 
+        void focusInEvent(QFocusEvent* event) override;
         void focusOutEvent(QFocusEvent* event) override;
+        bool event(QEvent* event) override;
+        void keyPressEvent(QKeyEvent* event) override;
     signals:
         void EditCompleted();
     private:
         static const int s_padding;
         static const int s_minHeight;
         static const int s_maxHeight;
+        QString m_textOnFocusIn;
         bool m_textChanged;
     };
 }

@@ -63,6 +63,7 @@ namespace AzToolsFramework
 
         m_indicatorButton = new QToolButton(this);
         m_indicatorButton->setObjectName("Indicator");
+        m_indicatorButton->setFocusPolicy(Qt::NoFocus);
         m_indicatorButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_indicatorButton->setFixedHeight(16);
         m_indicatorButton->setFixedWidth(16);
@@ -205,11 +206,13 @@ namespace AzToolsFramework
             // add those extra controls on the right hand side
             m_containerClearButton = new QToolButton(this);
             m_containerClearButton->setAutoRaise(true);
+            m_containerClearButton->setFocusPolicy(Qt::NoFocus);
             m_containerClearButton->setIcon(s_iconClear);
             m_containerClearButton->setToolTip(tr("Remove all elements"));
 
             m_containerAddButton = new QToolButton(this);
             m_containerAddButton->setAutoRaise(true);
+            m_containerAddButton->setFocusPolicy(Qt::NoFocus);
             m_containerAddButton->setIcon(s_iconAdd);
             m_containerAddButton->setToolTip(tr("Add new child element"));
 
@@ -397,6 +400,7 @@ namespace AzToolsFramework
                 static QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
                 m_elementRemoveButton = new QToolButton(this);
                 m_elementRemoveButton->setAutoRaise(true);
+                m_elementRemoveButton->setFocusPolicy(Qt::NoFocus);
                 m_elementRemoveButton->setIcon(s_iconRemove);
                 m_elementRemoveButton->setToolTip(tr("Remove this element"));
                 m_elementRemoveButton->setDisabled(m_readOnly);
@@ -1161,6 +1165,10 @@ namespace AzToolsFramework
             {
                 m_dropDownArrow = new QCheckBox(this);
                 AzQtComponents::CheckBox::applyExpanderStyle(m_dropDownArrow);
+                // Exclude the expand/collapse arrow from the tab chain. It is a visual
+                // toggle for collapsing groups, not a data input. Including it causes an
+                // extra tab step between every input row that has an expandable parent.
+                m_dropDownArrow->setFocusPolicy(Qt::NoFocus);
                 m_leftHandSideLayout->insertWidget(2, m_dropDownArrow);
                 connect(m_dropDownArrow, &QCheckBox::clicked, this, &PropertyRowWidget::OnClickedExpansionButton);
             }
@@ -1533,11 +1541,11 @@ namespace AzToolsFramework
 
     QWidget* PropertyRowWidget::GetFirstTabWidget()
     {
-        if ((m_dropDownArrow != nullptr) && (m_dropDownArrow->isVisible()))
-        {
-            return m_dropDownArrow;
-        }
-
+        // Prioritize the child widget's first tab target over the expand arrow.
+        // The expand arrow is a visual toggle (collapse/expand) and should not
+        // intercept the tab chain when an actual data input exists on this row.
+        // This prevents the "1+1" extra tab step between input lines and fixes
+        // group entries like [0] skipping their first input field.
         if ((m_childWidget) && (m_handler))
         {
             QWidget* target = m_handler->GetFirstInTabOrder_Internal(m_childWidget);
@@ -1545,6 +1553,11 @@ namespace AzToolsFramework
             {
                 return target;
             }
+        }
+
+        if ((m_dropDownArrow != nullptr) && (m_dropDownArrow->isVisible()))
+        {
+            return m_dropDownArrow;
         }
 
         return nullptr;
@@ -1571,7 +1584,7 @@ namespace AzToolsFramework
         else
         {
             // we have no child widget, its going to be either the drop down arrow or the container buttons.
-            if ((m_dropDownArrow) && (m_dropDownArrow->isVisible()))
+            if ((m_dropDownArrow) && (m_dropDownArrow->isVisible()) && (m_dropDownArrow->focusPolicy() != Qt::NoFocus))
             {
                 return m_dropDownArrow;
             }

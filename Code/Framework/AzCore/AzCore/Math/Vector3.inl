@@ -674,7 +674,9 @@ namespace AZ
 
     AZ_MATH_INLINE bool Vector3::IsFinite() const
     {
-        return IsFiniteFloat(m_x) && IsFiniteFloat(m_y) && IsFiniteFloat(m_z);
+        // Packed 3-lane finite check (Vec3 ops mask W): abs(v) <= FloatMax
+        // catches both NaN (unordered compare returns false) and +/-Inf (Inf > FloatMax)
+        return Simd::Vec3::CmpAllLtEq(Simd::Vec3::Abs(m_value), Simd::Vec3::Splat(Constants::FloatMax));
     }
 
     AZ_MATH_INLINE Simd::Vec3::FloatType Vector3::GetSimdValue() const

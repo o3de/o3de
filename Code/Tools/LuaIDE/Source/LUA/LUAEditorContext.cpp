@@ -387,16 +387,14 @@ namespace LUAEditor
                 }
                 else
                 {
-                    uint64_t lastKnownModTime = (AZ::u64)info.m_lastKnownModTime.dwHighDateTime << 32 | info.m_lastKnownModTime.dwLowDateTime;
+                    uint64_t lastKnownModTime = info.m_lastKnownModTime;
                     uint64_t modTime = m_fileIO->ModificationTime(info.m_assetId.c_str());
 
                     if (lastKnownModTime != modTime)
                     {
                         // ruh oh!  The file time of the asset changed - someone reverted, modified, etc.  What do we do?
                         // do we have unsaved changes?
-                        info.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-                        info.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
-
+                        info.m_lastKnownModTime = modTime;
                         {
                             AZ_TracePrintf(LUAEditorDebugName, "Document modtime has changed, queueing reload of '%s' '%s'\n", info.m_assetId.c_str(), info.m_assetName.c_str());
                         }
@@ -502,9 +500,7 @@ namespace LUAEditor
                     if (m_fileIO)
                     {
                         uint64_t modTime = m_fileIO->ModificationTime(info.m_assetId.c_str());
-
-                        info.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-                        info.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
+                        info.m_lastKnownModTime = modTime;
                     }
                 }
             }
@@ -1168,9 +1164,7 @@ namespace LUAEditor
             {
                 uint64_t modTime = m_fileIO->ModificationTime(assetId.c_str());
 
-                documentInfo.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-                documentInfo.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
-
+                documentInfo.m_lastKnownModTime = modTime;
                 documentInfo.m_bDataIsLoaded = true;
                 documentInfo.m_bIsModified = false;
             }
@@ -1514,8 +1508,7 @@ namespace LUAEditor
         info.m_bSourceControl_BusyGettingStats = true;
         info.m_bSourceControl_BusyGettingStats = false;
         info.m_bSourceControl_CanWrite = true;
-        info.m_lastKnownModTime.dwHighDateTime = static_cast<DWORD>(modTime >> 32);
-        info.m_lastKnownModTime.dwLowDateTime = static_cast<DWORD>(modTime);
+        info.m_lastKnownModTime = modTime;
         info.m_bIsModified = false;
 
         // load the script source

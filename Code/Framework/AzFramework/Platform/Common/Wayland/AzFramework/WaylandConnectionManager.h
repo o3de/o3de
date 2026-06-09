@@ -17,6 +17,20 @@
 struct xkb_context;
 namespace AzFramework
 {
+    //We should only have one display connection,
+    //either Qt or AzFramework::WaylandConnectionManagerImpl will try to be the provider for this.
+    class WaylandDisplayProvider
+    {
+    public:
+        AZ_RTTI(WaylandDisplayProvider, "{5C0FB229-0D37-42A2-B6DE-513BB421D6DA}");
+        virtual ~WaylandDisplayProvider() = default;
+
+        virtual int GetDisplayFD() const = 0;
+        virtual wl_display* GetWaylandDisplay() const = 0;
+    };
+
+    using WaylandDisplayProviderInterface = AZ::Interface<WaylandDisplayProvider>;
+
     class WaylandConnectionManager
     {
     public:
@@ -26,8 +40,9 @@ namespace AzFramework
         virtual void DoRoundtrip() const = 0;
         virtual void CheckErrors() const = 0;
 
-        virtual int GetDisplayFD() const = 0;
-        virtual wl_display* GetWaylandDisplay() const = 0;
+        //Returns null when it's unnecessary; we use event queues when someone else is providing the
+        // display connection for us (Qt) so we don't mess with their default event queue.
+        virtual wl_event_queue* GetWaylandEventQueue() const = 0;
         virtual wl_registry* GetWaylandRegistry() const = 0;
         virtual wl_compositor* GetWaylandCompositor() const = 0;
 

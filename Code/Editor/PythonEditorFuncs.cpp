@@ -218,14 +218,21 @@ namespace
     bool GetPythonScriptPath(const char* pFile, QString& path)
     {
         bool bRelativePath = true;
-        char drive[_MAX_DRIVE];
-        char fdir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char fext[_MAX_EXT];
-        drive[0] = '\0';
+        AZStd::string drive;
+        AZStd::string dir;
+        AZStd::string filename;
+        AZStd::string ext;
 
-        _splitpath_s(pFile, drive, fdir, fname, fext);
-        if (strlen(drive) != 0)
+        [[maybe_unused]] bool ret =
+            AZ::StringFunc::Path::Split(pFile,
+                                        &drive,    /* AZStd::string* pDstDriveOut */
+                                        &dir,      /* AZStd::string* pDstFolderPathOut */
+                                        &filename, /* AZStd::string* pDstNameOut */
+                                        &ext       /* AZStd::string* pDstExtensionOut */
+                                        );
+        AZ_Assert(ret, "Failed to split file path: %s", pFile);
+
+        if (drive.length() != 0)
         {
             bRelativePath = false;
         }

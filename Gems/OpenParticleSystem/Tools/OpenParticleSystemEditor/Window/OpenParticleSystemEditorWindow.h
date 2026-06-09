@@ -15,6 +15,7 @@
 #include <QMenuBar>
 #include <QMainWindow>
 #include <QLabel>
+#include <QPointer>
 
 #include <Editor/EditorParticleSystemComponentRequestBus.h>
 #include <Document/ParticleDocument.h>
@@ -60,7 +61,6 @@ namespace OpenParticleSystemEditor
         void closeEvent(QCloseEvent* event) override;
         bool RaiseOpendEmitter(const QString& path);
         void SetStatusMessage(const QString& message);
-        bool IsDockWidgetVisible(const AZStd::string& name) const;
         void SetDockWidgetVisible(const AZStd::string& name, bool visible);
         void SetEmitterDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area);
         bool AddDockWidget(const AZStd::string& name, QWidget* widget, AZ::u32 area);
@@ -83,7 +83,7 @@ namespace OpenParticleSystemEditor
         AZStd::unordered_map<AZStd::string, QAction*> m_dockActions;
 
         AzQtComponents::FancyDocking* m_fancyDockingManager = nullptr;
-        AzQtComponents::DockTabWidget* m_emitterTabWidget = nullptr;
+        QPointer<AzQtComponents::DockTabWidget> m_emitterTabWidget = nullptr;
         EffectorInspector* m_effectorInspector = nullptr;
         AZStd::string m_currentTabName;
     };

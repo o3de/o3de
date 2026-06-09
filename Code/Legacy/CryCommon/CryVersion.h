@@ -143,23 +143,23 @@ struct SFileVersion
     template <size_t size>
     void ToShortString(char(&buffer)[size]) const
     {
-        sprintf_s(buffer, size, "%d.%d.%d", v[2], v[1], v[0]);
+        azsnprintf(buffer, size, "%d.%d.%d", v[2], v[1], v[0]);
     }
 
     void ToShortString(char* s, size_t bufferSize) const
     {
-        sprintf_s(s, bufferSize, "%d.%d.%d", v[2], v[1], v[0]);
+        azsnprintf(s, bufferSize, "%d.%d.%d", v[2], v[1], v[0]);
     }
 
     template <size_t size>
     void ToString(char(&buffer)[size]) const
     {
-        sprintf_s(buffer, size, "%d.%d.%d.%d", v[3], v[2], v[1], v[0]);
+        azsnprintf(buffer, size, "%d.%d.%d.%d", v[3], v[2], v[1], v[0]);
     }
 
     void ToString(char* s, size_t bufferSize) const
     {
-        sprintf_s(s, bufferSize, "%d.%d.%d.%d", v[3], v[2], v[1], v[0]);
+        azsnprintf(s, bufferSize, "%d.%d.%d.%d", v[3], v[2], v[1], v[0]);
     }
 };
 

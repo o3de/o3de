@@ -79,8 +79,9 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/Undo/UndoSystem.h>
-#include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 #include <AzQtComponents/Components/Widgets/ComboBox.h>
+#include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
+#include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
@@ -92,6 +93,8 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: con
 #include <QGraphicsEffect>
 #include <QLabel>
 #include <QListView>
+#include <QFocusEvent>
+#include <QKeyEvent>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMessageBox>
@@ -652,6 +655,9 @@ namespace AzToolsFramework
             SIGNAL(editingFinished()),
             this,
             SLOT(OnEntityNameChanged()));
+
+        m_gui->m_entityNameEditor->installEventFilter(this);
+        new AzQtComponents::LineEditRevertHandler(m_gui->m_entityNameEditor);
 
         connect(m_gui->m_statusComboBox,
             SIGNAL(currentIndexChanged(int)),

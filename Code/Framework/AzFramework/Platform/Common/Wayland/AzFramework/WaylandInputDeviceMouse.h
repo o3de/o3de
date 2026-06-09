@@ -99,7 +99,7 @@ namespace AzFramework
 
         uint32_t m_currentSerial = UINT32_MAX;
         AzFramework::SystemCursorState m_cursorState = SystemCursorState::Unknown;
-        class WaylandNativeWindow* m_focusedWindow = nullptr;
+        NativeWindowHandle m_focusedWindow = nullptr;
 
         AZ::Vector2 m_position = AZ::Vector2::CreateZero();
 

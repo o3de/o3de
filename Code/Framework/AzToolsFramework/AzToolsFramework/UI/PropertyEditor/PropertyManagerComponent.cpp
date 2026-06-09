@@ -22,6 +22,7 @@ namespace AzToolsFramework
     AZTF_API void RegisterDoubleSpinBoxHandlers();
     AZTF_API void RegisterDoubleSliderHandlers();
     AZTF_API void RegisterColorPropertyHandlers();
+    AZTF_API void RegisterColorGradientPropertyHandlers();
     AZTF_API void RegisterStringLineEditHandler();
     AZTF_API void RegisterBoolComboBoxHandler();
     AZTF_API void RegisterCheckBoxHandlers();
@@ -38,6 +39,7 @@ namespace AzToolsFramework
     AZTF_API void ReflectPropertyEditor(AZ::ReflectContext* context);
     AZTF_API void RegisterExeSelectPropertyHandler();
     AZTF_API void RegisterLabelHandler();
+    AZTF_API void RegisterCurveEditHandler();
 
     namespace Components
     {
@@ -231,6 +233,7 @@ namespace AzToolsFramework
             RegisterDoubleSpinBoxHandlers();
             RegisterDoubleSliderHandlers();
             RegisterColorPropertyHandlers();
+            RegisterColorGradientPropertyHandlers();
             RegisterStringLineEditHandler();
             RegisterBoolComboBoxHandler();
             RegisterCheckBoxHandlers();
@@ -245,6 +248,7 @@ namespace AzToolsFramework
             RegisterMultiLineEditHandler();
             RegisterExeSelectPropertyHandler();
             RegisterLabelHandler();
+            RegisterCurveEditHandler();
 
             // GenericComboBoxHandlers
             RegisterGenericComboBoxHandler<AZ::Crc32>();

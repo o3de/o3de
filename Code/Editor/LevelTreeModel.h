@@ -14,6 +14,9 @@
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 #endif
+
+#include "LevelRoots.h"
+
 class QString;
 class QStandardItem;
 
@@ -38,12 +41,26 @@ public:
     enum Role
     {
         FullPathRole = Qt::UserRole + 1,
-        IsLevelFolderRole
+        IsLevelFolderRole,
+        // Absolute path of the top-level root this node belongs to. Set on
+        // every item so the dialog can resolve a selected item back to its
+        // owning root without walking up the tree.
+        RootPathRole,
+        // True for the project's own root; used to keep project-only
+        // affordances (e.g. validation messages) consistent.
+        IsProjectRootRole
     };
 
     explicit LevelTreeModel(QObject* parent = nullptr);
     ~LevelTreeModel();
-    void ReloadTree(bool recurseIfNoLevels);
+    // mode = Mode::ExistingOnly only surfaces gems that already have an
+    // Assets/Levels folder (browse / open). Mode::AllActive surfaces every
+    // active gem so the user can create the first level inside one (save).
+    void ReloadTree(bool recurseIfNoLevels, LevelRoots::Mode mode = LevelRoots::Mode::ExistingOnly);
+    // Reload the tree from a single explicit root. Used by the Save As
+    // dialog after the user picks a target from the combo box - the tree
+    // then shows just that root's contents instead of every available one.
+    void ReloadTreeFromRoot(bool recurseIfNoLevels, const LevelRoots::Root& root);
     void AddItem(const QString& name, const QModelIndex& parent); // Called when clicking "New folder"
     QVariant data(const QModelIndex& index, int role) const override;
 private:

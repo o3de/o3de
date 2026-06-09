@@ -55,6 +55,8 @@ namespace AzToolsFramework
     signals:
         void valueChanged(AZ::s64 newValue);
         void editingFinished();
+        void valueChangeBegan();
+        void valueChangeEnded();
 
     private:
         AzQtComponents::SpinBox* m_pSpinBox;

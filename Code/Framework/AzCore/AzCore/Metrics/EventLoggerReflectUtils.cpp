@@ -382,25 +382,25 @@ namespace AZ::Metrics
                 ->Attribute(AZ::Script::Attributes::Category, MetricsCategory)
                 ;
         }
-
-        static void ReflectRecordEvent(AZ::BehaviorContext& behaviorContext)
+        static bool RecordEvent(EventLoggerId eventLoggerId,
+                              EventPhase eventPhase,
+                              ScriptEventArgs eventPhaseArgs,
+                              IEventLoggerFactory* eventLoggerFactory = nullptr)
         {
-            auto RecordEvent = [](EventLoggerId eventLoggerId, EventPhase eventPhase, ScriptEventArgs eventPhaseArgs,
-                IEventLoggerFactory* eventLoggerFactory = nullptr)
-                -> bool
+            if (eventLoggerFactory == nullptr)
             {
-                if (eventLoggerFactory == nullptr)
-                {
-                    eventLoggerFactory = EventLoggerFactory::Get();
-                }
+                eventLoggerFactory = EventLoggerFactory::Get();
+            }
 
-                IEventLogger::ResultOutcome recordOutcome(AZStd::unexpect, IEventLogger::ResultOutcome::ErrorType::format(
+            IEventLogger::ResultOutcome recordOutcome(
+                AZStd::unexpect,
+                IEventLogger::ResultOutcome::ErrorType::format(
                     R"(Invalid eventPhase type %.*s specified)", AZ_STRING_ARG(ToString(eventPhase))));
 
-                switch (eventPhase)
-                {
-                case EventPhase::DurationBegin:
-                case EventPhase::DurationEnd:
+            switch (eventPhase)
+            {
+            case EventPhase::DurationBegin:
+            case EventPhase::DurationEnd:
                 {
                     DurationArgs durationArgs;
                     durationArgs.m_name = eventPhaseArgs.m_name;
@@ -419,7 +419,7 @@ namespace AZ::Metrics
                     recordOutcome = AZ::Metrics::Utility::RecordEvent(eventLoggerId, eventPhase, durationArgs, eventLoggerFactory);
                     break;
                 }
-                case EventPhase::Complete:
+            case EventPhase::Complete:
                 {
                     CompleteArgs completeArgs;
                     completeArgs.m_name = eventPhaseArgs.m_name;
@@ -439,7 +439,7 @@ namespace AZ::Metrics
                     recordOutcome = AZ::Metrics::Utility::RecordEvent(eventLoggerId, eventPhase, completeArgs, eventLoggerFactory);
                     break;
                 }
-                case EventPhase::Instant:
+            case EventPhase::Instant:
                 {
                     InstantArgs instantArgs;
                     instantArgs.m_name = eventPhaseArgs.m_name;
@@ -459,7 +459,7 @@ namespace AZ::Metrics
                     recordOutcome = AZ::Metrics::Utility::RecordEvent(eventLoggerId, eventPhase, instantArgs, eventLoggerFactory);
                     break;
                 }
-                case EventPhase::Counter:
+            case EventPhase::Counter:
                 {
                     CounterArgs counterArgs;
                     counterArgs.m_name = eventPhaseArgs.m_name;
@@ -478,9 +478,9 @@ namespace AZ::Metrics
                     recordOutcome = AZ::Metrics::Utility::RecordEvent(eventLoggerId, eventPhase, counterArgs, eventLoggerFactory);
                     break;
                 }
-                case EventPhase::AsyncStart:
-                case EventPhase::AsyncInstant:
-                case EventPhase::AsyncEnd:
+            case EventPhase::AsyncStart:
+            case EventPhase::AsyncInstant:
+            case EventPhase::AsyncEnd:
                 {
                     AsyncArgs asyncArgs;
                     asyncArgs.m_name = eventPhaseArgs.m_name;
@@ -499,10 +499,12 @@ namespace AZ::Metrics
                     recordOutcome = AZ::Metrics::Utility::RecordEvent(eventLoggerId, eventPhase, asyncArgs, eventLoggerFactory);
                     break;
                 }
-                }
-                return recordOutcome.IsSuccess();
-            };
+            }
+            return recordOutcome.IsSuccess();
+        };
 
+        static void ReflectRecordEvent(AZ::BehaviorContext& behaviorContext)
+        {
             // Add a default argument for the IEventLoggerFactory parameter in the BehaviorCont3ext
             AZStd::array<AZ::BehaviorParameterOverrides, AZStd::function_traits<decltype(RecordEvent)>::arity>
                 recordEventOverrides;

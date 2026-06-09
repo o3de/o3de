@@ -165,6 +165,8 @@ set(FILES
     Components/Widgets/LineEdit.h
     Components/Widgets/LineEdit.qss
     Components/Widgets/LineEditConfig.ini
+    Components/Widgets/LineEditRevertHandler.cpp
+    Components/Widgets/LineEditRevertHandler.h
     Components/Widgets/LogicalTabOrderingWidget.cpp
     Components/Widgets/LogicalTabOrderingWidget.h
     Components/Widgets/Menu.cpp

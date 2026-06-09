@@ -30,7 +30,7 @@ namespace LUAEditor
         AZStd::string m_assetName; // relative asset name
         AZStd::string m_displayName; // for friendly display only
 
-        FILETIME m_lastKnownModTime;
+        AZ::u64 m_lastKnownModTime;
         AzToolsFramework::SourceControlFileInfo m_sourceControlInfo;
 
         bool m_bSourceControl_Ready; // a result (or failure) came back from SCC.  Until this is true, you cannot write to it.

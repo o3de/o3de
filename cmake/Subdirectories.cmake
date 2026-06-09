@@ -44,6 +44,14 @@ function(add_o3de_object_gem_json_external_subdirectories object_type object_nam
         o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
         set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
 
+        # Some gems may have alternative names for legacy reasons. If one is set, make sure to track its path as well
+        o3de_read_optional_json_key(gem_alt_name "${gem_path}/gem.json" "gem_alt_name")
+        if(gem_alt_name)
+            MESSAGE(DEBUG "Gem Alt Name ${gem_alt_name} for ${gem_name}")
+            set_property(GLOBAL PROPERTY "@GEMROOT:${gem_alt_name}@" "${gem_path}")
+        endif()
+
+
         # Push the gem name onto the visited set
         list(APPEND ${visited_gem_name_set_ref} ${gem_name})
         foreach(gem_external_subdir IN LISTS gem_external_subdirs)
