@@ -3461,6 +3461,18 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
     Editor::EditorQtApplication::InstallQtLogHandler();
 
+#ifdef AZ_PLATFORM_LINUX
+    // Force the QPA platform so Qt does not load a platform plugin that AzFramework doesn't support.
+    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
+    {
+#if !PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        qputenv("QT_QPA_PLATFORM", "xcb");
+#elif !PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        qputenv("QT_QPA_PLATFORM", "wayland");
+#endif
+    }
+#endif
+
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     Editor::EditorQtApplication* app = Editor::EditorQtApplication::newInstance(argc, argv);
 

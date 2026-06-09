@@ -18,18 +18,73 @@
 #include <AzFramework/XcbEventHandler.h>
 #endif
 
+#ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+#include <AzFramework/WaylandInterface.h>
+#include <qpa/qplatformnativeinterface.h>
+#endif
+
 namespace Editor
 {
     EditorQtApplication* EditorQtApplication::newInstance(int& argc, char** argv)
     {
-#ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-        return new EditorQtApplicationXcb(argc, argv);
-#endif
-
-        return nullptr;
+        return new EditorQtApplicationLinux(argc, argv);
     }
 
-    xcb_connection_t* EditorQtApplicationXcb::GetXcbConnectionFromQt()
+    EditorQtApplicationLinux::EditorQtApplicationLinux(int& argc, char** argv)
+        : EditorQtApplication(argc, argv)
+    {
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        if (platformName() == "wayland")
+        {
+            m_wayland = true;
+            AzFramework::WaylandDisplayProviderInterface::Register(this);
+        }
+#endif
+    }
+
+    int EditorQtApplicationLinux::GetTickOrder()
+    {
+        return AZ::TICK_INPUT;
+    }
+
+    void EditorQtApplicationLinux::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    {
+        #if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        if (m_wayland)
+        {
+            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::PumpSystemEventLoopUntilEmpty);
+        }
+        #endif
+    }
+
+#ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+    wl_display* EditorQtApplicationLinux::GetWaylandDisplayFromQt() const
+    {
+        auto *waylandApp = nativeInterface<QNativeInterface::QWaylandApplication>();
+        AZ_Warning("EditorQtApplicationWayland", waylandApp, "Unable to retrieve the native platform interface");
+        if (!waylandApp)
+        {
+            return nullptr;
+        }
+
+        return waylandApp->display();
+    }
+
+    wl_display* EditorQtApplicationLinux::GetWaylandDisplay() const
+    {
+        return GetWaylandDisplayFromQt();
+    }
+
+    int EditorQtApplicationLinux::GetDisplayFD() const
+    {
+        return wl_display_get_fd(GetWaylandDisplayFromQt());
+    }
+#endif
+
+#ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+    xcb_connection_t* EditorQtApplicationLinux::GetXcbConnectionFromQt()
     {
         QNativeInterface::QX11Application* x11App = QGuiApplication::nativeInterface<QNativeInterface::QX11Application>();
         AZ_Warning("EditorQtApplicationXcb", x11App, "Unable to retrieve the native platform interface");
@@ -39,23 +94,47 @@ namespace Editor
         }
         return x11App->connection();
     }
+#endif
 
-    void EditorQtApplicationXcb::OnStartPlayInEditor()
+    void EditorQtApplicationLinux::OnStartPlayInEditor()
     {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        if (m_wayland)
+        {
+            AZ::TickBus::Handler::BusConnect();
+            return;
+        }
+#endif
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
         interface->SetEnableXInput(GetXcbConnectionFromQt(), true);
+#endif
     }
 
-    void EditorQtApplicationXcb::OnStopPlayInEditor()
+    void EditorQtApplicationLinux::OnStopPlayInEditor()
     {
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        if (m_wayland)
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+            return;
+        }
+#endif
+#if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
         interface->SetEnableXInput(GetXcbConnectionFromQt(), false);
 
         AzFramework::XcbEventHandlerBus::Broadcast(&AzFramework::XcbEventHandler::ResetStoredInputStates);
+#endif
     }
 
-    bool EditorQtApplicationXcb::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, qintptr*)
+    bool EditorQtApplicationLinux::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, qintptr*)
     {
+        if (m_wayland)
+        {
+            return false;
+        }
+
         if (GetIEditor()->IsInGameMode())
         {
 #ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
@@ -81,7 +160,7 @@ namespace Editor
             AzFramework::InputSystemCursorRequestBus::EventResult(systemCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
             if(systemCursorState == AzFramework::SystemCursorState::UnconstrainedAndVisible)
             {
-                // If the system cursor is visible and unconstrained, the user 
+                // If the system cursor is visible and unconstrained, the user
                 // can interact with the editor so allow all events.
                 return false;
             }
