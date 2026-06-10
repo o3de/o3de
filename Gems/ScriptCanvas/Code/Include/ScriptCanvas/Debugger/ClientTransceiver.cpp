@@ -147,7 +147,7 @@ namespace ScriptCanvas
                 RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::ContinueRequest());
             }
         }
-        
+
         AzFramework::RemoteToolsEndpointContainer ClientTransceiver::EnumerateAvailableNetworkTargets() const
         {
             AzFramework::RemoteToolsEndpointContainer targets;
@@ -216,7 +216,7 @@ namespace ScriptCanvas
 
             return targetInfo;
         }
-        
+
         void ClientTransceiver::GetAvailableScriptTargets()
         {
             AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
@@ -226,7 +226,7 @@ namespace ScriptCanvas
                 RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::GetAvailableScriptTargets());
             }
         }
-        
+
         void ClientTransceiver::GetActiveEntities()
         {
             AzFramework::RemoteToolsEndpointInfo target = GetNetworkTarget();
@@ -246,7 +246,7 @@ namespace ScriptCanvas
                 RemoteToolsInterface::Get()->SendRemoteToolsMessage(target, Message::GetActiveGraphsRequest());
             }
         }
-        
+
         void ClientTransceiver::GetVariableValue()
         {
 
@@ -268,24 +268,24 @@ namespace ScriptCanvas
 
             ProcessMessages();
         }
-        
+
         void ClientTransceiver::ProcessMessages()
         {
             AzFramework::RemoteToolsMessageQueue messages;
-            
+
             while (true)
             {
                 {
                     Lock lock(m_msgMutex);
-                    
+
                     if (m_msgQueue.empty())
                     {
                         return;
                     }
-                    
+
                     AZStd::swap(messages, m_msgQueue);
                 }
-                
+
                 while (!messages.empty())
                 {
                     AzFramework::RemoteToolsMessagePointer msg = *messages.begin();
@@ -329,13 +329,13 @@ namespace ScriptCanvas
             SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("received AvailableScriptTargetsResult!");
             ServiceNotificationsBus::Broadcast(&ServiceNotifications::GetAvailableScriptTargetResult, notification.m_payload);
         }
-        
+
         void ClientTransceiver::Visit(Message::ActiveEntitiesResult& notification)
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("received ActiveEntitiesResult!");
             ServiceNotificationsBus::Broadcast(&ServiceNotifications::GetActiveEntitiesResult, notification.m_payload);
         }
-        
+
         void ClientTransceiver::Visit(Message::ActiveGraphsResult& notification)
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("received ActiveGraphsResult!");
@@ -346,12 +346,12 @@ namespace ScriptCanvas
         {
             ServiceNotificationsBus::Broadcast(&ServiceNotifications::AnnotateNode, notification.m_payload);
         }
-        
+
         void ClientTransceiver::Visit(Message::BreakpointAdded& notification)
         {
             BreakpointAdded(notification.m_breakpoint);
         }
-        
+
         void ClientTransceiver::Visit(Message::BreakpointHit& notification)
         {
             BreakpointAdded(notification.m_breakpoint);
@@ -479,7 +479,7 @@ namespace ScriptCanvas
 
         void ClientTransceiver::AddEntityLoggingTarget(const AZ::EntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
         {
-            auto insertResult = m_addCache.m_entities.insert(entityId);
+            auto insertResult = m_addCache.m_entities.try_emplace(entityId);
             auto addCacheIter = insertResult.first;
 
             addCacheIter->second.insert(graphIdentifier);
@@ -494,7 +494,7 @@ namespace ScriptCanvas
 
         void ClientTransceiver::RemoveEntityLoggingTarget(const AZ::EntityId& entityId, const ScriptCanvas::GraphIdentifier& graphIdentifier)
         {
-            auto insertResult = m_removeCache.m_entities.insert(entityId);
+            auto insertResult = m_removeCache.m_entities.try_emplace(entityId);
             auto removeCacheIter = insertResult.first;
 
             removeCacheIter->second.insert(graphIdentifier);

@@ -508,7 +508,7 @@ namespace AZ
                 }
             }
         }
-        
+
         uint32_t MaterialComponentController::RepairMaterialsWithRenamedProperties()
         {
             uint32_t propertiesUpdated = 0;
@@ -516,7 +516,7 @@ namespace AZ
             for (auto& materialAssignmentPair : m_configuration.m_materials)
             {
                 MaterialAssignment& materialAssignment = materialAssignmentPair.second;
-                
+
                 AZStd::vector<AZStd::pair<Name, Name>> renamedProperties;
 
                 for (const auto& propertyPair : materialAssignment.m_propertyOverrides)
@@ -529,7 +529,7 @@ namespace AZ
                         ++propertiesUpdated;
                     }
                 }
-                
+
                 for (const auto& [oldName, newName] : renamedProperties)
                 {
                     materialAssignment.m_propertyOverrides[newName] = materialAssignment.m_propertyOverrides[oldName];
@@ -813,8 +813,8 @@ namespace AZ
                 {
                     auto descriptor = layout->GetPropertyDescriptor(AZ::RPI::MaterialPropertyIndex{ propertyIndex });
                     auto propertyValue = materialAsset->GetPropertyValues()[propertyIndex];
-                    properties.insert({ descriptor->GetName().GetStringView(),
-                                        ConvertAssetsForSerialization(AZ::RPI::MaterialPropertyValue::ToAny(propertyValue)) });
+                    properties.emplace(descriptor->GetName().GetStringView(),
+                                       ConvertAssetsForSerialization(AZ::RPI::MaterialPropertyValue::ToAny(propertyValue)));
                 }
             }
 

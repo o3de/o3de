@@ -615,7 +615,7 @@ namespace LUAEditor
             {
                 // the document was probably closed.
                 if (foundAbsolutePath)
-                { 
+                {
                     AssetOpenRequested(absolutePath, true);
                 }
                 else
@@ -899,7 +899,7 @@ namespace LUAEditor
     void Context::OnCloseDocument(const AZStd::string& id)
     {
         AZStd::string assetId = id; // as we might delete the reference
-        
+
         if (m_pLUAEditorMainWindow)
         {
             m_pLUAEditorMainWindow->OnCloseView(assetId);
@@ -1097,7 +1097,7 @@ namespace LUAEditor
             );
     }
 
-    AZStd::optional<const Context::DocumentInfoMap::iterator> Context::FindDocumentInfo(const AZStd::string_view assetId) 
+    AZStd::optional<const Context::DocumentInfoMap::iterator> Context::FindDocumentInfo(const AZStd::string_view assetId)
     {
         AZStd::string assetIdLower(assetId);
         AZStd::to_lower(assetIdLower.begin(), assetIdLower.end());
@@ -1341,7 +1341,7 @@ namespace LUAEditor
     {
         auto documentInfoIter = FindDocumentInfo(assetId);
         AZ_TracePrintf(LUAEditorDebugName, "OnReloadDocument() ENTRY user queing reload for assetId '%s'\n", assetId.c_str());
-        
+
         AZ_Assert(documentInfoIter.has_value(), "Invalid document lookup.");
         DocumentInfo& documentInfo = documentInfoIter.value()->second;
         documentInfo.m_bDataIsLoaded = false;
@@ -1674,7 +1674,7 @@ namespace LUAEditor
 
         AZ_TracePrintf(LUAEditorDebugName, "Context::CreateBreakpoint( %s )\n", debugName.c_str());
 
-        BreakpointMap::pair_iter_bool newInsertion = m_pBreakpointSavedState->m_Breakpoints.insert(breakpointUID);
+        BreakpointMap::pair_iter_bool newInsertion = m_pBreakpointSavedState->m_Breakpoints.try_emplace(breakpointUID);
         AZ_Assert(newInsertion.second, "Breakpoint already exists!");
         Breakpoint& newBreakpoint = newInsertion.first->second;
         newBreakpoint.m_assetName = debugName;
@@ -1829,7 +1829,7 @@ namespace LUAEditor
             AzToolsFramework::AssetSystemRequestBus::Broadcast(
                 &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
                 formattedRelativePath,
-                absolutePath); 
+                absolutePath);
         }
 
         //AZ_TracePrintf(LUAEditorDebugName, "Breakpoint '%s' was hit on line %i\n", assetIdString.c_str(), lineNumber);
