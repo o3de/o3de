@@ -40,8 +40,11 @@ namespace AZ
             virtual void SetExposure(float exposure) = 0;
             virtual float GetExposure() const = 0;
 
-            virtual void SetFaceResolution(uint32_t resolution) = 0;
-            virtual uint32_t GetFaceResolution() const = 0;
+            // Script Canvas / Lua represent numbers as a signed type, so the scripted
+            // face-resolution API uses int to avoid an unsigned conversion node. Values
+            // are clamped to the valid [4..256] range by the controller.
+            virtual void SetFaceResolution(int resolution) = 0;
+            virtual int GetFaceResolution() const = 0;
 
             virtual void SetUpdateMode(GradientGIUpdateMode mode) = 0;
             virtual GradientGIUpdateMode GetUpdateMode() const = 0;

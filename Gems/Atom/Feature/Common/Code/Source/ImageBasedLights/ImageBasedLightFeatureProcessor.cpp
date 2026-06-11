@@ -83,6 +83,13 @@ namespace AZ
             m_exposure = 0;
         }
 
+        bool ImageBasedLightFeatureProcessor::IsImageSet() const
+        {
+            // A non-default specular image means a system is actively driving the
+            // global IBL. After Reset() the slot holds the engine default again.
+            return m_specular && m_specular != m_defaultSpecularImage;
+        }
+
         void ImageBasedLightFeatureProcessor::LoadDefaultCubeMaps()
         {
             const constexpr char* DefaultSpecularCubeMapPath = "textures/default/default_iblglobalcm_iblspecular.dds.streamingimage";

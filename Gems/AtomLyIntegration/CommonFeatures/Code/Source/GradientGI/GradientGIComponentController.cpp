@@ -11,6 +11,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/algorithm.h>
 #include <Atom/RPI.Public/Scene.h>
 
 namespace AZ
@@ -85,6 +86,10 @@ namespace AZ
         void GradientGIComponentController::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC_CE("GradientGIService"));
+            // Gradient GI and a Global Skylight (IBL) both drive the scene's IBL slots.
+            // Reject both on the same entity so they cannot fight over ownership; cross-entity
+            // coexistence is handled cooperatively in the feature processor (yield / reclaim).
+            incompatible.push_back(AZ_CRC_CE("ImageBasedLightService"));
         }
 
         // =====================================================================
@@ -100,22 +105,14 @@ namespace AZ
         {
             m_entityId = entityId;
 
-            AZ_TracePrintf("GradientGI", "=== Controller::Activate() entity=%llu, mode=%d ===\n",
-                static_cast<AZ::u64>(m_entityId), static_cast<int>(m_configuration.m_updateMode));
-
             m_featureProcessor =
                 RPI::Scene::GetFeatureProcessorForEntity<GradientGIFeatureProcessorInterface>(m_entityId);
             AZ_Error("GradientGIComponentController", m_featureProcessor,
                 "Unable to find GradientGIFeatureProcessorInterface on this entity's scene.");
 
-            AZ_TracePrintf("GradientGI", "  FP ptr = %p\n", m_featureProcessor);
-
             if (m_featureProcessor)
             {
                 // Push all initial configuration into the FP.
-                AZ_TracePrintf("GradientGI", "  Pushing config: mode=%d, exposure=%.2f, resolution=%u\n",
-                    static_cast<int>(m_configuration.m_updateMode), m_configuration.m_exposure, m_configuration.m_faceResolution);
-
                 m_featureProcessor->SetUpdateMode(
                     static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(m_configuration.m_updateMode));
                 UpdateColors();
@@ -128,9 +125,6 @@ namespace AZ
 
         void GradientGIComponentController::Deactivate()
         {
-            AZ_TracePrintf("GradientGI", "=== Controller::Deactivate() entity=%llu ===\n",
-                static_cast<AZ::u64>(m_entityId));
-
             GradientGIComponentRequestBus::Handler::BusDisconnect();
 
             if (m_featureProcessor)
@@ -212,26 +206,23 @@ namespace AZ
             return m_configuration.m_exposure;
         }
 
-        void GradientGIComponentController::SetFaceResolution(uint32_t resolution)
+        void GradientGIComponentController::SetFaceResolution(int resolution)
         {
-            m_configuration.m_faceResolution = resolution;
+            // Clamp into the supported range before narrowing to the unsigned config field.
+            m_configuration.m_faceResolution = static_cast<uint32_t>(AZStd::clamp(resolution, 4, 256));
             if (m_featureProcessor)
             {
-                m_featureProcessor->SetFaceResolution(resolution);
+                m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
             }
         }
 
-        uint32_t GradientGIComponentController::GetFaceResolution() const
+        int GradientGIComponentController::GetFaceResolution() const
         {
-            return m_configuration.m_faceResolution;
+            return static_cast<int>(m_configuration.m_faceResolution);
         }
 
         void GradientGIComponentController::SetUpdateMode(GradientGIUpdateMode mode)
         {
-            AZ_TracePrintf("GradientGI", "Controller::SetUpdateMode(%d) current=%d, entity=%llu\n",
-                static_cast<int>(mode), static_cast<int>(m_configuration.m_updateMode),
-                static_cast<AZ::u64>(m_entityId));
-
             m_configuration.m_updateMode = mode;
             if (m_featureProcessor)
             {

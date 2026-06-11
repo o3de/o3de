@@ -91,6 +91,11 @@ namespace AZ::Render
         //! Called from Render() (render thread, after all Simulate jobs complete).
         void WriteSceneSrgFromPass();
 
+        //! True when the IBL FP currently holds the exact cubemap we last published --
+        //! i.e. we own the scene IBL slots and may safely release them. Used so teardown
+        //! never wipes a foreign IBL (e.g. a Global Skylight) that we were yielding to.
+        bool OwnsIblSlots() const;
+
         // =====================================================================
         // State -- Shared
         // =====================================================================

@@ -116,8 +116,9 @@ namespace AZ::Render
         // Remove the GPU pass from the pipeline, then drop our reference.
         SafeRemoveDynamicPass();
 
-        // Reset IBL slots for Static mode.
-        if (m_active && m_iblFeatureProcessor && m_updateMode == UpdateMode::Static)
+        // Release the IBL slots for Static mode -- but only if we still own them, so we
+        // never wipe a foreign IBL we were yielding to.
+        if (m_updateMode == UpdateMode::Static && OwnsIblSlots())
         {
             m_iblFeatureProcessor->Reset();
         }
@@ -159,22 +160,61 @@ namespace AZ::Render
     {
         AZ_PROFILE_SCOPE(RPI, "GradientGIFeatureProcessor: Simulate");
 
-        if (m_updateMode != UpdateMode::Static || !m_needsRebuild || !m_iblFeatureProcessor)
+        if (m_updateMode != UpdateMode::Static || !m_iblFeatureProcessor)
         {
             return;
         }
 
-        // Rebuild the CPU cubemap and delegate to the IBL FP (sole owner of scene SRG IBL slots).
-        m_cubemapImage = BuildGradientCubemap();
-        m_active       = (m_cubemapImage != nullptr);
-        m_needsRebuild = false;
+        // Capture slot ownership BEFORE a rebuild swaps our cubemap instance out.
+        // We "own" the slots when the IBL FP is currently holding the exact image we
+        // last published. A foreign owner is any other non-default image (e.g. a Global
+        // Skylight on another entity that activated after us).
+        const RPI::Image* slotImage = m_iblFeatureProcessor->GetSpecularImage().get();
+        const bool weOwnedSlots    = (m_cubemapImage && slotImage == m_cubemapImage.get());
+        const bool foreignOwnsSlots = m_iblFeatureProcessor->IsImageSet() && !weOwnedSlots;
 
-        if (m_active && m_imageAsset.GetId().IsValid())
+        // --- Rebuild the CPU cubemap when parameters changed --------------------
+        bool justRebuilt = false;
+        if (m_needsRebuild)
+        {
+            // Release the previous cubemap before building its replacement so we never hold
+            // two full cubemaps in the streaming pool at once. This bounds peak pool usage
+            // when the resolution slider is scrubbed rapidly in CPU mode (a contributor to
+            // the streaming-pool exhaustion panic seen on mobile).
+            m_cubemapImage = nullptr;
+            m_imageAsset   = {};
+
+            m_cubemapImage = BuildGradientCubemap();
+            m_active       = (m_cubemapImage != nullptr);
+            m_needsRebuild = false;
+            justRebuilt    = m_active;
+        }
+
+        if (!m_active || !m_imageAsset.GetId().IsValid())
+        {
+            return;
+        }
+
+        // --- Cooperative IBL ownership -----------------------------------------
+        // The IBL FP is the sole writer of the scene SRG IBL slots; we delegate our cubemap
+        // to it. While a foreign IBL owns the slots we yield and leave them untouched. When
+        // that system deactivates it Resets the IBL FP back to its default (IsImageSet()
+        // becomes false) and we reclaim on the next frame. An explicit local change
+        // (justRebuilt) re-asserts our cubemap.
+        if (foreignOwnsSlots && !justRebuilt)
+        {
+            return;
+        }
+
+        // (Re)publish the image only when we just rebuilt or the slots are free to claim;
+        // otherwise we already own them and just keep exposure in sync (cheap, and makes a
+        // floor exposure read as ~black immediately).
+        if (justRebuilt || !m_iblFeatureProcessor->IsImageSet())
         {
             m_iblFeatureProcessor->SetSpecularImage(m_imageAsset);
             m_iblFeatureProcessor->SetDiffuseImage(m_imageAsset);
-            m_iblFeatureProcessor->SetExposure(m_exposure);
         }
+        m_iblFeatureProcessor->SetExposure(m_exposure);
     }
 
     // =========================================================================
@@ -278,14 +318,11 @@ namespace AZ::Render
     {
         m_exposure = exposureStops;
 
-        if (m_updateMode == UpdateMode::Static)
-        {
-            if (m_active && m_iblFeatureProcessor)
-            {
-                m_iblFeatureProcessor->SetExposure(exposureStops);
-            }
-        }
-        else if (m_gradientPass)
+        // Static: exposure is pushed to the IBL FP from Simulate(), and only while we own
+        // the slots -- so a foreign IBL's exposure is never disturbed, and the floor value
+        // (~2^-20) reads as effectively black without conflicting with other lighting.
+        // Dynamic: update the live compute pass.
+        if (m_updateMode == UpdateMode::Dynamic && m_gradientPass)
         {
             // Push full color state (exposure is embedded in the shader SRG).
             m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
@@ -300,9 +337,14 @@ namespace AZ::Render
         {
             m_needsRebuild = true;
         }
-        // Dynamic mode: resolution changes require rebuilding the AttachmentImage.
-        // This happens automatically on the next component deactivate/activate cycle
-        // (triggered by ChangeNotify in the editor component).
+        else if (m_gradientPass)
+        {
+            // Dynamic mode: push the new resolution to the live pass, which reallocates its
+            // output cubemap (GradientGICubemapPass::SetGradientColors queues a pass rebuild
+            // when the face size changes). This makes resolution changes take effect live
+            // instead of waiting for a deactivate/activate cycle.
+            m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
+        }
     }
 
     void GradientGIFeatureProcessor::SetUpdateMode(UpdateMode mode)
@@ -350,9 +392,10 @@ namespace AZ::Render
                 CacheSceneSrgIndices();
             }
 
-            // Disengage the IBL FP -- clear its stale Static-mode images
-            // so it stops overwriting scene SRG IBL slots in its Simulate().
-            if (m_iblFeatureProcessor)
+            // Disengage the IBL FP from OUR static image so it stops writing it in Simulate().
+            // Guarded so we never wipe a foreign IBL we were yielding to; Dynamic mode then
+            // drives the scene SRG slots directly from Render().
+            if (OwnsIblSlots())
             {
                 m_iblFeatureProcessor->Reset();
             }
@@ -394,18 +437,21 @@ namespace AZ::Render
         // or when the FP deactivates. Orphaned passes (from pipeline rebuilds) are
         // detected and handled in SetUpdateMode() and AddRenderPasses().
 
-        if (m_updateMode == UpdateMode::Static)
+        if (m_updateMode == UpdateMode::Static && OwnsIblSlots())
         {
-            if (m_active && m_iblFeatureProcessor)
-            {
-                m_iblFeatureProcessor->Reset();
-            }
+            m_iblFeatureProcessor->Reset();
         }
 
         m_cubemapImage = nullptr;
         m_imageAsset   = {};
         m_active       = false;
         m_needsRebuild = false;
+    }
+
+    bool GradientGIFeatureProcessor::OwnsIblSlots() const
+    {
+        return m_iblFeatureProcessor && m_cubemapImage &&
+               m_iblFeatureProcessor->GetSpecularImage().get() == m_cubemapImage.get();
     }
 
     // =========================================================================

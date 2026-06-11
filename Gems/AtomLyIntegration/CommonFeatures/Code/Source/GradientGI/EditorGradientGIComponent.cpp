@@ -34,7 +34,7 @@ namespace AZ
                     // =========================================================
 
                     editContext->Class<EditorGradientGIComponent>(
-                        "Gradient GI", "Procedural gradient cubemap for ambient fill lighting")
+                        "Gradient GI (IBL)", "Procedural gradient cubemap for ambient image-based lighting (IBL)")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -77,13 +77,13 @@ namespace AZ
                         // -- Settings group --
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Settings")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientGIComponentConfig::m_exposure, "Exposure", "IBL exposure in EV stops")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientGIComponentConfig::m_exposure, "Exposure", "IBL exposure in EV stops. Drag fully left to dim the ambient fill to black.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
+                            ->Attribute(AZ::Edit::Attributes::SoftMin, -20.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax,  5.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
                             ->Attribute(AZ::Edit::Attributes::Max,  20.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientGIComponentConfig::m_faceResolution, "Face Resolution", "Cubemap face size in pixels (4-256)")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientGIComponentConfig::m_faceResolution, "Resolution", "Cubemap face size in pixels (4-256). Higher values give sharper ambient detail at greater cost.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::Min, 4u)
                             ->Attribute(AZ::Edit::Attributes::Max, 256u)
@@ -93,11 +93,11 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GradientGIComponentConfig::m_updateMode,
                             "Update Mode",
-                            "Static: CPU-generated StreamingImage (mobile-safe, updates on change).\n"
-                            "Dynamic: GPU compute pass writing every frame (desktop only, falls back to Static if unsupported).")
+                            "CPU: CPU-generated StreamingImage (mobile-safe, updates on change).\n"
+                            "GPU: GPU compute pass writing every frame (falls back to CPU if unsupported).")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->EnumAttribute(GradientGIUpdateMode::Static,  "Static (Mobile-Safe)")
-                            ->EnumAttribute(GradientGIUpdateMode::Dynamic, "Dynamic (Desktop GPU)")
+                            ->EnumAttribute(GradientGIUpdateMode::Static,  "CPU")
+                            ->EnumAttribute(GradientGIUpdateMode::Dynamic, "GPU")
                         ;
                 }
             }
@@ -140,7 +140,7 @@ namespace AZ
 
         AZ::u32 EditorGradientGIComponent::OnResolutionChanged()
         {
-            m_controller.SetFaceResolution(m_controller.m_configuration.m_faceResolution);
+            m_controller.SetFaceResolution(static_cast<int>(m_controller.m_configuration.m_faceResolution));
             return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
         }
 

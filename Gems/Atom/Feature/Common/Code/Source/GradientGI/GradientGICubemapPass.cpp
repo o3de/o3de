@@ -68,12 +68,26 @@ namespace AZ::Render
         const Color& low, const Color& mid, const Color& high,
         float exposure, uint32_t faceSize)
     {
+        const bool faceSizeChanged = (faceSize != m_faceSize);
+
         m_lowColor  = low;
         m_midColor  = mid;
         m_highColor = high;
         m_exposure  = exposure;
         m_faceSize  = faceSize;
         m_dirty     = true;
+
+        // The output cubemap is allocated at m_faceSize in BuildInternal(). A resolution
+        // change therefore requires reallocating it -- otherwise the compute dispatch grid
+        // and the image dimensions disagree: down-scaling under-writes each face (stale
+        // texels -> discolouration), up-scaling overruns the image bounds (cube-pattern
+        // aliasing). Queue a rebuild so BuildInternal() recreates the AttachmentImage at the
+        // new size. Guarded on m_cubemapImage so the initial pre-build call is a no-op (the
+        // pass system builds it once on add).
+        if (faceSizeChanged && m_cubemapImage)
+        {
+            QueueForBuildAndInitialization();
+        }
     }
 
     Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::GetCubemapImage() const

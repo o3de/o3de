@@ -54,8 +54,8 @@ namespace AZ
             void SetGradientColors(const Color& low, const Color& mid, const Color& high) override;
             void SetExposure(float exposure) override;
             float GetExposure() const override;
-            void SetFaceResolution(uint32_t resolution) override;
-            uint32_t GetFaceResolution() const override;
+            void SetFaceResolution(int resolution) override;
+            int GetFaceResolution() const override;
             void SetUpdateMode(GradientGIUpdateMode mode) override;
             GradientGIUpdateMode GetUpdateMode() const override;
 
