@@ -257,6 +257,8 @@ namespace AZ::Render
 
         // Push current gradient state into the pass before it starts running.
         m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
+        m_gradientPass->SetDetailLayer(m_detailTexture, m_detailMapping, m_detailBlend, m_detailStrength);
+        m_gradientPass->SetSpecularLayer(m_specularTexture, m_specularMapping, m_specularBlend, m_specularStrength);
 
         // Inject before DepthPrePass so it runs early in the frame.
         // The cubemap is ready by the time IBL sampling occurs later in the pipeline.
@@ -287,18 +289,20 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::WriteSceneSrgFromPass()
     {
-        auto cubemapImage = m_gradientPass->GetCubemapImage();
-        if (!cubemapImage)
+        auto diffuseImage  = m_gradientPass->GetDiffuseImage();
+        auto specularImage = m_gradientPass->GetSpecularImage();
+        if (!diffuseImage || !specularImage)
         {
             return;
         }
 
-        // Write the gradient cubemap to both IBL slots. This runs on the render thread
-        // after all Simulate() jobs have completed, so there is no race with the IBL FP.
-        // The cubemap SRV (default view set at image creation) is used for sampling.
-        const RHI::ImageView* cubemapView = cubemapImage->GetImageView();
-        m_sceneSrg->SetImageView(m_specularEnvMapIndex, cubemapView);
-        m_sceneSrg->SetImageView(m_diffuseEnvMapIndex,  cubemapView);
+        // Write the gradient cubemaps to their respective IBL slots. This runs on the render
+        // thread after all Simulate() jobs have completed, so there is no race with the IBL FP.
+        // The cubemap SRV (default view set at image creation) is used for sampling. In I.1 the
+        // two images hold identical gradient data; later phases composite distinct detail and
+        // specular layers so the diffuse and specular slots diverge.
+        m_sceneSrg->SetImageView(m_specularEnvMapIndex, specularImage->GetImageView());
+        m_sceneSrg->SetImageView(m_diffuseEnvMapIndex,  diffuseImage->GetImageView());
         m_sceneSrg->SetConstant(m_iblExposureIndex, m_exposure);
     }
 
@@ -423,6 +427,56 @@ namespace AZ::Render
                         "No default render pipeline found! Cannot inject compute pass.");
                 }
             }
+        }
+    }
+
+    void GradientGIFeatureProcessor::SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
+    {
+        // Resolve the asset to a resident runtime instance once. Color edits never touch this;
+        // they only update SRG constants, so the texture stays loaded (the cheap-rebuild goal).
+        m_detailTexture = texture.GetId().IsValid()
+            ? RPI::StreamingImage::FindOrCreate(texture)
+            : Data::Instance<RPI::Image>{};
+
+        if (m_gradientPass)
+        {
+            m_gradientPass->SetDetailLayer(m_detailTexture, m_detailMapping, m_detailBlend, m_detailStrength);
+        }
+    }
+
+    void GradientGIFeatureProcessor::SetDetailParams(uint8_t mapping, uint8_t blend, float strength)
+    {
+        m_detailMapping  = mapping;
+        m_detailBlend    = blend;
+        m_detailStrength = strength;
+
+        if (m_gradientPass)
+        {
+            m_gradientPass->SetDetailLayer(m_detailTexture, m_detailMapping, m_detailBlend, m_detailStrength);
+        }
+    }
+
+    void GradientGIFeatureProcessor::SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture)
+    {
+        m_specularTexture = texture.GetId().IsValid()
+            ? RPI::StreamingImage::FindOrCreate(texture)
+            : Data::Instance<RPI::Image>{};
+
+        if (m_gradientPass)
+        {
+            m_gradientPass->SetSpecularLayer(m_specularTexture, m_specularMapping, m_specularBlend, m_specularStrength);
+        }
+    }
+
+    void GradientGIFeatureProcessor::SetSpecularParams(uint8_t mapping, uint8_t blend, float strength)
+    {
+        m_specularMapping  = mapping;
+        m_specularBlend    = blend;
+        m_specularStrength = strength;
+
+        if (m_gradientPass)
+        {
+            m_gradientPass->SetSpecularLayer(m_specularTexture, m_specularMapping, m_specularBlend, m_specularStrength);
         }
     }
 

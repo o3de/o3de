@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Color.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace AZ::Render
 {
@@ -62,6 +63,20 @@ namespace AZ::Render
         //! If the platform does not support GPU compute UAV cubemaps, Dynamic silently
         //! falls back to Static.
         virtual void SetUpdateMode(UpdateMode mode) = 0;
+
+        //! Set the detail texture layer (GPU/Dynamic mode only). Pass an invalid asset to clear.
+        virtual void SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) = 0;
+
+        //! Set detail layer parameters. mapping/blend are codes matching the component enums
+        //! (GradientGITextureMapping / GradientGIBlendMode); strength is the 0..1 layer weight.
+        virtual void SetDetailParams(uint8_t mapping, uint8_t blend, float strength) = 0;
+
+        //! Set the specular texture layer (GPU/Dynamic mode only). Composites into the specular
+        //! IBL slot only. Pass an invalid asset to clear.
+        virtual void SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) = 0;
+
+        //! Set specular layer parameters (codes match the component enums; strength is 0..1).
+        virtual void SetSpecularParams(uint8_t mapping, uint8_t blend, float strength) = 0;
 
         //! Returns the currently active update mode (may differ from requested if
         //! the platform forced a fallback).

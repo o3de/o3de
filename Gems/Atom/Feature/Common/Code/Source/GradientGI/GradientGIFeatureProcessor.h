@@ -49,6 +49,10 @@ namespace AZ::Render
         void SetExposure(float exposureStops) override;
         void SetFaceResolution(uint32_t resolution) override;
         void SetUpdateMode(UpdateMode mode) override;
+        void SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) override;
+        void SetDetailParams(uint8_t mapping, uint8_t blend, float strength) override;
+        void SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) override;
+        void SetSpecularParams(uint8_t mapping, uint8_t blend, float strength) override;
         UpdateMode GetUpdateMode() const override;
         bool IsActive() const override;
         void Reset() override;
@@ -109,6 +113,19 @@ namespace AZ::Render
         Color    m_highColor      = Color(0.85f, 0.95f, 1.0f,  1.0f);
         float    m_exposure       = 0.0f;
         uint32_t m_faceResolution = 64;
+
+        // Detail texture layer (GPU/Dynamic mode). Resolved instance is resident; mapping/blend
+        // codes match the component enums. Bound to the pass once, recombined cheaply on color edits.
+        Data::Instance<RPI::Image> m_detailTexture;
+        uint8_t                    m_detailMapping  = 1;   // Stretched
+        uint8_t                    m_detailBlend    = 3;   // Overlay
+        float                      m_detailStrength = 1.0f;
+
+        // Specular texture layer (GPU/Dynamic mode). Composites into the specular output only.
+        Data::Instance<RPI::Image> m_specularTexture;
+        uint8_t                    m_specularMapping  = 1; // Stretched
+        uint8_t                    m_specularBlend    = 3; // Overlay
+        float                      m_specularStrength = 1.0f;
 
         UpdateMode m_updateMode = UpdateMode::Static;
         bool       m_active     = false;

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <Atom/Feature/GradientGI/GradientGIFeatureProcessorInterface.h>
 #include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConfig.h>
@@ -19,6 +20,7 @@ namespace AZ
     {
         class GradientGIComponentController final
             : GradientGIComponentRequestBus::Handler
+            , Data::AssetBus::MultiHandler
         {
         public:
             friend class EditorGradientGIComponent;
@@ -59,11 +61,55 @@ namespace AZ
             void SetUpdateMode(GradientGIUpdateMode mode) override;
             GradientGIUpdateMode GetUpdateMode() const override;
 
+            void SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) override;
+            Data::Asset<RPI::StreamingImageAsset> GetDetailTexture() const override;
+            void SetDetailTextureAssetId(const Data::AssetId& id) override;
+            Data::AssetId GetDetailTextureAssetId() const override;
+            void SetDetailTextureAssetPath(const AZStd::string& path) override;
+            AZStd::string GetDetailTextureAssetPath() const override;
+            void SetDetailMapping(GradientGITextureMapping mapping) override;
+            GradientGITextureMapping GetDetailMapping() const override;
+            void SetDetailBlend(GradientGIBlendMode blend) override;
+            GradientGIBlendMode GetDetailBlend() const override;
+            void SetDetailStrength(float strength) override;
+            float GetDetailStrength() const override;
+
+            void SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) override;
+            Data::Asset<RPI::StreamingImageAsset> GetSpecularTexture() const override;
+            void SetSpecularTextureAssetId(const Data::AssetId& id) override;
+            Data::AssetId GetSpecularTextureAssetId() const override;
+            void SetSpecularTextureAssetPath(const AZStd::string& path) override;
+            AZStd::string GetSpecularTextureAssetPath() const override;
+            void SetSpecularMapping(GradientGITextureMapping mapping) override;
+            GradientGITextureMapping GetSpecularMapping() const override;
+            void SetSpecularBlend(GradientGIBlendMode blend) override;
+            GradientGIBlendMode GetSpecularBlend() const override;
+            void SetSpecularStrength(float strength) override;
+            float GetSpecularStrength() const override;
+
+            // =====================================================================
+            // Data::AssetBus (detail/specular texture loading)
+            // =====================================================================
+
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetError(Data::Asset<Data::AssetData> asset) override;
+
             // =====================================================================
             // Helpers
             // =====================================================================
 
             void UpdateColors();
+
+            //! Queue an async load of the detail/specular texture assets (connects AssetBus).
+            void LoadDetailTexture();
+            void LoadSpecularTexture();
+            //! Push the resolved textures to the feature processor.
+            void PushDetailToFeatureProcessor();
+            void PushSpecularToFeatureProcessor();
+            //! Push the (mapping, blend, strength) params for each layer to the feature processor.
+            void PushDetailParams();
+            void PushSpecularParams();
 
             EntityId                         m_entityId;
             GradientGIComponentConfig        m_configuration;

@@ -13,18 +13,18 @@
                     "base": "SetLowColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Low Color" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Low Color is invoked" },
-                    "details": { "name": "Set Low Color", "tooltip": "Sets the nadir (ground) color of the gradient GI cubemap" },
+                    "details": { "name": "Set Low Color", "tooltip": "Sets the nadir (ground, -Y) color of the gradient GI cubemap" },
                     "params": [
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Low (Nadir)" } }
                     ]
                 },
                 {
                     "base": "GetLowColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Low Color" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get Low Color is invoked" },
-                    "details": { "name": "Get Low Color", "tooltip": "Gets the nadir (ground) color of the gradient GI cubemap" },
+                    "details": { "name": "Get Low Color", "tooltip": "Gets the nadir (ground, -Y) color of the gradient GI cubemap" },
                     "results": [
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Low (Nadir)" } }
                     ]
                 },
                 {
@@ -33,7 +33,7 @@
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Mid Color is invoked" },
                     "details": { "name": "Set Mid Color", "tooltip": "Sets the horizon (equator) color of the gradient GI cubemap" },
                     "params": [
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Mid (Horizon)" } }
                     ]
                 },
                 {
@@ -42,90 +42,270 @@
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get Mid Color is invoked" },
                     "details": { "name": "Get Mid Color", "tooltip": "Gets the horizon (equator) color of the gradient GI cubemap" },
                     "results": [
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Mid (Horizon)" } }
                     ]
                 },
                 {
                     "base": "SetHighColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set High Color" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set High Color is invoked" },
-                    "details": { "name": "Set High Color", "tooltip": "Sets the zenith (sky) color of the gradient GI cubemap" },
+                    "details": { "name": "Set High Color", "tooltip": "Sets the zenith (sky, +Y) color of the gradient GI cubemap" },
                     "params": [
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "High (Zenith)" } }
                     ]
                 },
                 {
                     "base": "GetHighColor",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get High Color" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get High Color is invoked" },
-                    "details": { "name": "Get High Color", "tooltip": "Gets the zenith (sky) color of the gradient GI cubemap" },
+                    "details": { "name": "Get High Color", "tooltip": "Gets the zenith (sky, +Y) color of the gradient GI cubemap" },
                     "results": [
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Color" } }
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "High (Zenith)" } }
                     ]
                 },
                 {
                     "base": "SetGradientColors",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Gradient Colors" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Gradient Colors is invoked" },
-                    "details": { "name": "Set Gradient Colors", "tooltip": "Sets all three gradient layers (low, mid, high) at once" },
+                    "details": { "name": "Set Gradient Colors", "tooltip": "Sets all three gradient bands (low, mid, high) at once" },
                     "params": [
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Low Color" } },
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Mid Color" } },
-                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "High Color" } }
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Low (Nadir)" } },
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "Mid (Horizon)" } },
+                        { "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}", "details": { "name": "High (Zenith)" } }
                     ]
                 },
                 {
                     "base": "SetExposure",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Exposure" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Exposure is invoked" },
-                    "details": { "name": "Set Exposure", "tooltip": "Sets the exposure in EV stops applied to the gradient GI cubemap" },
+                    "details": { "name": "Set Exposure", "tooltip": "Sets the exposure in EV stops applied to the gradient GI. The minimum value dims the ambient fill to black." },
                     "params": [
-                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Exposure" } }
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Exposure (EV)" } }
                     ]
                 },
                 {
                     "base": "GetExposure",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Exposure" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get Exposure is invoked" },
-                    "details": { "name": "Get Exposure", "tooltip": "Gets the exposure in EV stops applied to the gradient GI cubemap" },
+                    "details": { "name": "Get Exposure", "tooltip": "Gets the exposure in EV stops applied to the gradient GI" },
                     "results": [
-                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Exposure" } }
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Exposure (EV)" } }
                     ]
                 },
                 {
                     "base": "SetFaceResolution",
-                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Face Resolution" },
-                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Face Resolution is invoked" },
-                    "details": { "name": "Set Face Resolution", "tooltip": "Sets the cubemap face resolution in pixels (4-256)" },
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Resolution" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Resolution is invoked" },
+                    "details": { "name": "Set Resolution", "tooltip": "Sets the cubemap face size in pixels. Clamped to 4-256." },
                     "params": [
-                        { "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}", "details": { "name": "Resolution" } }
+                        { "typeid": "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}", "details": { "name": "Resolution" } }
                     ]
                 },
                 {
                     "base": "GetFaceResolution",
-                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Face Resolution" },
-                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Face Resolution is invoked" },
-                    "details": { "name": "Get Face Resolution", "tooltip": "Gets the cubemap face resolution in pixels" },
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Resolution" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Resolution is invoked" },
+                    "details": { "name": "Get Resolution", "tooltip": "Gets the cubemap face size in pixels" },
                     "results": [
-                        { "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}", "details": { "name": "Resolution" } }
+                        { "typeid": "{72039442-EB38-4d42-A1AD-CB68F7E0EEF6}", "details": { "name": "Resolution" } }
                     ]
                 },
                 {
                     "base": "SetUpdateMode",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Update Mode" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Set Update Mode is invoked" },
-                    "details": { "name": "Set Update Mode", "tooltip": "Sets the update mode (0 = Static / CPU, 1 = Dynamic / GPU compute)" },
+                    "details": { "name": "Set Update Mode", "tooltip": "Sets how the gradient cubemap is produced.\n0: CPU (StreamingImage rebuild, mobile-safe)\n1: GPU (compute pass; desktop, falls back to CPU if unsupported)" },
                     "params": [
-                        { "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}", "details": { "name": "Update Mode" } }
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Update Mode", "tooltip": "0: CPU, 1: GPU" } }
                     ]
                 },
                 {
                     "base": "GetUpdateMode",
                     "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Update Mode" },
                     "exit":  { "name": "Out", "tooltip": "Signaled after Get Update Mode is invoked" },
-                    "details": { "name": "Get Update Mode", "tooltip": "Gets the current update mode (0 = Static, 1 = Dynamic)" },
+                    "details": { "name": "Get Update Mode", "tooltip": "Gets the active update mode.\n0: CPU\n1: GPU" },
                     "results": [
-                        { "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}", "details": { "name": "Update Mode" } }
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Update Mode", "tooltip": "0: CPU, 1: GPU" } }
+                    ]
+                },
+                {
+                    "base": "SetDetailTextureAssetId",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Texture (Asset Id)" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Texture (Asset Id) is invoked" },
+                    "details": { "name": "Set Detail Texture (Asset Id)", "tooltip": "Sets the detail texture layer by asset id. GPU mode only; overlays detail/grit onto the gradient." },
+                    "params": [
+                        { "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}", "details": { "name": "Asset Id" } }
+                    ]
+                },
+                {
+                    "base": "GetDetailTextureAssetId",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Detail Texture (Asset Id)" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Detail Texture (Asset Id) is invoked" },
+                    "details": { "name": "Get Detail Texture (Asset Id)", "tooltip": "Gets the detail texture's asset id" },
+                    "results": [
+                        { "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}", "details": { "name": "Asset Id" } }
+                    ]
+                },
+                {
+                    "base": "SetDetailTextureAssetPath",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Texture (Path)" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Texture (Path) is invoked" },
+                    "details": { "name": "Set Detail Texture (Path)", "tooltip": "Sets the detail texture layer by source asset path. GPU mode only." },
+                    "params": [
+                        { "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}", "details": { "name": "Asset Path" } }
+                    ]
+                },
+                {
+                    "base": "GetDetailTextureAssetPath",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Detail Texture (Path)" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Detail Texture (Path) is invoked" },
+                    "details": { "name": "Get Detail Texture (Path)", "tooltip": "Gets the detail texture's source asset path" },
+                    "results": [
+                        { "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}", "details": { "name": "Asset Path" } }
+                    ]
+                },
+                {
+                    "base": "SetDetailMapping",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Mapping" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Mapping is invoked" },
+                    "details": { "name": "Set Detail Mapping", "tooltip": "Sets how the detail texture is mapped onto the cubemap.\n0: Tiled (2D texture repeated per face)\n1: Stretched (2D texture wrapped equirectangular)\n2: Cube (authored cubemap sampled by direction)" },
+                    "params": [
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Mapping", "tooltip": "0: Tiled, 1: Stretched, 2: Cube" } }
+                    ]
+                },
+                {
+                    "base": "GetDetailMapping",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Detail Mapping" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Detail Mapping is invoked" },
+                    "details": { "name": "Get Detail Mapping", "tooltip": "Gets the detail mapping mode.\n0: Tiled, 1: Stretched, 2: Cube" },
+                    "results": [
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Mapping", "tooltip": "0: Tiled, 1: Stretched, 2: Cube" } }
+                    ]
+                },
+                {
+                    "base": "SetDetailBlend",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Blend" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Blend is invoked" },
+                    "details": { "name": "Set Detail Blend", "tooltip": "Sets how the detail texture blends over the gradient color.\n0: Multiply\n1: Add\n2: Screen\n3: Overlay\n4: Replace" },
+                    "params": [
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Blend", "tooltip": "0: Multiply, 1: Add, 2: Screen, 3: Overlay, 4: Replace" } }
+                    ]
+                },
+                {
+                    "base": "GetDetailBlend",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Detail Blend" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Detail Blend is invoked" },
+                    "details": { "name": "Get Detail Blend", "tooltip": "Gets the detail blend mode.\n0: Multiply, 1: Add, 2: Screen, 3: Overlay, 4: Replace" },
+                    "results": [
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Blend", "tooltip": "0: Multiply, 1: Add, 2: Screen, 3: Overlay, 4: Replace" } }
+                    ]
+                },
+                {
+                    "base": "SetDetailStrength",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Detail Strength" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Detail Strength is invoked" },
+                    "details": { "name": "Set Detail Strength", "tooltip": "Sets the detail layer blend weight (0 = gradient only, 1 = full detail)" },
+                    "params": [
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Strength" } }
+                    ]
+                },
+                {
+                    "base": "GetDetailStrength",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Detail Strength" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Detail Strength is invoked" },
+                    "details": { "name": "Get Detail Strength", "tooltip": "Gets the detail layer blend weight" },
+                    "results": [
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Strength" } }
+                    ]
+                },
+                {
+                    "base": "SetSpecularTextureAssetId",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Specular Texture (Asset Id)" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Specular Texture (Asset Id) is invoked" },
+                    "details": { "name": "Set Specular Texture (Asset Id)", "tooltip": "Sets the specular texture layer by asset id. GPU mode only; composites into the specular reflection." },
+                    "params": [
+                        { "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}", "details": { "name": "Asset Id" } }
+                    ]
+                },
+                {
+                    "base": "GetSpecularTextureAssetId",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Specular Texture (Asset Id)" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Specular Texture (Asset Id) is invoked" },
+                    "details": { "name": "Get Specular Texture (Asset Id)", "tooltip": "Gets the specular texture's asset id" },
+                    "results": [
+                        { "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}", "details": { "name": "Asset Id" } }
+                    ]
+                },
+                {
+                    "base": "SetSpecularTextureAssetPath",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Specular Texture (Path)" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Specular Texture (Path) is invoked" },
+                    "details": { "name": "Set Specular Texture (Path)", "tooltip": "Sets the specular texture layer by source asset path. GPU mode only." },
+                    "params": [
+                        { "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}", "details": { "name": "Asset Path" } }
+                    ]
+                },
+                {
+                    "base": "GetSpecularTextureAssetPath",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Specular Texture (Path)" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Specular Texture (Path) is invoked" },
+                    "details": { "name": "Get Specular Texture (Path)", "tooltip": "Gets the specular texture's source asset path" },
+                    "results": [
+                        { "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}", "details": { "name": "Asset Path" } }
+                    ]
+                },
+                {
+                    "base": "SetSpecularMapping",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Specular Mapping" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Specular Mapping is invoked" },
+                    "details": { "name": "Set Specular Mapping", "tooltip": "Sets how the specular texture is mapped onto the cubemap.\n0: Tiled (2D texture repeated per face)\n1: Stretched (2D texture wrapped equirectangular)\n2: Cube (authored cubemap sampled by direction)" },
+                    "params": [
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Mapping", "tooltip": "0: Tiled, 1: Stretched, 2: Cube" } }
+                    ]
+                },
+                {
+                    "base": "GetSpecularMapping",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Specular Mapping" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Specular Mapping is invoked" },
+                    "details": { "name": "Get Specular Mapping", "tooltip": "Gets the specular mapping mode.\n0: Tiled, 1: Stretched, 2: Cube" },
+                    "results": [
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Mapping", "tooltip": "0: Tiled, 1: Stretched, 2: Cube" } }
+                    ]
+                },
+                {
+                    "base": "SetSpecularBlend",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Specular Blend" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Specular Blend is invoked" },
+                    "details": { "name": "Set Specular Blend", "tooltip": "Sets how the specular texture blends over the base color.\n0: Multiply\n1: Add\n2: Screen\n3: Overlay\n4: Replace (use the texture alone)" },
+                    "params": [
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Blend", "tooltip": "0: Multiply, 1: Add, 2: Screen, 3: Overlay, 4: Replace" } }
+                    ]
+                },
+                {
+                    "base": "GetSpecularBlend",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Specular Blend" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Specular Blend is invoked" },
+                    "details": { "name": "Get Specular Blend", "tooltip": "Gets the specular blend mode.\n0: Multiply, 1: Add, 2: Screen, 3: Overlay, 4: Replace" },
+                    "results": [
+                        { "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}", "details": { "name": "Blend", "tooltip": "0: Multiply, 1: Add, 2: Screen, 3: Overlay, 4: Replace" } }
+                    ]
+                },
+                {
+                    "base": "SetSpecularStrength",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Set Specular Strength" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Set Specular Strength is invoked" },
+                    "details": { "name": "Set Specular Strength", "tooltip": "Sets the specular layer blend weight (0 = matches diffuse, 1 = full specular texture)" },
+                    "params": [
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Strength" } }
+                    ]
+                },
+                {
+                    "base": "GetSpecularStrength",
+                    "entry": { "name": "In", "tooltip": "When signaled, this will invoke Get Specular Strength" },
+                    "exit":  { "name": "Out", "tooltip": "Signaled after Get Specular Strength is invoked" },
+                    "details": { "name": "Get Specular Strength", "tooltip": "Gets the specular layer blend weight" },
+                    "results": [
+                        { "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}", "details": { "name": "Strength" } }
                     ]
                 }
             ]

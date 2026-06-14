@@ -61,8 +61,21 @@ namespace AZ::Render
             const Color& low, const Color& mid, const Color& high,
             float exposure, uint32_t faceSize);
 
-        //! Returns the persistent output cubemap (valid after BuildInternal succeeds).
-        Data::Instance<RPI::AttachmentImage> GetCubemapImage() const;
+        //! Update the detail texture layer. A null texture disables the layer (the gradient
+        //! shows unmodified). mapping/blend codes match the component enums; strength is 0..1.
+        //! Only updates SRG state -- it never reallocates, so color edits stay cheap.
+        void SetDetailLayer(
+            const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength);
+
+        //! Update the specular texture layer. Composites into the specular output only; a null
+        //! texture means specular == diffuse base. Codes match the component enums; strength 0..1.
+        void SetSpecularLayer(
+            const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength);
+
+        //! Returns the persistent output cubemaps (valid after BuildInternal succeeds).
+        //! Diffuse and specular feed the scene SRG's separate IBL slots.
+        Data::Instance<RPI::AttachmentImage> GetDiffuseImage() const;
+        Data::Instance<RPI::AttachmentImage> GetSpecularImage() const;
 
     protected:
         // =====================================================================
@@ -85,10 +98,14 @@ namespace AZ::Render
         Data::Instance<RPI::ShaderResourceGroup> m_passSrg;
 
         // =====================================================================
-        // Output Image
+        // Output Images (separate diffuse + specular cubemaps)
         // =====================================================================
 
-        Data::Instance<RPI::AttachmentImage> m_cubemapImage;
+        Data::Instance<RPI::AttachmentImage> m_diffuseImage;
+        Data::Instance<RPI::AttachmentImage> m_specularImage;
+
+        //! Creates one output cubemap AttachmentImage at m_faceSize. Returns nullptr on failure.
+        Data::Instance<RPI::AttachmentImage> CreateOutputCubemap(const char* debugName) const;
 
         // =====================================================================
         // Gradient Parameters
@@ -99,6 +116,34 @@ namespace AZ::Render
         Color    m_highColor = Color(0.85f, 0.95f, 1.0f,  1.0f);
         float    m_exposure  = 0.0f;
         uint32_t m_faceSize  = 64;
+
+        // =====================================================================
+        // Detail Texture Layer (resident input; recombined per dispatch)
+        // =====================================================================
+
+        Data::Instance<RPI::Image> m_detailTexture;       // null = layer disabled
+        uint8_t                    m_detailMapping  = 1;  // GradientGITextureMapping (Stretched)
+        uint8_t                    m_detailBlend    = 3;  // GradientGIBlendMode (Overlay)
+        float                      m_detailStrength = 1.0f;
+
+        Data::Instance<RPI::Image> m_specularTexture;     // null = specular == diffuse base
+        uint8_t                    m_specularMapping  = 1; // GradientGITextureMapping (Stretched)
+        uint8_t                    m_specularBlend    = 3; // GradientGIBlendMode (Overlay)
+        float                      m_specularStrength = 1.0f;
+
+        // 1x1 white cubemap bound to the cube detail slot whenever it is unused (there is no
+        // system default cubemap). Created lazily and cached for the pass lifetime.
+        Data::Instance<RPI::Image> m_whiteFallbackCube;
+        Data::Instance<RPI::Image> GetOrCreateWhiteFallbackCube();
+
+        //! Bind one texture layer's SRG slots (2D + cube + params) during CompileResources.
+        //! Picks the 2D or cube slot per the mapping mode, falls back to white for the unused
+        //! slot, and disables the layer if Cube is requested with a non-cube texture.
+        void BindTextureLayer(
+            const AZ::Name& tex2DName, const AZ::Name& texCubeName,
+            const AZ::Name& mappingName, const AZ::Name& blendName,
+            const AZ::Name& strengthName, const AZ::Name& enabledName,
+            const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength);
 
         // Dirty flag: true means the SRG needs recompile before next dispatch
         bool m_dirty = true;

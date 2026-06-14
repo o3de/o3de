@@ -10,6 +10,9 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/std/string/string.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConstants.h>
 
 namespace AZ
@@ -48,6 +51,36 @@ namespace AZ
 
             virtual void SetUpdateMode(GradientGIUpdateMode mode) = 0;
             virtual GradientGIUpdateMode GetUpdateMode() const = 0;
+
+            // Detail texture layer (GPU/Dynamic mode)
+            // The Data::Asset accessors are the C++ core (not script-reflected); scripting uses
+            // the AssetId / AssetPath variants below to avoid a hard Asset<> dependency.
+            virtual void SetDetailTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) = 0;
+            virtual Data::Asset<RPI::StreamingImageAsset> GetDetailTexture() const = 0;
+            virtual void SetDetailTextureAssetId(const Data::AssetId& id) = 0;
+            virtual Data::AssetId GetDetailTextureAssetId() const = 0;
+            virtual void SetDetailTextureAssetPath(const AZStd::string& path) = 0;
+            virtual AZStd::string GetDetailTextureAssetPath() const = 0;
+            virtual void SetDetailMapping(GradientGITextureMapping mapping) = 0;
+            virtual GradientGITextureMapping GetDetailMapping() const = 0;
+            virtual void SetDetailBlend(GradientGIBlendMode blend) = 0;
+            virtual GradientGIBlendMode GetDetailBlend() const = 0;
+            virtual void SetDetailStrength(float strength) = 0;
+            virtual float GetDetailStrength() const = 0;
+
+            // Specular texture layer (GPU/Dynamic mode)
+            virtual void SetSpecularTexture(const Data::Asset<RPI::StreamingImageAsset>& texture) = 0;
+            virtual Data::Asset<RPI::StreamingImageAsset> GetSpecularTexture() const = 0;
+            virtual void SetSpecularTextureAssetId(const Data::AssetId& id) = 0;
+            virtual Data::AssetId GetSpecularTextureAssetId() const = 0;
+            virtual void SetSpecularTextureAssetPath(const AZStd::string& path) = 0;
+            virtual AZStd::string GetSpecularTextureAssetPath() const = 0;
+            virtual void SetSpecularMapping(GradientGITextureMapping mapping) = 0;
+            virtual GradientGITextureMapping GetSpecularMapping() const = 0;
+            virtual void SetSpecularBlend(GradientGIBlendMode blend) = 0;
+            virtual GradientGIBlendMode GetSpecularBlend() const = 0;
+            virtual void SetSpecularStrength(float strength) = 0;
+            virtual float GetSpecularStrength() const = 0;
         };
 
         using GradientGIComponentRequestBus = EBus<GradientGIComponentRequests>;

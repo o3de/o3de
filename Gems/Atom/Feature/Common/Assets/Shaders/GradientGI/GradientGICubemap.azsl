@@ -27,8 +27,12 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    // Output cubemap bound as 2DArray UAV (cubemap-typed UAVs not legal in DX12/Vulkan).
-    RWTexture2DArray<float4> m_outputCubemap;
+    // Output cubemaps bound as 2DArray UAVs (cubemap-typed UAVs not legal in DX12/Vulkan).
+    // Diffuse and specular are written to separate images so they can feed the scene SRG's
+    // independent IBL slots. In I.1 both receive the same gradient; later phases composite
+    // detail/specular layers so the two diverge.
+    RWTexture2DArray<float4> m_outputDiffuse;
+    RWTexture2DArray<float4> m_outputSpecular;
 
     // Gradient band colors (linear HDR, pre-exposure)
     float3 m_lowColor;      // nadir  (-Y)
@@ -40,6 +44,32 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
     // Cubemap face resolution in pixels
     uint m_faceSize;
+
+    // --- Detail texture layer (2D) ---
+    // m_detailEnabled gates sampling. m_detailMapping/m_detailBlend codes match
+    // GradientGITextureMapping / GradientGIBlendMode on the C++ side.
+    Texture2D<float4>   m_detailTex2D;
+    TextureCube<float4> m_detailTexCube;   // used when m_detailMapping == Cube (2)
+    Sampler m_detailSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+    uint  m_detailMapping;
+    uint  m_detailBlend;
+    float m_detailStrength;
+    uint  m_detailEnabled;
+
+    // --- Specular texture layer (composites into the specular output only) ---
+    Texture2D<float4>   m_specularTex2D;
+    TextureCube<float4> m_specularTexCube;
+    uint  m_specularMapping;
+    uint  m_specularBlend;
+    float m_specularStrength;
+    uint  m_specularEnabled;
 }
 
 // ============================================================================
@@ -63,6 +93,39 @@ float3 GetCubemapDirection(uint face, float uc, float vc)
     default: dir = float3(0.0f, 1.0f, 0.0f); break;
     }
     return normalize(dir);
+}
+
+static const float GGI_PI = 3.14159265f;
+
+// Equirectangular UV for a direction (Stretched mapping).
+float2 EquirectUV(float3 dir)
+{
+    float u = atan2(dir.z, dir.x) / (2.0f * GGI_PI) + 0.5f;
+    float v = acos(clamp(dir.y, -1.0f, 1.0f)) / GGI_PI;
+    return float2(u, v);
+}
+
+// Per-face UV in [0,1] for Tiled mapping. uc,vc are the face's [-1,1] coords.
+float2 TiledUV(float uc, float vc)
+{
+    return float2(0.5f * (uc + 1.0f), 0.5f * (vc + 1.0f));
+}
+
+// Blend a layer over a base color. mode matches GradientGIBlendMode.
+float3 BlendLayer(float3 base, float3 layer, uint mode)
+{
+    switch (mode)
+    {
+    case 1: return base + layer;                           // Add
+    case 2: return 1.0f - (1.0f - base) * (1.0f - layer);  // Screen
+    case 3:                                                // Overlay
+        return float3(
+            base.r < 0.5f ? (2.0f * base.r * layer.r) : (1.0f - 2.0f * (1.0f - base.r) * (1.0f - layer.r)),
+            base.g < 0.5f ? (2.0f * base.g * layer.g) : (1.0f - 2.0f * (1.0f - base.g) * (1.0f - layer.g)),
+            base.b < 0.5f ? (2.0f * base.b * layer.b) : (1.0f - 2.0f * (1.0f - base.b) * (1.0f - layer.b)));
+    case 4: return layer;                                  // Replace
+    default: return base * layer;                          // Multiply (0)
+    }
 }
 
 // ============================================================================
@@ -102,8 +165,46 @@ void MainCS(uint3 dispatch_thread_id : SV_DispatchThreadID)
         color = lerp(PassSrg::m_midColor, PassSrg::m_highColor, (t - 0.5f) * 2.0f);
     }
 
-    // Apply exposure (EV stops)
-    color *= pow(2.0f, PassSrg::m_exposure);
+    // Detail texture layer: sample (per mapping mode) and blend over the gradient.
+    if (PassSrg::m_detailEnabled != 0)
+    {
+        float3 detail;
+        if (PassSrg::m_detailMapping == 2) // Cube: sample the authored cubemap by direction
+        {
+            detail = PassSrg::m_detailTexCube.SampleLevel(PassSrg::m_detailSampler, dir, 0).rgb;
+        }
+        else
+        {
+            float2 uv = (PassSrg::m_detailMapping == 1) ? EquirectUV(dir) : TiledUV(uc, vc);
+            detail = PassSrg::m_detailTex2D.SampleLevel(PassSrg::m_detailSampler, uv, 0).rgb;
+        }
+        float3 blended = BlendLayer(color, detail, PassSrg::m_detailBlend);
+        color = lerp(color, blended, saturate(PassSrg::m_detailStrength));
+    }
 
-    PassSrg::m_outputCubemap[uint3(x, y, face)] = float4(color, 1.0f);
+    // 'color' now holds the diffuse/base (gradient with the detail layer overlaid).
+
+    // Specular layer: starts from the base; an optional specular texture composites over it.
+    float3 specularColor = color;
+    if (PassSrg::m_specularEnabled != 0)
+    {
+        float3 spec;
+        if (PassSrg::m_specularMapping == 2) // Cube
+        {
+            spec = PassSrg::m_specularTexCube.SampleLevel(PassSrg::m_detailSampler, dir, 0).rgb;
+        }
+        else
+        {
+            float2 uv = (PassSrg::m_specularMapping == 1) ? EquirectUV(dir) : TiledUV(uc, vc);
+            spec = PassSrg::m_specularTex2D.SampleLevel(PassSrg::m_detailSampler, uv, 0).rgb;
+        }
+        float3 blended = BlendLayer(color, spec, PassSrg::m_specularBlend);
+        specularColor = lerp(color, blended, saturate(PassSrg::m_specularStrength));
+    }
+
+    // Apply exposure (EV stops) to each output independently.
+    float expScale = pow(2.0f, PassSrg::m_exposure);
+
+    PassSrg::m_outputDiffuse[uint3(x, y, face)]  = float4(color * expScale, 1.0f);
+    PassSrg::m_outputSpecular[uint3(x, y, face)] = float4(specularColor * expScale, 1.0f);
 }

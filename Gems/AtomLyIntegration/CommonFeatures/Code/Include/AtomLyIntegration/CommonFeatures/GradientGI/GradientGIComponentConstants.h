@@ -33,5 +33,29 @@ namespace AZ
             Dynamic = 1,
         };
 
+        // =====================================================================
+        // Texture Layer Mapping / Blend (GPU/Dynamic-mode texturing)
+        // =====================================================================
+
+        //! How a detail/specular texture is mapped onto the gradient cubemap.
+        //! Codes are forwarded to the compute shader as plain uints, so the values
+        //! must stay in sync with GradientGICubemap.azsl.
+        enum class GradientGITextureMapping : uint8_t
+        {
+            Tiled     = 0,  //! 2D texture repeated per cube face using the face's UV basis.
+            Stretched = 1,  //! 2D texture wrapped over the sphere (equirectangular).
+            Cube      = 2,  //! Authored cubemap sampled by direction (added in a later phase).
+        };
+
+        //! How a texture layer combines with the color beneath it.
+        enum class GradientGIBlendMode : uint8_t
+        {
+            Multiply = 0,
+            Add      = 1,
+            Screen   = 2,
+            Overlay  = 3,
+            Replace  = 4,  //! Use the texture alone, ignoring the base (specular layer).
+        };
+
     } // namespace Render
 } // namespace AZ

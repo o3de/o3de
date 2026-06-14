@@ -10,6 +10,8 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <AtomLyIntegration/CommonFeatures/GradientGI/GradientGIComponentConstants.h>
 
 namespace AZ
@@ -40,6 +42,28 @@ namespace AZ
             float             m_exposure       = 0.0f;
             uint32_t          m_faceResolution = 64;
             GradientGIUpdateMode m_updateMode  = GradientGIUpdateMode::Static;
+
+            // =====================================================================
+            // Detail Texture Layer (GPU/Dynamic mode only)
+            // =====================================================================
+
+            Data::Asset<RPI::StreamingImageAsset> m_detailTexture;
+            GradientGITextureMapping m_detailMapping = GradientGITextureMapping::Stretched;
+            GradientGIBlendMode      m_detailBlend    = GradientGIBlendMode::Overlay;
+            float                    m_detailStrength = 1.0f;
+
+            // =====================================================================
+            // Specular Texture Layer (GPU/Dynamic mode only)
+            // =====================================================================
+
+            Data::Asset<RPI::StreamingImageAsset> m_specularTexture;
+            GradientGITextureMapping m_specularMapping = GradientGITextureMapping::Stretched;
+            GradientGIBlendMode      m_specularBlend    = GradientGIBlendMode::Overlay;
+            float                    m_specularStrength = 1.0f;
+
+            //! Editor visibility: the texture layers only function in GPU/Dynamic mode,
+            //! so they are hidden in CPU/Static mode. Returns a PropertyVisibility Crc.
+            AZ::Crc32 GetGpuLayerVisibility() const;
         };
 
     } // namespace Render

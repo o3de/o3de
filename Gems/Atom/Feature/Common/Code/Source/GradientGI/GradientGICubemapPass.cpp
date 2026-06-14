@@ -17,6 +17,11 @@
 #include <Atom/RPI.Reflect/Pass/PassDescriptor.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/Image/StreamingImagePool.h>
+#include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Name/Name.h>
 
@@ -84,15 +89,42 @@ namespace AZ::Render
         // aliasing). Queue a rebuild so BuildInternal() recreates the AttachmentImage at the
         // new size. Guarded on m_cubemapImage so the initial pre-build call is a no-op (the
         // pass system builds it once on add).
-        if (faceSizeChanged && m_cubemapImage)
+        if (faceSizeChanged && m_diffuseImage)
         {
             QueueForBuildAndInitialization();
         }
     }
 
-    Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::GetCubemapImage() const
+    Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::GetDiffuseImage() const
     {
-        return m_cubemapImage;
+        return m_diffuseImage;
+    }
+
+    Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::GetSpecularImage() const
+    {
+        return m_specularImage;
+    }
+
+    void GradientGICubemapPass::SetDetailLayer(
+        const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
+    {
+        // No reallocation here -- only SRG state changes. The resident texture and constants are
+        // (re)bound in CompileResources on the next dirty pass, so this stays cheap.
+        m_detailTexture  = texture;
+        m_detailMapping  = mapping;
+        m_detailBlend    = blend;
+        m_detailStrength = strength;
+        m_dirty          = true;
+    }
+
+    void GradientGICubemapPass::SetSpecularLayer(
+        const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
+    {
+        m_specularTexture  = texture;
+        m_specularMapping  = mapping;
+        m_specularBlend    = blend;
+        m_specularStrength = strength;
+        m_dirty            = true;
     }
 
     // =========================================================================
@@ -149,7 +181,24 @@ namespace AZ::Render
             return;
         }
 
-        // ---- Create persistent output cubemap AttachmentImage ----
+        // ---- Create persistent output cubemap AttachmentImages (diffuse + specular) ----
+        m_diffuseImage  = CreateOutputCubemap("GradientGI_Diffuse");
+        m_specularImage = CreateOutputCubemap("GradientGI_Specular");
+
+        if (!m_diffuseImage || !m_specularImage)
+        {
+            AZ_Error("GradientGICubemapPass", false,
+                "Failed to create AttachmentImage(s) for gradient cubemap. "
+                "GPU compute (UAV cubemap) is not supported on this platform.");
+            SetEnabled(false);
+            return;
+        }
+
+        m_dirty = true;
+    }
+
+    Data::Instance<RPI::AttachmentImage> GradientGICubemapPass::CreateOutputCubemap(const char* debugName) const
+    {
         // Bind flags: ShaderRead (SRV for IBL sampling) + ShaderWrite (UAV for compute output).
         // Default view is a cubemap SRV, used when binding to the scene SRG's IBL slots.
         auto* imageSystem = RPI::ImageSystemInterface::Get();
@@ -157,8 +206,7 @@ namespace AZ::Render
         if (!attachmentPool)
         {
             AZ_Error("GradientGICubemapPass", false, "System attachment pool not available.");
-            SetEnabled(false);
-            return;
+            return nullptr;
         }
 
         RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::CreateCubemap(
@@ -169,22 +217,116 @@ namespace AZ::Render
         // Cubemap SRV as default view -- used when the FP binds this image to scene SRG slots.
         auto cubemapViewDesc = RHI::ImageViewDescriptor::CreateCubemap();
 
-        m_cubemapImage = RPI::AttachmentImage::Create(
+        return RPI::AttachmentImage::Create(
             *attachmentPool, imageDesc,
-            AZ::Name("GradientGI_Cubemap"),
+            AZ::Name(debugName),
             nullptr,
             &cubemapViewDesc);
+    }
 
-        if (!m_cubemapImage)
+    Data::Instance<RPI::Image> GradientGICubemapPass::GetOrCreateWhiteFallbackCube()
+    {
+        if (m_whiteFallbackCube)
         {
-            AZ_Error("GradientGICubemapPass", false,
-                "Failed to create AttachmentImage for gradient cubemap. "
-                "GPU compute (UAV cubemap) is not supported on this platform.");
-            SetEnabled(false);
-            return;
+            return m_whiteFallbackCube;
         }
 
-        m_dirty = true;
+        // Build a 1x1, 6-face opaque-white cubemap. Bound to the cube detail slot whenever it
+        // is unused (there is no engine-default cubemap, and SRG slots must stay bound).
+        const RHI::Format format = RHI::Format::R8G8B8A8_UNORM;
+        const RHI::Size faceDimensions(1, 1, 1);
+        const RHI::DeviceImageSubresourceLayout faceLayout = RHI::GetImageSubresourceLayout(faceDimensions, format);
+        const size_t bytesPerFace = faceLayout.m_bytesPerImage;
+
+        AZStd::vector<uint8_t> whiteFace(bytesPerFace, 0xFF);
+
+        Data::Asset<RPI::ImageMipChainAsset> mipChainAsset;
+        {
+            RPI::ImageMipChainAssetCreator mipCreator;
+            mipCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()), /*mipLevels=*/1, /*arraySize=*/6);
+            mipCreator.BeginMip(faceLayout);
+            for (uint32_t face = 0; face < 6; ++face)
+            {
+                mipCreator.AddSubImage(whiteFace.data(), bytesPerFace);
+            }
+            mipCreator.EndMip();
+            if (!mipCreator.End(mipChainAsset))
+            {
+                return nullptr;
+            }
+        }
+
+        auto* imageSystem = RPI::ImageSystemInterface::Get();
+        if (!imageSystem)
+        {
+            return nullptr;
+        }
+
+        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::CreateCubemap(RHI::ImageBindFlags::ShaderRead, 1, format);
+
+        Data::Asset<RPI::StreamingImageAsset> imageAsset;
+        {
+            RPI::StreamingImageAssetCreator assetCreator;
+            assetCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()));
+            assetCreator.SetImageDescriptor(imageDesc);
+            assetCreator.SetImageViewDescriptor(RHI::ImageViewDescriptor::CreateCubemap());
+            assetCreator.SetFlags(RPI::StreamingImageFlags::NotStreamable);
+            assetCreator.SetPoolAssetId(imageSystem->GetSystemStreamingPool()->GetAssetId());
+            assetCreator.AddMipChainAsset(*mipChainAsset.Get());
+            if (!assetCreator.End(imageAsset))
+            {
+                return nullptr;
+            }
+        }
+
+        m_whiteFallbackCube = RPI::StreamingImage::FindOrCreate(imageAsset);
+        return m_whiteFallbackCube;
+    }
+
+    void GradientGICubemapPass::BindTextureLayer(
+        const AZ::Name& tex2DName, const AZ::Name& texCubeName,
+        const AZ::Name& mappingName, const AZ::Name& blendName,
+        const AZ::Name& strengthName, const AZ::Name& enabledName,
+        const Data::Instance<RPI::Image>& texture, uint8_t mapping, uint8_t blend, float strength)
+    {
+        const auto tex2DIdx   = m_passSrg->FindShaderInputImageIndex(tex2DName);
+        const auto texCubeIdx = m_passSrg->FindShaderInputImageIndex(texCubeName);
+        const auto mapIdx     = m_passSrg->FindShaderInputConstantIndex(mappingName);
+        const auto blendIdx   = m_passSrg->FindShaderInputConstantIndex(blendName);
+        const auto strIdx     = m_passSrg->FindShaderInputConstantIndex(strengthName);
+        const auto enIdx      = m_passSrg->FindShaderInputConstantIndex(enabledName);
+
+        // Detect whether the assigned texture is actually a cubemap.
+        bool isCube = false;
+        if (texture && texture->GetRHIImage())
+        {
+            const RHI::ImageDescriptor& d = texture->GetRHIImage()->GetDescriptor();
+            isCube = d.m_isCubemap || d.m_arraySize == 6;
+        }
+
+        const bool cubeRequested = (mapping == 2); // GradientGITextureMapping::Cube
+        const bool useCube       = cubeRequested && isCube;
+        // Cube requested but a non-cube texture supplied -> disable rather than bind a 2D image
+        // to a cube slot (which would be invalid).
+        const bool enabled = (texture != nullptr) && (!cubeRequested || isCube);
+
+        const Data::Instance<RPI::Image>& systemWhite2D =
+            RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);
+
+        // Both slots must stay bound with valid SRVs; the shader samples only the one matching
+        // the active mapping mode.
+        Data::Instance<RPI::Image> tex2D   = (enabled && !useCube) ? texture : systemWhite2D;
+        Data::Instance<RPI::Image> texCube = useCube ? texture : GetOrCreateWhiteFallbackCube();
+
+        m_passSrg->SetImage(tex2DIdx, tex2D);
+        if (texCube)
+        {
+            m_passSrg->SetImage(texCubeIdx, texCube);
+        }
+        m_passSrg->SetConstant(mapIdx,   static_cast<uint32_t>(mapping));
+        m_passSrg->SetConstant(blendIdx, static_cast<uint32_t>(blend));
+        m_passSrg->SetConstant(strIdx,   strength);
+        m_passSrg->SetConstant(enIdx,    enabled ? 1u : 0u);
     }
 
     // =========================================================================
@@ -195,31 +337,36 @@ namespace AZ::Render
     {
         RPI::RenderPass::SetupFrameGraphDependencies(frameGraph);
 
-        if (!m_cubemapImage)
+        if (!m_diffuseImage || !m_specularImage)
         {
             return;
         }
 
-        // Import the persistent attachment image into this frame's attachment database.
-        frameGraph.GetAttachmentDatabase().ImportImage(
-            m_cubemapImage->GetAttachmentId(),
-            m_cubemapImage->GetRHIImage());
+        // Import each persistent attachment image and declare UAV (read/write) access using a
+        // 2DArray view descriptor so the compute shader can address all 6 faces as array
+        // slices (cubemap-typed UAVs are not supported in DX12/Vulkan).
+        auto declareUav = [&frameGraph](const Data::Instance<RPI::AttachmentImage>& image)
+        {
+            frameGraph.GetAttachmentDatabase().ImportImage(
+                image->GetAttachmentId(),
+                image->GetRHIImage());
 
-        // Declare UAV (read/write) access: use a 2DArray view descriptor so the
-        // compute shader can address all 6 faces as array slices (required for UAV;
-        // cubemap-typed UAVs are not supported in DX12/Vulkan).
-        RHI::ImageScopeAttachmentDescriptor uavDesc;
-        uavDesc.m_attachmentId = m_cubemapImage->GetAttachmentId();
-        uavDesc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(
-            RHI::Format::Unknown,
-            /*mipSliceMin=*/0,
-            /*mipSliceMax=*/0,
-            /*arraySliceMin=*/0,
-            /*arraySliceMax=*/5);
-        uavDesc.m_loadStoreAction.m_loadAction  = RHI::AttachmentLoadAction::DontCare;
-        uavDesc.m_loadStoreAction.m_storeAction = RHI::AttachmentStoreAction::Store;
+            RHI::ImageScopeAttachmentDescriptor uavDesc;
+            uavDesc.m_attachmentId = image->GetAttachmentId();
+            uavDesc.m_imageViewDescriptor = RHI::ImageViewDescriptor::Create(
+                RHI::Format::Unknown,
+                /*mipSliceMin=*/0,
+                /*mipSliceMax=*/0,
+                /*arraySliceMin=*/0,
+                /*arraySliceMax=*/5);
+            uavDesc.m_loadStoreAction.m_loadAction  = RHI::AttachmentLoadAction::DontCare;
+            uavDesc.m_loadStoreAction.m_storeAction = RHI::AttachmentStoreAction::Store;
 
-        frameGraph.UseShaderAttachment(uavDesc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::ComputeShader);
+            frameGraph.UseShaderAttachment(uavDesc, RHI::ScopeAttachmentAccess::ReadWrite, RHI::ScopeAttachmentStage::ComputeShader);
+        };
+
+        declareUav(m_diffuseImage);
+        declareUav(m_specularImage);
     }
 
     // =========================================================================
@@ -241,7 +388,8 @@ namespace AZ::Render
             const auto highIdx  = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_highColor"));
             const auto expIdx   = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_exposure"));
             const auto sizeIdx  = m_passSrg->FindShaderInputConstantIndex(AZ::Name("m_faceSize"));
-            const auto imgIdx   = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputCubemap"));
+            const auto diffIdx  = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputDiffuse"));
+            const auto specIdx  = m_passSrg->FindShaderInputImageIndex(AZ::Name("m_outputSpecular"));
 
             m_passSrg->SetConstant(lowIdx,  AZ::Vector3(m_lowColor.GetR(),  m_lowColor.GetG(),  m_lowColor.GetB()));
             m_passSrg->SetConstant(midIdx,  AZ::Vector3(m_midColor.GetR(),  m_midColor.GetG(),  m_midColor.GetB()));
@@ -249,15 +397,34 @@ namespace AZ::Render
             m_passSrg->SetConstant(expIdx,  m_exposure);
             m_passSrg->SetConstant(sizeIdx, m_faceSize);
 
-            // ---- Bind the UAV image view from the frame graph (2DArray, not cubemap) ----
-            if (m_cubemapImage)
+            // ---- Bind the UAV image views from the frame graph (2DArray, not cubemap) ----
+            if (m_diffuseImage)
             {
-                const RHI::ImageView* uavView = context.GetImageView(m_cubemapImage->GetAttachmentId());
-                if (uavView)
+                if (const RHI::ImageView* uavView = context.GetImageView(m_diffuseImage->GetAttachmentId()))
                 {
-                    m_passSrg->SetImageView(imgIdx, uavView);
+                    m_passSrg->SetImageView(diffIdx, uavView);
                 }
             }
+            if (m_specularImage)
+            {
+                if (const RHI::ImageView* uavView = context.GetImageView(m_specularImage->GetAttachmentId()))
+                {
+                    m_passSrg->SetImageView(specIdx, uavView);
+                }
+            }
+
+            // ---- Texture layers (resident SRVs + parameters) ----
+            BindTextureLayer(
+                AZ::Name("m_detailTex2D"), AZ::Name("m_detailTexCube"),
+                AZ::Name("m_detailMapping"), AZ::Name("m_detailBlend"),
+                AZ::Name("m_detailStrength"), AZ::Name("m_detailEnabled"),
+                m_detailTexture, m_detailMapping, m_detailBlend, m_detailStrength);
+
+            BindTextureLayer(
+                AZ::Name("m_specularTex2D"), AZ::Name("m_specularTexCube"),
+                AZ::Name("m_specularMapping"), AZ::Name("m_specularBlend"),
+                AZ::Name("m_specularStrength"), AZ::Name("m_specularEnabled"),
+                m_specularTexture, m_specularMapping, m_specularBlend, m_specularStrength);
         }
 
         m_passSrg->Compile();
