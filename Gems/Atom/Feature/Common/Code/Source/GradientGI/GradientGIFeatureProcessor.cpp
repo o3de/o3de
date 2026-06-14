@@ -173,21 +173,26 @@ namespace AZ::Render
         const bool weOwnedSlots    = (m_cubemapImage && slotImage == m_cubemapImage.get());
         const bool foreignOwnsSlots = m_iblFeatureProcessor->IsImageSet() && !weOwnedSlots;
 
-        // --- Rebuild the CPU cubemap when parameters changed --------------------
+        // --- Rebuild the CPU cubemap when parameters changed (max once per frame) ----
+        // Each rebuild allocates a fresh StreamingImage (the type is immutable, so it cannot
+        // be updated in place). One rebuild per frame is safe and matches a tick-driven script
+        // changing colors at runtime. The editor color picker, however, can fire several
+        // changes within a single frame; m_rebuiltThisFrame (cleared each frame in Render())
+        // caps us to one rebuild per frame regardless. The latest values are buffered in the
+        // member colors, so a coalesced rebuild always uses the final values.
         bool justRebuilt = false;
-        if (m_needsRebuild)
+        if (m_needsRebuild && !m_rebuiltThisFrame)
         {
             // Release the previous cubemap before building its replacement so we never hold
-            // two full cubemaps in the streaming pool at once. This bounds peak pool usage
-            // when the resolution slider is scrubbed rapidly in CPU mode (a contributor to
-            // the streaming-pool exhaustion panic seen on mobile).
+            // two full cubemaps in the streaming pool at once.
             m_cubemapImage = nullptr;
             m_imageAsset   = {};
 
-            m_cubemapImage = BuildGradientCubemap();
-            m_active       = (m_cubemapImage != nullptr);
-            m_needsRebuild = false;
-            justRebuilt    = m_active;
+            m_cubemapImage     = BuildGradientCubemap();
+            m_active           = (m_cubemapImage != nullptr);
+            m_needsRebuild     = false;
+            m_rebuiltThisFrame = true;
+            justRebuilt        = m_active;
         }
 
         if (!m_active || !m_imageAsset.GetId().IsValid())
@@ -267,6 +272,10 @@ namespace AZ::Render
     void GradientGIFeatureProcessor::Render(const FeatureProcessor::RenderPacket& /*packet*/)
     {
         AZ_PROFILE_SCOPE(RPI, "GradientGIFeatureProcessor: Render");
+
+        // Frame boundary: Render() is called every frame (Simulate() may not be), so this is
+        // the reliable place to re-arm the once-per-frame CPU rebuild cap.
+        m_rebuiltThisFrame = false;
 
         if (m_updateMode != UpdateMode::Dynamic || !m_gradientPass || !m_sceneSrg)
         {

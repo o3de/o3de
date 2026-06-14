@@ -121,6 +121,14 @@ namespace AZ::Render
         Data::Asset<RPI::StreamingImageAsset>   m_imageAsset;
         bool                                    m_needsRebuild = false;
 
+        // Rebuild throttle: StreamingImage is immutable, so every parameter change allocates a
+        // new one. A single rebuild per frame is safe (matches a tick-driven runtime script).
+        // The editor color picker, however, can fire several changes within one frame; this
+        // flag (cleared each frame in Render()) caps us to one rebuild per frame. The latest
+        // parameters are always buffered in the member colors, so a coalesced rebuild uses the
+        // final values.
+        bool                                    m_rebuiltThisFrame = false;
+
         // =====================================================================
         // State -- Dynamic Mode
         // =====================================================================
