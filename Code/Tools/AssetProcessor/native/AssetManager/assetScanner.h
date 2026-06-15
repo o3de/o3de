@@ -8,14 +8,13 @@
 #ifndef ASSETSCANNER_H
 #define ASSETSCANNER_H
 
-#if !defined(Q_MOC_RUN)
 #include "native/assetprocessor.h"
 #include "assetScannerWorker.h"
 #include "assetScanFolderInfo.h"
+
 #include <QString>
 #include <QThread>
 #include <QList>
-#endif
 
 namespace AssetProcessor
 {

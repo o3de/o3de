@@ -94,4 +94,3 @@ namespace PhysX
     } // Editor
 } // PhysX
 
-#include <Editor/moc_SettingsWidget.cpp>

@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QAction>
 #include <QToolBar>
 #include <QMenu>
-#endif
 
 #include <Integration/Rendering/RenderFlag.h>
 

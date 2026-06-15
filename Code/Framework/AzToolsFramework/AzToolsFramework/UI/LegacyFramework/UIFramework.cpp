@@ -221,7 +221,8 @@ namespace AzToolsFramework
                     if (cssFile.exists())
                     {
                         enableStyleSheet = false; // dont use the built-in style sheet!
-                        cssFile.open(QFile::ReadOnly);
+                        [[maybe_unused]] const bool res = cssFile.open(QFile::ReadOnly);
+                        AZ_Assert(res, "Failed to open css file at %s", switchValue.c_str());
                         QString styleSheet = QLatin1String(cssFile.readAll());
                         pApplication->setStyleSheet(styleSheet);
                     }
@@ -638,4 +639,3 @@ namespace AzToolsFramework
     }
 }   // END namespace AzToolsFramework
 
-#include "UI/LegacyFramework/moc_UIFramework.cpp"

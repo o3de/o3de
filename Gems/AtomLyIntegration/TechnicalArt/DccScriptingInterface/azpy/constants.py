@@ -217,7 +217,7 @@ ENVAR_DCCSI_PY_BASE = str('DCCSI_PY_BASE')
 ENVAR_DCCSI_PY_DCCSI = str('DCCSI_PY_DCCSI')
 ENVAR_DCCSI_PY_DEFAULT = str('DCCSI_PY_DEFAULT')
 
-# Qt / PySide2
+# Qt / PySide
 ENVAR_QT_PLUGIN_PATH = str('QT_PLUGIN_PATH')
 ENVAR_QTFORPYTHON_PATH = str('QTFORPYTHON_PATH')
 
@@ -263,7 +263,7 @@ PATH_O3DE_BUILD = str(STR_CONSTRUCT_PATH_O3DE_BUILD.format(O3DE_DEV,
 
 # ENVAR_QT_PLUGIN_PATH = TAG_QT_PLUGIN_PATH
 STR_QTPLUGIN_DIR = str('{0}\\bin\\profile\\EditorPlugins')
-STR_QTFORPYTHON_PATH = str('{0}\\Gems\\QtForPython\\3rdParty\\pyside2\\windows\\release')
+STR_QTFORPYTHON_PATH = str('{0}\\Gems\\QtForPython\\3rdParty\\pyside6\\windows\\release')
 STR_PATH_O3DE_BIN = str('{0}\\bin\\profile')
 
 STR_PATH_O3DE_BUILD = str('{0}\\{1}')

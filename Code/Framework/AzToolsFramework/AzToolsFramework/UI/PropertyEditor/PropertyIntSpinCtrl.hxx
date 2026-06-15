@@ -10,10 +10,7 @@
 
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyIntCtrlCommon.h>
-#endif
 
 namespace AzQtComponents
 {

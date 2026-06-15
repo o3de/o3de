@@ -49,8 +49,6 @@ set(FILES
     Components/O3DEStylesheet.h
     Components/Titlebar.cpp
     Components/Titlebar.h
-    Components/TitleBarOverdrawHandler.cpp
-    Components/TitleBarOverdrawHandler.h
     Components/ToastNotification.cpp
     Components/ToastNotification.h
     Components/ToastNotificationConfiguration.h
@@ -101,7 +99,6 @@ set(FILES
     Components/WindowDecorationWrapper.h
     Components/ExtendedLabel.cpp
     Components/ExtendedLabel.h
-    Components/RepolishMinimizer.h
     Components/FlowLayout.h
     Components/FlowLayout.cpp
     Components/resources.qrc
@@ -279,7 +276,7 @@ set(FILES
     Components/Widgets/ColorPicker/Swatch.cpp
     Components/Widgets/ColorPicker/ColorWarning.h
     Components/Widgets/ColorPicker/ColorWarning.cpp
-    Images/resources.qrc
+    Images/img_resources.qrc
     PropertyInput/PropertyInputWidgets.h
     PropertyInput/PropertyInputWidgets.cpp
     Utilities/AutoSettingsGroup.h

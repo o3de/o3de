@@ -1752,5 +1752,3 @@ namespace AzToolsFramework
             &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew AZColorGradientRGBPropertyHandler());
     }
 }
-
-#include "UI/PropertyEditor/moc_PropertyColorGradientCtrl.cpp"

@@ -32,5 +32,3 @@ namespace OpenParticleSystemEditor
     {
     }
 } // namespace OpenParticleSystemEditor
-
-#include <moc_ExploreInspector.cpp>

@@ -529,10 +529,10 @@ namespace GraphCanvas
 
     void BookmarkTableSortProxyModel::SetFilter(const QString& filter)
     {
+        beginFilterChange();
         m_filter = filter;
         m_filterRegex = QRegularExpression(m_filter, QRegularExpression::PatternOption::CaseInsensitiveOption);
-
-        invalidateFilter();
+        endFilterChange();
     }
 
     void BookmarkTableSortProxyModel::ClearFilter()
@@ -540,5 +540,4 @@ namespace GraphCanvas
         SetFilter("");
     }
 
-#include <StaticLib/GraphCanvas/Widgets/Bookmarks/moc_BookmarkTableModel.cpp>
 }

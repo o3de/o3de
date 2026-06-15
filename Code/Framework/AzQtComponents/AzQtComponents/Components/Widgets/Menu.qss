@@ -7,6 +7,11 @@
  *
  */
 
+QMenu
+{
+    background-color: #222222;
+}
+
 QMenu::item
 {
     color: #FFFFFF;

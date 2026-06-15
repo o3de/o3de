@@ -10,12 +10,12 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Math/EasingCurve.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
 #include <QWidget>
 #include <QPaintEvent>
 #include <QPoint>
@@ -24,7 +24,6 @@
 #include <QRect>
 #include <QPainter>
 #include <QHBoxLayout>
-#endif
 
 namespace AzToolsFramework
 {

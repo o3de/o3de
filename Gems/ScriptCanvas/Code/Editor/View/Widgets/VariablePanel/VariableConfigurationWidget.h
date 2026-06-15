@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
 
 #include <QAbstractListModel>
@@ -45,7 +44,6 @@
 
 #include <Editor/View/Widgets/VariablePanel/VariablePaletteTableView.h>
 #include <Editor/View/Widgets/VariablePanel/GraphVariablesTableView.h>
-#endif
 
 class QAction;
 class QLineEdit;

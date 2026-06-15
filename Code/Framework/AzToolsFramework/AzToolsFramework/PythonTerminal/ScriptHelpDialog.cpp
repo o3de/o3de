@@ -127,8 +127,9 @@ namespace AzToolsFramework
         const QString lowerText = text.toLower();
         if (m_commandFilter != lowerText)
         {
+            beginFilterChange();
             m_commandFilter = lowerText;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -137,8 +138,9 @@ namespace AzToolsFramework
         const QString lowerText = text.toLower();
         if (m_moduleFilter != lowerText)
         {
+            beginFilterChange();
             m_moduleFilter = lowerText;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -147,8 +149,9 @@ namespace AzToolsFramework
         const QString lowerText = text.toLower();
         if (m_descriptionFilter != lowerText)
         {
+            beginFilterChange();
             m_descriptionFilter = lowerText;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -157,8 +160,9 @@ namespace AzToolsFramework
         const QString lowerText = text.toLower();
         if (m_exampleFilter != lowerText)
         {
+            beginFilterChange();
             m_exampleFilter = lowerText;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -202,7 +206,7 @@ namespace AzToolsFramework
         {
             return 0;
         }
-        return m_items.size();
+        return static_cast<int>(m_items.size());
     }
 
     int ScriptHelpModel::columnCount(const QModelIndex& parent) const
@@ -368,5 +372,3 @@ namespace AzToolsFramework
         setWindowTitle(QString("Script Help (Copied \"%1\" to clipboard)").arg(textForClipboard));
     }
 } // namespace AzToolsFramework
-
-#include <moc_ScriptHelpDialog.cpp>

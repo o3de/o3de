@@ -10,14 +10,14 @@
 
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
+
 #include "PropertyEditorAPI.h"
+
 #include <QWidget>
 #include <QFrame>
-#endif
 
 class QScrollArea;
 class QLayout;

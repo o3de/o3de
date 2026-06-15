@@ -7,7 +7,6 @@
  */
 
 #include <QApplication>
-#include <QtGui/private/qguiapplication_p.h>
 #include <QShortcutEvent>
 
 #include <AzQtComponents/Components/StyledDockWidget.h>

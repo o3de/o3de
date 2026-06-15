@@ -152,7 +152,7 @@ namespace GraphCanvas
         {
             showRow = true;
             
-            AZStd::pair<int, int> highlight(match.capturedStart(), match.capturedLength());
+            AZStd::pair<int, int> highlight(static_cast<int>(match.capturedStart()), static_cast<int>(match.capturedLength()));
             currentItem->SetHighlight(highlight);
         }
         else
@@ -240,7 +240,7 @@ namespace GraphCanvas
         // If name contains filter or filter regex, assuming shorter name has stronger relevance
         if (sourceString.contains(m_filter) || sourceString.contains(m_filterRegex))
         {
-            result = AZStd::min(result, sourceString.size());
+            result = AZStd::min<int>(result, static_cast<int>(sourceString.size()));
         }
         return result;
     }
@@ -282,15 +282,16 @@ namespace GraphCanvas
     {
         if (m_hasSourceSlotFilter)
         {
+            beginFilterChange();
             m_hasSourceSlotFilter = false;
             m_sourceSlotFilter.clear();
-
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
     void NodePaletteSortFilterProxyModel::FilterForSourceSlot(const AZ::EntityId& /*sceneId*/, const AZ::EntityId& /*sourceSlotId*/)
     {
+        beginFilterChange();
         m_hasSourceSlotFilter = true;
         m_sourceSlotAutoCompleteModel->beginResetModel();
         m_sourceSlotAutoCompleteModel->ClearAvailableItems();
@@ -326,7 +327,7 @@ namespace GraphCanvas
         }
 
         m_sourceSlotAutoCompleteModel->endResetModel();
-        invalidateFilter();
+        endFilterChange();
     }
 
     bool NodePaletteSortFilterProxyModel::HasFilter() const
@@ -392,5 +393,4 @@ namespace GraphCanvas
         }
     }
 
-    #include <StaticLib/GraphCanvas/Widgets/NodePalette/Model/moc_NodePaletteSortFilterProxyModel.cpp>
 }

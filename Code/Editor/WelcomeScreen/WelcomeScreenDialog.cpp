@@ -19,7 +19,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QScreen>
-#include <QDesktopWidget>
 #include <QTimer>
 #include <QDateTime>
 #include <QRegularExpression>
@@ -197,7 +196,7 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
     gamePath = Path::AddSlash(gamePath);
 
     QString sCurDir = (Path::GetEditingGameDataFolder() + QDir::separator().toLatin1()).c_str();
-    int nCurDir = sCurDir.length();
+    int nCurDir = static_cast<int>(sCurDir.length());
 
     int recentListSize = pList->GetSize();
     int currentRow = 0;
@@ -381,4 +380,3 @@ void WelcomeScreenDialog::previewAreaScrolled()
     m_messageScrollReported = true;
 }
 
-#include <WelcomeScreen/moc_WelcomeScreenDialog.cpp>

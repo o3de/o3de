@@ -11,8 +11,8 @@
  * SearchAssetTypeSelectorWidget has been deprecated, use AzQtComponents::FilteredSearchWidget instead.
  *********************************************************************************************/
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
+#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -28,9 +28,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: 'QBrush:
 #include <QCheckBox>
 #include <QString>
 AZ_POP_DISABLE_WARNING
-#endif
 
-#include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 
 class QMenu;

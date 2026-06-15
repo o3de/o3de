@@ -133,7 +133,7 @@ namespace AzToolsFramework
         QWidget::paintEvent(e);
     }
 
-    void ThumbnailPropertyCtrl::enterEvent(QEvent* e)
+    void ThumbnailPropertyCtrl::enterEvent(QEnterEvent* e)
     {
         m_dropDownArrow->setPixmap(QPixmap(":/stylesheet/img/triangle0_highlighted.png"));
         const QPoint offset(-m_thumbnailEnlarged->width() - 5, -m_thumbnailEnlarged->height() / 2 + m_thumbnail->height() / 2);
@@ -157,4 +157,3 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#include "UI/PropertyEditor/moc_ThumbnailPropertyCtrl.cpp"

@@ -8,7 +8,6 @@
 #ifndef FILESERVER_H
 #define FILESERVER_H
 
-#if !defined(Q_MOC_RUN)
 #include <QByteArray>
 #include <QDir>
 #include <QString>
@@ -18,7 +17,6 @@
 
 // currently these headers are there to provide OS 'HANDLE' of the lock-files
 #include <AzCore/PlatformIncl.h>
-#endif
 
 namespace AZ
 {

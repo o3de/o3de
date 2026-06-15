@@ -10,10 +10,10 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
+#include <QRegularExpression>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
@@ -21,12 +21,12 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4244: conversi
 #include <QString>
 #include <QRegularExpression>
 AZ_POP_DISABLE_WARNING
-#endif
 
 class QLineEdit;
 class QPushButton;
 class QSortFilterProxyModel;
 class QTreeView;
+class QStandardItem;
 
 namespace AZ
 {

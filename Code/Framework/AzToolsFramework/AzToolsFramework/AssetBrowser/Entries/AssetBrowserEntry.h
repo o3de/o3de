@@ -9,7 +9,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/IO/Path/Path.h>
@@ -21,7 +20,6 @@
 #include <QCollator>
 #include <QObject>
 #include <QModelIndex>
-#endif
 
 class QMimeData;
 

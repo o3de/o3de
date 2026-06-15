@@ -38,7 +38,6 @@ namespace UnitTest
             m_dummyWidget = AZStd::make_unique<QWidget>();
             // Give the test window a valid windowHandle. SpinBox code uses this to access the QScreen
             m_dummyWidget->winId();
-            QApplication::setActiveWindow(m_dummyWidget.get());
 
             m_intSpinBox = AZStd::make_unique<AzQtComponents::SpinBox>();
             m_doubleSpinBox = AZStd::make_unique<AzQtComponents::DoubleSpinBox>();
@@ -54,12 +53,17 @@ namespace UnitTest
                 spinBox->setFocusPolicy(Qt::StrongFocus);
                 spinBox->clearFocus();
             }
+
+            // Qt6 will not deliver QEvent::FocusIn to a widget whose top-level
+            // has never been shown, even on the offscreen platform. Show after
+            // parenting children so they inherit visibility.
+            m_dummyWidget->show();
+            m_dummyWidget->activateWindow();
+            QApplication::processEvents();
         }
 
         void TearDownEditorFixtureImpl() override
         {
-            QApplication::setActiveWindow(nullptr);
-
             // Regenerate this list in case any of them were deleted during the test
             m_spinBoxes = { m_intSpinBox.get(), m_doubleSpinBox.get(), m_doubleSpinBoxWithLineEdit.get() };
 
@@ -126,6 +130,20 @@ namespace UnitTest
 
     TEST_F(SpinBoxFixture, SpinBoxMousePressAndMoveLeftScrollsValue)
     {
+        // The leftward drag starts 1 pixel inside the widget and ends 10 pixels
+        // outside its left edge. SpinBox's mouse-drag handler relies on the
+        // platform delivering events for the off-widget portion of the drag,
+        // which requires QPA mouse grab support. The minimal QPA plugin (used
+        // on the Linux CI runner when libxcb-cursor0 is missing) prints
+        // "This plugin does not support grabbing the mouse" and the off-widget
+        // events are misreported, causing the test to observe two steps of
+        // motion instead of one. The rightward companion test passes on
+        // minimal because the drag stays in-bounds.
+        if (QApplication::platformName() == QLatin1String("minimal"))
+        {
+            GTEST_SKIP() << "minimal QPA does not support mouse grab; off-widget drag math is unreliable";
+        }
+
         m_doubleSpinBox->setValue(10.0);
 
         const int halfWidgetHeight = m_doubleSpinBox->height() / 2;

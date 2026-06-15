@@ -12,11 +12,10 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include <AzCore/Math/Guid.h>
+
 #include <QDialog>
 #include <QScopedPointer>
-#endif
-
 
 class CSettingsManager;
 

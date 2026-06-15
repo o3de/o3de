@@ -20,8 +20,6 @@
 #include "AzToolsFramework/API/EditorAssetSystemAPI.h"
 #include <native/AssetManager/SourceAssetReference.h>
 
-class QStringList;
-
 namespace AssetProcessor
 {
     //! the Asset Processor's database manager's job is to create and modify the actual underlying

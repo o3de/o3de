@@ -78,14 +78,14 @@ protected:
 
         while (true)
         {
-            pos = text.indexOf(m_searchTerm, pos+1, Qt::CaseInsensitive);
+            pos = static_cast<int>(text.indexOf(m_searchTerm, pos+1, Qt::CaseInsensitive));
 
             if (pos == -1)
             {
                 break;
             }
 
-            setFormat(pos, m_searchTerm.length(), myClassFormat);
+            setFormat(pos, static_cast<int>(m_searchTerm.length()), myClassFormat);
         }
     }
 
@@ -112,7 +112,7 @@ static QString RemoveColorCode(const QString& text, int& iColorCode)
     QString cleanString;
     cleanString.reserve(text.size());
 
-    const int textSize = text.size();
+    const int textSize = static_cast<int>(text.size());
     for (int i = 0; i < textSize; ++i)
     {
         QChar c = text.at(i);
@@ -289,14 +289,14 @@ void ConsoleLineEdit::DisplayHistory(bool bForward)
     const int newHistoryIndex = static_cast<int>(m_historyIndex) + increment;
 
     m_bReusedHistory = false;
-    m_historyIndex = static_cast<unsigned int>(clamp_tpl(newHistoryIndex, 0, m_history.size() - 1));
+    m_historyIndex = static_cast<unsigned int>(clamp_tpl(newHistoryIndex, 0, static_cast<int>(m_history.size()) - 1));
 
     setText(m_history[m_historyIndex]);
 }
 
 void ConsoleLineEdit::ResetHistoryIndex()
 {
-    m_historyIndex = m_history.size();
+    m_historyIndex = static_cast<int>(m_history.size());
     m_bReusedHistory = false;
 }
 
@@ -705,11 +705,11 @@ void ConsoleVariableItemDelegate::setEditorData(QWidget* editor, const QModelInd
         Q_ASSERT(var->GetType() == IVariable::FLOAT);
 
         QString valStr = QString::number(value.toFloat());
-        int decimalIndex = valStr.indexOf('.');
+        int decimalIndex = static_cast<int>(valStr.indexOf('.'));
         if (decimalIndex != -1)
         {
             valStr.remove(0, decimalIndex + 1);
-            doubleEditor->setDecimals(valStr.size());
+            doubleEditor->setDecimals(static_cast<int>(valStr.size()));
         }
 
         // Set the initial value to our editor
@@ -1412,5 +1412,3 @@ void CConsoleSCB::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
     }
 }
-
-#include <Controls/moc_ConsoleSCB.cpp>

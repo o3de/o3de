@@ -1,4 +1,4 @@
-﻿#
+#
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
@@ -30,9 +30,9 @@ ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-windows                  
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-windows                             TARGETS mikkelsen                   PACKAGE_HASH 872c4d245a1c86139aa929f2b465b63ea4ea55b04ced50309135dd4597457a4e)
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-windows                    TARGETS GoogleBenchmark             PACKAGE_HASH a19e41670b46ec1676b51f9d6ad862443c56415d61b505383c19909fb02feb9e)
 ly_associate_package(PACKAGE_NAME d3dx12-headers-rev1-windows                           TARGETS d3dx12                      PACKAGE_HASH 088c637159fba4a3e4c0cf08fb4921906fd4cca498939bd239db7c54b5b2f804)
-ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev6-windows                  TARGETS pyside2                     PACKAGE_HASH 6c4e99af920cda5f34dc2a495c42f38381179543f062dc72a12147a8a660a681)
+ly_associate_package(PACKAGE_NAME pyside6-6.10.2-py3.10-rev1-windows                    TARGETS pyside6                     PACKAGE_HASH 9e5b12174eebd4fdae194e894299284429835507a051ec83d316f7d3f5e5ab1e)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.17-rev4-windows           TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH d542198653b33640268a999de542c9c5adf4a29322ed04858c730bc82eb34b09)
-ly_associate_package(PACKAGE_NAME qt-5.15.2-rev7-windows                                TARGETS Qt                          PACKAGE_HASH 4343a04130657e740795e50a25ab5fe6e41100fa3c58a212c86bed612dde7775)
+ly_associate_package(PACKAGE_NAME qt-6.10.2-rev5-windows                                TARGETS Qt                          PACKAGE_HASH c45fc7c0f5c4c4055ee2b67748c2c1dd719a35812870316ccbb1c9952522eee3)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-windows                               TARGETS PNG                         PACKAGE_HASH e16539a0fff26ac9ef80dd11ef0103eca91745519eacd41d41d96911c173589f)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-windows                      TARGETS libsamplerate               PACKAGE_HASH dcf3c11a96f212a52e2c9241abde5c364ee90b0f32fe6eeb6dcdca01d491829f)
 ly_associate_package(PACKAGE_NAME civetweb-1.8-rev1-windows                             TARGETS civetweb                    PACKAGE_HASH 36d0e58a59bcdb4dd70493fb1b177aa0354c945b06c30416348fd326cf323dd4)

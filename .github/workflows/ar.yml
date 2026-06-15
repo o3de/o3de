@@ -221,8 +221,8 @@ jobs:
       platform: Windows
       type: profile
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }} # If CLEAN_ARTIFACTS is false, then this returns true
-      msvc_toolset_version: "14.29"
-      msvc_platform_toolset: "v142"
+      msvc_toolset_version: "14.44"
+      msvc_platform_toolset: "v143"
       cmake_version: *cmake_version
 
   Windows-Asset:
@@ -235,8 +235,8 @@ jobs:
       image: windows-2022
       platform: Windows
       type: asset_profile
-      msvc_toolset_version: "14.29"
-      msvc_platform_toolset: "v142"
+      msvc_toolset_version: "14.44"
+      msvc_platform_toolset: "v143"
       cmake_version: *cmake_version
 
   Windows-Test:
@@ -249,8 +249,8 @@ jobs:
       image: windows-2022
       platform: Windows
       type: test_cpu_profile
-      msvc_toolset_version: "14.29"
-      msvc_platform_toolset: "v142"
+      msvc_toolset_version: "14.44"
+      msvc_platform_toolset: "v143"
       cmake_version: *cmake_version
 
   Windows-Release:
@@ -263,6 +263,6 @@ jobs:
       platform: Windows
       type: release
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
-      msvc_toolset_version: "14.29"
-      msvc_platform_toolset: "v142"
+      msvc_toolset_version: "14.44"
+      msvc_platform_toolset: "v143"
       cmake_version: *cmake_version

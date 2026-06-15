@@ -559,5 +559,3 @@ namespace AzToolsFramework
         PropertyTypeRegistrationMessageBus::Broadcast(&PropertyTypeRegistrationMessages::RegisterPropertyType, aznew PropertyCurveEditHandler());
     }
 } // namespace AzToolsFramework
-
-#include "UI/PropertyEditor/moc_PropertyCurveCtrl.cpp"

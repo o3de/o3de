@@ -8,9 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QFrame>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)

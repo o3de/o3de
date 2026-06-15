@@ -9,7 +9,6 @@
 #pragma once
 
 // include MCore
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
@@ -36,7 +35,6 @@
 #include "AnimGraphOptions.h"
 #include "NodeGraph.h"
 #include "StateGraphNode.h"
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QSettings)
 QT_FORWARD_DECLARE_CLASS(QMenu)

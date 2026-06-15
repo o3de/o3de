@@ -45,6 +45,7 @@
 #include "UiEditorAnimationBus.h"
 
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QInputDialog>
 #include <QKeyEvent>
@@ -113,7 +114,7 @@ public:
                         }
                     }
 
-                    menu->exec(mouseEvent->globalPos());
+                    menu->exec(mouseEvent->globalPosition().toPoint());
                     return true;
                 }
 
@@ -219,7 +220,7 @@ void CUiAnimViewDialog::OnAddEntityNodeMenu()
 }
 
 //////////////////////////////////////////////////////////////////////////
-BOOL CUiAnimViewDialog::OnInitDialog()
+bool CUiAnimViewDialog::OnInitDialog()
 {
     InitToolbar();
     InitMenu();
@@ -1838,4 +1839,3 @@ void CUiAnimViewDialog::EndUndoTransaction()
     m_bDoingUndoOperation = false;
 }
 
-#include <Animation/moc_UiAnimViewDialog.cpp>

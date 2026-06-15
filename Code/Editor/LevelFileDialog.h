@@ -11,11 +11,8 @@
 #define CRYINCLUDE_EDITOR_LEVELFILEDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QScopedPointer>
-#include <QVector>
-#endif
 
 #include "LevelRoots.h"
 

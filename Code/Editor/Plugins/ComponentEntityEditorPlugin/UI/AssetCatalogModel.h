@@ -7,16 +7,15 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStandardItemModel>
 #include <QFileIconProvider>
 #include <QThread>
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/unordered_map.h>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
-#endif
 
 class QRegularExpression;
 

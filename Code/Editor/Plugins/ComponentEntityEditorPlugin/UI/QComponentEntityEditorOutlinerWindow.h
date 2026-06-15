@@ -7,12 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 
 #include <Legacy/CryCommon/ISystem.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#endif
 
 class QObjectPropertyModel;
 class PropertyInfo;

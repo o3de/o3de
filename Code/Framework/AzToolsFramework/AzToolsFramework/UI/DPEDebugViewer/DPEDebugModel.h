@@ -9,13 +9,13 @@
 #pragma once
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
-#if !defined(Q_MOC_RUN)
+
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QAbstractItemModel>
-#endif // Q_MOC_RUN
+
 
 namespace AzToolsFramework
 {
