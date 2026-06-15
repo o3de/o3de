@@ -547,7 +547,7 @@ namespace AzToolsFramework
             ));
         }
 
-        m_actionUpdaters.insert({ actionUpdaterIdentifier, {} });
+        m_actionUpdaters.try_emplace(actionUpdaterIdentifier);
         return AZ::Success();
     }
 

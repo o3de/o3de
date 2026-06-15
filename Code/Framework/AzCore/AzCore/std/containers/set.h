@@ -495,8 +495,8 @@ namespace AZStd
         AZ_FORCE_INLINE void swap(this_type& rhs)           { m_tree.swap(rhs.m_tree); }
 
         // insert/erase
-        AZ_FORCE_INLINE pair<iterator, bool> insert(const value_type& value)             { return m_tree.insert_equal(value); }
-        AZ_FORCE_INLINE iterator insert(iterator insertPos, const value_type& value)    { return m_tree.insert_equal(insertPos, value); }
+        AZ_FORCE_INLINE iterator insert(const value_type& value) { return m_tree.insert_equal(value); }
+        AZ_FORCE_INLINE iterator insert(iterator insertPos, const value_type& value) { return m_tree.insert_equal(insertPos, value); }
         template<class InputIterator>
         void insert(InputIterator first, InputIterator last)
         {

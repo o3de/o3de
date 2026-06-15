@@ -621,7 +621,7 @@ namespace
             // If this entry ultimately ends up not having any space char
             // indices associated with it, we will simply skip iterating over
             // it later.
-            batchSpaceIndices.insert(&drawBatch);
+            batchSpaceIndices.try_emplace(&drawBatch);
 
             int batchCurChar = 0;
 
