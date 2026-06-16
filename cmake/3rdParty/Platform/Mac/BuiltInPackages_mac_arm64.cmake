@@ -34,7 +34,7 @@ ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1w-rev1-mac-arm64                 
 ly_associate_package(PACKAGE_NAME OpenEXR-3.4.4-rev1-mac-arm64                      TARGETS OpenEXR Imath               PACKAGE_HASH 4a093f5ca03836631dc66166b8f493925d0445467219efcbca3a5a0ee2ccbf4b)
 ly_associate_package(PACKAGE_NAME qt-6.10.2-rev6-mac-arm64                          TARGETS Qt                          PACKAGE_HASH 48c698e2526ac31a0bd995e71e00a244b059557fbaa521b97edc0af76801cead)
 ly_associate_package(PACKAGE_NAME png-1.6.53-rev2-mac-arm64                         TARGETS PNG                         PACKAGE_HASH e778f60475c9582e840b73543d5081c8e4e8a4115badfe3db394d46f6dc87496)
-ly_associate_package(PACKAGE_NAME pyside6-6.10.2-py3.10-rev1-mac-arm64              TARGETS pyside6                     PACKAGE_HASH 8cfa46b80818a79153757d71bdc5be500432b461e808260557b24715acf2722c)
+ly_associate_package(PACKAGE_NAME pyside6-6.10.2-py3.10-rev4-mac-arm64              TARGETS pyside6                     PACKAGE_HASH 9584521424003da60397d527217066763814001a18f57371795a3eb3bb0b2edf)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac-arm64                TARGETS libsamplerate               PACKAGE_HASH 1a4954bd2e24b04da6c121e36fde1884e1e3f9492f580cf347637d0bea4b65e0)
 ly_associate_package(PACKAGE_NAME zlib-1.3.1-rev2-mac-arm64                         TARGETS ZLIB                        PACKAGE_HASH 52e62890329d3e003226fca88df30701cdd862a5f137eb5f75dff504377c13b3)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-mac-arm64                 TARGETS squish-ccr                  PACKAGE_HASH 51346fba3ba2380cfe82d6af9e2e9284ccdfd6093349e9de88078c52c28c6327)
