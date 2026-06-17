@@ -77,6 +77,16 @@ namespace AZ::Render
         static Vector3 CubeFaceDirection(uint32_t face, float uc, float vc);
 
         // =====================================================================
+        // Resolution Scrub Debounce (both modes)
+        // =====================================================================
+
+        //! Commit m_pendingFaceResolution into m_faceResolution and trigger the rebuild/realloc.
+        void ApplyFaceResolution();
+
+        //! Per-frame: advance the settle counter and commit a resolution change once it stabilises.
+        void TickResolutionSettle();
+
+        // =====================================================================
         // Dynamic Mode -- GPU Compute Pass Path
         // =====================================================================
 
@@ -112,7 +122,22 @@ namespace AZ::Render
         Color    m_midColor       = Color(0.20f, 0.30f, 0.55f, 1.0f);
         Color    m_highColor      = Color(0.85f, 0.95f, 1.0f,  1.0f);
         float    m_exposure       = 0.0f;
-        uint32_t m_faceResolution = 64;
+        uint32_t m_faceResolution = 64;   // size builds actually use; held steady during a scrub
+
+        // --- Resolution scrub debounce ---------------------------------------------------
+        // Changing the resolution allocates a brand-new, differently sized tiled StreamingImage
+        // from the DX12 streaming pool (a reserved resource). Rebuilding a different size on every
+        // frame of a slider scrub churns the pool's tile allocations and crashes inside the DX12
+        // RHI (GetResourceTiling, Device.cpp). Colour is safe to rebuild live because every rebuild
+        // is the SAME size. So m_faceResolution is held steady during a scrub and only advanced to
+        // m_pendingFaceResolution once the slider settles -- only the final size is ever allocated.
+        // See SetFaceResolution / TickResolutionSettle / ApplyFaceResolution.
+        uint32_t m_pendingFaceResolution   = 64;     // latest requested size (may differ mid-scrub)
+        uint8_t  m_resolutionSettleFrames  = 0;      // frames the request has held steady
+        bool     m_resolutionChangePending = false;  // a settled commit is owed
+        bool     m_faceResolutionApplied   = false;  // first push (initial config) applies immediately
+
+        static constexpr uint8_t ResolutionSettleFrameThreshold = 3; // ~50ms @60fps after release
 
         // Detail texture layer (GPU/Dynamic mode). Resolved instance is resident; mapping/blend
         // codes match the component enums. Bound to the pass once, recombined cheaply on color edits.

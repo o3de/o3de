@@ -279,6 +279,9 @@ namespace AZ::Render
         // the reliable place to re-arm the once-per-frame CPU rebuild cap.
         m_rebuiltThisFrame = false;
 
+        // Commit a deferred resolution change once the slider has settled (both modes).
+        TickResolutionSettle();
+
         if (m_updateMode != UpdateMode::Dynamic || !m_gradientPass || !m_sceneSrg)
         {
             return;
@@ -344,7 +347,38 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetFaceResolution(uint32_t resolution)
     {
-        m_faceResolution = AZStd::clamp(resolution, 4u, 256u);
+        // Unlike colour, applying a resolution change rebuilds a different-sized tiled cubemap;
+        // doing so on every editor scrub tick churns the DX12 streaming pool and crashes the RHI.
+        // So we defer the actual size change until the slider settles.
+        const uint32_t clamped = AZStd::clamp(resolution, 4u, 256u);
+
+        // The very first push (component activation, no scrub) applies immediately so the initial
+        // build uses the configured resolution with no transient flash at the default size.
+        if (!m_faceResolutionApplied)
+        {
+            m_pendingFaceResolution = clamped;
+            ApplyFaceResolution();
+            return;
+        }
+
+        // Already running: the user is editing. Only a genuine move of the requested size restarts
+        // the settle window, so an unrelated edit (e.g. a colour swatch) can't starve a pending
+        // resolution commit. The build keeps using the previous stable size meanwhile -- safe,
+        // exactly like a colour scrub.
+        if (clamped != m_pendingFaceResolution)
+        {
+            m_pendingFaceResolution  = clamped;
+            m_resolutionSettleFrames = 0;
+        }
+        m_resolutionChangePending = (m_pendingFaceResolution != m_faceResolution);
+    }
+
+    void GradientGIFeatureProcessor::ApplyFaceResolution()
+    {
+        m_faceResolution          = m_pendingFaceResolution;
+        m_faceResolutionApplied   = true;
+        m_resolutionChangePending = false;
+        m_resolutionSettleFrames  = 0;
 
         if (m_updateMode == UpdateMode::Static)
         {
@@ -354,10 +388,27 @@ namespace AZ::Render
         {
             // Dynamic mode: push the new resolution to the live pass, which reallocates its
             // output cubemap (GradientGICubemapPass::SetGradientColors queues a pass rebuild
-            // when the face size changes). This makes resolution changes take effect live
-            // instead of waiting for a deactivate/activate cycle.
+            // when the face size changes).
             m_gradientPass->SetGradientColors(m_lowColor, m_midColor, m_highColor, m_exposure, m_faceResolution);
         }
+    }
+
+    void GradientGIFeatureProcessor::TickResolutionSettle()
+    {
+        if (!m_resolutionChangePending)
+        {
+            return;
+        }
+
+        // Wait until the requested resolution has held steady for a few frames (slider released)
+        // before committing the one and only reallocation at the final size.
+        if (m_resolutionSettleFrames < ResolutionSettleFrameThreshold)
+        {
+            ++m_resolutionSettleFrames;
+            return;
+        }
+
+        ApplyFaceResolution();
     }
 
     void GradientGIFeatureProcessor::SetUpdateMode(UpdateMode mode)
