@@ -9,6 +9,7 @@
 #include "EditorWhiteBoxComponentModeBus.h"
 #include "WhiteBoxToolApiReflection.h"
 
+#include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
@@ -198,7 +199,28 @@ namespace WhiteBox
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
                     {
                         return Api::Clear(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
+                    })
+                ->Method(
+                    "MeshBoolean",
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, WhiteBoxMeshHandle* operandMeshHandle,
+                       const AZ::Transform& operandTransform, const int operation)
+                    {
+                        return Api::MeshBoolean(
+                            *WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), *WhiteBoxMeshFromHandle(*operandMeshHandle),
+                            operandTransform, static_cast<Api::BooleanOperation>(operation));
                     });
+
+            behaviorContext->EnumProperty<(int)Api::BooleanOperation::Union>("BOOLEAN_UNION")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "whitebox.enum");
+
+            behaviorContext->EnumProperty<(int)Api::BooleanOperation::Subtraction>("BOOLEAN_SUBTRACTION")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "whitebox.enum");
+
+            behaviorContext->EnumProperty<(int)Api::BooleanOperation::Intersection>("BOOLEAN_INTERSECTION")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "whitebox.enum");
 
             behaviorContext->EnumProperty<(int)DefaultShapeType::Cube>("CUBE")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)

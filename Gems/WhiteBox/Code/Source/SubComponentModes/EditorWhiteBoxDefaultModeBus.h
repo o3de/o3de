@@ -65,6 +65,27 @@ namespace WhiteBox
         //! Hide the selected Vertex.
         virtual void HideSelectedVertex() = 0;
 
+        // ------------------------------------------------------------------ //
+        // Blender-style numeric input (M=move, J=scale, U=rotate)           //
+        // ------------------------------------------------------------------ //
+        virtual void NumericMoveBegin()             = 0;
+        virtual void NumericScaleBegin()          = 0; //!< J – scale hovered polygon or edge
+        virtual void NumericRotateBegin()         = 0; //!< U – rotate hovered polygon or edge
+        virtual void NumericExtrudeBegin()        = 0; //!< E – extrude hovered polygon (along normal) or edge
+        virtual void NumericInsetBegin()          = 0; //!< F – face inset on hovered polygon (ratio 0-1)
+        virtual void NumericMoveSetAxisX()        = 0;
+        virtual void NumericMoveSetAxisY()        = 0;
+        virtual void NumericMoveSetAxisZ()        = 0;
+        virtual void NumericMoveConfirm()         = 0;
+        virtual void NumericMoveCancel()          = 0;
+        virtual void NumericMoveBackspace()       = 0;
+        virtual void NumericMoveDecimal()         = 0;
+        virtual void NumericMoveNegate()          = 0; //!< '-' operator (leading minus or binary subtract)
+        virtual void NumericMoveAppendDigit(char d) = 0;
+        virtual void NumericAppendOperatorPlus()  = 0; //!< '+' binary add
+        virtual void NumericAppendOperatorMult()  = 0; //!< '*' multiply
+        virtual void NumericAppendOperatorDiv()   = 0; //!< '/' divide
+
     protected:
         ~EditorWhiteBoxDefaultModeRequests() = default;
     };

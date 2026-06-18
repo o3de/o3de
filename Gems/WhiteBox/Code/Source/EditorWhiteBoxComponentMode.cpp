@@ -29,6 +29,8 @@
 #include <QVBoxLayout>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
 
+#include "Viewport/WhiteBoxDrawShapeMode.h"
+
 namespace WhiteBox
 {
     constexpr AZStd::string_view WhiteBoxTransformFeature = "/O3DE/Preferences/WhiteBox/TransformFeature";
@@ -36,6 +38,8 @@ namespace WhiteBox
     constexpr AZStd::string_view WhiteBoxDefaultSubModeIdentifier = "o3de.context.mode.whiteBox.default";
     constexpr AZStd::string_view WhiteBoxEdgeRestoreSubModeIdentifier = "o3de.context.mode.whiteBox.edgeRestore";
     constexpr AZStd::string_view WhiteBoxTransformSubModeIdentifier = "o3de.context.mode.whiteBox.transform";
+    constexpr AZStd::string_view WhiteBoxDrawShapeSubModeIdentifier =
+    "o3de.context.mode.whiteBox.drawShape";
 
     AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator)
 
@@ -53,6 +57,7 @@ namespace WhiteBox
     // helper function to return what modifier keys move us to restore mode
     static bool RestoreModifier(AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers)
     {
+        // AZ_Printf("DrawShapeMode", "ENTER EDGE RESTORE MODE");
         return modifiers.Shift() && modifiers.Ctrl();
     }
 
@@ -107,6 +112,9 @@ namespace WhiteBox
         actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
         actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
         actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            WhiteBoxDrawShapeSubModeIdentifier);
     }
 
     void EditorWhiteBoxComponentMode::RegisterActionUpdaters()
@@ -121,6 +129,7 @@ namespace WhiteBox
         DefaultMode::RegisterActions();
         EdgeRestoreMode::RegisterActions();
         TransformMode::RegisterActions();
+        DrawShapeMode::RegisterActions();
     }
 
     void EditorWhiteBoxComponentMode::BindActionsToModes()
@@ -128,6 +137,7 @@ namespace WhiteBox
         DefaultMode::BindActionsToModes(WhiteBoxDefaultSubModeIdentifier);
         EdgeRestoreMode::BindActionsToModes(WhiteBoxEdgeRestoreSubModeIdentifier);
         TransformMode::BindActionsToModes(WhiteBoxTransformSubModeIdentifier);
+        DrawShapeMode::BindActionsToModes(WhiteBoxDrawShapeSubModeIdentifier);
     }
 
     void EditorWhiteBoxComponentMode::BindActionsToMenus()
@@ -312,10 +322,24 @@ namespace WhiteBox
         // itself
         bool interactionHandled = AZStd::visit(
             [&mouseInteraction, entityComponentIdPair = GetEntityComponentIdPair(), &edgeIntersection,
-             &polygonIntersection, &vertexIntersection](auto& mode)
+             &polygonIntersection, &vertexIntersection,
+             &intersectionAndRenderData = m_intersectionAndRenderData,
+             &worldFromLocal = m_worldFromLocal](auto& mode)
             {
-                return mode->HandleMouseInteraction(
-                    mouseInteraction, entityComponentIdPair, edgeIntersection, polygonIntersection, vertexIntersection);
+                using ModeT = AZStd::decay_t<decltype(*mode)>;
+                if constexpr (AZStd::is_same_v<ModeT, DrawShapeMode>)
+                {
+                    // DrawShapeMode handles its own full mouse event; it needs
+                    // world transform and intersection cache directly.
+                    return mode->HandleMouseInteraction(
+                        mouseInteraction, worldFromLocal, intersectionAndRenderData.value());
+                }
+                else
+                {
+                    return mode->HandleMouseInteraction(
+                        mouseInteraction, entityComponentIdPair,
+                        edgeIntersection, polygonIntersection, vertexIntersection);
+                }
             },
             m_modes);
 
@@ -349,13 +373,30 @@ namespace WhiteBox
             m_modes);
     }
 
+
+    void EditorWhiteBoxComponentMode::EnterDrawShapeMode()
+    {
+        m_modes = AZStd::make_unique<DrawShapeMode>(GetEntityComponentIdPair());
+        m_intersectionAndRenderData = {};
+        m_currentSubMode = SubMode::DrawShape;
+        SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_drawShapeModeButtonId);
+        // AZ_Printf("DrawShapeMode", "ENTER DRAW SHAPE MODE");
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        if (actionManagerInterface)
+        {
+            actionManagerInterface->SetActiveActionContextMode(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                WhiteBoxDrawShapeSubModeIdentifier);
+        }
+    }
+
     void EditorWhiteBoxComponentMode::EnterDefaultMode()
     {
         m_modes = AZStd::make_unique<DefaultMode>(GetEntityComponentIdPair());
         m_intersectionAndRenderData = {};
         m_currentSubMode = SubMode::Default;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_defaultModeButtonId);
-
+        // AZ_Printf("DefaultMode", "ENTER DEFAULT MODE");
         // Change sub-mode to default at the next frame to go after the automated mode switching in ComponentModeActionHandler.
         QTimer::singleShot(
             0,
@@ -378,7 +419,7 @@ namespace WhiteBox
         m_intersectionAndRenderData = {};
         m_currentSubMode = SubMode::EdgeRestore;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_edgeRestoreModeButtonId);
-
+        // AZ_Printf("EdgeRestoreMode", "ENTER EDGE RESTORE MODE");
         // Set the Action Context Mode in the Action Manager, if enabled.
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         if (actionManagerInterface)
@@ -393,7 +434,7 @@ namespace WhiteBox
         m_intersectionAndRenderData = {};
         m_currentSubMode = SubMode::Transform;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_transformModeButtonId);
-
+        // AZ_Printf("TransformMode", "ENTER TRANSFORM MODE");
         // Set the Action Context Mode in the Action Manager, if enabled.
         auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
         if (actionManagerInterface)
@@ -406,22 +447,23 @@ namespace WhiteBox
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-
+    
         const auto modifiers = m_keyboardModifierQueryFn();
-
         // handle mode switch
         {
             auto* defaultMode = AZStd::get_if<AZStd::unique_ptr<DefaultMode>>(&m_modes);
             auto* edgeRestoreMode = AZStd::get_if<AZStd::unique_ptr<EdgeRestoreMode>>(&m_modes);
-
+    
             // enter edge restore mode if inside normal mode and restore modifier is held
             if (RestoreModifier(modifiers))
             {
                 if (defaultMode != nullptr)
                 {
+                    // AZ_Printf("DisplayEntityViewport", "ENTER EDGE RESTORE MODE FROM EditorWhiteBoxComponentMode::DisplayEntityViewport");
+
                     EnterEdgeRestoreMode();
                 }
-
+    
                 m_restoreModifierHeld = true;
             }
             // enter default mode if restore modifier is not currently held and
@@ -432,32 +474,38 @@ namespace WhiteBox
                 {
                     EnterDefaultMode();
                 }
-
+    
                 m_restoreModifierHeld = false;
             }
         }
-
+    
         // generate mesh to query
         if (!m_intersectionAndRenderData.has_value())
         {
             RecalculateWhiteBoxIntersectionData(DecideEdgeSelectionMode(m_currentSubMode));
         }
-
+    
         debugDisplay.DepthTestOn();
         debugDisplay.SetColor(ed_whiteBoxEdgeDefault);
         debugDisplay.SetLineWidth(4.0f);
-
+    
         AZStd::visit(
             [entityComponentIdPair = GetEntityComponentIdPair(),
              &whiteBoxIntersectionAndRenderData = m_intersectionAndRenderData, viewportInfo, &debugDisplay,
              &worldFromLocal = m_worldFromLocal](auto& mode)
             {
-                mode->Display(
-                    entityComponentIdPair, worldFromLocal, whiteBoxIntersectionAndRenderData.value(), viewportInfo,
-                    debugDisplay);
+                using ModeT = AZStd::decay_t<decltype(*mode)>;
+                
+                // At compile time, if the mode is DrawShapeMode, this skips compiling the Display call!
+                if constexpr (!AZStd::is_same_v<ModeT, DrawShapeMode>)
+                {
+                    mode->Display(
+                        entityComponentIdPair, worldFromLocal,
+                        whiteBoxIntersectionAndRenderData.value(), viewportInfo, debugDisplay);
+                }
             },
             m_modes);
-
+    
         debugDisplay.DepthTestOff();
     }
 
@@ -586,6 +634,8 @@ namespace WhiteBox
         // create and register the buttons
         m_defaultModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
         m_edgeRestoreModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "RestoreMode");
+        m_drawShapeModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "AddComponent");
+        // ^ swap "AddComponent" for whatever SVG icon you prefer
 
         // temporary setting to disable this feature
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
@@ -622,16 +672,27 @@ namespace WhiteBox
                 }
                 else if (buttonId == m_edgeRestoreModeButtonId)
                 {
+                    // AZ_Printf("EdgeRestoreMode", "ENTER EDGE RESTORE MODE FROM CreateSubModeSelectionCluster");
                     EnterEdgeRestoreMode();
                 }
                 else if (buttonId == m_transformModeButtonId)
                 {
                     EnterTransformMode();
                 }
+                else if (buttonId == m_drawShapeModeButtonId)
+                {
+                    EnterDrawShapeMode();
+                }
             });
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_modeSelectionClusterId,
             m_modeSelectionHandler);
+
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_modeSelectionClusterId, m_drawShapeModeButtonId,
+            WhiteboxModeClusterDrawShapeTooltip);
     }
 } // namespace WhiteBox

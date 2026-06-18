@@ -39,6 +39,35 @@ namespace WhiteBox
     static const AZ::Crc32 SwitchRotationMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_rotation");
     static const AZ::Crc32 SwitchScaleMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_scale");
 
+    // Numeric input action identifiers
+    constexpr AZStd::string_view NumericBeginMoveId     = "o3de.action.whiteBoxTransform.numeric.beginMove";
+    constexpr AZStd::string_view NumericBeginRotateId   = "o3de.action.whiteBoxTransform.numeric.beginRotate";
+    constexpr AZStd::string_view NumericBeginScaleId    = "o3de.action.whiteBoxTransform.numeric.beginScale";
+    constexpr AZStd::string_view NumericAxisXId         = "o3de.action.whiteBoxTransform.numeric.axisX";
+    constexpr AZStd::string_view NumericAxisYId         = "o3de.action.whiteBoxTransform.numeric.axisY";
+    constexpr AZStd::string_view NumericAxisZId         = "o3de.action.whiteBoxTransform.numeric.axisZ";
+    constexpr AZStd::string_view NumericConfirmId       = "o3de.action.whiteBoxTransform.numeric.confirm";
+    constexpr AZStd::string_view NumericCancelId        = "o3de.action.whiteBoxTransform.numeric.cancel";
+    constexpr AZStd::string_view NumericBackspaceId     = "o3de.action.whiteBoxTransform.numeric.backspace";
+    constexpr AZStd::string_view NumericDecimalId       = "o3de.action.whiteBoxTransform.numeric.decimal";
+    constexpr AZStd::string_view NumericNegateId        = "o3de.action.whiteBoxTransform.numeric.negate";
+    constexpr AZStd::string_view NumericOpPlusId        = "o3de.action.whiteBoxTransform.numeric.opPlus";
+    constexpr AZStd::string_view NumericOpMultId        = "o3de.action.whiteBoxTransform.numeric.opMult";
+    constexpr AZStd::string_view NumericOpDivId         = "o3de.action.whiteBoxTransform.numeric.opDiv";
+    // digit 0-9
+    constexpr AZStd::string_view NumericDigitIds[10] = {
+        "o3de.action.whiteBoxTransform.numeric.digit0",
+        "o3de.action.whiteBoxTransform.numeric.digit1",
+        "o3de.action.whiteBoxTransform.numeric.digit2",
+        "o3de.action.whiteBoxTransform.numeric.digit3",
+        "o3de.action.whiteBoxTransform.numeric.digit4",
+        "o3de.action.whiteBoxTransform.numeric.digit5",
+        "o3de.action.whiteBoxTransform.numeric.digit6",
+        "o3de.action.whiteBoxTransform.numeric.digit7",
+        "o3de.action.whiteBoxTransform.numeric.digit8",
+        "o3de.action.whiteBoxTransform.numeric.digit9",
+    };
+
     const constexpr char* SwitchToTranslationModeTile = "Translation Mode";
     const constexpr char* SwitchToRotationModeTile = "Rotation Mode";
     const constexpr char* SwitchToScaleModeTile = "Scale Mode";
@@ -244,6 +273,238 @@ namespace WhiteBox
 
             hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "3");
         }
+
+        // ------------------------------------------------------------------ //
+        // Blender-style numeric input actions                                 //
+        // ------------------------------------------------------------------ //
+        // Helper: dispatch a lambda to every active TransformMode instance.
+        auto dispatchToTransformModes = [](auto fn)
+        {
+            auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+            AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+            componentModeCollectionInterface->EnumerateActiveComponents(
+                [&fn](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                {
+                    EditorWhiteBoxTransformModeRequestBus::Event(entityComponentIdPair, fn);
+                });
+        };
+
+        // G – begin move
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Begin Numeric Move";
+            p.m_description = "Start a Blender-style numeric move (G then type a value)";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericBeginMoveId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericBeginMove);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericBeginMoveId, "M");
+        }
+
+        // R – begin rotate
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Begin Numeric Rotate";
+            p.m_description = "Start a Blender-style numeric rotate (R then type a value)";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericBeginRotateId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericBeginRotate);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericBeginRotateId, "U");
+        }
+
+        // S – begin scale
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Begin Numeric Scale";
+            p.m_description = "Start a Blender-style numeric scale (S then type a value)";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericBeginScaleId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericBeginScale);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericBeginScaleId, "J");
+        }
+
+        // X / Y / Z – axis constraint
+        {
+            AzToolsFramework::ActionProperties px;
+            px.m_name = "Numeric Input Axis X";
+            px.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericAxisXId, px,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericSetAxisX);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericAxisXId, "X");
+
+            AzToolsFramework::ActionProperties py;
+            py.m_name = "Numeric Input Axis Y";
+            py.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericAxisYId, py,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericSetAxisY);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericAxisYId, "Y");
+
+            AzToolsFramework::ActionProperties pz;
+            pz.m_name = "Numeric Input Axis Z";
+            pz.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericAxisZId, pz,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericSetAxisZ);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericAxisZId, "Z");
+        }
+
+        // Enter – confirm
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Numeric Input Confirm";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericConfirmId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericConfirm);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericConfirmId, "Return");
+        }
+
+        // Escape – cancel
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Numeric Input Cancel";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericCancelId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericCancel);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericCancelId, "Escape");
+        }
+
+        // Backspace
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Numeric Input Backspace";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericBackspaceId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericBackspace);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericBackspaceId, "Backspace");
+        }
+
+        // Period (decimal point)
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Numeric Input Decimal";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericDecimalId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericDecimal);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericDecimalId, ".");
+        }
+
+        // Minus / negate
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Numeric Operator Minus";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericNegateId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericNegate);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericNegateId, "-");
+        }
+        // Plus
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Numeric Operator Plus";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericOpPlusId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericAppendOperatorPlus);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericOpPlusId, "+");
+        }
+        // Multiply
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Numeric Operator Multiply";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericOpMultId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericAppendOperatorMult);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericOpMultId, "*");
+        }
+        // Divide
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = "Numeric Operator Divide";
+            p.m_category = "White Box Component Mode - Transform";
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericOpDivId, p,
+                [dispatchToTransformModes]
+                {
+                    dispatchToTransformModes(&EditorWhiteBoxTransformModeRequests::NumericAppendOperatorDiv);
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericOpDivId, "/");
+        }
+
+        // Digits 0-9
+        // NOTE: EBus::Event requires a member function pointer, not a lambda.
+        // For NumericAppendDigit (which takes a char arg) we inline the dispatch
+        // and pass the arg as a trailing parameter to EBus::Event.
+        const char* digitKeys[10] = {"0","1","2","3","4","5","6","7","8","9"};
+        for (int d = 0; d <= 9; ++d)
+        {
+            AzToolsFramework::ActionProperties p;
+            p.m_name = AZStd::string::format("Numeric Input Digit %d", d).c_str();
+            p.m_category = "White Box Component Mode - Transform";
+            const char digit = static_cast<char>('0' + d);
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier, NumericDigitIds[d], p,
+                [digit]
+                {
+                    auto cmci = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(cmci, "Could not retrieve component mode collection.");
+                    cmci->EnumerateActiveComponents(
+                        [digit](const AZ::EntityComponentIdPair& id, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                id, &EditorWhiteBoxTransformModeRequests::NumericAppendDigit, digit);
+                        });
+                });
+            hotKeyManagerInterface->SetActionHotKey(NumericDigitIds[d], digitKeys[d]);
+        }
     }
 
     void TransformMode::BindActionsToModes(const AZStd::string& modeIdentifier)
@@ -254,6 +515,26 @@ namespace WhiteBox
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation");
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation");
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale");
+
+        // Numeric input actions
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericBeginMoveId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericBeginRotateId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericBeginScaleId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericAxisXId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericAxisYId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericAxisZId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericConfirmId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericCancelId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericBackspaceId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericDecimalId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericNegateId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericOpPlusId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericOpMultId);
+        actionManagerInterface->AssignModeToAction(modeIdentifier, NumericOpDivId);
+        for (const auto& digitId : NumericDigitIds)
+        {
+            actionManagerInterface->AssignModeToAction(modeIdentifier, digitId);
+        }
 
         actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
     }
@@ -422,6 +703,17 @@ namespace WhiteBox
         }
         debugDisplay.PopMatrix();
         debugDisplay.DepthTestOff();
+
+        // Draw Blender-style numeric input overlay when active.
+        if (m_numericInput.IsActive() && m_whiteBoxSelection)
+        {
+            const AZStd::string statusText = m_numericInput.GetStatusText();
+            // Draw the status text above the selection midpoint in world space.
+            const AZ::Vector3 worldPos = worldFromLocal.TransformPoint(m_whiteBoxSelection->m_localPosition)
+                + AZ::Vector3::CreateAxisZ(0.3f);
+            debugDisplay.SetColor(AZ::Colors::White);
+            debugDisplay.DrawTextLabel(worldPos, 1.5f, statusText.c_str(), true, 0, 0);
+        }
     }
 
     bool TransformMode::HandleMouseInteraction(
@@ -837,6 +1129,129 @@ namespace WhiteBox
 
         scaleManipulators->Register(AzToolsFramework::GetMainManipulatorManagerId());
         m_manipulator = AZStd::move(scaleManipulators);
+    }
+
+    void TransformMode::ApplyNumericTransform()
+    {
+        if (!m_numericInput.IsActive() || !m_whiteBoxSelection)
+        {
+            m_numericInput.Reset();
+            return;
+        }
+
+        const float value = m_numericInput.GetValue();
+        if (value == 0.0f && m_numericInput.IsEmpty())
+        {
+            m_numericInput.Reset();
+            return;
+        }
+
+        WhiteBoxMesh* whiteBox = nullptr;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+
+        switch (m_numericInput.m_mode)
+        {
+        case NumericOpMode::Move:
+        {
+            // Determine translation delta.
+            AZ::Vector3 delta;
+            if (m_numericInput.m_axis != NumericAxisConstraint::Free)
+            {
+                delta = m_numericInput.GetAxisVector() * value;
+            }
+            else
+            {
+                // No axis locked: treat value as offset along the face/edge normal,
+                // or just apply uniformly (user can re-run with an axis if needed).
+                delta = AZ::Vector3(value, value, value);
+            }
+
+            size_t idx = 0;
+            for (const Api::VertexHandle& vh : m_whiteBoxSelection->m_vertexHandles)
+            {
+                Api::SetVertexPosition(*whiteBox, vh, m_whiteBoxSelection->m_vertexPositions[idx++] + delta);
+            }
+
+            // Update cached positions so subsequent operations stack correctly.
+            m_whiteBoxSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, m_whiteBoxSelection->m_vertexHandles);
+            m_whiteBoxSelection->m_localPosition   = m_whiteBoxSelection->m_localPosition + delta;
+            if (m_manipulator)
+            {
+                if (auto* tm = dynamic_cast<AzToolsFramework::TranslationManipulators*>(m_manipulator.get()))
+                {
+                    tm->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
+                }
+            }
+            break;
+        }
+        case NumericOpMode::Rotate:
+        {
+            // Rotation axis: explicit constraint or Z if free (Blender default).
+            const AZ::Vector3 axis = (m_numericInput.m_axis != NumericAxisConstraint::Free)
+                ? m_numericInput.GetAxisVector()
+                : AZ::Vector3::CreateAxisZ();
+
+            const AZ::Quaternion rotation = AZ::Quaternion::CreateFromAxisAngle(axis, AZ::DegToRad(value));
+
+            size_t idx = 0;
+            for (const Api::VertexHandle& vh : m_whiteBoxSelection->m_vertexHandles)
+            {
+                const AZ::Vector3 localPos =
+                    m_whiteBoxSelection->m_vertexPositions[idx++] - m_whiteBoxSelection->m_localPosition;
+                Api::SetVertexPosition(*whiteBox, vh, rotation.TransformVector(localPos) + m_whiteBoxSelection->m_localPosition);
+            }
+
+            m_whiteBoxSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, m_whiteBoxSelection->m_vertexHandles);
+            m_whiteBoxSelection->m_localRotation   = rotation * m_whiteBoxSelection->m_localRotation;
+            if (m_manipulator)
+            {
+                if (auto* rm = dynamic_cast<AzToolsFramework::RotationManipulators*>(m_manipulator.get()))
+                {
+                    rm->SetLocalOrientation(m_whiteBoxSelection->m_localRotation);
+                }
+            }
+            break;
+        }
+        case NumericOpMode::Scale:
+        {
+            // Per-axis or uniform scale factor.
+            AZ::Vector3 scaleFactor;
+            if (m_numericInput.m_axis != NumericAxisConstraint::Free)
+            {
+                // Only scale along the locked axis; leave the others at 1.
+                scaleFactor = AZ::Vector3::CreateOne();
+                if (m_numericInput.m_axis == NumericAxisConstraint::X) scaleFactor.SetX(value);
+                else if (m_numericInput.m_axis == NumericAxisConstraint::Y) scaleFactor.SetY(value);
+                else                                                         scaleFactor.SetZ(value);
+            }
+            else
+            {
+                scaleFactor = AZ::Vector3(value, value, value);
+            }
+
+            size_t idx = 0;
+            for (const Api::VertexHandle& vh : m_whiteBoxSelection->m_vertexHandles)
+            {
+                const AZ::Vector3 localPos =
+                    m_whiteBoxSelection->m_vertexPositions[idx++] - m_whiteBoxSelection->m_localPosition;
+                Api::SetVertexPosition(*whiteBox, vh, (localPos * scaleFactor) + m_whiteBoxSelection->m_localPosition);
+            }
+
+            m_whiteBoxSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, m_whiteBoxSelection->m_vertexHandles);
+            break;
+        }
+        default:
+            break;
+        }
+
+        Api::CalculateNormals(*whiteBox);
+        Api::CalculatePlanarUVs(*whiteBox);
+        EditorWhiteBoxComponentNotificationBus::Event(
+            m_entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
+        EditorWhiteBoxComponentRequestBus::Event(m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
+
+        m_numericInput.Reset();
     }
 
 } // namespace WhiteBox
