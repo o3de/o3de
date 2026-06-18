@@ -10,6 +10,7 @@
 
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
+#include "SubComponentModes/WhiteBoxNumericInput.h"
 
 #include <EditorWhiteBoxEdgeModifierBus.h>
 #include <EditorWhiteBoxPolygonModifierBus.h>
@@ -116,8 +117,36 @@ namespace WhiteBox
         //! Find all potentially interactive edge handles the user can select and manipulate.
         Api::EdgeHandles FindInteractiveEdgeHandles(const WhiteBoxMesh& whiteBox);
 
+        //! Apply the pending numeric operation (move / scale / rotate) to the hovered geometry, then reset state.
+        void ApplyNumeric();
+
+        // EditorWhiteBoxDefaultModeRequestBus numeric input overrides
+        void NumericMoveBegin()    override;
+        void NumericScaleBegin()   override;
+        void NumericRotateBegin()  override;
+        void NumericExtrudeBegin() override;
+        void NumericInsetBegin()   override;
+        void NumericMoveSetAxisX()  override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::X); }
+        void NumericMoveSetAxisY()  override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Y); }
+        void NumericMoveSetAxisZ()  override { if (m_numericInput.IsActive()) m_numericInput.SetAxis(NumericAxisConstraint::Z); }
+        void NumericMoveConfirm()   override { ApplyNumeric(); }
+        void NumericMoveCancel()    override { m_numericInput.Reset(); }
+        void NumericMoveBackspace() override { if (m_numericInput.IsActive()) m_numericInput.Backspace(); }
+        void NumericMoveDecimal()   override { if (m_numericInput.IsActive()) m_numericInput.AppendDecimal(); }
+        void NumericMoveNegate()    override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('-'); }
+        void NumericMoveAppendDigit(char d) override { if (m_numericInput.IsActive()) m_numericInput.AppendDigit(d); }
+        void NumericAppendOperatorPlus() override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('+'); }
+        void NumericAppendOperatorMult() override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('*'); }
+        void NumericAppendOperatorDiv()  override { if (m_numericInput.IsActive()) m_numericInput.AppendOperator('/'); }
+
         //! The entity component id of the component mode this sub-mode is associated with.
         AZ::EntityComponentIdPair m_entityComponentIdPair;
+
+        //! Blender-style numeric move input state (M + optional X/Y/Z + digits + Enter/Escape).
+        NumericInputState m_numericInput;
+
+        //! Local-space anchor captured when numeric input begins; used for the viewport overlay label.
+        AZ::Vector3 m_numericAnchorLocal{ AZ::Vector3::CreateZero() };
 
         AZStd::unique_ptr<PolygonTranslationModifier>
             m_polygonTranslationModifier; //!< The hovered polygon translation modifier.

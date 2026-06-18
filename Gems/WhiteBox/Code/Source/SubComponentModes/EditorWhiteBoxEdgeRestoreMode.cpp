@@ -162,10 +162,15 @@ namespace WhiteBox
 
         debugDisplay.PushMatrix(worldFromLocal);
 
-        // draw all 'user' and 'mesh' edges
+        // Depth test off so edges are always visible on top of the mesh surface
+        // (with depth-test on, co-planar edges z-fight into invisibility).
+        debugDisplay.DepthTestOff();
+
+        // draw user (polygon border) edges in the standard dark colour
         DrawEdges(
             debugDisplay, ed_whiteBoxEdgeDefault, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_user,
             interactiveEdgeHandles);
+        // draw hidden/mesh edges in a bright orange so they stand out as "restorable"
         DrawEdges(
             debugDisplay, ed_whiteBoxEdgeUnselected, renderData.m_whiteBoxEdgeRenderData.m_bounds.m_mesh,
             interactiveEdgeHandles);
@@ -203,6 +208,7 @@ namespace WhiteBox
         }
 
         debugDisplay.PopMatrix();
+        debugDisplay.DepthTestOn(); // restore for vertex spheres
 
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
 

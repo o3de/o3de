@@ -2502,8 +2502,30 @@ namespace WhiteBox
 
             for (const auto& face : faceVertHandles)
             {
-                polygon.push_back(whiteBox.mesh.add_face(
-                    om_vh(face.m_vertexHandles[0]), om_vh(face.m_vertexHandles[1]), om_vh(face.m_vertexHandles[2])));
+                const auto v0 = om_vh(face.m_vertexHandles[0]);
+                const auto v1 = om_vh(face.m_vertexHandles[1]);
+                const auto v2 = om_vh(face.m_vertexHandles[2]);
+
+                auto faceHandle = whiteBox.mesh.add_face(v0, v1, v2);
+                if (!faceHandle.is_valid())
+                {
+                    // Inserting this triangle in the current order would create a
+                    // non-manifold edge/vertex, so OpenMesh refuses it. Rather than
+                    // silently DROP the face (which leaves the mesh open and makes a
+                    // later CSG boolean fail with 'mesh is not a valid manifold'),
+                    // duplicate its vertices and add it as an isolated patch.
+                    // Coincident vertices are re-welded by consumers that need a
+                    // closed mesh (the CSG MeshBoolean welds on input).
+                    const auto d0 = whiteBox.mesh.add_vertex(whiteBox.mesh.point(v0));
+                    const auto d1 = whiteBox.mesh.add_vertex(whiteBox.mesh.point(v1));
+                    const auto d2 = whiteBox.mesh.add_vertex(whiteBox.mesh.point(v2));
+                    faceHandle = whiteBox.mesh.add_face(d0, d1, d2);
+                }
+
+                if (faceHandle.is_valid())
+                {
+                    polygon.push_back(faceHandle);
+                }
             }
 
             PolygonHandle polygonHandle = PolygonHandleFromInternal(polygon);
