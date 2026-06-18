@@ -13,10 +13,10 @@
 #include <AzQtComponents/Utilities/RandomNumberGenerator.h>
 
 // Qt
-#include <QPainter>
-#include <QThread>
 #include <QDir>
+#include <QPainter>
 #include <QStringList>
+#include <QThread>
 
 #include <ui_StartupLogoDialog.h>
 
@@ -42,7 +42,7 @@ CStartupLogoDialog::CStartupLogoDialog(
 
     if (!backgrounds.isEmpty())
     {
-        const int index = AzQtComponents::GetRandomGenerator()->bounded(backgrounds.size());
+        const int index = AzQtComponents::GetRandomGenerator()->bounded(aznumeric_cast<int>(backgrounds.size()));
         backgroundPath = QStringLiteral(":/StartupLogoDialog/") + backgrounds.at(index);
 
         m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
