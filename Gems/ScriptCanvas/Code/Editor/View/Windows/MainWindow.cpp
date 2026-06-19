@@ -1739,42 +1739,34 @@ namespace ScriptCanvasEditor
 
         QString filter = suggestedFileFilter.c_str();
 
-        while (!isValidFileName)
+        AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
+
+        QDir dir(suggestedDirectoryPath.c_str());
+        if (!dir.exists())
         {
-            AzFramework::StringFunc::Path::Normalize(suggestedDirectoryPath);
-
-            QDir dir(suggestedDirectoryPath.c_str());
-            if (!dir.exists())
+            auto result = AZ::IO::SystemFile::CreateDir(suggestedDirectoryPath.c_str());
+            if (!result)
             {
-                auto result = AZ::IO::SystemFile::CreateDir(suggestedDirectoryPath.c_str());
-                if (!result)
-                {
-                    AZ_Error("Script Canvas", false, "Failed to make new folder: %s", suggestedDirectoryPath.c_str());
-                    return false;
-                }
+                AZ_Error("Script Canvas", false, "Failed to make new folder: %s", suggestedDirectoryPath.c_str());
+                return false;
             }
+        }
 
-            AZ::IO::FixedMaxPath fullPath = suggestedDirectoryPath.c_str();
-            AZStd::string suggestedFileName = sourceHandle.GetSuggestedFileName() + SourceDescription::GetFileExtension();
-            fullPath /= suggestedFileName;
+        AZ::IO::FixedMaxPath fullPath = suggestedDirectoryPath.c_str();
+        AZStd::string suggestedFileName = sourceHandle.GetSuggestedFileName() + SourceDescription::GetFileExtension();
+        fullPath /= suggestedFileName;
 
-            QString localSelectedFilter;
-            QFileDialog::Options options;
-            QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
+        QString localSelectedFilter;
+        QFileDialog::Options options;
+        QString filePath = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), fullPath.c_str(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"), &localSelectedFilter, options);
 
-            selectedFile = filePath.toUtf8().toStdString().c_str();
+        selectedFile = filePath.toUtf8().toStdString().c_str();
 
-            // If the selected file is empty that means we just cancelled.
-            // So we want to break out.
-            if (selectedFile.isEmpty())
-            {
-                QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
-            }
-            else
-            {
-                isValidFileName = true;
-                break;
-            }
+        // If the selected file is empty that means we just cancelled.
+        // So we want to break out.
+        if (!selectedFile.isEmpty())
+        {
+            isValidFileName = true;
         }
 
         if (isValidFileName)
