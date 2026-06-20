@@ -116,8 +116,8 @@ SETTINGS_PLATFORM_SDK_API      = register_setting(key='platform.sdk.api',
                                                   default='31')
 
 SETTINGS_NDK_VERSION           = register_setting(key='ndk.version',
-                                                  description='The version of the android NDK (ref https://developer.android.com/ndk/downloads). File matching patterns can be used (i.e. 25.* will search for the most update to date major version 25)',
-                                                  default='25.*')
+                                                  description='The version of the android NDK (ref https://developer.android.com/ndk/downloads). File matching patterns can be used (i.e. 27.* will search for the most update to date major version 27)',
+                                                  default='27.*')
 
 SETTINGS_GRADLE_PLUGIN_VERSION = register_setting(key='android.gradle.plugin',
                                                   description='The version of the android gradle plugin to use for the build (ref https://developer.android.com/reference/tools/gradle-api)',

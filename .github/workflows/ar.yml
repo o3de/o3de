@@ -48,6 +48,10 @@ on:
 
 env:
   CMAKE_VERSION: &cmake_version "4.2.3"
+  GRADLE_VERSION: &gradle_version "8.12"
+  MSVC_PLATFORM_TOOLSET: &msvc_platform_toolset "v143"
+  MSVC_TOOLSET_VERSION: &msvc_toolset_version "14.44"
+  NDK_VERSION: &ndk_version "27.3.13750724"
 
 jobs:
   # The following jobs are used to build the project for the different platforms.
@@ -78,8 +82,8 @@ jobs:
       platform: Android
       type: profile
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
-      ndk_version: "25.1.8937393"
-      gradle_version: "8.12"
+      ndk_version: *ndk_version
+      gradle_version: *gradle_version
       cmake_version: *cmake_version
 
   Android-Asset:
@@ -92,8 +96,8 @@ jobs:
       image: ubuntu-22.04
       platform: Android
       type: asset_profile
-      ndk_version: "25.1.8937393"
-      gradle_version: "8.12"
+      ndk_version: *ndk_version
+      gradle_version: *gradle_version
       cmake_version: *cmake_version
 
   Android-Gradle:
@@ -106,8 +110,8 @@ jobs:
       image: ubuntu-22.04
       platform: Android
       type: gradle
-      ndk_version: "25.1.8937393"
-      gradle_version: "8.12"
+      ndk_version: *ndk_version
+      gradle_version: *gradle_version
       cmake_version: *cmake_version
 
 #### iOS Build ####
@@ -221,8 +225,8 @@ jobs:
       platform: Windows
       type: profile
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }} # If CLEAN_ARTIFACTS is false, then this returns true
-      msvc_toolset_version: "14.44"
-      msvc_platform_toolset: "v143"
+      msvc_toolset_version: *msvc_toolset_version
+      msvc_platform_toolset: *msvc_platform_toolset
       cmake_version: *cmake_version
 
   Windows-Asset:
@@ -235,8 +239,8 @@ jobs:
       image: windows-2022
       platform: Windows
       type: asset_profile
-      msvc_toolset_version: "14.44"
-      msvc_platform_toolset: "v143"
+      msvc_toolset_version: *msvc_toolset_version
+      msvc_platform_toolset: *msvc_platform_toolset
       cmake_version: *cmake_version
 
   Windows-Test:
@@ -249,8 +253,8 @@ jobs:
       image: windows-2022
       platform: Windows
       type: test_cpu_profile
-      msvc_toolset_version: "14.44"
-      msvc_platform_toolset: "v143"
+      msvc_toolset_version: *msvc_toolset_version
+      msvc_platform_toolset: *msvc_platform_toolset
       cmake_version: *cmake_version
 
   Windows-Release:
@@ -263,6 +267,6 @@ jobs:
       platform: Windows
       type: release
       last_artifact: ${{ !inputs.CLEAN_ARTIFACTS }}
-      msvc_toolset_version: "14.44"
-      msvc_platform_toolset: "v143"
+      msvc_toolset_version: *msvc_toolset_version
+      msvc_platform_toolset: *msvc_platform_toolset
       cmake_version: *cmake_version
