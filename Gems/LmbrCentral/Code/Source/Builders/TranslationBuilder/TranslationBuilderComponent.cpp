@@ -24,6 +24,8 @@ namespace TranslationBuilder
 {
     void BuilderPluginComponent::Activate()
     {
+        // https://github.com/o3de/o3de/issues/19851 - Disable QT translation building via asset processor as a workaround (it is currently unused)
+        /*
         // activate is where you'd perform registration with other objects and systems.
 
         // since we want to register our builder, we do that here:
@@ -42,6 +44,7 @@ namespace TranslationBuilder
 
         AssetBuilderSDK::AssetBuilderBus::Broadcast(
             &AssetBuilderSDK::AssetBuilderBus::Events::RegisterBuilderInformation, builderDescriptor);
+        */
     }
 
     void BuilderPluginComponent::Deactivate()

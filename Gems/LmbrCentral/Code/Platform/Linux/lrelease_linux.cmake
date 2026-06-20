@@ -8,5 +8,4 @@
 
 set(lrelease_files
     ${QT_LRELEASE_EXECUTABLE}
-    ${QT_PATH}/lib/libQt6Core.so.6
 )
