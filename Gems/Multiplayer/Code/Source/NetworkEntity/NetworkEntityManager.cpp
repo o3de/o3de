@@ -408,16 +408,24 @@ namespace Multiplayer
         for (NetEntityId entityId : removeList)
         {
             NetworkEntityHandle removeEntity = m_networkEntityTracker.Get(entityId);
-
             if (removeEntity != nullptr)
             {
                 // If we've spawned entities through @NetworkEntityManager::CreateEntitiesImmediate
                 // then we destroy those entities here by processing the removal list.
                 // Note that if we've spawned entities through @NetworkPrefabSpawnerComponent::SpawnPrefab
                 // we should instead use the SpawnableEntitiesManager to destroy them.
-                AzFramework::GameEntityContextRequestBus::Broadcast(
-                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, removeEntity.GetEntity()->GetId());
 
+                // Also of note, Deactivating an entity causes its children to also deactivate.
+                // In turn, deactivating a child will cause its NetBindComponent to remove itself from the NetworkEntityTracker.
+                // Which means it won't appear in this loop again.  This means we need to call DestroyGameEntityAndDescendants
+                // here, or we will miss inactive children.  Its either that, or run this loop in reverse order, since children are always
+                // spawned after parents.
+
+                // HOWEVER, working in reverse order would not solve the problem fully, since you can change the parent-child relationships
+                // after spawning, and doing so won't affect their order in this list, which would result in more housekeeping.  Instead,
+                // we just destroy them all here.
+                AzFramework::GameEntityContextRequestBus::Broadcast(
+                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants, removeEntity.GetEntity()->GetId());
                 m_networkEntityTracker.erase(entityId);
             }
         }
