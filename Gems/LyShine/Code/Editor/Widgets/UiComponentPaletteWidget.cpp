@@ -13,8 +13,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
-#include <QLineEdit>
-
 UiComponentPaletteWidget::UiComponentPaletteWidget(QWidget* parent)
     : ComponentPaletteWidget(parent, true)
 {
@@ -90,10 +88,7 @@ void UiComponentPaletteWidget::ActivateSelection(const QModelIndex& index)
 
     emit OnAddComponentEnd();
 
-    // Clear search and dismiss the palette
-    if (auto* searchBox = findChild<QLineEdit*>())
-    {
-        searchBox->setText("");
-    }
+    // Clear search and dismiss the palette through the base class codepath
+    ClearSearch();
     hide();
 }
