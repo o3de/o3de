@@ -506,26 +506,30 @@ namespace AzFramework
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
 
-#ifndef _RELEASE
-        AZ::EntityId parentId = m_parentId;
-
-        while (parentId.IsValid())
+#ifndef AZ_RELEASE_BUILD
+        // The following is an error check for cyclic dependencies and can be omitted in shipping builds
+        // Put variables in such a check in their own scope to avoid this kind of code leaking out of scope
         {
-            if (parentId == GetEntityId())
+            AZ::EntityId parentId = m_parentId;
+
+            while (parentId.IsValid())
             {
-                AZ_Error("TransformComponent", false, "Trying to create a circular dependency of parenting. Aborting set parent call.");
-                SetParent(AZ::EntityId());
-                return;
+                if (parentId == GetEntityId())
+                {
+                    AZ_Error("TransformComponent", false, "Trying to create a circular dependency of parenting. Aborting set parent call.");
+                    SetParent(AZ::EntityId());
+                    return;
+                }
+
+                auto handler = AZ::TransformBus::FindFirstHandler(parentId);
+
+                if (handler == nullptr)
+                {
+                    break;
+                }
+
+                parentId = handler->GetParentId();
             }
-
-            auto handler = AZ::TransformBus::FindFirstHandler(parentId);
-
-            if (handler == nullptr)
-            {
-                break;
-            }
-
-            parentId = handler->GetParentId();
         }
 #endif
 
@@ -607,9 +611,17 @@ namespace AzFramework
         // This call happens before destruction of the entity, with entityId = GetEntityId.
         // it also happens when the parent is destroyed, with entityId = m_parentId.
 
-        // If our parent is being destroyed, and we are not, it means that the heiarchy is being detached.
+        // If our parent is being destroyed, and we are not, it means that the hierarchy is being detached.
         // on the other hand, if we are being destroyed, and our parent is not, it means we are being removed
-        // from the heirarchy either way, and should notify of child removal.
+        // from the hierarchy either way, and should notify of child removal.
+
+        // For systems which destroy entire trees of entities, the optimal way would be from the leaves
+        // to the parent, so that none of these cascading transform change notifications happen.  So we
+        // essentially expect only to get into this function in the case where our parent is being destroyed
+        // and we are not.  A future optimization, if this turns out to be a profiler hotspot, would be
+        // to mark entities as being destroyed in a batch, so that elements in here can know whether
+        // its even worth sending out messages at all (ie, if the entire tree is being destroyed, then
+        // only the root, if it has a parent of its own, needs to notify its parent).
 
         if (entityId == m_parentId)
         {
@@ -626,6 +638,14 @@ namespace AzFramework
             m_parentTM = nullptr;
             m_parentActive = false;
             SetParentImpl(AZ::EntityId(), true);
+
+            // The "null" entity is never inactive, so make sure that we update our active state based on this in case we
+            // were inactive before.
+            m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), true);
+            if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+            {
+                m_entity->ApplyEffectiveActiveState();
+            }
         }
         else if (entityId == GetEntityId())
         {
@@ -649,12 +669,6 @@ namespace AzFramework
         if (GetEntity() && parentId == GetEntityId())
         {
             AZ_Warning("TransformComponent", false, "An entity can not be set as its own parent.");
-            return;
-        }
-
-        if (m_parentId == parentId)
-        {
-            // No change, do nothing.
             return;
         }
 
