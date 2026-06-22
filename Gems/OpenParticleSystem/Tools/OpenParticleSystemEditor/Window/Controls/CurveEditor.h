@@ -16,11 +16,9 @@
 #include <QPainter>
 #include <QHBoxLayout>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <Document/ParticleDocumentBus.h>
-#endif
 
 namespace OpenParticleSystemEditor
 {

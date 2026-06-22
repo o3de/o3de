@@ -26,7 +26,7 @@ namespace ScriptCanvas
         {
             AZ_CLASS_ALLOCATOR(ScriptTarget, AZ::SystemAllocator);
             AZ_TYPE_INFO(ScriptTarget, "{338BB8F6-2BF2-4D89-B862-847B7E25A97C}");
-            
+
             bool m_logExecution = false;
 
             TargetEntities m_entities;
@@ -38,18 +38,18 @@ namespace ScriptCanvas
             {
                 for (auto mapPair : other.m_entities)
                 {
-                    auto insertResult = m_entities.insert(mapPair.first);
+                    auto insertResult = m_entities.try_emplace(mapPair.first);
                     auto entityIter = insertResult.first;
 
                     for (auto assetId : mapPair.second)
                     {
                         entityIter->second.insert(assetId);
                     }
-                }                
+                }
 
                 for (auto mapPair : other.m_staticEntities)
                 {
-                    auto insertResult = m_staticEntities.insert(mapPair.first);
+                    auto insertResult = m_staticEntities.try_emplace(mapPair.first);
                     auto entityIter = insertResult.first;
 
                     for (auto assetId : mapPair.second)
@@ -99,7 +99,7 @@ namespace ScriptCanvas
             {
                 return m_graphs.find(assetId) != m_graphs.end();
             }
-        
+
         private:
             AZ_FORCE_INLINE bool IsEntityObserved(AZ::EntityId entityId, const GraphIdentifier& graphId) const
             {
@@ -112,9 +112,9 @@ namespace ScriptCanvas
         {
             AZ_CLASS_ALLOCATOR(Target, AZ::SystemAllocator);
             AZ_TYPE_INFO(Target, "{5127E021-1020-4B3A-BAA4-CA7174E3D07A}");
-            
+
             // optional, empty means use sender
-            AzFramework::RemoteToolsEndpointInfo m_info; 
+            AzFramework::RemoteToolsEndpointInfo m_info;
 
             ScriptTarget m_script;
 
@@ -129,16 +129,16 @@ namespace ScriptCanvas
 
             // only checks for the same identity of the debug service/client
             bool IsNetworkIdentityEqualTo(const Target& other) const;
-            
+
             // compares all values
             bool operator==(const Target& other) const;
-            
+
             explicit operator bool() const;
         };
 
         struct VariableChangeBreakpoint
         {
 
-        };                
+        };
     }
 }

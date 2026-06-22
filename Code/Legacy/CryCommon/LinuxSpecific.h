@@ -42,6 +42,8 @@
 #include <vector>
 #include <string>
 
+#include <AzCore/base.h>
+
 typedef void*                               LPVOID;
 #define VOID                    void
 #define PVOID                               void*
@@ -85,12 +87,12 @@ typedef float FLOAT;
 
 #define _PACK __attribute__ ((packed))
 
-#define MAKEWORD(a, b)      ((WORD)(((BYTE)((DWORD_PTR)(a) & 0xff)) | ((WORD)((BYTE)((DWORD_PTR)(b) & 0xff))) << 8))
-#define MAKELONG(a, b)      ((LONG)(((WORD)((DWORD_PTR)(a) & 0xffff)) | ((DWORD)((WORD)((DWORD_PTR)(b) & 0xffff))) << 16))
-#define LOWORD(l)           ((WORD)((DWORD_PTR)(l) & 0xffff))
-#define HIWORD(l)           ((WORD)((DWORD_PTR)(l) >> 16))
-#define LOBYTE(w)           ((BYTE)((DWORD_PTR)(w) & 0xff))
-#define HIBYTE(w)           ((BYTE)((DWORD_PTR)(w) >> 8))
+#define MAKEWORD(a, b)      ((AZ::u16)(((AZ::u8)((AZ::u64)(a) & 0xff)) | ((AZ::u16)((AZ::u8)((AZ::u64)(b) & 0xff))) << 8))
+#define MAKELONG(a, b)      ((AZ::s32)(((AZ::u16)((AZ::u64)(a) & 0xffff)) | ((AZ::u32)((AZ::u16)((AZ::u64)(b) & 0xffff))) << 16))
+#define LOWORD(l)           ((AZ::u16)((AZ::u64)(l) & 0xffff))
+#define HIWORD(l)           ((AZ::u16)((AZ::u64)(l) >> 16))
+#define LOBYTE(w)           ((AZ::u8)((AZ::u64)(w) & 0xff))
+#define HIBYTE(w)           ((AZ::u8)((AZ::u64)(w) >> 8))
 
 #define CALLBACK
 #define WINAPI
@@ -117,16 +119,16 @@ typedef LPCWSTR LPCTSTR;
 typedef LPWSTR LPTSTR;
 typedef char TCHAR;
 
-typedef DWORD COLORREF;
-#define RGB(r,g,b) ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
+typedef AZ::u32 COLORREF;
+#define RGB(r,g,b) ((COLORREF)(((BYTE)(r)|((AZ::u16)((BYTE)(g))<<8))|(((AZ::u32)(BYTE)(b))<<16)))
 
 #define GetRValue(rgb)  (LOBYTE(rgb))
-#define GetGValue(rgb)  (LOBYTE(((WORD)(rgb)) >> 8))
+#define GetGValue(rgb)  (LOBYTE(((AZ::u16)(rgb)) >> 8))
 #define GetBValue(rgb)  (LOBYTE((rgb)>>16))
 
 #define MAKEFOURCC(ch0, ch1, ch2, ch3)                \
-    ((DWORD)(BYTE)(ch0) | ((DWORD)(BYTE)(ch1) << 8) | \
-     ((DWORD)(BYTE)(ch2) << 16) | ((DWORD)(BYTE)(ch3) << 24))
+    ((AZ::u32)(BYTE)(ch0) | ((AZ::u32)(BYTE)(ch1) << 8) | \
+     ((AZ::u32)(BYTE)(ch2) << 16) | ((AZ::u32)(BYTE)(ch3) << 24))
 #define FILE_ATTRIBUTE_NORMAL               0x00000080
 
 typedef int                         BOOL;
@@ -180,12 +182,12 @@ typedef union _LARGE_INTEGER
 {
     struct
     {
-        DWORD LowPart;
+        AZ::u32 LowPart;
         LONG HighPart;
     };
     struct
     {
-        DWORD LowPart;
+        AZ::u32 LowPart;
         LONG HighPart;
     } u;
     long long QuadPart;
@@ -288,31 +290,6 @@ typedef unsigned int _fsize_t;
 
 struct _OVERLAPPED;
 
-typedef void (* LPOVERLAPPED_COMPLETION_ROUTINE)(DWORD dwErrorCode, DWORD dwNumberOfBytesTransfered, struct _OVERLAPPED* lpOverlapped);
-
-typedef struct _OVERLAPPED
-{
-    void* pCaller;//this is orginally reserved for internal purpose, we store the Caller pointer here
-    LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine; ////this is orginally ULONG_PTR InternalHigh and reserved for internal purpose
-    union
-    {
-        struct
-        {
-            DWORD Offset;
-            DWORD OffsetHigh;
-        };
-        PVOID Pointer;
-    };
-    DWORD dwNumberOfBytesTransfered;        //additional member temporary speciying the number of bytes to be read
-    /*HANDLE*/ void*  hEvent;
-} OVERLAPPED, * LPOVERLAPPED;
-
-typedef struct _SECURITY_ATTRIBUTES
-{
-    DWORD nLength;
-    LPVOID lpSecurityDescriptor;
-    BOOL bInheritHandle;
-} SECURITY_ATTRIBUTES, * PSECURITY_ATTRIBUTES, * LPSECURITY_ATTRIBUTES;
 
 #ifdef __cplusplus
 extern bool QueryPerformanceCounter(LARGE_INTEGER*);

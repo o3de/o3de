@@ -10,13 +10,12 @@
 
 #include <QWidget>
 #include <QLabel>
-#if !defined(Q_MOC_RUN)
+
 #include <AzCore/std/string/string.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
 #include <Serializer/DataConvertor.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
-#endif
 
 namespace OpenParticleSystemEditor
 {

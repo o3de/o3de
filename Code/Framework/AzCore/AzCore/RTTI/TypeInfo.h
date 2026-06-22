@@ -15,6 +15,7 @@
 #include <AzCore/std/typetraits/is_enum.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/utility/pair.h>
 
 #include <AzCore/Math/Uuid.h>
 
@@ -39,8 +40,6 @@ namespace AZStd
     struct equal_to;
     template <class T>
     struct hash;
-    template< class T1, class T2>
-    struct pair;
     template< class T, class Allocator/* = AZStd::allocator*/ >
     class vector;
     template< class T, class Allocator/* = AZStd::allocator*/ >
@@ -482,7 +481,6 @@ namespace AZStd
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::greater_equal, "AZStd::greater_equal", "{EB00488F-E20F-471A-B862-F1E3C39DDA1D}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::equal_to, "AZStd::equal_to", "{4377BCED-F78C-4016-80BB-6AFACE6E5137}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::hash, "AZStd::hash", "{EFA74E54-BDFA-47BE-91A7-5A05DA0306D7}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::pair, "AZStd::pair", "{919645C1-E464-482B-A69B-04AA688B6847}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::vector, "AZStd::vector", "{A60E3E61-1FF6-4982-B6B8-9E4350C4C679}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::list, "AZStd::list", "{E1E05843-BB02-4F43-B7DC-3ADB28DF42AC}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::forward_list, "AZStd::forward_list", "{D7E91EA3-326F-4019-87F0-6F45924B909A}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
@@ -602,6 +600,7 @@ namespace std
 
     // AZStd::optional is std::optional brought into the AZStd:: namespace
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::optional, "AZStd::optional", "{AB8C50C0-23A7-4333-81CD-46F648938B1C}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::pair, "AZStd::pair", "{919645C1-E464-482B-A69B-04AA688B6847}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
 
     // Adding overloads for GetO3deTypeName/GetO3deTypeId/GetO3deClassTemplateId and GetO3deTemplateId in the std:: namespace since AZStd::tuple is just std::tuple brought into the AZStd namespace
     // This allows ADL to add those function to the list of function overloads when evaulating the overload set

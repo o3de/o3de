@@ -63,4 +63,3 @@ namespace OpenParticleSystemEditor
     }
 } // namespace OpenParticleSystemEditor
 
-#include <Window/moc_EmitterInspector.cpp>

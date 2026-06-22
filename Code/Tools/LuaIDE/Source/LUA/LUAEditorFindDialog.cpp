@@ -82,7 +82,11 @@ namespace LUAEditor
         auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
         m_gui->wrapCheckBox->setChecked((pState ? pState->m_findWrap : true));
 
-        connect(m_gui->wrapCheckBox, &QCheckBox::stateChanged, this, [](int newState)
+        connect(
+            m_gui->wrapCheckBox,
+            &QCheckBox::checkStateChanged,
+            this,
+            [](Qt::CheckState newState)
         {
             auto pState = AZ::UserSettings::CreateFind<LUAEditorInternal::FindSavedState>(AZ_CRC_CE("FindInCurrent"), AZ::UserSettings::CT_LOCAL);
             pState->m_findWrap = (newState == Qt::Checked);
@@ -610,11 +614,11 @@ namespace LUAEditor
                     int index = 0;
                     if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                     {
-                        index = entry.m_lineText.indexOf(regex, index);
+                        index = static_cast<int>(entry.m_lineText.indexOf(regex, index));
                     }
                     else
                     {
-                        index = entry.m_lineText.indexOf(m_FIFData.m_SearchText, index, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                        index = static_cast<int>(entry.m_lineText.indexOf(m_FIFData.m_SearchText, index, m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive));
                     }
 
                     if (index > -1)
@@ -633,26 +637,26 @@ namespace LUAEditor
                         if (m_FIFData.m_bRegExIsChecked || m_FIFData.m_bWholeWordIsChecked)
                         {
                             QRegularExpressionMatch match = regex.match(entry.m_lineText);
-                            index = match.capturedStart();
+                            index = static_cast<int>(match.capturedStart());
                             while (match.hasMatch())
                             {
-                                const int length = match.capturedLength();
+                                const int length = static_cast<int>(match.capturedLength());
                                 entry.m_matches.push_back(AZStd::make_pair(index, length));
 
                                 match = regex.match(entry.m_lineText, index + length);
-                                index = match.capturedStart();
+                                index = static_cast<int>(match.capturedStart());
                             }
                         }
                         else
                         {
                             while (index > -1)
                             {
-                                entry.m_matches.push_back(AZStd::make_pair(index, m_FIFData.m_SearchText.length()));
+                                entry.m_matches.push_back(AZStd::make_pair(index, static_cast<int>(m_FIFData.m_SearchText.length())));
                                 index++;
-                                index = entry.m_lineText.indexOf(
+                                index = static_cast<int>(entry.m_lineText.indexOf(
                                     m_FIFData.m_SearchText,
                                     index,
-                                    m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive);
+                                    m_FIFData.m_bCaseSensitiveIsChecked ? Qt::CaseSensitive : Qt::CaseInsensitive));
                             }
                         }
 
@@ -1302,7 +1306,7 @@ namespace LUAEditor
 
         int count = 0;
         pLUAViewWidget->SetCursorPosition(0, 0);
-        const int advance = m_gui->txtReplaceWith->text().size();
+        const int advance = static_cast<int>(m_gui->txtReplaceWith->text().size());
         int firstFoundLine = 0;
         int firstFoundIndex = 0;
         if (pLUAViewWidget->FindFirst(m_gui->txtFind->text(),
@@ -1427,4 +1431,3 @@ namespace LUAEditor
     }
 }//namespace LUAEditor
 
-#include <Source/LUA/moc_LUAEditorFindDialog.cpp>

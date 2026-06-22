@@ -30,9 +30,8 @@
 // For lua debugger
 //#include <malloc.h>
 
-HMODULE gDLLHandle = NULL;
-
 #if !defined(AZ_MONOLITHIC_BUILD) && defined(AZ_HAS_DLL_SUPPORT) && AZ_TRAIT_LEGACY_CRYSYSTEM_DEFINE_DLLMAIN
+HMODULE gDLLHandle = NULL;
 AZ_PUSH_DISABLE_WARNING(4447, "-Wunknown-warning-option")
 BOOL APIENTRY DllMain(HANDLE hModule,
     DWORD  ul_reason_for_call,
@@ -48,8 +47,6 @@ AZ_POP_DISABLE_WARNING
     case DLL_PROCESS_ATTACH:
         break;
     case DLL_THREAD_ATTACH:
-
-
         break;
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:

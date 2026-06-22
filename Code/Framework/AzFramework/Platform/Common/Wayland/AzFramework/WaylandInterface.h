@@ -24,23 +24,6 @@ reinterpret_cast<char*>(pos) < (static_cast<char*>((array)->data) + (array)->siz
 
 namespace AzFramework
 {
-    template<auto Callable>
-    struct WaylandDeleterFreeFunctionWrapper
-    {
-        using value_type = decltype(Callable);
-        static constexpr value_type s_value = Callable;
-        constexpr operator value_type() const noexcept
-        {
-            return s_value;
-        }
-    };
-
-    template<typename T, auto fn>
-    using WaylandUniquePtr = AZStd::unique_ptr<T, WaylandDeleterFreeFunctionWrapper<fn>>;
-
-    template<typename T>
-    using WaylandStdFreePtr = WaylandUniquePtr<T, ::free>;
-
     // EBus to help with registry
     class WaylandRegistryEvents
     {
@@ -90,12 +73,12 @@ namespace AzFramework
 
     using WaylandInterfaceNotificationsBus = AZ::EBus<WaylandInterfaceNotifications, WaylandInterfaceNotificationsBusTraits>;
 
-    //Ebus to get a Wayland proxy
+    //Ebus to get a Wayland proxy from an interface name.
     class WaylandProxyBusEvents
     {
     public:
         AZ_RTTI(WaylandProxyBusEvents, "{ECE07457-9F6E-4C5D-AE9A-DA7F1A366392}")
-        virtual ~WaylandProxyBusEvents() = default;;
+        virtual ~WaylandProxyBusEvents() = default;
 
         virtual wl_proxy* GetProxy(AZ::Crc32 interface) = 0;
     };

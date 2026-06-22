@@ -216,7 +216,10 @@ namespace AZ
             //! Contains actions to perform for each material update version.
             MaterialVersionUpdates m_materialVersionUpdates;
 
-            //! Describes the layout of the MaterialParameter - struct
+            //! Describes the layout of the MaterialParameter - struct.
+            //! CAUTION: Do NOT add AZ::Matrix3x3, AZ::Matrix3x4, or AZ::Matrix4x4 parameters via this layout until the
+            //! Vulkan/row_major structured buffer bug is resolved. Store matrices as separate row_major float4 rows instead.
+            //! See MaterialShaderParameterLayout.cpp for details and UvPropertyGroup.json for a worked example.
             MaterialShaderParameterLayout m_materialShaderParameterLayout;
 
             bool m_isNonSerializedDataInitialized = false;

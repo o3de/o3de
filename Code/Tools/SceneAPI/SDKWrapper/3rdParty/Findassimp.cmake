@@ -24,7 +24,7 @@ function(GetAssimp)
     include(FetchContent)
 
     set(ASSIMP_GIT_REPO "https://github.com/assimp/assimp.git")
-    set(ASSIMP_GIT_TAG "fb375dd8c0a032106a2122815fb18dffe0283721")
+    set(ASSIMP_GIT_TAG "e0b52347c6e52de2827ec957a9ebf00ce3c54f79")
     set(ASSIMP_GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/tinyusd-include.patch")
 
     FetchContent_Declare(
@@ -37,7 +37,7 @@ function(GetAssimp)
     )
 
     # please always be really clear about what third parties your gem uses.
-    message(STATUS "SDKWrapper Tool uses Assimp v6.0.2 (Custom BSD-3-Clause) ${ASSIMP_GIT_REPO}")
+    message(STATUS "SDKWrapper Tool uses Assimp v6.0.4 (Custom BSD-3-Clause) ${ASSIMP_GIT_REPO}")
 
     # Part 2: Set the build settings and trigger the actual execution of the downloaded CMakeLists.txt file
 
@@ -51,14 +51,16 @@ function(GetAssimp)
     set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
 
     # The rest of these are all specific settings that come from Assimp's CMakeLists.txt files.
-    set(ASSIMP_BUILD_ZLIB OFF)  # Don't rebuild ZLIB. O3DE's comes with its own ZLIB 3rdParty package.
     set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
-    set(ASSIMP_BUILD_USD_IMPORTER ON)
-    set(ASSIMP_WARNINGS_AS_ERRORS OFF)  # Not sure why this doesn't work. Warnings are still treated as error; needed to add warning disabled commandline parameters to PAL_assimp_<compiler>.cmake
     set(ASSIMP_BUILD_TESTS OFF)
-    set(ASSIMP_INSTALL OFF)  # Disable since we're using Assimp as a sub module
-    set(ASSIMP_INJECT_DEBUG_POSTFIX OFF)  # Stop Assimp from adding 'd' to debug target outputs (mylibraryd.dll) https://github.com/assimp/assimp/blob/f63625256c4e6f18fca8e7dc857b47a02320e867/CMakeLists.txt#L411
+    set(ASSIMP_BUILD_USD_IMPORTER ON)
+    set(ASSIMP_BUILD_USE_CCACHE OFF)
+    set(ASSIMP_BUILD_ZLIB OFF)  # Don't rebuild ZLIB. O3DE's comes with its own ZLIB 3rdParty package.
     set(ASSIMP_HUNTER_ENABLED OFF)
+    set(ASSIMP_INJECT_DEBUG_POSTFIX OFF)  # Stop Assimp from adding 'd' to debug target outputs (mylibraryd.dll) https://github.com/assimp/assimp/blob/f63625256c4e6f18fca8e7dc857b47a02320e867/CMakeLists.txt#L411
+    set(ASSIMP_INSTALL OFF)  # Disable since we're using Assimp as a sub module
+    set(ASSIMP_WARNINGS_AS_ERRORS OFF)  # Not sure why this doesn't work. Warnings are still treated as error; needed to add warning disabled commandline parameters to PAL_assimp_<compiler>.cmake
+    set(TINYUSDZ_USE_CCACHE OFF)
 
     # Assimp requires ZLIB
     find_package(ZLIB REQUIRED)

@@ -8,15 +8,12 @@
 
 #pragma once
 
-
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
-#endif
 
 namespace OpenParticleSystem
 {

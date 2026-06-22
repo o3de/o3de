@@ -204,4 +204,3 @@ void PropertiesWidget::InvalidatePropertyDisplay([[maybe_unused]] AzToolsFramewo
     TriggerRefresh(AzToolsFramework::PropertyModificationRefreshLevel::Refresh_EntireTree, &scriptEditorTypeId);
 }
 
-#include <moc_PropertiesWidget.cpp>

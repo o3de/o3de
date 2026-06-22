@@ -541,8 +541,6 @@ namespace AzToolsFramework
             SetupHeader();
             m_parentEditorWidget->SetCurrentTab(this);
             m_parentEditorWidget->UpdateSaveMenuActionsStatus();
-
-            m_parentEditorWidget->AddRecentPath(asset.GetType(), asset.GetHint());
         }
 
         void AssetEditorTab::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -643,10 +641,19 @@ namespace AzToolsFramework
             AZ::IO::FixedMaxPath projectSourcePath = AZ::Utils::GetProjectPath();
             projectSourcePath /= "Assets";
 
+            // Only use the recent path if it falls within the project directory.
+            // This prevents the Save As dialog from defaulting to the Cache folder
+            // when an asset was previously opened from a product/cache location.
             auto& recentPathForAssetType = m_parentEditorWidget->GetRecentPathForAssetType(m_inMemoryAsset.GetType());
             if (!recentPathForAssetType.isEmpty())
             {
-                projectSourcePath = recentPathForAssetType.toStdString().c_str();
+                AZ::IO::FixedMaxPath projectRoot = AZ::Utils::GetProjectPath();
+                QString recentQStr = recentPathForAssetType;
+                QString projectRootQStr = QString::fromUtf8(projectRoot.c_str());
+                if (recentQStr.startsWith(projectRootQStr, Qt::CaseInsensitive))
+                {
+                    projectSourcePath = recentPathForAssetType.toStdString().c_str();
+                }
             }
 
             QDir dir(projectSourcePath.c_str());
@@ -907,7 +914,7 @@ namespace AzToolsFramework
             {
                 // Add the asset location to the right of the header. Location is relative to the Project directory.
                 QString pathAndAsset = assetPath.c_str();
-                int seperatorPos = pathAndAsset.lastIndexOf('/');
+                int seperatorPos = static_cast<int>(pathAndAsset.lastIndexOf('/'));
                 if (seperatorPos >= 0)
                 {
                     headerText.append(pathAndAsset.left(seperatorPos));
@@ -932,4 +939,3 @@ namespace AzToolsFramework
     } // namespace AssetEditor
 } // namespace AzToolsFramework
 
-#include <AssetEditor/moc_AssetEditorTab.cpp>

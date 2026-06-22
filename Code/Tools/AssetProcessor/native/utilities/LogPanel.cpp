@@ -7,6 +7,7 @@
  */
 
 #include "LogPanel.h"
+#include <native/assetprocessor.h> // for consolechannel
 #include <native/utilities/ThreadHelper.h>
 
 namespace AssetProcessor
@@ -57,6 +58,15 @@ namespace AssetProcessor
     {
         if (AssetProcessor::GetThreadLocalJobId())
         {
+            // you can "punch through" this filter by using a window of the console channel (AssetProcessor).
+            // mainly used to show debug.
+            if (window)
+            {
+                if (strcmp(window, AssetProcessor::ConsoleChannel) == 0)
+                {
+                    return true; // allow it to print.
+                }
+            }
             return false; // we are in a job thread
         }
 

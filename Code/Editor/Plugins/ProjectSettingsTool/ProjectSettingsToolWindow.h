@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "LastPathBus.h"
 #include "Platforms.h"
 #include "PlatformSettings.h"
@@ -21,7 +20,6 @@
 #include <QProcess>
 #include <QScopedPointer>
 #include <QWidget>
-#endif
 
 // Forward Declares
 namespace Ui

@@ -80,7 +80,7 @@ namespace OpenParticleSystem
         options.isPreview = true;
         options.showInMenu = true;
         options.showOnToolsToolbar = true;
-        options.toolbarIcon = ":/stylesheet/img/UI20/toolbar/particle.svg";
+        options.toolbarIcon = ":/OpenParticleSystem/Icons/Particle.svg";
 
         AzToolsFramework::RegisterViewPane<OpenParticleSystemEditor::OpenParticleSystemEditorWindow>(
             "(Preview) Particle Editor", LyViewPane::CategoryTools, options);

@@ -218,9 +218,13 @@ namespace AzFramework
         , m_surface(nullptr)
         , m_xdgSurface(nullptr)
     {
+        if (auto displayManager = AzFramework::WaylandDisplayProviderInterface::Get())
+        {
+            m_display = displayManager->GetWaylandDisplay();
+        }
+
         if (auto connectionManager = AzFramework::WaylandConnectionManagerInterface::Get())
         {
-            m_display = connectionManager->GetWaylandDisplay();
             m_compositor = connectionManager->GetWaylandCompositor();
         }
 
@@ -519,16 +523,6 @@ namespace AzFramework
         }
 
         InternalUpdateBufferScale();
-    }
-
-    void WaylandNativeWindow::SetPointerFocus(WaylandInputDeviceMouse* pointer)
-    {
-        m_focusedCursor = pointer;
-    }
-
-    void WaylandNativeWindow::SetKeyboardFocus(WaylandInputDeviceKeyboard* keyboard)
-    {
-        m_focusedKeyboard = keyboard;
     }
 
 } // namespace AzFramework

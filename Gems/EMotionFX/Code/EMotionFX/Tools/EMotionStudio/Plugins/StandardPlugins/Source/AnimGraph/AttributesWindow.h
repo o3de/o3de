@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
@@ -18,7 +17,6 @@
 #include <QDialog>
 #include <QModelIndex>
 #include <QWidget>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QScrollArea)
 QT_FORWARD_DECLARE_CLASS(QItemSelection)

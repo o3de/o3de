@@ -60,7 +60,7 @@ namespace EMotionFX
         // Get the currently selected tag strings from the widget.
         QVector<QString> tagStrings;
         m_tagSelector->GetSelectedTagStrings(tagStrings);
-        const int numTags = tagStrings.count();
+        const int numTags = static_cast<int>(tagStrings.count());
 
         AZStd::vector<AZStd::string> newTags;
         newTags.reserve(numTags);

@@ -392,14 +392,12 @@ namespace LogFileInternal
 
 void CLogFile::AboutSystem()
 {
-#if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
+#if defined(AZ_PLATFORM_WINDOWS)
     //////////////////////////////////////////////////////////////////////
     // Write the system informations to the log
     //////////////////////////////////////////////////////////////////////
     char szBuffer[MAX_LOGBUFFER_SIZE];
-    //wchar_t szCPUModel[64];
-    MEMORYSTATUS MemoryStatus;
-#endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
+#endif // defined(AZ_PLATFORM_WINDOWS)
 
 #if defined(AZ_PLATFORM_WINDOWS)
     wchar_t szLanguageBufferW[64];
@@ -420,7 +418,7 @@ void CLogFile::AboutSystem()
     CryLog("%s", szBuffer);
 #else
     QLocale locale;
-    CryLog("Current Language: %s (%s)", qPrintable(QLocale::languageToString(locale.language())), qPrintable(QLocale::countryToString(locale.country())));
+    CryLog("Current Language: %s (%s)", qPrintable(QLocale::languageToString(locale.language())), qPrintable(QLocale::territoryToString(locale.territory())));
 #endif
 
 
@@ -438,15 +436,7 @@ void CLogFile::AboutSystem()
     // TODO: Add more detail about the current Linux Distro
     CryLog("Linux");
 #elif AZ_TRAIT_OS_PLATFORM_APPLE
-    QString operatingSystemName;
-    if (QSysInfo::MacintoshVersion >= Q_MV_OSX(10, 12))
-    {
-        operatingSystemName = "macOS ";
-    }
-    else
-    {
-        operatingSystemName = "OS X ";
-    }
+    QString operatingSystemName ="macOS ";
 
     int majorVersion = 0;
     int minorVersion = 0;
@@ -492,24 +482,10 @@ void CLogFile::AboutSystem()
     //////////////////////////////////////////////////////////////////////
     // Send system memory status
     //////////////////////////////////////////////////////////////////////
-
-#if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
-    GlobalMemoryStatus(&MemoryStatus);
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "%zdMB phys. memory installed, %zdMB paging available",
-        MemoryStatus.dwTotalPhys / 1048576 + 1,
-        MemoryStatus.dwAvailPageFile / 1048576);
-    CryLog("%s", szBuffer);
-#elif defined(AZ_PLATFORM_LINUX)
-    //KDAB_TODO
-#else
-
-    SInt32 mb = 0, lmb = 0;
-    AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations")
-    Gestalt(gestaltPhysicalRAMSizeInMegabytes, &mb);
-    Gestalt(gestaltLogicalRAMSize, &lmb);
-    AZ_POP_DISABLE_WARNING
-    CryLog("%dMB phys. memory installed, %dMB paging available", mb, lmb);
-#endif
+    AZ::u32 totalPhysicalMemory = 0;
+    AZ::u32 availablePageMemory = 0;
+    CLogFile::GetMemoryStatusMB(totalPhysicalMemory, availablePageMemory);
+    CryLog("%dMB phys. memory installed, %dMB paging available", totalPhysicalMemory, availablePageMemory);
 
     //////////////////////////////////////////////////////////////////////
     // Send display settings
@@ -683,7 +659,7 @@ void CLogFile::OnWriteToConsole(AZStd::string_view sText, bool bNewLine)
             }
 
             // remember selection and the top row
-            int len = m_hWndEditBox->document()->toPlainText().length();
+            int len = static_cast<int>(m_hWndEditBox->document()->toPlainText().length());
             int top = 0;
             int from = m_hWndEditBox->textCursor().selectionStart();
             int to = from + m_hWndEditBox->textCursor().selectionEnd();
@@ -766,4 +742,50 @@ void CLogFile::OnWriteToConsole(AZStd::string_view sText, bool bNewLine)
 //////////////////////////////////////////////////////////////////////////
 void CLogFile::OnWriteToFile([[maybe_unused]] AZStd::string_view sText, [[maybe_unused]] bool bNewLine)
 {
+}
+
+
+void CLogFile::GetMemoryStatusMB(AZ::u32 &totalPhysicalMemory, AZ::u32& availablePageMemory)
+{
+    totalPhysicalMemory = 0;
+    availablePageMemory = 0;
+
+#if defined(AZ_PLATFORM_WINDOWS)
+    MEMORYSTATUS MemoryStatus;
+    ::GlobalMemoryStatus(&MemoryStatus);
+    totalPhysicalMemory = MemoryStatus.dwTotalPhys / 1048576 + 1;
+    availablePageMemory = MemoryStatus.dwAvailPageFile / 1048576;
+#elif defined(AZ_PLATFORM_LINUX)
+    FILE* f = nullptr;
+    azfopen(&f, "/proc/meminfo", "r");
+    if (f)
+    {
+        char buffer[256];
+        memset(buffer, '0', 256);
+        int total=0, free=0;
+
+        while (fgets(buffer, sizeof(buffer), f))
+        {
+            if (azsscanf(buffer, "MemTotal: %d", &total))
+            {
+                totalPhysicalMemory = total / 1024;
+            }
+            else if (azsscanf(buffer, "SwapFree: %d", &free))
+            {
+                availablePageMemory = free / 1024;
+            }
+        }
+        fclose(f);
+    }
+#elif defined(AZ_PLATFORM_MAC)
+    SInt32 mb = 0, lmb = 0;
+    AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations")
+    Gestalt(gestaltPhysicalRAMSizeInMegabytes, &mb);
+    Gestalt(gestaltLogicalRAMSize, &lmb);
+    AZ_POP_DISABLE_WARNING
+    totalPhysicalMemory = static_cast<AZ::u32>(mb);
+    availablePageMemory = static_cast<AZ::u32>(lmb);
+#else 
+#error "Unsupported Host"
+#endif
 }

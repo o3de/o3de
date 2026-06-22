@@ -63,8 +63,8 @@ def ComponentCRUD_Add_Delete_Components():
         :return: None
         """
 
-        from PySide2 import QtWidgets, QtTest
-        from PySide2.QtCore import Qt
+        from PySide6 import QtWidgets, QtTest
+        from PySide6.QtCore import Qt
 
         import azlmbr.legacy.general as general
         import azlmbr.bus as bus

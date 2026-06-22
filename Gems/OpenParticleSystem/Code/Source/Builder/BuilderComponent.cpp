@@ -15,8 +15,8 @@
 
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <OpenParticleSystem/Asset/ParticleAssetHandler.h>
-#include <Runtime/OpenParticleSystem/ParticleConfig.h>
-#include <Runtime/OpenParticleSystem/ParticleEditDataConfig.h>
+#include <OpenParticleSystem/ParticleConfig.h>
+#include <OpenParticleSystem/ParticleEditDataConfig.h>
 #include <Serializer/ParticleSourceData.h>
 
 namespace OpenParticle

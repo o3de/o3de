@@ -45,8 +45,13 @@ namespace AZ
             RPI::MaterialPropertyIndex m_rotateDegrees; //!< index of material property for rotating
 
             // Shader setting output...
-            RPI::MaterialShaderParameterNameIndex m_transformMatrix; //!< the index of a float3x3 shader input
-            RPI::MaterialShaderParameterNameIndex m_transformMatrixInverse; //!< the index of the inverse float3x3 shader input
+            // Each matrix is stored as 3 separate row_major float4 rows to work around a Vulkan structured buffer bug with float3x3.
+            RPI::MaterialShaderParameterNameIndex m_transformMatrixRow0; //!< Row 0 of the UV transform matrix (float4, w unused)
+            RPI::MaterialShaderParameterNameIndex m_transformMatrixRow1; //!< Row 1 of the UV transform matrix (float4, w unused)
+            RPI::MaterialShaderParameterNameIndex m_transformMatrixRow2; //!< Row 2 of the UV transform matrix (float4, w unused)
+            RPI::MaterialShaderParameterNameIndex m_transformMatrixInverseRow0; //!< Row 0 of the inverse UV transform matrix (float4, w unused)
+            RPI::MaterialShaderParameterNameIndex m_transformMatrixInverseRow1; //!< Row 1 of the inverse UV transform matrix (float4, w unused)
+            RPI::MaterialShaderParameterNameIndex m_transformMatrixInverseRow2; //!< Row 2 of the inverse UV transform matrix (float4, w unused)
         };
 
     } // namespace Render

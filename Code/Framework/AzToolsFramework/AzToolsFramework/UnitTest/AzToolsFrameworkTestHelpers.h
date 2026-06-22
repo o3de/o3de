@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Slice/SliceAsset.h>
@@ -47,8 +46,8 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
+
 #include <QMainWindow>
-#endif // !defined(Q_MOC_RUN)
 
 #include <ostream>
 

@@ -12,7 +12,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <IMovieSystem.h>
 
 #include "AnimationContext.h"
@@ -28,7 +27,6 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <QMainWindow>
-#endif
 
 class QComboBox;
 class QLabel;
@@ -143,7 +141,7 @@ protected slots:
 protected:
     void keyPressEvent(QKeyEvent* event) override;
 #if defined(AZ_PLATFORM_WINDOWS)
-    bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
 #endif
     bool event(QEvent* event) override;
 

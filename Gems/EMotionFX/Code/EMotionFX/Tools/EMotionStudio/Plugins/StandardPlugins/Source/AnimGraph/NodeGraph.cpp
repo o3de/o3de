@@ -2646,4 +2646,3 @@ namespace EMStudio
 
 }   // namespace EMotionStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/moc_NodeGraph.cpp>

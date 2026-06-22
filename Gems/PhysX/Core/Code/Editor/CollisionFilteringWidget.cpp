@@ -81,4 +81,3 @@ namespace PhysX
     }
 }
 
-#include <Editor/moc_CollisionFilteringWidget.cpp>

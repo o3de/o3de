@@ -89,7 +89,7 @@ protected:
             if (componentEditor->IsDragged())
             {
                 QStyleOption opt;
-                opt.init(this);
+                opt.initFrom(this);
                 opt.rect = currRect;
                 static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
                 drag = true;
@@ -102,7 +102,7 @@ protected:
                 dropRect.setHeight(0);
 
                 QStyleOption opt;
-                opt.init(this);
+                opt.initFrom(this);
                 opt.rect = dropRect;
                 style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
 
@@ -117,7 +117,7 @@ protected:
             dropRect.setHeight(0);
 
             QStyleOption opt;
-            opt.init(this);
+            opt.initFrom(this);
             opt.rect = dropRect;
             style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
         }
@@ -236,7 +236,7 @@ bool PropertiesContainer::HandleSelectionEvents(QObject* object, QEvent* event)
         return false;
     }
 
-    const QRect globalRect(mouseEvent->globalPos(), mouseEvent->globalPos());
+    const QRect globalRect(mouseEvent->globalPosition().toPoint(), mouseEvent->globalPosition().toPoint());
 
     //reject input outside of the inspector's component list
     if (!DoesOwnFocus() ||
@@ -1071,14 +1071,15 @@ void PropertiesContainer::SetEditorOnlyCheckbox(QCheckBox* editorOnlyCheckbox)
     m_editorOnlyCheckbox = editorOnlyCheckbox;
 
     QObject::connect(m_editorOnlyCheckbox,
-        &QCheckBox::stateChanged,
-        [this](int value)
+        &QCheckBox::checkStateChanged,
+        [this](Qt::CheckState value)
         {
             QSignalBlocker blocker(this);
 
-            QMetaObject::invokeMethod(m_editorWindow->GetHierarchy(), "SetEditorOnlyForSelectedItems", Qt::QueuedConnection, Q_ARG(bool, value));
+            bool checked = value == Qt::CheckState::Checked;
+            QMetaObject::invokeMethod(
+                m_editorWindow->GetHierarchy(), "SetEditorOnlyForSelectedItems", Qt::QueuedConnection, Q_ARG(bool, checked));
         }
     );
 }
 
-#include <moc_PropertiesContainer.cpp>

@@ -104,4 +104,3 @@ namespace GraphCanvas
     }
 }
 
-#include <StaticLib/GraphCanvas/Widgets/StyledItemDelegates/moc_GenericComboBoxDelegate.cpp>

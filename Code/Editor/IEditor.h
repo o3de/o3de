@@ -174,10 +174,10 @@ enum EEditorNotifyEvent
 // UI event handler
 struct IUIEvent
 {
-    virtual void OnClick(DWORD dwId) = 0;
-    virtual bool IsEnabled(DWORD dwId) = 0;
-    virtual bool IsChecked(DWORD dwId) = 0;
-    virtual const char* GetUIElementName(DWORD dwId) = 0;
+    virtual void OnClick(AZ::u32 id) = 0;
+    virtual bool IsEnabled(AZ::u32 id) = 0;
+    virtual bool IsChecked(AZ::u32 id) = 0;
+    virtual const char* GetUIElementName(AZ::u32 id) = 0;
 };
 
 //! Add object that implements this interface to Load listeners of IEditor

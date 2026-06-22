@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <source/ui/AssetListTabWidget.h>
 #include <source/ui/SeedTabWidget.h>
 #include <source/ui/BundleListTabWidget.h>
@@ -20,7 +19,6 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QSharedPointer>
-#endif
 
 namespace Ui
 {

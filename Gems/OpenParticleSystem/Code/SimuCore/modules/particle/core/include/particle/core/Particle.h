@@ -65,6 +65,15 @@ namespace SimuCore::ParticleCore {
         AZ::Vector3 scale{ 1.f, 1.f, 1.f };
     };
 
+    struct ParticleMeshInstanceData {
+        AZ::Vector4 offset{ 0.f, 0.f, 0.f, 0.f };
+        AZ::Color color{ 1.f, 1.f, 1.f, 1.f };
+        AZ::Vector4 initRotation{ 0.f, 1.f, 0.f, 0.f }; // axis-angle
+        AZ::Quaternion rotationVector{ 0.f, 0.f, 0.f, 1.f }; // quaternion
+        AZ::Vector4 scale{ 1.f, 1.f, 1.f, 1.f };
+        AZ::u32 hasInstanceData = 0; // flag for shader: non-zero = valid data
+    };
+
     struct ParticleRibbonVertex {
         AZ::Vector4 position{ 0.f, 0.f, 0.f, 0.f};
         AZ::Color color{ 1.f, 1.f, 1.f, 1.f };
@@ -515,6 +524,7 @@ namespace SimuCore::ParticleCore {
         RenderType type = RenderType::UNDEFINED;
         VariantKey variantKey;
         BufferView vertexBuffer;
+        BufferView instanceBuffer;
         BufferView indexBuffer;
         DrawArgs drawArgs;
         AZStd::vector<AZ::Vector3> positionBuffer;
@@ -534,7 +544,8 @@ namespace SimuCore::ParticleCore {
 
     enum class BufferUsage : AZ::u8 {
         VERTEX,
-        INDEX
+        INDEX,
+        STRUCTURED
     };
 
     enum class MemoryType : AZ::u8 {
@@ -550,6 +561,7 @@ namespace SimuCore::ParticleCore {
     struct BufferCreate {
         const AZ::u8* data = nullptr;
         AZ::u32 size = 0;
+        AZ::u32 elementSize = 0;
         BufferUsage usage;
         MemoryType memory;
     };

@@ -16,7 +16,7 @@ on:
     inputs:
       image:
         type: string
-        default: macos-15-intel
+        default: macos-15
       config:
         type: string
         required: true

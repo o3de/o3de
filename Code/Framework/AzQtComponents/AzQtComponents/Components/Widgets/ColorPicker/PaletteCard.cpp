@@ -202,4 +202,3 @@ QuickPaletteCard::QuickPaletteCard(QSharedPointer<Palette> palette, Internal::Co
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_PaletteCard.cpp"

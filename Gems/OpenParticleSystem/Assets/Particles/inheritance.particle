@@ -32,7 +32,7 @@
                 ]
             },
             "OpenParticle::InheritanceHandler": {
-                "emitterIndex": 0,
+                "emitterIndex": 1,
                 "emitterName": "father",
                 "calculateSpawnRate": true,
                 "spawnRate": 2.0,

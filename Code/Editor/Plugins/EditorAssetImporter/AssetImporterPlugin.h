@@ -89,7 +89,7 @@ public:
     {
         return "{0abf28f2-ef56-4ac9-a459-175abb40d649}";
     }
-    DWORD GetPluginVersion() override
+    AZ::u32 GetPluginVersion() override
     {
         return 1;
     }

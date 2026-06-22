@@ -22,6 +22,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesManager.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesSettings.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
@@ -117,6 +118,7 @@ namespace AzToolsFramework
         void AssetBrowserComponent::Reflect(AZ::ReflectContext* context)
         {
             AssetSystem::FileInfosNotificationMessage::Reflect(context);
+            AssetBrowserFavoritesProjectSettings::Reflect(context);
 
             AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
             if (serialize)

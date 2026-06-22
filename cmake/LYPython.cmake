@@ -267,8 +267,24 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
 
     # now install the new one:
 
+    # Pick the install target. For an installed (read-only) engine, prefer
+    # a pre-built sdist under <package>/dist/ if one exists; pip then runs
+    # entirely from the sdist tarball and doesn't try to write .egg-info
+    # into the read-only source. Falls back to plain (non-editable) install
+    # of the source dir if no sdist is shipped. For development builds
+    # (engine source tree, NOT installed), use the original editable mode.
+    set(_pip_install_target ${package_folder_path})
+    set(_pip_install_mode_args "-e")
+    if (INSTALLED_ENGINE)
+        set(_pip_install_mode_args "")
+        file(GLOB _pip_sdist_candidates "${package_folder_path}/dist/*.tar.gz")
+        if (_pip_sdist_candidates)
+            list(GET _pip_sdist_candidates 0 _pip_install_target)
+        endif()
+    endif()
+
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} -m pip install -e ${package_folder_path} --no-deps --disable-pip-version-check  --no-warn-script-location 
+        ${LY_PYTHON_CMD} -m pip install ${_pip_install_mode_args} ${_pip_install_target} --no-deps --disable-pip-version-check  --no-warn-script-location 
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}/python
         RESULT_VARIABLE PIP_RESULT
         OUTPUT_VARIABLE PIP_OUT 

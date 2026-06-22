@@ -8,14 +8,13 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <MCore/Source/StandardHeaders.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
 #include "../StandardPluginsConfig.h"
 #include "ParameterWidget.h"
+
 #include <QDialog>
-#endif
 
 
 namespace EMStudio

@@ -8,7 +8,6 @@
  *
  */
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QMenu>
 #include <QScopedPointer>
@@ -19,7 +18,6 @@
 
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
-#endif
 
 class ImporterRootDisplayWidget;
 class QAction;

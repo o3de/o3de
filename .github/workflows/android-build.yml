@@ -188,10 +188,17 @@ jobs:
           java-version: 17
 
       - name: Setup clang
+        # Use the official LLVM installer script so we can install arbitrary upstream Clang versions.
+        # Ref: https://apt.llvm.org/llvm.sh
+        #
+        # NOTE: This clang is the *host* compiler used on the Linux runner.
+        # The Android NDK provides its own clang toolchain for cross-compiling to Android.
         if: ${{ inputs.clang_version }}
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y clang-${{ inputs.clang_version }} lld-${{ inputs.clang_version }}
+          wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+          chmod +x /tmp/llvm.sh
+          sudo /tmp/llvm.sh ${{ inputs.clang_version }}
+          sudo apt-get install -y lld-${{ inputs.clang_version }}
           echo "CC=$(which clang-${{ inputs.clang_version }})" >> $GITHUB_ENV
           echo "CXX=$(which clang++-${{ inputs.clang_version }})" >> $GITHUB_ENV
 
@@ -228,6 +235,7 @@ jobs:
           if [[ -n "${{ inputs.ndk_version }}" ]]; then
             echo "LY_NDK_DIR=$ANDROID_HOME/ndk/${{ env.NDK_VERSION }}" >> $GITHUB_ENV
           fi
+
           echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
           echo "JDK_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
           echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV

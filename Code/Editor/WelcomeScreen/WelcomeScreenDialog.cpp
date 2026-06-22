@@ -19,7 +19,6 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QScreen>
-#include <QDesktopWidget>
 #include <QTimer>
 #include <QDateTime>
 #include <QRegularExpression>
@@ -41,6 +40,7 @@
 #include "MainWindow.h"
 #include "CryEdit.h"
 #include "LevelFileDialog.h"
+#include "LevelRoots.h"
 
 #include <WelcomeScreen/ui_WelcomeScreenDialog.h>
 
@@ -196,7 +196,7 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
     gamePath = Path::AddSlash(gamePath);
 
     QString sCurDir = (Path::GetEditingGameDataFolder() + QDir::separator().toLatin1()).c_str();
-    int nCurDir = sCurDir.length();
+    int nCurDir = static_cast<int>(sCurDir.length());
 
     int recentListSize = pList->GetSize();
     int currentRow = 0;
@@ -208,8 +208,13 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
         {
             if (CFileUtil::Exists(recentFile, false))
             {
-                QString sCurEntryDir = recentFile.left(nCurDir);
-                if (sCurEntryDir.compare(sCurDir, Qt::CaseInsensitive) == 0)
+                // Accept project-rooted entries (legacy fast path) or any
+                // entry that lives inside an active gem's source tree, so
+                // gem-rooted levels show up alongside project ones.
+                const QString sCurEntryDir = recentFile.left(nCurDir);
+                const bool isProjectRooted = sCurEntryDir.compare(sCurDir, Qt::CaseInsensitive) == 0;
+                const bool isGemRooted = !isProjectRooted && LevelRoots::IsPathUnderActiveSource(recentFile);
+                if (isProjectRooted || isGemRooted)
                 {
                     QString fullPath = recentFile;
                     const QString name = Path::GetFile(fullPath);
@@ -218,7 +223,10 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
                     fullPath = Path::ToUnixPath(fullPath.toLower());
                     fullPath = Path::AddSlash(fullPath);
 
-                    if (fullPath.contains(gamePath))
+                    // For project-rooted levels keep the original belt-and-braces
+                    // gamePath substring check; gem-rooted entries already passed
+                    // the active-source check above and skip it.
+                    if (isGemRooted || fullPath.contains(gamePath))
                     {
                         if (gSettings.prefabSystem)
                         {
@@ -372,4 +380,3 @@ void WelcomeScreenDialog::previewAreaScrolled()
     m_messageScrollReported = true;
 }
 
-#include <WelcomeScreen/moc_WelcomeScreenDialog.cpp>

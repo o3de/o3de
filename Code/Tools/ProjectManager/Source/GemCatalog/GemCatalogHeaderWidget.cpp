@@ -413,7 +413,7 @@ namespace O3DE::ProjectManager
                 const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
                 const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
 
-                const int count = toBeAdded.size() + toBeRemoved.size();
+                const int count = static_cast<int>(toBeAdded.size()) + static_cast<int>(toBeRemoved.size());
                 m_countLabel->setText(QString::number(count));
 
                 m_dropDownButton->setVisible(!toBeAdded.isEmpty() || !toBeRemoved.isEmpty());

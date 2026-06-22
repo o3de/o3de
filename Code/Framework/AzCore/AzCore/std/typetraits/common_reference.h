@@ -92,8 +92,8 @@ namespace AZStd::Internal
     };
 
     template <class T, class U>
-    using cond_res = decltype(false ? declval<copy_cv_qual_t<remove_reference_t<T>, remove_reference_t<U>>&>()
-        : declval<copy_cv_qual_t<remove_reference_t<U>, remove_reference_t<T>>&>());
+    using cond_res = decltype(false ? declval<copy_cv_qual_t<remove_reference_t<T>, remove_reference_t<U>>& (&)()>()() 
+        : declval<copy_cv_qual_t<remove_reference_t<U>, remove_reference_t<T>>& (&)()>()());
 
     // common reference helper templates begin
     template <class T, class U, typename = void>
@@ -158,35 +158,37 @@ namespace AZStd::Internal
     constexpr bool has_basic_common_reference_test<T, U,
         void_t<typename basic_common_reference_test<T, U>::type>> = true;
 
-    template <class T, class U, typename = void>
-    constexpr bool has_condition_result_test = false;
-
     template <class T, class U>
-    constexpr bool has_condition_result_test<T, U, void_t<decltype(false ? declval<T>() : declval<U>())>> = true;
+    using cond_res_t = decltype(false ? declval<T (&)()>()() : declval<U (&)()>()());
 
-    template <class T, class U, typename = void>
-    struct common_reference_base_test
+    // Inspired by libstdc++ iterrate from 1 to 5 
+    template <class T, class U, int Bullet = 1, typename = void>
+    struct common_reference_base_test : common_reference_base_test<T, U, Bullet + 1>
     {};
 
     template <class T, class U>
-    struct common_reference_base_test<T, U, enable_if_t<has_reference_test<T, U>>>
+    struct common_reference_base_test<T, U, 1, void_t<typename common_reference_base_reference_test<T, U>::type>>
         : common_reference_base_reference_test<T, U>
     {};
+
     template <class T, class U>
-    struct common_reference_base_test<T, U, enable_if_t<!has_reference_test<T, U>
-        && has_basic_common_reference_test<T, U>>>
+    struct common_reference_base_test<T, U, 2, void_t<typename basic_common_reference_test<T, U>::type>>
         : basic_common_reference_test<T, U>
     {};
+
     template <class T, class U>
-    struct common_reference_base_test<T, U, enable_if_t<!has_reference_test<T, U>
-        && !has_basic_common_reference_test<T, U> && has_condition_result_test<T,U>>>
+    struct common_reference_base_test<T, U, 3, void_t<cond_res_t<T, U>>>
     {
-        using type = decltype(false ? declval<T>() : declval<U>());
+        using type = cond_res_t<T, U>;
     };
+
     template <class T, class U>
-    struct common_reference_base_test<T, U, enable_if_t<!has_reference_test<T, U>
-        && !has_basic_common_reference_test<T, U> && !has_condition_result_test<T, U>>>
-        : common_type<T, U>
+    struct common_reference_base_test<T, U, 4, void_t<common_type_t<T, U>>> : common_type<T, U>
+    {};
+
+    // nothing worked - sentinel type
+    template <class T, class U>
+    struct common_reference_base_test<T, U, 5, void>
     {};
 
     template <class... T>

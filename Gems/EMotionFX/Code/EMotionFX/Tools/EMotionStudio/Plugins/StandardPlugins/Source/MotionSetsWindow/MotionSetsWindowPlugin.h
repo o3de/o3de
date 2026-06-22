@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #include <MysticQt/Source/DialogStack.h>
@@ -19,6 +18,7 @@
 #include <EMotionFX/Source/EventHandler.h>
 #include "MotionSetWindow.h"
 #include "MotionSetManagementWindow.h"
+
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -26,7 +26,6 @@
 #include <QTreeWidget>
 #include <QLineEdit>
 #include <QDialog>
-#endif
 
 namespace EMStudio
 {

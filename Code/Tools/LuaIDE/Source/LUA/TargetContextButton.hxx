@@ -8,16 +8,15 @@
 
 #ifndef INC_TARGETCONTEXTBUTTON_H
 #define INC_TARGETCONTEXTBUTTON_H
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Source/LUA/LUAContextControlMessages.h>
+
 #include <QPushButton>
 #include <QWidgetAction>
-#endif
 
-#pragma once
 
 namespace LUA
 {

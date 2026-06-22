@@ -536,7 +536,24 @@ namespace AzFramework
 
         if (m_table != LUA_NOREF)
         {
-            lua_State* lua = m_context->NativeContext();
+            // The owning ScriptContext can already be gone if this component is
+            // deactivated during application shutdown: ScriptSystemComponent::Deactivate
+            // disconnects ScriptSystemRequestBus and deletes every context, but a
+            // leftover spawned entity is then torn down by the SpawnableEntitiesManager
+            // (via the game entity context) afterwards. The cached m_context would dangle,
+            // and lua_rawgeti below would use-after-free the freed lua_State. Re-query the
+            // live context (as Init() does) and abandon the table when the VM is gone --
+            // it is being freed wholesale anyway, so there is nothing to release.
+            AZ::ScriptContext* context = nullptr;
+            AZ::ScriptSystemRequestBus::BroadcastResult(
+                context, &AZ::ScriptSystemRequestBus::Events::GetContext, m_contextId);
+            if (!context)
+            {
+                m_table = LUA_NOREF;
+                return;
+            }
+
+            lua_State* lua = context->NativeContext();
             LSV_BEGIN(lua, 0);
 
             // call OnDeactivate

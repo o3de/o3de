@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <qglobal.h> // For qreal
@@ -20,7 +19,6 @@
 #include <QRect>
 #include <QWidget>
 #include <QPolygon>
-#endif
 
 class QScreen;
 class QMainWindow;

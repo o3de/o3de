@@ -7,9 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
-#endif
+
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 class QAbstractItemModel;

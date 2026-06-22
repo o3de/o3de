@@ -8,17 +8,17 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "native/utilities/ApplicationManagerBase.h"
 #include "native/utilities/AssetUtilEBusHelper.h"
 #include "native/FileWatcher/FileWatcher.h"
-#include <QMap>
-#include <QAtomicInt>
-#include <QFileSystemWatcher>
+
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <native/ui/MainWindow.h>
+
+#include <QAtomicInt>
+#include <QFileSystemWatcher>
+#include <QMap>
 #include <QSystemTrayIcon>
-#endif
 
 class ConnectionManager;
 class IniConfiguration;

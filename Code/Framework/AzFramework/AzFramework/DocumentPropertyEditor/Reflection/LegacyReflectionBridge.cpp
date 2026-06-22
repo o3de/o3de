@@ -1272,7 +1272,10 @@ namespace AZ::Reflection
                             else if (auto genericVisibility = ReadGenericAttributeToDomValue(instance, it->second))
                             {
                                 // Fallback to generic read if LegacyAttributeToDomValue fails
-                                visibility = PropertyEditor::Visibility.DomToValue(genericVisibility.value()).value();
+                                if (auto visibilityOption = PropertyEditor::Visibility.DomToValue(genericVisibility.value()))
+                                {
+                                    visibility = visibilityOption.value();
+                                }
                                 return;
                             }
                         }

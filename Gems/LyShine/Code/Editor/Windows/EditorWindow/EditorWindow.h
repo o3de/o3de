@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Animation/UiEditorAnimationBus.h"
 #include "Helpers/EntityHelpers.h"
 #include "UiEditorEntityContext.h"
@@ -36,7 +35,6 @@
 #include <QMainWindow>
 #include <QList>
 #include <QCursor>
-#endif
 
 class AssetTreeEntry;
 class CanvasSizeToolbarSection;
@@ -76,7 +74,7 @@ public: // types
 
     struct UiCanvasTabMetadata
     {
-        AZ::EntityId m_canvasEntityId;
+        AZ::EntityId m_canvasEntityId = AZ::EntityId{};
     };
 
 public: // member functions

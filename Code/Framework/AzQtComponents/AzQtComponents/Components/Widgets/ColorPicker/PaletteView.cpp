@@ -140,7 +140,7 @@ private:
 
         void PaletteModelInsertionCommand::undo()
         {
-            m_target.tryRemove(m_index, m_colors.size(), true);
+            m_target.tryRemove(m_index, static_cast<int>(m_colors.size()), true);
         }
 
         void PaletteModelInsertionCommand::redo()
@@ -193,7 +193,7 @@ private:
 
         void PaletteModelRemovalCommand::redo()
         {
-            m_target.tryRemove(m_index, m_colors.count(), true);
+            m_target.tryRemove(m_index, static_cast<int>(m_colors.count()), true);
         }
 
         class PaletteModelSetColorCommand : public QUndoCommand
@@ -284,7 +284,7 @@ Palette PaletteModel::paletteFromIndices(const QModelIndexList& indices) const
 
 int PaletteModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : m_palette->colors().size();
+    return parent.isValid() ? 0 : static_cast<int>(m_palette->colors().size());
 }
 
 QVariant PaletteModel::data(const QModelIndex& index, int role) const
@@ -347,7 +347,7 @@ bool PaletteModel::tryAppend(const AZ::Color& color)
 
 bool PaletteModel::tryAppend(const QVector<AZ::Color>& colors)
 {
-    return tryInsert(m_palette->colors().size(), colors.cbegin(), colors.cend());
+    return tryInsert(static_cast<int>(m_palette->colors().size()), colors.cbegin(), colors.cend());
 }
 
 bool PaletteModel::tryInsert(int row, QVector<AZ::Color>::const_iterator first, QVector<AZ::Color>::const_iterator last, bool isUndoRedo)
@@ -640,10 +640,10 @@ PaletteView::PaletteView(Palette* palette, Internal::ColorController* controller
     onColorChanged(m_controller->color());
 
     m_context = new QMenu(this);
-    m_cut = m_context->addAction(tr("Cut"), this, &PaletteView::cut, QKeySequence::Cut);
-    m_copy = m_context->addAction(tr("Copy"), this, &PaletteView::copy, QKeySequence::Copy);
-    m_paste = m_context->addAction(tr("Paste"), this, &PaletteView::paste, QKeySequence::Paste);
-    m_remove = m_context->addAction(tr("Remove"), this, &PaletteView::removeSelection, QKeySequence::Delete);
+    m_cut = m_context->addAction(tr("Cut"), QKeySequence::Cut, this, &PaletteView::cut);
+    m_copy = m_context->addAction(tr("Copy"), QKeySequence::Copy, this, &PaletteView::copy);
+    m_paste = m_context->addAction(tr("Paste"), QKeySequence::Paste, this, &PaletteView::paste);
+    m_remove = m_context->addAction(tr("Remove"), QKeySequence::Delete, this, &PaletteView::removeSelection);
     m_update = m_context->addAction(tr("Update to current"), this, [this]() {
         m_paletteModel->trySet(selectionModel()->currentIndex().row(), m_controller->color());
     });
@@ -1019,13 +1019,13 @@ void PaletteView::paintEvent(QPaintEvent* event)
             option.state |= QStyle::State_HasFocus;
         }
 
-        itemDelegate(index)->paint(&painter, option, index);
+        itemDelegateForIndex(index)->paint(&painter, option, index);
     }
 
     if (!m_dropIndicatorRect.isNull())
     {
         QStyleOption option;
-        option.init(this);
+        option.initFrom(this);
         option.rect = m_dropIndicatorRect;
         style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &option, &painter, this);
     }
@@ -1374,8 +1374,8 @@ bool PaletteView::canDrop(QDropEvent* event)
 
 bool PaletteView::canDrop(QDropEvent* event, QModelIndex& index, int& row)
 {
-    index = indexAt(event->pos());
-    row = getRootRow(event->pos(), index);
+    index = indexAt(event->position().toPoint());
+    row = getRootRow(event->position().toPoint(), index);
 
     m_droppingOn = false;
     m_dropIndicatorRect = {};
@@ -1510,4 +1510,3 @@ void PaletteView::onColorChanged(const AZ::Color& c)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/ColorPicker/moc_PaletteView.cpp"

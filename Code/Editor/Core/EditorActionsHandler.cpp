@@ -33,6 +33,7 @@
 #include <Core/Widgets/ViewportSettingsWidgets.h>
 #include <CryEdit.h>
 #include <EditorCoreAPI.h>
+#include <LevelRoots.h>
 #include <Editor/EditorViewportCamera.h>
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/Undo/Undo.h>
@@ -2247,6 +2248,7 @@ bool EditorActionsHandler::IsRecentFileEntryValid(const QString& entry, const QS
         return false;
     }
 
+    // Project-rooted level (legacy fast path).
     const QDir gameDir(gameFolderPath);
     QDir dir(entry); // actually pointing at file, first cdUp() gets us the parent dir
     while (dir.cdUp())
@@ -2257,7 +2259,9 @@ bool EditorActionsHandler::IsRecentFileEntryValid(const QString& entry, const QS
         }
     }
 
-    return false;
+    // Gem-rooted level: a recent file living under any active gem's source
+    // tree is also a valid Open Recent target.
+    return LevelRoots::IsPathUnderActiveSource(entry);
 }
 
 void EditorActionsHandler::OpenLevelByRecentFileEntryIndex(int index)
@@ -2331,9 +2335,24 @@ void EditorActionsHandler::UpdateRecentFileActions()
 
         if (index < recentFilesSize)
         {
-            // If the index is valid, use it to populate the action's name and then increment for the next menu item.
+            // For project-rooted entries, GetDisplayName already produces a
+            // path relative to the project. For gem-rooted entries it falls
+            // back to the absolute path, so swap in the LevelRoots helper
+            // which renders the file as "<GemName>/Levels/...".
             QString displayName;
             recentFiles->GetDisplayName(displayName, index, sCurDir);
+
+            const QString& absoluteEntry = (*recentFiles)[index];
+            if (!LevelRoots::IsPathUnderActiveSource(absoluteEntry))
+            {
+                // Fall through with whatever GetDisplayName produced.
+            }
+            else if (QDir::cleanPath(displayName).compare(QDir::cleanPath(absoluteEntry), Qt::CaseInsensitive) == 0)
+            {
+                // GetDisplayName left the absolute path intact (gem-rooted case);
+                // replace it with the gem-aware short form.
+                displayName = LevelRoots::FormatRelativeDisplay(absoluteEntry);
+            }
 
             m_actionManagerInterface->SetActionName(
                 actionIdentifier, AZStd::string::format("%i | %s", counter + 1, displayName.toUtf8().data()));

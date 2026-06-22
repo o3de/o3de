@@ -19,7 +19,7 @@ public:
     ~CAutoLogTime();
 private:
     const char* m_what;
-    int m_t0, m_t1;
+    AZ::s64 m_t0, m_t1;
 };
 
 #endif // CRYINCLUDE_EDITOR_UTIL_AUTOLOGTIME_H

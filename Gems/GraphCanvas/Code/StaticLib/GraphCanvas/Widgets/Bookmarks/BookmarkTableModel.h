@@ -7,11 +7,10 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <qabstractitemmodel.h>
-#include <qitemdelegate.h>
-#include <qobject.h>
-#include <qsortfilterproxymodel.h>
+#include <QAbstractItemModel>
+#include <QItemDelegate>
+#include <QObject>
+#include <QSortFilterProxyModel>
 #include <QRegularExpression>
 
 #include <AzCore/Component/EntityId.h>
@@ -21,7 +20,6 @@
 
 #include <GraphCanvas/Components/Bookmarks/BookmarkBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
-#endif
 
 namespace GraphCanvas
 {
