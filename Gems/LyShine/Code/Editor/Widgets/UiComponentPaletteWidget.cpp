@@ -14,7 +14,6 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
 #include <QLineEdit>
-#include <QStandardItemModel>
 
 UiComponentPaletteWidget::UiComponentPaletteWidget(QWidget* parent)
     : ComponentPaletteWidget(parent, true)
@@ -98,5 +97,3 @@ void UiComponentPaletteWidget::ActivateSelection(const QModelIndex& index)
     }
     hide();
 }
-
-#include <moc_UiComponentPaletteWidget.cpp>
