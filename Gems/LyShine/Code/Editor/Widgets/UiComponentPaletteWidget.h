@@ -7,9 +7,7 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteWidget.hxx>
-#endif
 
 //! Subclass of the standard ComponentPaletteWidget that overrides component addition
 //! to use LyShine's entity management and undo system instead of the standard
