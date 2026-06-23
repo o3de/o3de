@@ -608,9 +608,9 @@ void ApplicationManagerBase::InitConnectionManager()
     AZ_Assert(result, "Failed to connect to RCController signal");
 
     result = QObject::connect(GetRCController(), &AssetProcessor::RCController::JobStarted, this,
-            [](QString inputFile, QString platform)
+            [](QString inputFile, QString jobKey, QString platform)
             {
-                QString msg = QCoreApplication::translate("O3DE Asset Processor", "Processing %1 (%2)...\n", "%1 is the name of the file, and %2 is the platform to process it for").arg(inputFile, platform);
+                QString msg = QCoreApplication::translate("O3DE Asset Processor", "Processing %1 \"%2\" (%3)...\n", "%1 is the name of the file, %2 is the job type, %3 is the platform to process it for").arg(inputFile, jobKey, platform);
                 AZ_Printf(AssetProcessor::ConsoleChannel, "%s", msg.toUtf8().constData());
                 AssetNotificationMessage message(inputFile.toUtf8().constData(), AssetNotificationMessage::JobStarted, AZ::Data::s_invalidAssetType, platform.toUtf8().constData());
                 AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::SendPerPlatform, 0, message, platform);
@@ -1704,7 +1704,8 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
     // If a lost connection occured or the process was terminated before a response can be read, and there is another retry to get the
     // response from a Builder, then handle the logic to log and sleep before attempting the retry of the job
     if ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
-         result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
+         result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ||
+         result == AssetProcessor::BuilderRunJobOutcome::ResponseFailure) && (retryCount <= AssetProcessor::RetriesForJobLostConnection))
     {
         const int delay = 1 << (retryCount-1);
 
@@ -1713,22 +1714,25 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
         {
             // If the connection was lost and the process handle is no longer valid, then we need to request a new builder to reprocess the job
             AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
+            AZ::u32 oldConnId = builderRef->GetConnectionId();
             builderRef.release();
-
             AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
 
             if (builderRef)
             {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
+                AZ_Printf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s - %i. Retrying with a new builder %s - %i (Attempt %d with %d second delay)",
                                 oldBuilderId.c_str(),
+                                oldConnId,
                                 builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                builderRef->GetConnectionId(),
                                 retryCount+1,
                                 delay);
             }
             else
             {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s and no further builders are available. Job will not retry.\n",
-                               oldBuilderId.c_str());
+                AZ_Printf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s - %i and no further builders are available. Job will not retry.\n",
+                    oldBuilderId.c_str(),
+                    oldConnId);
                 // if we failed to get a builder ref, it means we're probably
                 // shutting down, in which case we do not want to do an exponential
                 // backoff delay and need to return immediately.
@@ -1797,10 +1801,16 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
 
+                    if (JobOutcomeIsTerminal(result))
+                    {
+                        builderRef.MarkAsDefunct(); // prevent reuse immediately, within the same thread, etc, before we try anything else.
+                    }
+
                     HandleConditionalRetry(result, retryCount, builderRef, AssetProcessor::BuilderPurpose::CreateJobs);
 
                 } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
-                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
+                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ||
+                          result == AssetProcessor::BuilderRunJobOutcome::ResponseFailure) &&
                           retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
             else
@@ -1852,7 +1862,8 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     HandleConditionalRetry(result, retryCount, builderRef, AssetProcessor::BuilderPurpose::ProcessJob);
 
                 } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
-                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
+                          result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ||
+                          result == AssetProcessor::BuilderRunJobOutcome::ResponseFailure) &&
                           retryCount <= AssetProcessor::RetriesForJobLostConnection);
             }
             else

@@ -425,8 +425,8 @@ namespace AssetProcessor
                 if ((isInQueue(target)) || (isInFlight(target)))
                 {
                     // Its important that this still follows the 'cancelled' flow, so that other parts of the code can update their "in progress" and other maps.
-                    AZ_TracePrintf(
-                        AssetProcessor::DebugChannel,
+                    AZ_Printf(
+                        AssetProcessor::ConsoleChannel,
                         "Cancelling Job [%s, %s, %s] because the source file no longer exists.\n",
                         target.GetSourceAssetReference().AbsolutePath().c_str(),
                         target.GetPlatform().toUtf8().data(),

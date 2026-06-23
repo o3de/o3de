@@ -1743,6 +1743,15 @@ namespace AssetUtilities
                 AppendLog(m_inException ? AzFramework::LogFile::SEV_EXCEPTION : AzFramework::LogFile::SEV_NORMAL, window, message);
             }
 
+            // allow "AssetProcessor" log to escape builder threads for debugging
+            if (window)
+            {
+                if (strcmp(window, AssetProcessor::ConsoleChannel) == 0)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 

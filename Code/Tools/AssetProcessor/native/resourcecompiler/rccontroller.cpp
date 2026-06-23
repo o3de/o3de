@@ -136,7 +136,7 @@ namespace AssetProcessor
         m_RCJobListModel.markAsStarted(rcJob);
         Q_EMIT JobStatusChanged(rcJob->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::InProgress);
         rcJob->Start();
-        Q_EMIT JobStarted(rcJob->GetJobEntry().m_sourceAssetReference.RelativePath().c_str(), QString::fromUtf8(rcJob->GetPlatformInfo().m_identifier.c_str()));
+        Q_EMIT JobStarted(rcJob->GetJobEntry().m_sourceAssetReference.RelativePath().c_str(), rcJob->GetJobEntry().m_jobKey, QString::fromUtf8(rcJob->GetPlatformInfo().m_identifier.c_str()));
     }
 
     void RCController::QuitRequested()
@@ -258,8 +258,8 @@ namespace AssetProcessor
                 // The job status has changed
                 if (existingJob->HasMissingSourceDependency() != hasMissingDependency)
                 {
-                    AZ_TracePrintf(
-                        AssetProcessor::DebugChannel,
+                    AZ_Printf(
+                        AssetProcessor::ConsoleChannel,
                         "Cancelling Job [%s, %s, %s] missing source dependency status has changed.\n",
                         checkFile.GetSourceAssetReference().AbsolutePath().c_str(),
                         checkFile.GetPlatform().toUtf8().data(),
@@ -271,8 +271,8 @@ namespace AssetProcessor
 
             if (!cancelJob)
             {
-                AZ_TracePrintf(
-                    AssetProcessor::DebugChannel,
+                AZ_Printf(
+                    AssetProcessor::ConsoleChannel,
                     "Job is already in queue and has not started yet - ignored [%s, %s, %s]\n",
                     checkFile.GetSourceAssetReference().AbsolutePath().c_str(),
                     checkFile.GetPlatform().toUtf8().data(),
@@ -299,8 +299,8 @@ namespace AssetProcessor
                 // have FinishJob called once through the callback in RCController::StartJob. FinishJob should not be called more than once.
                 if (existingJob->GetJobEntry().m_computedFingerprint != details.m_jobEntry.m_computedFingerprint)
                 {
-                    AZ_TracePrintf(
-                        AssetProcessor::DebugChannel,
+                    AZ_Printf(
+                        AssetProcessor::ConsoleChannel,
                         "Cancelling Job [%s, %s, %s] with old FP %u, replacing with new FP %u \n",
                         checkFile.GetSourceAssetReference().AbsolutePath().c_str(),
                         checkFile.GetPlatform().toUtf8().data(),
@@ -314,7 +314,7 @@ namespace AssetProcessor
                     // If a job has dependencies, it's very likely it was re-queued as a result of a dependency being changed
                     // The in-flight job is probably going to fail at best, or use old data at worst, so cancel the in-flight job
 
-                    AZ_TracePrintf(AssetProcessor::DebugChannel, "Cancelling Job with dependencies [%s, %s, %s], replacing with re-queued job\n",
+                    AZ_Printf(AssetProcessor::ConsoleChannel, "Cancelling Job with dependencies [%s, %s, %s], replacing with re-queued job\n",
                         checkFile.GetSourceAssetReference().AbsolutePath().c_str(), checkFile.GetPlatform().toUtf8().data(), checkFile.GetJobDescriptor().toUtf8().data());
                     cancelJob = true;
                 }

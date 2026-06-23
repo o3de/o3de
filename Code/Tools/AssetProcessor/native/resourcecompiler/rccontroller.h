@@ -62,7 +62,7 @@ namespace AssetProcessor
         void ReadyToQuit(QObject* source); //After receiving QuitRequested, you must send this when its safe
 
         ///! JobStarted will notify with a path name relative to the watch folder it was found in (not the database sourcename column)
-        void JobStarted(QString inputFile, QString platform);
+        void JobStarted(QString inputFile, QString jobKey, QString platform);
         void JobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status);
         void JobsInQueuePerPlatform(QString platform, int jobs);
         void ActiveJobsCountChanged(unsigned int jobs); // This is the count of jobs which are either queued or inflight

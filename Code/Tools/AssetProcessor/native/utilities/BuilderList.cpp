@@ -48,7 +48,7 @@ namespace AssetProcessor
         {
             if (m_createJobsBuilder)
             {
-                if (!m_createJobsBuilder->m_busy)
+                if (m_createJobsBuilder->IsReadyToWork())
                 {
                     m_createJobsBuilder->PumpCommunicator();
 
@@ -76,7 +76,7 @@ namespace AssetProcessor
         {
             auto& builder = itr->second;
 
-            if (!builder->m_busy)
+            if (builder->IsReadyToWork())
             {
                 builder->PumpCommunicator();
 
@@ -147,7 +147,9 @@ namespace AssetProcessor
 
     void BuilderList::PumpIdleBuilders()
     {
-        if (m_createJobsBuilder && !m_createJobsBuilder->m_busy)
+        // idle builders will not have their event pump run inside the job that they are performing, so we need to pump them here.
+        // these are all the builders that are "ready to work" ie aren't currently working.
+        if (m_createJobsBuilder && m_createJobsBuilder->IsReadyToWork())
         {
             m_createJobsBuilder->PumpCommunicator();
         }
@@ -156,7 +158,7 @@ namespace AssetProcessor
         {
             auto builder = pair.second;
 
-            if (!builder->m_busy)
+            if (builder->IsReadyToWork())
             {
                 builder->PumpCommunicator();
             }

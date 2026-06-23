@@ -260,6 +260,11 @@ namespace AZ
             MaterialConsumerRequestBus::EventResult(
                 m_defaultMaterialMap, m_entityId, &MaterialConsumerRequestBus::Events::GetDefaultMaterialMap);
 
+            // Resolve any by-label overrides against the now-known slot labels. By-label entries are kept
+            // intact so they survive future mesh swaps; they are projected into m_materials as side data.
+            // Explicit m_materials entries always win when both exist for the same slot.
+            ResolveMaterialsByLabel();
+
             // Build tables of all referenced materials so that we can load and look up defaults
             for (const auto& [materialAssignmentId, materialAssignment] : m_defaultMaterialMap)
             {
@@ -301,6 +306,50 @@ namespace AZ
             if (!anyQueued)
             {
                 QueueMaterialsUpdatedNotification();
+            }
+        }
+
+        void MaterialComponentController::ResolveMaterialsByLabel()
+        {
+            if (m_configuration.m_materialsByLabel.empty())
+            {
+                return;
+            }
+
+            // Pull the current label set from the associated material consumer (typically the MeshComponent).
+            // If the model has not yet been loaded, the returned map contains only the default-slot label
+            // and no resolution will succeed this pass; the by-label entries remain pending.
+            MaterialAssignmentLabelMap labels;
+            MaterialConsumerRequestBus::EventResult(
+                labels, m_entityId, &MaterialConsumerRequestBus::Events::GetMaterialLabels);
+
+            // Build a lookup from label string to the general (non-LOD) slot id. By-label overrides apply
+            // to every LOD with a matching label, so only IsSlotIdOnly() ids are valid targets.
+            AZStd::unordered_map<AZStd::string, MaterialAssignmentId> labelToGeneralId;
+            labelToGeneralId.reserve(labels.size());
+            for (const auto& [id, label] : labels)
+            {
+                if (id.IsSlotIdOnly())
+                {
+                    labelToGeneralId[label] = id;
+                }
+            }
+
+            // Project each resolvable by-label entry into m_materials. Explicit m_materials entries are not
+            // overwritten so that hand-authored or upstream-imported keyed overrides always win.
+            for (const auto& [label, assignment] : m_configuration.m_materialsByLabel)
+            {
+                const auto labelIt = labelToGeneralId.find(label);
+                if (labelIt == labelToGeneralId.end())
+                {
+                    continue;
+                }
+
+                const MaterialAssignmentId& resolvedId = labelIt->second;
+                if (m_configuration.m_materials.find(resolvedId) == m_configuration.m_materials.end())
+                {
+                    m_configuration.m_materials[resolvedId] = assignment;
+                }
             }
         }
 

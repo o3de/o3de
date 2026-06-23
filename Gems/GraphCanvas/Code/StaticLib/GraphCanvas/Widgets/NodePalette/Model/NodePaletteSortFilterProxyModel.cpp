@@ -148,7 +148,7 @@ namespace GraphCanvas
         
         bool showRow = false;
         QRegularExpressionMatch match = m_filterRegex.match(test);
-        if (match.isValid())
+        if (match.isValid() && match.hasMatch())
         {
             showRow = true;
             
