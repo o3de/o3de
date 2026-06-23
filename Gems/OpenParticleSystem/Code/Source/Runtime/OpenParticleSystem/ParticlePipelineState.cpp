@@ -19,6 +19,13 @@ namespace OpenParticle
     void EmitterInstance::Setup(AZ::Data::Asset<AZ::RPI::MaterialAsset>& mat)
     {
         m_materialAsset = mat;
+        // Preload the material asset so it's ready when Create() needs it.
+        // Without this, material sub-assets from the particle archive may not be
+        // loaded when the particle system activates on level load.
+        if (m_materialAsset.GetId().IsValid() && !m_materialAsset.IsReady())
+        {
+            m_materialAsset.QueueLoad();
+        }
         m_material = AZ::RPI::Material::Create(m_materialAsset);
 
         if (!m_material)
