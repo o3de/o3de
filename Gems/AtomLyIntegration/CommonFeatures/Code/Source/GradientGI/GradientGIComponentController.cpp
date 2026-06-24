@@ -28,6 +28,10 @@ namespace
     {
         AZStd::string path(rawPath);
         AZStd::replace(path.begin(), path.end(), '\\', '/');
+
+        // Strip leading slashes. erase(pos, count) only throws when pos > size(); pos is always 0
+        // here and count is clamped to the remaining length, so an all-slash or empty input simply
+        // yields an empty string -- no out-of-range, no UB.
         const size_t firstReal = path.find_first_not_of('/');
         path.erase(0, (firstReal == AZStd::string::npos) ? path.size() : firstReal);
         return path;
