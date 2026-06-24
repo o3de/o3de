@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityActiveSystemComponent.h>
+#include <AzCore/Component/EntityBus.h>
 #include <AzCore/Serialization/Utils.h>
 
 namespace UnitTest
@@ -780,5 +781,61 @@ namespace UnitTest
         EXPECT_FALSE(entity.IsEffectivelyActive());
         EXPECT_TRUE(entity.SetEntityActive(true));
         EXPECT_TRUE(entity.IsEffectivelyActive());
+    }
+
+    // Records the entity's State at the instant each lifecycle notification fires. Connect while the
+    // entity is still Constructed so the EntityBus connection policy (which replays OnEntityExists/
+    // OnEntityActivated for an already-registered Init/Active entity) has nothing to replay here.
+    class LifecycleStateProbe
+        : public AZ::EntityBus::Handler
+    {
+    public:
+        explicit LifecycleStateProbe(AZ::Entity* entity)
+            : m_entity(entity)
+        {
+            AZ::EntityBus::Handler::BusConnect(entity->GetId());
+        }
+        ~LifecycleStateProbe() override
+        {
+            AZ::EntityBus::Handler::BusDisconnect();
+        }
+
+        void OnEntityExists(const AZ::EntityId&) override      { m_stateAtExists = m_entity->GetState();      ++m_existsCount; }
+        void OnEntityActivated(const AZ::EntityId&) override   { m_stateAtActivated = m_entity->GetState();   ++m_activatedCount; }
+        void OnEntityDeactivated(const AZ::EntityId&) override { m_stateAtDeactivated = m_entity->GetState(); ++m_deactivatedCount; }
+
+        AZ::Entity* m_entity = nullptr;
+        AZ::Entity::State m_stateAtExists = AZ::Entity::State::Constructed;
+        AZ::Entity::State m_stateAtActivated = AZ::Entity::State::Constructed;
+        AZ::Entity::State m_stateAtDeactivated = AZ::Entity::State::Constructed;
+        int m_existsCount = 0;
+        int m_activatedCount = 0;
+        int m_deactivatedCount = 0;
+    };
+
+    // Entity lifecycle notifications must observe the TRANSITION state, not the settled state, so a
+    // listener can tell "transitioning now" apart from "already settled" when it gates work on
+    // GetState() (the pattern TransformComponent relies on). Init/Activate set the settled state
+    // AFTER notifying; Deactivate sets Deactivating BEFORE notifying. Guards the AZ::Entity ordering
+    // from PR #19856 - this FAILS on a tree without that ordering fix, which is the intended alarm.
+    TEST_F(EntityTests, EntityLifecycle_NotificationsObserveTransitionState)
+    {
+        AZ::Entity entity("LifecycleProbe");
+        LifecycleStateProbe probe(&entity); // connect while Constructed -> no connection-policy replay
+
+        entity.Init();
+        EXPECT_EQ(probe.m_existsCount, 1);
+        EXPECT_EQ(probe.m_stateAtExists, AZ::Entity::State::Initializing); // not Init
+        EXPECT_EQ(entity.GetState(), AZ::Entity::State::Init);             // settles after notify
+
+        entity.Activate();
+        EXPECT_EQ(probe.m_activatedCount, 1);
+        EXPECT_EQ(probe.m_stateAtActivated, AZ::Entity::State::Activating); // not Active
+        EXPECT_EQ(entity.GetState(), AZ::Entity::State::Active);
+
+        entity.Deactivate();
+        EXPECT_EQ(probe.m_deactivatedCount, 1);
+        EXPECT_EQ(probe.m_stateAtDeactivated, AZ::Entity::State::Deactivating); // not Active
+        EXPECT_EQ(entity.GetState(), AZ::Entity::State::Init);              // Deactivate returns to Init
     }
 } // namespace UnitTest

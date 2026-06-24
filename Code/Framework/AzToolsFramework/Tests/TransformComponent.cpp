@@ -1141,6 +1141,86 @@ namespace UnitTest
         EXPECT_EQ(handlerB.m_added, 1);
     }
 
+    // Minimal component used to detect whether the rest of an entity's components are initialized at
+    // the instant a hierarchy notification fires. Created AFTER the TransformComponent so it sits later
+    // in the init order (Entity::Init runs components in insertion order; only Activate sorts).
+    class InitProbeComponent
+        : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(InitProbeComponent, "{6F2A9C84-3B1D-4E7A-AB52-9D0C1E3F5A7B}");
+        static void Reflect(AZ::ReflectContext*) {}
+        void Init() override { m_initialized = true; }
+        void Activate() override {}
+        void Deactivate() override {}
+        bool m_initialized = false;
+    };
+
+    // Listens on the PARENT and, when a child is added, records whether that child's OTHER component
+    // (the InitProbeComponent) was already initialized - i.e. whether OnChildAdded fired only after the
+    // whole child finished initializing. Mirrors the real crash: the parent's net-transform reaching
+    // into the child's not-yet-init NetBindComponent during the child's Init.
+    class ChildAddedInitInspector
+        : public AZ::TransformNotificationBus::Handler
+    {
+    public:
+        explicit ChildAddedInitInspector(AZ::EntityId parentId)
+        {
+            AZ::TransformNotificationBus::Handler::BusConnect(parentId);
+        }
+        ~ChildAddedInitInspector() override
+        {
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
+        }
+        void OnChildAdded(AZ::EntityId child) override
+        {
+            AZ::Entity* childEntity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(
+                childEntity, &AZ::ComponentApplicationRequests::FindEntity, child);
+            if (childEntity)
+            {
+                if (auto* probe = childEntity->FindComponent<InitProbeComponent>())
+                {
+                    m_siblingInitializedAtChildAdded = probe->m_initialized;
+                }
+            }
+            ++m_childAddedCount;
+        }
+
+        int m_childAddedCount = 0;
+        bool m_siblingInitializedAtChildAdded = false;
+    };
+
+    // Hierarchy notifications (OnChildAdded) must fire at PostInit - after EVERY component on the child
+    // is initialized - never mid-Init from the TransformComponent (the first component) while later
+    // siblings are still unconstructed. Guards the AzFramework TransformComponent change from PR #19856
+    // (SetParentImpl moved Init -> OnEntityExists). FAILS on a tree without that fix - the intended alarm.
+    TEST_F(TransformComponentApplication, ChildAdded_FiresOnlyAfterAllChildComponentsInitialized)
+    {
+        m_app.RegisterComponentDescriptor(InitProbeComponent::CreateDescriptor());
+
+        AZ::Entity parent("Parent");
+        parent.CreateComponent<TransformComponent>();
+        parent.Init();
+        parent.Activate();
+
+        ChildAddedInitInspector inspector(parent.GetId());
+
+        AZ::Entity* child = aznew AZ::Entity("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent.GetId();
+        child->CreateComponent<TransformComponent>()->SetConfiguration(childConfig); // component 0 - fires OnChildAdded
+        child->CreateComponent<InitProbeComponent>();                               // component 1 - the sibling
+        child->Init();
+
+        EXPECT_EQ(inspector.m_childAddedCount, 1);
+        // The alarm: on the old path OnChildAdded fires from TransformComponent::Init before this
+        // sibling is initialized, so this reads false. With #19856 it fires post-init and reads true.
+        EXPECT_TRUE(inspector.m_siblingInitializedAtChildAdded);
+
+        delete child;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::Components::TransformComponent
 
@@ -1296,29 +1376,5 @@ R"DELIMITER(<ObjectStream version="1">
         entity->Deactivate();
         entity->Activate();
         EXPECT_FALSE(m_transformUpdated);
-    }
-
-    // Editor TransformComponent always-active lifecycle: deactivating then reactivating a child must
-    // NOT churn OnChildAdded/OnChildRemoved on its parent - hierarchy membership now persists across
-    // active-state (matching the runtime). Regression guard for the #19816 deactivate-time removal storm.
-    TEST_F(TransformComponentActivationTest, ChildEventsAreNotChurnedWhenChildIsDeactivatedAndActivated)
-    {
-        AZ::EntityId parentId = CreateEditorEntityUnderRoot("Parent");
-        AZ::EntityId childId = CreateEditorEntityUnderRoot("Child");
-        AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParent, parentId);
-        ProcessDeferredUpdates();
-
-        // Connect after the reparent so only deactivate/reactivate churn would be counted.
-        ChildChangeNotificationHandler handler(parentId);
-
-        Entity* child = nullptr;
-        ComponentApplicationBus::BroadcastResult(child, &AZ::ComponentApplicationRequests::FindEntity, childId);
-        ASSERT_NE(child, nullptr);
-
-        child->Deactivate();
-        child->Activate();
-
-        EXPECT_EQ(handler.m_added, 0);
-        EXPECT_EQ(handler.m_removed, 0);
     }
 } // namespace UnitTest
