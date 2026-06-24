@@ -347,10 +347,24 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetFaceResolution(uint32_t resolution)
     {
-        // Unlike colour, applying a resolution change rebuilds a different-sized tiled cubemap;
-        // doing so on every editor scrub tick churns the DX12 streaming pool and crashes the RHI.
-        // So we defer the actual size change until the slider settles.
         const uint32_t clamped = AZStd::clamp(resolution, 4u, 256u);
+
+        // GPU/Dynamic mode reallocates a lightweight AttachmentImage (NOT the DX12 tiled streaming
+        // pool), so a resolution change is cheap and safe to apply live every tick. Applying it
+        // immediately also avoids the settle delay, which otherwise reads as a flicker while the
+        // resolution slider is scrubbed. Only CPU/Static mode -- which churns the tiled streaming
+        // pool and crashes the RHI on a size change -- needs the debounce below.
+        if (m_updateMode == UpdateMode::Dynamic)
+        {
+            m_pendingFaceResolution = clamped;
+            ApplyFaceResolution();
+            return;
+        }
+
+        // --- CPU/Static: debounce the size change until the slider settles --------------------
+        // Unlike colour (which rebuilds an identically sized image), a resolution change rebuilds a
+        // different-sized tiled cubemap; doing so on every editor scrub tick churns the DX12
+        // streaming pool and crashes the RHI. So we defer the actual size change.
 
         // The very first push (component activation, no scrub) applies immediately so the initial
         // build uses the configured resolution with no transient flash at the default size.
@@ -361,10 +375,9 @@ namespace AZ::Render
             return;
         }
 
-        // Already running: the user is editing. Only a genuine move of the requested size restarts
-        // the settle window, so an unrelated edit (e.g. a colour swatch) can't starve a pending
-        // resolution commit. The build keeps using the previous stable size meanwhile -- safe,
-        // exactly like a colour scrub.
+        // Only a genuine move of the requested size restarts the settle window, so an unrelated
+        // edit (e.g. a colour swatch) can't starve a pending resolution commit. The build keeps
+        // using the previous stable size meanwhile -- safe, exactly like a colour scrub.
         if (clamped != m_pendingFaceResolution)
         {
             m_pendingFaceResolution  = clamped;

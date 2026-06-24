@@ -12,10 +12,27 @@
 #include <AzCore/Script/ScriptContextAttributes.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/math.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Utils/Utils.h>
+
+namespace
+{
+    // Normalise a user- or script-supplied asset path to the catalog's product-path convention:
+    // unify separators to forward slashes and strip any leading slashes so the result is
+    // catalog-relative. This lets a manually typed string path and a script-variable path resolve
+    // through the same GetAssetIdByPath lookup regardless of how they were entered.
+    AZStd::string NormalizeAssetPath(AZStd::string_view rawPath)
+    {
+        AZStd::string path(rawPath);
+        AZStd::replace(path.begin(), path.end(), '\\', '/');
+        const size_t firstReal = path.find_first_not_of('/');
+        path.erase(0, (firstReal == AZStd::string::npos) ? path.size() : firstReal);
+        return path;
+    }
+}
 
 namespace AZ
 {
@@ -262,19 +279,21 @@ namespace AZ
             return m_configuration.m_exposure;
         }
 
-        void GradientGIComponentController::SetFaceResolution(int resolution)
+        void GradientGIComponentController::SetFaceResolution(float resolution)
         {
-            // Clamp into the supported range before narrowing to the unsigned config field.
-            m_configuration.m_faceResolution = static_cast<uint32_t>(AZStd::clamp(resolution, 4, 256));
+            // Script Canvas hands us a Number (float). Round to the nearest whole pixel, then clamp
+            // into the supported range before narrowing to the unsigned config field.
+            const int rounded = static_cast<int>(AZStd::lround(resolution));
+            m_configuration.m_faceResolution = static_cast<uint32_t>(AZStd::clamp(rounded, 4, 256));
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
             }
         }
 
-        int GradientGIComponentController::GetFaceResolution() const
+        float GradientGIComponentController::GetFaceResolution() const
         {
-            return static_cast<int>(m_configuration.m_faceResolution);
+            return static_cast<float>(m_configuration.m_faceResolution);
         }
 
         void GradientGIComponentController::SetUpdateMode(GradientGIUpdateMode mode)
@@ -322,7 +341,7 @@ namespace AZ
         void GradientGIComponentController::SetDetailTextureAssetPath(const AZStd::string& path)
         {
             SetDetailTexture(GetAssetFromPath<RPI::StreamingImageAsset>(
-                path, m_configuration.m_detailTexture.GetAutoLoadBehavior()));
+                NormalizeAssetPath(path), m_configuration.m_detailTexture.GetAutoLoadBehavior()));
         }
 
         AZStd::string GradientGIComponentController::GetDetailTextureAssetPath() const
@@ -396,7 +415,7 @@ namespace AZ
         void GradientGIComponentController::SetSpecularTextureAssetPath(const AZStd::string& path)
         {
             SetSpecularTexture(GetAssetFromPath<RPI::StreamingImageAsset>(
-                path, m_configuration.m_specularTexture.GetAutoLoadBehavior()));
+                NormalizeAssetPath(path), m_configuration.m_specularTexture.GetAutoLoadBehavior()));
         }
 
         AZStd::string GradientGIComponentController::GetSpecularTextureAssetPath() const
