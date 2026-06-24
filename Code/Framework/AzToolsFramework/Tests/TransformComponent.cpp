@@ -1151,9 +1151,11 @@ namespace UnitTest
         AZ_COMPONENT(InitProbeComponent, "{6F2A9C84-3B1D-4E7A-AB52-9D0C1E3F5A7B}");
         static void Reflect(AZ::ReflectContext*) {}
         void Init() override { m_initialized = true; }
-        void Activate() override {}
-        void Deactivate() override {}
+        void Activate() override { ++m_activateCount; }
+        void Deactivate() override { ++m_deactivateCount; }
         bool m_initialized = false;
+        int m_activateCount = 0;
+        int m_deactivateCount = 0;
     };
 
     // Listens on the PARENT and, when a child is added, records whether that child's OTHER component
@@ -1219,6 +1221,146 @@ namespace UnitTest
         EXPECT_TRUE(inspector.m_siblingInitializedAtChildAdded);
 
         delete child;
+    }
+
+    // F4 - parent (de)activation cascades to the child's effective state AND its components: deactivating
+    // the parent drives the child effectively inactive (its components Deactivate); reactivating restores
+    // it. This is F7's enabler - a child component deactivating is what unregisters NetBind during teardown.
+    // GREEN on base (merged 26.05 cascade) - regression guard.
+    TEST_F(TransformComponentApplication, ParentDeactivation_CascadesToChildComponents_AndReactivationRestores)
+    {
+        m_app.RegisterComponentDescriptor(InitProbeComponent::CreateDescriptor());
+
+        AZ::Entity parent("Parent");
+        parent.CreateComponent<TransformComponent>();
+        parent.Init();
+        parent.Activate();
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent.GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        InitProbeComponent* probe = child.CreateComponent<InitProbeComponent>();
+        child.Init();
+        child.Activate();
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Active);
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(probe->m_activateCount, 1);
+
+        // Parent deactivates -> child cascades inactive, its component deactivates.
+        parent.Deactivate();
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Init);
+        EXPECT_EQ(probe->m_deactivateCount, 1);
+
+        // Parent reactivates -> child restored, its component reactivates.
+        parent.Activate();
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Active);
+        EXPECT_EQ(probe->m_activateCount, 2);
+    }
+
+    // F5a - a child parked inactive SOLELY because its parent is inactive regains active-ness when that
+    // already-deactivated parent is destroyed (OnEntityDestruction releases the parent dependency and
+    // restores the parent-active layer). RED on base: base never restores the layer -> child stuck Init.
+    TEST_F(TransformComponentApplication, DeactivatedParentDestroyed_ChildRegainsActive)
+    {
+        AZ::Entity* parent = aznew AZ::Entity("Parent");
+        parent->CreateComponent<TransformComponent>();
+        parent->Init();
+        parent->Activate();
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent->GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        child.Init();
+        child.Activate();
+        EXPECT_TRUE(child.IsEffectivelyActive());
+
+        // Parent deactivated FIRST -> child settles into the parent-inactive state.
+        parent->Deactivate();
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Init);
+
+        // Destroy the now-inactive parent -> child must regain active-ness (the alarm).
+        delete parent;
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Active);
+
+        AZ::EntityId childParentId;
+        AZ::TransformBus::EventResult(childParentId, child.GetId(), &AZ::TransformBus::Events::GetParentId);
+        EXPECT_FALSE(childParentId.IsValid());
+    }
+
+    // F5b - destroying an ACTIVE parent: the destroy implicitly deactivates it (Reset->Deactivate cascade
+    // flags the child parent-inactive) THEN OnEntityDestruction recovers the child, all in one teardown
+    // (child Active->Init->Active). Verifies the full destroy ordering settles to active. RED on base.
+    TEST_F(TransformComponentApplication, ActiveParentDestroyed_ChildRegainsActive)
+    {
+        AZ::Entity* parent = aznew AZ::Entity("Parent");
+        parent->CreateComponent<TransformComponent>();
+        parent->Init();
+        parent->Activate();
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent->GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        child.Init();
+        child.Activate();
+        EXPECT_TRUE(child.IsEffectivelyActive());
+
+        // Destroy the ACTIVE parent directly - implicit deactivate-then-destruct in one call.
+        delete parent;
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Active);
+
+        AZ::EntityId childParentId;
+        AZ::TransformBus::EventResult(childParentId, child.GetId(), &AZ::TransformBus::Events::GetParentId);
+        EXPECT_FALSE(childParentId.IsValid());
+    }
+
+    // F6 - an EXPLICITLY deactivated child (entity-layer false via SetEntityActive) must NOT revive when
+    // the parent reactivates OR is destroyed: effective-active is the AND of all layers, so restoring the
+    // parent layer can't override an explicit deactivate. This is what stops the inactive->active->inactive
+    // ping-pong behind the teardown use-after-free. GREEN on base (AND logic is merged 26.05) - UAF guard.
+    TEST_F(TransformComponentApplication, ExplicitlyInactiveChild_DoesNotReviveOnParentActivateOrDestroy)
+    {
+        m_app.RegisterComponentDescriptor(InitProbeComponent::CreateDescriptor());
+
+        AZ::Entity* parent = aznew AZ::Entity("Parent");
+        parent->CreateComponent<TransformComponent>();
+        parent->Init();
+        parent->Activate();
+
+        AZ::Entity child("Child");
+        AZ::TransformConfig childConfig;
+        childConfig.m_parentId = parent->GetId();
+        child.CreateComponent<TransformComponent>()->SetConfiguration(childConfig);
+        InitProbeComponent* probe = child.CreateComponent<InitProbeComponent>();
+        child.Init();
+        child.Activate();
+        EXPECT_TRUE(child.IsEffectivelyActive());
+        EXPECT_EQ(probe->m_activateCount, 1);
+
+        // Explicitly deactivate the child (entity-layer false), then reconcile to actually deactivate it.
+        child.SetEntityActive(false);
+        child.ApplyEffectiveActiveState();
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(child.GetState(), AZ::Entity::State::Init);
+        EXPECT_EQ(probe->m_deactivateCount, 1);
+
+        // A parent activate cycle must NOT revive the explicitly-inactive child (no re-Activate).
+        parent->Deactivate();
+        parent->Activate();
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(probe->m_activateCount, 1);
+
+        // Destroying the parent must NOT revive it either (parent layer restored, entity layer still false).
+        delete parent;
+        EXPECT_FALSE(child.IsEffectivelyActive());
+        EXPECT_EQ(probe->m_activateCount, 1);
     }
 
     ///////////////////////////////////////////////////////////////////////////
