@@ -47,4 +47,3 @@ EnterPreviewToolbar::EnterPreviewToolbar(EditorWindow* parent)
     parent->addToolBar(this);
 }
 
-#include <moc_EnterPreviewToolbar.cpp>

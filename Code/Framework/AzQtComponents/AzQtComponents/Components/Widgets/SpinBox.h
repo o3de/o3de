@@ -7,17 +7,16 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QCursor>
 #include <QDoubleSpinBox>
 #include <QLineEdit>
 #include <QPointer>
-#endif
 
 class QAction;
 class QLineEdit;
+class QLabel;
 class QMenu;
 class QPainter;
 class QProxyStyle;
@@ -48,6 +47,7 @@ namespace AzQtComponents
         Q_PROPERTY(bool redoAvailable READ isRedoAvailable)
     public:
         static unsigned int s_watcherReferenceCount;
+        static constexpr const char* s_draggableLabelName = "SpinboxDragLabel";
 
         //! Style configuration for the SpinBox class.
         struct Config
@@ -130,6 +130,7 @@ namespace AzQtComponents
         
         static void initializeWatcher();
         static void uninitializeWatcher();
+        static void registerLabelToWatcher(QLabel* label, bool shouldRegister);
 
         static bool drawSpinBox(const QProxyStyle* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
         static QRect editFieldRect(const QProxyStyle* style, const QStyleOptionComplex* option, const QWidget* widget, const Config& config);

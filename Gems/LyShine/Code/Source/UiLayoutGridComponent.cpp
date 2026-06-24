@@ -481,7 +481,7 @@ void UiLayoutGridComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiLayoutGridComponent>("LayoutGrid", "A layout component that arranges its children in a grid");
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Layout")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiLayoutGrid.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiLayoutGrid.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

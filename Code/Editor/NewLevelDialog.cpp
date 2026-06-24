@@ -158,7 +158,7 @@ void CNewLevelDialog::InitTemplateListWidget() const
         {
             if (fileName.compare(QString::fromUtf8(DefaultTemplate), Qt::CaseInsensitive) == 0)
             {
-                defaultItem = allTemplateFiles.size();
+                defaultItem = static_cast<int>(allTemplateFiles.size());
             }
             allTemplateFiles.push_back(projectTemplateDirectory.filePath(fileName));
         }
@@ -383,7 +383,7 @@ void CNewLevelDialog::OnLevelNameChange()
         {
             valid = false;
 
-            int levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
+            qsizetype levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
             QMessageBox::warning(this, tr("Unable to Save Level"), QObject::tr("The level name is too long, the maximum is '%1'.").arg(levelMaxLength), QMessageBox::Ok, QMessageBox::Ok);
         }
     }
@@ -424,4 +424,3 @@ void CNewLevelDialog::showEvent(QShowEvent* event)
     QDialog::showEvent(event);
 }
 
-#include <moc_NewLevelDialog.cpp>

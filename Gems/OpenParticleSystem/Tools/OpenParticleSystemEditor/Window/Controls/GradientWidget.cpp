@@ -86,7 +86,7 @@ namespace OpenParticleSystemEditor
 
     unsigned int GradientWidget::AddGradient(QGradient* gradient, QPainter::CompositionMode mode)
     {
-        unsigned int index = m_gradients.count();
+        unsigned int index = static_cast<int>(m_gradients.count());
         m_gradients.push_back(new Gradient(gradient, mode));
         update();
         return index;
@@ -102,5 +102,4 @@ namespace OpenParticleSystemEditor
         update();
     }
 
-#include <moc_GradientWidget.cpp>
 } // namespace OpenParticleSystemEditor

@@ -1761,7 +1761,7 @@ void CXConsole::Exit(const char* szExitComments, ...)
         // make result string
         va_list     arglist;
         va_start(arglist, szExitComments);
-        azvsprintf(sResultMessageText, szExitComments, arglist);
+        azvsnprintf(sResultMessageText, AZ_ARRAY_SIZE(sResultMessageText), szExitComments, arglist);
         va_end(arglist);
     }
     else

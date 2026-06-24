@@ -60,8 +60,9 @@ namespace EMStudio
     {
         if (m_nonFilterableSourceIndex != sourceIndex)
         {
+            beginFilterChange();
             m_nonFilterableSourceIndex = sourceIndex;
-            invalidateFilter();
+            endFilterChange();
         }
     }
 
@@ -157,4 +158,3 @@ namespace EMStudio
 
 } // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/moc_AnimGraphSortFilterProxyModel.cpp>

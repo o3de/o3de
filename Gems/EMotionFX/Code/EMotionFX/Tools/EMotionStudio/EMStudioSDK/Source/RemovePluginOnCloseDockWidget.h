@@ -8,9 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Components/StyledDockWidget.h>
-#endif
 
 namespace EMStudio
 {

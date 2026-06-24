@@ -281,7 +281,7 @@ public:
 // better version of TokenizeString
 inline void SplitString(const QString& rSrcStr, QStringList& rDestStrings, char aSeparator = ',')
 {
-    int crtPos = 0, lastPos = 0;
+    qsizetype crtPos = 0, lastPos = 0;
 
     while (true)
     {
@@ -289,7 +289,7 @@ inline void SplitString(const QString& rSrcStr, QStringList& rDestStrings, char 
 
         if (-1 == crtPos)
         {
-            crtPos = rSrcStr.length();
+            crtPos = static_cast<int>(rSrcStr.length());
 
             if (crtPos != lastPos)
             {
@@ -327,9 +327,6 @@ QColor ColorToQColor(uint32 color);
 
 class QCursor;
 class QPixmap;
-
-template<typename T>
-class QVector;
 
 /*! Collection of Utility MFC functions.
 */
@@ -390,7 +387,7 @@ public:
         while (totalBytesLeftToWrite > 0)
         {
             uint bytesToWrite = AZ::GetMin(blockSize, totalBytesLeftToWrite);
-            uint bytesWritten = QDataStream::writeRawData(reinterpret_cast<char*>(buffer) + totalBytesWritten, bytesToWrite);
+            uint bytesWritten = static_cast<uint>(QDataStream::writeRawData(reinterpret_cast<char*>(buffer) + totalBytesWritten, bytesToWrite));
 
             totalBytesLeftToWrite -= bytesWritten;
             totalBytesWritten += bytesWritten;
@@ -482,14 +479,14 @@ inline CArchive& operator>>(CArchive& ar, QString& str)
         // check if it's short aligned; if it isn't, we need to copy to a temp buffer
         if ((reinterpret_cast<uintptr_t>(raw) & 1) != 0)
         {
-            ushort* shortAlignedData = new ushort[length];
+            char16_t* shortAlignedData = new char16_t[length];
             memcpy(shortAlignedData, raw, length * 2);
             str = QString::fromUtf16(shortAlignedData, aznumeric_cast<int>(length));
             delete[] shortAlignedData;
         }
         else
         {
-            str = QString::fromUtf16(reinterpret_cast<ushort*>(raw), aznumeric_cast<int>(length));
+            str = QString::fromUtf16(reinterpret_cast<char16_t*>(raw), aznumeric_cast<int>(length));
         }
     }
 
@@ -510,7 +507,7 @@ inline CArchive& operator<<(CArchive& ar, const QString& str)
     // box and is much less ambiguous on other platforms.
 
     QByteArray data = str.toUtf8();
-    int length = data.length();
+    int length = static_cast<int>(data.length());
 
     if (length < 255)
     {

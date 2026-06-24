@@ -21,12 +21,10 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
-#include <QMenu>
 #include <QMenu>
 #include <QPainter>
 #include <QPushButton>
@@ -213,7 +211,7 @@ namespace AzQtComponents
         }
 
         QStyleOption options;
-        options.init(this);
+        options.initFrom(this);
         const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, &options, this);
         const int vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, &options, this);
 
@@ -372,7 +370,7 @@ namespace AzQtComponents
         QMap<QString, QList<QStandardItem*>> categoryToEntryItems; // category name to sub-items that will be added
         
 
-        const int numItems = unfilteredData.length();
+        const int numItems = static_cast<int>(unfilteredData.length());
         for (int unfilteredDataIndex = 0; unfilteredDataIndex < numItems; ++unfilteredDataIndex)
         {
             const SearchTypeFilter& filter = unfilteredData.at(unfilteredDataIndex);
@@ -397,7 +395,7 @@ namespace AzQtComponents
             }
         }
 
-        const int numCategories = categoriesInOrder.size();
+        const int numCategories = static_cast<int>(categoriesInOrder.size());
 
         // If there is only one category and its name is empty, discard it,
         // and add its children directly to the model as one big column of N rows
@@ -646,8 +644,9 @@ namespace AzQtComponents
 
     void SearchTypeSelectorFilterModel::setNoResultsMessageRow(int row)
     {
+        beginFilterChange();
         m_noResultsRow = row;
-        invalidateFilter();
+        endFilterChange();
     }
 
 
@@ -855,7 +854,10 @@ namespace AzQtComponents
         m_ui->assetTypeSelector->setMenu(m_selector);
         SetupPaintDelegates();
 
-        connect(m_selector, &SearchTypeSelector::aboutToShow, this, [this]() {m_selector->Setup(m_typeFilters); });
+        connect(m_selector, &SearchTypeSelector::aboutToShow, this, [this]() {
+            m_selector->Setup(m_typeFilters);
+            m_selector->show();
+        });
         connect(m_selector, &SearchTypeSelector::TypeToggled, this, &FilteredSearchWidget::SetFilterStateByIndex);
     }
 
@@ -893,7 +895,7 @@ namespace AzQtComponents
         if (!typeFilter.displayName.isEmpty())
         {
             m_typeFilters.append(typeFilter);
-            SetFilterStateByIndex(m_typeFilters.length() - 1, typeFilter.enabled);
+            SetFilterStateByIndex(static_cast<int>(m_typeFilters.length()) - 1, typeFilter.enabled);
         }
 
         SetTypeFilterVisible(true);
@@ -959,7 +961,7 @@ namespace AzQtComponents
 
     int FilteredSearchWidget::GetTypeFilterCount()
     {
-        return m_typeFilters.size();
+        return static_cast<int>(m_typeFilters.size());
     }
 
     void FilteredSearchWidget::GetTypeFilterDetails(const int index, QString& categoryKeyOut, QString& displayNameOut, bool& enabledOut)
@@ -1306,7 +1308,7 @@ namespace AzQtComponents
         ConfigHelpers::GroupGuard guard(&settings, widgetName);
         settings.setValue(g_textFilterKey, textFilter());
 
-        const int size = m_typeFilters.size();
+        const int size = static_cast<int>(m_typeFilters.size());
         settings.beginWriteArray(g_typeFiltersKey, size);
         for (int i = 0; i < size; ++i)
         {
@@ -1551,7 +1553,7 @@ namespace AzQtComponents
                 do
                 {
                     // Find filter term within the text.
-                    highlightTextIndex = label.lastIndexOf(m_selector->GetFilterString(), highlightTextIndex - 1, Qt::CaseInsensitive);
+                    highlightTextIndex = static_cast<int>(label.lastIndexOf(m_selector->GetFilterString(), highlightTextIndex - 1, Qt::CaseInsensitive));
                     if (highlightTextIndex >= 0)
                     {
                         // Insert background-color terminator at appropriate place to return to normal text.
@@ -1588,5 +1590,3 @@ namespace AzQtComponents
         return QStyledItemDelegate::sizeHint(option, index);
     }
 } // namespace AzQtComponents
-
-#include "Components/moc_FilteredSearchWidget.cpp"

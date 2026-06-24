@@ -18,8 +18,8 @@ def Scene_Settings_Procedural_Mesh_Groups_Test():
     async def run_test():
         import asyncio
         from editor_python_test_tools.utils import Report
-        import PySide2
-        from PySide2 import QtWidgets
+        import PySide6
+        from PySide6 import QtWidgets
         import azlmbr.bus as bus
         import azlmbr.legacy.general as general
         import ly_test_tools.o3de.pipeline_utils as utils

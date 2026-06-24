@@ -8,9 +8,7 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <GraphCanvas/Types/ConstructPresets.h>
-#endif
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>

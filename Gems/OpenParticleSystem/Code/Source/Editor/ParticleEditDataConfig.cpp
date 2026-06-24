@@ -1450,7 +1450,7 @@ namespace OpenParticle
                         ->Attribute(AZ::Edit::Attributes::Visibility, &RibbonConfig::ModeChangToTrail)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::tesselationFactor,
                         "Tesselation Factor",
-                        "The tesselation factor of the ribbon.")
+                        "Each time a ribbon segment grows longer than this value, it will be subdivided.  Lower values result in more (smoother) subdivisions, more resource use.")
                         ->Attribute(AZ::Edit::Attributes::Min, 1.f - SimuCore::ALMOST_ONE) 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::curveTension,
                         "Curve Tension",

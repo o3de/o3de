@@ -8,14 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
 
 #include <QWidget>
-#endif
 
 namespace Ui
 {

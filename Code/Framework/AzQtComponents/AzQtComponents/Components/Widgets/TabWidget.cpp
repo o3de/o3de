@@ -441,10 +441,10 @@ namespace AzQtComponents
         m_overflowing = OverflowUnchecked;
     }
 
-    void TabBar::enterEvent(QEvent* event)
+    void TabBar::enterEvent(QEnterEvent* event)
     {
         auto enterEvent = static_cast<QEnterEvent*>(event);
-        m_hoveredTab = tabAt(enterEvent->pos());
+        m_hoveredTab = tabAt(enterEvent->position().toPoint());
 
         QTabBar::enterEvent(event);
     }
@@ -835,4 +835,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_TabWidget.cpp"

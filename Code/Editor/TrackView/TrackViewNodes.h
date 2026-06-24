@@ -12,7 +12,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Entity.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -26,7 +25,6 @@
 #include <QTreeWidgetItem>
 
 #include <QWidget>
-#endif
 
 // forward declarations.
 class CTrackViewAnimNode;
@@ -219,8 +217,7 @@ private:
 };
 
 
-typedef CTrackViewNode* CTrackViewNodePtr;
-Q_DECLARE_METATYPE(CTrackViewNodePtr);
-QDataStream& operator<<(QDataStream& out, const CTrackViewNodePtr& obj);
-QDataStream& operator>>(QDataStream& in, CTrackViewNodePtr& obj);
+Q_DECLARE_METATYPE(CTrackViewNode*);
+QDataStream& operator<<(QDataStream& out, const CTrackViewNode*& obj);
+QDataStream& operator>>(QDataStream& in, CTrackViewNode*& obj);
 

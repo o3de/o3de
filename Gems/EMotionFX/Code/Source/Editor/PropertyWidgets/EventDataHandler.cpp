@@ -212,4 +212,3 @@ namespace EMotionFX
         return true;
     }
 } // namespace EMotionFX
-#include <Source/Editor/PropertyWidgets/moc_EventDataHandler.cpp>

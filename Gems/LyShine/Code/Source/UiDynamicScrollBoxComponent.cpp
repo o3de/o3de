@@ -740,7 +740,7 @@ void UiDynamicScrollBoxComponent::Reflect(AZ::ReflectContext* context)
                     "The scroll box's content element's first child acts as the prototype element.");
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Layout")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiDynamicScrollBox.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiDynamicScrollBox.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

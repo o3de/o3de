@@ -8,7 +8,6 @@
 
 #include "LUACompleter.hxx"
 
-#include <Source/LUA/CodeCompletion/moc_LUACompleter.cpp>
 
 #include <QRegularExpression>
 
@@ -34,6 +33,6 @@ namespace LUAEditor
     int Completer::GetCompletionPrefixTailLength()
     {
         auto result = completionPrefix().split(QRegularExpression(c_luaSplit));
-        return result.back().length();
+        return static_cast<int>(result.back().length());
     }
 }

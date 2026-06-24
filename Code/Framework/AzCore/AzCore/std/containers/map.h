@@ -80,7 +80,7 @@ namespace AZStd
 
         using reverse_iterator = typename tree_type::reverse_iterator;
         using const_reverse_iterator = typename tree_type::const_reverse_iterator;
-        
+
         using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename tree_type::node_type, typename tree_type::node_deleter>>;
         using insert_return_type = AssociativeInternal::insert_return_type<iterator, node_type>;
 
@@ -392,7 +392,7 @@ namespace AZStd
     inline bool operator==(const map<Key, MappedType, Compare, Allocator>& left, const map<Key, MappedType, Compare, Allocator>& right)
     {
         return (left.size() == right.size()
-            && equal(left.begin(), left.end(), right.begin()));
+            && AZStd::equal(left.begin(), left.end(), right.begin()));
     }
 
     template<class Key, class MappedType, class Compare, class Allocator>
@@ -404,7 +404,7 @@ namespace AZStd
     template<class Key, class MappedType, class Compare, class Allocator>
     inline bool operator<(const map<Key, MappedType, Compare, Allocator>& left, const map<Key, MappedType, Compare, Allocator>& right)
     {
-        return (lexicographical_compare(left.begin(), left.end(), right.begin(), right.end()));
+        return (AZStd::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end()));
     }
 
     template<class Key, class MappedType, class Compare, class Allocator>
@@ -601,7 +601,7 @@ namespace AZStd
         AZ_FORCE_INLINE void swap(this_type& rhs) { m_tree.swap(rhs.m_tree); }
 
         // insert/erase
-        AZ_FORCE_INLINE pair<iterator, bool> insert(const value_type& value) { return m_tree.insert_equal(value); }
+        AZ_FORCE_INLINE iterator insert(const value_type& value) { return m_tree.insert_equal(value); }
         AZ_FORCE_INLINE iterator insert(const_iterator insertPos, const value_type& value) { return m_tree.insert_equal(insertPos, value); }
         template <class InputIterator>
         void insert(InputIterator first, InputIterator last)
@@ -636,7 +636,7 @@ namespace AZStd
             }
             return *this;
         }
-        AZStd::pair<iterator, bool> insert(value_type&& value)
+        iterator insert(value_type&& value)
         {
             return m_tree.insert_equal(AZStd::forward<value_type>(value));
         }
@@ -765,7 +765,7 @@ namespace AZStd
     inline bool operator==(const multimap<Key, MappedType, Compare, Allocator>& left, const multimap<Key, MappedType, Compare, Allocator>& right)
     {
         return (left.size() == right.size()
-                && equal(left.begin(), left.end(), right.begin()));
+                && AZStd::equal(left.begin(), left.end(), right.begin()));
     }
 
     template<class Key, class MappedType, class Compare, class Allocator>
@@ -777,7 +777,7 @@ namespace AZStd
     template<class Key, class MappedType, class Compare, class Allocator>
     inline bool operator<(const multimap<Key, MappedType, Compare, Allocator>& left, const multimap<Key, MappedType, Compare, Allocator>& right)
     {
-        return (lexicographical_compare(left.begin(), left.end(), right.begin(), right.end()));
+        return (AZStd::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end()));
     }
 
     template<class Key, class MappedType, class Compare, class Allocator>

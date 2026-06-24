@@ -13,10 +13,12 @@
 #include "Widgets/HierarchyWidget/HierarchyWidget.h"
 #include "Widgets/HierarchyWidget/HierarchyMenu.h"
 #include "Widgets/PropertiesWidget/PropertiesWidget.h"
+#include "Widgets/UiComponentPaletteWidget.h"
 #include "Helpers/ComponentHelpers.h"
 #include "Commands/CommandHierarchyItemRename.h"
 
 #include <AzQtComponents/Components/Style.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
@@ -87,7 +89,7 @@ protected:
             if (componentEditor->IsDragged())
             {
                 QStyleOption opt;
-                opt.init(this);
+                opt.initFrom(this);
                 opt.rect = currRect;
                 static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
                 drag = true;
@@ -100,7 +102,7 @@ protected:
                 dropRect.setHeight(0);
 
                 QStyleOption opt;
-                opt.init(this);
+                opt.initFrom(this);
                 opt.rect = dropRect;
                 style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
 
@@ -115,7 +117,7 @@ protected:
             dropRect.setHeight(0);
 
             QStyleOption opt;
-            opt.init(this);
+            opt.initFrom(this);
             opt.rect = dropRect;
             style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
         }
@@ -165,6 +167,9 @@ PropertiesContainer::PropertiesContainer(PropertiesWidget* propertiesWidget, Edi
     // Get the serialize context.
     AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "We should have a valid context!");
+
+    // Component palette popup (modern searchable component menu)
+    m_componentPalette = new UiComponentPaletteWidget(this);
 
     QObject::connect(m_editorWindow->GetHierarchy(),
         &HierarchyWidget::editorOnlyStateChangedOnSelectedElements,
@@ -231,7 +236,7 @@ bool PropertiesContainer::HandleSelectionEvents(QObject* object, QEvent* event)
         return false;
     }
 
-    const QRect globalRect(mouseEvent->globalPos(), mouseEvent->globalPos());
+    const QRect globalRect(mouseEvent->globalPosition().toPoint(), mouseEvent->globalPosition().toPoint());
 
     //reject input outside of the inspector's component list
     if (!DoesOwnFocus() ||
@@ -740,11 +745,42 @@ void PropertiesContainer::UpdateInternalState()
 
 void PropertiesContainer::OnAddComponent()
 {
-    HierarchyMenu contextMenu(m_editorWindow->GetHierarchy(),
-        HierarchyMenu::Show::kAddComponents,
-        true);
+    ShowComponentPalette();
+}
 
-    contextMenu.exec(QCursor::pos());
+void PropertiesContainer::ShowComponentPalette()
+{
+    // Choose filter based on whether the canvas entity or a UI element is selected
+    AzToolsFramework::ComponentFilter componentFilter;
+    if (m_isCanvasSelected)
+    {
+        componentFilter = [](const AZ::SerializeContext::ClassData& classData)
+        {
+            return AzToolsFramework::AppearsInAddComponentMenu(classData, AZ_CRC_CE("CanvasUI"));
+        };
+    }
+    else
+    {
+        componentFilter = [](const AZ::SerializeContext::ClassData& classData)
+        {
+            return AzToolsFramework::AppearsInAddComponentMenu(classData, AZ_CRC_CE("UI"));
+        };
+    }
+
+    AZ::ComponentDescriptor::DependencyArrayType serviceFilter;
+    AZ::ComponentDescriptor::DependencyArrayType incompatibleServiceFilter;
+
+    // Position the palette over the properties area before populating
+    // (Populate calls Present which shows the widget)
+    QRect paletteRect = GetWidgetGlobalRect(this);
+    m_componentPalette->setGeometry(paletteRect);
+
+    m_componentPalette->Populate(
+        m_serializeContext,
+        m_selectedEntities,
+        componentFilter,
+        serviceFilter,
+        incompatibleServiceFilter);
 }
 
 void PropertiesContainer::OnDisplayUiComponentEditorMenu(const QPoint& position)
@@ -1039,14 +1075,15 @@ void PropertiesContainer::SetEditorOnlyCheckbox(QCheckBox* editorOnlyCheckbox)
     m_editorOnlyCheckbox = editorOnlyCheckbox;
 
     QObject::connect(m_editorOnlyCheckbox,
-        &QCheckBox::stateChanged,
-        [this](int value)
+        &QCheckBox::checkStateChanged,
+        [this](Qt::CheckState value)
         {
             QSignalBlocker blocker(this);
 
-            QMetaObject::invokeMethod(m_editorWindow->GetHierarchy(), "SetEditorOnlyForSelectedItems", Qt::QueuedConnection, Q_ARG(bool, value));
+            bool checked = value == Qt::CheckState::Checked;
+            QMetaObject::invokeMethod(
+                m_editorWindow->GetHierarchy(), "SetEditorOnlyForSelectedItems", Qt::QueuedConnection, Q_ARG(bool, checked));
         }
     );
 }
 
-#include <moc_PropertiesContainer.cpp>

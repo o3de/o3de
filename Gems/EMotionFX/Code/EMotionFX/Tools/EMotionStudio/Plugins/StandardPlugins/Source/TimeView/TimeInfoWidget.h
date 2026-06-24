@@ -8,15 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/LogManager.h>
 #include "../StandardPluginsConfig.h"
+
 #include <QWidget>
 #include <QPen>
 #include <QFont>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QBrush)
 

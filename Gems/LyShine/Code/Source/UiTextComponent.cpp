@@ -621,7 +621,7 @@ namespace
             // If this entry ultimately ends up not having any space char
             // indices associated with it, we will simply skip iterating over
             // it later.
-            batchSpaceIndices.insert(&drawBatch);
+            batchSpaceIndices.try_emplace(&drawBatch);
 
             int batchCurChar = 0;
 
@@ -3085,7 +3085,7 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiTextComponent>("Text", "A visual component that draws a text string");
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Visual")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiText.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiText.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

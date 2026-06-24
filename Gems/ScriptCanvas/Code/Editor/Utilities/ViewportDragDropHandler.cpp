@@ -58,7 +58,7 @@ void ScriptCanvasAssetDragDropHandler::DragEnter(QDragEnterEvent* event, AzQtCom
     }
 
     QList<QUrl> urlList = mimeData->urls();
-    int urlListSize = urlList.size();
+    int urlListSize = static_cast<int>(urlList.size());
 
     for (int i = 0; i < urlListSize; ++i)
     {

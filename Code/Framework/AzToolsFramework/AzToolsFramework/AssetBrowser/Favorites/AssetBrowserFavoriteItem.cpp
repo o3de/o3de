@@ -6,4 +6,3 @@
  *
  */
 
-#include "AssetBrowser/Favorites/moc_AssetBrowserFavoriteItem.cpp"

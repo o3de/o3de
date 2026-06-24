@@ -18,11 +18,17 @@
 #include "AppleSpecific.h"
 #include <cstddef>
 #include <cfloat>
-#include <xmmintrin.h>
-//#define _CPU_X86
-#define _CPU_AMD64
+#if AZ_TRAIT_USE_PLATFORM_SIMD_SSE
+#   include <xmmintrin.h>
+#   include <pmmintrin.h>
+#   include <emmintrin.h>
+#   include <smmintrin.h>
 #define _CPU_SSE
 #define PLATFORM_64BIT
+#elif AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+#   include <arm_neon.h>
+#endif
+
 
 #define VK_CONTROL  0
 

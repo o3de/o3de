@@ -10,12 +10,10 @@
 #define CRYINCLUDE_EDITOR_LEVEL_ITEM_MODEL_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include "Editor/LevelRoots.h"
+
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
-#endif
-
-#include "LevelRoots.h"
 
 class QString;
 class QStandardItem;

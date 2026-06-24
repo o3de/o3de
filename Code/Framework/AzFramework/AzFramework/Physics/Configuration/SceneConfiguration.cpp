@@ -21,7 +21,7 @@ namespace AzPhysics
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<SceneConfiguration>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("Name", &SceneConfiguration::m_sceneName)
                 ->Field("WorldBounds", &SceneConfiguration::m_worldBounds)
                 ->Field("Gravity", &SceneConfiguration::m_gravity)
@@ -30,6 +30,7 @@ namespace AzPhysics
                 ->Field("EnableCcdResweep", &SceneConfiguration::m_enableCcdResweep)
                 ->Field("EnableActiveActors", &SceneConfiguration::m_enableActiveActors)
                 ->Field("EnablePcm", &SceneConfiguration::m_enablePcm)
+                ->Field("EnableEnhancedDeterminism", &SceneConfiguration::m_enableEnhancedDeterminism)
                 ->Field("BounceThresholdVelocity", &SceneConfiguration::m_bounceThresholdVelocity)
                 ;
 
@@ -54,6 +55,8 @@ namespace AzPhysics
                     ->EndGroup()
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_enablePcm, "Persistent Contact Manifold", "Enabled the persistent contact manifold narrow-phase algorithm")
+                    ->DataElement(AZ::Edit::UIHandlers::Default,&SceneConfiguration::m_enableEnhancedDeterminism,
+                        "Enhanced Determinism", "Improves determinism at a performance cost. Applied at scene creation.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_bounceThresholdVelocity,
                         "Bounce Threshold Velocity", "Relative velocity below which colliding objects will not bounce")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
@@ -74,6 +77,7 @@ namespace AzPhysics
             && m_enableCcdResweep == other.m_enableCcdResweep
             && m_enableActiveActors == other.m_enableActiveActors
             && m_enablePcm == other.m_enablePcm
+            && m_enableEnhancedDeterminism == other.m_enableEnhancedDeterminism
             && m_kinematicFiltering == other.m_kinematicFiltering
             && m_kinematicStaticFiltering == other.m_kinematicStaticFiltering
             && m_customUserData == other.m_customUserData

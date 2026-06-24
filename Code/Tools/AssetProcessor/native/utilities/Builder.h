@@ -25,14 +25,26 @@ namespace AssetProcessor
 
     enum class BuilderRunJobOutcome
     {
-        Ok,
-        LostConnection,
-        ProcessTerminated,
-        JobCancelled,
-        ResponseFailure,
-        FailedToDecodeResponse,
-        FailedToWriteDebugRequest
+        Ok,                         // the builder completed the job.  This does not mean the job succeeded, just that it began, processed, ended, responded.
+        LostConnection,             // the network socket was closed.
+        ProcessTerminated,          // the process was terminated by some outside source (not us).
+        JobCancelled,               // we cancelled the job, and will terminate the process ourselves.
+        ResponseFailure,            // we asked it to do work and after a very long time it did not respond.
+        FailedToDecodeResponse,     // response was garbled
+        FailedToWriteDebugRequest   // in debug mode, we couldn't write the file to disk (disk full?  permissions?  serialization fail?)
     };
+
+    // the following outcomes are all the kind of outcomes where the builder is in a terminal state, and is unusable from this point on.
+    // it has either already been terminated, or will be soon.
+    static constexpr bool JobOutcomeIsTerminal(BuilderRunJobOutcome outcome)
+    {
+        return (
+            outcome == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
+            outcome == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated ||
+            outcome == AssetProcessor::BuilderRunJobOutcome::JobCancelled ||
+            outcome == AssetProcessor::BuilderRunJobOutcome::ResponseFailure
+            );
+    }
 
     //! Wrapper for managing a single builder process and sending job requests to it
     class Builder
@@ -72,6 +84,7 @@ namespace AssetProcessor
         void PumpCommunicator() const;
         void FlushCommunicator() const;
         void TerminateProcess(AZ::u32 exitCode) const;
+        bool IsReadyToWork() const;
 
         //! Sends the job over to the builder and blocks until the response is received or the builder crashes/times out
         template<typename TNetRequest, typename TNetResponse, typename TRequest, typename TResponse>
@@ -105,7 +118,7 @@ namespace AssetProcessor
         BuilderRunJobOutcome WaitForBuilderResponse(
             AssetBuilderSDK::JobCancelListener* jobCancelListener,
             AZ::u32 processTimeoutLimitInSeconds,
-            AZStd::binary_semaphore* waitEvent) const;
+            AZStd::binary_semaphore* waitEvent) const; // non-const since it can set itself as defunct
 
         //! Writes the request out to disk for debug purposes and logs info on how to manually run the asset builder
         template<typename TRequest>
@@ -120,6 +133,8 @@ namespace AssetProcessor
 
         //! Indicates if the builder is currently in use
         bool m_busy = false;
+
+        bool m_defunct = false; // becomes true if the builder process has terminated, but before cleanup, so we don't reuse it.
 
         AZStd::atomic<AZ::u32> m_connectionId = 0;
 
@@ -156,6 +171,8 @@ namespace AssetProcessor
         const Builder* operator->() const;
 
         explicit operator bool() const;
+
+        void MarkAsDefunct();
 
         void release();
 

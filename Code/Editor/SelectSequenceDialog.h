@@ -11,9 +11,7 @@
 #define CRYINCLUDE_EDITOR_SELECTSEQUENCEDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "GenericSelectItemDialog.h"
-#endif
 
 // CSelectSequence dialog
 

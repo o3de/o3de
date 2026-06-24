@@ -9,10 +9,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QScopedPointer>
 #include <QDialog>
-#endif
 
 namespace Ui {
     class CUiAVNewSequenceDialog;

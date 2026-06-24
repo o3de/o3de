@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 #include <QStackedWidget>
 
@@ -15,7 +14,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 #include <CryCommon/ISystem.h>
-#endif
 
 class QObjectPropertyModel;
 class PropertyInfo;

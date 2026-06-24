@@ -7,7 +7,6 @@
  */
 
 #include "TargetContextButton.hxx"
-#include <Source/LUA/moc_TargetContextButton.cpp>
 #include <Source/LUA/LUAEditorContextMessages.h>
 #include <Source/LUA/LUAEditorDebuggerMessages.h>
 #include <Source/LUA/LUATargetContextTrackerMessages.h>

@@ -12,9 +12,9 @@
 
 import sys
 
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QProcess, QTextCodec
-from PyQt5.QtGui import QTextCursor
-from PyQt5.QtWidgets import QApplication, QPlainTextEdit
+from PyQt6.QtCore import pyqtSignal, pyqtSlot, QProcess, QTextCodec
+from PyQt6.QtGui import QTextCursor
+from PyQt6.QtWidgets import QApplication, QPlainTextEdit
 
 
 class ProcessOutputReader(QProcess):

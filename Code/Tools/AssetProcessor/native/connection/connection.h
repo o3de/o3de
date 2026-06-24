@@ -8,16 +8,14 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#if !defined(Q_MOC_RUN)
-#include <QThread>
-#include <QElapsedTimer>
 #include "native/utilities/AssetUtilEBusHelper.h"
-#include <QHostAddress>
 
 #include <QTimer>
 #include <QString>
 #include <QPointer>
-#endif
+#include <QThread>
+#include <QElapsedTimer>
+#include <QHostAddress>
 
 class QSettings;
 

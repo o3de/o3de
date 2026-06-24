@@ -93,4 +93,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/PropertyEditor/moc_EntityIdQLabel.cpp"

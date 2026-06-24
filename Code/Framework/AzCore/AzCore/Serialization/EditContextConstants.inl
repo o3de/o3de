@@ -271,6 +271,7 @@ namespace AZ
             const static AZ::Crc32 Vector4 = AZ_CRC_CE("Vector4");
             const static AZ::Crc32 ExeSelectBrowseEdit = AZ_CRC_CE("ExeSelectBrowseEdit");
             const static AZ::Crc32 Label = AZ_CRC_CE("Label");
+            const static AZ::Crc32 Curve = AZ_CRC_CE("Curve");
 
             // Maintained in the UIHandlers namespace for backwards compatibility; moved to the Attributes namespace now
             const static AZ::Crc32 Handler = Attributes::Handler;

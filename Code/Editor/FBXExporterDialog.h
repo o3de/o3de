@@ -11,11 +11,9 @@
 #define CRYINCLUDE_EDITOR_FBXEXPORTERDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Resource.h"
 
 #include <QDialog>
-#endif
 
 namespace Ui
 {

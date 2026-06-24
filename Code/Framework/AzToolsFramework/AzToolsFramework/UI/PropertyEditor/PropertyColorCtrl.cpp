@@ -398,10 +398,10 @@ namespace AzToolsFramework
         AZ_UNUSED(node);
         AZ::Vector4 asVector4 = static_cast<AZ::Vector4>(instance);
         QColor asQColor;
-        asQColor.setRedF((qreal)asVector4.GetX());
-        asQColor.setGreenF((qreal)asVector4.GetY());
-        asQColor.setBlueF((qreal)asVector4.GetZ());
-        asQColor.setAlphaF((qreal)asVector4.GetW());
+        asQColor.setRedF(asVector4.GetX());
+        asQColor.setGreenF(asVector4.GetY());
+        asQColor.setBlueF(asVector4.GetZ());
+        asQColor.setAlphaF(asVector4.GetW());
         GUI->setValue(asQColor);
         return false;
     }
@@ -440,9 +440,9 @@ namespace AzToolsFramework
         AZ_UNUSED(node);
         AZ::Vector3 asVector3 = static_cast<AZ::Vector3>(instance);
         QColor asQColor;
-        asQColor.setRedF((qreal)asVector3.GetX());
-        asQColor.setGreenF((qreal)asVector3.GetY());
-        asQColor.setBlueF((qreal)asVector3.GetZ());
+        asQColor.setRedF(asVector3.GetX());
+        asQColor.setGreenF(asVector3.GetY());
+        asQColor.setBlueF(asVector3.GetZ());
         GUI->setValue(asQColor);
         return false;
     }
@@ -458,4 +458,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/PropertyEditor/moc_PropertyColorCtrl.cpp"

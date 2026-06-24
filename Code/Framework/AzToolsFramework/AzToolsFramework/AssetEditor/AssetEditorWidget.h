@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
@@ -15,7 +14,6 @@
 
 #include <QWidget>
 #include <QToolButton>
-#endif
 
 namespace AZ
 {

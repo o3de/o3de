@@ -63,7 +63,7 @@ endif()
 set(LY_ASSET_DEPLOY_ASSET_TYPE "mac" CACHE STRING "Set the asset type for deployment.")
 
 # Set the deployment target for MacOS
-set(LY_MAC_DEPLOYMENT_TARGET "11.0" CACHE STRING "Mac Deployment Target")
+set(LY_MAC_DEPLOYMENT_TARGET "15.0" CACHE STRING "Mac Deployment Target")
 set(CMAKE_OSX_DEPLOYMENT_TARGET ${LY_MAC_DEPLOYMENT_TARGET})
 
 # Set the python cmd tool
@@ -72,5 +72,5 @@ ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 # Compiler flag to export all symbols from a library
 ly_set(PAL_TRAIT_EXPORT_ALL_SYMBOLS_COMPILE_OPTIONS -fvisibility=default)
 
-# Only x86_64 is currently supported on Mac
-ly_set(CMAKE_OSX_ARCHITECTURES "x86_64")
+# Only arm64 is currently supported on Mac
+ly_set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}")

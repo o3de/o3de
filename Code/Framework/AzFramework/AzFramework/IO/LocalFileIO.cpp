@@ -64,7 +64,7 @@ namespace AZ
                 fileHandle = GetNextHandle();
 
                 // Construct a new SystemFile in the map (SystemFiles don't copy/move very well).
-                auto newPair = m_openFiles.emplace(fileHandle);
+                auto newPair = m_openFiles.try_emplace(fileHandle);
                 // Check for successful insert
                 if (!newPair.second)
                 {

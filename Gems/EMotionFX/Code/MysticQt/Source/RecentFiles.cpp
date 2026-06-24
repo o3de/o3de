@@ -133,7 +133,7 @@ namespace MysticQt
         AzFramework::StringFunc::Strip(cacheFolder, AZ_CORRECT_FILESYSTEM_SEPARATOR, true, false, true);
 
         int recentFilesAdded = 0;
-        const int recentFileCount = m_recentFiles.size();
+        const int recentFileCount = static_cast<int>(m_recentFiles.size());
         for (int i = 0; i < recentFileCount; ++i)
         {
             const QString recentFilePath = m_recentFiles[i];
@@ -200,9 +200,9 @@ namespace MysticQt
     {
         m_maxNumRecentFiles = numRecentFiles;
 
-        if (m_recentFiles.size() > m_maxNumRecentFiles)
+        if (static_cast<size_t>(m_recentFiles.size()) > m_maxNumRecentFiles)
         {
-            while (m_recentFiles.size() > m_maxNumRecentFiles)
+            while (static_cast<size_t>(m_recentFiles.size()) > m_maxNumRecentFiles)
             {
                 m_recentFiles.removeLast();
             }
@@ -278,4 +278,3 @@ namespace MysticQt
     }
 } // namespace MysticQt
 
-#include <MysticQt/Source/moc_RecentFiles.cpp>
