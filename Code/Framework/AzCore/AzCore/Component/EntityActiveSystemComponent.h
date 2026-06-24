@@ -43,6 +43,6 @@ namespace AZ
         size_t ScanListForIndex(AZ::Crc32 typeNameId);
     private:
         AZStd::vector<AZ::Crc32> m_activeTypeNameToIndex = { ENTITY_ACTIVE_TYPE_NAME };
-        static constexpr size_t s_maxStateFlags = 32;
+        static constexpr size_t s_maxStateFlags = 16; // activation-layer capacity; matches AZ::Entity activation low-half
     };
 } // namespace AZ

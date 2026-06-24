@@ -97,9 +97,12 @@ namespace AZ
             result.Combine(componentLoadResult);
         }
 
-        ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
-            azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
+        // RuntimeActiveByDefault is a packed flag bit (not an addressable member), so round-trip it
+        // through the accessor while keeping the on-disk "IsRuntimeActive" bool field unchanged.
+        bool isRuntimeActiveByDefault = entityInstance->IsRuntimeActiveByDefault();
+        ContinueLoadingFromJsonObjectField(&isRuntimeActiveByDefault, azrtti_typeid<bool>(),
             inputValue, "IsRuntimeActive", context);
+        entityInstance->SetRuntimeActiveByDefault(isRuntimeActiveByDefault);
  
         AZStd::string_view message = result.GetProcessing() == JSR::Processing::Completed
             ? "Successfully loaded entity information."
@@ -184,13 +187,15 @@ namespace AZ
 
         {
             AZ::ScopedContextPath subPathRuntimeActive(context, "m_isRuntimeActiveByDefault");
-            const bool* runtimeActive = &entityInstance->m_isRuntimeActiveByDefault;
-            const bool* runtimeActiveDefault =
-                defaultEntityInstance ? &defaultEntityInstance->m_isRuntimeActiveByDefault : nullptr;
+            // RuntimeActiveByDefault is a packed flag bit; read it via the accessor into a local and
+            // serialize that, keeping the on-disk "IsRuntimeActive" bool field unchanged.
+            const bool runtimeActive = entityInstance->IsRuntimeActiveByDefault();
+            const bool runtimeActiveDefault =
+                defaultEntityInstance ? defaultEntityInstance->IsRuntimeActiveByDefault() : false;
 
             JSR::ResultCode resultRuntimeActive =
                 ContinueStoringToJsonObjectField(outputValue, "IsRuntimeActive",
-                    runtimeActive, runtimeActiveDefault, azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(), context);
+                    &runtimeActive, defaultEntityInstance ? &runtimeActiveDefault : nullptr, azrtti_typeid<bool>(), context);
 
             result.Combine(resultRuntimeActive);
         }
