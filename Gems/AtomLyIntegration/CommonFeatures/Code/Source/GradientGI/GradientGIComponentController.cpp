@@ -11,32 +11,11 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/algorithm.h>
-#include <AzCore/std/math.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <Atom/Feature/GradientGI/GradientGILogic.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Utils/Utils.h>
-
-namespace
-{
-    // Normalise a user- or script-supplied asset path to the catalog's product-path convention:
-    // unify separators to forward slashes and strip any leading slashes so the result is
-    // catalog-relative. This lets a manually typed string path and a script-variable path resolve
-    // through the same GetAssetIdByPath lookup regardless of how they were entered.
-    AZStd::string NormalizeAssetPath(AZStd::string_view rawPath)
-    {
-        AZStd::string path(rawPath);
-        AZStd::replace(path.begin(), path.end(), '\\', '/');
-
-        // Strip leading slashes. erase(pos, count) only throws when pos > size(); pos is always 0
-        // here and count is clamped to the remaining length, so an all-slash or empty input simply
-        // yields an empty string -- no out-of-range, no UB.
-        const size_t firstReal = path.find_first_not_of('/');
-        path.erase(0, (firstReal == AZStd::string::npos) ? path.size() : firstReal);
-        return path;
-    }
-}
 
 namespace AZ
 {
@@ -95,22 +74,20 @@ namespace AZ
                     // Update mode (Static / Dynamic)
                     ->Event("SetUpdateMode",  &GradientGIComponentRequestBus::Events::SetUpdateMode)
                     ->Event("GetUpdateMode",  &GradientGIComponentRequestBus::Events::GetUpdateMode)
-                    // Detail texture layer (scripting uses AssetId / AssetPath, not Asset<>)
+                    // Detail texture layer (scripting uses AssetId; the AssetPath route is not
+                    // reflected -- a raw path can't resolve to a processed product asset, so only
+                    // the AssetId node is exposed to Script Canvas).
                     ->Event("SetDetailTextureAssetId",   &GradientGIComponentRequestBus::Events::SetDetailTextureAssetId)
                     ->Event("GetDetailTextureAssetId",   &GradientGIComponentRequestBus::Events::GetDetailTextureAssetId)
-                    ->Event("SetDetailTextureAssetPath", &GradientGIComponentRequestBus::Events::SetDetailTextureAssetPath)
-                    ->Event("GetDetailTextureAssetPath", &GradientGIComponentRequestBus::Events::GetDetailTextureAssetPath)
                     ->Event("SetDetailMapping",  &GradientGIComponentRequestBus::Events::SetDetailMapping)
                     ->Event("GetDetailMapping",  &GradientGIComponentRequestBus::Events::GetDetailMapping)
                     ->Event("SetDetailBlend",    &GradientGIComponentRequestBus::Events::SetDetailBlend)
                     ->Event("GetDetailBlend",    &GradientGIComponentRequestBus::Events::GetDetailBlend)
                     ->Event("SetDetailStrength", &GradientGIComponentRequestBus::Events::SetDetailStrength)
                     ->Event("GetDetailStrength", &GradientGIComponentRequestBus::Events::GetDetailStrength)
-                    // Specular texture layer (scripting uses AssetId / AssetPath, not Asset<>)
+                    // Specular texture layer (scripting uses AssetId; AssetPath not reflected, see above)
                     ->Event("SetSpecularTextureAssetId",   &GradientGIComponentRequestBus::Events::SetSpecularTextureAssetId)
                     ->Event("GetSpecularTextureAssetId",   &GradientGIComponentRequestBus::Events::GetSpecularTextureAssetId)
-                    ->Event("SetSpecularTextureAssetPath", &GradientGIComponentRequestBus::Events::SetSpecularTextureAssetPath)
-                    ->Event("GetSpecularTextureAssetPath", &GradientGIComponentRequestBus::Events::GetSpecularTextureAssetPath)
                     ->Event("SetSpecularMapping",  &GradientGIComponentRequestBus::Events::SetSpecularMapping)
                     ->Event("GetSpecularMapping",  &GradientGIComponentRequestBus::Events::GetSpecularMapping)
                     ->Event("SetSpecularBlend",    &GradientGIComponentRequestBus::Events::SetSpecularBlend)
@@ -125,12 +102,10 @@ namespace AZ
                     ->VirtualProperty("FaceResolution", "GetFaceResolution", "SetFaceResolution")
                     ->VirtualProperty("UpdateMode",     "GetUpdateMode",     "SetUpdateMode")
                     ->VirtualProperty("DetailTextureAssetId",   "GetDetailTextureAssetId",   "SetDetailTextureAssetId")
-                    ->VirtualProperty("DetailTextureAssetPath", "GetDetailTextureAssetPath", "SetDetailTextureAssetPath")
                     ->VirtualProperty("DetailMapping",  "GetDetailMapping",  "SetDetailMapping")
                     ->VirtualProperty("DetailBlend",    "GetDetailBlend",    "SetDetailBlend")
                     ->VirtualProperty("DetailStrength", "GetDetailStrength", "SetDetailStrength")
                     ->VirtualProperty("SpecularTextureAssetId",   "GetSpecularTextureAssetId",   "SetSpecularTextureAssetId")
-                    ->VirtualProperty("SpecularTextureAssetPath", "GetSpecularTextureAssetPath", "SetSpecularTextureAssetPath")
                     ->VirtualProperty("SpecularMapping",  "GetSpecularMapping",  "SetSpecularMapping")
                     ->VirtualProperty("SpecularBlend",    "GetSpecularBlend",    "SetSpecularBlend")
                     ->VirtualProperty("SpecularStrength", "GetSpecularStrength", "SetSpecularStrength")
@@ -285,10 +260,9 @@ namespace AZ
 
         void GradientGIComponentController::SetFaceResolution(float resolution)
         {
-            // Script Canvas hands us a Number (float). Round to the nearest whole pixel, then clamp
-            // into the supported range before narrowing to the unsigned config field.
-            const int rounded = static_cast<int>(AZStd::lround(resolution));
-            m_configuration.m_faceResolution = static_cast<uint32_t>(AZStd::clamp(rounded, 4, 256));
+            // Script Canvas hands us a Number (float). Round to the nearest whole pixel and clamp
+            // into the supported range before storing into the unsigned config field.
+            m_configuration.m_faceResolution = GradientGI::RoundAndClampFaceResolution(resolution);
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
@@ -345,7 +319,7 @@ namespace AZ
         void GradientGIComponentController::SetDetailTextureAssetPath(const AZStd::string& path)
         {
             SetDetailTexture(GetAssetFromPath<RPI::StreamingImageAsset>(
-                NormalizeAssetPath(path), m_configuration.m_detailTexture.GetAutoLoadBehavior()));
+                GradientGI::NormalizeAssetPath(path), m_configuration.m_detailTexture.GetAutoLoadBehavior()));
         }
 
         AZStd::string GradientGIComponentController::GetDetailTextureAssetPath() const
@@ -419,7 +393,7 @@ namespace AZ
         void GradientGIComponentController::SetSpecularTextureAssetPath(const AZStd::string& path)
         {
             SetSpecularTexture(GetAssetFromPath<RPI::StreamingImageAsset>(
-                NormalizeAssetPath(path), m_configuration.m_specularTexture.GetAutoLoadBehavior()));
+                GradientGI::NormalizeAssetPath(path), m_configuration.m_specularTexture.GetAutoLoadBehavior()));
         }
 
         AZStd::string GradientGIComponentController::GetSpecularTextureAssetPath() const

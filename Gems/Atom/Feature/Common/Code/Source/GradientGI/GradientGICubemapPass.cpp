@@ -8,6 +8,7 @@
 
 #include "GradientGICubemapPass.h"
 
+#include <Atom/Feature/GradientGI/GradientGILogic.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DispatchItem.h>
 #include <Atom/RHI/FrameGraphInterface.h>
@@ -307,8 +308,9 @@ namespace AZ::Render
         const bool cubeRequested = (mapping == 2); // GradientGITextureMapping::Cube
         const bool useCube       = cubeRequested && isCube;
         // Cube requested but a non-cube texture supplied -> disable rather than bind a 2D image
-        // to a cube slot (which would be invalid).
-        const bool enabled = (texture != nullptr) && (!cubeRequested || isCube);
+        // to a cube slot (which would be invalid). The layer also falls back to disabled when no
+        // texture is bound at all, so the gradient (or diffuse, for specular) shows through.
+        const bool enabled = GradientGI::IsTextureLayerEnabled(texture != nullptr, cubeRequested, isCube);
 
         const Data::Instance<RPI::Image>& systemWhite2D =
             RPI::ImageSystemInterface::Get()->GetSystemImage(RPI::SystemImage::White);

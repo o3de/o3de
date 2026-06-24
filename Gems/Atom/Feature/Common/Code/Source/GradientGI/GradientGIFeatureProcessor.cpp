@@ -52,13 +52,12 @@ namespace AZ::Render
             "ImageBasedLightFeatureProcessorInterface not found on scene. GradientGI requires it.");
 
         // If Dynamic mode was requested, check platform support; fall back to Static if needed.
-        if (m_updateMode == UpdateMode::Dynamic && !GradientGICubemapPass::IsGpuComputeSupported())
-        {
-            AZ_Warning("GradientGI", false,
-                "GPU compute UAV cubemaps are not supported on this platform. "
-                "GradientGI falling back to Static mode.");
-            m_updateMode = UpdateMode::Static;
-        }
+        const UpdateMode resolvedMode =
+            GradientGI::ResolveUpdateMode(m_updateMode, GradientGICubemapPass::IsGpuComputeSupported());
+        AZ_Warning("GradientGI", resolvedMode == m_updateMode,
+            "GPU compute UAV cubemaps are not supported on this platform. "
+            "GradientGI falling back to Static mode.");
+        m_updateMode = resolvedMode;
 
         m_needsRebuild = false;
         m_active       = false;
@@ -347,7 +346,7 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::SetFaceResolution(uint32_t resolution)
     {
-        const uint32_t clamped = AZStd::clamp(resolution, 4u, 256u);
+        const uint32_t clamped = GradientGI::ClampFaceResolution(resolution);
 
         // GPU/Dynamic mode reallocates a lightweight AttachmentImage (NOT the DX12 tiled streaming
         // pool), so a resolution change is cheap and safe to apply live every tick. Applying it
@@ -356,42 +355,29 @@ namespace AZ::Render
         // pool and crashes the RHI on a size change -- needs the debounce below.
         if (m_updateMode == UpdateMode::Dynamic)
         {
-            m_pendingFaceResolution = clamped;
-            ApplyFaceResolution();
+            m_resolutionThrottle.Commit(clamped);
+            ApplyFaceResolution(clamped);
             return;
         }
-
-        // --- CPU/Static: debounce the size change until the slider settles --------------------
-        // Unlike colour (which rebuilds an identically sized image), a resolution change rebuilds a
-        // different-sized tiled cubemap; doing so on every editor scrub tick churns the DX12
-        // streaming pool and crashes the RHI. So we defer the actual size change.
 
         // The very first push (component activation, no scrub) applies immediately so the initial
         // build uses the configured resolution with no transient flash at the default size.
         if (!m_faceResolutionApplied)
         {
-            m_pendingFaceResolution = clamped;
-            ApplyFaceResolution();
+            m_resolutionThrottle.Commit(clamped);
+            ApplyFaceResolution(clamped);
             return;
         }
 
-        // Only a genuine move of the requested size restarts the settle window, so an unrelated
-        // edit (e.g. a colour swatch) can't starve a pending resolution commit. The build keeps
-        // using the previous stable size meanwhile -- safe, exactly like a colour scrub.
-        if (clamped != m_pendingFaceResolution)
-        {
-            m_pendingFaceResolution  = clamped;
-            m_resolutionSettleFrames = 0;
-        }
-        m_resolutionChangePending = (m_pendingFaceResolution != m_faceResolution);
+        // CPU/Static while editing: defer to the scrub throttle. The build keeps using the previous
+        // stable size until the slider settles -- safe, exactly like a colour scrub.
+        m_resolutionThrottle.Request(clamped);
     }
 
-    void GradientGIFeatureProcessor::ApplyFaceResolution()
+    void GradientGIFeatureProcessor::ApplyFaceResolution(uint32_t value)
     {
-        m_faceResolution          = m_pendingFaceResolution;
-        m_faceResolutionApplied   = true;
-        m_resolutionChangePending = false;
-        m_resolutionSettleFrames  = 0;
+        m_faceResolution        = value;
+        m_faceResolutionApplied = true;
 
         if (m_updateMode == UpdateMode::Static)
         {
@@ -408,24 +394,21 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::TickResolutionSettle()
     {
-        if (!m_resolutionChangePending)
+        // Commit the one and only reallocation at the final size once the slider has settled.
+        if (const AZStd::optional<uint32_t> settled = m_resolutionThrottle.AdvanceFrame())
         {
-            return;
+            ApplyFaceResolution(*settled);
         }
-
-        // Wait until the requested resolution has held steady for a few frames (slider released)
-        // before committing the one and only reallocation at the final size.
-        if (m_resolutionSettleFrames < ResolutionSettleFrameThreshold)
-        {
-            ++m_resolutionSettleFrames;
-            return;
-        }
-
-        ApplyFaceResolution();
     }
 
-    void GradientGIFeatureProcessor::SetUpdateMode(UpdateMode mode)
+    void GradientGIFeatureProcessor::SetUpdateMode(UpdateMode requestedMode)
     {
+        // GPU/Dynamic requires compute UAV cubemap support; fall back to Static if unavailable.
+        const UpdateMode mode =
+            GradientGI::ResolveUpdateMode(requestedMode, GradientGICubemapPass::IsGpuComputeSupported());
+        AZ_Warning("GradientGI", mode == requestedMode,
+            "GPU compute UAV cubemaps not supported. Staying in Static mode.");
+
         if (m_updateMode == mode)
         {
             // Same mode requested. In Dynamic mode, verify the pass is still healthy.
@@ -454,15 +437,6 @@ namespace AZ::Render
         // =================================================================
         else if (mode == UpdateMode::Dynamic)
         {
-            // Check platform support
-            if (!GradientGICubemapPass::IsGpuComputeSupported())
-            {
-                AZ_Warning("GradientGI", false,
-                    "GPU compute UAV cubemaps not supported. Staying in Static mode.");
-                m_updateMode = UpdateMode::Static;
-                return;
-            }
-
             // Cache scene SRG indices if not already done
             if (!m_sceneSrgIndicesCached)
             {

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/Feature/GradientGI/GradientGIFeatureProcessorInterface.h>
+#include <Atom/Feature/GradientGI/GradientGILogic.h>
 #include <Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -80,10 +81,10 @@ namespace AZ::Render
         // Resolution Scrub Debounce (both modes)
         // =====================================================================
 
-        //! Commit m_pendingFaceResolution into m_faceResolution and trigger the rebuild/realloc.
-        void ApplyFaceResolution();
+        //! Apply a face resolution into m_faceResolution and trigger the rebuild/realloc.
+        void ApplyFaceResolution(uint32_t value);
 
-        //! Per-frame: advance the settle counter and commit a resolution change once it stabilises.
+        //! Per-frame: advance the scrub throttle and apply a resolution change once it settles.
         void TickResolutionSettle();
 
         // =====================================================================
@@ -125,19 +126,14 @@ namespace AZ::Render
         uint32_t m_faceResolution = 64;   // size builds actually use; held steady during a scrub
 
         // --- Resolution scrub debounce ---------------------------------------------------
-        // Changing the resolution allocates a brand-new, differently sized tiled StreamingImage
-        // from the DX12 streaming pool (a reserved resource). Rebuilding a different size on every
-        // frame of a slider scrub churns the pool's tile allocations and crashes inside the DX12
-        // RHI (GetResourceTiling, Device.cpp). Colour is safe to rebuild live because every rebuild
-        // is the SAME size. So m_faceResolution is held steady during a scrub and only advanced to
-        // m_pendingFaceResolution once the slider settles -- only the final size is ever allocated.
-        // See SetFaceResolution / TickResolutionSettle / ApplyFaceResolution.
-        uint32_t m_pendingFaceResolution   = 64;     // latest requested size (may differ mid-scrub)
-        uint8_t  m_resolutionSettleFrames  = 0;      // frames the request has held steady
-        bool     m_resolutionChangePending = false;  // a settled commit is owed
-        bool     m_faceResolutionApplied   = false;  // first push (initial config) applies immediately
-
-        static constexpr uint8_t ResolutionSettleFrameThreshold = 3; // ~50ms @60fps after release
+        // A CPU/Static resolution change rebuilds a different-sized tiled StreamingImage from the
+        // DX12 streaming pool. Rebuilding a different size on every frame of a slider scrub churns
+        // the pool's tile allocations and crashes inside the DX12 RHI (GetResourceTiling,
+        // Device.cpp). Colour is safe to rebuild live because every rebuild is the SAME size. The
+        // throttle holds m_faceResolution steady during a scrub and yields the final size only once
+        // the slider settles. See GradientGI::ResolutionScrubThrottle and SetFaceResolution.
+        GradientGI::ResolutionScrubThrottle m_resolutionThrottle;
+        bool                                m_faceResolutionApplied = false; // first push applies immediately
 
         // Detail texture layer (GPU/Dynamic mode). Resolved instance is resident; mapping/blend
         // codes match the component enums. Bound to the pass once, recombined cheaply on color edits.
