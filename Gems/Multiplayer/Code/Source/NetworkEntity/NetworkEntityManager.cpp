@@ -403,31 +403,36 @@ namespace Multiplayer
 
     void NetworkEntityManager::RemoveEntities()
     {
-        AZStd::vector<NetEntityId> removeList;
-        removeList.swap(m_removeList);
-        for (NetEntityId entityId : removeList)
+        // this removes entities locally, and from the tracking list in the network entity tracker.
+        // 
+
+        // First collect their entityIds and remove them from the tracker itself.
+        AZStd::vector<AZ::EntityId> removeEntityIds;
+        removeEntityIds.reserve(m_removeList.size());
+        for (const NetEntityId& entityId : m_removeList)
         {
             NetworkEntityHandle removeEntity = m_networkEntityTracker.Get(entityId);
             if (removeEntity != nullptr)
             {
-                // If we've spawned entities through @NetworkEntityManager::CreateEntitiesImmediate
-                // then we destroy those entities here by processing the removal list.
-                // Note that if we've spawned entities through @NetworkPrefabSpawnerComponent::SpawnPrefab
-                // we should instead use the SpawnableEntitiesManager to destroy them.
-
-                // Also of note, Deactivating an entity causes its children to also deactivate.
-                // In turn, deactivating a child will cause its NetBindComponent to remove itself from the NetworkEntityTracker.
-                // Which means it won't appear in this loop again.  This means we need to call DestroyGameEntityAndDescendants
-                // here, or we will miss inactive children.  Its either that, or run this loop in reverse order, since children are always
-                // spawned after parents.
-
-                // HOWEVER, working in reverse order would not solve the problem fully, since you can change the parent-child relationships
-                // after spawning, and doing so won't affect their order in this list, which would result in more housekeeping.  Instead,
-                // we just destroy them all here.
-                AzFramework::GameEntityContextRequestBus::Broadcast(
-                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants, removeEntity.GetEntity()->GetId());
-                m_networkEntityTracker.erase(entityId);
+                removeEntityIds.push_back(removeEntity.GetEntity()->GetId());
             }
+            m_networkEntityTracker.erase(entityId);
+        }
+        m_removeList.clear();
+
+        // Now, erase them from the "real" entity game local context, using just the cached
+        // entityIds.
+        // iterate over the entityIds in the removeEntityIds vector, in reverse.  The order won't
+        // actually cause problems no matter what order we do it in, but since entities tend to get
+        // added to the tracker from parent first, then child, reversing will more often than not
+        // remove children first, which causes less events to fire.  This is "free" to do, but
+        // actually trying to force this into the order of the children will be more expensive
+        // than actually removing the entities in the wrong order, so don't bother actually searching
+        // first.
+        for (auto it = removeEntityIds.rbegin(); it != removeEntityIds.rend(); ++it)
+        {
+            AzFramework::GameEntityContextRequestBus::Broadcast(
+                &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, *it);
         }
     }
 
