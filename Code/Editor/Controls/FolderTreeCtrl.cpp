@@ -326,7 +326,7 @@ CFolderTreeCtrl::CTreeItem* CFolderTreeCtrl::CreateFolderItems(const QString& fo
     {
         QString currentFolder;
         QString fullpath;
-        const int splittedFoldersCount = splittedFolder.size();
+        const int splittedFoldersCount = static_cast<int>(splittedFolder.size());
         for (int idx = 0; idx < splittedFoldersCount; ++idx)
         {
             currentFolder = Path::RemoveBackslash(splittedFolder[idx]);
@@ -350,7 +350,7 @@ CFolderTreeCtrl::CTreeItem* CFolderTreeCtrl::CreateFolderItems(const QString& fo
 void CFolderTreeCtrl::RemoveEmptyFolderItems(const QString& folder)
 {
     QStringList splittedFolder = Path::SplitIntoSegments(folder);
-    const int splittedFoldersCount = splittedFolder.size();
+    const int splittedFoldersCount = static_cast<int>(splittedFolder.size());
     QString fullpath;
     for (int idx = 0; idx < splittedFoldersCount; ++idx)
     {

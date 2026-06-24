@@ -13,10 +13,8 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <FormLineEditWidget.h>
-#endif
 
 class QCompleter;
 class QPushButton;

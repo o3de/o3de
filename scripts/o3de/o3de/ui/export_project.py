@@ -6,7 +6,6 @@
 #
 
 import tkinter as tk
-import tkinter.tix as tkp
 from tkinter import ttk, filedialog, messagebox
 
 import os
@@ -20,7 +19,54 @@ EXPORT_SCRIPTS_PATH = pathlib.Path(__file__).parent.parent.parent / 'ExportScrip
 assert EXPORT_SCRIPTS_PATH.is_dir(), "Missing expected ExportScripts path"
 
 
-class MainWindow(tkp.Tk):
+class _ToolTip:
+    """Lightweight hover tooltip built on standard tkinter.
+
+    Provides the small subset of the tkinter.tix Balloon API this window
+    relies on (bind_widget(widget, balloonmsg=...)) so the export settings
+    UI no longer depends on tkinter.tix, which the Python standard library
+    has deprecated in favor of tkinter.ttk.
+    """
+
+    def __init__(self, master, delay_ms=600):
+        self._master = master
+        self._delay_ms = delay_ms
+        self._after_id = None
+        self._tip_window = None
+
+    def bind_widget(self, widget, balloonmsg='', **_kwargs):
+        widget.bind('<Enter>', lambda event: self._schedule(widget, balloonmsg), add='+')
+        widget.bind('<Leave>', lambda event: self._hide(), add='+')
+        widget.bind('<ButtonPress>', lambda event: self._hide(), add='+')
+
+    def _schedule(self, widget, message):
+        self._unschedule()
+        if message:
+            self._after_id = self._master.after(self._delay_ms, lambda: self._show(widget, message))
+
+    def _unschedule(self):
+        if self._after_id is not None:
+            self._master.after_cancel(self._after_id)
+            self._after_id = None
+
+    def _show(self, widget, message):
+        self._hide()
+        x = widget.winfo_rootx() + 20
+        y = widget.winfo_rooty() + widget.winfo_height() + 2
+        self._tip_window = tk.Toplevel(widget)
+        self._tip_window.wm_overrideredirect(True)
+        self._tip_window.wm_geometry(f'+{x}+{y}')
+        label = ttk.Label(self._tip_window, text=message, relief='solid', borderwidth=1, padding=(4, 2))
+        label.pack()
+
+    def _hide(self):
+        self._unschedule()
+        if self._tip_window is not None:
+            self._tip_window.destroy()
+            self._tip_window = None
+
+
+class MainWindow(tk.Tk):
     """
     Main Widget to manage the settings for Project Export based on an export config
     """
@@ -56,7 +102,7 @@ class MainWindow(tkp.Tk):
         self.main_frame = tk.Frame(self)
         self.main_frame.columnconfigure(0, weight=1)
         self.main_frame.grid(sticky=tk.NSEW)
-        self.tool_tip = tkp.Balloon(self.main_frame)
+        self.tool_tip = _ToolTip(self.main_frame)
 
         if not self.is_sdk:
             self.init_source_engine_build_options(self.main_frame)

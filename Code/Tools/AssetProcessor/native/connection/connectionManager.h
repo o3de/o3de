@@ -8,8 +8,10 @@
 #ifndef CONNECTIONMANAGER_H
 #define CONNECTIONMANAGER_H
 
-#if !defined(Q_MOC_RUN)
+#include "native/utilities/AssetUtilEBusHelper.h"
+
 #include <AzCore/std/function/function_fwd.h> // <functional> complains about exception handling and is not okay to mix with azcore/etc stuff.
+
 #include <QReadWriteLock>
 #include <QMap>
 #include <QMultiMap>
@@ -17,9 +19,7 @@
 #include <QString>
 #include <QHostAddress>
 #include <QStringListModel>
-#include "native/utilities/AssetUtilEBusHelper.h"
 #include <QAbstractItemModel>
-#endif
 
 class Connection;
 //! defines the callback type for registering handlers to handle messages coming from outside into Asset Processor.

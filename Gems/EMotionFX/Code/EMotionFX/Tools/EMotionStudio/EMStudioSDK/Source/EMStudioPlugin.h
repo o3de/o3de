@@ -8,15 +8,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/MemoryFile.h>
 #include <Integration/Rendering/RenderFlag.h>
 #include "EMStudioConfig.h"
+
 #include <QString>
 #include <QObject>
 #include <QFile>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QMenu)
 

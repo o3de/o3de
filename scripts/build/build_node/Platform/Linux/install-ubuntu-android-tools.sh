@@ -44,7 +44,7 @@ then
 fi
 rm -f /tmp/commandlinetools-linux.zip
 
-for i in "cmdline-tools;latest" "build-tools;30.0.2" "platform-tools" "platforms;android-24" "ndk;25.2.9519653"
+for i in "cmdline-tools;latest" "build-tools;30.0.2" "platform-tools" "platforms;android-24" "ndk;25.2.9519653" "ndk;27.3.13750724"
 do
     echo "Installing official $i"
     yes | /opt/android-sdk-linux/cmdline-tools/tools/bin/sdkmanager --install "$i"
@@ -55,11 +55,11 @@ do
     fi
 done
 
-# Add the path and necessary environment variable to build android based on NDK 25.2.9519653
+# Add the path and necessary environment variable to build android based on NDK 27.3.13750724
 if [[ -d /etc/profile.d ]]; then
     mkdir /etc/profile.d
 fi
 echo 'export PATH="$PATH:/opt/android-sdk-linux/cmdline-tools/latest/bin/"' > /etc/profile.d/android-env.sh
-echo "export LY_NDK_DIR=/opt/android-sdk-linux/ndk/25.2.9519653" >> /etc/profile.d/android-env.sh
+echo "export LY_NDK_DIR=/opt/android-sdk-linux/ndk/27.3.13750724" >> /etc/profile.d/android-env.sh
 chmod a+x /etc/profile.d/android-env.sh
 

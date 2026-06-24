@@ -28,9 +28,9 @@ namespace AZ
             Instance& instance = Instance::GetInstance();
 
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
-            if (auto wlConnection = AzFramework::WaylandConnectionManagerInterface::Get())
+            if (auto displayProvider = AzFramework::WaylandDisplayProviderInterface::Get())
             {
-                wl_display* display = wlConnection->GetWaylandDisplay();
+                wl_display* display = displayProvider->GetWaylandDisplay();
                 if(display == nullptr){
                     AZ_Error("AtomVulkan_RHI", display!=nullptr, "Unable to get Wayland Display.");
                     return RHI::ResultCode::Fail;

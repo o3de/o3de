@@ -10,8 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
-
 #include <AzCore/base.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityBus.h>
@@ -33,9 +31,6 @@
 #include <QRect>
 #include <QStyledItemDelegate>
 #include <QWidget>
-#endif
-
-#pragma once
 
 namespace AzToolsFramework
 {

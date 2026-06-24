@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 
-#include <Source/LUA/moc_LUAEditorView.cpp>
 #include "LUAEditorContextMessages.h"
 #include "LUAEditorContextInterface.h"
 #include "LUAEditorViewMessages.h"
@@ -1023,7 +1022,7 @@ namespace LUAEditor
             newText.append(block.text());
             newText.append("\n");
         });
-        currText.remove(currText.count() - 1, 1);
+        currText.remove(currText.length() - 1, 1);
 
         if (startLine == 0)
         {

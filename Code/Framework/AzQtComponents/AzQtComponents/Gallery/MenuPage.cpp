@@ -92,4 +92,3 @@ MenuPage::~MenuPage()
 {
 }
 
-#include <Gallery/moc_MenuPage.cpp>

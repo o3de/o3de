@@ -8,12 +8,10 @@
 
 #pragma once
 
-
-#if !defined(Q_MOC_RUN)
 #include <AzCore/RTTI/TypeInfo.h>
+
 #include <QFrame>
 #include <QWidget>
-#endif
 
 
 // Forward declarations

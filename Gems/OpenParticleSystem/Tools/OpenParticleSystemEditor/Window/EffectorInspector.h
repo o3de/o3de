@@ -7,7 +7,7 @@
  */
 
 #pragma once
-#if !defined(Q_MOC_RUN)
+
 #include <Window/ui_EffectorInspector.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -21,7 +21,6 @@
 #include <EventHandlerWidgets.h>
 #include <Document/ParticleDocumentBus.h>
 #include <AzCore/Math/Vector3.h>
-#endif
 
 namespace Ui
 {
@@ -89,6 +88,8 @@ namespace OpenParticleSystemEditor
         bool AfterVortexForceModified(AzToolsFramework::InstanceDataNode* pNode);
         bool AfterSpawnRotationModified(AzToolsFramework::InstanceDataNode* pNode);
         bool AfterVector3Modifed(AzToolsFramework::InstanceDataNode* pNode, AZ::u8 classIndex, AZ::u8 moduleIndex);
+
+        void CheckWarningText();
 
     private:
         AZ::SerializeContext* m_serializeContext = nullptr;

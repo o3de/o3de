@@ -12,6 +12,7 @@
 #include <QActionEvent>
 #include <QHBoxLayout>
 #include <QToolButton>
+#include <QMenu>
 
 namespace AzQtComponents
 {
@@ -100,4 +101,3 @@ namespace AzQtComponents
     }
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_TabWidgetActionToolBar.cpp"

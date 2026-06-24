@@ -7,13 +7,13 @@
 #
 
 set(FILES
+    ActionOutput.h
+    ActionOutput.cpp
     EditorCommon.h
     EditorCommon.cpp
     EditorCommonAPI.h
-    ActionOutput.h
-    ActionOutput.cpp
-    DockTitleBarWidget.cpp
     DockTitleBarWidget.h
+    DockTitleBarWidget.cpp
     SaveUtilities/AsyncSaveRunner.h
     SaveUtilities/AsyncSaveRunner.cpp
 )

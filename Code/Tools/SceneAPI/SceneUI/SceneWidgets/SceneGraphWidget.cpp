@@ -96,7 +96,7 @@ namespace AZ
                 ui->m_selectionTree->setHeaderHidden(true);
                 ui->m_selectionTree->setModel(m_treeModel.data());
 
-                connect(ui->m_selectAllCheckBox, &QCheckBox::stateChanged, this, &SceneGraphWidget::OnSelectAllCheckboxStateChanged);
+                connect(ui->m_selectAllCheckBox, &QCheckBox::checkStateChanged, this, &SceneGraphWidget::OnSelectAllCheckboxStateChanged);
                 connect(m_treeModel.data(), &QStandardItemModel::itemChanged, this, &SceneGraphWidget::OnTreeItemStateChanged);
                 connect(ui->m_selectionTree->selectionModel(), &QItemSelectionModel::currentChanged, this, &SceneGraphWidget::OnTreeItemChanged);
             }
@@ -523,4 +523,3 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-#include <SceneWidgets/moc_SceneGraphWidget.cpp>

@@ -66,7 +66,7 @@ Surface EvaluateSurface_StandardPBR(
     {
         if(o_clearCoat_enabled)
         {
-            real3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? real3x3(params.m_uvMatrix) : CreateIdentity3x3_real();
+            real3x3 uvMatrix = params.m_clearCoatNormalMapUvIndex == 0 ? real3x3(params.m_uvMatrixRow0.xyz, params.m_uvMatrixRow1.xyz, params.m_uvMatrixRow2.xyz) : CreateIdentity3x3_real();
             GetClearCoatInputs(GetMaterialTexture(params.m_clearCoatInfluenceMap), uvs[params.m_clearCoatInfluenceMapUvIndex], real(params.m_clearCoatFactor), o_clearCoat_factor_useTexture,
                                GetMaterialTexture(params.m_clearCoatRoughnessMap), uvs[params.m_clearCoatRoughnessMapUvIndex], real(params.m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
                                GetMaterialTexture(params.m_clearCoatNormalMap),    uvs[params.m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, real(params.m_clearCoatNormalStrength),

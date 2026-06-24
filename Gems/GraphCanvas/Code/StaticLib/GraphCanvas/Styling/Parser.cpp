@@ -643,7 +643,8 @@ namespace GraphCanvas
             QFile resource(QString::fromUtf8(json.c_str()));
             if (resource.exists())
             {
-                resource.open(QIODevice::ReadOnly);
+                [[maybe_unused]] const bool res = resource.open(QIODevice::ReadOnly);
+                AZ_Assert(res, "Failed to open resource file");
                 document.Parse(resource.readAll().data());
             }
             else
@@ -861,8 +862,7 @@ namespace GraphCanvas
                     else
                     {
                         // Check all available font families (from both the system and explicitly registered with the application)
-                        QFontDatabase fontDatabase;
-                        if (!fontDatabase.families().contains(valueStr))
+                        if (!QFontDatabase::families().contains(valueStr))
                         {
                             qWarning() << "Invalid font-family:" << valueStr;
                         }

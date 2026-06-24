@@ -218,6 +218,10 @@ namespace O3DE::ProjectManager
                 indexesChanged.append(modelIndex);
 
                 m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+                if (!gemInfo.m_altname.isEmpty())
+                {
+                    m_nameToIndexMap[gemInfo.m_altname] = modelIndex;
+                }
             }
         }
 
@@ -307,6 +311,10 @@ namespace O3DE::ProjectManager
             GemModel::SetIsAdded(*this, modelIndex, true);
 
             m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+            if (!gemInfo.m_altname.isEmpty())
+            {
+                m_nameToIndexMap[gemInfo.m_altname] = modelIndex;
+            }
 
             AZ_Warning("ProjectManager::GemCatalog", false,
                 "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",
@@ -380,7 +388,7 @@ namespace O3DE::ProjectManager
         for (auto iter = m_gemDependencyMap.begin(); iter != m_gemDependencyMap.end(); ++iter)
         {
             const QString& dependant = iter.key();
-            for (const QModelIndex& dependency : iter.value())
+            for (const QPersistentModelIndex& dependency : iter.value())
             {
                 const QString& dependencyName = dependency.data(RoleName).toString();
                 if (!m_gemReverseDependencyMap.contains(dependencyName))
@@ -616,7 +624,7 @@ namespace O3DE::ProjectManager
     bool GemModel::HasDependentGems(const QModelIndex& modelIndex) const
     {
         auto dependentGems = GatherDependentGems(modelIndex);
-        for (const QModelIndex& dependency : dependentGems)
+        for (const QPersistentModelIndex& dependency : dependentGems)
         {
             if (IsAdded(dependency))
             {
@@ -638,7 +646,7 @@ namespace O3DE::ProjectManager
 
         if (isAdded)
         {
-            for (const QModelIndex& dependency : dependencies)
+            for (const QPersistentModelIndex& dependency : dependencies)
             {
                 if (!IsAddedDependency(dependency))
                 {
@@ -713,7 +721,7 @@ namespace O3DE::ProjectManager
         // Select a valid row if currently selected row was removed
         if (selectedRowRemoved)
         {
-            for (const QModelIndex& index : m_nameToIndexMap)
+            for (const QPersistentModelIndex& index : m_nameToIndexMap)
             {
                 if (index.isValid())
                 {
@@ -739,7 +747,7 @@ namespace O3DE::ProjectManager
             GemModel* gemModel = GetSourceModel(&model);
             AZ_Assert(gemModel, "Failed to obtain GemModel");
             auto dependencies = gemModel->GatherGemDependencies(modelIndex);
-            for (const QModelIndex& dependency : dependencies)
+            for (const QPersistentModelIndex& dependency : dependencies)
             {
                 SetWasPreviouslyAddedDependency(*gemModel, dependency, true);
             }

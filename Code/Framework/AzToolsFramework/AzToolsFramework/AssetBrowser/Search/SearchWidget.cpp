@@ -60,7 +60,19 @@ namespace AzToolsFramework
                             groupFilter->SetAssetGroup(group);
 
                             AzQtComponents::SearchTypeFilter stFilter;
-                            stFilter.displayName = group;
+
+                            // Split "GS/Core" into category="GS", displayName="Core"
+                            int lastSlash = aznumeric_cast<int>(group.lastIndexOf('/'));
+                            if (lastSlash >= 0)
+                            {
+                                stFilter.category = group.left(lastSlash);
+                                stFilter.displayName = group.mid(lastSlash + 1);
+                            }
+                            else
+                            {
+                                stFilter.displayName = group;
+                            }
+
                             stFilter.metadata = QVariant::fromValue(FilterConstType(groupFilter));
 
                             filters.push_back(stFilter);
@@ -355,4 +367,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/Search/moc_SearchWidget.cpp"

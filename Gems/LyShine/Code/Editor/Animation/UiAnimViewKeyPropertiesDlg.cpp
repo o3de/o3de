@@ -353,4 +353,3 @@ void CUiAnimViewTrackPropsDlg::SetCurrKey(CUiAnimViewKeyHandle& keyHandle)
     }
 }
 
-#include <Animation/moc_UiAnimViewKeyPropertiesDlg.cpp>

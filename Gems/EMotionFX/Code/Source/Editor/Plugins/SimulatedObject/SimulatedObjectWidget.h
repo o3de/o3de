@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
@@ -17,7 +16,6 @@
 #include <Editor/SimulatedObjectModel.h>
 #include <MCore/Source/Command.h>
 #include <Source/Editor/ObjectEditor.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QPushButton)

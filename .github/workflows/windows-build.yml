@@ -49,7 +49,7 @@ env:
   CMAKE_C_COMPILER_LAUNCHER: C:\ProgramData\Chocolatey\bin\ccache.exe
   CMAKE_CXX_COMPILER_LAUNCHER: C:\ProgramData\Chocolatey\bin\ccache.exe
 
-# Note: All 3P Github Actions use the commit hash for security reasons 
+# Note: All 3P Github Actions use the commit hash for security reasons
 # Avoid using the tag version, which is vulnerable to supply chain attacks
 
 jobs:
@@ -167,7 +167,7 @@ jobs:
         if: ${{ steps.restore-artifact-cache.outcome == 'success' }}
         working-directory: ${{ env.DEV_DRIVE_WORKSPACE }}
         run: |
-          if (Test-Path ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar) {          
+          if (Test-Path ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar) {
             tar -xvpf ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
             rm ${{ env.DEV_DRIVE_WORKSPACE }}\cache.tar
             ccache --zero-stats --cleanup
@@ -182,19 +182,30 @@ jobs:
 
       - name: Configure generator/toolset env for CMake
         # Set the environment variables for the CMake generator and toolset depending on CMake version
+        #
+        # Guard behavior:
+        # - If msvc_platform_toolset is not provided, do NOT set CMAKE_GENERATOR_TOOLSET.
+        # - If msvc_platform_toolset is provided and msvc_toolset_version is NOT, set toolset to just "v143" (no version pin).
+        # - If both are provided and CMake >= 3.25, pin version via "v143,version=14.xx".
         run: |
           $cap = cmake -E capabilities | ConvertFrom-Json
           $maj = [int]$cap.version.major
           $min = [int]$cap.version.minor
 
-          echo "CMAKE_GENERATOR=Visual Studio 17 2022" >> $env:GITHUB_ENV 
+          echo "CMAKE_GENERATOR=Visual Studio 17 2022" >> $env:GITHUB_ENV
 
-          if ($maj -gt 3 -or ($maj -eq 3 -and $min -ge 25)) {
-            # CMake >= 3.25: support 'version='
-            echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }},version=${{ inputs.msvc_toolset_version }}" >> $env:GITHUB_ENV
-          } else {
-            # CMake 3.24: omit 'version='; MSBuild line is selected by msvc-dev-cmd
-            echo "CMAKE_GENERATOR_TOOLSET=${{ inputs.msvc_platform_toolset }}" >> $env:GITHUB_ENV
+          $platformToolset = "${{ inputs.msvc_platform_toolset }}"
+          $toolsetVersion  = "${{ inputs.msvc_toolset_version }}"
+
+          if (![string]::IsNullOrWhiteSpace($platformToolset)) {
+
+            if (($maj -gt 3 -or ($maj -eq 3 -and $min -ge 25)) -and ![string]::IsNullOrWhiteSpace($toolsetVersion)) {
+              # CMake >= 3.25: support 'version='
+              echo "CMAKE_GENERATOR_TOOLSET=$platformToolset,version=$toolsetVersion" >> $env:GITHUB_ENV
+            } else {
+              # CMake 3.24 (or no version requested): omit 'version='; MSBuild line is selected by msvc-dev-cmd
+              echo "CMAKE_GENERATOR_TOOLSET=$platformToolset" >> $env:GITHUB_ENV
+            }
           }
 
       - name: Install specific MSVC toolset
@@ -205,7 +216,12 @@ jobs:
             --installPath "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise" `
             --add "Microsoft.VisualStudio.Component.VC.${{ inputs.msvc_toolset_version }}.x86.x64" --quiet --wait
 
-      - name: Set MSBuild options
+      - name: Set MSBuild options (default toolset)
+        if: ${{ !inputs.msvc_toolset_version }}
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+
+      - name: Set MSBuild options (pinned toolset)
+        if: ${{ inputs.msvc_toolset_version }}
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
         with:
           toolset: ${{ inputs.msvc_toolset_version }}

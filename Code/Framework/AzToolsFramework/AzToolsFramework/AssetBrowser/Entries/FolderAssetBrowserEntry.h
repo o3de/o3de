@@ -37,6 +37,7 @@ namespace AzToolsFramework
 
             bool IsScanFolder() const;
             bool IsGemFolder() const;
+            bool IsProjectFolder() const;
             const AZ::Uuid& GetFolderUuid() const;
 
             static const FolderAssetBrowserEntry* GetFolderByUuid(const AZ::Uuid& folderUuid);
@@ -47,6 +48,7 @@ namespace AzToolsFramework
         private:
             bool m_isScanFolder = false;
             bool m_isGemFolder = false;
+            bool m_isProjectFolder = false;
             AZ::Uuid m_folderUuid;
 
             AZ_DISABLE_COPY_MOVE(FolderAssetBrowserEntry);

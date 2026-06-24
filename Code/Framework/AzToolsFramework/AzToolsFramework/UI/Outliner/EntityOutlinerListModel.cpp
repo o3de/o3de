@@ -273,8 +273,8 @@ namespace AzToolsFramework
         case Qt::ForegroundRole:
             {
                 // We use the parent's palette because the GUI Application palette is returning the wrong colors
-                auto parentWidgetPtr = static_cast<QWidget*>(QObject::parent());
-                return QBrush(parentWidgetPtr->palette().color(QPalette::Text));
+                if (auto parentWidgetPtr = static_cast<QWidget*>(QObject::parent()))
+                    return QBrush(parentWidgetPtr->palette().color(QPalette::Text));
             }
             break;
         case Qt::DecorationRole:
@@ -2261,4 +2261,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <UI/Outliner/moc_EntityOutlinerListModel.cpp>

@@ -186,7 +186,7 @@ namespace AZStd
 
         /// Constructs an object with initial content an object of type decay_t<ValueType>, direct-initialized from forward<ValueType>(val)
         template <typename ValueType, typename = enable_if_t<!is_same<decay_t<ValueType>, any>::value>>
-        explicit any(ValueType&& val, allocator alloc = allocator{})
+        any(ValueType&& val, allocator alloc = allocator())
             : any(alloc)
         {
             static_assert(std::is_copy_constructible<decay_t<ValueType>>::value

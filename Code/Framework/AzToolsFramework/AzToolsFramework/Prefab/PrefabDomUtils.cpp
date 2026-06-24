@@ -614,84 +614,91 @@ namespace AzToolsFramework
                 const AZStd::string containerEntityAlias(containerEntityAliasIt->value.GetString());
 
                 const auto entitiesIt = templateDomRef.FindMember(PrefabDomUtils::EntitiesName);
-                if (entitiesIt == templateDomRef.MemberEnd() || !entitiesIt->value.IsObject())
+                if (entitiesIt != templateDomRef.MemberEnd() && !entitiesIt->value.IsObject())
                 {
-                    AZ_Error("Prefab", false, "'%s' lacks 'Entities' container.", path.c_str());
+                    AZ_Error("Prefab", false, "'%s' 'Entities' should be an Object, but is not", path.c_str());
                     return false;
                 }
 
+                // it is valid to have no "entities" in a prefab.  
+                // Prefabs could be:  Empty: no instances, no entities
+                //                    Just references to other prefabs: Instances, but no entities
+                //                    Just plain loose entities of their own: Entities, no instances
                 bool result = true;
-                // Search through entities for their TransformComponents
-                for (auto entityIt = entitiesIt->value.MemberBegin(); entityIt != entitiesIt->value.MemberEnd(); ++entityIt)
+                if (entitiesIt != templateDomRef.MemberEnd())
                 {
-                    // More information for logs
-                    constexpr const auto unknownName = "[unknown]";
-                    AZStd::string entityAlias = unknownName;
-                    const auto entityAliasIt = entityIt->value.FindMember(PrefabDomUtils::EntityIdName);
-                    if (entityAliasIt != entityIt->value.MemberEnd() && entityAliasIt->value.IsString())
+                    // Search through entities for their TransformComponents
+                    for (auto entityIt = entitiesIt->value.MemberBegin(); entityIt != entitiesIt->value.MemberEnd(); ++entityIt)
                     {
-                        entityAlias = entityAliasIt->value.GetString();
-                    }
-                    AZStd::string entityName = unknownName;
-                    const auto entityNameIt = entityIt->value.FindMember("Name");
-                    if (entityNameIt != entityIt->value.MemberEnd() && entityNameIt->value.IsString())
-                    {
-                        entityName = entityNameIt->value.GetString();
-                    }
+                        // More information for logs
+                        constexpr const auto unknownName = "[unknown]";
+                        AZStd::string entityAlias = unknownName;
+                        const auto entityAliasIt = entityIt->value.FindMember(PrefabDomUtils::EntityIdName);
+                        if (entityAliasIt != entityIt->value.MemberEnd() && entityAliasIt->value.IsString())
+                        {
+                            entityAlias = entityAliasIt->value.GetString();
+                        }
+                        AZStd::string entityName = unknownName;
+                        const auto entityNameIt = entityIt->value.FindMember("Name");
+                        if (entityNameIt != entityIt->value.MemberEnd() && entityNameIt->value.IsString())
+                        {
+                            entityName = entityNameIt->value.GetString();
+                        }
 
-                    const auto componentsIt = entityIt->value.FindMember(PrefabDomUtils::ComponentsName);
-                    if (componentsIt == entityIt->value.MemberEnd() || !componentsIt->value.IsObject())
-                    {
-                        result = false;
-                        AZ_Error("Prefab", false, "'%s' lacks 'Components' container in Entity (%s, '%s').",
-                            path.c_str(), entityAlias.c_str(), entityName.c_str());
-                        continue;
-                    }
-
-                    // Search current entity object for TransformComponent looping through components
-                    for (auto componentIt = componentsIt->value.MemberBegin(); componentIt != componentsIt->value.MemberEnd();
-                         ++componentIt)
-                    {
-                        const auto componentsTypeIt = componentIt->value.FindMember(PrefabDomUtils::TypeName);
-                        if (componentsTypeIt == componentIt->value.MemberEnd() || !componentsTypeIt->value.IsString())
+                        const auto componentsIt = entityIt->value.FindMember(PrefabDomUtils::ComponentsName);
+                        if (componentsIt == entityIt->value.MemberEnd() || !componentsIt->value.IsObject())
                         {
                             result = false;
-                            AZStd::string componentName = componentIt->name.GetString();
-                            AZ_Error("Prefab", false, "'%s' lacks '$type' sub-object in a component object of Entity (%s, '%s').",
+                            AZ_Error("Prefab", false, "'%s' lacks 'Components' container in Entity (%s, '%s').",
                                 path.c_str(), entityAlias.c_str(), entityName.c_str());
                             continue;
                         }
 
-                        AZStd::string componentAlias(componentsTypeIt->value.GetString());
-
-
-                        if (!TransformComponentNames.contains(componentAlias))
+                        // Search current entity object for TransformComponent looping through components
+                        for (auto componentIt = componentsIt->value.MemberBegin(); componentIt != componentsIt->value.MemberEnd();
+                            ++componentIt)
                         {
-                            continue; // not the component we are looking for
-                        }
+                            const auto componentsTypeIt = componentIt->value.FindMember(PrefabDomUtils::TypeName);
+                            if (componentsTypeIt == componentIt->value.MemberEnd() || !componentsTypeIt->value.IsString())
+                            {
+                                result = false;
+                                AZStd::string componentName = componentIt->name.GetString();
+                                AZ_Error("Prefab", false, "'%s' lacks '$type' sub-object in a component object of Entity (%s, '%s').",
+                                    path.c_str(), entityAlias.c_str(), entityName.c_str());
+                                continue;
+                            }
+                            
+                            AZStd::string componentAlias(componentsTypeIt->value.GetString());
 
-                        constexpr const auto parentObjectName = "Parent Entity";
-                        auto parentIt = componentIt->value.FindMember(parentObjectName);
-                        if (parentIt == componentIt->value.MemberEnd() || !parentIt->value.IsString())
-                        {
-                            result = false;
-                            AZ_Error("Prefab", false, "'%s' lacks 'Parent Entity' object in TransformComponent of Entity (%s, '%s').",
-                                path.c_str(), entityAlias.c_str(), entityName.c_str());
-                            break; // one TransformComponent for an Entity -> invalid
-                        }
 
-                        if (AZStd::string(parentIt->value.GetString()).empty()) // parent link empty ?
-                        {
-                            // Re-link this entity under the ContainerEntity using its Alias
-                            parentIt->value.SetString(rapidjson::StringRef(containerEntityAlias.c_str()), templateDomRef.GetAllocator());
+                            if (!TransformComponentNames.contains(componentAlias))
+                            {
+                                continue; // not the component we are looking for
+                            }
 
-                            result = false; // report that changes were needed and made
-                            AZ_Error("Prefab", false,
-                                "'%s' lacks 'Parent Entity' value in TransformComponent of Entity (%s, '%s')"
-                                "\nEntity re-linked under the root container '%s'.",
-                                path.c_str(), entityAlias.c_str(), entityName.c_str(), containerEntityAlias.c_str());
+                            constexpr const auto parentObjectName = "Parent Entity";
+                            auto parentIt = componentIt->value.FindMember(parentObjectName);
+                            if (parentIt == componentIt->value.MemberEnd() || !parentIt->value.IsString())
+                            {
+                                result = false;
+                                AZ_Error("Prefab", false, "'%s' lacks 'Parent Entity' object in TransformComponent of Entity (%s, '%s').",
+                                    path.c_str(), entityAlias.c_str(), entityName.c_str());
+                                break; // one TransformComponent for an Entity -> invalid
+                            }
+
+                            if (AZStd::string(parentIt->value.GetString()).empty()) // parent link empty ?
+                            {
+                                // Re-link this entity under the ContainerEntity using its Alias
+                                parentIt->value.SetString(rapidjson::StringRef(containerEntityAlias.c_str()), templateDomRef.GetAllocator());
+
+                                result = false; // report that changes were needed and made 
+                                AZ_Error("Prefab", false,
+                                    "'%s' lacks 'Parent Entity' value in TransformComponent of Entity (%s, '%s')"
+                                    "\nEntity re-linked under the root container '%s'.",
+                                    path.c_str(), entityAlias.c_str(), entityName.c_str(), containerEntityAlias.c_str());
+                            }
+                            break; // single TransformComponent for an Entity -> evaluated
                         }
-                        break; // single TransformComponent for an Entity -> evaluated
                     }
                 }
                 return result;

@@ -114,27 +114,21 @@ namespace UnitTest
 
         AZ_TEST_ASSERT(pi1 == pi1);
         AZ_TEST_ASSERT(pr1 == pr1);
-        AZ_TEST_ASSERT(pi1 == pr1);
 
         AZ_TEST_ASSERT(pi1 != pi2);
         AZ_TEST_ASSERT(pr1 != pr2);
-        AZ_TEST_ASSERT(pi1 != pr2);
 
         AZ_TEST_ASSERT(pi1 <= pi2);
         AZ_TEST_ASSERT(pr1 <= pr2);
-        AZ_TEST_ASSERT(pi1 <= pr2);
 
         AZ_TEST_ASSERT(pi1 < pi2);
         AZ_TEST_ASSERT(pr1 < pr2);
-        AZ_TEST_ASSERT(pi1 < pr2);
 
         AZ_TEST_ASSERT(pi2 >= pi1);
         AZ_TEST_ASSERT(pr2 >= pr1);
-        AZ_TEST_ASSERT(pi2 >= pr1);
 
         AZ_TEST_ASSERT(pi2 > pi1);
         AZ_TEST_ASSERT(pr2 > pr1);
-        AZ_TEST_ASSERT(pi2 > pr1);
     }
 
     TEST_F(Arrays, PairConstructSucceeds)

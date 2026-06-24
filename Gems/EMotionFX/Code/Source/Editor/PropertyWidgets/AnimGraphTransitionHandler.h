@@ -8,16 +8,15 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <MCore/Source/CommandManagerCallback.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <EMotionFX/Source/AnimGraphObjectIds.h>
+
 #include <QWidget>
 #include <QPushButton>
 #include <QToolTip>
 #include <QVBoxLayout>
-#endif
 
 
 namespace EMotionFX

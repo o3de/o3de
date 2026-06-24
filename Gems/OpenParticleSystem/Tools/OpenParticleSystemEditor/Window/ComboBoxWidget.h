@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -18,7 +17,6 @@
 #include <ParticleCommonData.h>
 #include <QVBoxLayout>
 #include <QCoreApplication>
-#endif
 
 namespace OpenParticleSystemEditor
 {
@@ -67,6 +65,8 @@ namespace OpenParticleSystemEditor
             AZ::Data::Asset<AZ::RPI::MaterialAsset>* materialAsset,
             AZ::Data::Asset<AZ::RPI::ModelAsset>* modelAsset,
             AZ::Data::Asset<AZ::RPI::ModelAsset>* skeletonModelAsset);
+
+        bool IsMeshRenderer() const;
 
     private slots:
         void OnIndexChanged(const QString& curString);

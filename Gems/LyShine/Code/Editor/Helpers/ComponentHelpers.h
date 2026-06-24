@@ -8,24 +8,20 @@
 #pragma once
 
 #include "ComponentAssetHelpers.h"
-#include "Widgets/HierarchyWidget/TreeWidgetItemList.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utility/pair.h>
-#include <QList>
 
 class QWidget;
 class QAction;
-class HierarchyWidget;
 
 namespace ComponentHelpers
 {
     using EntityComponentPair = AZStd::pair<AZ::EntityId, AZ::TypeId>;
 
-    QList<QAction*> CreateAddComponentActions(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems, QWidget* parent);
     QAction* CreateRemoveComponentsAction(QWidget* parent);
     void UpdateRemoveComponentsAction(QAction* action);
     QAction* CreateCutComponentsAction(QWidget* parent);

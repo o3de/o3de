@@ -482,7 +482,7 @@ namespace EMStudio
         menu.setToolTipsVisible(true);
 
         bool instanceSelected = false;
-        const int selectedItemCount = items.count();
+        const int selectedItemCount = static_cast<int>(items.count());
         for (int i = 0; i < selectedItemCount; ++i)
         {
             if (items[i]->parent())

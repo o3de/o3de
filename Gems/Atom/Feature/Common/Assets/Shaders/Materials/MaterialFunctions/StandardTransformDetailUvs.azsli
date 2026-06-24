@@ -13,6 +13,8 @@ void TransformDetailUvs(const MaterialParameters params, in float2 IN[UvSetCount
     // the same transform to both UV sets because the detail map feature forces the same UV set to be used for all detail maps.
     // Note we might be able to combine these into a single UV similar to what Skin.materialtype does,
     // but we would need to address how it works with the parallax code below that indexes into the m_detailUV array.
-    OUT[0] = mul(params.m_detailUvMatrix, float3(IN[0], 1.0)).xy;
-    OUT[1] = mul(params.m_detailUvMatrix, float3(IN[1], 1.0)).xy;
+    float3 _duv0h = float3(IN[0], 1.0);
+    float3 _duv1h = float3(IN[1], 1.0);
+    OUT[0] = float2(dot(params.m_detailUvMatrixRow0.xyz, _duv0h), dot(params.m_detailUvMatrixRow1.xyz, _duv0h));
+    OUT[1] = float2(dot(params.m_detailUvMatrixRow0.xyz, _duv1h), dot(params.m_detailUvMatrixRow1.xyz, _duv1h));
 }

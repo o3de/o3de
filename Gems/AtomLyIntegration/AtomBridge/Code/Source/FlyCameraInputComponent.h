@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
-#include <Cry_Math.h>
+
 #include <AtomBridge/FlyCameraInputBus.h>
 
 namespace AZ
@@ -51,9 +53,9 @@ namespace AZ
             void OnMouseEvent(const AzFramework::InputChannel& inputChannel);
             void OnKeyboardEvent(const AzFramework::InputChannel& inputChannel);
             void OnGamepadEvent(const AzFramework::InputChannel& inputChannel);
-            void OnTouchEvent(const AzFramework::InputChannel& inputChannel, const Vec2& screenPosition);
-            void OnVirtualLeftThumbstickEvent(const AzFramework::InputChannel& inputChannel, const Vec2& screenPosition);
-            void OnVirtualRightThumbstickEvent(const AzFramework::InputChannel& inputChannel, const Vec2& screenPosition);
+            void OnTouchEvent(const AzFramework::InputChannel& inputChannel, const AZ::Vector2& screenPosition);
+            void OnVirtualLeftThumbstickEvent(const AzFramework::InputChannel& inputChannel, const AZ::Vector2& screenPosition);
+            void OnVirtualRightThumbstickEvent(const AzFramework::InputChannel& inputChannel, const AZ::Vector2& screenPosition);
 
             float GetViewWidth() const;
             float GetViewHeight() const;
@@ -73,13 +75,13 @@ namespace AZ
             bool m_isEnabled = true;
 
             // Run-time Properties
-            Vec3 m_movement = ZERO;
-            Vec2 m_rotation = ZERO;
+            AZ::Vector3 m_movement = AZ::Vector3::CreateZero(); ///< Movement per tick
+            AZ::Vector2 m_rotation = AZ::Vector2::CreateZero(); ///< Accumulated rotation input per tick
 
-            Vec2 m_leftDownPosition = ZERO;
+            AZ::Vector2 m_leftDownPosition = AZ::Vector2::CreateZero();
             AZ::Crc32 m_leftFingerId = UnknownInputChannelId;
 
-            Vec2 m_rightDownPosition = ZERO;
+            AZ::Vector2 m_rightDownPosition = AZ::Vector2::CreateZero();
             AZ::Crc32 m_rightFingerId = UnknownInputChannelId;
 
             int m_thumbstickTextureId = 0;

@@ -126,4 +126,3 @@ bool CCheckOutDialog::EnableForAll(bool isEnable)
     return bPrevEnable;
 }
 
-#include <moc_CheckOutDialog.cpp>

@@ -8,8 +8,8 @@ This file is being deprecated. relevant functions should be added to EditorPytho
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets, QtTest, QtCore
-from PySide2.QtCore import Qt
+from PySide6 import QtWidgets, QtTest, QtCore
+from PySide6.QtCore import Qt
 from editor_python_test_tools.utils import Report
 import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra

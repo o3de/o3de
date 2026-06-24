@@ -7,6 +7,8 @@
 #
 
 o3de_gem_setup("PhysX5")
+set(legacy_gem_name_alias "PhysX")
+
 get_property(v_hacd_gem_root GLOBAL PROPERTY "@GEMROOT:PhysXCommon@")
 list(APPEND CMAKE_MODULE_PATH ${v_hacd_gem_root}/3rdParty)
 
@@ -53,6 +55,7 @@ ly_add_target(
         PRIVATE
             Gem::LmbrCentral.API
 )
+ly_create_alias(NAME ${legacy_gem_name_alias}.Static NAMESPACE Gem TARGETS Gem::${gem_name}.Static)
 
 ly_add_target(
     NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
@@ -76,6 +79,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
+ly_create_alias(NAME ${legacy_gem_name_alias} NAMESPACE Gem TARGETS Gem::${gem_name})
 
 # Inject the gem name into the Module source file
 if(PAL_TRAIT_PHYSX_SUPPORTED)
@@ -100,6 +104,10 @@ endif()
 ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
+
+ly_create_alias(NAME ${legacy_gem_name_alias}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${legacy_gem_name_alias}.Servers NAMESPACE Gem TARGETS Gem::${gem_name})
+ly_create_alias(NAME ${legacy_gem_name_alias}.Unified NAMESPACE Gem TARGETS Gem::${gem_name})
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -143,6 +151,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             AZ::SceneCore
     )
+    ly_create_alias(NAME ${legacy_gem_name_alias}.Editor.Static NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.Static)
 
     ly_add_target(
         NAME ${gem_name}.Editor GEM_MODULE
@@ -165,10 +174,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::${gem_name}.Editor.Static
     )
+    ly_create_alias(NAME ${legacy_gem_name_alias}.Editor NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
     # use the ${gem_name}.Editor module in dev tools:
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
     ly_create_alias(NAME ${gem_name}.Tools    NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${legacy_gem_name_alias}.Builders NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
+    ly_create_alias(NAME ${legacy_gem_name_alias}.Tools NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
 endif()
 

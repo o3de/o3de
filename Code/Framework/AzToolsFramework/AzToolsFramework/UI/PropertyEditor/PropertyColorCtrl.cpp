@@ -8,6 +8,7 @@
 #include "PropertyColorCtrl.hxx"
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
+#include <AzQtComponents/Components/Widgets/LineEditRevertHandler.h>
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <AzQtComponents/Utilities/ColorUtilities.h>
 #include <QSlider>
@@ -16,7 +17,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 // 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QHBoxLayout>
 // qpainter.h(465): warning C4251: 'QPainter::d_ptr': class 'QScopedPointer<QPainterPrivate,QScopedPointerDeleter<T>>' needs to have dll-interface to be used by clients of class 'QPainter'
-#include <QPainter> 
+#include <QPainter>
 AZ_POP_DISABLE_WARNING
 #include <QToolButton>
 #include <QRegularExpressionValidator>
@@ -71,6 +72,8 @@ namespace AzToolsFramework
         connect(m_colorEdit, SIGNAL(editingFinished()), this, SLOT(OnEditingFinished()));
         connect(m_colorEdit, SIGNAL(returnPressed()), this, SLOT(OnEditingFinished()));
         connect(m_colorEdit, SIGNAL(textEdited(const QString&)), this, SLOT(OnTextEdited(const QString&)));
+
+        new AzQtComponents::LineEditRevertHandler(m_colorEdit);
     }
 
     PropertyColorCtrl::~PropertyColorCtrl()
@@ -395,10 +398,10 @@ namespace AzToolsFramework
         AZ_UNUSED(node);
         AZ::Vector4 asVector4 = static_cast<AZ::Vector4>(instance);
         QColor asQColor;
-        asQColor.setRedF((qreal)asVector4.GetX());
-        asQColor.setGreenF((qreal)asVector4.GetY());
-        asQColor.setBlueF((qreal)asVector4.GetZ());
-        asQColor.setAlphaF((qreal)asVector4.GetW());
+        asQColor.setRedF(asVector4.GetX());
+        asQColor.setGreenF(asVector4.GetY());
+        asQColor.setBlueF(asVector4.GetZ());
+        asQColor.setAlphaF(asVector4.GetW());
         GUI->setValue(asQColor);
         return false;
     }
@@ -437,9 +440,9 @@ namespace AzToolsFramework
         AZ_UNUSED(node);
         AZ::Vector3 asVector3 = static_cast<AZ::Vector3>(instance);
         QColor asQColor;
-        asQColor.setRedF((qreal)asVector3.GetX());
-        asQColor.setGreenF((qreal)asVector3.GetY());
-        asQColor.setBlueF((qreal)asVector3.GetZ());
+        asQColor.setRedF(asVector3.GetX());
+        asQColor.setGreenF(asVector3.GetY());
+        asQColor.setBlueF(asVector3.GetZ());
         GUI->setValue(asQColor);
         return false;
     }
@@ -455,4 +458,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/PropertyEditor/moc_PropertyColorCtrl.cpp"

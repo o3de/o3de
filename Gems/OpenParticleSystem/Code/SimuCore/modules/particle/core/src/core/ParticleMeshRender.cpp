@@ -15,10 +15,10 @@
 namespace SimuCore::ParticleCore {
     ParticleMeshRender::~ParticleMeshRender()
     {
-        for (auto& view : bufferViews) {
-            ParticleDriver::bufferDestroyFn(gDriver, view.second.buffer);
+        for (auto& view : instanceBufferViews) {
+            ParticleDriver::bufferDestroyFn(m_driver, view.second.buffer);
         }
-        gDriver = nullptr;
+        m_driver = nullptr;
     }
 
     AZ::u32 ParticleMeshRender::DataSize() const
@@ -26,59 +26,65 @@ namespace SimuCore::ParticleCore {
         return sizeof(MeshConfig);
     }
 
-    static void UpdateParticle(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<ParticleMeshVertex>& vb,
-            AZStd::vector<AZ::Vector3>& positionBuffer)
+    static void UpdateParticle(const ParticlePool& pool, const WorldInfo& world,
+            AZStd::vector<ParticleMeshInstanceData>& instanceData, AZStd::vector<AZ::Vector3>& positionBuffer)
     {
         const Particle* particle = pool.ParticleData().data();
-        ParticleMeshVertex* meshInfo = vb.data();
+        ParticleMeshInstanceData* instanceInfo = instanceData.data();
         for (AZ::u32 i = 0; i < pool.Alive(); ++i) {
             const Particle& curr = particle[i];
-            if (curr.hasLightEffect) {
+            if (i < positionBuffer.size() && curr.hasLightEffect) {
                 positionBuffer[i] = curr.globalPosition;
             }
-            meshInfo[i].position = curr.globalPosition - world.emitterTransform.GetTranslation();
-            meshInfo[i].color = curr.color;
-            meshInfo[i].scale = curr.scale;
+            const AZ::Vector3 offset = curr.globalPosition - world.emitterTransform.GetTranslation();
             AZ::Vector3 initAxis(curr.rotation.GetX(), curr.rotation.GetY(), curr.rotation.GetZ());
-            meshInfo[i].initRotation = initAxis.IsClose(AZ::Vector3::CreateZero()) ? AZ::Vector4(initAxis, 0.f) : curr.rotation;
+            const AZ::Vector4 initRotation = initAxis.IsClose(AZ::Vector3::CreateZero()) ? AZ::Vector4(initAxis, 0.f) : curr.rotation;
             AZ::Vector3 rotateAxis(curr.rotationVector.GetX(), curr.rotationVector.GetY(), curr.rotationVector.GetZ());
-            meshInfo[i].rotationVector = rotateAxis.IsClose(AZ::Vector3::CreateZero())
+            const AZ::Quaternion rotationVector = rotateAxis.IsClose(AZ::Vector3::CreateZero())
                 ? AZ::Quaternion(rotateAxis, 0.f)
                 : AZ::Quaternion(rotateAxis, AZ::DegToRad(curr.rotationVector.GetW()));
+
+            instanceInfo[i].offset = AZ::Vector4(offset, 0.0f);
+            instanceInfo[i].color = curr.color;
+            instanceInfo[i].scale = AZ::Vector4(curr.scale, 0.0f);
+            instanceInfo[i].initRotation = initRotation;
+            instanceInfo[i].rotationVector = rotationVector;
+            instanceInfo[i].hasInstanceData = 1;
         }
     }
 
     void ParticleMeshRender::UpdateBuffer(const ParticlePool& pool, const WorldInfo& world, AZStd::vector<AZ::Vector3>& positionBuffer)
     {
-        auto& bufferView = bufferViews[world.viewKey.v];
-        auto& vb = vbs[world.viewKey.v];
+        auto& instanceBufferView = instanceBufferViews[world.viewKey.v];
+        auto& instanceVb = instanceData[world.viewKey.v];
 
         bool reCreate = false;
-        if (pool.Alive() > vb.size()) {
+        if (pool.Alive() > instanceVb.size()) {
             particleSize = pool.Size();
-            vb.resize(particleSize);
-            ParticleDriver::bufferDestroyFn(gDriver, bufferView.buffer);
+            instanceVb.resize(particleSize);
+            ParticleDriver::bufferDestroyFn(m_driver, instanceBufferView.buffer);
             reCreate = true;
         }
-        UpdateParticle(pool, world, vb, positionBuffer);
+        UpdateParticle(pool, world, instanceVb, positionBuffer);
 
-        if (reCreate || bufferView.buffer.data.ptr == nullptr) {
+        if (reCreate || instanceBufferView.buffer.data.ptr == nullptr) {
             BufferCreate info = {};
-            info.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshVertex));
-            info.data = reinterpret_cast<const AZ::u8*>(vb.data());
-            info.usage = BufferUsage::VERTEX;
+            info.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshInstanceData));
+            info.elementSize = static_cast<AZ::u32>(sizeof(ParticleMeshInstanceData));
+            info.data = reinterpret_cast<const AZ::u8*>(instanceVb.data());
+            info.usage = BufferUsage::STRUCTURED;
             info.memory = MemoryType::DYNAMIC;
-            ParticleDriver::bufferCreateFn(gDriver, info, bufferView.buffer);
-            bufferView.offset = 0;
-            bufferView.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshVertex));
-            bufferView.stride = sizeof(ParticleMeshVertex);
+            ParticleDriver::bufferCreateFn(m_driver, info, instanceBufferView.buffer);
+            instanceBufferView.offset = 0;
+            instanceBufferView.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshInstanceData));
+            instanceBufferView.stride = sizeof(ParticleMeshInstanceData);
         } else {
             BufferUpdate info = {};
-            info.usage = BufferUsage::VERTEX;
+            info.usage = BufferUsage::STRUCTURED;
             info.memory = MemoryType::DYNAMIC;
-            info.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshVertex));
-            info.data = reinterpret_cast<const AZ::u8*>(vb.data());
-            ParticleDriver::bufferUpdateFn(gDriver, info, bufferView.buffer);
+            info.size = particleSize * static_cast<AZ::u32>(sizeof(ParticleMeshInstanceData));
+            info.data = reinterpret_cast<const AZ::u8*>(instanceVb.data());
+            ParticleDriver::bufferUpdateFn(m_driver, info, instanceBufferView.buffer);
         }
     }
 
@@ -89,13 +95,13 @@ namespace SimuCore::ParticleCore {
             return;
         }
         const MeshConfig& config = *reinterpret_cast<const MeshConfig*>(data);
-        gDriver = driver;
+        m_driver = driver;
         UpdateBuffer(pool, world, item.positionBuffer);
 
         item.type = RenderType::MESH;
         item.drawArgs.type = DrawType::INDEXED;
         item.drawArgs.indexed.instanceCount = pool.Alive();
-        item.vertexBuffer = bufferViews[world.viewKey.v];
+        item.instanceBuffer = instanceBufferViews[world.viewKey.v];
         SpriteVariantKeySetFacing(item.variantKey, config.facing);
     }
 }

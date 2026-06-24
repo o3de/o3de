@@ -26,14 +26,17 @@ namespace AssetProcessor
                 , m_sourceFile(sourceFile)
                 , m_task(task)
             {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request started builder [%s] task (%s) %s \n",
-                    m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
+                // Note that this message and the following message may be useful in debugging job runs and builder timeouts
+                // but spew before and after every single job, cluttering the log.  Send to AssetProcessor::ConsoleChannel if you want
+                // to debug, but otherwise, leave as-is to avoid STDOUT clutter.  (They still end up in the log)
+                AZ_TracePrintf("Builder::RunJob", "Request started builder [%s - %u] task (%s) %s \n",
+                    m_builder.UuidString().c_str(), m_builder.GetConnectionId(), m_task.c_str(), m_sourceFile.c_str());
             }
 
             ~BuildTracker()
             {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Request stopped builder [%s] task (%s) %s \n",
-                    m_builder.UuidString().c_str(), m_task.c_str(), m_sourceFile.c_str());
+                AZ_TracePrintf("Builder::RunJob", "Request stopped builder [%s - %u] task (%s) %s \n",
+                    m_builder.UuidString().c_str(), m_builder.GetConnectionId(), m_task.c_str(), m_sourceFile.c_str());
             }
 
             const Builder& m_builder;

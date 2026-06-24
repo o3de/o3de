@@ -71,7 +71,7 @@ void QtViewport::dragEnterEvent(QDragEnterEvent* event)
         // new bus-based way of doing it (install a listener!)
         using namespace AzQtComponents;
         ViewportDragContext context;
-        BuildDragDropContext(context, GetViewportId(), event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->position().toPoint());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::DragEnter, event, context);
     }
 }
@@ -94,7 +94,7 @@ void QtViewport::dragMoveEvent(QDragMoveEvent* event)
         // new bus-based way of doing it (install a listener!)
         using namespace AzQtComponents;
         ViewportDragContext context;
-        BuildDragDropContext(context, GetViewportId(), event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->position().toPoint());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::DragMove, event, context);
     }
 }
@@ -110,19 +110,19 @@ void QtViewport::dropEvent(QDropEvent* event)
     // first use the legacy pathway, which assumes its always okay as long as any callback is installed
     if (m_dropCallback)
     {
-        m_dropCallback(this, event->pos().x(), event->pos().y(), m_dropCallbackCustom);
+        m_dropCallback(this, event->position().x(), event->position().y(), m_dropCallbackCustom);
         event->setAccepted(true);
     }
     else
     {
         // new bus-based way of doing it (install a listener!)
         ViewportDragContext context;
-        BuildDragDropContext(context, GetViewportId(), event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->position().toPoint());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::Drop, event, context);
         if (event->isAccepted())
         {
             // send focus to whatever window accepted it.  Its not necessarily this window, as it might be a child embedded in it.
-            QWidget* widget = qApp->widgetAt(event->pos());
+            QWidget* widget = qApp->widgetAt(event->position().toPoint());
             if (widget)
             {
                 widget->setFocus(Qt::MouseFocusReason);
@@ -576,7 +576,7 @@ void QtViewport::OnDragSelectRectangle(const QRect& rect, bool bNormalizeRect)
     float w = box.GetXExtent();
     float h = box.GetYExtent();
     char szNewStatusText[512];
-    sprintf_s(szNewStatusText, "X:%g Y:%g Z:%g  W:%g H:%g", org.x, org.y, org.z, w, h);
+    azsnprintf(szNewStatusText, AZ_ARRAY_SIZE(szNewStatusText), "X:%g Y:%g Z:%g  W:%g H:%g", org.x, org.y, org.z, w, h);
     GetIEditor()->SetStatusText(szNewStatusText);
 }
 
@@ -989,4 +989,3 @@ void QtViewport::setRay(QPoint& vp, Vec3& raySrc, Vec3& rayDir)
     m_rayDir = rayDir;
 }
 
-#include <moc_Viewport.cpp>

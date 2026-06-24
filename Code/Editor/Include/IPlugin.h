@@ -43,7 +43,7 @@ struct IPlugin
     virtual void ShowAbout() = 0;
     //! Return the GUID of the plugin
     virtual const char* GetPluginGUID() = 0;
-    virtual DWORD GetPluginVersion() = 0;
+    virtual AZ::u32 GetPluginVersion() = 0;
     //! Return the human readable name of the plugin
     virtual const char* GetPluginName() = 0;
     //! Asks if the plugin can exit now. This might involve asking the user if he wants to save

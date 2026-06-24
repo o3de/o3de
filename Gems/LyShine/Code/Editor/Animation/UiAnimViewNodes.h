@@ -9,15 +9,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "UiAnimViewNode.h"
 #include "UiAnimViewSequence.h"
 #include "Undo/IUndoManagerListener.h"
 
 #include <LyShine/Animation/IUiAnimation.h>
+
 #include <QMap>
 #include <QTreeWidgetItem>
-#endif
 
 // forward declarations.
 class CUiAnimViewNode;
@@ -185,8 +184,6 @@ private:
     QScopedPointer<Ui::CUiAnimViewNodesCtrl> ui;
 };
 
-
-typedef CUiAnimViewNode* CUiAnimViewNodePtr;
-Q_DECLARE_METATYPE(CUiAnimViewNodePtr);
-QDataStream& operator<<(QDataStream& out, const CUiAnimViewNodePtr& obj);
-QDataStream& operator>>(QDataStream& in, CUiAnimViewNodePtr& obj);
+Q_DECLARE_METATYPE(CUiAnimViewNode*);
+QDataStream& operator<<(QDataStream& out, const CUiAnimViewNode*& obj);
+QDataStream& operator>>(QDataStream& in, CUiAnimViewNode*& obj);

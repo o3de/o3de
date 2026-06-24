@@ -162,5 +162,3 @@ void AssetEditorWindow::OnAssetSaveFailed(const AZStd::string& error)
     QMessageBox::warning(this, tr("Unable to Save Asset"),
         tr(error.c_str()), QMessageBox::Ok, QMessageBox::Ok);
 }
-
-#include <AssetEditor/moc_AssetEditorWindow.cpp>

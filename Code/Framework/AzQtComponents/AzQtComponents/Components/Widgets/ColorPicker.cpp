@@ -34,6 +34,7 @@
 // 4251: class needs to have dll-interface to be used by clients of class 
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
+#include <QActionGroup>
 #include <QEvent>
 #include <QResizeEvent>
 #include <QApplication>
@@ -341,7 +342,7 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     , m_defaultVForHsMode(0.85)
     , m_defaultLForHsMode(0.85)
 {
-    qRegisterMetaTypeStreamOperators<Palette>("AzQtComponents::Palette");
+    qRegisterMetaType<Palette>("AzQtComponents::Palette");
 
     setFocusPolicy(Qt::NoFocus);
 
@@ -390,7 +391,7 @@ ColorPicker::ColorPicker(ColorPicker::Configuration configuration, const QString
     Style::addClass(m_alphaSlider, "AlphaGradient");
     m_alphaSlider->setColorFunction([this](qreal position) {
         auto color = ToQColor(m_currentColorController->color());
-        color.setAlphaF(position);
+        color.setAlphaF(aznumeric_cast<float>(position));
         return color;
     });
     m_alphaSlider->setToolTipFunction([this](qreal position) {
@@ -1540,4 +1541,3 @@ void ColorPicker::hideEvent(QHideEvent* event)
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_ColorPicker.cpp"

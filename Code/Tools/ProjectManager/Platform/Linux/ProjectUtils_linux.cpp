@@ -21,7 +21,7 @@ namespace O3DE::ProjectManager
     {
         // The list of clang C/C++ compiler command lines to validate on the host Linux system
         // Only Ubuntu has clang++-<version> symlinks, other linux distros do not,
-        // so a empty string entry is added to the end
+        // so an empty string entry is added to the end
         const QStringList SupportedClangVersions = {"-13", "-12", "-11", "-10", "-9", "-8", "-7", "-6.0", ""};
 
         QChar GetPlatformPathEnvSeparator()
@@ -94,9 +94,15 @@ namespace O3DE::ProjectManager
             return AZ::Success(QString{ cmakeInstalledPath });
         }
 
-        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform([[maybe_unused]] const ProjectInfo& projectInfo)
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform(const ProjectInfo& projectInfo)
         {
-            // Query the version of cmake that is installed
+            // Validate that cmake is installed
+            auto cmakeProcessEnvResult = SetupCommandLineProcessEnvironment();
+            if (!cmakeProcessEnvResult.IsSuccess())
+            {
+                return AZ::Failure(cmakeProcessEnvResult.GetError());
+            }
+
             if (auto queryCmakeVersionQuery = FindSupportedCMake(); !queryCmakeVersionQuery.IsSuccess())
             {
                 return queryCmakeVersionQuery;

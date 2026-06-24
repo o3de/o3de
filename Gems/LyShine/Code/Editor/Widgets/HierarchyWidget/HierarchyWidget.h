@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Helpers/EntityHelpers.h"
 #include "HierarchyItem.h"
 #include "TreeWidgetItemList.h"
@@ -20,7 +19,6 @@
 #include <QAbstractItemView>
 #include <QStringList>
 #include <QTreeWidget>
-#endif
 
 class EditorWindow;
 class HierarchyItem;
@@ -119,7 +117,7 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* ev) override;
     QStringList mimeTypes() const override;
-    QMimeData* mimeData(const QList<QTreeWidgetItem*> items) const override;
+    QMimeData* mimeData(const QList<QTreeWidgetItem*>& items) const override;
 
 private:
     // EditorPickModeNotificationBus

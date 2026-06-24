@@ -58,7 +58,7 @@ CTrackViewNodesCtrl::CRecord::CRecord(CTrackViewNode* pNode /*= nullptr*/)
     if (pNode)
     {
         QVariant v;
-        v.setValue<CTrackViewNodePtr>(pNode);
+        v.setValue(pNode);
         setData(0, Qt::UserRole, v);
     }
 }
@@ -110,7 +110,7 @@ protected:
 
     void dragMoveEvent(QDragMoveEvent* event) override
     {
-        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->pos());
+        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->position().toPoint());
         if (!record)
         {
             return;
@@ -148,7 +148,7 @@ protected:
 
     void dropEvent(QDropEvent* event) override
     {
-        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->pos());
+        CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->position().toPoint());
         if (!record)
         {
             return;
@@ -265,7 +265,7 @@ private:
             QVariant v = roleDataMap[Qt::UserRole];
             if (v.isValid())
             {
-                CTrackViewNode* pNode = v.value<CTrackViewNodePtr>();
+                CTrackViewNode* pNode = v.value<CTrackViewNode*>();
                 if (pNode && pNode->GetNodeType() == eTVNT_AnimNode)
                 {
                     nodes << (CTrackViewAnimNode*)pNode;
@@ -278,13 +278,13 @@ private:
     CTrackViewNodesCtrl*    m_controller;
 };
 
-QDataStream& operator<<(QDataStream& out, const CTrackViewNodePtr& obj)
+QDataStream& operator<<(QDataStream& out, const CTrackViewNode*& obj)
 {
     out.writeRawData((const char*) &obj, sizeof(obj));
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, CTrackViewNodePtr& obj)
+QDataStream& operator>>(QDataStream& in, CTrackViewNode*& obj)
 {
     in.readRawData((char*) &obj, sizeof(obj));
     return in;
@@ -359,8 +359,7 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     m_currentMatchIndex = 0;
     m_matchCount = 0;
 
-    qRegisterMetaType<CTrackViewNodePtr>("CTrackViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CTrackViewNodePtr>("CTrackViewNodePtr");
+    qRegisterMetaType<CTrackViewNode*>("CTrackViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();
@@ -759,7 +758,7 @@ void CTrackViewNodesCtrl::OnSelectionChanged()
         sequence->ClearSelection();
 
         QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
-        int nCount = items.count();
+        int nCount = static_cast<int>(items.count());
         for (int i = 0; i < nCount; i++)
         {
             CRecord* record = (CRecord*)items.at(i);
@@ -1919,7 +1918,7 @@ void CTrackViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         return;
     }
 
-    UINT count = menu->actions().size();
+    UINT count = static_cast<int>(menu->actions().size());
     for (UINT i = 0; i < count; ++i)
     {
         QAction* a = menu->actions()[i];
@@ -1993,7 +1992,7 @@ void CTrackViewNodesCtrl::OnFilterChange(const QString& text)
 
             CTrackViewAnimNodeBundle animNodes = sequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {
@@ -2042,7 +2041,7 @@ void CTrackViewNodesCtrl::ShowNextResult()
 
             CTrackViewAnimNodeBundle animNodes = sequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {
@@ -2551,5 +2550,3 @@ void CTrackViewNodesCtrl::EraseNodeRecordRec(CTrackViewNode* pNode)
         EraseNodeRecordRec(pNode->GetChild(i));
     }
 }
-
-#include <TrackView/moc_TrackViewNodes.cpp>
