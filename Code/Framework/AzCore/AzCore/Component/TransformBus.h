@@ -349,18 +349,10 @@ namespace AZ
         virtual void OnParentTransformWillChange(AZ::Transform oldTransform, AZ::Transform newTransform) { (void)oldTransform; (void)newTransform; }
 
         //! Signals that a child was added to the entity.
-        //! @note BREAKING CHANGE (Entity Activation update, PR #19319): this fires only when the
-        //! parent/child relationship actually changes - at Init (entity created with a parent) and on
-        //! reparent - NOT when an entity is merely activated. The transform hierarchy now persists
-        //! across active-state changes; a child leaves the hierarchy only on reparent or destruction.
-        //! Previously, child add/remove were also emitted as entities activated/deactivated. Listeners
-        //! that relied on that (e.g. to track only "active" children) must now check entity state.
         //! @param child The entityId of the added child.
         virtual void OnChildAdded(EntityId child) { (void)child; }
 
         //! Signals that a child was removed from the entity.
-        //! @note See OnChildAdded for the PR #19319 behavior change: removal fires on reparent or
-        //! destruction, NOT on deactivation.
         //! @param child The entityId of the removed child.
         virtual void OnChildRemoved(EntityId child) { (void)child; }
     };

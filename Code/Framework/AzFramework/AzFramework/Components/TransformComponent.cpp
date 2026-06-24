@@ -565,16 +565,15 @@ namespace AzFramework
         }
     }
 
-    void TransformComponent::OnEntityActivated(const AZ::EntityId& parentEntityId)
+    void TransformComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& parentEntityId)
     {
         AZ_Assert(parentEntityId == m_parentId, "We expect to receive notifications only from the current parent!");
 
-        // The parent just became available/active. Re-process it so the parent transform is (re)bound,
-        // this transform is recomputed relative to it, and the parent-active layer + effective state
-        // are applied. A plain layer-flip would activate this entity but leave it mis-positioned when
-        // the parent was set before it existed (e.g. out-of-order network replication): m_parentTM
-        // would still be null and no relative recompute would have run.
-        ProcessParentEntity(parentEntityId);
+        m_entity->SetEffectiveActiveLayerByTypeIndex(GetParentActiveIndex(), true);
+        if (m_entity->GetState() == AZ::Entity::State::Init || m_entity->GetState() == AZ::Entity::State::Active)
+        {
+            m_entity->ApplyEffectiveActiveState();
+        }
     }
 
     void TransformComponent::OnEntityDeactivated([[maybe_unused]] const AZ::EntityId& parentEntityId)

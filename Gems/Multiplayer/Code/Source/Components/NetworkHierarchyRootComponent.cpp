@@ -305,10 +305,8 @@ namespace Multiplayer
                     }
                     else
                     {
-                        // No TransformComponent on this candidate, so there are no transform children
-                        // to walk. Readiness/active gating is handled above by IsHierarchyEnabled();
-                        // under the always-active transform GetTransform() is valid from Init, so this
-                        // branch now only guards genuinely transform-less entities.
+                        // Child entities may not be in the Active state so skip for now.
+                        // They will notify when ready causing another rebuild.
                         continue;
                     }
 

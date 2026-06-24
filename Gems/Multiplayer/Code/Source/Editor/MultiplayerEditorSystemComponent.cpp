@@ -791,16 +791,14 @@ namespace Multiplayer
     }
     void MultiplayerEditorSystemComponent::OnStopPlayInEditorBegin()
     {
-        // Tear down any active editor multiplayer session before leaving play mode. NetworkEntityManager
-        // entities (a client's replicas and/or an in-process server's entities) are destroyed only via
-        // Terminate -> NetworkEntityManager::ClearAllEntities; without this they are "left hanging
-        // around" in the editor after returning to edit mode. Previously this was gated to ClientServer
-        // + editorsv_clientserver, so a dedicated-server session (editor running as a Client) skipped
-        // the teardown and left the editor's client-side replica entities orphaned on exit.
-        if (GetMultiplayer()->GetAgentType() != MultiplayerAgentType::Uninitialized)
+        if (GetMultiplayer()->GetAgentType() != MultiplayerAgentType::ClientServer || !editorsv_clientserver)
         {
-            AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
+            return;
         }
+
+        // Make sure the client-server stops before the editor leaves play mode.
+        // Otherwise network entities will be left hanging around.
+        AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
     }
 
 } // namespace Multiplayer
