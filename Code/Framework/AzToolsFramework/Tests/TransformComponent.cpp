@@ -1363,6 +1363,36 @@ namespace UnitTest
         EXPECT_EQ(probe->m_activateCount, 1);
     }
 
+    // F9 - FindEntity must still locate a DEACTIVATED (but not yet destroyed) entity. The network
+    // teardown's destroy path relies on this: it resolves entity ids up front then destroys them in an
+    // order that is not guaranteed child-first, so DestroyGameEntity may need to find a child that a
+    // sibling's destruction already deactivated. Lives in this fixture because it needs a
+    // ComponentApplication (m_app) for FindEntity to resolve. GREEN on base - guards the dependency.
+    TEST_F(TransformComponentApplication, FindEntity_LocatesDeactivatedEntity)
+    {
+        auto findEntity = [](const AZ::EntityId& lookup) -> AZ::Entity*
+        {
+            AZ::Entity* found = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(found, &AZ::ComponentApplicationRequests::FindEntity, lookup);
+            return found;
+        };
+
+        AZ::Entity* entity = aznew AZ::Entity("Deactivatable");
+        entity->CreateComponent<TransformComponent>();
+        entity->Init();
+        entity->Activate();
+        const AZ::EntityId id = entity->GetId();
+
+        EXPECT_EQ(findEntity(id), entity); // active -> found
+
+        entity->Deactivate();
+        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Init);
+        EXPECT_EQ(findEntity(id), entity); // deactivated but allocated -> STILL found (the contract)
+
+        delete entity;
+        EXPECT_EQ(findEntity(id), nullptr); // destroyed -> gone (sanity that the lookup is real)
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::Components::TransformComponent
 
