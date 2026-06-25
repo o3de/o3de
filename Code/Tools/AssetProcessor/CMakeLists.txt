@@ -115,7 +115,6 @@ ly_add_target(
 ly_add_target(
     NAME AssetProcessorBatch EXECUTABLE
     NAMESPACE AZ
-    AUTOMOC
     FILES_CMAKE
         assetprocessor_batch_files.cmake
     INCLUDE_DIRECTORIES
