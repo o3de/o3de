@@ -786,6 +786,19 @@ namespace AzToolsFramework
             if (restored)
             {
                 UpdatePropertyEditor(m_inMemoryAsset);
+
+                // The rebuild above discards the focused field, so keyboard focus would leave the Asset Editor
+                // and its action-context watcher would stop receiving Ctrl+Z/Ctrl+Y (the shortcut would then
+                // leak to the main Editor). Refocus the property editor - a descendant of the watched
+                // AssetEditorWidget - so the undo/redo shortcuts keep reaching the Asset Editor. Defer it so it
+                // runs after the rebuild's own posted focus changes settle.
+                QWidget* focusTarget = m_useDPE ? static_cast<QWidget*>(m_filteredWidget)
+                                                : static_cast<QWidget*>(m_propertyEditor);
+                if (focusTarget)
+                {
+                    focusTarget->setFocusPolicy(Qt::StrongFocus);
+                    QTimer::singleShot(0, focusTarget, [focusTarget]() { focusTarget->setFocus(Qt::OtherFocusReason); });
+                }
             }
             m_isRestoringSnapshot = false;
 

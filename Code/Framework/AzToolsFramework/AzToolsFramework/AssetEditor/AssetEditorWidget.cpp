@@ -60,8 +60,6 @@ AZ_POP_DISABLE_WARNING
 #include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <QAction>
-#include <QApplication>
-#include <QKeyEvent>
 #include <QMenu>
 #include <QMenuBar>
 #include <QTimer>
@@ -751,14 +749,18 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::UpdateUndoRedoActionsStatus()
         {
+            // Keep Undo/Redo enabled whenever a tab is open - even with empty history - so the action-context
+            // watcher always claims Ctrl+Z / Ctrl+Y while an asset is open and they never fall through to the
+            // main Editor's level undo. The tab's Undo()/Redo() are no-ops when there is nothing to undo/redo.
+            // (When no tab is open the actions are disabled, releasing the shortcut back to the level.)
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
             if (m_undoAction)
             {
-                m_undoAction->setEnabled(tab && tab->CanUndo());
+                m_undoAction->setEnabled(tab != nullptr);
             }
             if (m_redoAction)
             {
-                m_redoAction->setEnabled(tab && tab->CanRedo());
+                m_redoAction->setEnabled(tab != nullptr);
             }
         }
 
