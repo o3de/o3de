@@ -88,7 +88,7 @@ QComboBox QAbstractItemView::item
 {
     color: #FFFFFF;
     padding-right: 24px;
-    padding-left: 2px; /* There is already 22px from the check mark */
+    padding-left: 24px; /* Reserves the left margin for the check glyph painted by ComboBoxItemDelegate::paint (the native check column is stripped in Qt6); keeps every row's text aligned */
 
     /* Without that the padding don't apply */
     border: 0px solid transparent;

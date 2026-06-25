@@ -17,7 +17,9 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QComboBox>
 #include <QDebug>
 #include <QGraphicsDropShadowEffect>
+#include <QIcon>
 #include <QLineEdit>
+#include <QPainter>
 #include <QSettings>
 #include <QStyledItemDelegate>
 #include <QToolButton>
@@ -166,6 +168,22 @@ namespace AzQtComponents
                     case QEvent::Show:
                     {
                         newHasPopupOpen = true;
+
+                        // Qt6: the popup item-view clears with its palette Base, which the qss
+                        // background-color does NOT override -> the dropdown renders black. Force the
+                        // view (and viewport) palette to the dropdown background. Mirrors the color in
+                        // ComboBox.qss (QComboBox QAbstractItemView { background-color: #222222 }).
+                        const QColor popupBg(0x22, 0x22, 0x22);
+                        QPalette pal = itemView->palette();
+                        pal.setColor(QPalette::Base, popupBg);
+                        pal.setColor(QPalette::Window, popupBg);
+                        itemView->setPalette(pal);
+                        itemView->setAutoFillBackground(true);
+                        if (QWidget* viewport = itemView->viewport())
+                        {
+                            viewport->setPalette(pal);
+                            viewport->setAutoFillBackground(true);
+                        }
                     }
                     // intentional fall-through
                     case QEvent::Hide:
@@ -213,23 +231,67 @@ namespace AzQtComponents
         {
             QStyledItemDelegate::initStyleOption(option, index);
 
-            // The default usage of combobox only allow one selection,
-            // then we have to tweak it a bit so it show a check mark in this case.
+            // Single-select combos show a clean check mark on the CURRENT item only. Every other row
+            // must have HasCheckIndicator STRIPPED (not merely "not added") -- otherwise Qt6 reserves
+            // the check column and paints an empty check-box frame for it. The checked glyph for the
+            // current row is painted into the left margin in paint() below, so the frames are gated off.
             if (option && m_combo && m_combo->view()->selectionMode() == QAbstractItemView::SingleSelection)
             {
-                option->features |= QStyleOptionViewItem::HasCheckIndicator;
                 auto *style = qobject_cast<Style *>(m_combo->style());
-                Qt::CheckState checkState;
                 if (style && style->hasClass(m_combo, g_customCheckStateClass))
                 {
-                    checkState = index.data(Qt::CheckStateRole).value<Qt::CheckState>();
+                    // Multi-state combos: per-row check state from the model (drawn via drawItemCheckIndicator).
+                    option->features |= QStyleOptionViewItem::HasCheckIndicator;
+                    option->checkState = index.data(Qt::CheckStateRole).value<Qt::CheckState>();
                 }
                 else
                 {
-                    checkState = m_combo->currentIndex() == index.row() ? Qt::Checked : Qt::Unchecked;
+                    // Plain single-select: no native check column at all -- it would reserve space and
+                    // draw an empty frame, and only the current row would be indented. Every row keeps
+                    // the same layout; the current row is marked by a check glyph painted into the left
+                    // margin in paint() below (the qss item padding-left reserves the room).
+                    option->features &= ~QStyleOptionViewItem::HasCheckIndicator;
+                    option->checkState = Qt::Unchecked;
                 }
-                option->checkState = checkState;
             }
+        }
+
+        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
+        {
+            QSize size = QStyledItemDelegate::sizeHint(option, index);
+            // Drive popup row height from the DELEGATE, not qss item padding. Qt6 does not feed qss
+            // padding back into the combobox popup geometry, so padding makes rows render tall but
+            // mis-positioned / overlapping. The delegate height is what Qt uses for BOTH item layout
+            // and popup placement -> they stay in sync.
+            const int minItemHeight = 24;
+            size.setHeight(qMax(size.height(), minItemHeight));
+            return size;
+        }
+
+        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+        {
+            QStyledItemDelegate::paint(painter, option, index);
+
+            // Mark the current item of a plain single-select combo with a clean check glyph drawn into
+            // the left margin (the qss item padding-left reserves the room). Every row has identical
+            // layout, so text stays aligned whether or not the row is the current one. Multi-state
+            // combos draw their own indicators via drawItemCheckIndicator, so they are skipped here.
+            if (!m_combo || m_combo->view()->selectionMode() != QAbstractItemView::SingleSelection
+                || m_combo->currentIndex() != index.row())
+            {
+                return;
+            }
+            auto* style = qobject_cast<Style*>(m_combo->style());
+            if (style && style->hasClass(m_combo, g_customCheckStateClass))
+            {
+                return;
+            }
+            static const QIcon checkIcon(QStringLiteral(":/stylesheet/img/UI20/checkmark.svg"));
+            const int glyph = 14;
+            const QRect glyphRect(option.rect.left() + 6,
+                                  option.rect.top() + (option.rect.height() - glyph) / 2,
+                                  glyph, glyph);
+            checkIcon.paint(painter, glyphRect, Qt::AlignCenter);
         }
 
     private:
