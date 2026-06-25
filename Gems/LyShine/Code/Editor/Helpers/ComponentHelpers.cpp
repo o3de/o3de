@@ -914,55 +914,59 @@ namespace ComponentHelpers
             // Now paste
             bool isCanvasSelected = false;
             AzToolsFramework::EntityIdList selectedEntities = Internal::GetSelectedEntities(&isCanvasSelected);
-            if (Internal::CanPasteComponentsToEntities(selectedEntities, isCanvasSelected))
+            if (!Internal::CanPasteComponentsToEntities(selectedEntities, isCanvasSelected))
             {
-                const QMimeData* mimeData = AzToolsFramework::ComponentMimeData::GetComponentMimeDataFromClipboard();
-                AzToolsFramework::ComponentMimeData::ComponentDataContainer componentsToAdd;
+                return;
+            }
+
+            const QMimeData* mimeData = AzToolsFramework::ComponentMimeData::GetComponentMimeDataFromClipboard();
+            AzToolsFramework::ComponentMimeData::ComponentDataContainer componentsToAdd;
+            AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
+
+            AzToolsFramework::ComponentTypeMimeData::ClassDataContainer classDataForComponentsToAdd;
+            AzToolsFramework::ComponentTypeMimeData::Get(mimeData, classDataForComponentsToAdd);
+            if (componentsToAdd.size() != classDataForComponentsToAdd.size())
+            {
+                return;
+            }
+
+            UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
+
+            for (const AZ::EntityId& entityId : selectedEntities)
+            {
+                AZ::Entity* entity = AzToolsFramework::GetEntityById(entityId);
                 AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
-
-                AzToolsFramework::ComponentTypeMimeData::ClassDataContainer classDataForComponentsToAdd;
-                AzToolsFramework::ComponentTypeMimeData::Get(mimeData, classDataForComponentsToAdd);
-                if (componentsToAdd.size() == classDataForComponentsToAdd.size())
+                if (!entity)
                 {
-                    UiEditorInternalNotificationBus::Broadcast(&UiEditorInternalNotificationBus::Events::OnBeginUndoableEntitiesChange);
+                    continue;
+                }
 
-                    for (const AZ::EntityId& entityId : selectedEntities)
+                bool reactivate = false;
+                if (entity->GetState() == AZ::Entity::State::Active)
+                {
+                    reactivate = true;
+                    entity->Deactivate();
+                }
+
+                for (int componentIndex = 0; componentIndex < componentsToAdd.size(); ++componentIndex)
+                {
+                    AZ::Component* component = componentsToAdd[componentIndex];
+                    if (component)
                     {
-                        AZ::Entity* entity = AzToolsFramework::GetEntityById(entityId);
-                        AzToolsFramework::ComponentMimeData::GetComponentDataFromMimeData(mimeData, componentsToAdd);
-                        if (!entity)
-                        {
-                            continue;
-                        }
-
-                        bool reactivate = false;
-                        if (entity->GetState() == AZ::Entity::State::Active)
-                        {
-                            reactivate = true;
-                            entity->Deactivate();
-                        }
-
-                        for (int componentIndex = 0; componentIndex < componentsToAdd.size(); ++componentIndex)
-                        {
-                            AZ::Component* component = componentsToAdd[componentIndex];
-                            if (component)
-                            {
-                                entity->AddComponent(component);
-                            }
-                        }
-
-                        if (reactivate)
-                        {
-                            entity->Activate();
-                        }
+                        entity->AddComponent(component);
                     }
+                }
 
-                    UiEditorInternalNotificationBus::Broadcast(
-                        &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "duplicate component");
-
-                    Internal::HandleSelectedEntitiesPropertiesChanged();
+                if (reactivate)
+                {
+                    entity->Activate();
                 }
             }
+
+            UiEditorInternalNotificationBus::Broadcast(
+                &UiEditorInternalNotificationBus::Events::OnEndUndoableEntitiesChange, "duplicate component");
+
+            Internal::HandleSelectedEntitiesPropertiesChanged();
         });
 
         return action;

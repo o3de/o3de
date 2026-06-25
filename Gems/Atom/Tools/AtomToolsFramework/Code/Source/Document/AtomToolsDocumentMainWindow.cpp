@@ -14,6 +14,8 @@
 #include <AtomToolsFramework/Document/CreateDocumentDialog.h>
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
+
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -191,13 +193,9 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentMainWindow::CommitInProgressEdit()
     {
-        // Clearing focus fires the editor's focus-out, which emits editingFinished and writes the value
-        // (and its undo entry) into the document. The save below then captures the committed data.
-        QWidget* focusWidget = QApplication::focusWidget();
-        if (focusWidget && isAncestorOf(focusWidget))
-        {
-            focusWidget->clearFocus();
-        }
+        // Clearing focus fires the editor's focus-out, which writes the value (and its undo entry) into the
+        // document so the save below captures the committed data.
+        AzQtComponents::ClearFocusWithin(this);
     }
 
     bool AtomToolsDocumentMainWindow::SaveDocument(const AZ::Uuid& documentId)

@@ -42,6 +42,7 @@
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -678,10 +679,7 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
 {
     // Step out of any in-progress field edit first: clearing focus fires the property editor's focus-out,
     // which commits the value (and its undo entry) before the canvas is serialized below.
-    if (QWidget* focusWidget = QApplication::focusWidget(); focusWidget && isAncestorOf(focusWidget))
-    {
-        focusWidget->clearFocus();
-    }
+    AzQtComponents::ClearFocusWithin(this);
 
     AZStd::string sourceAssetPathName = canvasMetadata.m_canvasSourceAssetPathname;
     AZStd::string assetIdPathname;

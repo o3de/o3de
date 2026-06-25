@@ -29,6 +29,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/FancyDocking.h>
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
 // include Qt related
 #include <QAbstractEventDispatcher>
@@ -1468,10 +1469,7 @@ namespace EMStudio
         // committing its in-progress value (and undo entry) so the edited object is marked dirty before
         // SaveDirtyFiles decides what to save. Without this, edits like transition properties (issue #13224)
         // are not yet applied and get skipped.
-        if (QWidget* focusWidget = QApplication::focusWidget(); focusWidget && isAncestorOf(focusWidget))
-        {
-            focusWidget->clearFocus();
-        }
+        AzQtComponents::ClearFocusWithin(this);
 
         m_dirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, MCORE_INVALIDINDEX32, QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     }

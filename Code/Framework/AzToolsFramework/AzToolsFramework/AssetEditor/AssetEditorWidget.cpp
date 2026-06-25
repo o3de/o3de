@@ -28,6 +28,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -43,7 +44,10 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -72,6 +76,10 @@ namespace AzToolsFramework
         //////////////////////////////////
 
         static constexpr const char* k_assetEditorSettingsPath = "/O3DE/Preferences/AssetEditor/Settings";
+
+        // Dedicated Action Manager context for the Asset Editor so its shortcuts (e.g. Ctrl+S) win over the
+        // main Editor's identical ones while focus is inside the Asset Editor. See RegisterShortcutActionContext.
+        static constexpr const char* k_assetEditorActionContextId = "o3de.context.assetEditor";
 
         void AssetEditorWidgetUserSettings::Reflect(AZ::ReflectContext* context)
         {
@@ -311,20 +319,13 @@ namespace AzToolsFramework
 
             m_saveAssetAction = fileMenu->addAction("&Save");
             m_saveAssetAction->setShortcut(QKeySequence::Save);
+            m_saveAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(m_saveAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAsset);
 
             m_saveAsAssetAction = fileMenu->addAction("&Save As");
             m_saveAsAssetAction->setShortcut(QKeySequence::SaveAs);
-            connect(m_saveAsAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAssetAs);
-
-            // The shortcuts above cannot win through QAction resolution: the Asset Editor pane is parented
-            // under the main Editor window (even when floating), whose Ctrl+S (save level) is also in scope,
-            // so Qt treats both as ambiguous and fires neither. Ctrl+S is instead claimed in event() below by
-            // accepting the ShortcutOverride while focus is inside this widget. The shortcuts are kept here
-            // purely for the menu accelerator labels, and scoped to WidgetWithChildrenShortcut so that when
-            // focus is outside the Asset Editor they are not in scope and the main Editor's level save wins.
-            m_saveAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             m_saveAsAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            connect(m_saveAsAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAssetAs);
 
             m_saveAllAssetsAction = fileMenu->addAction("Save All");
             connect(m_saveAllAssetsAction, &QAction::triggered, this, &AssetEditorWidget::SaveAll);
@@ -346,6 +347,8 @@ namespace AzToolsFramework
             mainLayout->setMenuBar(mainMenu);
 
             setLayout(mainLayout);
+
+            RegisterShortcutActionContext();
 
             QObject::connect(m_recentFileMenu, &QMenu::aboutToShow, this, &AssetEditorWidget::PopulateRecentMenu);
 
@@ -642,48 +645,43 @@ namespace AzToolsFramework
             return tab->SaveAssetToPath(assetPath.data());
         }
 
-        bool AssetEditorWidget::event(QEvent* event)
+        void AssetEditorWidget::RegisterShortcutActionContext()
         {
-            // Claim the save shortcuts before Qt's (ambiguous) shortcut resolution. Accepting the
-            // ShortcutOverride suppresses all shortcut matching for the key and makes Qt deliver it as a
-            // normal key press, which the KeyPress branch handles. This only runs while a descendant of the
-            // Asset Editor has focus, so Ctrl+S still saves the level when focus is elsewhere.
-            if (event->type() == QEvent::ShortcutOverride)
+            // The Asset Editor pane shares its top-level window with the main Editor, whose Ctrl+S (save level)
+            // is dispatched by the Action Manager: a per-context event filter installed on the context's widget
+            // claims the shortcut on QEvent::ShortcutOverride and consumes it before it reaches parent widgets.
+            // Giving the Asset Editor its own action context installs that same filter on this widget - a
+            // descendant of the main window - so it runs first and triggers the Asset Editor's own actions
+            // (registered on this widget via addAction below) instead of the main Editor's level save. This is
+            // the standard O3DE way to let duplicated shortcut hotkeys coexist, and keeps the shortcuts
+            // rebindable through the Hotkey Manager (no hard-coded key handling).
+            auto* actionManager = AZ::Interface<ActionManagerInterface>::Get();
+            auto* hotKeyManager = AZ::Interface<HotKeyManagerInterface>::Get();
+            if (!actionManager || !hotKeyManager)
             {
-                auto* keyEvent = static_cast<QKeyEvent*>(event);
-                if (keyEvent->matches(QKeySequence::Save) || keyEvent->matches(QKeySequence::SaveAs))
-                {
-                    event->accept();
-                    return true;
-                }
-            }
-            else if (event->type() == QEvent::KeyPress)
-            {
-                auto* keyEvent = static_cast<QKeyEvent*>(event);
-                if (keyEvent->matches(QKeySequence::Save))
-                {
-                    SaveAsset();
-                    return true;
-                }
-                if (keyEvent->matches(QKeySequence::SaveAs))
-                {
-                    SaveAssetAs();
-                    return true;
-                }
+                return;
             }
 
-            return QWidget::event(event);
+            if (!actionManager->IsActionContextRegistered(k_assetEditorActionContextId))
+            {
+                ActionContextProperties contextProperties;
+                contextProperties.m_name = "O3DE Asset Editor";
+                actionManager->RegisterActionContext(k_assetEditorActionContextId, contextProperties);
+            }
+
+            // The context's widget watcher triggers matching actions found on the watched widget, so the save
+            // actions must be added to this widget (not just the menu) to be reachable.
+            addAction(m_saveAssetAction);
+            addAction(m_saveAsAssetAction);
+
+            hotKeyManager->AssignWidgetToActionContext(k_assetEditorActionContextId, this);
         }
 
         void AssetEditorWidget::CommitInProgressEdit()
         {
-            // Clearing focus fires the editor's focus-out, which emits editingFinished and writes the value
-            // (and its undo entry) into the model. The save below then captures the committed data.
-            QWidget* focusWidget = QApplication::focusWidget();
-            if (focusWidget && isAncestorOf(focusWidget))
-            {
-                focusWidget->clearFocus();
-            }
+            // Clearing focus fires the editor's focus-out, which writes the value (and its undo entry) into the
+            // model so the save below captures the committed data.
+            AzQtComponents::ClearFocusWithin(this);
         }
 
         void AssetEditorWidget::SaveAsset()
