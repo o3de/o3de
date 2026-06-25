@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 #include <QFrame>
 #include <QPointer>
 #include <QChildEvent>
-#endif
 
 class QSettings;
 class QStyleOption;
@@ -106,13 +104,12 @@ namespace AzQtComponents
         void closeEvent(QCloseEvent* ev) override;
         void showEvent(QShowEvent* ev) override;
         void hideEvent(QHideEvent* ev) override;
-        bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+        bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result) override;
         void changeEvent(QEvent* ev) override;
 
     private:
         friend class StyledDockWidget;
-        static bool handleNativeEvent(const QByteArray& eventType, void* message, long* result, const QWidget* widget);
-        static QMargins win10TitlebarHeight(QWindow *w);
+        static bool handleNativeEvent(const QByteArray& eventType, void* message, qintptr* result, const QWidget* widget);
         static Qt::WindowFlags specialFlagsForOS();
         static void drawFrame(const QStyleOption *option, QPainter *painter, const QWidget *widget);
         QWidget* topLevelParent();
@@ -132,6 +129,7 @@ namespace AzQtComponents
         void adjustSizeGripGeometry();
         void adjustWidgetGeometry();
         void updateConstraints();
+        void updateRoundedCorners();
         void enableSaveRestoreGeometry(QSettings* settings, const QString& key, bool autoRestoreOnShow);
 
         bool m_initialized = false;
@@ -146,6 +144,7 @@ namespace AzQtComponents
         bool m_restoringGeometry = false;
         bool m_autoRestoreOnShow = false;
         bool m_blockForRestoreOnShow = false;
+        bool m_windowAttributesInit = false;
     };
 } // namespace AzQtComponents
 

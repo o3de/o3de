@@ -11,11 +11,9 @@
 #define CRYINCLUDE_EDITOR_GENERICSELECTITEMDIALOG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
 #include <QScopedPointer>
 #include "Util/Variable.h"
-#endif
 
 // CGenericSelectItem dialog
 

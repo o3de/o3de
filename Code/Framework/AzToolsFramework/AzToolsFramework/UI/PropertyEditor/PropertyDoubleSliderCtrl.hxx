@@ -11,13 +11,11 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
-#include "PropertyEditorAPI.h"
 
-#endif
+#include "PropertyEditorAPI.h"
 
 namespace AzToolsFramework
 {

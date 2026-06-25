@@ -17,6 +17,10 @@ typedef HANDLE HINSTANCE;
 #define DLL_PROCESS_ATTACH 1
 #endif
 
+#if AZ_TRAIT_OS_PLATFORM_APPLE
+typedef unsigned char BOOL;
+#endif
+
 IEditor* g_pEditor = nullptr;
 
 //------------------------------------------------------------------

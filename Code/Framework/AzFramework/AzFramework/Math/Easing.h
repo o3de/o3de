@@ -5,11 +5,35 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
 #include <AzCore/Math/MathUtils.h>
 
-namespace ScriptedEntityTweener
+namespace AzFramework
 {
+    enum class EasingMethod
+    {
+        None = 0,
+        Linear = None,
+        Quad, //1
+        Cubic, //2
+        Quart, //3
+        Quint, //4
+        Sine, //5
+        Expo, //6
+        Circ, //7
+        Elastic, //8
+        Back, //9
+        Bounce //10
+    };
+
+    enum class EasingType
+    {
+        In = 0,
+        Out, //1
+        InOut //2
+    };
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //! A collection of common easing/tweening equations.
     class EasingEquations
@@ -142,7 +166,7 @@ namespace ScriptedEntityTweener
         static T GetEasingResultCombinedIn(float expo, float timeActive, float duration, T valueInitial, T valueTarget)
         {
             float progressPercent = timeActive / duration;
-            return valueInitial + ((valueTarget - valueInitial) * pow(progressPercent, 1.0f + expo));
+            return valueInitial + ((valueTarget - valueInitial) * powf(progressPercent, 1.0f + expo));
         }
 
         template <typename T>
@@ -154,7 +178,7 @@ namespace ScriptedEntityTweener
         template <typename T>
         static T GetEasingResultInExpo(float timeActive, float duration, T valueInitial, T valueTarget)
         {
-            return (valueTarget - valueInitial) * pow(2.0f, 10.0f * (timeActive / duration - 1.0f)) + valueInitial;
+            return (valueTarget - valueInitial) * powf(2.0f, 10.0f * (timeActive / duration - 1.0f)) + valueInitial;
         }
 
         template <typename T>
@@ -176,7 +200,7 @@ namespace ScriptedEntityTweener
             {
                 return valueTarget;
             }
-            T position = (valueTarget - valueInitial) * pow(2.0f, 10.0f * (progressPercent -= 1.0f));
+            T position = (valueTarget - valueInitial) * powf(2.0f, 10.0f * (progressPercent -= 1.0f));
             float elasticAmplitude = 0.3f / 4.0f;
             /*
             if (amplitudeOverride != 0.0f)
@@ -249,7 +273,7 @@ namespace ScriptedEntityTweener
         {
             timeActive = timeActive / duration;
             timeActive--;
-            return -(valueTarget - valueInitial) * (pow(timeActive, 4) - 1.0f) + valueInitial;
+            return -(valueTarget - valueInitial) * (powf(timeActive, 4.0f) - 1.0f) + valueInitial;
         }
 
         template <typename T>
@@ -257,7 +281,7 @@ namespace ScriptedEntityTweener
         {
             timeActive = timeActive / duration;
             timeActive--;
-            return (valueTarget - valueInitial) * (pow(timeActive, 5) + 1.0f) + valueInitial;
+            return (valueTarget - valueInitial) * (powf(timeActive, 5.0f) + 1.0f) + valueInitial;
         }
 
         template <typename T>
@@ -269,7 +293,7 @@ namespace ScriptedEntityTweener
         template <typename T>
         static T GetEasingResultOutExpo(float timeActive, float duration, T valueInitial, T valueTarget)
         {
-            return (valueTarget - valueInitial) * (-pow(2.0f, -10.0f * timeActive / duration) + 1.0f) + valueInitial;
+            return (valueTarget - valueInitial) * (-powf(2.0f, -10.0f * timeActive / duration) + 1.0f) + valueInitial;
         }
 
         template <typename T>
@@ -293,7 +317,7 @@ namespace ScriptedEntityTweener
                 return valueTarget;
             }
             T distance = valueTarget - valueInitial;
-            T positionFix = distance * pow(2.0f, -10.0f * progressPercent);
+            T positionFix = distance * powf(2.0f, -10.0f * progressPercent);
             float constant = 0.3f / 4.0f;
             /*
             if (amplitudeOverride != -1)
@@ -401,10 +425,10 @@ namespace ScriptedEntityTweener
             timeActive /= duration / 2.0f;
             if (timeActive < 1.0f)
             {
-                return (valueTarget - valueInitial) / 2.0f * pow(2.0f, 10.0f * (timeActive - 1.0f)) + valueInitial;
+                return (valueTarget - valueInitial) / 2.0f * powf(2.0f, 10.0f * (timeActive - 1.0f)) + valueInitial;
             }
             timeActive--;
-            return (valueTarget - valueInitial) / 2.0f * (-pow(2.0f, -10.0f * timeActive) + 2.0f) + valueInitial;
+            return (valueTarget - valueInitial) / 2.0f * (-powf(2.0f, -10.0f * timeActive) + 2.0f) + valueInitial;
         }
 
         template <typename T>
@@ -440,12 +464,12 @@ namespace ScriptedEntityTweener
             */
             if (progressPercent < 1.0f)
             {
-                T positionFix = distance * pow(2.0f, 10.0f * (progressPercent -= 1.0f));
+                T positionFix = distance * powf(2.0f, 10.0f * (progressPercent -= 1.0f));
                 return (positionFix * sin((progressPercent - (constant / 4.0f)) * 2.0f * AZ::Constants::Pi / constant)) * (-0.5f) + valueInitial;
             }
             else
             {
-                T positionFix = distance * pow(2.0f, -10.0f * (progressPercent -= 1.0f));
+                T positionFix = distance * powf(2.0f, -10.0f * (progressPercent -= 1.0f));
                 return positionFix * sin((progressPercent - constant / 4.0f) * 2.0f * AZ::Constants::Pi / constant) * 0.5f + valueTarget;
             }
         }
@@ -486,3 +510,4 @@ namespace ScriptedEntityTweener
         }
     };
 }
+

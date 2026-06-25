@@ -91,5 +91,4 @@ void QComponentEntityEditorInspectorWindow::Init()
 // End of context menu handling
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <UI/moc_QComponentEntityEditorMainWindow.cpp>
 

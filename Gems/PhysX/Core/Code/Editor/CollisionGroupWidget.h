@@ -8,14 +8,11 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyStringComboBoxCtrl.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEnumComboBoxCtrl.hxx>
-
-#endif
 
 namespace PhysX
 {

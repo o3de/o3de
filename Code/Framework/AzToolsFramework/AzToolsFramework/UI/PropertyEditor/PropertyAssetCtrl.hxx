@@ -11,7 +11,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <QWidget>
@@ -36,7 +35,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QLineEdit>
 #include <QToolButton>
 AZ_POP_DISABLE_WARNING
-#endif
 
 class QPushButton;
 class QDragEnterEvent;

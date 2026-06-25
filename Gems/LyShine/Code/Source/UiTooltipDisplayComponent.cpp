@@ -311,7 +311,7 @@ void UiTooltipDisplayComponent::Reflect(AZ::ReflectContext* context)
             auto editInfo = ec->Class<UiTooltipDisplayComponent>("TooltipDisplay", "A component that handles how the tooltip element is to be displayed.");
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Tooltip")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiTooltipDisplay.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiTooltipDisplay.png")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

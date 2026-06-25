@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <source/models/AssetBundlerAbstractFileTableModel.h>
 #include <source/models/AssetBundlerFileTableFilterModel.h>
 
@@ -22,7 +21,6 @@
 #include <QLabel>
 #include <QWidget>
 #include <QItemSelection>
-#endif
 
 namespace AssetBundler
 {

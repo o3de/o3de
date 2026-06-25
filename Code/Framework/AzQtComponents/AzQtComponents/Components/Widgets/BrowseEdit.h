@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 
@@ -15,7 +14,6 @@
 #include <QFrame>
 #include <QIcon>
 #include <QString>
-#endif
 
 class QSettings;
 class QLineEdit;

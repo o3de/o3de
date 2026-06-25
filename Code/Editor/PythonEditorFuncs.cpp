@@ -379,22 +379,22 @@ namespace
             {
                 if (tempString.indexOf(".", posDots) > -1)
                 {
-                    posDots = tempString.indexOf(".", posDots) + 1;
+                    posDots = static_cast<int>(tempString.indexOf(".", posDots)) + 1;
                     countDots++;
                 }
                 if (tempString.indexOf(",", posComa) > -1)
                 {
-                    posComa = tempString.indexOf(",", posComa) + 1;
+                    posComa = static_cast<int>(tempString.indexOf(",", posComa)) + 1;
                     countComa++;
                 }
                 if (tempString.indexOf("(", posOpenRoundBraket) > -1)
                 {
-                    posOpenRoundBraket = tempString.indexOf("(", posOpenRoundBraket) + 1;
+                    posOpenRoundBraket = static_cast<int>(tempString.indexOf("(", posOpenRoundBraket)) + 1;
                     countOpenRoundBraket++;
                 }
                 if (tempString.indexOf(")", posCloseRoundBraket) > -1)
                 {
-                    posCloseRoundBraket = tempString.indexOf(")", posCloseRoundBraket) + 1;
+                    posCloseRoundBraket = static_cast<int>(tempString.indexOf(")", posCloseRoundBraket)) + 1;
                     countCloseRoundBraket++;
                 }
             }
@@ -403,16 +403,16 @@ namespace
             {
                 // for example: (1.95, 2.75, 3.36)
                 QString valueRed = stringValue;
-                int iStart = valueRed.indexOf("(");
+                int iStart = static_cast<int>(valueRed.indexOf("("));
                 valueRed.remove(0, iStart + 1);
-                int iEnd = valueRed.indexOf(",");
+                int iEnd = static_cast<int>(valueRed.indexOf(","));
                 valueRed.remove(iEnd, valueRed.length());
                 float fValueRed = valueRed.toFloat();
 
                 QString valueGreen = stringValue;
-                iStart = valueGreen.indexOf(",");
+                iStart = static_cast<int>(valueGreen.indexOf(","));
                 valueGreen.remove(0, iStart + 1);
-                iEnd = valueGreen.indexOf(",");
+                iEnd = static_cast<int>(valueGreen.indexOf(","));
                 valueGreen.remove(iEnd, valueGreen.length());
                 float fValueGreen = valueGreen.toFloat();
 
@@ -430,16 +430,16 @@ namespace
                 const AZ::u8 lowColorValue { 0 };
                 const AZ::u8 highColorValue { 255 };
                 QString valueRed = stringValue;
-                int iStart = valueRed.indexOf("(");
+                int iStart = static_cast<int>(valueRed.indexOf("("));
                 valueRed.remove(0, iStart + 1);
-                int iEnd = valueRed.indexOf(",");
+                int iEnd = static_cast<int>(valueRed.indexOf(","));
                 valueRed.remove(iEnd, valueRed.length());
                 AZ::u8 iValueRed = AZStd::clamp(aznumeric_cast<AZ::u8>(valueRed.toInt()), lowColorValue, highColorValue);
 
                 QString valueGreen = stringValue;
-                iStart = valueGreen.indexOf(",");
+                iStart = static_cast<int>(valueGreen.indexOf(","));
                 valueGreen.remove(0, iStart + 1);
-                iEnd = valueGreen.indexOf(",");
+                iEnd = static_cast<int>(valueGreen.indexOf(","));
                 valueGreen.remove(iEnd, valueGreen.length());
                 AZ::u8 iValueGreen = AZStd::clamp(aznumeric_cast<AZ::u8>(valueGreen.toInt()), lowColorValue, highColorValue);
 

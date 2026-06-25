@@ -15,11 +15,9 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QApplication>
 #include <QMessageBox>
 #include <QProgressDialog>
-#endif
 
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 // Clang20 on Windows complains about the expression "(begin - &*context_.begin())" in OpenImageIo/detail/fmt/core.h:2716 not being a

@@ -1909,7 +1909,7 @@ namespace AssetProcessor
         {
             m_queuedExamination = true;
             QTimer::singleShot(0, this, SLOT(ProcessFilesToExamineQueue()));
-            Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
+            Q_EMIT NumRemainingJobsChanged(static_cast<int>(m_activeFiles.size()) + static_cast<int>(m_filesToExamine.size()) + static_cast<int>(m_numOfJobsToAnalyze), AnalysisExtraInfo());
         }
     }
 
@@ -2212,7 +2212,7 @@ namespace AssetProcessor
         {
             // QSet does not actually have a function that tells us if the set already contained as well as inserts it
             // (unlike std::set and others) but an easy way to tell in o(1) is to just check if the size changed
-            int priorSize = m_knownFolders.size();
+            int priorSize = static_cast<int>(m_knownFolders.size());
             m_knownFolders.insert(normalizedParentFolder);
             if (m_knownFolders.size() == priorSize)
             {
@@ -2221,7 +2221,7 @@ namespace AssetProcessor
                 break;
             }
 
-            int pos = normalizedParentFolder.lastIndexOf(QChar('/'));
+            int pos = static_cast<int>(normalizedParentFolder.lastIndexOf(QChar('/')));
             if (pos >= 0)
             {
                 normalizedParentFolder = normalizedParentFolder.left(pos);
@@ -2840,8 +2840,8 @@ namespace AssetProcessor
             // CreateJobs can sometimes take a very long time, update the remaining count occasionally
             if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_CREATE_JOBS_STATUS_UPDATE)
             {
-                int remainingInSwapped = swapped.size() - i;
-                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + remainingInSwapped + m_numOfJobsToAnalyze, AnalysisExtraInfo());
+                int remainingInSwapped = static_cast<int>(swapped.size()) - i;
+                Q_EMIT NumRemainingJobsChanged(static_cast<int>(m_activeFiles.size()) + remainingInSwapped + m_numOfJobsToAnalyze, AnalysisExtraInfo());
                 elapsedTimer.restart();
             }
 
@@ -2883,8 +2883,8 @@ namespace AssetProcessor
                     if (normalizedPath.endsWith(QString(FENCE_FILE_EXTENSION), Qt::CaseInsensitive))
                     {
                         // its a fence file, now computing fenceId from it:
-                        int startPos = normalizedPath.lastIndexOf("~");
-                        int endPos = normalizedPath.lastIndexOf(".");
+                        int startPos = static_cast<int>(normalizedPath.lastIndexOf("~"));
+                        int endPos = static_cast<int>(normalizedPath.lastIndexOf("."));
                         QString fenceIdString = normalizedPath.mid(startPos + 1, endPos - startPos - 1);
                         bool isNumber = false;
                         int fenceId = fenceIdString.toInt(&isNumber);
@@ -3163,7 +3163,7 @@ namespace AssetProcessor
             if (!m_quitRequested && m_AssetProcessorIsBusy)
             {
                 m_AssetProcessorIsBusy = false;
-                Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
+                Q_EMIT NumRemainingJobsChanged(static_cast<int>(m_activeFiles.size()) + static_cast<int>(m_filesToExamine.size()) + m_numOfJobsToAnalyze, AnalysisExtraInfo());
                 Q_EMIT AssetProcessorManagerIdleState(true);
             }
 
@@ -3192,7 +3192,7 @@ namespace AssetProcessor
             Q_EMIT AssetProcessorManagerIdleState(false);
 
             // amount of jobs to evaluate right now (no deferred jobs)
-            int numWorkRemainingNow = m_activeFiles.size() + m_filesToExamine.size();
+            int numWorkRemainingNow = static_cast<int>(m_activeFiles.size()) + static_cast<int>(m_filesToExamine.size());
             // total (GUI Shown) of work remaining (including jobs to do later)
             int numTotalWorkRemaining = numWorkRemainingNow + m_numOfJobsToAnalyze;
             Q_EMIT NumRemainingJobsChanged(numTotalWorkRemaining, AnalysisExtraInfo());
@@ -3359,7 +3359,7 @@ namespace AssetProcessor
         m_alreadyActiveFiles.insert(normalizedFullFile);
 
 
-        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
+        Q_EMIT NumRemainingJobsChanged(static_cast<int>(m_activeFiles.size()) + static_cast<int>(m_filesToExamine.size()) + static_cast<int>(m_numOfJobsToAnalyze), AnalysisExtraInfo());
 
         if (!m_alreadyScheduledUpdate)
         {
@@ -3504,7 +3504,7 @@ namespace AssetProcessor
         [[maybe_unused]] int processedFileCount = 0;
 
         AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
-        m_totalScannerFilesToAssess = filePaths.size();
+        m_totalScannerFilesToAssess = static_cast<int>(filePaths.size());
         m_scannerFilesAssessed = 0;
 
         for (const AssetFileInfo& fileInfo : filePaths)
@@ -3842,7 +3842,7 @@ namespace AssetProcessor
                 // Update the remaining job status occasionally
                 if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_PROCESS_JOBS_STATUS_UPDATE)
                 {
-                    Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
+                    Q_EMIT NumRemainingJobsChanged(static_cast<int>(m_activeFiles.size()) + static_cast<int>(m_filesToExamine.size()) + static_cast<int>(m_numOfJobsToAnalyze), AnalysisExtraInfo());
                     elapsedTimer.restart();
                 }
             }
@@ -3875,7 +3875,7 @@ namespace AssetProcessor
             QueueIdleCheck();
         }
 
-        Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze, AnalysisExtraInfo());
+        Q_EMIT NumRemainingJobsChanged(static_cast<int>(m_activeFiles.size()) + static_cast<int>(m_filesToExamine.size()) + static_cast<int>(m_numOfJobsToAnalyze), AnalysisExtraInfo());
     }
 
     void AssetProcessorManager::ProcessJob(JobDetails& job)
@@ -4468,7 +4468,7 @@ namespace AssetProcessor
 
             if (sourceDependency.m_sourceDependencyType == AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards)
             {
-                int wildcardIndex = encodedFileData.indexOf("*");
+                int wildcardIndex = static_cast<int>(encodedFileData.indexOf("*"));
 
                 if (wildcardIndex < 0)
                 {
@@ -4477,7 +4477,7 @@ namespace AssetProcessor
                 }
                 else
                 {
-                    int slashBeforeWildcardIndex = encodedFileData.lastIndexOf("/", wildcardIndex);
+                    int slashBeforeWildcardIndex = static_cast<int>(encodedFileData.lastIndexOf("/", wildcardIndex));
                     QString knownPathBeforeWildcard = encodedFileData.left(slashBeforeWildcardIndex + 1); // include the slash
                     QString relativeSearch = encodedFileData.mid(slashBeforeWildcardIndex + 1); // skip the slash
 

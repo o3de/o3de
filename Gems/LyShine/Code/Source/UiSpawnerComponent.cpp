@@ -76,7 +76,7 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
                     "The spawner component provides dynamic UI slice spawning support.");
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Gameplay")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Spawner.svg")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Spawner.svg")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

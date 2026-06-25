@@ -1265,4 +1265,3 @@ namespace AzToolsFramework
 
 }
 
-#include <UI/Outliner/moc_EntityOutlinerWidget.cpp>

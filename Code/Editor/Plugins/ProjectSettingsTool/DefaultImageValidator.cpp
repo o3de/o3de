@@ -56,4 +56,3 @@ namespace ProjectSettingsTool
         m_specificOverrides.push_back(preview);
     }
 } // namespace ProjectSettingsTool
-#include <moc_DefaultImageValidator.cpp>

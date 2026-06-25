@@ -8,17 +8,16 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include "../StandardPluginsConfig.h"
-#include <QToolBar>
 
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/PlaybackControlsGroup.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/PlaybackOptionsGroup.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/RecorderGroup.h>
-#endif
+
+#include <QToolBar>
 
 namespace EMStudio
 {

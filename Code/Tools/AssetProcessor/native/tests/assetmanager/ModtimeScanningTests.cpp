@@ -217,7 +217,8 @@ namespace UnitTests
     void ModtimeScanningTest::SetFileContents(QString filePath, QString contents)
     {
         QFile file(filePath);
-        file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+        [[maybe_unused]] const bool res = file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+        AZ_Assert(res, "Failed to open file %s", qPrintable(filePath));
         file.write(contents.toUtf8().constData());
         file.close();
     }

@@ -161,4 +161,3 @@ QModelIndex ColumnGroupTreeView::mapFromSource(const QModelIndex& sourceModel) c
 }
 
 
-#include <Util/moc_ColumnGroupTreeView.cpp>

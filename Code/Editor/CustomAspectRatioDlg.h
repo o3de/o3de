@@ -15,9 +15,7 @@
 #define CRYINCLUDE_EDITOR_CUSTOMASPECTRATIODLG_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QDialog>
-#endif
 
 namespace Ui
 {

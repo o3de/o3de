@@ -199,5 +199,4 @@ void SpinBoxPage::track(SpinBoxType* spinBox)
     });
 }
 
-#include "Gallery/moc_SpinBoxPage.cpp"
 

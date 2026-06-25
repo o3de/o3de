@@ -30,17 +30,38 @@ namespace UnitTest
     public:
         void SetUpEditorFixtureImpl() override
         {
+            // Qt6 will not deliver QEvent::FocusIn to a widget whose top-level
+            // has never been shown, even on the offscreen platform. Show before
+            // activating so focus events reach the child correctly.
             m_dummyWidget = AZStd::make_unique<QWidget>();
             m_dummyWidget->winId();
-            QApplication::setActiveWindow(m_dummyWidget.get());
 
             m_textEdit = AZStd::make_unique<GrowTextEdit>(m_dummyWidget.get());
             m_textEdit->setFocusPolicy(Qt::StrongFocus);
+            // ensurePolished() forces full internal-state initialization on the
+            // child. Without it, Linux offscreen QPA does not deliver
+            // QEvent::FocusIn to a freshly created QTextEdit subclass.
+            m_textEdit->ensurePolished();
+
+            m_dummyWidget->show();
+            m_dummyWidget->activateWindow();
+            // qWaitForWindowExposed is the canonical Qt synchronization for
+            // "window is ready for input". Required on Linux offscreen where
+            // processEvents() alone is not enough for show() to fully expose.
+            // Return is [[nodiscard]] in Qt6; offscreen QPA may legitimately
+            // return false, so the value is discarded rather than asserted.
+            (void)QTest::qWaitForWindowExposed(m_dummyWidget.get());
+            // Some QPA plugins (including Linux offscreen) auto-focus the
+            // first focusable child when the top-level is shown, firing
+            // FocusIn before the test body can set the value it expects to
+            // capture. Clear focus so each test body's setFocus() delivers a
+            // fresh FocusIn against the just-set text.
+            m_textEdit->clearFocus();
+            QApplication::processEvents();
         }
 
         void TearDownEditorFixtureImpl() override
         {
-            QApplication::setActiveWindow(nullptr);
             m_textEdit.reset();
             m_dummyWidget.reset();
         }

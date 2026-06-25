@@ -187,4 +187,3 @@ namespace AzToolsFramework
 
 } //AzToolsFramework
 
-#include "UI/PropertyEditor/moc_PropertyIntSpinCtrl.cpp"

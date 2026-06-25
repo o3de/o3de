@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 
 // Disables warning messages triggered by the Qt library
@@ -17,7 +16,6 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QDialog>
 AZ_POP_DISABLE_WARNING
-#endif
 
 namespace AzQtComponents
 {

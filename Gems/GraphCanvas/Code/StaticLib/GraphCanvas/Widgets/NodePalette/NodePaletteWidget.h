@@ -7,16 +7,7 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/PlatformDef.h>
-
-AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
-#include <QAction>
-#include <QTimer>
-#include <qlabel.h>
-#include <qitemselectionmodel.h>
-#include <qstyleditemdelegate.h>
-AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -30,7 +21,14 @@ AZ_POP_DISABLE_WARNING
 #include <GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.h>
 
 #include <GraphCanvas/Editor/AssetEditorBus.h>
-#endif
+
+AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
+#include <QAction>
+#include <QTimer>
+#include <QItemSelectionModel>
+#include <QLabel>
+#include <QStyledItemDelegate>
+AZ_POP_DISABLE_WARNING
 
 class QSortFilterProxyModel;
 

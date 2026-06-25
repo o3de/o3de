@@ -11,10 +11,10 @@
 
 import sys
 
-from PySide2.QtCore import QProcess, Signal, Slot, QTextCodec
-from PySide2.QtGui import QTextCursor
-from PySide2.QtWidgets import QApplication, QPlainTextEdit
-from PySide2.QtCore import QTimer
+from PySide6.QtCore import QProcess, Signal, Slot, QTextCodec
+from PySide6.QtGui import QTextCursor
+from PySide6.QtWidgets import QApplication, QPlainTextEdit
+from PySide6.QtCore import QTimer
 
 class ProcessOutputReader(QProcess):
     produce_output = Signal(str)

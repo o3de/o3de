@@ -41,5 +41,4 @@ namespace ScriptCanvasEditor
         m_ui->showWarningButton->setText(QString("%1 Warnings").arg(warningCount));
     }
 
-#include <Editor/View/Widgets/moc_MainWindowStatusWidget.cpp>
 }

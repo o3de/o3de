@@ -139,44 +139,52 @@ namespace OpenParticle
 
     void ParticleComponentController::Play()
     {
-        if (!m_particleHandle.IsValid()) {
-            AZ_Printf("Particle", "No particle asset found to Play");
+        if (!m_particleHandle.IsValid())
+        {
+            Register(); // restart it in case of play() after stop().
+        }
+
+        if (!m_particleHandle.IsValid())
+        {
+            AZ_Warning("Particle", false, "ParticleComponentController::Play - No particle asset found to Play");
             return;
         }
-        AZ_Printf("Particle", "Particle Play %s", m_particleHandle->m_particleAsset.GetHint().data());
+        AZ_TracePrintf("Particle", "Particle Play %s", m_particleHandle->m_particleAsset.GetHint().data());
         m_particleHandle->m_status = ParticleStatus::PLAYING;
 
     }
 
     void ParticleComponentController::Pause()
     {
-        if (!m_particleHandle.IsValid()) {
-            AZ_Printf("Particle", "No particle asset found to PAUSE");
+        if (!m_particleHandle.IsValid())
+        {
+            AZ_Warning("Particle", false, "ParticleComponentController::Pause - No particle asset found to PAUSE");
             return;
         }
-        AZ_Printf("Particle", "Particle Pause %s", m_particleHandle->m_particleAsset.GetHint().data());
+        AZ_TracePrintf("Particle", "Particle Pause %s", m_particleHandle->m_particleAsset.GetHint().data());
         m_particleHandle->m_status = ParticleStatus::PAUSED;
     }
 
     void ParticleComponentController::Stop()
     {
-        if (!m_particleHandle.IsValid()) {
-            AZ_Printf("Particle", "No particle asset found to STOP");
+        if (!m_particleHandle.IsValid())
+        {
+            AZ_Warning("Particle", false, "ParticleComponentController::Stop - No particle asset found to Stop");
             return;
         }
-        AZ_Printf("Particle", "Particle Stop %s", m_particleHandle->m_particleAsset.GetHint().data());
+        AZ_TracePrintf("Particle", "Particle Stop %s", m_particleHandle->m_particleAsset.GetHint().data());
         Deregister();
     }
 
     void ParticleComponentController::SetVisibility(bool visible)
     {
-        AZ_Printf("Particle", "Particle Show %s", m_entityId.ToString().c_str());
+        AZ_TracePrintf("Particle", "Particle Show %s", m_entityId.ToString().c_str());
         SetVisible(visible);
     }
 
     bool ParticleComponentController::GetVisibility() const
     {
-        AZ_Printf("Particle", "Particle Show %s", m_entityId.ToString().c_str());
+        AZ_TracePrintf("Particle", "Particle Show %s", m_entityId.ToString().c_str());
         return m_isVisible;
     }
 
@@ -255,6 +263,7 @@ namespace OpenParticle
         if (m_featureProcessor != nullptr && m_particleHandle.IsValid())
         {
             m_featureProcessor->ReleaseParticle(m_particleHandle);
+            m_particleHandle = {};
         }
     }
 

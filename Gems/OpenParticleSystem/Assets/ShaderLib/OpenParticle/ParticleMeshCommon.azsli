@@ -5,14 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-namespace QtForPython
+#include <OpenParticle/ParticleCommon.azsli>
+
+struct ParticleMeshInstanceData
 {
-    class InitializeEmbeddedPyside2
-    {
-    public:
-        InitializeEmbeddedPyside2() = default;
-        virtual ~InitializeEmbeddedPyside2() = default;
-    };
-} // namespace QtForPython
+    float4 m_offset;
+    float4 m_color;
+    float4 m_initRotation;
+    float4 m_rotationQuat;
+    float4 m_scale;
+    uint4  m_hasInstanceData;
+};

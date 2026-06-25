@@ -111,7 +111,7 @@ namespace AzToolsFramework
 
         int AssetBrowserListModel::rowCount(const QModelIndex& parent) const
         {
-            return !parent.isValid() ? m_indexMap.size() : 0;
+            return !parent.isValid() ? static_cast<int>(m_indexMap.size()) : 0;
         }
 
         void AssetBrowserListModel::timerEvent([[maybe_unused]] QTimerEvent* event)
@@ -300,4 +300,3 @@ namespace AzToolsFramework
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-#include "AssetBrowser/moc_AssetBrowserListModel.cpp"

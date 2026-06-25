@@ -57,8 +57,8 @@ ANDROID_GRADLE_PLUGIN="${ANDROID_GRADLE_PLUGIN:-8.1.4}"
 echo "Using Android gradle plugin version $ANDROID_GRADLE_PLUGIN"
 "$O3DE_PATH/scripts/o3de.sh" android-configure --set-value android.gradle.plugin="$ANDROID_GRADLE_PLUGIN" --global
 
-# Optionally override the version of the android NDK to use, otherwise default to 25
-ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:-25}"
+# Optionally override the version of the android NDK to use, otherwise default to 27
+ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:-27}"
 echo "Using Android NDK Version $ANDROID_NDK_VERSION"
 "$O3DE_PATH/scripts/o3de.sh" android-configure --set-value ndk.version="$ANDROID_NDK_VERSION.*"
 

@@ -8,7 +8,6 @@
 #ifndef ASSETPROCESSOR_RCQUEUESORTMODEL_H
 #define ASSETPROCESSOR_RCQUEUESORTMODEL_H
 
-#if !defined(Q_MOC_RUN)
 #include <QSortFilterProxyModel>
 #include <QSet>
 #include <QString>
@@ -17,7 +16,6 @@
 #include "native/utilities/AssetUtilEBusHelper.h"
 #include <AzCore/std/containers/unordered_map.h>
 #include "native/assetprocessor.h"
-#endif
 
 class RCcontrollerUnitTests;
 

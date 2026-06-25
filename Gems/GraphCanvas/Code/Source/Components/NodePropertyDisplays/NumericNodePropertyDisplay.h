@@ -7,14 +7,12 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QLineEdit>
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
 #include <GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.h>
 #include <GraphCanvas/Components/NodePropertyDisplay/NumericDataInterface.h>
-#endif
 
 class QGraphicsProxyWidget;
 

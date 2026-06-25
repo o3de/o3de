@@ -14,7 +14,6 @@ namespace Editor
 {
     class EditorQtApplicationWindows : public EditorQtApplication
     {
-        Q_OBJECT
     public:
         EditorQtApplicationWindows(int& argc, char** argv)
             : EditorQtApplication(argc, argv)
@@ -22,7 +21,7 @@ namespace Editor
         }
 
         // QAbstractNativeEventFilter:
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
+        bool nativeEventFilter(const QByteArray& eventType, void* message, qintptr* result) override;
 
         bool eventFilter(QObject* object, QEvent* event) override;
     };
