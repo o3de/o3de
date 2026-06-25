@@ -47,6 +47,30 @@ namespace UnitTest
         EXPECT_EQ(ClampFaceResolution(1000), MaxFaceResolution);  // above ceiling
     }
 
+    TEST_F(GradientGILogicFixture, SnapCpuFaceResolutionToPow2_AvoidsTheBlackBand)
+    {
+        // Powers of two pass through unchanged.
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(4), 4u);
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(64), 64u);
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(128), 128u);
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(256), 256u);
+
+        // The observed dead band (91..127 at 16-bit RGBA) snaps out to a safe power of two.
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(91), 64u);   // nearer 64
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(127), 128u); // nearer 128
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(100), 128u);
+        EXPECT_EQ(SnapCpuFaceResolutionToPow2(200), 256u);
+
+        // Result is always a power of two within [4..256], whatever the input.
+        for (uint32_t v = MinFaceResolution; v <= MaxFaceResolution; ++v)
+        {
+            const uint32_t snapped = SnapCpuFaceResolutionToPow2(v);
+            EXPECT_GE(snapped, MinFaceResolution);
+            EXPECT_LE(snapped, MaxFaceResolution);
+            EXPECT_EQ(snapped & (snapped - 1), 0u) << "not a power of two for input " << v;
+        }
+    }
+
     TEST_F(GradientGILogicFixture, RoundAndClampFaceResolution_RoundsThenClamps)
     {
         // Script Canvas Numbers arrive as float -- round to nearest whole pixel.

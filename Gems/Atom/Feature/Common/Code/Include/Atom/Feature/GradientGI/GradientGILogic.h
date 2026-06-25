@@ -50,6 +50,27 @@ namespace AZ::Render::GradientGI
         return static_cast<uint32_t>(clamped);
     }
 
+    //! Snap a CPU/Static face size to the nearest power of two in [4..256].
+    //!
+    //! O3DE's runtime StreamingImage GPU upload renders certain non-power-of-two cubemap face sizes
+    //! black -- an observed dead band around 91..127 at R16G16B16A16, where the per-face subresource
+    //! crosses 64KB yet isn't power-of-two/alignment-clean. The gradient is smooth low-frequency
+    //! ambient light, so snapping the CPU face size to a power of two is visually lossless and avoids
+    //! the quirk. GPU/Dynamic mode is unaffected -- it writes an AttachmentImage from a compute pass,
+    //! never a StreamingImage -- so only the CPU build path uses this.
+    inline uint32_t SnapCpuFaceResolutionToPow2(uint32_t value)
+    {
+        const uint32_t clamped = ClampFaceResolution(value);
+        uint32_t lower = MinFaceResolution; // 4 is already a power of two
+        while ((lower << 1) <= clamped)
+        {
+            lower <<= 1;
+        }
+        const uint32_t upper = lower << 1;
+        const uint32_t nearest = (clamped - lower <= upper - clamped) ? lower : upper;
+        return ClampFaceResolution(nearest);
+    }
+
     // =========================================================================================
     // Update mode fallback (GPU/Dynamic -> CPU/Static)
     // =========================================================================================

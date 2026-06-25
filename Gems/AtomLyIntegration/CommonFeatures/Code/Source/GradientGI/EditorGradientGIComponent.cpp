@@ -83,7 +83,9 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::SoftMax,  5.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
                             ->Attribute(AZ::Edit::Attributes::Max,  20.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientGIComponentConfig::m_faceResolution, "Resolution", "Cubemap face size in pixels (4-256). Higher values give sharper ambient detail at greater cost.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &GradientGIComponentConfig::m_faceResolution, "Resolution",
+                            "Cubemap face size in pixels (4-256). Higher values give sharper ambient detail at greater cost. "
+                            "In CPU mode the value snaps to the nearest power of two on release.")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(AZ::Edit::Attributes::Min, 4u)
                             ->Attribute(AZ::Edit::Attributes::Max, 256u)
@@ -187,6 +189,17 @@ namespace AZ
         // =====================================================================
         // ChangeNotify Handlers
         // =====================================================================
+
+        AZ::u32 EditorGradientGIComponent::OnConfigurationChanged()
+        {
+            // Make the CPU/Static power-of-two snap visible: adjust the stored value first, then let
+            // the base adapter re-activate the controller with it, and refresh the inspector so the
+            // Resolution slider shows exactly what is rendered (e.g. 100 -> 128) instead of silently
+            // diverging. GPU/Dynamic mode leaves the value untouched.
+            m_controller.SnapResolutionForCurrentMode();
+            BaseClass::OnConfigurationChanged();
+            return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+        }
 
         AZ::u32 EditorGradientGIComponent::OnColorChanged()
         {

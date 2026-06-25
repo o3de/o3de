@@ -156,6 +156,7 @@ namespace AZ
                     static_cast<GradientGIFeatureProcessorInterface::UpdateMode>(m_configuration.m_updateMode));
                 UpdateColors();
                 m_featureProcessor->SetExposure(m_configuration.m_exposure);
+                SnapResolutionForCurrentMode();
                 m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
 
                 // Texture layers: push params now; the textures load asynchronously.
@@ -263,9 +264,23 @@ namespace AZ
             // Script Canvas hands us a Number (float). Round to the nearest whole pixel and clamp
             // into the supported range before storing into the unsigned config field.
             m_configuration.m_faceResolution = GradientGI::RoundAndClampFaceResolution(resolution);
+            SnapResolutionForCurrentMode();
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetFaceResolution(m_configuration.m_faceResolution);
+            }
+        }
+
+        void GradientGIComponentController::SnapResolutionForCurrentMode()
+        {
+            // CPU/Static renders only power-of-two cubemap faces (engine streaming-image upload
+            // limit -- a per-face >64KB non-power-of-two subresource samples black). Snap the stored
+            // value so the slider and the scripting getter agree with what is actually rendered, with
+            // no hidden clip. GPU/Dynamic composites any size on the GPU and is left untouched.
+            if (m_configuration.m_updateMode == GradientGIUpdateMode::Static)
+            {
+                m_configuration.m_faceResolution =
+                    GradientGI::SnapCpuFaceResolutionToPow2(m_configuration.m_faceResolution);
             }
         }
 
@@ -277,6 +292,9 @@ namespace AZ
         void GradientGIComponentController::SetUpdateMode(GradientGIUpdateMode mode)
         {
             m_configuration.m_updateMode = mode;
+            // Switching to CPU/Static may make the current size a power of two (and back to GPU lifts
+            // that restriction), so re-evaluate the snapped value for the getter's sake.
+            SnapResolutionForCurrentMode();
             if (m_featureProcessor)
             {
                 m_featureProcessor->SetUpdateMode(

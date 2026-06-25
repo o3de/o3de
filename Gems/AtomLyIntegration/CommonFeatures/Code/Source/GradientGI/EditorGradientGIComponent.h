@@ -30,6 +30,10 @@ namespace AZ
             EditorGradientGIComponent(const GradientGIComponentConfig& config);
 
         private:
+            //! Snap the CPU/Static resolution to a power of two and refresh the inspector so the
+            //! slider visibly reflects the value that is actually rendered (no hidden clip).
+            AZ::u32 OnConfigurationChanged() override;
+
             AZ::u32 OnColorChanged();
             AZ::u32 OnExposureChanged();
             AZ::u32 OnResolutionChanged();

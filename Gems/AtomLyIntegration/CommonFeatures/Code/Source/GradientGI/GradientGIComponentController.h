@@ -101,6 +101,10 @@ namespace AZ
 
             void UpdateColors();
 
+            //! CPU/Static renders only power-of-two cubemap faces; snap the stored resolution so the
+            //! slider and scripting getter match what is rendered. No-op in GPU/Dynamic mode.
+            void SnapResolutionForCurrentMode();
+
             //! Queue an async load of the detail/specular texture assets (connects AssetBus).
             void LoadDetailTexture();
             void LoadSpecularTexture();

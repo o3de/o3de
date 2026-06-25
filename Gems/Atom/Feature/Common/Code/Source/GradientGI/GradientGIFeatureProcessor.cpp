@@ -632,7 +632,10 @@ namespace AZ::Render
     Data::Instance<RPI::StreamingImage> GradientGIFeatureProcessor::BuildGradientCubemap()
     {
         const RHI::Format format   = ChooseBestFormat();
-        const uint32_t    faceSize = m_faceResolution;
+        // Snap to a power of two: O3DE's runtime StreamingImage upload renders certain non-power-of-
+        // two face sizes black (observed dead band ~91..127 at R16G16B16A16). Imperceptible for a
+        // smooth gradient. See GradientGI::SnapCpuFaceResolutionToPow2.
+        const uint32_t    faceSize = GradientGI::SnapCpuFaceResolutionToPow2(m_faceResolution);
 
         // Step 1: Generate pixel data for each of the 6 faces
         AZStd::array<AZStd::vector<uint8_t>, 6> facePixels;

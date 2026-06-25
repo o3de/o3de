@@ -213,22 +213,18 @@ namespace AzQtComponents
         {
             QStyledItemDelegate::initStyleOption(option, index);
 
-            // The default usage of combobox only allow one selection,
-            // then we have to tweak it a bit so it show a check mark in this case.
+            // Only multi-state combos (explicitly opted in via the custom-check-state class) get a check
+            // indicator. Plain single-select combos show the current item through the selection
+            // highlight only -- no checkbox square. Qt6's Fusion base renders HasCheckIndicator as a
+            // boxed checkbox rather than the old clean checkmark, which is what we are avoiding here.
             if (option && m_combo && m_combo->view()->selectionMode() == QAbstractItemView::SingleSelection)
             {
-                option->features |= QStyleOptionViewItem::HasCheckIndicator;
                 auto *style = qobject_cast<Style *>(m_combo->style());
-                Qt::CheckState checkState;
                 if (style && style->hasClass(m_combo, g_customCheckStateClass))
                 {
-                    checkState = index.data(Qt::CheckStateRole).value<Qt::CheckState>();
+                    option->features |= QStyleOptionViewItem::HasCheckIndicator;
+                    option->checkState = index.data(Qt::CheckStateRole).value<Qt::CheckState>();
                 }
-                else
-                {
-                    checkState = m_combo->currentIndex() == index.row() ? Qt::Checked : Qt::Unchecked;
-                }
-                option->checkState = checkState;
             }
         }
 
