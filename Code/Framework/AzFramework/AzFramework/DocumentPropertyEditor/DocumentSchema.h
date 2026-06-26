@@ -574,8 +574,14 @@ namespace AZ::DocumentPropertyEditor
 
                             return CallbackTraits::InvokeOnBoundMessage(boundMessage.value(), marshalledArguments);
                         }
+
+                        return AZ::Failure<ErrorType>("Failed to unmarshal BoundAdapterMessage from DOM value");
                     }
+
+                    return AZ::Failure<ErrorType>("Object has an unrecognized $type for callback invocation");
                 }
+
+                return AZ::Failure<ErrorType>("Object has no $type field for callback invocation");
             }
             else if (value.IsArray())
             {
