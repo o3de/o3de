@@ -2810,9 +2810,8 @@ namespace AzToolsFramework
         ToolsApplicationRequests::Bus::BroadcastResult(areEntitiesEditable, &ToolsApplicationRequests::AreEntitiesEditable, m_selectedEntityIds);
         if (areEntitiesEditable)
         {
-            componentPalette->Populate(m_serializeContext, m_selectedEntityIds, m_componentFilter, serviceFilter, incompatibleServiceFilter);
-            componentPalette->Present();
             componentPalette->setGeometry(QRect(position, size));
+            componentPalette->Populate(m_serializeContext, m_selectedEntityIds, m_componentFilter, serviceFilter, incompatibleServiceFilter);
         }
     }
 
