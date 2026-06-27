@@ -10,18 +10,19 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Serialization/ObjectStream.h>
-#include <AzCore/Serialization/IdUtils.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 
 // Forward declarations
 namespace AZ
 {
     class Entity;
 }
+
+//! Simple spawn ticket ID for tracking UI spawn requests
+using UiSpawnId = uint32_t;
+static constexpr UiSpawnId InvalidUiSpawnId = 0;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Bus for making requests to the UI game entity context.
@@ -39,17 +40,16 @@ public:
     static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
     //////////////////////////////////////////////////////////////////////////
 
-    //! Instantiates a dynamic slice asynchronously.
-    //! \return a ticket identifying the spawn request.
-    //!         Callers can immediately subscribe to the SliceInstantiationResultBus for this ticket
-    //!         to receive result for this specific request.
-    virtual AzFramework::SliceInstantiationTicket InstantiateDynamicSlice(
-        const AZ::Data::Asset<AZ::Data::AssetData>& /*sliceAsset*/,
+    //! Spawns entities from a spawnable asset asynchronously.
+    //! \return a spawn ID identifying the spawn request.
+    //!         Callers can immediately subscribe to the UiGameEntityContextSpawnResultsBus for this ID
+    //!         to receive results for this specific request.
+    virtual UiSpawnId SpawnSpawnable(
+        const AZ::Data::Asset<AzFramework::Spawnable>& /*spawnableAsset*/,
         const AZ::Vector2& /*position*/,
         bool /*isViewportPosition*/,
-        AZ::Entity* /*parent*/,
-        const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& /*customIdMapper*/)
-    { return AzFramework::SliceInstantiationTicket(); }
+        AZ::Entity* /*parent*/)
+    { return InvalidUiSpawnId; }
 };
 
 using UiGameEntityContextBus = AZ::EBus<UiGameEntityContextRequests>;
@@ -63,44 +63,39 @@ public:
 
     virtual ~UiGameEntityContextNotifications() = default;
 
-    /// Fired when a slice has been successfully instantiated.
-    virtual void OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/,
-        const AZ::SliceComponent::SliceInstanceAddress& /*instance*/,
-        const AzFramework::SliceInstantiationTicket& /*ticket*/) {}
+    /// Fired when entities have been successfully spawned.
+    virtual void OnSpawnCompleted(UiSpawnId /*spawnId*/,
+        const AZStd::vector<AZ::EntityId>& /*spawnedEntities*/) {}
 
-    /// Fired when a slice asset could not be instantiated.
-    virtual void OnSliceInstantiationFailed(const AZ::Data::AssetId& /*sliceAssetId*/,
-        const AzFramework::SliceInstantiationTicket& /*ticket*/) {}
+    /// Fired when a spawn request could not be completed.
+    virtual void OnSpawnFailed(UiSpawnId /*spawnId*/) {}
 };
 
 using UiGameEntityContextNotificationBus = AZ::EBus<UiGameEntityContextNotifications>;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//! Bus for receiving notifications from the UI game entity context component. This bus is used
+//! Bus for receiving per-spawn notifications from the UI game entity context component. This bus is used
 //! by the UiSpawnerComponent that depends on the UiGameEntityContext fixing entities up before
 //! it sends out notifications to listeners on the UiSpawnerNotificationBus
-class UiGameEntityContextSliceInstantiationResults
+class UiGameEntityContextSpawnResults
     : public AZ::EBusTraits
 {
 public:
 
-    virtual ~UiGameEntityContextSliceInstantiationResults() = default;
+    virtual ~UiGameEntityContextSpawnResults() = default;
 
     //////////////////////////////////////////////////////////////////////////
-    // EBusTraits overrides. Addressed by SliceInstantiationTicket
+    // EBusTraits overrides. Addressed by UiSpawnId
     static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-    typedef AzFramework::SliceInstantiationTicket BusIdType;
+    typedef UiSpawnId BusIdType;
     //////////////////////////////////////////////////////////////////////////
 
-    //! Signals that a slice was successfully instantiated prior to entity registration.
-    virtual void OnEntityContextSlicePreInstantiate(const AZ::Data::AssetId& /*sliceAssetId*/, const AZ::SliceComponent::SliceInstanceAddress& /*sliceAddress*/) {}
+    //! Signals that entities were successfully spawned and are ready.
+    virtual void OnEntityContextSpawnCompleted(const AZStd::vector<AZ::EntityId>& /*spawnedEntities*/) {}
 
-    //! Signals that a slice was successfully instantiated after entity registration.
-    virtual void OnEntityContextSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, const AZ::SliceComponent::SliceInstanceAddress& /*sliceAddress*/) {}
-
-    //! Signals that a slice could not be instantiated.
-    virtual void OnEntityContextSliceInstantiationFailed(const AZ::Data::AssetId& /*sliceAssetId*/) {}
+    //! Signals that a spawn request failed.
+    virtual void OnEntityContextSpawnFailed() {}
 };
 
-using UiGameEntityContextSliceInstantiationResultsBus = AZ::EBus<UiGameEntityContextSliceInstantiationResults>;
+using UiGameEntityContextSpawnResultsBus = AZ::EBus<UiGameEntityContextSpawnResults>;

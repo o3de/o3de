@@ -9,21 +9,20 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Slice/SliceAsset.h>
-#include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 
 #include <Shine/Bus/UiSpawnerBus.h>
 #include <Shine/Bus/UiGameEntityContextBus.h>
 
 /**
-* SpawnerComponent
+* UiSpawnerComponent
 *
-* SpawnerComponent facilitates spawning of a design-time selected or run-time provided "*.dynamicslice" at an entity's location with an optional offset.
+* UiSpawnerComponent facilitates spawning of a design-time selected or run-time provided spawnable at an entity's location with an optional offset.
 */
 class UiSpawnerComponent
     : public AZ::Component
     , private UiSpawnerBus::Handler
-    , private UiGameEntityContextSliceInstantiationResultsBus::MultiHandler
+    , private UiGameEntityContextSpawnResultsBus::MultiHandler
 {
 public:
     AZ_COMPONENT(UiSpawnerComponent, "{5AF19874-04A4-4540-82FC-5F29EC854E31}");
@@ -39,19 +38,18 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     // UiSpawnerBus::Handler
-    AzFramework::SliceInstantiationTicket Spawn() override;
-    AzFramework::SliceInstantiationTicket SpawnRelative(const AZ::Vector2& relative) override;
-    AzFramework::SliceInstantiationTicket SpawnViewport(const AZ::Vector2& pos) override;
-    AzFramework::SliceInstantiationTicket SpawnSlice(const AZ::Data::Asset<AZ::Data::AssetData>& slice) override;
-    AzFramework::SliceInstantiationTicket SpawnSliceRelative(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Vector2& relative) override;
-    AzFramework::SliceInstantiationTicket SpawnSliceViewport(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Vector2& pos) override;
+    AzFramework::EntitySpawnTicket::Id Spawn() override;
+    AzFramework::EntitySpawnTicket::Id SpawnRelative(const AZ::Vector2& relative) override;
+    AzFramework::EntitySpawnTicket::Id SpawnViewport(const AZ::Vector2& pos) override;
+    AzFramework::EntitySpawnTicket::Id SpawnSpawnable(const AZ::Data::Asset<AzFramework::Spawnable>& spawnable) override;
+    AzFramework::EntitySpawnTicket::Id SpawnSpawnableRelative(const AZ::Data::Asset<AzFramework::Spawnable>& spawnable, const AZ::Vector2& relative) override;
+    AzFramework::EntitySpawnTicket::Id SpawnSpawnableViewport(const AZ::Data::Asset<AzFramework::Spawnable>& spawnable, const AZ::Vector2& pos) override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
-    // UiGameEntityContextSliceInstantiationResultsBus::MultiHandler
-    void OnEntityContextSlicePreInstantiate(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& sliceAddress) override;
-    void OnEntityContextSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& sliceAddress) override;
-    void OnEntityContextSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId) override;
+    // UiGameEntityContextSpawnResultsBus::MultiHandler
+    void OnEntityContextSpawnCompleted(const AZStd::vector<AZ::EntityId>& spawnedEntities) override;
+    void OnEntityContextSpawnFailed() override;
     //////////////////////////////////////////////////////////////////////////
 
 private:
@@ -65,11 +63,15 @@ private:
 
     //////////////////////////////////////////////////////////////////////////
     // Private helpers
-    AzFramework::SliceInstantiationTicket SpawnSliceInternal(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Vector2& position, bool isViewportPosition);
-    AZStd::vector<AZ::EntityId> GetTopLevelEntities(const AZ::SliceComponent::EntityList& entities);
+    AzFramework::EntitySpawnTicket::Id SpawnSpawnableInternal(const AZ::Data::Asset<AzFramework::Spawnable>& spawnable, const AZ::Vector2& position, bool isViewportPosition);
+    AZStd::vector<AZ::EntityId> GetTopLevelEntities(const AZStd::vector<AZ::EntityId>& entityIds);
     //////////////////////////////////////////////////////////////////////////
 
     // Serialized members
-    AZ::Data::Asset<AZ::DynamicSliceAsset> m_sliceAsset{ AZ::Data::AssetLoadBehavior::PreLoad };
+    AZ::Data::Asset<AzFramework::Spawnable> m_spawnableAsset{ AZ::Data::AssetLoadBehavior::PreLoad };
     bool m_spawnOnActivate = false;
+
+    // Map UiSpawnId to a pseudo EntitySpawnTicket::Id for bus compatibility
+    AZStd::unordered_map<UiSpawnId, AzFramework::EntitySpawnTicket::Id> m_activeSpawns;
+    AzFramework::EntitySpawnTicket::Id m_nextTicketId = 1;
 };

@@ -10,14 +10,17 @@
 #include <Shine/UiEntityContext.h>
 #include <Shine/Bus/UiGameEntityContextBus.h>
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
+#include <AzFramework/Spawnable/Spawnable.h>
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//! The UiGameEntityContext is used for a canvas that is loaded in game as oppoed to being
+//! The UiGameEntityContext is used for a canvas that is loaded in game as opposed to being
 //! open for editing
 class UiGameEntityContext
     : public UiEntityContext
     , public UiGameEntityContextBus::Handler
-    , private AzFramework::SliceInstantiationResultBus::MultiHandler
+    , public AZ::Data::AssetBus::MultiHandler
 {
 public: // member functions
 
@@ -47,16 +50,15 @@ public: // member functions
     // ~UiEntityContextRequestBus
 
     // UiGameEntityContextBus
-    AzFramework::SliceInstantiationTicket InstantiateDynamicSlice(
-        const AZ::Data::Asset<AZ::Data::AssetData>& sliceAsset, const AZ::Vector2& position, bool isViewportPostion,
-        AZ::Entity* parent, const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customIdMapper) override;
+    UiSpawnId SpawnSpawnable(
+        const AZ::Data::Asset<AzFramework::Spawnable>& spawnableAsset, const AZ::Vector2& position, bool isViewportPosition,
+        AZ::Entity* parent) override;
     // ~UiGameEntityContextBus
 
-    // SliceInstantiationResultBus
-    void OnSlicePreInstantiate(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& instance) override;
-    void OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& instance) override;
-    void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId) override;
-    // ~SliceInstantiationResultBus
+    // AZ::Data::AssetBus::MultiHandler
+    void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+    void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+    // ~AZ::Data::AssetBus
 
     void SetCanvasEntity(AZ::EntityId canvasEntityId) { m_canvasEntityId = canvasEntityId; }
 
@@ -68,24 +70,28 @@ protected: // member functions
     // Used to validate that the entities in an instantiated slice are valid entities for this context
     bool ValidateEntitiesAreValidForContext(const AzFramework::EntityList& entities) override;
 
+    // Clone entities from a spawnable and integrate them into the UI context
+    void ProcessSpawnableEntities(UiSpawnId spawnId, const AzFramework::Spawnable& spawnable);
+
 protected: // data
 
-    struct InstantiatingDynamicSlice
+    struct PendingSpawn
     {
-        InstantiatingDynamicSlice(const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+        PendingSpawn(const AZ::Data::Asset<AzFramework::Spawnable>& asset,
             const AZ::Vector2& position, bool isViewportPosition, AZ::Entity* parent)
             : m_asset(asset)
             , m_position(position)
             , m_isViewportPosition(isViewportPosition)
             , m_parent(parent) {}
 
-        AZ::Data::Asset<AZ::Data::AssetData>    m_asset;
+        AZ::Data::Asset<AzFramework::Spawnable> m_asset;
         AZ::Vector2                             m_position;
         bool                                    m_isViewportPosition;
         AZ::Entity*                             m_parent;
     };
 
-    AZStd::unordered_map<AzFramework::SliceInstantiationTicket, InstantiatingDynamicSlice> m_instantiatingDynamicSlices;
+    AZStd::unordered_map<UiSpawnId, PendingSpawn> m_pendingSpawns;
+    UiSpawnId m_nextSpawnId = 1;
 
     AZ::EntityId m_canvasEntityId;
 };

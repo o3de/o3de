@@ -48,7 +48,7 @@ end
 function RadioButtonSpawner:OnTopLevelEntitiesSpawned(ticket, ids)
     -- we could do this in OnSpawnEnd but this is a convenient way to add each top-level element
     -- spawned to be part of the radio button group. There is only one top-level element in the
-    -- dynamic slice and we know it is the radio button
+    -- spawnable and we know it is the radio button
     for i = 1,#ids do
         local parent = UiElementBus.Event.GetParent(ids[i])
         if parent == self.Properties.SpawnerElement then
@@ -142,7 +142,7 @@ function RadioButtonSpawner:SpawnRadioButtons(activeButton)
 end
 
 -- Helper function to set the text on a child component of the radio button.
--- We know that the radio button element in our dynamic slice has a child called "Text"
+-- We know that the radio button element in our spawnable has a child called "Text"
 function RadioButtonSpawner:SetRadioButtonText(rb, value)
     local textEntity = UiElementBus.Event.FindChildByName(rb, "Text")
     if (textEntity and textEntity:IsValid()) then

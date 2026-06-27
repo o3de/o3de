@@ -27,7 +27,7 @@ function SpawnElements:OnDeactivate()
 end
 
 function SpawnElements:OnButtonClick()
-    -- don't spawn another dynamic slice until we have processed the last one
+    -- don't spawn another spawnable until we have processed the last one
     if self.spawnTicket == nil then
         self.spawnerHandler = UiSpawnerNotificationBus.Connect(self, self.Properties.SpawnerElement)
         self.spawnTicket = UiSpawnerBus.Event.Spawn(self.Properties.SpawnerElement)

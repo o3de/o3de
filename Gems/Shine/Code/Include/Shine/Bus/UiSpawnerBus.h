@@ -9,8 +9,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Vector2.h>
-#include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Slice/SliceInstantiationTicket.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Bus for making requests to the UiSpawnerComponent
@@ -20,23 +19,23 @@ class UiSpawnerInterface
 public:
     virtual ~UiSpawnerInterface() {}
 
-    //! Spawn the selected slice at the entity's location
-    virtual AzFramework::SliceInstantiationTicket Spawn() = 0;
+    //! Spawn the selected spawnable at the entity's location
+    virtual AzFramework::EntitySpawnTicket::Id Spawn() = 0;
 
-    //! Spawn the selected slice at the entity's location with the provided relative offset
-    virtual AzFramework::SliceInstantiationTicket SpawnRelative(const AZ::Vector2& relative) = 0;
+    //! Spawn the selected spawnable at the entity's location with the provided relative offset
+    virtual AzFramework::EntitySpawnTicket::Id SpawnRelative(const AZ::Vector2& relative) = 0;
 
-    //! Spawn the selected slice at the specified viewport position
-    virtual AzFramework::SliceInstantiationTicket SpawnViewport(const AZ::Vector2& pos) { (void)pos; return AzFramework::SliceInstantiationTicket(); };
+    //! Spawn the selected spawnable at the specified viewport position
+    virtual AzFramework::EntitySpawnTicket::Id SpawnViewport(const AZ::Vector2& pos) = 0;
 
-    //! Spawn the provided slice at the entity's location
-    virtual AzFramework::SliceInstantiationTicket SpawnSlice(const AZ::Data::Asset<AZ::Data::AssetData>& slice) { (void)slice; return AzFramework::SliceInstantiationTicket(); };
+    //! Spawn the provided spawnable at the entity's location
+    virtual AzFramework::EntitySpawnTicket::Id SpawnSpawnable(const AZ::Data::Asset<AzFramework::Spawnable>& spawnable) = 0;
 
-    //! Spawn the provided slice at the entity's location with the provided relative offset
-    virtual AzFramework::SliceInstantiationTicket SpawnSliceRelative(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Vector2& relative) { (void)slice; (void)relative; return AzFramework::SliceInstantiationTicket(); };
+    //! Spawn the provided spawnable at the entity's location with the provided relative offset
+    virtual AzFramework::EntitySpawnTicket::Id SpawnSpawnableRelative(const AZ::Data::Asset<AzFramework::Spawnable>& spawnable, const AZ::Vector2& relative) = 0;
 
-    //! Spawn the provided slice at the specified viewport position
-    virtual AzFramework::SliceInstantiationTicket SpawnSliceViewport(const AZ::Data::Asset<AZ::Data::AssetData>& slice, const AZ::Vector2& pos) { (void)slice; (void)pos; return AzFramework::SliceInstantiationTicket(); };
+    //! Spawn the provided spawnable at the specified viewport position
+    virtual AzFramework::EntitySpawnTicket::Id SpawnSpawnableViewport(const AZ::Data::Asset<AzFramework::Spawnable>& spawnable, const AZ::Vector2& pos) = 0;
 };
 
 using UiSpawnerBus = AZ::EBus<UiSpawnerInterface>;
@@ -60,25 +59,25 @@ class UiSpawnerNotifications
 public:
     virtual ~UiSpawnerNotifications() {}
 
-    //! Notify that slice has been spawned, but entities have not yet been activated.
+    //! Notify that spawnable has been spawned, but entities have not yet been activated.
     //! OnEntitySpawned events are about to be dispatched.
-    virtual void OnSpawnBegin(const AzFramework::SliceInstantiationTicket& /*ticket*/) {}
+    virtual void OnSpawnBegin(const AzFramework::EntitySpawnTicket::Id& /*ticketId*/) {}
 
-    //! Notify that an entity has spawned, will be called once for each entity spawned in a slice.
-    virtual void OnEntitySpawned(const AzFramework::SliceInstantiationTicket& /*ticket*/, const AZ::EntityId& /*spawnedEntity*/) {}
+    //! Notify that an entity has spawned, will be called once for each entity spawned.
+    virtual void OnEntitySpawned(const AzFramework::EntitySpawnTicket::Id& /*ticketId*/, const AZ::EntityId& /*spawnedEntity*/) {}
 
-    //! Single event notification for an entire slice spawn, providing a list of all resulting entity Ids.
-    virtual void OnEntitiesSpawned(const AzFramework::SliceInstantiationTicket& /*ticket*/, const AZStd::vector<AZ::EntityId>& /*spawnedEntities*/) {}
+    //! Single event notification for an entire spawn, providing a list of all resulting entity Ids.
+    virtual void OnEntitiesSpawned(const AzFramework::EntitySpawnTicket::Id& /*ticketId*/, const AZStd::vector<AZ::EntityId>& /*spawnedEntities*/) {}
 
-    //! Single event notification for an entire slice spawn, providing a list of all resulting top-level entity Ids.
-    //! Top-level entities are ones that are not the child of any other entity in the slice
-    virtual void OnTopLevelEntitiesSpawned(const AzFramework::SliceInstantiationTicket& /*ticket*/, const AZStd::vector<AZ::EntityId>& /*spawnedEntities*/) {}
+    //! Single event notification for an entire spawn, providing a list of all resulting top-level entity Ids.
+    //! Top-level entities are ones that are not the child of any other entity in the spawnable
+    virtual void OnTopLevelEntitiesSpawned(const AzFramework::EntitySpawnTicket::Id& /*ticketId*/, const AZStd::vector<AZ::EntityId>& /*spawnedEntities*/) {}
 
     //! Notify that a spawn has been completed. All spawn notifications for this ticket have been dispatched.
-    virtual void OnSpawnEnd(const AzFramework::SliceInstantiationTicket& /*ticket*/) {}
+    virtual void OnSpawnEnd(const AzFramework::EntitySpawnTicket::Id& /*ticketId*/) {}
 
-    //! Notify that slice has failed to be spawned.
-    virtual void OnSpawnFailed(const AzFramework::SliceInstantiationTicket& /*ticket*/) {}
+    //! Notify that spawn has failed.
+    virtual void OnSpawnFailed(const AzFramework::EntitySpawnTicket::Id& /*ticketId*/) {}
 };
 
 using UiSpawnerNotificationBus = AZ::EBus<UiSpawnerNotifications>;

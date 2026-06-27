@@ -1311,16 +1311,6 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId UiElementComponent::GetSliceEntityParentId()
-{
-    return GetParentEntityId();
-}
-
-AZStd::vector<AZ::EntityId> UiElementComponent::GetSliceEntityChildren()
-{
-    return GetChildEntityIds();
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC STATIC MEMBER FUNCTIONS
@@ -1523,7 +1513,6 @@ void UiElementComponent::Activate()
 {
     UiElementBus::Handler::BusConnect(m_entity->GetId());
     UiEditorBus::Handler::BusConnect(m_entity->GetId());
-    AZ::SliceEntityHierarchyRequestBus::Handler::BusConnect(m_entity->GetId());
     AZ::EntityBus::Handler::BusConnect(m_entity->GetId());
 
     // Once added the transform component is never removed
@@ -1544,7 +1533,6 @@ void UiElementComponent::Deactivate()
 {
     UiElementBus::Handler::BusDisconnect();
     UiEditorBus::Handler::BusDisconnect();
-    AZ::SliceEntityHierarchyRequestBus::Handler::BusDisconnect();
     AZ::EntityBus::Handler::BusDisconnect();
 
     // tell the canvas to invalidate the render graph

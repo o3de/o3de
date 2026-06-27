@@ -8,6 +8,7 @@
 
 #include "UiGameEntityContext.h"
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Serialization/IdUtils.h>
 #include <Shine/Bus/UiCanvasBus.h>
 #include <Shine/Bus/UiElementBus.h>
 #include <Shine/Bus/UiTransformBus.h>
@@ -246,200 +247,229 @@ bool UiGameEntityContext::ValidateEntitiesAreValidForContext(const AzFramework::
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AzFramework::SliceInstantiationTicket UiGameEntityContext::InstantiateDynamicSlice(
-    const AZ::Data::Asset<AZ::Data::AssetData>& sliceAsset, const AZ::Vector2& position, bool isViewportPosition,
-    AZ::Entity* parent, const AZ::IdUtils::Remapper<AZ::EntityId>::IdMapper& customIdMapper)
+UiSpawnId UiGameEntityContext::SpawnSpawnable(
+    const AZ::Data::Asset<AzFramework::Spawnable>& spawnableAsset, const AZ::Vector2& position, bool isViewportPosition,
+    AZ::Entity* parent)
 {
-    if (sliceAsset.GetId().IsValid())
+    if (!spawnableAsset.GetId().IsValid())
     {
-        AzFramework::SliceInstantiationTicket ticket;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(ticket, GetContextId(),
-            &AzFramework::SliceEntityOwnershipServiceRequests::InstantiateSlice, sliceAsset, customIdMapper, nullptr);
-        if (ticket.IsValid())
-        {
-            auto it = m_instantiatingDynamicSlices.emplace(ticket, InstantiatingDynamicSlice(sliceAsset, position, isViewportPosition, parent));
-            bool inserted = it.second;
-            AZ_Error("UiEntityContext", inserted, "InstantiateDynamicSlice failed because the key already exists.");
+        return InvalidUiSpawnId;
+    }
 
-            if (inserted)
+    UiSpawnId spawnId = m_nextSpawnId++;
+    m_pendingSpawns.emplace(spawnId, PendingSpawn(spawnableAsset, position, isViewportPosition, parent));
+
+    // If the asset is already ready, process immediately
+    if (spawnableAsset.IsReady())
+    {
+        ProcessSpawnableEntities(spawnId, *spawnableAsset.Get());
+    }
+    else
+    {
+        // Queue the asset for loading and wait for OnAssetReady
+        AZ::Data::AssetBus::MultiHandler::BusConnect(spawnableAsset.GetId());
+        AZ::Data::AssetManager::Instance().GetAsset(spawnableAsset.GetId(),
+            azrtti_typeid<AzFramework::Spawnable>(), AZ::Data::AssetLoadBehavior::Default);
+    }
+
+    return spawnId;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiGameEntityContext::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+{
+    AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
+
+    // Find the pending spawn for this asset
+    for (auto it = m_pendingSpawns.begin(); it != m_pendingSpawns.end(); ++it)
+    {
+        if (it->second.m_asset.GetId() == asset.GetId())
+        {
+            UiSpawnId spawnId = it->first;
+            auto* spawnable = asset.GetAs<AzFramework::Spawnable>();
+            if (spawnable)
             {
-                AzFramework::SliceInstantiationResultBus::MultiHandler::BusConnect(ticket);
-                return ticket;
+                ProcessSpawnableEntities(spawnId, *spawnable);
             }
-        }
-    }
-
-    return AzFramework::SliceInstantiationTicket();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiGameEntityContext::OnSlicePreInstantiate(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& sliceAddress)
-{
-    const AzFramework::SliceInstantiationTicket ticket = *AzFramework::SliceInstantiationResultBus::GetCurrentBusId();
-
-    auto instantiatingIter = m_instantiatingDynamicSlices.find(ticket);
-    if (instantiatingIter != m_instantiatingDynamicSlices.end())
-    {
-        const AZ::SliceComponent::EntityList& entities = sliceAddress.GetInstance()->GetInstantiated()->m_entities;
-
-        // If the context was loaded from a stream and Ids were remapped, fix up entity Ids in that slice that
-        // point to entities in the stream (i.e. level entities).
-        AZ::SliceComponent::EntityIdToEntityIdMap loadedEntityIdMap;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(loadedEntityIdMap, GetContextId(),
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetLoadedEntityIdMap);
-        if (!loadedEntityIdMap.empty())
-        {
-            AZ::SliceComponent::InstantiatedContainer instanceEntities(false);
-            instanceEntities.m_entities = entities;
-            AZ::IdUtils::Remapper<AZ::EntityId>::RemapIds(&instanceEntities,
-                [this](const AZ::EntityId& originalId, bool isEntityId, const AZStd::function<AZ::EntityId()>&) -> AZ::EntityId
-                {
-                    if (!isEntityId)
-                    {
-                        AZ::SliceComponent::EntityIdToEntityIdMap loadedEntityIdMap;
-                        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(loadedEntityIdMap, GetContextId(),
-                            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetLoadedEntityIdMap);
-                        auto iter = loadedEntityIdMap.find(originalId);
-                        if (iter != loadedEntityIdMap.end())
-                        {
-                            return iter->second;
-                        }
-                    }
-                    return originalId;
-                }, m_serializeContext, false);
-        }
-
-        UiGameEntityContextSliceInstantiationResultsBus::Event(
-            ticket,
-            &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSlicePreInstantiate,
-            sliceAssetId,
-            sliceAddress);
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiGameEntityContext::OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& instance)
-{
-    const AzFramework::SliceInstantiationTicket ticket = *AzFramework::SliceInstantiationResultBus::GetCurrentBusId();
-
-    AzFramework::SliceInstantiationResultBus::MultiHandler::BusDisconnect(ticket);
-
-    auto instantiatingIter = m_instantiatingDynamicSlices.find(ticket);
-    if (instantiatingIter != m_instantiatingDynamicSlices.end())
-    {
-        InstantiatingDynamicSlice& instantiating = instantiatingIter->second;
-
-        const AZ::SliceComponent::EntityList& entities = instance.GetInstance()->GetInstantiated()->m_entities;
-
-        // It's possible that this dynamic slice only contains editor-only elements
-        if (entities.empty())
-        {
+            else
+            {
+                AZ_Warning("UiGameEntityContext", false, "Asset loaded but is not a Spawnable.");
+                UiGameEntityContextSpawnResultsBus::Event(spawnId, &UiGameEntityContextSpawnResultsBus::Events::OnEntityContextSpawnFailed);
+                UiGameEntityContextNotificationBus::Broadcast(&UiGameEntityContextNotificationBus::Events::OnSpawnFailed, spawnId);
+                m_pendingSpawns.erase(it);
+            }
             return;
         }
-
-        // Create a set of all the top-level entities.
-        AZStd::unordered_set<AZ::Entity*> topLevelEntities;
-        for (AZ::Entity* entity : entities)
-        {
-            topLevelEntities.insert(entity);
-        }
-
-        // remove anything from the topLevelEntities set that is referenced as the child of another element in the list
-        for (AZ::Entity* entity : entities)
-        {
-            Shine::EntityArray children;
-            UiElementBus::EventResult(children, entity->GetId(), &UiElementBus::Events::GetChildElements);
-
-            for (auto child : children)
-            {
-                topLevelEntities.erase(child);
-            }
-        }
-
-        // This can be null is nothing is selected. That is OK, the usage of it below treats that as meaning
-        // add as a child of the root element.
-        AZ::Entity* parent = instantiating.m_parent;
-
-        // Now topLevelElements contains all of the top-level elements in the set of newly instantiated entities
-        // Copy the topLevelEntities set into a list
-        Shine::EntityArray entitiesToInit;
-        for (auto entity : topLevelEntities)
-        {
-            entitiesToInit.push_back(entity);
-        }
-
-        // There must be at least one element
-        AZ_Assert(entitiesToInit.size() >= 1, "There must be at least one top-level entity in a UI slice.");
-
-        // Initialize the internal parent pointers and the canvas pointer in the elements
-        // We do this before adding the elements, otherwise the GetUniqueChildName code in FixupCreatedEntities will
-        // already see the new elements and think the names are not unique
-        UiCanvasBus::Event(m_canvasEntityId, &UiCanvasBus::Events::FixupCreatedEntities, entitiesToInit, true, parent);
-
-        // Add all of the top-level entities as children of the parent
-        for (auto entity : topLevelEntities)
-        {
-            UiCanvasBus::Event(m_canvasEntityId, &UiCanvasBus::Events::AddElement, entity, parent, nullptr);
-        }
-
-        // Here we adjust the position of the instantiated entities. Depending on how the dynamic slice
-        // was spawned we position it at a viewport position or a relative position.
-        if (instantiating.m_isViewportPosition)
-        {
-            const AZ::Vector2& desiredViewportPosition = instantiating.m_position;
-
-            AZ::Entity* rootElement = entitiesToInit[0];
-
-            // Transform pivot position to canvas space
-            AZ::Vector2 pivotPos;
-            UiTransformBus::EventResult(pivotPos, rootElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
-
-            // Transform destination position to canvas space
-            AZ::Matrix4x4 transformFromViewport;
-            UiTransformBus::Event(rootElement->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
-            AZ::Vector3 destPos3 = transformFromViewport * AZ::Vector3(desiredViewportPosition.GetX(), desiredViewportPosition.GetY(), 0.0f);
-            AZ::Vector2 destPos(destPos3.GetX(), destPos3.GetY());
-
-            AZ::Vector2 offsetDelta = destPos - pivotPos;
-
-            // Adjust offsets on all top level elements
-            for (auto entity : entitiesToInit)
-            {
-                UiTransform2dInterface::Offsets offsets;
-                UiTransform2dBus::EventResult(offsets, entity->GetId(), &UiTransform2dBus::Events::GetOffsets);
-                UiTransform2dBus::Event(entity->GetId(), &UiTransform2dBus::Events::SetOffsets, offsets + offsetDelta);
-            }
-        }
-        else if (!instantiating.m_position.IsZero())
-        {
-            AZ::Entity* rootElement = entitiesToInit[0];
-            UiTransformBus::Event(rootElement->GetId(), &UiTransformBus::Events::MoveLocalPositionBy, instantiating.m_position);
-        }
-
-        // must erase this in case our instantiate calls trigger a slice spawn which would invalid this iterator.
-        m_instantiatingDynamicSlices.erase(instantiatingIter);
-
-        // This allows the UiSpawnerComponent to respond after the entities have been activated and fixed up
-        UiGameEntityContextSliceInstantiationResultsBus::Event(
-            ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSliceInstantiated, sliceAssetId, instance);
-
-        UiGameEntityContextNotificationBus::Broadcast(
-            &UiGameEntityContextNotificationBus::Events::OnSliceInstantiated, sliceAssetId, instance, ticket);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiGameEntityContext::OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId)
+void UiGameEntityContext::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
 {
-    const AzFramework::SliceInstantiationTicket ticket = *AzFramework::SliceInstantiationResultBus::GetCurrentBusId();
+    AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
 
-    AzFramework::SliceInstantiationResultBus::MultiHandler::BusDisconnect(ticket);
-
-    if (m_instantiatingDynamicSlices.erase(ticket) > 0)
+    for (auto it = m_pendingSpawns.begin(); it != m_pendingSpawns.end(); ++it)
     {
-        UiGameEntityContextSliceInstantiationResultsBus::Event(
-            ticket, &UiGameEntityContextSliceInstantiationResultsBus::Events::OnEntityContextSliceInstantiationFailed, sliceAssetId);
-        UiGameEntityContextNotificationBus::Broadcast(
-            &UiGameEntityContextNotificationBus::Events::OnSliceInstantiationFailed, sliceAssetId, ticket);
+        if (it->second.m_asset.GetId() == asset.GetId())
+        {
+            UiSpawnId spawnId = it->first;
+            AZ_Warning("UiGameEntityContext", false, "Spawnable asset failed to load.");
+            UiGameEntityContextSpawnResultsBus::Event(spawnId, &UiGameEntityContextSpawnResultsBus::Events::OnEntityContextSpawnFailed);
+            UiGameEntityContextNotificationBus::Broadcast(&UiGameEntityContextNotificationBus::Events::OnSpawnFailed, spawnId);
+            m_pendingSpawns.erase(it);
+            return;
+        }
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiGameEntityContext::ProcessSpawnableEntities(UiSpawnId spawnId, const AzFramework::Spawnable& spawnable)
+{
+    auto instantiatingIter = m_pendingSpawns.find(spawnId);
+    if (instantiatingIter == m_pendingSpawns.end())
+    {
+        return;
+    }
+
+    PendingSpawn& pending = instantiatingIter->second;
+
+    const auto& templateEntities = spawnable.GetEntities();
+    if (templateEntities.empty())
+    {
+        m_pendingSpawns.erase(instantiatingIter);
+        return;
+    }
+
+    // Clone entities from the spawnable template with new entity IDs
+    AZ::SliceComponent::EntityIdToEntityIdMap idMap;
+    AzFramework::EntityList clonedEntities;
+    clonedEntities.reserve(templateEntities.size());
+
+    for (const auto& templateEntity : templateEntities)
+    {
+        AZ::Entity* clonedEntity = AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(
+            templateEntity.get(), idMap, m_serializeContext);
+        if (clonedEntity)
+        {
+            clonedEntities.push_back(clonedEntity);
+        }
+    }
+
+    if (clonedEntities.empty())
+    {
+        AZ_Warning("UiGameEntityContext", false, "Failed to clone entities from spawnable.");
+        UiGameEntityContextSpawnResultsBus::Event(spawnId, &UiGameEntityContextSpawnResultsBus::Events::OnEntityContextSpawnFailed);
+        UiGameEntityContextNotificationBus::Broadcast(&UiGameEntityContextNotificationBus::Events::OnSpawnFailed, spawnId);
+        m_pendingSpawns.erase(instantiatingIter);
+        return;
+    }
+
+    // Validate that all entities are valid UI entities
+    if (!ValidateEntitiesAreValidForContext(clonedEntities))
+    {
+        AZ_Warning("UiGameEntityContext", false, "Spawnable contains entities that are not valid UI elements.");
+        for (AZ::Entity* entity : clonedEntities)
+        {
+            delete entity;
+        }
+        UiGameEntityContextSpawnResultsBus::Event(spawnId, &UiGameEntityContextSpawnResultsBus::Events::OnEntityContextSpawnFailed);
+        UiGameEntityContextNotificationBus::Broadcast(&UiGameEntityContextNotificationBus::Events::OnSpawnFailed, spawnId);
+        m_pendingSpawns.erase(instantiatingIter);
+        return;
+    }
+
+    // Add entities to the entity context
+    AddUiEntities(clonedEntities);
+
+    // Create a set of all the top-level entities
+    AZStd::unordered_set<AZ::Entity*> topLevelEntities;
+    for (AZ::Entity* entity : clonedEntities)
+    {
+        topLevelEntities.insert(entity);
+    }
+
+    // Remove anything from the topLevelEntities set that is referenced as the child of another element
+    for (AZ::Entity* entity : clonedEntities)
+    {
+        Shine::EntityArray children;
+        UiElementBus::EventResult(children, entity->GetId(), &UiElementBus::Events::GetChildElements);
+
+        for (auto child : children)
+        {
+            topLevelEntities.erase(child);
+        }
+    }
+
+    AZ::Entity* parent = pending.m_parent;
+
+    // Now topLevelElements contains all of the top-level elements in the set of newly cloned entities
+    Shine::EntityArray entitiesToInit;
+    for (auto entity : topLevelEntities)
+    {
+        entitiesToInit.push_back(entity);
+    }
+
+    // There must be at least one element
+    AZ_Assert(entitiesToInit.size() >= 1, "There must be at least one top-level entity in a UI spawnable.");
+
+    // Initialize the internal parent pointers and the canvas pointer in the elements
+    UiCanvasBus::Event(m_canvasEntityId, &UiCanvasBus::Events::FixupCreatedEntities, entitiesToInit, true, parent);
+
+    // Add all of the top-level entities as children of the parent
+    for (auto entity : topLevelEntities)
+    {
+        UiCanvasBus::Event(m_canvasEntityId, &UiCanvasBus::Events::AddElement, entity, parent, nullptr);
+    }
+
+    // Position the instantiated entities
+    if (pending.m_isViewportPosition)
+    {
+        const AZ::Vector2& desiredViewportPosition = pending.m_position;
+
+        AZ::Entity* rootElement = entitiesToInit[0];
+
+        // Transform pivot position to canvas space
+        AZ::Vector2 pivotPos;
+        UiTransformBus::EventResult(pivotPos, rootElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
+
+        // Transform destination position to canvas space
+        AZ::Matrix4x4 transformFromViewport;
+        UiTransformBus::Event(rootElement->GetId(), &UiTransformBus::Events::GetTransformFromViewport, transformFromViewport);
+        AZ::Vector3 destPos3 = transformFromViewport * AZ::Vector3(desiredViewportPosition.GetX(), desiredViewportPosition.GetY(), 0.0f);
+        AZ::Vector2 destPos(destPos3.GetX(), destPos3.GetY());
+
+        AZ::Vector2 offsetDelta = destPos - pivotPos;
+
+        // Adjust offsets on all top level elements
+        for (auto entity : entitiesToInit)
+        {
+            UiTransform2dInterface::Offsets offsets;
+            UiTransform2dBus::EventResult(offsets, entity->GetId(), &UiTransform2dBus::Events::GetOffsets);
+            UiTransform2dBus::Event(entity->GetId(), &UiTransform2dBus::Events::SetOffsets, offsets + offsetDelta);
+        }
+    }
+    else if (!pending.m_position.IsZero())
+    {
+        AZ::Entity* rootElement = entitiesToInit[0];
+        UiTransformBus::Event(rootElement->GetId(), &UiTransformBus::Events::MoveLocalPositionBy, pending.m_position);
+    }
+
+    // Collect all spawned entity IDs
+    AZStd::vector<AZ::EntityId> spawnedEntityIds;
+    spawnedEntityIds.reserve(clonedEntities.size());
+    for (AZ::Entity* entity : clonedEntities)
+    {
+        spawnedEntityIds.push_back(entity->GetId());
+    }
+
+    // Must erase before firing events to avoid iterator invalidation
+    m_pendingSpawns.erase(instantiatingIter);
+
+    // Notify via per-spawn results bus (used by UiSpawnerComponent)
+    UiGameEntityContextSpawnResultsBus::Event(
+        spawnId, &UiGameEntityContextSpawnResultsBus::Events::OnEntityContextSpawnCompleted, spawnedEntityIds);
+
+    // Notify via broadcast bus
+    UiGameEntityContextNotificationBus::Broadcast(
+        &UiGameEntityContextNotificationBus::Events::OnSpawnCompleted, spawnId, spawnedEntityIds);
 }

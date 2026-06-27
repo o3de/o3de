@@ -12,7 +12,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
-#include <AzCore/Slice/SliceBus.h>
 #include <AzCore/std/containers/vector.h>
 
 #include "UiSerialize.h"
@@ -30,7 +29,6 @@ class UiElementComponent
     : public AZ::Component
     , public UiElementBus::Handler
     , public UiEditorBus::Handler
-    , public AZ::SliceEntityHierarchyRequestBus::Handler
     , public AZ::EntityBus::Handler
     , public AZStd::intrusive_slist_node<UiElementComponent>
 {
@@ -43,7 +41,7 @@ public: // types
 
 public: // member functions
 
-    AZ_COMPONENT(UiElementComponent, Shine::UiElementComponentUuid, AZ::Component, AZ::SliceEntityHierarchyInterface);
+    AZ_COMPONENT(UiElementComponent, Shine::UiElementComponentUuid, AZ::Component);
 
     //! Construct an uninitialized element component
     UiElementComponent();
@@ -151,11 +149,6 @@ public: // member functions
 
     // Used to check that cached child pointers are setup
     bool AreChildPointersValid() const;
-
-    // SliceEntityHierarchyRequestBus
-    AZ::EntityId GetSliceEntityParentId() override;
-    AZStd::vector<AZ::EntityId> GetSliceEntityChildren() override;
-    // ~SliceEntityHierarchyRequestBus
 
 public: // static member functions
 

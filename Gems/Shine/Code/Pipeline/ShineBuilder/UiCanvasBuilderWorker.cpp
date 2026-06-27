@@ -117,7 +117,7 @@ namespace Shine
             jobDescriptor.m_critical = true;
             jobDescriptor.m_jobKey = "UI Canvas";
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
-            jobDescriptor.m_additionalFingerprintInfo = AZStd::string(compilerVersion).append(azrtti_typeid<AZ::DynamicSliceAsset>().ToString<AZStd::string>());
+            jobDescriptor.m_additionalFingerprintInfo = AZStd::string(compilerVersion).append(azrtti_typeid<AZ::SliceAsset>().ToString<AZStd::string>());
 
             response.m_createJobOutputs.push_back(jobDescriptor);
         }
