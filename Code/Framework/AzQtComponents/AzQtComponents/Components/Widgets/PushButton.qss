@@ -52,16 +52,13 @@ QPushButton:flat
 }
 
 QPushButton.Primary,
-QPushButton:default,
-QToolButton::menu-indicator,
-QToolButton.SmallIcon::menu-indicator
+QPushButton:default
 {
     color: #FFFFFF;
 }
 
 QPushButton.Primary:disabled,
-QPushButton:default:disabled,
-QToolButton.SmallIcon:disabled::menu-indicator
+QPushButton:default:disabled
 {
     color: #BBBBBB;
 }

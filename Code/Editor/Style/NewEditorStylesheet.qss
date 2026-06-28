@@ -1207,11 +1207,6 @@ QToolButton#assetTypeSelector
     padding: 0 0 0 2;
 }
 
-QToolButton#assetTypeSelector::menu-indicator
-{
-    image : url(none.jpg);
-}
-
 QToolButton#assetTypeSelector:hover
 {
     border: none;
@@ -2346,13 +2341,6 @@ AzQtComponents--FilteredSearchWidget QToolButton#assetTypeSelector
     icon-size: 16px 14px;
     max-height: 24px;
     max-width: 24px;
-}
-
-AzQtComponents--FilteredSearchWidget QToolButton#assetTypeSelector::menu-indicator
-{
-    image: url(none.jpg);
-    subcontrol-position: right center;
-    subcontrol-origin: padding;
 }
 
 AzQtComponents--FilteredSearchWidget QLabel#label
