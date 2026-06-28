@@ -11,23 +11,32 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 
-AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QComboBox>
-#include <QDebug>
 #include <QGraphicsDropShadowEffect>
+#include <QIcon>
 #include <QLineEdit>
+#include <QPainter>
 #include <QSettings>
 #include <QStyledItemDelegate>
 #include <QToolButton>
-AZ_POP_DISABLE_WARNING
 
 namespace AzQtComponents
 {
     const int g_errorBorderWidth = 1;
 
     static const QString g_customCheckStateClass = QStringLiteral("CustomCheckState");
+
+    // (options below can be moved to the config file later if needed)
+    // Size, in pixels, of the check / indeterminate mark drawn at the left of each dropdown item.
+    static constexpr int g_checkMarkSize = 16;
+    // Horizontal inset, in pixels, of that mark from the left edge of the item. The left padding
+    // reserved for the mark is set in ComboBox.qss (QAbstractItemView::item) and must stay in sync.
+    static constexpr int g_checkMarkLeftMargin = 4;
+    // Minimum height, in pixels, of a dropdown item. Drives the popup row geometry from the delegate
+    // so it stays in sync with the rendered item regardless of the combo box font size.
+    static constexpr int g_minItemHeight = 24;
 
     ComboBoxValidator::ComboBoxValidator(QObject* parent)
         : QValidator(parent)
@@ -213,23 +222,51 @@ namespace AzQtComponents
         {
             QStyledItemDelegate::initStyleOption(option, index);
 
-            // The default usage of combobox only allow one selection,
-            // then we have to tweak it a bit so it show a check mark in this case.
-            if (option && m_combo && m_combo->view()->selectionMode() == QAbstractItemView::SingleSelection)
+            // Prevent QT from drawing the checkbox as we do it ourself
+            option->features &= ~QStyleOptionViewItem::HasCheckIndicator;
+        }
+
+        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
+        {
+            QSize size = QStyledItemDelegate::sizeHint(option, index);
+            size.setHeight(qMax(size.height(), g_minItemHeight));
+            return size;
+        }
+
+        Qt::CheckState itemCheckState(const QModelIndex& index) const
+        {
+            if (Style::hasClass(m_combo, g_customCheckStateClass))
             {
-                option->features |= QStyleOptionViewItem::HasCheckIndicator;
-                auto *style = qobject_cast<Style *>(m_combo->style());
-                Qt::CheckState checkState;
-                if (style && style->hasClass(m_combo, g_customCheckStateClass))
-                {
-                    checkState = index.data(Qt::CheckStateRole).value<Qt::CheckState>();
-                }
-                else
-                {
-                    checkState = m_combo->currentIndex() == index.row() ? Qt::Checked : Qt::Unchecked;
-                }
-                option->checkState = checkState;
+                return index.data(Qt::CheckStateRole).value<Qt::CheckState>();
             }
+            return (m_combo && m_combo->currentIndex() == index.row()) ? Qt::Checked : Qt::Unchecked;
+        }
+
+        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+        {
+            QStyledItemDelegate::paint(painter, option, index);
+
+            if (!m_combo || m_combo->view()->selectionMode() != QAbstractItemView::SingleSelection)
+            {
+                return;
+            }
+
+            const Qt::CheckState checkState = itemCheckState(index);
+            if (checkState == Qt::Unchecked)
+            {
+                return;
+            }
+
+            static const QIcon s_checkMark(QStringLiteral(":/stylesheet/img/UI20/checkmark.svg"));
+            static const QIcon s_indeterminateMark(QStringLiteral(":/stylesheet/img/UI20/indeterminate.svg"));
+            const QIcon& mark = (checkState == Qt::PartiallyChecked) ? s_indeterminateMark : s_checkMark;
+
+            const QRect markRect(
+                option.rect.left() + g_checkMarkLeftMargin,
+                option.rect.top() + (option.rect.height() - g_checkMarkSize) / 2,
+                g_checkMarkSize,
+                g_checkMarkSize);
+            mark.paint(painter, markRect, Qt::AlignCenter);
         }
 
     private:
@@ -437,29 +474,6 @@ namespace AzQtComponents
         cb.rect = downArrowRect;
         cb.palette.setColor(QPalette::ButtonText, config.framelessTextColor);
         style->QCommonStyle::drawPrimitive(QStyle::PE_IndicatorArrowDown, &cb, painter, widget);
-        return true;
-    }
-
-    bool ComboBox::drawItemCheckIndicator(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config)
-    {
-        Q_UNUSED(config);
-
-        if (strcmp(widget->metaObject()->className(), "QComboBoxListView") != 0)
-        {
-            return false;
-        }
-
-        auto opt = qstyleoption_cast<const QStyleOptionViewItem*>(option);
-        if (!opt)
-        {
-            return false;
-        }
-
-        if (opt->checkState != Qt::Unchecked)
-        {
-            style->QProxyStyle::drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, opt, painter, widget);
-        }
-
         return true;
     }
 
