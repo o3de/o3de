@@ -65,20 +65,14 @@ namespace WhiteBox
         //! Shape the draw-shape tool builds, from the component's "Draw Shape" property.
         virtual DrawShapeType GetDrawShape() { return DrawShapeType::Box; }
 
-        //! Number of steps the draw-shape tool uses when building a Staircase,
-        //! sourced from the component's "Draw Steps" property.
-        virtual int GetDrawStairSteps() { return 8; }
+        //! Staircase build parameters (step count, step-height division mode, riser height and
+        //! 90-degree rotation), sourced from the component's Staircase properties. Returned as a
+        //! single snapshot so callers fetch the whole group in one request.
+        virtual DrawStairInfo GetDrawStairInfo() { return DrawStairInfo{}; }
 
-        //! When true, a Staircase is divided by a fixed step (riser) height rather
-        //! than a fixed step count; the count is derived from the pull height.
-        virtual bool GetDrawStairByHeight() { return false; }
-
-        //! Riser height used when a Staircase is divided by step height.
-        virtual float GetDrawStepHeight() { return 0.25f; }
-
-        //! Staircase orientation in 90-degree steps (0..3) about the surface normal.
-        //! 2 (180 degrees) puts the tall end at the first-clicked corner.
-        virtual int GetDrawStairRotation() { return 0; }
+        //! When true, draw acts as a CSG boolean (same as holding Ctrl): pulling in
+        //! carves/subtracts, pulling out adds/unions.
+        virtual bool GetDrawCarve() { return false; }
 
         //! When true, draw mode click-stamps grid-snapped 1x1x1 cubes (CSG union, or
         //! subtract with Ctrl) instead of the click-drag-pull workflow.

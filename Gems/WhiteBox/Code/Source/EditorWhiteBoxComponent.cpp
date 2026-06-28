@@ -139,7 +139,7 @@ namespace WhiteBox
 
         AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
             &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
-            "@gemroot:WhiteBox_test@/Editor/Scripts/default_shapes.py", scriptArgs);
+            "@gemroot:WhiteBox@/Editor/Scripts/default_shapes.py", scriptArgs);
 
         EditorWhiteBoxComponentNotificationBus::Event(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()),
@@ -148,22 +148,22 @@ namespace WhiteBox
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
-    AZ::u32 EditorWhiteBoxComponent::OnDrawShapeChange()
+    AZ::u32 EditorWhiteBoxComponent::DrawShapeData::OnShapeChange()
     {
         // Reset Draw Sides to a sensible default for the newly chosen shape:
         // angular shapes -> 4 (box / square base), round shapes -> 24 (smooth).
-        switch (m_drawShape)
+        switch (m_shape)
         {
         case DrawShapeType::Box:
         case DrawShapeType::Pyramid:
-            m_drawSides = 4;
+            m_sides = 4;
             break;
         case DrawShapeType::Cylinder:
         case DrawShapeType::Cone:
-            m_drawSides = 24;
+            m_sides = 24;
             break;
         case DrawShapeType::Sphere:
-            m_drawSides = 16; // longitude segments; latitude rings derived from this
+            m_sides = 16; // longitude segments; latitude rings derived from this
             break;
         default:
             break;
@@ -219,7 +219,7 @@ namespace WhiteBox
 
         AzToolsFramework::ScopedUndoBatch undoBatch("White Box Boolean");
 
-        if (!Api::MeshBoolean(*targetMesh, *sourceMesh, operandTransform, m_booleanOperation))
+        if (!Api::ApplyMeshBoolean(*targetMesh, *sourceMesh, operandTransform, m_booleanOperation))
         {
             AZ_Warning(
                 "EditorWhiteBoxComponent", false,
@@ -514,7 +514,7 @@ namespace WhiteBox
         {
             return;
         }
-        if (Api::MeshBoolean(*evaluated, *sourceMesh, operandTransform, m_booleanOperation))
+        if (Api::ApplyMeshBoolean(*evaluated, *sourceMesh, operandTransform, m_booleanOperation))
         {
             Api::CalculateNormals(*evaluated);
             Api::CalculatePlanarUVs(*evaluated);
@@ -538,6 +538,24 @@ namespace WhiteBox
         UpdateBooleanSourceListener();
         RebuildWhiteBox(); // evaluates the live boolean (or reverts to base) + rebuilds render/physics
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
+    AZ::u32 EditorWhiteBoxComponent::OnBooleanSourceChange()
+    {
+        OnLiveBooleanChange();
+        // The Boolean group's visibility depends on whether a source is set. EntityId
+        // fields don't reliably honor the ChangeNotify refresh-level return value, so
+        // force the property tree to rebuild explicitly so the group shows/hides.
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+            AzToolsFramework::Refresh_EntireTree);
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::BooleanGroupVisibility() const
+    {
+        return m_booleanSourceEntity.IsValid() ? AZ::Edit::PropertyVisibility::Show
+                                               : AZ::Edit::PropertyVisibility::Hide;
     }
 
     void EditorWhiteBoxComponent::BooleanSourceListener::OnTransformChanged(
@@ -586,9 +604,95 @@ namespace WhiteBox
         return true;
     }
 
+    void EditorWhiteBoxComponent::DrawStairData::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<DrawStairData>()
+                ->Version(1)
+                ->Field("ByHeight", &DrawStairData::m_byHeight)
+                ->Field("Steps", &DrawStairData::m_steps)
+                ->Field("StepHeight", &DrawStairData::m_stepHeight)
+                ->Field("Rotation", &DrawStairData::m_rotation);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<DrawStairData>("Stair", "Staircase-specific Draw Shape settings.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &DrawStairData::m_byHeight, "Stair By Step Height",
+                        "When on, the Staircase is divided by a fixed step (riser) height; the step count is derived "
+                        "from the pull height. When off, a fixed step count is used.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Slider, &DrawStairData::m_steps, "Step Count",
+                        "Number of steps the Draw Shape tool builds when the shape is a Staircase.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 128)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &DrawStairData::StepsVisibility)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &DrawStairData::m_stepHeight, "Step Height",
+                        "Riser height of each step; the step count is derived from the pull height.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 1000.0f)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &DrawStairData::StepHeightVisibility)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Slider, &DrawStairData::m_rotation, "Stair Rotation (x90)",
+                        "Orientation of the Staircase in 90-degree steps about the drawn surface. 2 (180 degrees) puts "
+                        "the tall end at the corner you first clicked.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0)
+                    ->Attribute(AZ::Edit::Attributes::Max, 3);
+            }
+        }
+    }
+
+    void EditorWhiteBoxComponent::DrawShapeData::Reflect(AZ::ReflectContext* context)
+    {
+        DrawStairData::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<DrawShapeData>()
+                ->Version(1)
+                ->Field("Shape", &DrawShapeData::m_shape)
+                ->Field("Sides", &DrawShapeData::m_sides)
+                ->Field("Stair", &DrawShapeData::m_stair);
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<DrawShapeData>("Draw Shape", "Draw Shape tool settings.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &DrawShapeData::m_shape, "Draw Shape",
+                        "Shape the Draw Shape tool builds. Changing this resets Draw Sides to a sensible default.")
+                    ->EnumAttribute(DrawShapeType::Box, "Box")
+                    ->EnumAttribute(DrawShapeType::Cylinder, "Cylinder")
+                    ->EnumAttribute(DrawShapeType::Pyramid, "Pyramid")
+                    ->EnumAttribute(DrawShapeType::Cone, "Cone")
+                    ->EnumAttribute(DrawShapeType::Sphere, "Sphere")
+                    ->EnumAttribute(DrawShapeType::Staircase, "Staircase")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DrawShapeData::OnShapeChange)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Slider, &DrawShapeData::m_sides, "Draw Sides",
+                        "Number of sides for round / N-gon shapes (4 = box / square), or the subdivision of the Sphere.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 3)
+                    ->Attribute(AZ::Edit::Attributes::Max, 128)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::SidesVisibility)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &DrawShapeData::m_stair, "Stair",
+                        "Staircase-specific settings.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::StairVisibility)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+            }
+        }
+    }
+
     void EditorWhiteBoxComponent::Reflect(AZ::ReflectContext* context)
     {
         EditorWhiteBoxMeshAsset::Reflect(context);
+        DrawShapeData::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -601,12 +705,8 @@ namespace WhiteBox
                 ->Field("RenderData", &EditorWhiteBoxComponent::m_renderData)
                 ->Field("ComponentMode", &EditorWhiteBoxComponent::m_componentModeDelegate)
                 ->Field("FlipYZForExport", &EditorWhiteBoxComponent::m_flipYZForExport)
-                ->Field("DrawSides", &EditorWhiteBoxComponent::m_drawSides)
-                ->Field("DrawShape", &EditorWhiteBoxComponent::m_drawShape)
-                ->Field("DrawStairSteps", &EditorWhiteBoxComponent::m_drawStairSteps)
-                ->Field("DrawStairByHeight", &EditorWhiteBoxComponent::m_drawStairByHeight)
-                ->Field("DrawStepHeight", &EditorWhiteBoxComponent::m_drawStepHeight)
-                ->Field("DrawStairRotation", &EditorWhiteBoxComponent::m_drawStairRotation)
+                ->Field("DrawShapeData", &EditorWhiteBoxComponent::m_drawShapeData)
+                ->Field("DrawCarve", &EditorWhiteBoxComponent::m_drawCarve)
                 ->Field("DrawUnitCube", &EditorWhiteBoxComponent::m_drawUnitCube)
                 ->Field("VoxelCells", &EditorWhiteBoxComponent::m_voxelCells)
                 ->Field("BooleanSource", &EditorWhiteBoxComponent::m_booleanSourceEntity)
@@ -637,46 +737,14 @@ namespace WhiteBox
                     ->EnumAttribute(DefaultShapeType::Asset, "Mesh Asset")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_drawShape, "Draw Shape",
-                        "Shape the Draw Shape tool builds. Changing this resets Draw Sides to a sensible default.")
-                    ->EnumAttribute(DrawShapeType::Box, "Box")
-                    ->EnumAttribute(DrawShapeType::Cylinder, "Cylinder")
-                    ->EnumAttribute(DrawShapeType::Pyramid, "Pyramid")
-                    ->EnumAttribute(DrawShapeType::Cone, "Cone")
-                    ->EnumAttribute(DrawShapeType::Sphere, "Sphere")
-                    ->EnumAttribute(DrawShapeType::Staircase, "Staircase")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDrawShapeChange)
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawShapeData, "Draw Shape",
+                        "Draw Shape tool settings.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &EditorWhiteBoxComponent::m_drawSides, "Draw Sides",
-                        "Number of sides for round / N-gon shapes (4 = box / square), or the subdivision of the Sphere.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 3)
-                    ->Attribute(AZ::Edit::Attributes::Max, 128)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::DrawSidesVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawStairByHeight, "Stair By Step Height",
-                        "When on, the Staircase is divided by a fixed step (riser) height; the step count is derived "
-                        "from the pull height. When off, a fixed step count is used.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::StairVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &EditorWhiteBoxComponent::m_drawStairSteps, "Step Count",
-                        "Number of steps the Draw Shape tool builds when the shape is a Staircase.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 1)
-                    ->Attribute(AZ::Edit::Attributes::Max, 128)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::DrawStepsVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawStepHeight, "Step Height",
-                        "Riser height of each step; the step count is derived from the pull height.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 1000.0f)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::StepHeightVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &EditorWhiteBoxComponent::m_drawStairRotation, "Stair Rotation (x90)",
-                        "Orientation of the Staircase in 90-degree steps about the drawn surface. 2 (180 degrees) puts "
-                        "the tall end at the corner you first clicked.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0)
-                    ->Attribute(AZ::Edit::Attributes::Max, 3)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::StairVisibility)
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_drawCarve, "Carve (Boolean)",
+                        "When on, drawing performs a CSG boolean (same as holding Ctrl): pull into the surface to "
+                        "carve/subtract, pull out to add/union.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawUnitCube, "Unit Cube Stamp",
                         "In draw mode, click to stamp a grid-snapped 1x1x1 cube (CSG union; hold Ctrl to subtract) "
@@ -711,7 +779,16 @@ namespace WhiteBox
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_booleanSourceEntity, "Boolean Source",
                         "Another entity with a White Box component to use as the boolean operand.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnBooleanSourceChange)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Boolean")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    // Apply Boolean is placed as the FIRST child of the group: a UIElement
+                    // that is the LAST child of a group is dropped by the property editor.
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Apply the boolean using the source entity's mesh")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ApplyBoolean)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Apply Boolean")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_booleanOperation, "Boolean Operation",
                         "How to combine the source mesh with this one.")
@@ -719,21 +796,22 @@ namespace WhiteBox
                     ->EnumAttribute(Api::BooleanOperation::Union, "Union")
                     ->EnumAttribute(Api::BooleanOperation::Intersection, "Intersect")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_liveBoolean,
                         "Non-Destructive (Live)",
                         "Keep this mesh editable and show the boolean result live (re-evaluates when the source "
-                        "moves or either mesh changes). Leave off to use the one-shot Apply Boolean below.")
+                        "moves or either mesh changes). Leave off to use the one-shot Apply Boolean button.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_hideSourceAfterApply,
                         "Hide Source After Apply", "Hide the source entity once the boolean is applied.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_deleteSourceAfterApply,
                         "Delete Source After Apply", "Delete the source entity once the boolean is applied.")
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Apply the boolean using the source entity's mesh")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ApplyBoolean)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Apply Boolean");
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility);
             }
         }
     }
@@ -753,33 +831,35 @@ namespace WhiteBox
                                                : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::DrawSidesVisibility() const
+    AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::SidesVisibility() const
     {
-        // Sides drives the resolution of round shapes (Cylinder/Cone) and the
-        // subdivision of the Sphere; it is meaningless for Box/Pyramid/Staircase.
-        const bool usesSides = m_drawShape == DrawShapeType::Cylinder || m_drawShape == DrawShapeType::Cone ||
-            m_drawShape == DrawShapeType::Sphere;
-        return usesSides ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        // Sides applies to every solid shape: it sets the footprint resolution for
+        // round shapes (Cylinder/Cone), the subdivision for the Sphere, and the
+        // N-gon footprint for Box/Pyramid (3 = triangular prism, 4 = box, etc.).
+        // Only the Staircase ignores it.
+        return m_shape == DrawShapeType::Staircase ? AZ::Edit::PropertyVisibility::Hide
+                                                   : AZ::Edit::PropertyVisibility::Show;
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::StairVisibility() const
+    AZ::Crc32 EditorWhiteBoxComponent::DrawShapeData::StairVisibility() const
     {
-        return m_drawShape == DrawShapeType::Staircase ? AZ::Edit::PropertyVisibility::Show
-                                                       : AZ::Edit::PropertyVisibility::Hide;
+        // The whole Stair group only shows for a Staircase. Within the group the
+        // step-count / step-height split is handled by DrawStairData itself.
+        return m_shape == DrawShapeType::Staircase ? AZ::Edit::PropertyVisibility::Show
+                                                   : AZ::Edit::PropertyVisibility::Hide;
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::DrawStepsVisibility() const
+    AZ::Crc32 EditorWhiteBoxComponent::DrawStairData::StepsVisibility() const
     {
-        // Step count only applies to a Staircase in step-count mode.
-        const bool show = m_drawShape == DrawShapeType::Staircase && !m_drawStairByHeight;
-        return show ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        // Step count only applies in step-count mode (the group is already hidden
+        // unless the draw shape is a Staircase).
+        return m_byHeight ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
     }
 
-    AZ::Crc32 EditorWhiteBoxComponent::StepHeightVisibility() const
+    AZ::Crc32 EditorWhiteBoxComponent::DrawStairData::StepHeightVisibility() const
     {
-        // Step height only applies to a Staircase in step-height mode.
-        const bool show = m_drawShape == DrawShapeType::Staircase && m_drawStairByHeight;
-        return show ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        // Step height only applies in step-height mode.
+        return m_byHeight ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     void EditorWhiteBoxComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

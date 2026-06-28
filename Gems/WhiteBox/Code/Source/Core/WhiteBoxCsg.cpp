@@ -6,6 +6,8 @@
  *
  */
 
+#include "WhiteBoxCsg.h"
+
 #include "WhiteBoxCsgCore.h"
 
 #include <AzCore/Math/Transform.h>
@@ -32,7 +34,10 @@ namespace WhiteBox
             // two adjacent triangles are merged into one polygon when their normals deviate
             // by less than this (dot product threshold, ~0.5 degrees)
             constexpr float CoplanarNormalDotThreshold = 0.99996f;
+        } // namespace
 
+        namespace Detail
+        {
             // convert a white box mesh to an indexed triangle mesh, transforming all
             // positions by the given transform
             Csg::TriangleMesh ToTriangleMesh(const WhiteBoxMesh& whiteBox, const AZ::Transform& transform)
@@ -159,13 +164,6 @@ namespace WhiteBox
             // Everything is validated (all-CCW + matching area); on ANY failure the
             // caller keeps the region's original triangles, so this never makes the
             // result worse than the un-cleaned mesh.
-
-            // A 2D point on the region's plane (double precision for robust geometry).
-            struct V2
-            {
-                double x;
-                double y;
-            };
 
             // Twice the signed area of triangle (a,b,c); > 0 when CCW.
             double Cross2(const V2& a, const V2& b, const V2& c)
@@ -797,9 +795,9 @@ namespace WhiteBox
                 CalculateNormals(whiteBox);
                 CalculatePlanarUVs(whiteBox);
             }
-        } // namespace
+        } // namespace Detail
 
-        bool MeshBoolean(
+        bool ApplyMeshBoolean(
             WhiteBoxMesh& whiteBox, const WhiteBoxMesh& operand, const AZ::Transform& operandTransform,
             const BooleanOperation operation)
         {
@@ -817,8 +815,8 @@ namespace WhiteBox
                 }
             }();
 
-            const Csg::TriangleMesh meshA = ToTriangleMesh(whiteBox, AZ::Transform::CreateIdentity());
-            const Csg::TriangleMesh meshB = ToTriangleMesh(operand, operandTransform);
+            const Csg::TriangleMesh meshA = Detail::ToTriangleMesh(whiteBox, AZ::Transform::CreateIdentity());
+            const Csg::TriangleMesh meshB = Detail::ToTriangleMesh(operand, operandTransform);
 
             Csg::TriangleMesh result;
 
@@ -826,7 +824,7 @@ namespace WhiteBox
             {
                 return false;
             }
-            RebuildFromTriangleMesh(whiteBox, result);
+            Detail::RebuildFromTriangleMesh(whiteBox, result);
 
             return true;
         }

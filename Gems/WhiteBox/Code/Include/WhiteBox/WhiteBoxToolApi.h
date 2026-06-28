@@ -679,7 +679,7 @@ namespace WhiteBox
         //! intersect, or one of them is not a closed manifold). whiteBox is unmodified on failure.
         //! @note Both meshes must be closed (watertight). Coplanar faces in the result are merged
         //! into white box polygons, but UVs are recalculated so custom UVs are not preserved.
-        bool MeshBoolean(
+        bool ApplyMeshBoolean(
             WhiteBoxMesh& whiteBox, const WhiteBoxMesh& operand, const AZ::Transform& operandTransform,
             BooleanOperation operation);
 

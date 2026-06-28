@@ -64,12 +64,14 @@ namespace WhiteBox
         void WriteAssetToComponent() override;
         void RebuildWhiteBox() override;
         void SetDefaultShape(DefaultShapeType defaultShape) override;
-        int GetDrawSides() override { return m_drawSides; }
-        DrawShapeType GetDrawShape() override { return m_drawShape; }
-        int GetDrawStairSteps() override { return m_drawStairSteps; }
-        bool GetDrawStairByHeight() override { return m_drawStairByHeight; }
-        float GetDrawStepHeight() override { return m_drawStepHeight; }
-        int GetDrawStairRotation() override { return m_drawStairRotation; }
+        int GetDrawSides() override { return m_drawShapeData.m_sides; }
+        DrawShapeType GetDrawShape() override { return m_drawShapeData.m_shape; }
+        DrawStairInfo GetDrawStairInfo() override
+        {
+            const DrawStairData& stair = m_drawShapeData.m_stair;
+            return DrawStairInfo{stair.m_steps, stair.m_byHeight, stair.m_stepHeight, stair.m_rotation};
+        }
+        bool GetDrawCarve() override { return m_drawCarve; }
         bool GetDrawUnitCube() override { return m_drawUnitCube; }
         void SetVoxelCell(const AZ::Vector3& cellMin, bool filled) override;
 
@@ -97,6 +99,45 @@ namespace WhiteBox
         void OverrideEditorWhiteBoxMeshAsset(EditorWhiteBoxMeshAsset* editorMeshAsset);
 
     private:
+        //! Staircase-specific settings for the Draw Shape tool (only relevant when the
+        //! draw shape is a Staircase). Grouped to keep the related members together.
+        struct DrawStairData
+        {
+            AZ_TYPE_INFO(DrawStairData, "{EA16269C-D4DF-42A6-BC29-EE70B305D896}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            bool m_byHeight = false;    //!< Staircase divided by a fixed riser height instead of a fixed step count.
+            int m_steps = 8;            //!< Number of steps the Draw Shape tool uses when building a Staircase (count mode).
+            float m_stepHeight = 0.25f; //!< Riser height used when a Staircase is divided by step height.
+            int m_rotation = 0;         //!< Staircase orientation in 90-degree steps (0..3) about the surface normal.
+
+        private:
+            //! Step Count only shows for a Staircase in step-count mode.
+            AZ::Crc32 StepsVisibility() const;
+            //! Step Height only shows for a Staircase in step-height mode.
+            AZ::Crc32 StepHeightVisibility() const;
+        };
+
+        //! Settings for the Draw Shape tool, grouped to keep the related members together.
+        struct DrawShapeData
+        {
+            AZ_TYPE_INFO(DrawShapeData, "{A3794143-8F9E-49E9-B172-9025713D6553}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            DrawShapeType m_shape = DrawShapeType::Box; //!< Shape the Draw Shape tool builds.
+            int m_sides = 4;        //!< Side count the Draw Shape tool uses for round / N-gon shapes (4 = box/square).
+            DrawStairData m_stair;  //!< Staircase-specific settings.
+
+        private:
+            //! When the Draw Shape changes, set a sensible default Draw Sides for it and
+            //! refresh the property grid so the Draw Sides field updates.
+            AZ::u32 OnShapeChange();
+            //! Draw Sides only matters for round / N-gon shapes; hide it for a Staircase.
+            AZ::Crc32 SidesVisibility() const;
+            //! The Staircase-only controls only show when the draw shape is a Staircase.
+            AZ::Crc32 StairVisibility() const;
+        };
+
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
@@ -125,17 +166,6 @@ namespace WhiteBox
         void ExportDescendantsToFile();
         AZ::Crc32 SaveAsAsset();
         AZ::Crc32 OnDefaultShapeChange();
-        //! When the Draw Shape changes, set a sensible default Draw Sides for it and
-        //! refresh the property grid so the Draw Sides field updates.
-        AZ::u32 OnDrawShapeChange();
-        //! Draw Sides only matters for round / sphere shapes; hide it otherwise.
-        AZ::Crc32 DrawSidesVisibility() const;
-        //! Staircase-only controls (the shared switch + rotation).
-        AZ::Crc32 StairVisibility() const;
-        //! Draw Steps (count) only shows for a Staircase in step-count mode.
-        AZ::Crc32 DrawStepsVisibility() const;
-        //! Step Height only shows for a Staircase in step-height mode.
-        AZ::Crc32 StepHeightVisibility() const;
         //! Apply a CSG boolean using the White Box mesh on m_booleanSourceEntity.
         void ApplyBoolean();
         //! Update the voxel-stamped geometry in place: remove the faces belonging to
@@ -152,8 +182,13 @@ namespace WhiteBox
         void EvaluateLiveBoolean();
         //! Connect/disconnect the listener that re-evaluates when the source moves.
         void UpdateBooleanSourceListener();
-        //! ChangeNotify for the live-boolean / source / operation fields.
+        //! ChangeNotify for the live-boolean / operation fields.
         AZ::u32 OnLiveBooleanChange();
+        //! ChangeNotify for the Boolean Source field: like OnLiveBooleanChange but forces a
+        //! full tree rebuild so the Boolean group shows/hides when a source is set/cleared.
+        AZ::u32 OnBooleanSourceChange();
+        //! The Boolean group (Apply + options) only shows once a source entity is assigned.
+        AZ::Crc32 BooleanGroupVisibility() const;
 
         void OnMaterialChange();
         AZ::Crc32 AssetVisibility() const;
@@ -178,12 +213,8 @@ namespace WhiteBox
         DefaultShapeType m_defaultShape =
             DefaultShapeType::Cube; //!< Used for selecting a default shape for the White Box mesh.
         bool m_flipYZForExport = false; //!< Flips the Y and Z components of white box vertices when exporting for different coordinate systems
-        int m_drawSides = 4; //!< Side count the Draw Shape tool uses for round / N-gon shapes (4 = box/square).
-        DrawShapeType m_drawShape = DrawShapeType::Box; //!< Shape the Draw Shape tool builds.
-        int m_drawStairSteps = 8; //!< Number of steps the Draw Shape tool uses when building a Staircase (count mode).
-        bool m_drawStairByHeight = false; //!< Staircase divided by a fixed riser height instead of a fixed step count.
-        float m_drawStepHeight = 0.25f; //!< Riser height used when a Staircase is divided by step height.
-        int m_drawStairRotation = 0; //!< Staircase orientation in 90-degree steps (0..3) about the surface normal.
+        DrawShapeData m_drawShapeData; //!< Draw Shape tool settings (shape, sides and staircase options).
+        bool m_drawCarve = false; //!< When set, draw acts as a CSG boolean (same as holding Ctrl).
         bool m_drawUnitCube = false; //!< Draw mode click-stamps grid-snapped unit cubes (CSG) instead of drag-draw.
 
         AZ::EntityId m_booleanSourceEntity; //!< Another entity whose White Box mesh is used as a boolean operand.

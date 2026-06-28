@@ -9,6 +9,6 @@
 set(FILES
     Source/WhiteBoxModule.h
     Source/WhiteBoxModule.cpp
-    Source/WhiteBox_testEditorModule.h
-    Source/WhiteBox_testEditorModule.cpp
+    Source/WhiteBoxEditorModule.h
+    Source/WhiteBoxEditorModule.cpp
 )

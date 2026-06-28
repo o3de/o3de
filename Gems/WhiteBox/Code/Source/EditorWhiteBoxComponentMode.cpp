@@ -320,26 +320,22 @@ namespace WhiteBox
         // interactionHandled will be set to true if the mouse interaction has been handled by this white box component
         // which involves either interacting with a manipulator from this white box or clicking on the white box mesh
         // itself
+        // Bundle everything any mode might need so all modes share one HandleMouseInteraction
+        // signature (DrawShapeMode uses the transform + intersection cache, the editing modes use
+        // the precomputed edge/polygon/vertex hits).
+        const ModeMouseInteraction mouseContext{
+            mouseInteraction,
+            GetEntityComponentIdPair(),
+            m_worldFromLocal,
+            m_intersectionAndRenderData.value(),
+            edgeIntersection,
+            polygonIntersection,
+            vertexIntersection};
+
         bool interactionHandled = AZStd::visit(
-            [&mouseInteraction, entityComponentIdPair = GetEntityComponentIdPair(), &edgeIntersection,
-             &polygonIntersection, &vertexIntersection,
-             &intersectionAndRenderData = m_intersectionAndRenderData,
-             &worldFromLocal = m_worldFromLocal](auto& mode)
+            [&mouseContext](auto& mode)
             {
-                using ModeT = AZStd::decay_t<decltype(*mode)>;
-                if constexpr (AZStd::is_same_v<ModeT, DrawShapeMode>)
-                {
-                    // DrawShapeMode handles its own full mouse event; it needs
-                    // world transform and intersection cache directly.
-                    return mode->HandleMouseInteraction(
-                        mouseInteraction, worldFromLocal, intersectionAndRenderData.value());
-                }
-                else
-                {
-                    return mode->HandleMouseInteraction(
-                        mouseInteraction, entityComponentIdPair,
-                        edgeIntersection, polygonIntersection, vertexIntersection);
-                }
+                return mode->HandleMouseInteraction(mouseContext);
             },
             m_modes);
 
@@ -494,15 +490,9 @@ namespace WhiteBox
              &whiteBoxIntersectionAndRenderData = m_intersectionAndRenderData, viewportInfo, &debugDisplay,
              &worldFromLocal = m_worldFromLocal](auto& mode)
             {
-                using ModeT = AZStd::decay_t<decltype(*mode)>;
-                
-                // At compile time, if the mode is DrawShapeMode, this skips compiling the Display call!
-                if constexpr (!AZStd::is_same_v<ModeT, DrawShapeMode>)
-                {
-                    mode->Display(
-                        entityComponentIdPair, worldFromLocal,
-                        whiteBoxIntersectionAndRenderData.value(), viewportInfo, debugDisplay);
-                }
+                mode->Display(
+                    entityComponentIdPair, worldFromLocal, whiteBoxIntersectionAndRenderData.value(), viewportInfo,
+                    debugDisplay);
             },
             m_modes);
     
@@ -635,7 +625,6 @@ namespace WhiteBox
         m_defaultModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
         m_edgeRestoreModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "RestoreMode");
         m_drawShapeModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "AddComponent");
-        // ^ swap "AddComponent" for whatever SVG icon you prefer
 
         // temporary setting to disable this feature
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
