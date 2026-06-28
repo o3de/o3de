@@ -9,7 +9,7 @@
 #include "Components/EditorWhiteBoxColliderComponent.h"
 #include "EditorWhiteBoxComponent.h"
 #include "EditorWhiteBoxSystemComponent.h"
-#include "WhiteBox_testEditorModule.h"
+#include "WhiteBoxEditorModule.h"
 
 namespace WhiteBox
 {

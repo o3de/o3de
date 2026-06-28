@@ -716,13 +716,13 @@ namespace WhiteBox
         }
     }
 
-    bool TransformMode::HandleMouseInteraction(
-        const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
-        [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair,
-        const AZStd::optional<EdgeIntersection>& edgeIntersection,
-        const AZStd::optional<PolygonIntersection>& polygonIntersection,
-        const AZStd::optional<VertexIntersection>& vertexIntersection)
+    bool TransformMode::HandleMouseInteraction(const ModeMouseInteraction& mouse)
     {
+        const auto& mouseInteraction = mouse.m_mouseInteraction;
+        const AZStd::optional<EdgeIntersection>& edgeIntersection = mouse.m_edgeIntersection;
+        const AZStd::optional<PolygonIntersection>& polygonIntersection = mouse.m_polygonIntersection;
+        const AZStd::optional<VertexIntersection>& vertexIntersection = mouse.m_vertexIntersection;
+
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);

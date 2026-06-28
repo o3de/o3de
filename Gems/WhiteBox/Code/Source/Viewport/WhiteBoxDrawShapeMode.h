@@ -66,15 +66,16 @@ namespace WhiteBox
 
         //! Forward a raw mouse interaction event.
         //! @return true if the event was consumed (prevents other handlers from seeing it).
-        bool HandleMouseInteraction(
-            const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction,
-            const AZ::Transform& worldFromLocal,
-            const IntersectionAndRenderData& intersectionData);
+        bool HandleMouseInteraction(const ModeMouseInteraction& mouse);
 
-        //! Draw the ghost preview into the viewport.
-        // void Display(
-        //     const AzFramework::ViewportInfo& viewportInfo,
-        //     AzFramework::DebugDisplayRequests& debugDisplay) const;
+        //! Required by EditorWhiteBoxComponentMode variant dispatch. DrawShapeMode draws its
+        //! own ghost preview through DisplayViewport (ViewportDebugDisplayEventBus), so the
+        //! shared per-mode Display path is intentionally a no-op here.
+        void Display(
+            const AZ::EntityComponentIdPair&, const AZ::Transform&, const IntersectionAndRenderData&,
+            const AzFramework::ViewportInfo&, AzFramework::DebugDisplayRequests&)
+        {
+        }
 
         //! Required by EditorWhiteBoxComponentMode variant dispatch.
         void Refresh() {}
@@ -131,18 +132,17 @@ namespace WhiteBox
         DrawShapeType CurrentShape() const;
         int CurrentSides() const;
 
-        //! Number of steps to build for a Staircase, read from the component's
-        //! "Step Count" property (clamped to a safe range).
-        int CurrentStairSteps() const;
-
-        //! Staircase step-division mode / step height / rotation, from the component.
-        bool CurrentStairByHeight() const;
-        float CurrentStepHeight() const;
-        int CurrentStairRotation() const;
+        //! Staircase build parameters (step count, step-division mode, step height and rotation),
+        //! read from the component in one request and sanitised to safe ranges.
+        DrawStairInfo CurrentStairInfo() const;
 
         //! Effective staircase step count for the current pull height: the fixed
         //! "Step Count" in count mode, or derived from "Step Height" otherwise.
         int EffectiveStairSteps() const;
+
+        //! Whether the component's "Carve (Boolean)" toggle is active (a persistent
+        //! alternative to holding Ctrl).
+        bool CurrentCarve() const;
 
         //! Whether the component's "Unit Cube Stamp" mode is active.
         bool UnitCubeMode() const;
