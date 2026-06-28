@@ -1,4 +1,4 @@
-o3de_gem_setup("WhiteBox_test")
+o3de_gem_setup("WhiteBox")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdParty)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})

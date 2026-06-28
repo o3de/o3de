@@ -201,9 +201,7 @@ namespace WhiteBox
                         return Api::Clear(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
                     })
                 ->Method(
-                    // Script-facing name kept as "MeshBoolean" for backward compatibility even
-                    // though the C++ entry point is now Api::ApplyMeshBoolean.
-                    "MeshBoolean",
+                    "ApplyMeshBoolean",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, WhiteBoxMeshHandle* operandMeshHandle,
                        const AZ::Transform& operandTransform, const int operation)
                     {

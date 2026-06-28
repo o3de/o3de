@@ -14,7 +14,7 @@ extrude/translate-polygon operations.
 
 NOTE on operands
 ----------------
-MeshBoolean is backed by the Manifold library, which is robust for any
+ApplyMeshBoolean is backed by the Manifold library, which is robust for any
 closed (watertight) two-manifold operands, convex or not - including
 meshes that have already been CSG-subtracted.  The historical convex-only
 constraint of the old half-space clipper no longer applies.
@@ -147,7 +147,7 @@ def csg_subtract(target_handle, target_component, cutter_entity, cutter_handle, 
     The source brush must be a closed (watertight) mesh; it does not
     need to be convex.
     """
-    if target_handle.MeshBoolean(cutter_handle, transform, SUBTRACTION):
+    if target_handle.ApplyMeshBoolean(cutter_handle, transform, SUBTRACTION):
         init.update_white_box(target_handle, target_component)
         editor.ToolsApplicationRequestBus(bus.Broadcast, 'DeleteEntityById', cutter_entity)
         return True
