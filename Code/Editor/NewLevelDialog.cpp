@@ -58,10 +58,8 @@ private:
     CNewLevelDialog* m_parentDialog;
 };
 
-// In Qt6, QListWidget icon-mode items render icons in QIcon::Selected mode when
-// selected, applying a white color transformation that makes PNG previews unreadable.
-// This delegate draws the selection background manually, then paints the icon in
-// Normal mode so it remains visible regardless of selection state.
+// QListWidget icon-mode items render icons in white color when selected in Qt6, 
+// which makes PNG previews unreadable. This delegate draws the selection background manually.
 class TemplateItemDelegate : public QStyledItemDelegate
 {
 public:

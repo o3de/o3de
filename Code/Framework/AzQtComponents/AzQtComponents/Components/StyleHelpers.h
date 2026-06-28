@@ -50,12 +50,10 @@ namespace AzQtComponents
 
                 if (QStyle* styleSheet = StyleManager::styleSheetStyle(widget))
                 {
-                    // Qt6: unpolish() clears the cached render rules so polish() re-evaluates
-                    // them with the new property value.
+                    // Qt6: unpolish() clears the cached render rules; polish() re-evaluates
+                    // them with the new property value. Child render rules must be explicitly invalidated.
                     styleSheet->unpolish(widget);
                     styleSheet->polish(widget);
-                    // Qt6: child render rules (e.g. "Card[selected=true] > #contentContainer")
-                    // are cached independently and must be explicitly invalidated.
                     for (QWidget* child : widget->template findChildren<QWidget*>())
                     {
                         styleSheet->unpolish(child);
