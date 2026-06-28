@@ -39,7 +39,7 @@ print('--- source cube ---')
 print('  verts/faces:', counts(wb), '(expect 8 / 12)')
 
 transform = CsgDemo.compose(translation=V3(0.7745, -0.7745, 0.0), scale=1.2, rot_z=-math.pi / 4)
-ok = wb.MeshBoolean(wb_cut, transform, 1)   # 1 == SUBTRACTION
+ok = wb.ApplyMeshBoolean(wb_cut, transform, 1)   # 1 == SUBTRACTION
 print('--- boolean returned:', ok, '---')
 
 if ok:
