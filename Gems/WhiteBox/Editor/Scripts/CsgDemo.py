@@ -222,19 +222,19 @@ def demo_chamfer():
     A 45-degree chamfered (bevelled) corner -- impossible with extrude alone.
 
     Source:  unit cube
-    Cutter:  unit cube rotated 45° around Z (the vertical axis) so it presents
-             a 45° vertical face, placed so that face lies on the plane
+    Cutter:  unit cube rotated 45 deg around Z (the vertical axis) so it presents
+             a 45 deg vertical face, placed so that face lies on the plane
              x - y = 0.7 and only shaves the front-right vertical edge.
     Result:  a block with one chamfered vertical edge (a 0.3 bevel).
 
     Viewed from above (x-y plane), corner at (+0.5, -0.5):
         +-------+
         |       |
-        |       \     <- 45° bevel on the front-right edge
+        |       \     <- 45 deg bevel on the front-right edge
         +------\
     """
     entity, comp, wb = make_cube('Chamfer')
-    # Rotate the cutter -45° about Z (vertical), NOT Y - a vertical edge runs
+    # Rotate the cutter -45 deg about Z (vertical), NOT Y - a vertical edge runs
     # along Z, so the cut plane must be vertical.  scale 1.2 (half-extent 0.6)
     # covers the full height in z and keeps the cutter's side faces outside the
     # corner.  Translating to (0.7745, -0.7745) puts the cutter's -X face on the
