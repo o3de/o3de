@@ -21,7 +21,7 @@ namespace WhiteBox
         Rotate,
         Scale,
         Extrude, //!< Polygon extrude along normal OR edge extrude along displacement
-        Inset,   //!< Face inset (scale-append, ratio 0=collapse → 1=no-inset)
+        Inset,   //!< Face inset (scale-append, ratio 0=collapse -> 1=no-inset)
         Draw,    //!< Draw-shape pull depth (+ = add, - = carve)
     };
 
@@ -36,12 +36,12 @@ namespace WhiteBox
     //! Tracks the state of a Blender-style numeric input session.
     //!
     //! Supports simple two-operand expressions:  lhs [op] rhs
-    //!   e.g.  "5"          → 5
-    //!         "-5"         → -5
-    //!         "10*2"       → 20
-    //!         "10/4"       → 2.5
-    //!         "3+2"        → 5
-    //!         "10-3"       → 7
+    //!   e.g.  "5"          -> 5
+    //!         "-5"         -> -5
+    //!         "10*2"       -> 20
+    //!         "10/4"       -> 2.5
+    //!         "3+2"        -> 5
+    //!         "10-3"       -> 7
     struct NumericInputState
     {
         // ------------------------------------------------------------------ //
@@ -57,7 +57,7 @@ namespace WhiteBox
 
         void SetAxis(NumericAxisConstraint axis)
         {
-            // pressing the same axis key again → back to Free (Blender behaviour)
+            // pressing the same axis key again -> back to Free (Blender behaviour)
             m_axis = (m_axis == axis) ? NumericAxisConstraint::Free : axis;
         }
 
@@ -86,19 +86,19 @@ namespace WhiteBox
 
         //! Handle an operator key: +  -  *  /
         //! Rules:
-        //!   – leading '-' when nothing typed yet → start a negative number
-        //!   – leading '+' when nothing typed yet → no-op (already positive)
-        //!   – any operator after the first operand → record it and start the rhs buffer
-        //!   – pressing the same operator again → cancel it (back to lhs editing)
+        //!   - leading '-' when nothing typed yet -> start a negative number
+        //!   - leading '+' when nothing typed yet -> no-op (already positive)
+        //!   - any operator after the first operand -> record it and start the rhs buffer
+        //!   - pressing the same operator again -> cancel it (back to lhs editing)
         //! Handle an operator key: +  -  *  /
         //!
-        //! Leading '-' → start a negative first operand (e.g. "-5").
-        //! Leading '+' → no-op (already positive).
-        //! Leading '*' or '/' → implicit LHS of "1"  (so "*2" = 1×2 = 2;  "/4" = 1÷4 = 0.25).
-        //!   This lets you type  J *2 Enter  to scale×2, or  J /2 Enter  to scale×0.5.
-        //! After a first operand is complete → set the binary operator and start the RHS.
-        //! Pressing the same operator again → cancel it (back to LHS editing).
-        //! Pressing a different operator while RHS is empty → change operator.
+        //! Leading '-' -> start a negative first operand (e.g. "-5").
+        //! Leading '+' -> no-op (already positive).
+        //! Leading '*' or '/' -> implicit LHS of "1"  (so "*2" = 1x2 = 2;  "/4" = 1/4 = 0.25).
+        //!   This lets you type  J *2 Enter  to scalex2, or  J /2 Enter  to scalex0.5.
+        //! After a first operand is complete -> set the binary operator and start the RHS.
+        //! Pressing the same operator again -> cancel it (back to LHS editing).
+        //! Pressing a different operator while RHS is empty -> change operator.
         void AppendOperator(char op)
         {
             if (m_op == '\0')
@@ -107,7 +107,7 @@ namespace WhiteBox
                 {
                     if (op == '-')
                     {
-                        m_lhs = "-"; // leading minus → negative number
+                        m_lhs = "-"; // leading minus -> negative number
                     }
                     else if (op == '*' || op == '/')
                     {
@@ -115,11 +115,11 @@ namespace WhiteBox
                         m_lhs = "1";
                         m_op  = op;
                     }
-                    // '+' at start is implicit – ignore
+                    // '+' at start is implicit - ignore
                 }
                 else if (m_lhs != "-")
                 {
-                    // first operand complete → set binary operator
+                    // first operand complete -> set binary operator
                     m_op = op;
                 }
             }
@@ -127,7 +127,7 @@ namespace WhiteBox
             {
                 if (op == m_op)
                 {
-                    // pressing same operator again → cancel
+                    // pressing same operator again -> cancel
                     m_op = '\0';
                     m_rhs.clear();
                 }

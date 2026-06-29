@@ -838,7 +838,7 @@ namespace WhiteBox
                 const AZ::Vector3 rawHit = RaycastToSurface(mi, worldFromLocal, intersectionData, dummyNormal);
 
                 // Project the raw hit onto the anchor's surface plane so the base rectangle
-                // always lies flat on that surface — works for horizontal, vertical, or tilted.
+                // always lies flat on that surface -- works for horizontal, vertical, or tilted.
                 const AZ::Vector3 up = m_surfaceNormal.GetNormalized();
                 const float distFromPlane = (rawHit - m_worldP0).Dot(up);
                 m_worldP1 = rawHit - up * distFromPlane;
@@ -847,7 +847,7 @@ namespace WhiteBox
             }
             if (leftUp)
             {
-                // (no SetZ — P1 is already on the surface plane from the move handler)
+                // (no SetZ -- P1 is already on the surface plane from the move handler)
                 const AZ::Vector3 baseDelta = m_worldP1 - m_worldP0;
 
                 // Reject a near-zero base measured IN THE SURFACE PLANE, not by world XZ.
@@ -1203,7 +1203,7 @@ namespace WhiteBox
 
         const AZ::Vector3 ru     = uAxis * 0.5f;
         const AZ::Vector3 rv     = vAxis * 0.5f;
-        const AZ::Vector3 ext    = up * m_height;   // signed — preview follows pull direction
+        const AZ::Vector3 ext    = up * m_height;   // signed -- preview follows pull direction
 
         const bool isSphere = (shape == DrawShapeType::Sphere);
         const bool isStair  = (shape == DrawShapeType::Staircase);

@@ -289,7 +289,7 @@ namespace WhiteBox
                 });
         };
 
-        // G – begin move
+        // G - begin move
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Begin Numeric Move";
@@ -304,7 +304,7 @@ namespace WhiteBox
             hotKeyManagerInterface->SetActionHotKey(NumericBeginMoveId, "M");
         }
 
-        // R – begin rotate
+        // R - begin rotate
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Begin Numeric Rotate";
@@ -319,7 +319,7 @@ namespace WhiteBox
             hotKeyManagerInterface->SetActionHotKey(NumericBeginRotateId, "U");
         }
 
-        // S – begin scale
+        // S - begin scale
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Begin Numeric Scale";
@@ -334,7 +334,7 @@ namespace WhiteBox
             hotKeyManagerInterface->SetActionHotKey(NumericBeginScaleId, "J");
         }
 
-        // X / Y / Z – axis constraint
+        // X / Y / Z - axis constraint
         {
             AzToolsFramework::ActionProperties px;
             px.m_name = "Numeric Input Axis X";
@@ -370,7 +370,7 @@ namespace WhiteBox
             hotKeyManagerInterface->SetActionHotKey(NumericAxisZId, "Z");
         }
 
-        // Enter – confirm
+        // Enter - confirm
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Numeric Input Confirm";
@@ -384,7 +384,7 @@ namespace WhiteBox
             hotKeyManagerInterface->SetActionHotKey(NumericConfirmId, "Return");
         }
 
-        // Escape – cancel
+        // Escape - cancel
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Numeric Input Cancel";

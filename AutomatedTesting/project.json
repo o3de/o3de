@@ -70,5 +70,10 @@
         "TextureAtlas",
         "Vegetation",
         "WhiteBox"
-    ]
+    ],
+    "engine": "o3de",
+    "origin": "",
+    "summary": "",
+    "user_tags": [],
+    "engine_version": "2.7.0"
 }

@@ -574,7 +574,7 @@ namespace WhiteBox
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //
         //! Remove faces from the mesh.
-        //! @note Collect all face handles to remove and call once per operation —
+        //! @note Collect all face handles to remove and call once per operation --
         //! do not call in a loop, as handles may be invalidated during garbage_collect.
         void RemoveFaces(WhiteBoxMesh& whiteBox, const FaceHandles& faceHandles);
         //! Set the position of the provided vertex handle to the new vertex position.

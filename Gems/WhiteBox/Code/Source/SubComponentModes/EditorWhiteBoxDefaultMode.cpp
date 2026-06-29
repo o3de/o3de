@@ -336,7 +336,7 @@ namespace WhiteBox
                 });
         };
 
-        // M – begin numeric move
+        // M - begin numeric move
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Begin Numeric Move";
@@ -347,7 +347,7 @@ namespace WhiteBox
                 [dispatchDefault] { dispatchDefault(&EditorWhiteBoxDefaultModeRequests::NumericMoveBegin); });
             hotKeyManagerInterface->SetActionHotKey(DefaultNumericBeginMoveId, "M");
         }
-        // J – begin numeric scale
+        // J - begin numeric scale
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Begin Numeric Scale";
@@ -358,7 +358,7 @@ namespace WhiteBox
                 [dispatchDefault] { dispatchDefault(&EditorWhiteBoxDefaultModeRequests::NumericScaleBegin); });
             hotKeyManagerInterface->SetActionHotKey(DefaultNumericBeginScaleId, "J");
         }
-        // U – begin numeric rotate
+        // U - begin numeric rotate
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Begin Numeric Rotate";
@@ -369,7 +369,7 @@ namespace WhiteBox
                 [dispatchDefault] { dispatchDefault(&EditorWhiteBoxDefaultModeRequests::NumericRotateBegin); });
             hotKeyManagerInterface->SetActionHotKey(DefaultNumericBeginRotateId, "U");
         }
-        // O – begin numeric extrude (polygon along normal, or edge along displacement)
+        // O - begin numeric extrude (polygon along normal, or edge along displacement)
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Begin Numeric Extrude";
@@ -380,7 +380,7 @@ namespace WhiteBox
                 [dispatchDefault] { dispatchDefault(&EditorWhiteBoxDefaultModeRequests::NumericExtrudeBegin); });
             hotKeyManagerInterface->SetActionHotKey(DefaultNumericBeginExtrudeId, "O");
         }
-        // F – begin numeric inset (face inset on polygon, ratio 0=collapse → 1=no inset)
+        // F - begin numeric inset (face inset on polygon, ratio 0=collapse -> 1=no inset)
         {
             AzToolsFramework::ActionProperties p;
             p.m_name = "Begin Numeric Face Inset";
@@ -391,7 +391,7 @@ namespace WhiteBox
                 [dispatchDefault] { dispatchDefault(&EditorWhiteBoxDefaultModeRequests::NumericInsetBegin); });
             hotKeyManagerInterface->SetActionHotKey(DefaultNumericBeginInsetId, "F");
         }
-        // X / Y / Z – axis constraint
+        // X / Y / Z - axis constraint
         {
             AzToolsFramework::ActionProperties px; px.m_name = "Numeric Move Axis X"; px.m_category = "White Box Component Mode - Default";
             actionManagerInterface->RegisterAction(EditorIdentifiers::MainWindowActionContextIdentifier, DefaultNumericAxisXId, px,
@@ -408,14 +408,14 @@ namespace WhiteBox
                 [dispatchDefault] { dispatchDefault(&EditorWhiteBoxDefaultModeRequests::NumericMoveSetAxisZ); });
             hotKeyManagerInterface->SetActionHotKey(DefaultNumericAxisZId, "Z");
         }
-        // Enter – confirm
+        // Enter - confirm
         {
             AzToolsFramework::ActionProperties p; p.m_name = "Numeric Move Confirm"; p.m_category = "White Box Component Mode - Default";
             actionManagerInterface->RegisterAction(EditorIdentifiers::MainWindowActionContextIdentifier, DefaultNumericConfirmId, p,
                 [dispatchDefault] { dispatchDefault(&EditorWhiteBoxDefaultModeRequests::NumericMoveConfirm); });
             hotKeyManagerInterface->SetActionHotKey(DefaultNumericConfirmId, "Return");
         }
-        // Escape – cancel
+        // Escape - cancel
         {
             AzToolsFramework::ActionProperties p; p.m_name = "Numeric Move Cancel"; p.m_category = "White Box Component Mode - Default";
             actionManagerInterface->RegisterAction(EditorIdentifiers::MainWindowActionContextIdentifier, DefaultNumericCancelId, p,
@@ -1138,7 +1138,7 @@ namespace WhiteBox
 
         if (ph.m_faceHandles.empty() && !vh.IsValid() && !eh.IsValid())
         {
-            // Nothing hovered — check whether something is selected.
+            // Nothing hovered -- check whether something is selected.
             ph = SelectedPolygonHandles().empty() ? Api::PolygonHandle{} : SelectedPolygonHandles().front();
             if (ph.m_faceHandles.empty())
             {
@@ -1444,7 +1444,7 @@ namespace WhiteBox
             }
             else if (const Api::EdgeHandle eh = resolveEdge(); eh.IsValid())
             {
-                // Edge has no natural rotation axis — require explicit X/Y/Z.
+                // Edge has no natural rotation axis -- require explicit X/Y/Z.
                 if (m_numericInput.m_axis == NumericAxisConstraint::Free)
                 {
                     m_numericInput.Reset(); return;

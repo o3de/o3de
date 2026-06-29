@@ -27,12 +27,12 @@ namespace WhiteBox
     //! inside the White Box component mode.
     //!
     //! Interaction flow:
-    //!   1. Left mouse down  → anchor first corner (world hit or ground plane)
-    //!   2. Left mouse drag  → size the base rectangle (live preview)
-    //!   3. Left mouse up    → lock base, enter height-pull phase
-    //!   4. Mouse move       → pull height along up-axis (live preview)
-    //!   5. Left mouse down  → commit box to white box mesh + undo batch
-    //!   Right-click / Esc  → cancel at any phase
+    //!   1. Left mouse down  -> anchor first corner (world hit or ground plane)
+    //!   2. Left mouse drag  -> size the base rectangle (live preview)
+    //!   3. Left mouse up    -> lock base, enter height-pull phase
+    //!   4. Mouse move       -> pull height along up-axis (live preview)
+    //!   5. Left mouse down  -> commit box to white box mesh + undo batch
+    //!   Right-click / Esc  -> cancel at any phase
     //!
     //! During the height-pull phase the depth can also be typed (Blender-style
     //! numeric entry, expressions allowed e.g. "-5+3"). The first digit/minus
