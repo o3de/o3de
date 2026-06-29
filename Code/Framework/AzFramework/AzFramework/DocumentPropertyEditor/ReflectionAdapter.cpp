@@ -1616,7 +1616,9 @@ namespace AZ::DocumentPropertyEditor
         {
             // For now just trigger a soft reset but the end goal is to handle granular updates.
             // This will still only send the view patches for what's actually changed.
-            NotifyResetDocument();
+            // Also note, this can happen in the middle of property editing, we do NOT want to actually
+            // reset the document immediately and cause the widgets to potentially be destroyed while still being worked on.
+            QueueResetDocument();
         };
 
         return message.Match(

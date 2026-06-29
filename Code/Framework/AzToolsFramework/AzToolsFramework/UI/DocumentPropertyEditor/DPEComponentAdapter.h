@@ -61,6 +61,7 @@ namespace AZ::DocumentPropertyEditor
 
         //! Gets notification from the EntitySystemBus before destroying an entity.
         void OnEntityDestruction(const AZ::EntityId&) override;
+        void OnEntityInitialized(const AZ::EntityId&) override;
 
     private:
         //! Checks if the component is still valid in the entity.
