@@ -44,8 +44,10 @@ namespace AZ
             AZStd::string m_rotateDegrees; //!< material property for rotating
 
             // Shader setting outputs...
-            AZStd::string m_transformMatrix;          //!< name of a float3x3 shader input
-            AZStd::string m_transformMatrixInverse;   //!< name of the inverse float3x3 shader input
+            // The base name (e.g. "m_uvMatrixRow0") for the three row_major float4 rows of the transform matrix.
+            // Row1 and Row2 are derived by replacing the trailing "Row0" suffix with "Row1" / "Row2".
+            AZStd::string m_transformMatrix;          //!< base name (Row0) of the UV transform matrix rows
+            AZStd::string m_transformMatrixInverse;   //!< base name (Row0) of the inverse UV transform matrix rows
         };
 
     } // namespace Render

@@ -35,7 +35,7 @@ public:
     void ShowAbout() override {}
 
     const char* GetPluginGUID() override { return "{C5B96A1A-036A-46F9-B7F0-5DF93494F988}"; }
-    DWORD GetPluginVersion() override { return 1; }
+    AZ::u32 GetPluginVersion() override { return 1; }
     const char* GetPluginName() override { return "ProjectSettingsTool"; }
     bool CanExitNow() override { return true; }
     void OnEditorNotify([[maybe_unused]] EEditorNotifyEvent aEventId) override {}

@@ -378,7 +378,7 @@ namespace EMStudio
 
     AZStd::string EMStudioManager::GetAppDataFolder() const
     {
-        AZStd::string appDataFolder = QStandardPaths::standardLocations(QStandardPaths::DataLocation).at(0).toUtf8().data();
+        AZStd::string appDataFolder = QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0).toUtf8().data();
         appDataFolder += "/EMotionStudio/";
 
         QDir dir(appDataFolder.c_str());

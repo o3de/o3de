@@ -10,8 +10,6 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
-#if !defined(Q_MOC_RUN)
-
 #include <AzCore/base.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityBus.h>
@@ -32,10 +30,9 @@
 #include <QCheckBox>
 #include <QRect>
 #include <QStyledItemDelegate>
-#include <QWidget>
-#endif
+#include <QTimer>
 
-#pragma once
+#include <QWidget>
 
 namespace AzToolsFramework
 {
@@ -384,6 +381,8 @@ namespace AzToolsFramework
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+
+        QTimer* m_cacheRefreshTimer = nullptr;
     };
 
 }

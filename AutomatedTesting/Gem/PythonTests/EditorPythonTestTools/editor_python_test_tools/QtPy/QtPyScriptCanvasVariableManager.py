@@ -6,10 +6,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Object to house all the Qt Objects and behavior used in testing the script canvas variable manager
 """
-from PySide2.QtCore import Qt
+from PySide6.QtCore import Qt
 import types
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets, QtCore, QtTest
+from PySide6 import QtWidgets, QtCore, QtTest
 import pyside_utils
 from types import SimpleNamespace
 from consts.scripting import (VARIABLE_MANAGER_QT, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, GRAPH_VARIABLES_QT, GRAPH_VARIABLES_PAGE_QT)

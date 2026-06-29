@@ -182,7 +182,7 @@ Surface EvaluateSurface_Skin(
         bool applyOverlay = true;
         surface.normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormal, normalTS, tangents[params.m_normalMapUvIndex], bitangents[params.m_normalMapUvIndex], 
                                                  GetMaterialTexture(params.m_detail_normal_texture), GetMaterialTextureSampler(), detailUv, params.m_detail_normal_flipX, params.m_detail_normal_flipY, 
-                                                 detailLayerNormalFactor, tangents[params.m_detail_allMapsUvIndex], bitangents[params.m_detail_allMapsUvIndex], real3x3(params.m_detailUvMatrix), uvDxDy, customDerivatives);
+                                                 detailLayerNormalFactor, tangents[params.m_detail_allMapsUvIndex], bitangents[params.m_detail_allMapsUvIndex], real3x3(params.m_detailUvMatrixRow0.xyz, params.m_detailUvMatrixRow1.xyz, params.m_detailUvMatrixRow2.xyz), uvDxDy, customDerivatives);
     }
     else
     {

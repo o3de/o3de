@@ -173,5 +173,3 @@ namespace OpenParticleSystemEditor
         }
     }
 }
-
-#include <moc_ViewInspector.cpp>

@@ -908,7 +908,7 @@ namespace AZ
                 {
                     auto elementIterator = containerPtr->begin();
                     AZStd::advance(elementIterator, index);
-                    
+
                     return (elementIterator != containerPtr->end()) ? &(*elementIterator) : nullptr;
                 }
                 return nullptr;
@@ -1064,7 +1064,9 @@ namespace AZ
 
                 m_value2ClassElement.m_name = "value2";
                 m_value2ClassElement.m_nameCrc = AZ_CRC_CE("value2");
-                m_value2ClassElement.m_offset = sizeof(T1);
+                // std::pair is not standard-layout, so offsetof() is ill-formed here.
+                // The second member immediately follows the first, so its offset is sizeof(T1) rounded up to alignof(T2).
+                m_value2ClassElement.m_offset = AZ_SIZE_ALIGN_UP(sizeof(T1), alignof(T2));
                 SetupClassElementFromType<T2>(m_value2ClassElement);
             }
 

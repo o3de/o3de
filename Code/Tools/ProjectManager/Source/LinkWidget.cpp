@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
         emit clicked();
     }
 
-    void LinkLabel::enterEvent([[maybe_unused]] QEvent* event)
+    void LinkLabel::enterEvent([[maybe_unused]] QEnterEvent* event)
     {
         setStyleSheet(QString("font-size: %1px; color: #94D2FF; text-decoration: underline;").arg(m_fontSize));
     }

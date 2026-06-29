@@ -31,9 +31,6 @@
 #include <QScrollBar>
 #include <QStaticText>
 #include <QToolTip>
-#if defined(Q_OS_WIN)
-#include <QtWinExtras/QtWin>
-#endif
 
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 
@@ -86,7 +83,7 @@ CUiAnimViewDopeSheetBase::CUiAnimViewDopeSheetBase(QWidget* parent)
     m_currentTime = 0.0f;
     m_storedTime = m_currentTime;
     m_rcSelect = QRect(0, 0, 0, 0);
-    m_rubberBand = 0;
+    m_rubberBand = nullptr;
     m_scrollBar = new QScrollBar(Qt::Horizontal, this);
     connect(m_scrollBar, &QScrollBar::valueChanged, this, &CUiAnimViewDopeSheetBase::OnHScroll);
     m_keyTimeOffset = 0;
@@ -529,22 +526,24 @@ void CUiAnimViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, [[ma
         return;
     }
 
+    if (m_rubberBand)
+    {
+        m_rubberBand->deleteLater();
+        m_rubberBand = nullptr;
+    }
+
     if (m_mouseMode == eUiAVMouseMode_Select)
     {
         // Check if any key are selected.
         m_rcSelect.translate(-m_scrollOffset);
         SelectKeys(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
-        m_rubberBand->deleteLater();
-        m_rubberBand = 0;
     }
     else if (m_mouseMode == eUiAVMouseMode_SelectWithinTime)
     {
         m_rcSelect.translate(-m_scrollOffset);
         SelectAllKeysWithinTimeFrame(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
-        m_rubberBand->deleteLater();
-        m_rubberBand = 0;
     }
     else if (m_mouseMode == eUiAVMouseMode_DragTime)
     {
@@ -2340,11 +2339,11 @@ void CUiAnimViewDopeSheetBase::DrawKeys(CUiAnimViewTrack* pTrack, QPainter* pain
                     // Show its time or frame number additionally.
                     if (GetTickDisplayMode() == eUiAVTickMode_InSeconds)
                     {
-                        sprintf_s(keydesc, "%.3f, {", time);
+                        azsprintf(keydesc, "%.3f, {", time);
                     }
                     else
                     {
-                        sprintf_s(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
+                        azsprintf(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
                     }
                 }
                 else

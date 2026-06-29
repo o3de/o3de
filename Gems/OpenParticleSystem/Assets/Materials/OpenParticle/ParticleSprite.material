@@ -1,6 +1,6 @@
 {
     "materialType": "Types/ParticleSprite.materialtype",
-    "materialTypeVersion": 1,
+    "materialTypeVersion": 3,
     "propertyValues": {
         "general.DiffuseMap": "@gemroot:OpenParticleSystem@/Assets/Textures/OpenParticle/DefaultSpriteNumber.png"
     }

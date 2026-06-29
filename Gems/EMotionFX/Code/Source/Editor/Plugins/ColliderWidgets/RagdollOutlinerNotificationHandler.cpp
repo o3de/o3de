@@ -73,7 +73,7 @@ namespace EMotionFX
             return;
         }
 
-        const int numSelectedNodes = selectedRowIndices.count();
+        const int numSelectedNodes = static_cast<int>(selectedRowIndices.count());
         int ragdollNodeCount = 0;
         for (const QModelIndex& modelIndex : selectedRowIndices)
         {

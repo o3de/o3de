@@ -91,10 +91,11 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
     ProcessedMaterialInputs result;
 
     float2 transformedUv[UvSetCount];
-    transformedUv[0] = mul(inputs.m_uvMatrix, float3(inputs.m_vertexUv[0], 1.0)).xy;
+    float3 _mlUv0h = float3(inputs.m_vertexUv[0], 1.0);
+    transformedUv[0] = float2(dot(inputs.m_uvMatrix[0], _mlUv0h), dot(inputs.m_uvMatrix[1], _mlUv0h));
     transformedUv[1] = inputs.m_vertexUv[1];
 
-    real3x3 normalUvMatrix = inputs.m_normalMapUvIndex == 0 ? real3x3(inputs.m_uvMatrix) : real3x3(CreateIdentity3x3());
+    real3x3 normalUvMatrix = inputs.m_normalMapUvIndex == 0 ? real3x3(inputs.m_uvMatrix) : CreateIdentity3x3_real();
     result.m_normalTS = GetNormalInputTS(inputs.m_normalMap, inputs.m_sampler, transformedUv[inputs.m_normalMapUvIndex], inputs.m_flipNormalX, inputs.m_flipNormalY, normalUvMatrix, inputs.m_normal_useTexture, real(inputs.m_normalFactor), uvDxDy, customDerivatives);
 
     real3 sampledBaseColor = GetBaseColorInput(inputs.m_baseColorMap, inputs.m_sampler, transformedUv[inputs.m_baseColorMapUvIndex], real3(inputs.m_baseColor.rgb), inputs.m_baseColor_useTexture, uvDxDy, customDerivatives);
@@ -110,7 +111,7 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
     result.m_clearCoat.InitializeToZero();
     if(inputs.m_clearCoatEnabled)
     {
-        real3x3 clearCoatUvMatrix = inputs.m_clearCoatNormalMapUvIndex == 0 ? real3x3(inputs.m_uvMatrix) : real3x3(CreateIdentity3x3());
+        real3x3 clearCoatUvMatrix = inputs.m_clearCoatNormalMapUvIndex == 0 ? real3x3(inputs.m_uvMatrix) : CreateIdentity3x3_real();
         GetClearCoatInputs(inputs.m_clearCoatInfluenceMap, transformedUv[inputs.m_clearCoatInfluenceMapUvIndex], real(inputs.m_clearCoatFactor), inputs.m_clearCoat_factor_useTexture,
                             inputs.m_clearCoatRoughnessMap, transformedUv[inputs.m_clearCoatRoughnessMapUvIndex], real(inputs.m_clearCoatRoughness), inputs.m_clearCoat_roughness_useTexture,
                             inputs.m_clearCoatNormalMap,    transformedUv[inputs.m_clearCoatNormalMapUvIndex], inputs.m_normal, inputs.m_clearCoat_normal_useTexture, real(inputs.m_clearCoatNormalStrength),
@@ -125,7 +126,7 @@ ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inp
 #define FILL_STANDARD_MATERIAL_INPUTS(inputs, srgLayerPrefix, optionsLayerPrefix, blendWeight)                     \
     inputs.m_sampler = GetMaterialTextureSampler();                                                                \
     inputs.m_vertexUv = uvs;                                                                                       \
-    inputs.m_uvMatrix = srgLayerPrefix##m_uvMatrix;                                                                \
+    inputs.m_uvMatrix = float3x3(srgLayerPrefix##m_uvMatrixRow0.xyz, srgLayerPrefix##m_uvMatrixRow1.xyz, srgLayerPrefix##m_uvMatrixRow2.xyz); \
     inputs.m_normal = normalWS;                                                                                    \
     inputs.m_tangents = tangents;                                                                                  \
     inputs.m_bitangents = bitangents;                                                                              \

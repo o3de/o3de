@@ -936,8 +936,8 @@ namespace OpenParticle
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelConcentrate::centre, "Centre",
-                        "The centre of the Concentrate.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelConcentrate::centre, "Center",
+                        "The center of the Concentrate.")
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelConcentrate::rateObject, "Rate",
                         "The rate of Concentrate.")
@@ -1450,7 +1450,7 @@ namespace OpenParticle
                         ->Attribute(AZ::Edit::Attributes::Visibility, &RibbonConfig::ModeChangToTrail)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::tesselationFactor,
                         "Tesselation Factor",
-                        "The tesselation factor of the ribbon.")
+                        "Each time a ribbon segment grows longer than this value, it will be subdivided.  Lower values result in more (smoother) subdivisions, more resource use.")
                         ->Attribute(AZ::Edit::Attributes::Min, 1.f - SimuCore::ALMOST_ONE) 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::curveTension,
                         "Curve Tension",

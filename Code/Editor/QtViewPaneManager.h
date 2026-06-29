@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Include/EditorCoreAPI.h"
 #include "Resource.h"
 #include <AzToolsFramework/API/ViewPaneOptions.h>
@@ -29,7 +28,6 @@
 #include <LyViewPaneNames.h>
 
 #include <AzCore/std/functional.h>
-#endif
 
 class QMainWindow;
 class ViewportEditorModeNotificationsBusImpl;

@@ -309,11 +309,11 @@ namespace EMStudio
         menu->setObjectName("EMFX.MainWindow.FileMenu");
 
         // reset action
-        m_resetAction = menu->addAction(tr("&Reset"), this, &MainWindow::OnReset, QKeySequence::New);
+        m_resetAction = menu->addAction(tr("&Reset"), QKeySequence::New, this, &MainWindow::OnReset);
         m_resetAction->setObjectName("EMFX.MainWindow.ResetAction");
 
         // save all
-        m_saveAllAction = menu->addAction(tr("Save All..."), this, &MainWindow::OnSaveAll, QKeySequence::Save);
+        m_saveAllAction = menu->addAction(tr("Save All..."), QKeySequence::Save, this, &MainWindow::OnSaveAll);
         m_saveAllAction->setObjectName("EMFX.MainWindow.SaveAllAction");
 
         // disable the reset and save all menus until one thing is loaded
@@ -323,9 +323,9 @@ namespace EMStudio
         menu->addSeparator();
 
         // actor file actions
-        QAction* openAction = menu->addAction(tr("&Open Actor"), this, &MainWindow::OnFileOpenActor, QKeySequence::Open);
+        QAction* openAction = menu->addAction(tr("&Open Actor"), QKeySequence::Open, this, &MainWindow::OnFileOpenActor);
         openAction->setObjectName("EMFX.MainWindow.OpenActorAction");
-        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), this, &MainWindow::OnFileMergeActor, 0x0 | Qt::CTRL | Qt::Key_I);
+        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), Qt::CTRL | Qt::Key_I, this, &MainWindow::OnFileMergeActor);
         m_mergeActorAction->setObjectName("EMFX.MainWindow.MergeActorAction");
         m_saveSelectedActorsAction = menu->addAction(tr("&Save Selected Actors"), this, &MainWindow::OnFileSaveSelectedActors);
         m_saveSelectedActorsAction->setObjectName("EMFX.MainWindow.SaveActorAction");
@@ -359,17 +359,15 @@ namespace EMStudio
         menu = menuBar->addMenu(tr("&Edit"));
         menu->setObjectName("EMFX.MainWindow.EditMenu");
         m_undoAction = menu->addAction(
-            tr("Undo"),
+            tr("Undo"), QKeySequence::Undo,
             this,
-            &MainWindow::OnUndo,
-            QKeySequence::Undo
+            &MainWindow::OnUndo
         );
         m_undoAction->setObjectName("EMFX.MainWindow.UndoAction");
         m_redoAction = menu->addAction(
-            tr("Redo"),
+            tr("Redo"), QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Z),
             this,
-            &MainWindow::OnRedo,
-            QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Z)
+            &MainWindow::OnRedo
         );
         m_redoAction->setObjectName("EMFX.MainWindow.RedoAction");
         m_undoAction->setDisabled(true);
@@ -1808,7 +1806,7 @@ namespace EMStudio
         m_layoutNames.clear();
         AZStd::string filename;
         const QFileInfoList list = dir.entryInfoList();
-        const int listSize = list.size();
+        const int listSize = static_cast<int>(list.size());
         for (int i = 0; i < listSize; ++i)
         {
             // get the filename
@@ -2487,7 +2485,7 @@ namespace EMStudio
                     fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
                 }
             }
-            LoadFiles(fileNames, event->pos().x(), event->pos().y());
+            LoadFiles(fileNames, event->position().x(), event->position().y());
             event->acceptProposedAction();
 
         }
@@ -2647,7 +2645,7 @@ namespace EMStudio
             // generate the autosave file list
             int maxAutosaveFileNumber = 0;
             QList<QString> autosaveFileList;
-            const int numEntry = entryList.size();
+            const int numEntry = static_cast<int>(entryList.size());
             for (int j = 0; j < numEntry; ++j)
             {
                 // get the file info
@@ -2684,7 +2682,7 @@ namespace EMStudio
             {
                 // number of files to delete
                 // one is added because one space needs to be free for the new file
-                const int numFilesToDelete = m_options.GetAutoSaveNumberOfFiles() ? (autosaveFileList.size() - m_options.GetAutoSaveNumberOfFiles() + 1) : autosaveFileList.size();
+                const int numFilesToDelete = m_options.GetAutoSaveNumberOfFiles() ? (static_cast<int>(autosaveFileList.size()) - m_options.GetAutoSaveNumberOfFiles() + 1) : static_cast<int>(autosaveFileList.size());
 
                 // delete each file
                 for (int j = 0; j < numFilesToDelete; ++j)

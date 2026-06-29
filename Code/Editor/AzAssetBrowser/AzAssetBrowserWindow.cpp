@@ -1165,5 +1165,3 @@ void AzAssetBrowserWindow::SelectionChanged(const QItemSelection& selected, [[ma
     // Note the above code SHOULD early return if more cases appear.
     AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
 }
-
-#include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>

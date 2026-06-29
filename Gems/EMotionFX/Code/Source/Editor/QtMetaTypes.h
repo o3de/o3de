@@ -24,7 +24,6 @@
 
 
 // Required to return different types through a QVariant and to make signal/slot connections
-Q_DECLARE_METATYPE(AZ::Uuid);
 Q_DECLARE_METATYPE(EMotionFX::Actor*);
 Q_DECLARE_METATYPE(EMotionFX::ActorInstance*);
 Q_DECLARE_METATYPE(EMotionFX::AnimGraphInstance*);
@@ -36,4 +35,3 @@ Q_DECLARE_METATYPE(EMotionFX::BlendTreeConnection*);
 Q_DECLARE_METATYPE(EMotionFX::Node*);
 Q_DECLARE_METATYPE(EMotionFX::SimulatedObject*);
 Q_DECLARE_METATYPE(EMotionFX::SimulatedJoint*);
-Q_DECLARE_METATYPE(QVector<int>);

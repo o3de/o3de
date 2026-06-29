@@ -288,6 +288,8 @@ set(FILES
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
+    Math/ColorGradient.cpp
+    Math/ColorGradient.h
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
     Math/Crc.cpp
@@ -419,6 +421,8 @@ set(FILES
     Math/PackedVector4.h
     Math/Color.h
     Math/Color.cpp
+    Math/ColorGradient.h
+    Math/ColorGradient.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
     Memory/AllocationRecords.cpp

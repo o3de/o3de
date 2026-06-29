@@ -63,7 +63,7 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
         """
 
         import os
-        from PySide2 import QtWidgets
+        from PySide6 import QtWidgets
 
         import azlmbr.bus as bus
         import azlmbr.editor as editor

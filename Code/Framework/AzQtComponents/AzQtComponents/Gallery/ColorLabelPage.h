@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QScopedPointer>
-#endif
 
 #include <AzCore/Math/Color.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>

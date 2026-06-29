@@ -8,14 +8,13 @@
 
 #ifndef LUAEDITOR_LUACOMPLETER_H
 #define LUAEDITOR_LUACOMPLETER_H
+#pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <QCompleter>
-#endif
 
-#pragma once
+#include <QCompleter>
+
 
 namespace LUAEditor
 {

@@ -38,7 +38,7 @@ def Pane_Undocked_ClosesSuccessfully():
     :return: None
     """
 
-    from PySide2 import QtWidgets
+    from PySide6 import QtWidgets
 
     # Helper imports
     from utils import Report

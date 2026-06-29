@@ -669,7 +669,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::dropEvent(QDropEvent* event)
         {
-            QModelIndex targetIndex = indexAt(event->pos());
+            QModelIndex targetIndex = indexAt(event->position().toPoint());
             if (!targetIndex.isValid())
             {
                 event->ignore();
@@ -883,4 +883,3 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/Views/moc_AssetBrowserTreeView.cpp"

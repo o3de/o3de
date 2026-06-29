@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <AzCore/base.h>
 #include <AzCore/Console/IConsoleTypes.h>
+#include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/variant.h>
@@ -34,6 +35,7 @@ namespace AZ
     class AZCORE_API ConsoleFunctorBase
     {
     public:
+        using ArgumentAutoCompleteCallback = AZStd::function<void(AZStd::string_view arguments, AZStd::vector<AZStd::string>& matches)>;
 
         //! Constructor.
         //! @param name   the string name of the functor, used to identify and invoke the functor through the console interface
@@ -75,6 +77,16 @@ namespace AZ
         //! @return the TypeId of the bound type if one exists
         const TypeId& GetTypeId() const;
 
+        //! Sets the callback used to autocomplete arguments after this functor name.
+        //! The callback receives the raw argument substring after the command name and should append complete argument strings to matches.
+        void SetArgumentAutoCompleteCallback(ArgumentAutoCompleteCallback callback);
+
+        //! Returns whether this functor has an argument autocomplete callback.
+        bool HasArgumentAutoCompleteCallback() const;
+
+        //! Appends autocomplete matches for arguments after this functor name.
+        void AutoCompleteArguments(AZStd::string_view arguments, AZStd::vector<AZStd::string>& matches) const;
+
         //! Execute operator, calling this executes the functor.
         //! @param arguments set of string inputs to the functor
         virtual void operator()(const ConsoleCommandContainer& arguments) = 0;
@@ -107,6 +119,7 @@ namespace AZ
         TypeId m_typeId;
 
         IConsole* m_console = nullptr;
+        ArgumentAutoCompleteCallback m_argumentAutoCompleteCallback;
 
         ConsoleFunctorBase* m_prev = nullptr;
         ConsoleFunctorBase* m_next = nullptr;

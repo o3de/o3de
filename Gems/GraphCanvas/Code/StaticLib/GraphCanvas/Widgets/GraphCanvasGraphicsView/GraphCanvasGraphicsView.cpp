@@ -1095,10 +1095,11 @@ namespace GraphCanvas
                 /* QT comment/
                 // Left-button press in scroll hand mode initiates hand scrolling.
                 */
-                QMouseEvent startPressEvent(QEvent::MouseButtonPress, m_initialClick, Qt::LeftButton, Qt::LeftButton, event->modifiers());
+                QMouseEvent startPressEvent(
+                    QEvent::MouseButtonPress, m_initialClick, m_initialClick, Qt::LeftButton, Qt::LeftButton, event->modifiers());
                 QGraphicsView::mousePressEvent(&startPressEvent);
 
-                QMouseEvent customEvent(event->type(), event->pos(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
+                QMouseEvent customEvent(event->type(), event->position(), event->globalPosition(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
                 QGraphicsView::mousePressEvent(&customEvent);
             }
 
@@ -1107,7 +1108,7 @@ namespace GraphCanvas
 
         if (m_checkForEdges)
         {
-            m_edgePanning = CalculateEdgePanning(event->globalPos());
+            m_edgePanning = CalculateEdgePanning(event->globalPosition());
             ManageTickState();
         }
 
@@ -1121,7 +1122,7 @@ namespace GraphCanvas
             // If we move less than ~0.5% in both directions, we'll consider it an unintended move
             if ((m_initialClick - event->pos()).manhattanLength() <= (width() * 0.005f + height() * 0.005f))
             {
-                QContextMenuEvent ce(QContextMenuEvent::Mouse, event->pos(), event->globalPos(), event->modifiers());
+                QContextMenuEvent ce(QContextMenuEvent::Mouse, event->pos(), event->globalPosition().toPoint(), event->modifiers());
                 QGraphicsView::contextMenuEvent(&ce);
                 return;
             }
@@ -1139,7 +1140,7 @@ namespace GraphCanvas
                 // under the mouse that have a valid cursor at this time, so
                 // we could repeat the steps from mouseMoveEvent().
                 */
-                QMouseEvent customEvent(event->type(), event->pos(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
+                QMouseEvent customEvent(event->type(), event->position(), event->globalPosition(), Qt::LeftButton, Qt::LeftButton, event->modifiers());
                 QGraphicsView::mouseReleaseEvent(&customEvent);
                 event->accept();
                 setInteractive(true);

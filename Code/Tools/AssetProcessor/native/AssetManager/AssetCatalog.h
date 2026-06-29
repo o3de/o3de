@@ -8,28 +8,29 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <QObject>
 #include <QString>
 #include <QTimer>
 #include <QStringList>
 #include <QHash>
 #include <QDir>
+#include <QMutex>
+#include <QRecursiveMutex>
+#include <QMultiMap>
+
 #include "native/AssetDatabase/AssetDatabase.h"
 #include "native/assetprocessor.h"
 #include "native/utilities/AssetUtilEBusHelper.h"
 #include "native/utilities/PlatformConfiguration.h"
+#include "AssetRequestHandler.h"
+
 #include <AzFramework/Asset/AssetRegistry.h>
-#include <QMutex>
-#include <QMultiMap>
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
 #include <native/connection/connection.h>
-#endif
-
-#include "AssetRequestHandler.h"
 
 namespace AzFramework
 {
@@ -192,7 +193,7 @@ namespace AssetProcessor
         SourceUUIDToSourceAssetMap m_sourceUUIDToSourceAssetMap; // map of uuids to SourceAssetReferences for assets that are currently in the processing queue
         SourceAssetToSourceUuidMap m_sourceAssetToSourceUUIDMap; // map of SourceAssetReferences to UUIDs for assets that are currently in the processing queue
 
-        QMutex m_registriesMutex;
+        QRecursiveMutex m_registriesMutex;
         QHash<QString, AzFramework::AssetRegistry> m_registries; // per platform.
         AssetProcessor::PlatformConfiguration* m_platformConfig;
         QStringList m_platforms;

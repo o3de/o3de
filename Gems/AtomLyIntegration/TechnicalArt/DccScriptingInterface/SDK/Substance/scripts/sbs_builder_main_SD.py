@@ -11,11 +11,11 @@
 
 import sys
 import os
-from PySide2 import QtCore, QtWidgets
-# from PySide2.QtCore import QTimer
-from PySide2.QtCore import QProcess, Signal, Slot, QTextCodec
-from PySide2.QtGui import QTextCursor, QColor
-from PySide2.QtWidgets import QApplication, QPlainTextEdit
+from PySide6 import QtCore, QtWidgets
+# from PySide6.QtCore import QTimer
+from PySide6.QtCore import QProcess, Signal, Slot, QTextCodec
+from PySide6.QtGui import QTextCursor, QColor
+from PySide6.QtWidgets import QApplication, QPlainTextEdit
 import pysbs.batchtools as sbs
 from LyPy.si_substance import builder
 from LyPy.si_substance.builder.atom_material import AtomMaterial

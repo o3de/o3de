@@ -281,7 +281,7 @@ namespace AssetProcessor
                     {
                         AZStd::string newStatKey = AZStd::string::format("CreateJobsByBuilder,%.*s", AZ_STRING_ARG(builderName));
 
-                        auto insertion = m_stats.insert(newStatKey);
+                        auto insertion = m_stats.try_emplace(newStatKey);
                         StatsEntry& statToSynth = insertion.first->second;
                         statToSynth.m_cumulativeTime += statistic.m_cumulativeTime;
                         statToSynth.m_operationCount += statistic.m_operationCount;
@@ -309,7 +309,7 @@ namespace AssetProcessor
                     // synthesize a stat to record process time accumulated by job key platform
                     {
                         AZStd::string newStatKey = AZStd::string::format("ProcessJobsByPlatform,%.*s", AZ_STRING_ARG(platformName));
-                        auto insertion = m_stats.insert(newStatKey);
+                        auto insertion = m_stats.try_emplace(newStatKey);
                         StatsEntry& statToSynth = insertion.first->second;
                         statToSynth.m_cumulativeTime += statistic.m_cumulativeTime;
                         statToSynth.m_operationCount += statistic.m_operationCount;
@@ -322,7 +322,7 @@ namespace AssetProcessor
                     // synthesize a stat to record process time accumulated job key total across all platforms
                     {
                         AZStd::string newStatKey = AZStd::string::format("ProcessJobsByJobKey,%.*s", AZ_STRING_ARG(jobKey));
-                        auto insertion = m_stats.insert(newStatKey);
+                        auto insertion = m_stats.try_emplace(newStatKey);
                         StatsEntry& statToSynth = insertion.first->second;
                         statToSynth.m_cumulativeTime += statistic.m_cumulativeTime;
                         statToSynth.m_operationCount += statistic.m_operationCount;

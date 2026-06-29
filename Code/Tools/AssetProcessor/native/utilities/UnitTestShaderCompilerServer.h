@@ -8,11 +8,9 @@
 #ifndef UNITTESTSHADERCOMPILERSERVER_H
 #define UNITTESTSHADERCOMPILERSERVER_H
 
-#if !defined(Q_MOC_RUN)
 #include <QString>
 #include <QByteArray>
 #include <QObject>
-#endif
 
 class QTcpServer;
 class QTcpSocket;

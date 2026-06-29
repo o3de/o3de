@@ -313,5 +313,4 @@ namespace GraphCanvas
         actions.clear();
     }
 
-#include <StaticLib/GraphCanvas/Widgets/EditorContextMenu/moc_EditorContextMenu.cpp>
 }

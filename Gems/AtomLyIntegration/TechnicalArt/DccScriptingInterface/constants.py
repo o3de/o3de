@@ -48,7 +48,7 @@ from DccScriptingInterface import ENVAR_O3DE_DEV
 # envar to get/set/override the o3de 3rdParty location
 from DccScriptingInterface import ENVAR_PATH_O3DE_3RDPARTY
 
-# envar related to PySide2 bootstrapping
+# envar related to PySide bootstrapping
 from DccScriptingInterface import ENVAR_QT_PLUGIN_PATH
 
 # a str path constructor for the dccsi 3rdParty site-dir

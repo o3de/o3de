@@ -11,7 +11,7 @@ from Editor_TestClass import BaseClass
 
 class Editor_PySide_Example_Works(BaseClass):
     # Description: 
-    # This test shows how to use PySide2 inside an Editor Python Bindings test.
+    # This test shows how to use PySide inside an Editor Python Bindings test.
     # For PySide details see automatedtesting_shared/pyside_utils.py and automatedtesting_shared/pyside_component_utils.py
     
     @staticmethod

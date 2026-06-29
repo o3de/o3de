@@ -5,7 +5,6 @@ Introduction:
 The PhysX Debug Gem will visualize PhysX primitives and other Debug functionalities.
 
 Dependencies:
-  - LY minimum v 1.14
   - PhysX Gem
   - ImGui Gem
 

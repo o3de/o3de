@@ -292,5 +292,4 @@ AzQtComponents::TabWidget::applySecondaryStyle(tabWidget, bordered);
 TabWidgetPage::~TabWidgetPage()
 {
 }
-#include "Gallery/moc_TabWidgetPage.cpp"
 

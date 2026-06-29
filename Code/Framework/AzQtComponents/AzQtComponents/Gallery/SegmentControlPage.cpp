@@ -128,4 +128,3 @@ SegmentControlPage::~SegmentControlPage()
 {
 }
 
-#include "Gallery/moc_SegmentControlPage.cpp"

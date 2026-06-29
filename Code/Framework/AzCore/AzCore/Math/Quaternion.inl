@@ -582,7 +582,9 @@ namespace AZ
 
     AZ_MATH_INLINE bool Quaternion::IsFinite() const
     {
-        return IsFiniteFloat(GetX()) && IsFiniteFloat(GetY()) && IsFiniteFloat(GetZ()) && IsFiniteFloat(GetW());
+        // Packed 4-lane finite check: abs(v) <= FloatMax
+        // catches both NaN (unordered compare returns false) and +/-Inf (Inf > FloatMax)
+        return Simd::Vec4::CmpAllLtEq(Simd::Vec4::Abs(m_value), Simd::Vec4::Splat(Constants::FloatMax));
     }
 
 

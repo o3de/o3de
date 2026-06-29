@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <source/ui/AssetBundlerTabWidget.h>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -18,7 +17,6 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QWidget>
-#endif
 
 namespace Ui
 {

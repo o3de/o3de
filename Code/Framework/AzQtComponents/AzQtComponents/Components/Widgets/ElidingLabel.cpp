@@ -228,7 +228,7 @@ namespace AzQtComponents
 
         painter.save();
 
-        while ((regexIndex = text().indexOf(m_filterRegex, regexIndex + 1)) >= 0)
+        while ((regexIndex = static_cast<int>(text().indexOf(m_filterRegex, regexIndex + 1))) >= 0)
         {
             QString preSelectedText = text().left(regexIndex);
             int preSelectedTextLength = fontMetrics().horizontalAdvance(preSelectedText);
@@ -289,4 +289,3 @@ namespace AzQtComponents
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_ElidingLabel.cpp"

@@ -15,6 +15,7 @@
 #include <AzCore/std/hash.h>
 #include <AzCore/std/typetraits/conjunction.h>
 #include <AzCore/std/typetraits/is_same.h>
+#include <AzCore/std/typetraits/is_swappable.h>
 #include <AzCore/std/typetraits/void_t.h>
 #include <AzCore/std/utility/tuple_concepts.h>
 #include <AzCore/std/utils.h>

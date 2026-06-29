@@ -49,7 +49,7 @@ CUiAnimViewNodesCtrl::CRecord::CRecord(CUiAnimViewNode* pNode /*= nullptr*/)
     if (pNode)
     {
         QVariant v;
-        v.setValue<CUiAnimViewNodePtr>(pNode);
+        v.setValue(pNode);
         setData(0, Qt::UserRole, v);
     }
 }
@@ -143,7 +143,7 @@ private:
             QVariant v = roleDataMap[Qt::UserRole];
             if (v.isValid())
             {
-                CUiAnimViewNode* pNode = v.value<CUiAnimViewNodePtr>();
+                CUiAnimViewNode* pNode = v.value<CUiAnimViewNode*>();
                 if (pNode && pNode->GetNodeType() == eUiAVNT_AnimNode)
                 {
                     nodes << (CUiAnimViewAnimNode*)pNode;
@@ -156,13 +156,13 @@ private:
     CUiAnimViewNodesCtrl*   m_controller;
 };
 
-QDataStream& operator<<(QDataStream& out, const CUiAnimViewNodePtr& obj)
+QDataStream& operator<<(QDataStream& out, const CUiAnimViewNode*& obj)
 {
     out.writeRawData((const char*) &obj, sizeof(obj));
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, CUiAnimViewNodePtr& obj)
+QDataStream& operator>>(QDataStream& in, CUiAnimViewNode*& obj)
 {
     in.readRawData((char*) &obj, sizeof(obj));
     return in;
@@ -237,8 +237,7 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
     m_currentMatchIndex = 0;
     m_matchCount = 0;
 
-    qRegisterMetaType<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
-    qRegisterMetaTypeStreamOperators<CUiAnimViewNodePtr>("CUiAnimViewNodePtr");
+    qRegisterMetaType<CUiAnimViewNode*>("CUiAnimViewNodePtr");
 
     ui->treeWidget->hide();
     ui->searchField->hide();
@@ -633,7 +632,7 @@ void CUiAnimViewNodesCtrl::OnSelectionChanged()
         pSequence->ClearSelection();
 
         QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
-        int nCount = items.count();
+        int nCount = static_cast<int>(items.count());
         for (int i = 0; i < nCount; i++)
         {
             CRecord* pRecord = (CRecord*)items.at(i);
@@ -1191,7 +1190,7 @@ void CUiAnimViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         return;
     }
 
-    UINT count = menu->actions().size();
+    UINT count = static_cast<int>(menu->actions().size());
     for (UINT i = 0; i < count; ++i)
     {
         QAction* a = menu->actions().at(i);
@@ -1273,7 +1272,7 @@ void CUiAnimViewNodesCtrl::OnFilterChange(const QString& text)
 
             CUiAnimViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {
@@ -1325,7 +1324,7 @@ void CUiAnimViewNodesCtrl::ShowNextResult()
 
             CUiAnimViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
 
-            m_matchCount = items.size();                    // and the count.
+            m_matchCount = static_cast<int>(items.size());                    // and the count.
 
             if (!items.empty())
             {
@@ -1671,4 +1670,3 @@ void CUiAnimViewNodesCtrl::EraseNodeRecordRec(CUiAnimViewNode* pNode)
     }
 }
 
-#include <Animation/moc_UiAnimViewNodes.cpp>

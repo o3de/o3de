@@ -635,4 +635,3 @@ namespace AtomToolsFramework
     }
 } // namespace AtomToolsFramework
 
-#include "Inspector/PropertyWidgets/moc_PropertyStringBrowseEditCtrl.cpp"

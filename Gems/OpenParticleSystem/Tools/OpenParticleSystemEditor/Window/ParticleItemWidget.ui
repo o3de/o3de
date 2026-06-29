@@ -257,7 +257,7 @@ border-radius: 1px;</string>
          </property>
          <property name="icon">
           <iconset resource="../../../../../Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
-           <normaloff>:/stylesheet/img/UI20/toolbar/particle.svg</normaloff>:/stylesheet/img/UI20/toolbar/particle.svg</iconset>
+           <normaloff>:/OpenParticleSystem/Icons/Particle.svg</normaloff>:/OpenParticleSystem/Icons/Particle.svg</iconset>
          </property>
         </widget>
        </item>

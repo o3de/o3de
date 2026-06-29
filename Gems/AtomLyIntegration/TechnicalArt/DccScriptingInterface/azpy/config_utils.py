@@ -11,7 +11,7 @@
 This module is a set of utils related to config.py, it hase several methods
 that can fullfil discovery of paths for use in standing up a synthetic env.
 This is particularly useful when the config is used outside of O3DE,
-in an external standalone tool with PySide2(Qt). For example, these paths
+in an external standalone tool with (Qt). For example, these paths
 are discoverable so that we can synthetically derive code access to various
 aspects of O3DE outside of the executables.
 

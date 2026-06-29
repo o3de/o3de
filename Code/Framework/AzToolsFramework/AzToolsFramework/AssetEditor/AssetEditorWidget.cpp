@@ -979,4 +979,3 @@ namespace AzToolsFramework
     } // namespace AssetEditor
 } // namespace AzToolsFramework
 
-#include "AssetEditor/moc_AssetEditorWidget.cpp"

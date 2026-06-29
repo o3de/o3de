@@ -12,6 +12,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Protocols/SeatManager.h>
 #include <AzFramework/WaylandConnectionManager.h>
+#include <AzFramework/Windowing/WindowBus.h>
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -86,6 +87,6 @@ namespace AzFramework
 
         bool m_inTextMode = false;
 
-        class WaylandNativeWindow* m_focusedWindow = nullptr;
+        NativeWindowHandle m_focusedWindow = nullptr;
     };
 } // namespace AzFramework

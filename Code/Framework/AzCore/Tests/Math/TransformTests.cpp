@@ -166,6 +166,37 @@ namespace UnitTest
         EXPECT_THAT(transformedVector, IsClose(expected));
     }
 
+    TEST(MATH_Transform, PackedLane_SetTranslationPreservesScale)
+    {
+        AZ::Transform transform = AZ::Transform::CreateUniformScale(2.5f);
+        transform.SetTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f));
+        EXPECT_FLOAT_EQ(transform.GetUniformScale(), 2.5f);
+        EXPECT_THAT(transform.GetTranslation(), IsClose(AZ::Vector3(1.0f, 2.0f, 3.0f)));
+        transform.SetTranslation(4.0f, 5.0f, 6.0f);
+        EXPECT_FLOAT_EQ(transform.GetUniformScale(), 2.5f);
+        EXPECT_THAT(transform.GetTranslation(), IsClose(AZ::Vector3(4.0f, 5.0f, 6.0f)));
+    }
+
+    TEST(MATH_Transform, PackedLane_SetUniformScalePreservesTranslation)
+    {
+        AZ::Transform transform = AZ::Transform::CreateTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f));
+        transform.SetUniformScale(7.5f);
+        EXPECT_FLOAT_EQ(transform.GetUniformScale(), 7.5f);
+        EXPECT_THAT(transform.GetTranslation(), IsClose(AZ::Vector3(1.0f, 2.0f, 3.0f)));
+        transform.MultiplyByUniformScale(2.0f);
+        EXPECT_FLOAT_EQ(transform.GetUniformScale(), 15.0f);
+        EXPECT_THAT(transform.GetTranslation(), IsClose(AZ::Vector3(1.0f, 2.0f, 3.0f)));
+    }
+
+    TEST(MATH_Transform, PackedLane_ExtractScaleLeavesIdentityWAndPreservesTranslation)
+    {
+        AZ::Transform transform = AZ::Transform(AZ::Vector3(1.0f, 2.0f, 3.0f), AZ::Quaternion::CreateIdentity(), 5.0f);
+        const float extracted = transform.ExtractUniformScale();
+        EXPECT_FLOAT_EQ(extracted, 5.0f);
+        EXPECT_FLOAT_EQ(transform.GetUniformScale(), 1.0f);
+        EXPECT_THAT(transform.GetTranslation(), IsClose(AZ::Vector3(1.0f, 2.0f, 3.0f)));
+    }
+
     using TransformCreateLookAtFixture = ::testing::TestWithParam<MathTestData::AxisPair>;
 
     TEST_P(TransformCreateLookAtFixture, CreateLookAt)

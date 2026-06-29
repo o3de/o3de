@@ -15,19 +15,29 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QApplication>
 #include <QMessageBox>
 #include <QProgressDialog>
-#endif
 
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 // Clang20 on Windows complains about the expression "(begin - &*context_.begin())" in OpenImageIo/detail/fmt/core.h:2716 not being a
 // constant expression, but other compilers dont. To fix this without needing to update the library, define an empty FMT_CONSTEVAL macro,
 // which disables constexpr format strings for the library entirely
 #define FMT_CONSTEVAL
+
+#ifdef _SECURE_SCL
+#   define OLD_SECURE_SCL _SECURE_SCL
+#   undef _SECURE_SCL
+#endif
 #include <OpenImageIO/imageio.h>
+
+#ifdef OLD_SECURE_SCL
+#   define _SECURE_SCL OLD_SECURE_SCL
+#   undef OLD_SECURE_SCL
+#endif
+
 #undef FMT_CONSTEVAL
+
 AZ_POP_DISABLE_WARNING
 
 namespace GradientSignal::ImageCreatorUtils

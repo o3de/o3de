@@ -64,6 +64,10 @@ ly_append_configurations_options(
         -fvisibility-inlines-hidden
         -Wall
         -Werror
+        # Fedora RPM build: clang 21+ promoted these to errors; demote
+        # back to warnings so upstream -Werror doesn't fail the build.
+        -Wno-error=deprecated-volatile
+        -Wno-error=character-conversion
 
         ###################
         # Disabled warnings (please do not disable any others without first consulting sig-build)

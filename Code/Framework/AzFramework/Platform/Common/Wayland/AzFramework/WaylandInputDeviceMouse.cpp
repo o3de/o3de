@@ -56,15 +56,7 @@ namespace AzFramework
         wl_fixed_t surface_y)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
-        if (surface != nullptr)
-        {
-            if (auto wnw = static_cast<WaylandNativeWindow*>(wl_surface_get_user_data(surface)))
-            {
-                wnw->SetPointerFocus(self);
-                self->m_focusedWindow = wnw;
-            }
-        }
-
+        self->m_focusedWindow = static_cast<NativeWindowHandle>(surface);
         self->m_currentSerial = serial;
 
         self->m_axisEvent.m_eventMask |= PointerEventMask::POINTER_EVENT_ENTER;
@@ -79,14 +71,6 @@ namespace AzFramework
                                                wl_surface* surface)
     {
         auto self = static_cast<WaylandInputDeviceMouse*>(data);
-
-        if (surface != nullptr)
-        {
-            if (auto wnw = static_cast<WaylandNativeWindow*>(wl_surface_get_user_data(surface)))
-            {
-                wnw->SetPointerFocus(nullptr);
-            }
-        }
         self->m_focusedWindow = nullptr;
 
         // I don't really see a need to save the pointer leave serial
@@ -105,7 +89,9 @@ namespace AzFramework
         self->m_position = AZ::Vector2((float)wl_fixed_to_double(surface_x), (float)wl_fixed_to_double(surface_y));
         if (self->m_focusedWindow)
         {
-            self->m_position *= self->m_focusedWindow->GetDpiScaleFactor();
+            float dpiScaleFactor = 1.0f;
+            WindowRequestBus::EventResult(dpiScaleFactor, self->m_focusedWindow, &WindowRequests::GetDpiScaleFactor);
+            self->m_position *= dpiScaleFactor;
         }
     }
 
@@ -346,7 +332,8 @@ namespace AzFramework
     {
         if (m_focusedWindow)
         {
-            const auto windowSize = m_focusedWindow->GetClientAreaSize();
+            WindowSize windowSize = {};
+            WindowRequestBus::EventResult(windowSize, m_focusedWindow, &WindowRequests::GetClientAreaSize);
             return m_position / AZ::Vector2((float)windowSize.m_width, (float)windowSize.m_height);
         }
 
@@ -402,6 +389,11 @@ namespace AzFramework
             return;
         }
 
+        if (m_pointer == nullptr)
+        {
+            return;
+        }
+
         if (!visible)
         {
             wl_pointer_set_cursor(m_pointer, m_currentSerial, nullptr, 0, 0);
@@ -416,6 +408,11 @@ namespace AzFramework
 
     void WaylandInputDeviceMouse::InternalConstrainMouse(bool wantConstraints)
     {
+        if (m_pointer == nullptr)
+        {
+            return;
+        }
+
         if (wantConstraints)
         {
             if (m_lockedPointer != nullptr)
@@ -436,15 +433,15 @@ namespace AzFramework
             auto constraints = reinterpret_cast<zwp_pointer_constraints_v1*>(proxy);
             if (constraints)
             {
-                void* constraintWindowRawPtr = nullptr;
+                NativeWindowHandle constraintWindow = nullptr;
                 InputSystemCursorConstraintRequestBus::BroadcastResult(
-                    constraintWindowRawPtr,
+                    constraintWindow,
                     &InputSystemCursorConstraintRequestBus::Events::GetSystemCursorConstraintWindow);
-                auto constraintWlWindow = static_cast<WaylandNativeWindow*>(constraintWindowRawPtr);
-                if (constraintWlWindow == nullptr)
+
+                if (constraintWindow == nullptr)
                 {
                     // Use focused
-                    constraintWlWindow = m_focusedWindow;
+                    constraintWindow = m_focusedWindow;
                 }
 
                 // Remove our old region
@@ -455,7 +452,9 @@ namespace AzFramework
                     (int32_t)m_currentRegion.m_width,
                     (int32_t)m_currentRegion.m_height);
 
-                const auto constraintSize = constraintWlWindow->GetClientAreaSize();
+                WindowSize constraintSize = {};
+                WindowRequestBus::EventResult(constraintSize, constraintWindow, &WindowRequests::GetClientAreaSize);
+
                 m_currentRegion = {0, 0, constraintSize.m_width, constraintSize.m_height};
                 wl_region_add(
                     m_confinedRegion,
@@ -466,22 +465,19 @@ namespace AzFramework
 
                 m_lockedPointer = zwp_pointer_constraints_v1_lock_pointer(
                     constraints,
-                    (wl_surface*)m_focusedWindow->GetWindowHandle(),
+                    static_cast<wl_surface*>(constraintWindow),
                     m_pointer,
                     m_confinedRegion,
                     ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-
-                return;
             }
         }
         else
         {
             if (m_lockedPointer)
             {
-                // Dont want constraints anymore
+                // Don't want constraints anymore
                 zwp_locked_pointer_v1_destroy(m_lockedPointer);
                 m_lockedPointer = nullptr;
-                return;
             }
         }
     }

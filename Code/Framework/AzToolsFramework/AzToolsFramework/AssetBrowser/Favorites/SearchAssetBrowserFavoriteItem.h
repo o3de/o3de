@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoriteItem.h>
 
 #include <QList>
 #include <QString>
-#endif
+#include <QSettings>
+
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 
 namespace AzToolsFramework

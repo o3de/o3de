@@ -44,7 +44,8 @@ VsOutput EvaluateVertexGeometry_BasePBR(
 
 #if MATERIAL_USES_VERTEX_UV
     // By design, only UV0 is allowed to apply transforms.
-    output.uvs[0] = mul(params.m_uvMatrix, float3(uv0, 1.0)).xy;
+    float3 _uv0h = float3(uv0, 1.0);
+    output.uvs[0] = float2(dot(params.m_uvMatrixRow0.xyz, _uv0h), dot(params.m_uvMatrixRow1.xyz, _uv0h));
     output.uvs[1] = uv1;
 #endif // MATERIAL_USES_VERTEX_UV
 

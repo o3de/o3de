@@ -442,4 +442,3 @@ namespace AzToolsFramework
 
 }
 
-#include "UI/PropertyEditor/moc_PropertyDoubleSliderCtrl.cpp"

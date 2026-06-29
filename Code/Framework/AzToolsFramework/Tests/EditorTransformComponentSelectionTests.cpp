@@ -194,7 +194,7 @@ namespace UnitTest
     {
         // setup a dummy widget and make it the active window to ensure focus in/out events are fired
         auto dummyWidget = AZStd::make_unique<QWidget>();
-        QApplication::setActiveWindow(dummyWidget.get());
+        dummyWidget->activateWindow();
 
         // note: it is important to make sure the focus widget is parented to the dummy widget to have focus in/out events fire
         auto focusWidget = AZStd::make_unique<UnitTest::FocusInteractionWidget>(dummyWidget.get());
