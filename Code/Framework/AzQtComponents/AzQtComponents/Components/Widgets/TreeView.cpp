@@ -44,6 +44,7 @@ namespace AzQtComponents
                         auto styleSheet = StyleManager::styleSheetStyle(widget);
                         if (styleSheet)
                         {
+                            styleSheet->unpolish(widget);
                             styleSheet->polish(widget);
                         }
                         widget->update();

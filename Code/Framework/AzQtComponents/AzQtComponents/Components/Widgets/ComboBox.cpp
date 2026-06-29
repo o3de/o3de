@@ -136,6 +136,7 @@ namespace AzQtComponents
                     case QEvent::DynamicPropertyChange:
                     {
                         auto styleSheet = StyleManager::styleSheetStyle(cbWidget);
+                        styleSheet->unpolish(cbWidget);
                         styleSheet->polish(cbWidget);
                     }
                     break;

@@ -58,33 +58,6 @@ private:
     CNewLevelDialog* m_parentDialog;
 };
 
-// QListWidget icon-mode items render icons in white color when selected in Qt6, 
-// which makes PNG previews unreadable. This delegate draws the selection background manually.
-class TemplateItemDelegate : public QStyledItemDelegate
-{
-public:
-    using QStyledItemDelegate::QStyledItemDelegate;
-
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
-    {
-        QStyleOptionViewItem opt = option;
-        initStyleOption(&opt, index);
-
-        QStyle* style = opt.widget ? opt.widget->style() : QApplication::style();
-
-        const bool selected = opt.state & QStyle::State_Selected;
-        if (selected)
-        {
-            painter->fillRect(opt.rect, opt.palette.highlight());
-        }
-
-        // Strip selection/focus flags so Qt doesn't tint the icon white.
-        opt.state &= ~QStyle::State_Selected;
-        opt.state &= ~QStyle::State_HasFocus;
-        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
-    }
-};
-
 static QString ChangeFileExtension(const QString& filePath, const QString& newExtension)
 {
     QFileInfo fileInfo(filePath);
@@ -211,7 +184,7 @@ void CNewLevelDialog::InitTemplateListWidget() const
     ui->listTemplates->setViewMode(QListWidget::IconMode);
     ui->listTemplates->setIconSize(iconSize);
     ui->listTemplates->setDragDropMode(QAbstractItemView::NoDragDrop);
-    ui->listTemplates->setItemDelegate(new TemplateItemDelegate(ui->listTemplates));
+    ui->listTemplates->setItemDelegate(new DrawIconWithBackgroundDelegate(ui->listTemplates));
     if (ui->listTemplates->count() > 0)
     {
         ui->listTemplates->setCurrentRow(defaultItem);
