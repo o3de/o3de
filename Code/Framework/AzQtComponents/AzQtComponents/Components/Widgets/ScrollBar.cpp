@@ -167,6 +167,7 @@ namespace AzQtComponents
                     {
                         if (auto styleSheet = StyleManager::styleSheetStyle(cornerWidget))
                         {
+                            styleSheet->unpolish(cornerWidget);
                             styleSheet->polish(cornerWidget);
                         }
                     }

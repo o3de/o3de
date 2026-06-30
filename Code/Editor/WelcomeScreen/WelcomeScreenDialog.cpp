@@ -217,7 +217,7 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
                 if (isProjectRooted || isGemRooted)
                 {
                     QString fullPath = recentFile;
-                    const QString name = Path::GetFile(fullPath);
+                    const QString name = Path::GetFileName(fullPath);
 
                     Path::ConvertSlashToBackSlash(fullPath);
                     fullPath = Path::ToUnixPath(fullPath.toLower());
@@ -239,9 +239,7 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
                             ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(name));
                         }
                         QFileInfo file(recentFile);
-                        QDateTime dateTime = file.lastModified();
-                        QString date = QLocale::system().toString(dateTime.date(), QLocale::ShortFormat) + " " +
-                            QLocale::system().toString(dateTime.time(), QLocale::LongFormat);
+                        QString date = QLocale::system().toString(file.lastModified(), QLocale::ShortFormat);
                         ui->recentLevelTable->setItem(currentRow, 1, new QTableWidgetItem(date));
                         ui->recentLevelTable->setItem(currentRow++, 2, new QTableWidgetItem(tr("Level")));
                         m_levels.push_back(std::make_pair(name, recentFile));

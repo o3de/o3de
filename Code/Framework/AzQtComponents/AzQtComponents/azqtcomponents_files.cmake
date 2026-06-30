@@ -42,8 +42,6 @@ set(FILES
     Components/FilteredSearchWidget.cpp
     Components/FilteredSearchWidget.h
     Components/FilteredSearchWidget.ui
-    Components/GlobalEventFilter.h
-    Components/GlobalEventFilter.cpp
     Components/InputDialog.h
     Components/InputDialog.cpp
     Components/O3DEStylesheet.h

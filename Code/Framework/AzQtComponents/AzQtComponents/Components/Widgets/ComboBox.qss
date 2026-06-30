@@ -88,7 +88,8 @@ QComboBox QAbstractItemView::item
 {
     color: #FFFFFF;
     padding-right: 24px;
-    padding-left: 2px; /* There is already 22px from the check mark */
+    /* We draw the checkbox via a delegate, need to reserve space for it  */
+    padding-left: 24px;
 
     /* Without that the padding don't apply */
     border: 0px solid transparent;
@@ -113,24 +114,6 @@ QComboBox QAbstractItemView::separator
 {
     height: 1px;
     background: #444444;
-}
-
-QComboBox QAbstractItemView::indicator
-{
-    /* Keep in sync with the check mark image size */
-    width: 16px;
-    height: 16px;
-    image: none;
-}
-
-QComboBox QAbstractItemView::indicator:checked
-{
-    image: url(:/stylesheet/img/UI20/checkmark.svg);
-}
-
-QComboBox QAbstractItemView::indicator:indeterminate
-{
-    image: url(:/stylesheet/img/UI20/indeterminate.svg);
 }
 
 QMenu QComboBox

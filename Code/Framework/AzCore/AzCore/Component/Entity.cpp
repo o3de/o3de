@@ -713,10 +713,17 @@ namespace AZ
     {
         bool isEffective = IsEffectivelyActive();
 
-        // Avoid evaluation during irregular states.
+        // ApplyEffectiveActiveState may only be driven from a settled state (Init or Active);
+        // it transitions between those two. Being called mid-transition (Constructed,
+        // Initializing, Activating, Deactivating, ...) is a programming error in the caller,
+        // not a recoverable runtime condition. Assert so misuse fails loudly in tests rather
+        // than silently no-opping (which previously let erroneous tests pass). All in-engine
+        // callers already gate on Init/Active before calling this.
         if (m_state != State::Init && m_state != State::Active)
         {
-            AZ_Warning("Entity", false, "%s evaluating active state, between valid states. Exiting out.", m_name.c_str());
+            AZ_Assert(false, "%s: ApplyEffectiveActiveState called from invalid state %d. "
+                "Only Init or Active are valid; the activation layer must settle before applying.",
+                m_name.c_str(), static_cast<int>(m_state));
             return false;
         }
 

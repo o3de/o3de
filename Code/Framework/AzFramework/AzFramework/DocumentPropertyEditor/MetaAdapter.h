@@ -27,6 +27,8 @@ namespace AZ::DocumentPropertyEditor
             const AZStd::string& settingsRegistryKey = AZStd::string(),
             const AZStd::string& propertyEditorName = AZStd::string()) override;
 
+        void ExecuteQueuedReset() override;
+
     protected:
         // handlers for source adapter's messages
         void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, Dom::Value& value);

@@ -76,4 +76,14 @@ namespace AZ::DocumentPropertyEditor
         return rowPath;
     }
 
+    void MetaAdapter::ExecuteQueuedReset()
+    {
+        DocumentAdapter::ExecuteQueuedReset();
+        // if we're told to execute a queued reset, we need to forward that to our source.
+        if (m_sourceAdapter)
+        {
+            m_sourceAdapter->ExecuteQueuedReset();
+        }
+    }
+
 } // namespace AZ::DocumentPropertyEditor

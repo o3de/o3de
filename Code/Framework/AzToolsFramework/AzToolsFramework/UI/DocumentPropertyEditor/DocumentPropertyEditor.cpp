@@ -1848,11 +1848,25 @@ namespace AzToolsFramework
             }
         };
 
+        auto handlePropertyEditorChanged = [&](const AZ::Dom::Value&, AZ::DocumentPropertyEditor::Nodes::ValueChangeType)
+        {
+            // When a value changes, we'd like to queue the execution of any property editor tree updates.
+            QTimer::singleShot(
+                0,
+                this,
+                [this]()
+                {
+                    m_adapter->ExecuteQueuedReset();
+                });
+        };
+
         message.Match(
             AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey,
             showKeyQueryDialog,
             AZ::DocumentPropertyEditor::Nodes::Adapter::QuerySubclass,
-            showQuerySubclassDialog);
+            showQuerySubclassDialog,
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged,
+            handlePropertyEditorChanged);
     }
 
     void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)

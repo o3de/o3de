@@ -48,7 +48,10 @@ namespace AZ
                 connect(m_graphView.data(), &SceneGraphWidget::SelectionChanged, this, &SceneGraphInspectWidget::OnSelectionChanged);
             }
 
-            SceneGraphInspectWidget::~SceneGraphInspectWidget() = default;
+            SceneGraphInspectWidget::~SceneGraphInspectWidget()
+            {
+                QObject::disconnect(this);
+            }
 
             void SceneGraphInspectWidget::OnSelectionChanged(AZStd::shared_ptr<const DataTypes::IGraphObject> item)
             {
