@@ -26,8 +26,3 @@ _savebackup/
 CrashDB/
 *.DotSettings.user
 imgui.ini
-*.bak
-fix_o3de_validators.py
-AutomatedTesting/project.json.bak0
-AutomatedTesting/project.json
-AutomatedTesting/project.json

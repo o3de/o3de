@@ -1,3 +1,15 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+# Always start by checking if the target already exists.
+# This prevents repeated calls but also allows the user to substitute their own 3rd party library
+# if they wish to do so.
+
 include(FetchContent)
 
 if (TARGET 3rdParty::OpenMesh)
