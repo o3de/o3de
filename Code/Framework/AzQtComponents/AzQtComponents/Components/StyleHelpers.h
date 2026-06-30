@@ -9,6 +9,8 @@
 
 #include <AzQtComponents/Components/StyleManager.h>
 
+#include <QWidget>
+
 namespace AzQtComponents
 {
     namespace StyleHelpers
@@ -48,11 +50,15 @@ namespace AzQtComponents
 
                 if (QStyle* styleSheet = StyleManager::styleSheetStyle(widget))
                 {
-                    // For the widget and each of its children, QStyleSheetStyle::repolish clears
-                    // the existing render rules, polishes the widget and sends it a StyleChange
-                    // event. This ensure that both render rules which depend on properties, and
-                    // properties that are set in style sheets via qproperty- are correctly updated.
+                    // Qt6: unpolish() clears the cached render rules; polish() re-evaluates
+                    // them with the new property value. Child render rules must be explicitly invalidated.
+                    styleSheet->unpolish(widget);
                     styleSheet->polish(widget);
+                    for (QWidget* child : widget->template findChildren<QWidget*>())
+                    {
+                        styleSheet->unpolish(child);
+                        styleSheet->polish(child);
+                    }
                 }
             });
         }

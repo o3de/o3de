@@ -636,15 +636,6 @@ namespace AzQtComponents
             }
             break;
 
-            case PE_IndicatorItemViewItemCheck:
-            {
-                if (ComboBox::drawItemCheckIndicator(this, option, painter, widget, m_data->comboBoxConfig))
-                {
-                    return;
-                }
-            }
-            break;
-
             case PE_PanelStatusBar:
             {
                 if (StatusBar::drawPanelStatusBar(this, option, painter, widget, m_data->statusBarConfig))

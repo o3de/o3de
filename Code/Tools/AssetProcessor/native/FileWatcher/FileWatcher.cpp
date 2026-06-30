@@ -101,7 +101,7 @@ FileWatcher::FileWatcher()
 
 FileWatcher::~FileWatcher()
 {
-    disconnect();
+    disconnect(this);
     StopWatching();
 }
 
