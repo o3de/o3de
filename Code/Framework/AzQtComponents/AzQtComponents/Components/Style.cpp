@@ -473,43 +473,6 @@ namespace AzQtComponents
                 }
             }
             break;
-            case CE_MenuItem:
-            {
-                const QMenu* menu = qobject_cast<const QMenu*>(widget);
-                QAction* action = menu->activeAction();
-                if (action)
-                {
-                    QMenu* subMenu = action->menu();
-                    if (subMenu)
-                    {
-                        QVariant noHover = subMenu->property("noHover");
-                        if (noHover.isValid() && noHover.toBool())
-                        {
-                            // First draw as standard to get the correct hover background for the complete control.
-                            QProxyStyle::drawControl(element, option, painter, widget);
-                            // Now draw the icon as non-hovered so control behaves as designed.
-                            QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
-                            myOpt.state &= ~QStyle::State_Selected;
-                            return QProxyStyle::drawControl(element, &myOpt, painter, widget);
-                        }
-                    }
-                }
-                // Implement checkmark with icon in menu.
-                QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
-                bool checkable = myOpt.checkType != QStyleOptionMenuItem::NotCheckable;
-                bool checked = checkable ? myOpt.checked : false;
-
-                if (!myOpt.icon.isNull() && checked)
-                {
-                    const int iconSize{ 18 };
-                    int topPadding{ AZStd::max( 0 , (myOpt.rect.height() - iconSize) / 2) - 1};
-
-                    QProxyStyle::drawControl(element, &myOpt, painter, widget);
-                    myOpt.rect.adjust(0, topPadding, iconSize - myOpt.rect.width(), iconSize - myOpt.rect.height());
-                    return drawPrimitive(PE_IndicatorMenuCheckMark, &myOpt, painter, widget);
-                }
-            }
-            break;
         }
 
         return QProxyStyle::drawControl(element, option, painter, widget);
@@ -621,15 +584,6 @@ namespace AzQtComponents
             case PE_IndicatorBranch:
             {
                 if (TreeView::drawBranchIndicator(this, option, painter, widget, m_data->treeViewConfig))
-                {
-                    return;
-                }
-            }
-            break;
-
-            case PE_PanelMenu:
-            {
-                if (Menu::drawFrame(this, option, painter, widget, m_data->menuConfig))
                 {
                     return;
                 }
@@ -1041,26 +995,6 @@ namespace AzQtComponents
             case QStyle::PM_TabCloseIndicatorHeight:
             {
                 return TabBar::closeButtonSize(this, option, widget, m_data->tabWidgetConfig);
-                break;
-            }
-
-            case QStyle::PM_MenuHMargin:
-            {
-                const int margin = Menu::horizontalMargin(this, option, widget, m_data->menuConfig);
-                if (margin != -1)
-                {
-                    return margin;
-                }
-                break;
-            }
-
-            case QStyle::PM_MenuVMargin:
-            {
-                const int margin = Menu::verticalMargin(this, option, widget, m_data->menuConfig);
-                if (margin != -1)
-                {
-                    return margin;
-                }
                 break;
             }
 

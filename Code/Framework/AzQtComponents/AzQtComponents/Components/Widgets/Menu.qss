@@ -10,21 +10,7 @@
 QMenu
 {
     background-color: #222222;
-}
-
-QMenu::item
-{
-    color: #FFFFFF;
-    font-size: 12px;
-    font-family: "Open Sans";
-
-    /* default height is 18px */
-    /* target height is 24px */
-    /* 24 - 18 = 6 */
-    /* 6 / 2 = 3 */
-    /* top, right, bottom, left */
-    padding: 2px auto 4px 20px;
-    height: 18px;
+    padding: 4px 2px;
 }
 
 /* Hover */
@@ -32,33 +18,6 @@ QMenu::item:selected,
 QMenu::item .WidgetAction:hover
 {
     background-color: #444444;
-}
-
-QMenu::icon,
-QMenu::right-arrow
-{
-    width: 16px;
-    height: 16px;
-
-    subcontrol-position: right center;
-}
-
-QMenu::right-arrow
-{
-    right: 4px;
-}
-
-QMenu::icon
-{
-    right: 20px;
-}
-
-QMenu::indicator:checked
-{
-    width: 16px;
-    height: 16px;
-    margin-left: 2px;
-    image: url(:/stylesheet/img/UI20/checkmark-menu.svg);
 }
 
 QMenu::item:disabled
@@ -82,5 +41,5 @@ QMenu.SourceControlMenu
 
 QMenu.SourceControlMenu::item
 {
-    margin-left: 22px;
+    margin-left: 41px;
 }

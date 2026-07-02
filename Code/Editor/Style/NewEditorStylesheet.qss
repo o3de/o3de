@@ -1497,42 +1497,6 @@ QSlider::handle:disabled {
     image: url(:/stylesheet/img/slider-handle-disabled.png);
 }
 
-QMenu {
-    background-color: #333333;
-    margin: 3 5 5 5;
-}
-
-/* Setting padding-left explicitly only pads the text,
- * without taking into account the action icon, so it
- * may result in text and icon overlapping. */
-QMenu::item {
-    color: white;
-    font-size: 12px;
-    padding-right: 25px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-}
-
-QMenu::item:selected {
-    color: #4285F4;
-}
-
-QMenu::item:disabled {
-    color: #555555;
-}
-
-QMenu::separator
-{
-    height: 0px;
-    margin: 2px 6px 2px 6px;
-    border-top-width: 1px;
-    border-top-style: solid;
-    border-top-color: #303030;
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-    border-bottom-color: #222222;
-}
-
 QComboBox {
     height: 17px;
     border-radius: 1px;
