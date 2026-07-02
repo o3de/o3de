@@ -86,6 +86,7 @@ namespace AzToolsFramework
             void Redo();
             bool CanUndo() const;
             bool CanRedo() const;
+
         public Q_SLOTS:
 
             void SaveAsset();
@@ -171,6 +172,10 @@ namespace AzToolsFramework
 
             void GenerateSaveDataSnapshot();
 
+            QIcon m_warningIcon;
+
+            AZ::Uuid m_assetObserverToken; // Token that can be used to register for specific request for a new asset to be created via the AssetEditor::CreateAsset function.
+
             // --- Undo/redo support ---
             // Serialize the current in-memory asset into a snapshot buffer (uses the asset handler, same
             // round-trip as save), and restore a snapshot back into the in-memory asset in place.
@@ -192,11 +197,6 @@ namespace AzToolsFramework
             bool m_isRestoringSnapshot = false;
             QTimer m_undoCoalesceTimer;
             static constexpr size_t s_maxUndoLevels = 100;
-
-            QIcon m_warningIcon;
-
-            AZ::Uuid m_assetObserverToken; // Token that can be used to register for specific request for a new asset to be created via the AssetEditor::CreateAsset function. 
-
         };
     } // namespace AssetEditor
 } // namespace AzToolsFramework
