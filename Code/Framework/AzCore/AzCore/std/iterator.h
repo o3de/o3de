@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/base.h>
@@ -29,9 +30,8 @@ namespace AZStd
     using std::random_access_iterator_tag;
     using std::contiguous_iterator_tag;
 
-    /// Add the default_sentinel struct from C++20
-    struct default_sentinel_t {};
-    inline constexpr default_sentinel_t default_sentinel{};
+    using std::default_sentinel_t;
+    using std::default_sentinel;
 }
 
 namespace AZStd::Internal
@@ -211,7 +211,7 @@ namespace AZStd
         template<class Iterator, class ConstIterator>
         inline Iterator ConstIteratorCast(ConstIterator& iter)
         {
-            static_assert((AZStd::is_base_of<ConstIterator, Iterator>::value), "For this cast to work Iterator should derive from ConstIterator");
+            static_assert(AZStd::is_base_of_v<ConstIterator, Iterator>, "For this cast to work Iterator should derive from ConstIterator");
             static_assert(sizeof(ConstIterator) == sizeof(Iterator), "For this cast to work ConstIterator and Iterator should be binarily identical");
             return *reinterpret_cast<Iterator*>(&iter);
         }

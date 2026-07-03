@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/concepts/concepts.h>
@@ -208,11 +209,10 @@ namespace AZStd::Internal
     * - trivial copy ctor.
     * - all iterators satisfy the C++20 are contiguous iterator concept
     */
-    template<class Out, class = void>
-    constexpr bool indirectly_trivially_copyable = false;
     template<class Out>
-    constexpr bool indirectly_trivially_copyable<Out,
-        enable_if_t<indirectly_readable<Out>>> = is_trivially_copyable_v<iter_value_t<Out>>;
+    concept indirectly_trivially_copyable =
+        indirectly_readable<Out>
+        && is_trivially_copyable_v<iter_value_t<Out>>;
 
     template<class InputIterator, class ResultIterator>
     using is_fast_copy = bool_constant<indirectly_trivially_copyable<ResultIterator>
@@ -224,7 +224,7 @@ namespace AZStd::Internal
     constexpr bool is_fast_copy_v = is_fast_copy<InputIterator, ResultIterator>::value;
 
 
-    // is_fast_copy argument is no longer used.
+    // The bool dispatch argument is retained for existing call sites.
     template <class InputIterator, class ForwardIterator>
     constexpr ForwardIterator copy(InputIterator first, InputIterator last, ForwardIterator result, bool)
     {
@@ -574,19 +574,18 @@ namespace AZStd::Internal
     * - size of type == 1 (chars) to use memset
     * - contiguous iterators
     */
-    template<class Out, class = void>
-    constexpr bool indirectly_copy_assignable = false;
     template<class Out>
-    constexpr bool indirectly_copy_assignable<Out, enable_if_t<indirectly_readable<Out>>> =
-        is_trivially_copy_assignable_v<iter_value_t<Out>> && sizeof(iter_value_t<Out>) == 1;
+    concept indirectly_copy_assignable =
+        indirectly_readable<Out>
+        && is_trivially_copy_assignable_v<iter_value_t<Out>>
+        && sizeof(iter_value_t<Out>) == 1;
 
     template<class Iterator>
     using is_fast_fill = bool_constant<indirectly_copy_assignable<Iterator> && contiguous_iterator<Iterator>>;
     template<class Iterator>
     constexpr bool is_fast_fill_v = is_fast_fill<Iterator>::value;
 
-    // The fast fill trait is no longer used
-    // It is detected using C++20 concepts now
+    // The bool dispatch argument is retained for existing call sites.
     template <class ForwardIterator, class T>
     constexpr void fill(ForwardIterator first, ForwardIterator last, const T& value, bool)
     {

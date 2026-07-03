@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/algorithm.h>
@@ -83,7 +84,7 @@ namespace AZStd
         {
             m_tree.insert_unique(first, last);
         }
-        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        template<Internal::container_compatible_range<value_type> R>
         set(from_range_t, R&& rg, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
             : m_tree(comp, alloc)
         {
@@ -118,7 +119,7 @@ namespace AZStd
             : set(first, last, Compare(), alloc)
         {
         }
-        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        template<Internal::container_compatible_range<value_type> R>
         set(from_range_t, R&& rg, const Allocator& a)
             : set(from_range, AZStd::forward<R>(rg), Compare(), a)
         {
@@ -152,8 +153,8 @@ namespace AZStd
         {
             m_tree.insert_unique(first, last);
         }
-        template<class R>
-        auto insert_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        template<Internal::container_compatible_range<value_type> R>
+        void insert_range(R&& rg)
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
@@ -234,30 +235,40 @@ namespace AZStd
         pair<const_iterator, const_iterator> equal_range(const key_type& key) const { return m_tree.equal_range_unique(key); }
 
         template<typename ComparableToKey>
-        auto find(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, const_iterator> { return m_tree.find(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        const_iterator find(const ComparableToKey& key) const { return m_tree.find(key); }
         template<typename ComparableToKey>
-        auto find(const ComparableToKey& key) -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, iterator> { return m_tree.find(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        iterator find(const ComparableToKey& key) { return m_tree.find(key); }
 
         template<typename ComparableToKey>
-        auto contains(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, bool> { return m_tree.contains(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        bool contains(const ComparableToKey& key) const { return m_tree.contains(key); }
 
         template<typename ComparableToKey>
-        auto count(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, size_type> { return m_tree.count(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        size_type count(const ComparableToKey& key) const { return m_tree.count(key); }
 
         template<typename ComparableToKey>
-        auto lower_bound(const ComparableToKey& key) -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, iterator> { return m_tree.lower_bound(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        iterator lower_bound(const ComparableToKey& key) { return m_tree.lower_bound(key); }
         template<typename ComparableToKey>
-        auto lower_bound(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, const_iterator> { return m_tree.lower_bound(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        const_iterator lower_bound(const ComparableToKey& key) const { return m_tree.lower_bound(key); }
 
         template<typename ComparableToKey>
-        auto upper_bound(const ComparableToKey& key) -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, iterator> { return m_tree.upper_bound(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        iterator upper_bound(const ComparableToKey& key) { return m_tree.upper_bound(key); }
         template<typename ComparableToKey>
-        auto upper_bound(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, const_iterator> { return m_tree.upper_bound(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        const_iterator upper_bound(const ComparableToKey& key) const { return m_tree.upper_bound(key); }
 
         template<typename ComparableToKey>
-        auto equal_range(const ComparableToKey& key) -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, pair<iterator, iterator>> { return m_tree.equal_range_unique(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        pair<iterator, iterator> equal_range(const ComparableToKey& key) { return m_tree.equal_range_unique(key); }
         template<typename ComparableToKey>
-        auto equal_range(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, pair<const_iterator, const_iterator>> { return m_tree.equal_range_unique(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        pair<const_iterator, const_iterator> equal_range(const ComparableToKey& key) const { return m_tree.equal_range_unique(key); }
 
         /**
         * \anchor ListExtensions
@@ -361,8 +372,8 @@ namespace AZStd
         ->set<iter_value_type<InputIterator>, Compare, Allocator>;
 
     template<class R, class Compare = less<ranges::range_value_t<R>>,
-        class Allocator = allocator,
-        class = enable_if_t<ranges::input_range<R>>>
+        class Allocator = allocator>
+        requires ranges::input_range<R>
     set(from_range_t, R&&, Compare = Compare(), Allocator = Allocator())
         ->set<ranges::range_value_t<R>, Compare, Allocator>;
 
@@ -375,7 +386,7 @@ namespace AZStd
         ->set<iter_value_type<InputIterator>,
         less<iter_value_type<InputIterator>>, Allocator>;
 
-    template<class R, class Allocator, class = enable_if_t<ranges::input_range<R>>>
+    template<ranges::input_range R, class Allocator>
     set(from_range_t, R&&, Allocator)
         ->set<ranges::range_value_t<R>, less<ranges::range_value_t<R>>, Allocator>;
 
@@ -433,7 +444,7 @@ namespace AZStd
         {
             m_tree.insert_equal(first, last);
         }
-        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        template<Internal::container_compatible_range<value_type> R>
         multiset(from_range_t, R&& rg, const Compare& comp = Compare(), const Allocator& alloc = Allocator())
             : m_tree(comp, alloc)
         {
@@ -468,7 +479,7 @@ namespace AZStd
             : multiset(first, last, Compare(), alloc)
         {
         }
-        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        template<Internal::container_compatible_range<value_type> R>
         multiset(from_range_t, R&& rg, const Allocator& a)
             : multiset(from_range, AZStd::forward<R>(rg), Compare(), a)
         {
@@ -502,8 +513,8 @@ namespace AZStd
         {
             m_tree.insert_equal(first, last);
         }
-        template<class R>
-        auto insert_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        template<Internal::container_compatible_range<value_type> R>
+        void insert_range(R&& rg)
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
@@ -585,30 +596,40 @@ namespace AZStd
         pair<const_iterator, const_iterator> equal_range(const key_type& key) const { return m_tree.equal_range(key); }
 
         template<typename ComparableToKey>
-        auto find(const ComparableToKey& key) const ->enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, const_iterator> { return m_tree.find(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        const_iterator find(const ComparableToKey& key) const { return m_tree.find(key); }
         template<typename ComparableToKey>
-        auto find(const ComparableToKey& key) ->  enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, iterator> { return m_tree.find(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        iterator find(const ComparableToKey& key) { return m_tree.find(key); }
 
         template<typename ComparableToKey>
-        auto contains(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, bool> { return m_tree.contains(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        bool contains(const ComparableToKey& key) const { return m_tree.contains(key); }
 
         template<typename ComparableToKey>
-        auto count(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, size_type> { return m_tree.count(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        size_type count(const ComparableToKey& key) const { return m_tree.count(key); }
 
         template<typename ComparableToKey>
-        auto lower_bound(const ComparableToKey& key) -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, iterator> { return m_tree.lower_bound(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        iterator lower_bound(const ComparableToKey& key) { return m_tree.lower_bound(key); }
         template<typename ComparableToKey>
-        auto lower_bound(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, const_iterator> { return m_tree.lower_bound(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        const_iterator lower_bound(const ComparableToKey& key) const { return m_tree.lower_bound(key); }
 
         template<typename ComparableToKey>
-        auto upper_bound(const ComparableToKey& key) -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, iterator> { return m_tree.upper_bound(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        iterator upper_bound(const ComparableToKey& key) { return m_tree.upper_bound(key); }
         template<typename ComparableToKey>
-        auto upper_bound(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, const_iterator> { return m_tree.upper_bound(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        const_iterator upper_bound(const ComparableToKey& key) const { return m_tree.upper_bound(key); }
 
         template<typename ComparableToKey>
-        auto equal_range(const ComparableToKey& key) -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, pair<iterator, iterator>> { return m_tree.equal_range(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        pair<iterator, iterator> equal_range(const ComparableToKey& key) { return m_tree.equal_range(key); }
         template<typename ComparableToKey>
-        auto equal_range(const ComparableToKey& key) const -> enable_if_t<::AZStd::Internal::is_transparent<key_compare, ComparableToKey>::value, pair<const_iterator, const_iterator>> { return m_tree.equal_range(key); }
+            requires ::AZStd::Internal::is_transparent_v<key_compare, ComparableToKey>
+        pair<const_iterator, const_iterator> equal_range(const ComparableToKey& key) const { return m_tree.equal_range(key); }
 
         /**
         * \anchor ListExtensions
@@ -712,8 +733,8 @@ namespace AZStd
         ->multiset<iter_value_type<InputIterator>, Compare, Allocator>;
 
     template<class R, class Compare = less<ranges::range_value_t<R>>,
-        class Allocator = allocator,
-        class = enable_if_t<ranges::input_range<R>>>
+        class Allocator = allocator>
+        requires ranges::input_range<R>
     multiset(from_range_t, R&&, Compare = Compare(), Allocator = Allocator())
         ->multiset<ranges::range_value_t<R>, Compare, Allocator>;
 
@@ -726,7 +747,7 @@ namespace AZStd
         ->multiset<iter_value_type<InputIterator>,
         less<iter_value_type<InputIterator>>, Allocator>;
 
-    template<class R, class Allocator, class = enable_if_t<ranges::input_range<R>>>
+    template<ranges::input_range R, class Allocator>
     multiset(from_range_t, R&&, Allocator)
         ->multiset<ranges::range_value_t<R>, less<ranges::range_value_t<R>>, Allocator>;
 

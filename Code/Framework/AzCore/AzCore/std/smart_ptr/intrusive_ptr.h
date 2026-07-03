@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 //
@@ -95,7 +96,8 @@ namespace AZStd
         }
 
         template<class U>
-        intrusive_ptr(intrusive_ptr<U> const& rhs, enable_if_t<is_convertible<U*, T*>::value, int> = 0)
+            requires is_convertible_v<U*, T*>
+        intrusive_ptr(intrusive_ptr<U> const& rhs)
             : px(rhs.get())
         {
             if (px != 0)
@@ -121,14 +123,16 @@ namespace AZStd
         }
 
         template<class U>
-        enable_if_t<is_convertible<U*, T*>::value, intrusive_ptr&> operator=(intrusive_ptr<U> const& rhs)
+            requires is_convertible_v<U*, T*>
+        auto operator=(intrusive_ptr<U> const& rhs) -> intrusive_ptr&
         {
             this_type(rhs).swap(*this);
             return *this;
         }
 
         template<class U>
-        intrusive_ptr(intrusive_ptr<U>&& rhs, enable_if_t<is_convertible<U*, T*>::value, int> = 0)
+            requires is_convertible_v<U*, T*>
+        intrusive_ptr(intrusive_ptr<U>&& rhs)
             : px(rhs.get())
         {
             rhs.px = 0;
@@ -140,7 +144,8 @@ namespace AZStd
         }
 
         template<class U>
-        enable_if_t<is_convertible<U*, T*>::value, intrusive_ptr&> operator=(intrusive_ptr<U>&& rhs)
+            requires is_convertible_v<U*, T*>
+        auto operator=(intrusive_ptr<U>&& rhs) -> intrusive_ptr&
         {
             this_type(AZStd::move(rhs)).swap(*this);
             return *this;

@@ -20,7 +20,6 @@
 */Code/Framework/AzCore/AzCore/Memory/nedmalloc.inl
 */Code/Framework/AzCore/AzCore/PlatformId/PlatformDefaults.*
 */Code/Framework/AzCore/AzCore/PlatformDef.h
-*/Code/Framework/AzCore/AzCore/std/containers/compressed_pair.h
 */Code/Framework/AzCore/AzCore/std/containers/variant.h
 */Code/Framework/AzCore/AzCore/std/parallel/binary_semaphore.h
 */Code/Framework/AzCore/AzCore/std/parallel/semaphore.h

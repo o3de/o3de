@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/base.h>
@@ -177,14 +178,14 @@ namespace AZStd
         template <class Allocator>
         static auto has_max_size_test(const volatile Allocator&)->false_type;
         template <typename Allocator>
-        static constexpr bool has_max_size = integral_constant<bool, is_same<decltype(has_max_size_test(declval<Allocator&>())), true_type>::value>::value;
+        static constexpr bool has_max_size = is_same_v<decltype(has_max_size_test(declval<Allocator&>())), true_type>;
 
         template <class Allocator>
         static auto has_get_max_size_test(Allocator&& alloc) -> decltype(alloc.get_max_size(), true_type());
         template <class Allocator>
         static auto has_get_max_size_test(const volatile Allocator&)->false_type;
         template <typename Allocator>
-        static constexpr bool has_get_max_size = integral_constant<bool, is_same<decltype(has_get_max_size_test(declval<Allocator&>())), true_type>::value>::value;
+        static constexpr bool has_get_max_size = is_same_v<decltype(has_get_max_size_test(declval<Allocator&>())), true_type>;
         // Prefer the C++ standard max_size function before the AZStd get_max_size function
         template <typename Allocator, typename ValueType, typename SizeType, bool max_size_callable, bool get_max_size_callable>
         struct call_max_size

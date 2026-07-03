@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/typetraits/config.h>
@@ -12,6 +13,5 @@
 namespace AZStd
 {
     using std::remove_volatile;
-    template<class T>
-    using remove_volatile_t = std::remove_volatile_t<T>;
+    using std::remove_volatile_t;
 }

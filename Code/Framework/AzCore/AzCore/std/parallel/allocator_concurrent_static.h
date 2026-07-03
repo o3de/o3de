@@ -117,7 +117,7 @@ namespace AZStd
         {
             AZ_Assert(alignment > 0 && (alignment & (alignment - 1)) == 0, "AZStd::static_pool_concurrent_allocator::allocate - alignment must be > 0 and power of 2");
             AZ_Assert(byteSize == sizeof(Node), "AZStd::static_pool_concurrent_allocator - We can allocate only node sizes from the pool!");
-            AZ_Assert(alignment <= AZStd::alignment_of<Node>::value, "AZStd::static_pool_concurrent_allocator - Invalid data alignment!");
+            AZ_Assert(alignment <= AZStd::alignment_of_v<Node>, "AZStd::static_pool_concurrent_allocator - Invalid data alignment!");
 
             return allocate();
         }

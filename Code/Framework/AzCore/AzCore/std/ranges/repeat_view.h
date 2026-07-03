@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/iterator/unreachable_sentinel.h>
@@ -15,15 +16,10 @@ namespace AZStd::ranges
 {
     //! Generates a sequence of elements by repeating incrementing an initial element W
     //! up to Bound
-    template<class W, class Bound = unreachable_sentinel_t, class = enable_if_t<conjunction_v<
-        bool_constant<move_constructible<W>>,
-        bool_constant<semiregular<Bound>>,
-        is_object<W>,
-        bool_constant<same_as<W, remove_cv_t<W>>>,
-        disjunction<bool_constant<::AZStd::Internal::is_integer_like<Bound>>,
-            bool_constant<same_as<Bound, unreachable_sentinel_t>>
-            >
-    > >>
+    template<move_constructible W, semiregular Bound = unreachable_sentinel_t>
+        requires is_object_v<W>
+            && same_as<W, remove_cv_t<W>>
+            && (::AZStd::Internal::is_integer_like<Bound> || same_as<Bound, unreachable_sentinel_t>)
     class repeat_view;
 }
 
@@ -56,19 +52,22 @@ namespace AZStd::ranges::views
 
 namespace AZStd::ranges
 {
-    template<class W, class Bound, class>
+    template<move_constructible W, semiregular Bound>
+        requires is_object_v<W>
+            && same_as<W, remove_cv_t<W>>
+            && (::AZStd::Internal::is_integer_like<Bound> || same_as<Bound, unreachable_sentinel_t>)
     class repeat_view
         : public view_interface<repeat_view<W, Bound>>
     {
         struct iterator;
 
     public:
-        template <bool Enable = default_initializable<W>,
-            class = enable_if_t<Enable>>
-        constexpr repeat_view() {}
+        constexpr repeat_view()
+            requires default_initializable<W>
+        {}
 
-        template<bool Enable = copy_constructible<W>, class = enable_if_t<Enable>>
         constexpr explicit repeat_view(const W& value, Bound bound = {})
+            requires copy_constructible<W>
             : m_value(value)
             , m_bound(bound)
         {
@@ -80,9 +79,9 @@ namespace AZStd::ranges
         {
         }
 
-        template<class... WArgs, class... BoundArgs,
-            bool Enable = constructible_from<W, WArgs...>&& constructible_from<Bound, BoundArgs...>,
-            class = enable_if_t<Enable>>
+        template<class... WArgs, class... BoundArgs>
+            requires constructible_from<W, WArgs...>
+                && constructible_from<Bound, BoundArgs...>
         constexpr explicit repeat_view(piecewise_construct_t, tuple<WArgs...> valueArgs, tuple<BoundArgs...> boundArgs = {})
             : repeat_view(piecewise_construct, AZStd::move(valueArgs), AZStd::move(boundArgs),
                 make_index_sequence<sizeof...(WArgs)>{}, make_index_sequence<sizeof...(BoundArgs)>{})
@@ -105,8 +104,8 @@ namespace AZStd::ranges
             }
         }
 
-        template<bool Enable = !same_as<Bound, unreachable_sentinel_t>, class = enable_if_t<Enable>>
         constexpr auto size() const
+            requires (!same_as<Bound, unreachable_sentinel_t>)
         {
             return Internal::to_unsigned_like(m_bound);
         }
@@ -130,25 +129,14 @@ namespace AZStd::ranges
     repeat_view(W, Bound) -> repeat_view<W, Bound>;
 }
 
-namespace AZStd::ranges::Internal
-{
-    struct repeat_view_requirements_fulfilled {};
-}
-
 namespace AZStd::ranges
 {
     // repeat iterator
-    template<class W, class Bound, class ViewEnable>
-    struct repeat_view<W, Bound, ViewEnable>::iterator
-        : enable_if_t<conjunction_v<
-        bool_constant<move_constructible<W>>,
-        bool_constant<semiregular<Bound>>,
-        is_object<W>,
-        bool_constant<same_as<W, remove_cv_t<W>>>,
-        disjunction<bool_constant<::AZStd::Internal::is_integer_like<Bound>>,
-            bool_constant<same_as<Bound, unreachable_sentinel_t>>
-            >
-        >, Internal::repeat_view_requirements_fulfilled>
+    template<move_constructible W, semiregular Bound>
+        requires is_object_v<W>
+            && same_as<W, remove_cv_t<W>>
+            && (::AZStd::Internal::is_integer_like<Bound> || same_as<Bound, unreachable_sentinel_t>)
+    struct repeat_view<W, Bound>::iterator
     {
     private:
         friend class repeat_view;
@@ -176,9 +164,9 @@ namespace AZStd::ranges
         using reference = const W&;
 #endif
 
-        template<bool Enable = default_initializable<W>,
-            class = enable_if_t<Enable>>
-        constexpr iterator() {}
+        constexpr iterator()
+            requires default_initializable<W>
+        {}
 
         constexpr explicit iterator(const W* value, index_type b = {})
             : m_value(value)

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_FIXED_LIST_H
-#define AZSTD_FIXED_LIST_H 1
+
+#pragma once
 
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/allocator_static.h>
@@ -72,6 +72,3 @@ namespace AZStd
         return !(left == right);
     }
 }
-
-#endif // AZSTD_FIXED_LIST_H
-#pragma once

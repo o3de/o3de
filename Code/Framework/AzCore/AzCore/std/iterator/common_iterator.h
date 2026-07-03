@@ -5,11 +5,13 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/base.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/iterator/iterator_primitives.h>
+#include <AzCore/std/typetraits/remove_cvref.h>
 
 namespace AZStd
 {
@@ -19,17 +21,42 @@ namespace AZStd
 
 namespace AZStd::Internal
 {
-    template<class I, class = void>
-    constexpr bool has_operator_arrow = false;
-    template<class I>
-    inline constexpr bool has_operator_arrow<I, enable_if_t<
-        sfinae_trigger_v<decltype(declval<I>().operator->())>
-        >> = true;
+    template<class>
+    inline constexpr bool is_std_move_iterator_v = false;
 
-    template <class T, class = void>
-    /*concept*/ constexpr bool can_reference_post_increment = false;
-    template <class T>
-    constexpr bool can_reference_post_increment<T, enable_if_t<can_reference<decltype(*declval<T>()++)>>> = true;
+    template<class I>
+    inline constexpr bool is_std_move_iterator_v<std::move_iterator<I>> = true;
+
+    template<class I>
+    concept std_move_iterator = is_std_move_iterator_v<remove_cvref_t<I>>;
+
+#if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__)
+    template<class I1, class I2>
+    concept common_iterator_move_iterator_equality_comparable_with =
+        (!std_move_iterator<I1> || !std_move_iterator<I2>)
+        || requires(const typename remove_cvref_t<I1>::iterator_type& i1, const typename remove_cvref_t<I2>::iterator_type& i2)
+        {
+            { i1 == i2 } -> convertible_to<bool>;
+        };
+#else
+    template<class I1, class I2>
+    concept common_iterator_move_iterator_equality_comparable_with = true;
+#endif
+
+    template<class I1, class I2>
+    concept common_iterator_iter_equality_comparable_with =
+        equality_comparable_with<I1, I2>
+        && common_iterator_move_iterator_equality_comparable_with<I1, I2>;
+
+    template<class I>
+    concept has_operator_arrow =
+        (!std_move_iterator<I>)
+        && requires(I value) { value.operator->(); };
+
+    template<class T>
+    concept can_reference_post_increment =
+        requires(T value) { *value++; }
+        && can_reference<decltype(*declval<T>()++)>;
 }
 
 namespace AZStd
@@ -37,18 +64,15 @@ namespace AZStd
     template<class I, class S, class = void>
     class common_iterator;
 
-    template<class I, class S>
-    class common_iterator<I, S, enable_if_t<conjunction_v<
-        bool_constant<input_or_output_iterator<I>>,
-        bool_constant<sentinel_for<S, I>>,
-        bool_constant<!same_as<I, S>>,
-        bool_constant<copyable<I>>
-    >
-    >>
+    template<input_or_output_iterator I, sentinel_for<I> S>
+        requires (!same_as<I, S>)
+            && copyable<I>
+    class common_iterator<I, S>
     {
     public:
-        template<bool Enable = default_initializable<I>, class = enable_if<Enable>>
-        constexpr common_iterator() {}
+        constexpr common_iterator()
+            requires default_initializable<I>
+        {}
         constexpr common_iterator(I i)
             : m_iterSentinel{ in_place_type<I>, AZStd::move(i) }
         {
@@ -57,11 +81,9 @@ namespace AZStd
             : m_iterSentinel{ in_place_type<S>, AZStd::move(s) }
         {
         }
-        template<class I2, class S2, class = enable_if_t<conjunction_v<
-            bool_constant<convertible_to<const I2&, I>>,
-            bool_constant<convertible_to<const S2&, S>>
-        >
-        >>
+        template<class I2, class S2>
+            requires convertible_to<const I2&, I>
+                && convertible_to<const S2&, S>
         constexpr common_iterator(const common_iterator<I2, S2>& other)
             : m_iterSentinel {
             [&]()
@@ -83,13 +105,11 @@ namespace AZStd
         {
         }
 
-        template<class I2, class S2, class = enable_if_t<conjunction_v<
-            bool_constant<convertible_to<const I2&, I>>,
-            bool_constant<convertible_to<const S2&, S>>,
-            bool_constant<assignable_from<I&, const I2&>>,
-            bool_constant<assignable_from<S&, const S2&>>
-        >
-        >>
+        template<class I2, class S2>
+            requires convertible_to<const I2&, I>
+                && convertible_to<const S2&, S>
+                && assignable_from<I&, const I2&>
+                && assignable_from<S&, const S2&>
         constexpr common_iterator& operator=(const common_iterator<I2, S2>& other)
         {
             AZ_Assert(!other.m_iterSentinel.valueless_by_exception(), "common_iterator variant must have an alternative");
@@ -124,21 +144,15 @@ namespace AZStd
             AZ_Assert(holds_alternative<I>(m_iterSentinel), "Attempting to deference the sentinel value");
             return *get<0>(m_iterSentinel);
         }
-        template<bool Enable = Internal::dereferenceable<const I>, class = enable_if_t<Enable>>
         constexpr decltype(auto) operator*() const
+            requires Internal::dereferenceable<const I>
         {
             AZ_Assert(holds_alternative<I>(m_iterSentinel), "Attempting to deference the sentinel value");
             return *get<0>(m_iterSentinel);
         }
-        template<bool Enable = conjunction_v<
-            bool_constant<indirectly_readable<const I>>,
-            disjunction<
-                bool_constant<Internal::has_operator_arrow<const I>>,
-                is_reference<iter_reference_t<I>>,
-                bool_constant<constructible_from<iter_value_t<I>, iter_reference_t<I>>>
-                >
-            >, class = enable_if_t<Enable>>
         constexpr decltype(auto) operator->() const
+            requires indirectly_readable<const I>
+                && (Internal::has_operator_arrow<const I> || is_reference_v<iter_reference_t<I>> || constructible_from<iter_value_t<I>, iter_reference_t<I>>)
         {
             AZ_Assert(holds_alternative<I>(m_iterSentinel), "arrow operator cannot invoked on sentinel value");
             if constexpr (AZStd::is_pointer_v<I> || Internal::has_operator_arrow<const I>)
@@ -209,13 +223,10 @@ namespace AZStd
             }
         }
 
-        template<class I2, class S2>
-        friend constexpr auto operator==(const common_iterator& x, const common_iterator<I2, S2>& y)
-            -> enable_if_t<conjunction_v<
-            bool_constant<sentinel_for<S2, I>>,
-            bool_constant<sentinel_for<S, I2>>,
-            bool_constant<!equality_comparable_with<I, I2>>
-        >, bool>
+        template<class I2, sentinel_for<I> S2>
+            requires sentinel_for<S, I2>
+                && (!Internal::common_iterator_iter_equality_comparable_with<I, I2>)
+        friend constexpr bool operator==(const common_iterator& x, const common_iterator<I2, S2>& y)
         {
         #if __cpp_constexpr_dynamic_alloc >= 201907L
             AZ_Assert(!x.m_iterSentinel.valueless_by_exception() && !y.m_iterSentinel.valueless_by_exception(),
@@ -235,24 +246,18 @@ namespace AZStd
                 return get<1>(x.m_iterSentinel) == get<0>(y.m_iterSentinel);
             }
         }
-        template<class I2, class S2>
-        friend constexpr auto operator!=(const common_iterator& x, const common_iterator<I2, S2>& y)
-            -> enable_if_t<conjunction_v<
-            bool_constant<sentinel_for<S2, I>>,
-            bool_constant<sentinel_for<S, I2>>,
-            bool_constant<!equality_comparable_with<I, I2>>
-        >, bool>
+        template<class I2, sentinel_for<I> S2>
+            requires sentinel_for<S, I2>
+                && (!Internal::common_iterator_iter_equality_comparable_with<I, I2>)
+        friend constexpr bool operator!=(const common_iterator& x, const common_iterator<I2, S2>& y)
         {
             return !operator==(x, y);
         }
 
-        template<class I2, class S2>
-        friend constexpr auto operator==(const common_iterator& x, const common_iterator<I2, S2>& y)
-            -> enable_if_t<conjunction_v<
-            bool_constant<sentinel_for<S2, I>>,
-            bool_constant<sentinel_for<S, I2>>,
-            bool_constant<equality_comparable_with<I, I2>>
-        >, bool>
+        template<class I2, sentinel_for<I> S2>
+            requires sentinel_for<S, I2>
+                && Internal::common_iterator_iter_equality_comparable_with<I, I2>
+        friend constexpr bool operator==(const common_iterator& x, const common_iterator<I2, S2>& y)
         {
         #if __cpp_constexpr_dynamic_alloc >= 201907L
             AZ_Assert(!x.m_iterSentinel.valueless_by_exception() && !y.m_iterSentinel.valueless_by_exception(),
@@ -281,24 +286,17 @@ namespace AZStd
                 return get<1>(x.m_iterSentinel) == get<0>(y.m_iterSentinel);
             }
         }
-        template<class I2, class S2>
-        friend constexpr auto operator!=(const common_iterator& x, const common_iterator<I2, S2>& y)
-            -> enable_if_t<conjunction_v<
-            bool_constant<sentinel_for<S2, I>>,
-            bool_constant<sentinel_for<S, I2>>,
-            bool_constant<equality_comparable_with<I, I2>>
-        >, bool>
+        template<class I2, sentinel_for<I> S2>
+            requires sentinel_for<S, I2>
+                && Internal::common_iterator_iter_equality_comparable_with<I, I2>
+        friend constexpr bool operator!=(const common_iterator& x, const common_iterator<I2, S2>& y)
         {
             return !operator==(x, y);
         }
 
-        template<class I2, class S2>
-        friend constexpr auto operator-(const common_iterator& x, const common_iterator<I2, S2>& y)
-            -> enable_if_t<conjunction_v<
-            bool_constant<sized_sentinel_for<I2, I>>,
-            bool_constant<sized_sentinel_for<S2, I>>,
-            bool_constant<sized_sentinel_for<S, I2>>
-        >, iter_difference_t<I2>>
+        template<sized_sentinel_for<I> I2, sized_sentinel_for<I> S2>
+            requires sized_sentinel_for<S, I2>
+        friend constexpr iter_difference_t<I2> operator-(const common_iterator& x, const common_iterator<I2, S2>& y)
         {
         #if __cpp_constexpr_dynamic_alloc >= 201907L
             AZ_Assert(!x.m_iterSentinel.valueless_by_exception() && !y.m_iterSentinel.valueless_by_exception(),
@@ -327,15 +325,15 @@ namespace AZStd
             }
         }
 
-        friend constexpr auto iter_move(const common_iterator& i)
+        friend constexpr iter_rvalue_reference_t<I> iter_move(const common_iterator& i)
             noexcept(noexcept(ranges::iter_move(declval<const I&>())))
-            -> enable_if_t<input_iterator<I>, iter_rvalue_reference_t<I>>
+            requires input_iterator<I>
         {
             AZ_Assert(holds_alternative<I>(i.m_iterSentinel), "iter_move cannot be invoked on sentinel value");
             return ranges::iter_move(get<I>(i.m_iterSentinel));
         }
 
-        template<class I2, class S2, enable_if_t<indirectly_swappable<I2, I>>>
+        template<indirectly_swappable<I> I2, class S2>
         friend constexpr void iter_swap(const common_iterator& x, const common_iterator<I2, S2>& y)
             noexcept(noexcept(ranges::iter_swap(declval<const I&>(), declval<const I2&>())))
         {
@@ -612,9 +610,9 @@ namespace AZStd::Internal
 
 namespace AZStd
 {
-    template<class I, class S>
+    template<input_iterator I, class S>
     struct iterator_traits<common_iterator<I, S>>
-        : enable_if_t<input_iterator<I>, Internal::common_iterator_iterator_trait_requirements_fulfilled>
+        : Internal::common_iterator_iterator_trait_requirements_fulfilled
     {
     private:
         template<class I2, class = void>
@@ -622,8 +620,8 @@ namespace AZStd
         {
             using type = void;
         };
-        template<class I2>
-        struct get_pointer_type_alias<I2, enable_if_t<Internal::has_operator_arrow<I2>>>
+        template<Internal::has_operator_arrow I2>
+        struct get_pointer_type_alias<I2>
         {
             using type = decltype(declval<I>().operator->());
         };
@@ -635,9 +633,8 @@ namespace AZStd
         };
 
         template<class I2>
-        struct get_iterator_category<I2, enable_if_t<
-            derived_from<typename iterator_traits<I2>::iterator_category, forward_iterator_tag>
-        >>
+            requires derived_from<typename iterator_traits<I2>::iterator_category, forward_iterator_tag>
+        struct get_iterator_category<I2>
         {
             using type = forward_iterator_tag;
         };

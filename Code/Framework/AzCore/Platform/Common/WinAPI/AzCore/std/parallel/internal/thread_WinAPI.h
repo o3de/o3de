@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_THREAD_WINDOWS_H
-#define AZSTD_THREAD_WINDOWS_H
+
+#pragma once
 
 #ifndef YieldProcessor
 #    define YieldProcessor _mm_pause
@@ -32,7 +32,8 @@ namespace AZStd
 
     //////////////////////////////////////////////////////////////////////////
     // thread
-    template<class F, class... Args, typename>
+    template<class F, class... Args>
+        requires (!AZStd::is_convertible_v<AZStd::decay_t<F>, thread_desc>)
     thread::thread(F&& f, Args&&... args)
         : thread(thread_desc{}, AZStd::forward<F>(f), AZStd::forward<Args>(args)...)
     {}
@@ -96,6 +97,3 @@ namespace AZStd
         }
     }
 }
-
-#endif // AZSTD_THREAD_WINDOWS_H
-#pragma once

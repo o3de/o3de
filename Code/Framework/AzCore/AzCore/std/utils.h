@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/base.h>
@@ -35,8 +36,8 @@ namespace AZStd
     template <class T>
     struct default_delete
     {
-        template <class U, 
-            class = typename enable_if<is_convertible<U*, T*>::value, void>::type>
+        template <class U>
+            requires is_convertible_v<U*, T*>
         void operator()(U* ptr) const
         {
             delete ptr;
@@ -46,14 +47,14 @@ namespace AZStd
     template <class T>
     struct default_delete<T[]>
     {
-        template<class U,
-            class = typename enable_if<is_convertible<U(*)[], T(*)[]>::value, void>::type>
+        template<class U>
+            requires is_convertible_v<U(*)[], T(*)[]>
         default_delete(const default_delete<U[]>&)
         {
         }
 
-        template<class U,
-            class = typename enable_if<is_convertible<U(*)[], T(*)[]>::value, void>::type>
+        template<class U>
+            requires is_convertible_v<U(*)[], T(*)[]>
         void operator()(U *ptr) const
         {
             delete[] ptr;
@@ -129,16 +130,17 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
 
 
-    template<class T, bool isEnum = AZStd::is_enum<T>::value>
+    template<class T>
     struct RemoveEnum
     {
-        typedef typename AZStd::underlying_type<T>::type type;
+        typedef T type;
     };
 
     template<class T>
-    struct RemoveEnum<T, false>
+        requires AZStd::is_enum_v<T>
+    struct RemoveEnum<T>
     {
-        typedef T type;
+        typedef typename AZStd::underlying_type<T>::type type;
     };
 
     template<class T>

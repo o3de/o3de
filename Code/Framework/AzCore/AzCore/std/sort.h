@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_SORT_H
-#define AZSTD_SORT_H 1
+
+#pragma once
 
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/algorithm.h>
@@ -75,7 +75,7 @@ namespace AZStd
                     }
                 }
 
-                m_allocator.deallocate(m_data, sizeof(T) * m_capacity, alignment_of<T>::value);
+                m_allocator.deallocate(m_data, sizeof(T) * m_capacity, alignment_of_v<T>);
             }
 
             AZ_FORCE_INLINE size_type   capacity() const    { return m_capacity; }
@@ -1067,6 +1067,3 @@ namespace AZStd
 
     //////////////////////////////////////////////////////////////////////////
 }
-
-#endif // AZSTD_SORT_H
-#pragma once

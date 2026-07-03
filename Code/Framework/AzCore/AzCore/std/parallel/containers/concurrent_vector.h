@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_PARALLEL_CONTAINERS_CONCURRENT_VECTOR_H
-#define AZSTD_PARALLEL_CONTAINERS_CONCURRENT_VECTOR_H 1
+
+#pragma once
 
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/parallel/atomic.h>
@@ -49,7 +49,7 @@ namespace AZStd
                 if (chunk)
                 {
                     unsigned int chunkSize = GetChunkSize(i);
-                    m_alloc.deallocate(chunk, chunkSize * sizeof(T), alignment_of<T>::value);
+                    m_alloc.deallocate(chunk, chunkSize * sizeof(T), alignment_of_v<T>);
                 }
             }
         }
@@ -135,12 +135,12 @@ namespace AZStd
         {
             //allocate a new chunk, and attempt to assign it atomically with a compareAndSwap
             unsigned int chunkSize = GetChunkSize(chunkIndex);
-            T* newChunk = static_cast<T*>(m_alloc.allocate(chunkSize * sizeof(T), alignment_of<T>::value));
+            T* newChunk = static_cast<T*>(m_alloc.allocate(chunkSize * sizeof(T), alignment_of_v<T>));
             T* oldChunk = NULL;
             if (!m_chunks[chunkIndex].compare_exchange_strong(oldChunk, newChunk, memory_order_acq_rel, memory_order_acquire))
             {
                 //somebody beat us to it, that's ok, use their chunk and free our attempted allocation
-                m_alloc.deallocate(newChunk, chunkSize * sizeof(T), alignment_of<T>::value);
+                m_alloc.deallocate(newChunk, chunkSize * sizeof(T), alignment_of_v<T>);
                 return oldChunk;
             }
             return newChunk;
@@ -153,6 +153,3 @@ namespace AZStd
         Allocator m_alloc;
     };
 }
-
-#endif
-#pragma once

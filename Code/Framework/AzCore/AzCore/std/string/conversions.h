@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/string/string.h>
@@ -297,8 +298,9 @@ namespace AZStd
     }
 
     template<class Str, class BoolType>
+        requires same_as<remove_cvref_t<BoolType>, bool>
     auto to_string(Str& str, BoolType value)
-        -> enable_if_t<same_as<remove_cvref_t<BoolType>, bool>>
+        -> void
     {
         str = value ? "true" : "false";
     }
@@ -313,7 +315,8 @@ namespace AZStd
     inline AZStd::string to_string(unsigned long long val)  { AZStd::string str; to_string(str, val); return str; }
     inline AZStd::string to_string(long double val)         { AZStd::string str; to_string(str, val); return str; }
     template<class BoolType>
-    auto to_string(BoolType value) -> enable_if_t<same_as<remove_cvref_t<BoolType>, bool>, AZStd::string>
+        requires same_as<remove_cvref_t<BoolType>, bool>
+    auto to_string(BoolType value) -> AZStd::string
     {
         AZStd::string str;
         to_string(str, value);
@@ -544,10 +547,10 @@ namespace AZStd
         }
     }
 
-    template<class Range>
+    template<ranges::range Range>
+        requires indirectly_copyable<ranges::iterator_t<Range>, ranges::iterator_t<Range>>
     auto to_lower(Range&& r, const std::locale& loc = {})
-        -> enable_if_t<ranges::range<Range>
-            && indirectly_copyable<ranges::iterator_t<Range>, ranges::iterator_t<Range>>>
+        -> void
     {
         to_lower(ranges::begin(r), ranges::end(r), loc);
     }
@@ -562,10 +565,10 @@ namespace AZStd
         }
     }
 
-    template<class Range>
+    template<ranges::range Range>
+        requires indirectly_copyable<ranges::iterator_t<Range>, ranges::iterator_t<Range>>
     auto to_upper(Range&& r, const std::locale& loc = {})
-        -> enable_if_t<ranges::range<Range>
-            && indirectly_copyable<ranges::iterator_t<Range>, ranges::iterator_t<Range>>>
+        -> void
     {
         to_upper(ranges::begin(r), ranges::end(r), loc);
     }

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/ranges/all_view.h>
@@ -15,14 +16,11 @@
 
 namespace AZStd::ranges
 {
-    template<class View, class Pattern, class = enable_if_t<conjunction_v<
-        bool_constant<forward_range<View>>,
-        bool_constant<forward_range<Pattern>>,
-        bool_constant<view<View>>,
-        bool_constant<view<Pattern>>,
-        bool_constant<indirectly_comparable<iterator_t<View>, iterator_t<Pattern>, ranges::equal_to>>
-        >>>
-        class split_view;
+    template<forward_range View, forward_range Pattern>
+        requires view<View>
+            && view<Pattern>
+            && indirectly_comparable<iterator_t<View>, iterator_t<Pattern>, ranges::equal_to>
+    class split_view;
 
     // views::split customization point
     namespace views
@@ -32,16 +30,15 @@ namespace AZStd::ranges
             struct split_view_fn
                 : Internal::range_adaptor_closure<split_view_fn>
             {
-                template <class View, class Pattern, class = enable_if_t<conjunction_v<
-                    bool_constant<viewable_range<View>>
-                    >>>
+                template <viewable_range View, class Pattern>
                 constexpr auto operator()(View&& view, Pattern&& pattern) const
                 {
                     return split_view(AZStd::forward<View>(view), AZStd::forward<Pattern>(pattern));
                 }
 
                 // Create a range_adaptor arugment forwarder which binds the pattern for later
-                template <class Pattern, class = enable_if_t<constructible_from<decay_t<Pattern>, Pattern>>>
+                template <class Pattern>
+                    requires constructible_from<decay_t<Pattern>, Pattern>
                 constexpr auto operator()(Pattern&& pattern) const
                 {
                     return range_adaptor_argument_forwarder(
@@ -55,35 +52,37 @@ namespace AZStd::ranges
         }
     }
 
-    template<class View, class Pattern, class>
+    template<forward_range View, forward_range Pattern>
+        requires view<View>
+            && view<Pattern>
+            && indirectly_comparable<iterator_t<View>, iterator_t<Pattern>, ranges::equal_to>
     class split_view
         : public view_interface<split_view<View, Pattern>>
     {
         struct iterator;
         struct sentinel;
     public:
-        template <bool Enable = default_initializable<View> && default_initializable<Pattern>,
-            class = enable_if_t<Enable>>
-        split_view() {}
+        split_view()
+            requires default_initializable<View>
+                && default_initializable<Pattern>
+        {}
 
         constexpr split_view(View base, Pattern pattern)
             : m_base(AZStd::move(base))
             , m_pattern(AZStd::move(pattern))
         {}
 
-        template<class R, class = enable_if_t<conjunction_v<
-            bool_constant<forward_range<R>>,
-            bool_constant<constructible_from<View, views::all_t<R>>>,
-            bool_constant<constructible_from<Pattern, single_view<range_value_t<R>>>>
-            >>>
+        template<forward_range R>
+            requires constructible_from<View, views::all_t<R>>
+                && constructible_from<Pattern, single_view<range_value_t<R>>>
         constexpr split_view(R&& r, range_value_t<R> e)
             : m_base{ views::all(AZStd::forward<R>(r)) }
             , m_pattern{ views::single(AZStd::move(e)) }
         {
         }
 
-        template <bool Enable = copy_constructible<View>, class = enable_if_t<Enable>>
         constexpr View base() const&
+            requires copy_constructible<View>
         {
             return m_base;
         }
@@ -128,12 +127,15 @@ namespace AZStd::ranges
     template<class R, class P>
     split_view(R&&, P&&)->split_view<views::all_t<R>, views::all_t<P>>;
 
-    template<class R, class = enable_if_t<forward_range<R>>>
+    template<forward_range R>
     split_view(R&&, range_value_t<R>)
         -> split_view<views::all_t<R>, single_view<range_value_t<R>>>;
 
-    template<class View, class Pattern, class Enable>
-    struct split_view<View, Pattern, Enable>::iterator
+    template<forward_range View, forward_range Pattern>
+        requires view<View>
+            && view<Pattern>
+            && indirectly_comparable<iterator_t<View>, iterator_t<Pattern>, ranges::equal_to>
+    struct split_view<View, Pattern>::iterator
     {
         using iterator_concept = forward_iterator_tag;
         using iterator_category = input_iterator_tag;
@@ -212,8 +214,11 @@ namespace AZStd::ranges
         bool m_trailing_empty{};
     };
 
-    template<class View, class Pattern, class Enable>
-    struct split_view<View, Pattern, Enable>::sentinel
+    template<forward_range View, forward_range Pattern>
+        requires view<View>
+            && view<Pattern>
+            && indirectly_comparable<iterator_t<View>, iterator_t<Pattern>, ranges::equal_to>
+    struct split_view<View, Pattern>::sentinel
     {
         sentinel() = default;
         explicit constexpr sentinel(split_view& parent)
