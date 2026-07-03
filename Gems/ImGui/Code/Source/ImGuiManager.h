@@ -10,6 +10,8 @@
 
 #ifdef IMGUI_ENABLED
 
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Input/Events/InputTextEventListener.h>
@@ -87,6 +89,7 @@ namespace ImGui
 
     private:
         void RenderJob();
+        void FlushPendingTextInputEvents();
 
         ImGuiContext* m_imguiContext = nullptr;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
@@ -110,6 +113,7 @@ namespace ImGui
         float m_lastPrimaryTouchPosition[2] = { 0.0f, 0.0f };
         bool m_useLastPrimaryTouchPosition = false;
         bool m_simulateBackspaceKeyPressed = false;
+        AZStd::vector<AZStd::string> m_pendingTextInputEvents;
 
         ImGuiBroadcastState m_imGuiBroadcastState;
 
