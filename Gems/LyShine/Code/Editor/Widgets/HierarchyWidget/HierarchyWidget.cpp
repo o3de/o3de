@@ -1210,8 +1210,13 @@ void HierarchyWidget::PasteAsChild()
 
 void HierarchyWidget::Duplicate()
 {
-    Copy();
-    PasteAsSibling();
+    // Build mime data directly and paste it, so duplicate doesn't overwrite the user's clipboard.
+    QTreeWidgetItemRawPtrQList selection = selectedItems();
+    if (QMimeData* mimeData = HierarchyClipboard::CreateMimeDataForSelection(this, selection))
+    {
+        HierarchyClipboard::CreateElementsFromMimeData(this, mimeData, selection, false);
+        delete mimeData;
+    }
 }
 
 void HierarchyWidget::SetEditorOnlyForSelectedItems(bool editorOnly)
