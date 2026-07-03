@@ -13,11 +13,14 @@
 #include "NewLevelDialog.h"
 
 // Qt
+#include <QApplication>
 #include <QComboBox>
 #include <QLabel>
+#include <QPainter>
 #include <QPushButton>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QStyledItemDelegate>
 #include <QTimer>
 #include <QToolButton>
 #include <QListWidgetItem>
@@ -181,6 +184,7 @@ void CNewLevelDialog::InitTemplateListWidget() const
     ui->listTemplates->setViewMode(QListWidget::IconMode);
     ui->listTemplates->setIconSize(iconSize);
     ui->listTemplates->setDragDropMode(QAbstractItemView::NoDragDrop);
+    ui->listTemplates->setItemDelegate(new DrawIconWithBackgroundDelegate(ui->listTemplates));
     if (ui->listTemplates->count() > 0)
     {
         ui->listTemplates->setCurrentRow(defaultItem);

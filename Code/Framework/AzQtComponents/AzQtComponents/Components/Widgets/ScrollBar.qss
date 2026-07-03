@@ -9,8 +9,8 @@
 
 QScrollBar
 {
-    border: 2px solid rgba(50, 50, 50, 70%);
-    background: none;
+    border: 2px solid rgba(0, 0, 0, 0%);
+    background: transparent;
     margin: 0px;
 }
 
@@ -75,32 +75,26 @@ QAbstractScrollArea > .QWidget
 
 QScrollBar:hover
 {
-    border: 1px solid rgba(50, 50, 50, 70%);
-    background: none;
+    border: 1px solid rgba(0, 0, 0, 0%);
+    background-color: rgb(85, 85, 85);
     margin: 0px;
 }
 
 QAbstractScrollArea.DarkScrollBar QScrollBar:hover
 {
-    border: 1px solid rgba(136, 136, 136, 64%);
-    background: none;
+    border: 1px solid rgba(0, 0, 0, 0%);
+    background-color: rgb(220, 220, 220);
     margin: 0px;
-}
-
-QScrollBar::handle:hover
-{
-    border-radius: 3px;
-    background-color: #999999;
 }
 
 QAbstractScrollArea > .QWidget:hover,
 QAbstractScrollArea > .QWidget[ShowBackground=true]
 {
-    background-color: rgba(255, 255, 255, 12%);
+    background-color: rgb(85, 85, 85);
 }
 
 QAbstractScrollArea.DarkScrollBar > .QWidget:hover,
 QAbstractScrollArea.DarkScrollBar > .QWidget[ShowBackground=true]
 {
-    background-color: rgba(221, 221, 221, 80%);
+    background-color: rgb(220, 220, 220);
 }

@@ -90,12 +90,7 @@ QToolButton#minimizeButton,
 QToolButton#maximizeButton,
 QToolButton#closeButton 
 {
-    qproperty-iconSize: 14px 14px;
     background: transparent;
-    max-width: 24px;
-    min-width: 24px;
-    min-height: 24px;
-    max-height: 24px;
 }
 
 QToolButton#minimizeButton:hover,

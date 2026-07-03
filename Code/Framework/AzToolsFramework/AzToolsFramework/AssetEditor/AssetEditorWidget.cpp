@@ -60,6 +60,8 @@ AZ_POP_DISABLE_WARNING
 #include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <QAction>
+#include <QApplication>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QMenuBar>
 #include <QTimer>

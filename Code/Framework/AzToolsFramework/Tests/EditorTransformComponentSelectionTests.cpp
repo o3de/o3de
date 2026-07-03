@@ -18,7 +18,6 @@
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
-#include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityActionComponent.h>
@@ -1919,9 +1918,6 @@ namespace UnitTest
         EXPECT_THAT(transformMode(), EditorTransformComponentSelectionRequestBus::Events::Mode::Translation);
 
         auto wheelEventWidget = WheelEventWidget(m_viewportManipulatorInteraction->GetViewportInteraction().GetViewportId());
-        // attach the global event filter to the placeholder widget
-        AzQtComponents::GlobalEventFilter globalEventFilter(QApplication::instance());
-        wheelEventWidget.installEventFilter(&globalEventFilter);
 
         // example mouse wheel event (does not yet factor in position of mouse in relation to widget)
         auto wheelEvent = QWheelEvent(

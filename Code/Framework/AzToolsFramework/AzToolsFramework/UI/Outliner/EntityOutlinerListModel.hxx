@@ -30,6 +30,8 @@
 #include <QCheckBox>
 #include <QRect>
 #include <QStyledItemDelegate>
+#include <QTimer>
+
 #include <QWidget>
 
 namespace AzToolsFramework
@@ -379,6 +381,8 @@ namespace AzToolsFramework
 
         EditorEntityUiInterface* m_editorEntityFrameworkInterface = nullptr;
         ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+
+        QTimer* m_cacheRefreshTimer = nullptr;
     };
 
 }

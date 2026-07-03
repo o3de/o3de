@@ -185,10 +185,11 @@ namespace AZ
             }
         }
 
-        SetState(State::Init);
-
+        // SetState AFTER notifying, so that the entity can check whether it is already in the init state, vs the "Initializing" state.
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityExists, m_id);
         EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityInitialized, m_id);
+
+        SetState(State::Init);
     }
 
     void Entity::Activate()
@@ -211,8 +212,8 @@ namespace AZ
             ActivateComponent(**it);
         }
 
-        SetState(State::Active);
-
+        // alert listeners that the entity is becoming active, do this BEFORE you change its state to Active
+        // so that entities can check if it was already active, vs the "Activating" state.
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityActivated, m_id);
         EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityActivated, m_id);
         AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
@@ -220,11 +221,19 @@ namespace AZ
         {
             componentApplication->SignalEntityActivated(this);
         }
+
+         SetState(State::Active);
     }
 
     void Entity::Deactivate()
     {
         AZ_PROFILE_FUNCTION(AzCore);
+
+        AZ_Assert(m_state == State::Active, "Component should be in Active state to be Deactivated!");
+
+        // To mirror the Init and Activate functions, we set the state Deactivating before we alert listeners,
+        // so that listeners can tell the difference between an entity that is currently deactivating, or one that is already deactivated.
+        SetState(State::Deactivating);
 
         AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
         if (componentApplication != nullptr)
@@ -233,9 +242,6 @@ namespace AZ
         }
         EntityBus::Event(m_id, &EntityBus::Events::OnEntityDeactivated, m_id);
         EntitySystemBus::Broadcast(&EntitySystemBus::Events::OnEntityDeactivated, m_id);
-
-        AZ_Assert(m_state == State::Active, "Component should be in Active state to be Deactivated!");
-        SetState(State::Deactivating);
 
         for (ComponentArrayType::reverse_iterator it = m_components.rbegin(); it != m_components.rend(); ++it)
         {
@@ -707,10 +713,17 @@ namespace AZ
     {
         bool isEffective = IsEffectivelyActive();
 
-        // Avoid evaluation during irregular states.
+        // ApplyEffectiveActiveState may only be driven from a settled state (Init or Active);
+        // it transitions between those two. Being called mid-transition (Constructed,
+        // Initializing, Activating, Deactivating, ...) is a programming error in the caller,
+        // not a recoverable runtime condition. Assert so misuse fails loudly in tests rather
+        // than silently no-opping (which previously let erroneous tests pass). All in-engine
+        // callers already gate on Init/Active before calling this.
         if (m_state != State::Init && m_state != State::Active)
         {
-            AZ_Warning("Entity", false, "%s evaluating active state, between valid states. Exiting out.", m_name.c_str());
+            AZ_Assert(false, "%s: ApplyEffectiveActiveState called from invalid state %d. "
+                "Only Init or Active are valid; the activation layer must settle before applying.",
+                m_name.c_str(), static_cast<int>(m_state));
             return false;
         }
 

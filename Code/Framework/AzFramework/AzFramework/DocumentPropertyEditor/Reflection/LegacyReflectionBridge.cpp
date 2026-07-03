@@ -272,6 +272,57 @@ namespace AZ::Reflection
             return m_keyInstance.IsValid();
         }
 
+        bool ReadLegacyVisibility(
+            AZ::PointerObject instance, AZ::Attribute* attribute, DocumentPropertyEditor::Nodes::PropertyVisibility& outVisibility)
+        {
+            using DocumentPropertyEditor::Nodes::PropertyVisibility;
+
+            if (attribute == nullptr)
+            {
+                return false;
+            }
+
+            AZ::AttributeReader reader(instance.m_address, attribute);
+
+            // 1. AZ::Crc32 - holds the PropertyVisibility hash directly.
+            AZ::Crc32 crcValue;
+            if (reader.Read<AZ::Crc32>(crcValue))
+            {
+                outVisibility = static_cast<PropertyVisibility>(static_cast<AZ::u32>(crcValue));
+                return true;
+            }
+
+            // 2. AZ::u32 - a raw hash, or the 0/1 shorthand for Hide/Show. This branch also
+            //    captures bool-returning attributes, which the reader converts to 0/1.
+            AZ::u32 u32Value = 0;
+            if (reader.Read<AZ::u32>(u32Value))
+            {
+                switch (u32Value)
+                {
+                case 0:
+                    outVisibility = PropertyVisibility::Hide;
+                    break;
+                case 1:
+                    outVisibility = PropertyVisibility::Show;
+                    break;
+                default:
+                    outVisibility = static_cast<PropertyVisibility>(u32Value);
+                    break;
+                }
+                return true;
+            }
+
+            // 3. bool - true/false for Show/Hide (safety net for any reader that only matches bool).
+            bool boolValue = false;
+            if (reader.Read<bool>(boolValue))
+            {
+                outVisibility = boolValue ? PropertyVisibility::Show : PropertyVisibility::Hide;
+                return true;
+            }
+
+            return false;
+        }
+
         struct InstanceVisitor
             : IObjectAccess
             , IAttributes
@@ -387,8 +438,6 @@ namespace AZ::Reflection
 
             using HandlerCallback = AZStd::function<bool()>;
             AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
-
-            static constexpr auto VisibilityBoolean = AZ::DocumentPropertyEditor::AttributeDefinition<bool>("VisibilityBoolean");
 
             // Specify whether the visit starts from the root of the instance.
             bool m_visitFromRoot = true;
@@ -1182,8 +1231,6 @@ namespace AZ::Reflection
                 PropertyVisibility visibility = PropertyVisibility::Show;
 
                 // If the stack contains 2 nodes, it means we are now processing the root node. The first node is a dummy parent node.
-                // Hide the root node itself if the visitor is visiting from the instance's root.
-                // Alternatively, hide if forced by the node's property.
                 if ((m_stack.size() == 2 && m_visitFromRoot) || nodeData.m_showChildrenOnly)
                 {
                     visibility = PropertyVisibility::ShowChildrenOnly;
@@ -1227,61 +1274,18 @@ namespace AZ::Reflection
                         visitedAttributes.insert(name);
 
                         // Handle visibility calculations internally, as we calculate and emit an aggregate visibility value.
-                        // We also need to handle special cases here, because the Visibility attribute supports 3 different value types:
-                        //      1. AZ::Crc32 - This is the default
-                        //      2. AZ::u32 - This allows the user to specify a value of 1/0 for Show/Hide, respectively
-                        //      3. bool - This allows the user to specify true/false for Show/Hide, respectively
-                        //
-                        // We need to return out of checkAttribute for Visibility attributes since the attributeValue handling
-                        // below doesn't account for these special cases. The Visibility attribute instead gets cached at
-                        // the end of the CacheAttributes method after it has done further visibility computations.
                         if (name == PropertyEditor::Visibility.GetName())
                         {
-                            auto visibilityValue = PropertyEditor::Visibility.DomToValue(
-                                PropertyEditor::Visibility.LegacyAttributeToDomValue(instance, it->second));
-
-                            if (visibilityValue.has_value())
+                            // Resolve the Visibility attribute by reading it as its actual stored type
+                            
+                            PropertyVisibility resolvedVisibility = PropertyVisibility::Show;
+                            if (ReadLegacyVisibility(instance, it->second, resolvedVisibility))
                             {
-                                visibility = visibilityValue.value();
-
-                                // The PropertyEditor::Visibility is actually an AZ::u32 enum class, so we need
-                                // to check here if we read in a 0 or 1 instead of a hash so we can handle
-                                // those special cases.
-                                AZ::u32 visibilityNumericValue = static_cast<AZ::u32>(visibility);
-                                switch (visibilityNumericValue)
-                                {
-                                case 0:
-                                    visibility = PropertyVisibility::Hide;
-                                    break;
-                                case 1:
-                                    visibility = PropertyVisibility::Show;
-                                    break;
-                                default:
-                                    break;
-                                }
-                                return;
+                                visibility = resolvedVisibility;
                             }
-                            else if (
-                                auto visibilityBoolValue =
-                                    VisibilityBoolean.DomToValue(VisibilityBoolean.LegacyAttributeToDomValue(instance, it->second)))
-                            {
-                                bool isVisible = visibilityBoolValue.value();
-                                visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
-                                return;
-                            }
-                            else if (auto genericVisibility = ReadGenericAttributeToDomValue(instance, it->second))
-                            {
-                                // Fallback to generic read if LegacyAttributeToDomValue fails
-                                if (auto visibilityOption = PropertyEditor::Visibility.DomToValue(genericVisibility.value()))
-                                {
-                                    visibility = visibilityOption.value();
-                                }
-                                return;
-                            }
+                            return;
                         }
                         // The legacy ReadOnly property needs to be converted into the Disabled node property.
-                        // If our ancestor is disabled we don't need to read the attribute because this node
-                        // will already be disabled as well.
                         else if ((name == PropertyEditor::ReadOnly.GetName()) && !nodeData.m_isAncestorDisabled)
                         {
                             nodeData.m_disableEditor |=
@@ -1324,10 +1328,7 @@ namespace AZ::Reflection
                                 genericValueCache.ArrayPushBack(attributeValue);
                                 return;
                             }
-                            // Collect EnumValueKey attributes unless this node has an EnumValues, GenericValue or GenericValueList
-                            // attribute. If an EnumValues, GenericValue or GenericValueList attribute is present we do not cache
-                            // because such nodes also have internal EnumValueKey attributes that we won't use.
-                            // The cached values will be stored as a GenericValueList attribute.
+                            // Collect EnumValueKey attributes unless this node has an EnumValues, GenericValue or GenericValueList attribute.
                             if (name == enumValueKeyName)
                             {
                                 if (visitedAttributes.contains(enumValuesCrcName) || visitedAttributes.contains(genericValueListName) ||
@@ -1337,10 +1338,7 @@ namespace AZ::Reflection
                                 }
 
                                 genericValueCache.ArrayPushBack(attributeValue);
-                                // Forcing the node's typeId to AZ::u64 so the correct property handler will be chosen
-                                // in the PropertyEditorSystem.
-                                // This is reasonable since the attribute's value is an enum with an underlying integral
-                                // type which is safely convertible to AZ::u64.
+                                // Forcing the node's typeId to AZ::u64 so the correct property handler will be chosen in the PropertyEditorSystem.
                                 nodeData.m_instance.m_typeId = AzTypeInfo<u64>::Uuid();
                                 return;
                             }

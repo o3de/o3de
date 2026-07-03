@@ -23,7 +23,6 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 // AzQtComponents
-#include <AzQtComponents/Components/GlobalEventFilter.h>
 #include <AzQtComponents/Components/O3DEStylesheet.h>
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -38,11 +37,11 @@ Q_LOGGING_CATEGORY(InputDebugging, "o3de.editor.input")
 namespace
 {
     class EditorGlobalEventFilter
-        : public AzQtComponents::GlobalEventFilter
+        : public QObject
     {
     public:
         explicit EditorGlobalEventFilter(QObject* watch)
-            : AzQtComponents::GlobalEventFilter(watch) {}
+            : QObject(watch) {}
 
         bool eventFilter(QObject* obj, QEvent* e) override
         {
@@ -141,7 +140,7 @@ namespace
                 break;
             }
 
-            return GlobalEventFilter::eventFilter(obj, e);
+            return false;
         }
 
     private:

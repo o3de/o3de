@@ -74,7 +74,11 @@ AssetImporterWindow::AssetImporterWindow(QWidget* parent)
 
 AssetImporterWindow::~AssetImporterWindow()
 {
-    disconnect();
+    while (QLayoutItem* cardToDelete = ui->m_cardAreaLayout->takeAt(0))
+    {
+        delete cardToDelete->widget();
+        delete cardToDelete;
+    }
 }
 
 void AssetImporterWindow::OpenFile(const AZStd::string& filePath)
