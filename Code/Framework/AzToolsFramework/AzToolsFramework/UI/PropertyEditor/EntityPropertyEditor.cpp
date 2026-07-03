@@ -2867,8 +2867,7 @@ namespace AzToolsFramework
         m_actionToDuplicateComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         connect(m_actionToDuplicateComponents, &QAction::triggered, this, [this]()
         {
-            CopyComponents();
-            PasteComponents();
+            DuplicateComponents();
         });
         addAction(m_actionToDuplicateComponents);
         m_entityComponentActions.push_back(m_actionToDuplicateComponents);
@@ -2994,6 +2993,11 @@ namespace AzToolsFramework
 
     bool EntityPropertyEditor::CanPasteComponentsOnSelectedEntities() const
     {
+        return CanPasteComponentsOnSelectedEntitiesFromMimeData(ComponentMimeData::GetComponentMimeDataFromClipboard());
+    }
+
+    bool EntityPropertyEditor::CanPasteComponentsOnSelectedEntitiesFromMimeData(const QMimeData* mimeData) const
+    {
         if (!AllowAnyComponentModification())
         {
             return false;
@@ -3016,9 +3020,6 @@ namespace AzToolsFramework
             // Can't paste components if there is a mixed selection or read only entities
             return false;
         }
-
-        // Grab component data from clipboard, if exists
-        const QMimeData* mimeData = ComponentMimeData::GetComponentMimeDataFromClipboard();
 
         if (!mimeData)
         {
@@ -3144,9 +3145,27 @@ namespace AzToolsFramework
         }
     }
 
+    void EntityPropertyEditor::DuplicateComponents()
+    {
+        const auto& componentsToEdit = GetCopyableComponents();
+        if (componentsToEdit.empty() || !AreComponentsCopyable(componentsToEdit))
+        {
+            return;
+        }
+
+        // Build mime data directly and paste it, so duplicate doesn't overwrite the user's clipboard.
+        AZStd::unique_ptr<QMimeData> mimeData = ComponentMimeData::Create(componentsToEdit);
+        PasteComponentsFromMimeData(mimeData.get());
+    }
+
     void EntityPropertyEditor::PasteComponents()
     {
-        if (!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntities())
+        PasteComponentsFromMimeData(ComponentMimeData::GetComponentMimeDataFromClipboard());
+    }
+
+    void EntityPropertyEditor::PasteComponentsFromMimeData(const QMimeData* mimeData)
+    {
+        if (!m_selectedEntityIds.empty() && CanPasteComponentsOnSelectedEntitiesFromMimeData(mimeData))
         {
             ScopedUndoBatch undoBatch("Paste Component(s)");
 
@@ -3163,7 +3182,7 @@ namespace AzToolsFramework
                 GetAllComponentsForEntityInOrder(GetEntity(entityId), componentsInOrder);
 
                 //perform the paste operation which should add new components to the entity or pending list
-                EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::PasteComponentsToEntity, entityId);
+                EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::PasteComponentsToEntityFromMimeData, entityId, mimeData);
 
                 //get the post-paste set of components, which should include all prior components plus new ones
                 componentsAfterPaste.clear();
