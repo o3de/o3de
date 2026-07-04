@@ -14,6 +14,8 @@
 #include <AtomToolsFramework/Document/CreateDocumentDialog.h>
 #include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
+
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -95,6 +97,7 @@ namespace AtomToolsFramework
         }, QKeySequence::Save);
 
         m_actionSaveAsCopy = CreateActionAtPosition(m_menuFile, insertPostion, "Save &As...", [this]() {
+            CommitInProgressEdit();
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
             if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
@@ -110,6 +113,7 @@ namespace AtomToolsFramework
         }, QKeySequence::SaveAs);
 
         m_actionSaveAsChild = CreateActionAtPosition(m_menuFile, insertPostion, "Save As &Child...", [this]() {
+            CommitInProgressEdit();
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
             if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
@@ -187,8 +191,17 @@ namespace AtomToolsFramework
         m_menuView->insertSeparator(insertPostion);
     }
 
+    void AtomToolsDocumentMainWindow::CommitInProgressEdit()
+    {
+        // Clearing focus fires the editor's focus-out, which writes the value (and its undo entry) into the
+        // document so the save below captures the committed data.
+        AzQtComponents::ClearFocusWithin(this);
+    }
+
     bool AtomToolsDocumentMainWindow::SaveDocument(const AZ::Uuid& documentId)
     {
+        CommitInProgressEdit();
+
         AZStd::string documentPath;
         AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         DocumentTypeInfo documentInfo;

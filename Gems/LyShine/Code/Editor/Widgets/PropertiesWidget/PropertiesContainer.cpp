@@ -713,6 +713,9 @@ void PropertiesContainer::CreateActions()
     m_actionToPasteComponents = ComponentHelpers::CreatePasteComponentsAction(this);
     addAction(m_actionToPasteComponents);
 
+    m_actionToDuplicateComponents = ComponentHelpers::CreateDuplicateComponentsAction(this);
+    addAction(m_actionToDuplicateComponents);
+
     UpdateInternalState();
 }
 
@@ -721,6 +724,7 @@ void PropertiesContainer::UpdateActions()
     ComponentHelpers::UpdateRemoveComponentsAction(m_actionToDeleteComponents);
     ComponentHelpers::UpdateCutComponentsAction(m_actionToCutComponents);
     ComponentHelpers::UpdateCopyComponentsAction(m_actionToCopyComponents);
+    ComponentHelpers::UpdateDuplicateComponentsAction(m_actionToDuplicateComponents);
     // The paste components action always remains enabled except for when the context menu is up
     // This is so a paste can be performed after a copy operation was made via the shortcut keys (since we don't know when a copy was performed)
 }

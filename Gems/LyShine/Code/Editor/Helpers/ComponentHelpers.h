@@ -30,6 +30,8 @@ namespace ComponentHelpers
     void UpdateCopyComponentsAction(QAction* action);
     QAction* CreatePasteComponentsAction(QWidget* parent);
     void UpdatePasteComponentsAction(QAction* action);
+    QAction* CreateDuplicateComponentsAction(QWidget* parent);
+    void UpdateDuplicateComponentsAction(QAction* action);
 
     //! Returns whether a list of components can be added to all currently selected entities
     bool CanAddComponentsToSelectedEntities(

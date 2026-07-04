@@ -40,6 +40,7 @@
 #include <GameEngine.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <MainWindow.h>
+#include <Viewport.h>
 #include <QtViewPaneManager.h>
 #include <ToolBox.h>
 #include <ToolsConfigPage.h>
@@ -51,6 +52,7 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
+#include <QApplication>
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
@@ -403,8 +405,25 @@ void EditorActionsHandler::OnActionRegistrationHook()
         
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier, "o3de.action.file.save", actionProperties,
-            [cryEdit = m_cryEditApp]
+            [cryEdit = m_cryEditApp, mainWindow = m_mainWindow]
             {
+                // Step out of any in-progress property field edit (e.g. the Entity Inspector) so its value
+                // and undo entry are committed via the focus-out before the level is saved. Move focus to the
+                // viewport rather than clearing it to nothing: a null focus widget leaves no widget in the main
+                // window holding keyboard focus, so editor shortcuts (e.g. Ctrl+Z) are not delivered until the
+                // user clicks back into the interface. Focusing the viewport both commits the edit and keeps
+                // keyboard focus inside the editor's shortcut scope.
+                if (QWidget* focusWidget = QApplication::focusWidget())
+                {
+                    if (QtViewport* viewport = mainWindow ? mainWindow->GetActiveViewport() : nullptr)
+                    {
+                        viewport->setFocus(Qt::OtherFocusReason);
+                    }
+                    else
+                    {
+                        focusWidget->clearFocus();
+                    }
+                }
                 cryEdit->OnFileSave();
             }
         );

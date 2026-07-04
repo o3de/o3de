@@ -139,6 +139,10 @@ namespace AzToolsFramework
 
             void PopulateRecentMenu();
 
+            // Give the Asset Editor its own Action Manager context so its shortcuts (Ctrl+S / Ctrl+Shift+S) win
+            // over the main Editor's identical ones while focus is inside the pane. See the implementation.
+            void RegisterShortcutActionContext();
+
             void CloseOnNextTick();
 
             AzQtComponents::TabWidget* m_tabs;
@@ -182,6 +186,8 @@ namespace AzToolsFramework
 
             void PopulateGenericAssetTypes();
             void SaveSettings();
+
+            void CommitInProgressEdit();
         };
     } // namespace AssetEditor
 } // namespace AzToolsFramework

@@ -92,6 +92,8 @@ namespace AtomToolsFramework
         void AddDocumentTabBar();
         void UpdateRecentFileMenu();
 
+        void CommitInProgressEdit();
+
         // Return true when save success
         bool SaveDocument(const AZ::Uuid& documentId);
 
