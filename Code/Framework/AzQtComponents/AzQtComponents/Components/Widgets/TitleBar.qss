@@ -84,6 +84,7 @@ AzQtComponents--TabBar AzQtComponents--DockBarButton
     max-width: 14px;
     min-height: 14px;
     max-height: 14px;
+    margin-right: 4px;
 }
 
 QToolButton#minimizeButton,

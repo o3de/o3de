@@ -551,7 +551,7 @@ namespace AzQtComponents
         // Handle tabs shrinking when overflowing
         QSize size = QTabBar::tabSizeHint(index);
 
-        if (m_overflowing == Overflowing && index != currentIndex())
+        if (m_overflowing == Overflowing)
         {
             auto tabWidget = qobject_cast<TabWidget*>(parent());
             if (!tabWidget)
@@ -560,18 +560,26 @@ namespace AzQtComponents
             }
 
             int availableWidth = tabWidget->width() - tabWidget->count() + 1;
-            if (tabWidget->isActionToolBarVisible())
+
+            // Reserve the space taken by the top-right corner widget, which holds the
+            // action toolbar and/or the overflow button
+            if (auto* corner = tabWidget->cornerWidget(Qt::TopRightCorner))
             {
-                auto toolBarContainer = qobject_cast<QWidget*>(tabWidget->actionToolBar()->parent());
-                if (toolBarContainer != nullptr)
-                {
-                    availableWidth -= toolBarContainer->size().width();
-                }
+                availableWidth -= corner->width();
             }
 
-            // The selected tab keeps its full size, the others share the remaining width
-            availableWidth -= tabSizeHint(currentIndex()).width();
-            size.setWidth(availableWidth / (count() - 1));
+            if (index == currentIndex())
+            {
+                // The selected tab keeps its full size, but is never wider than the whole
+                // tab bar region.
+                size.setWidth(qMax(0, qMin(size.width(), availableWidth)));
+            }
+            else
+            {
+                // The other tabs share whatever width is left after the selected tab
+                const int remainingWidth = availableWidth - tabSizeHint(currentIndex()).width();
+                size.setWidth(qMax(0, remainingWidth / (count() - 1)));
+            }
         }
 
         return size;
