@@ -272,15 +272,6 @@ namespace AzQtComponents
                 }
                 break;
             }
-            case QStyle::CT_TabBarTab:
-            {
-                const auto tabSize = TabBar::sizeFromContents(this, type, option, size, widget, m_data->tabWidgetConfig);
-                if (tabSize.isValid())
-                {
-                    return tabSize;
-                }
-                break;
-            }
             case QStyle::CT_HeaderSection:
             {
                 const auto headerSize = TableView::sizeFromContents(this, type, option, size, widget, m_data->tableViewConfig);
@@ -370,24 +361,6 @@ namespace AzQtComponents
                 if (qobject_cast<const QRadioButton*>(widget))
                 {
                     if (RadioButton::drawRadioButtonLabel(this, option, painter, widget, m_data->radioButtonConfig))
-                    {
-                        return;
-                    }
-                }
-            }
-            break;
-
-            case CE_TabBarTabLabel:
-            {
-                if (qobject_cast<const QTabBar*>(widget))
-                {
-                    // Qt lacks a textAlignment variable in QStyleOptionTab, which is used for drawing QTabWidget and QTabBar.
-                    // Text alignment for tab labels is hardcoded to horizontal center. For this reason, there is no way to customize
-                    // text alignment if not creating a new member variable for QStyleOptionTab (or to subclass QStyleOptionTab) on Qt
-                    // side. To avoid doing either, we set a new variable to be used from Style::drawItemText, with a scope limited to
-                    // the drawing of this specific control element (the tab label).
-                    QScopedValueRollback<QVariant> rollbackTabBarTabLabel(m_drawItemTextAlignmentOverride, {(int)(Qt::AlignLeft | Qt::AlignVCenter)});
-                    if (TabBar::drawTabBarTabLabel(this, option, painter, widget, m_data->tabWidgetConfig))
                     {
                         return;
                     }
@@ -687,15 +660,6 @@ namespace AzQtComponents
         }
 
         return QProxyStyle::drawComplexControl(element, option, painter, widget);
-    }
-
-    void Style::drawItemText(QPainter* painter, const QRect& rectangle, int alignment, const QPalette& palette, bool enabled, const QString& text, QPalette::ColorRole textRole) const
-    {
-        if (m_drawItemTextAlignmentOverride.isValid())
-        {
-            alignment = m_drawItemTextAlignmentOverride.value<Qt::Alignment>();
-        }
-        QProxyStyle::drawItemText(painter, rectangle, alignment, palette, enabled, text, textRole);
     }
 
     void Style::drawDragIndicator(const QStyleOption* option, QPainter* painter, const QWidget* widget) const
