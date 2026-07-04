@@ -8,7 +8,6 @@
 #include "AssetDropHelpers.h"
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
-#include <AzCore/Slice/SliceAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <Shine/UiAssetTypes.h>
@@ -50,45 +49,37 @@ namespace AssetDropHelpers
         return mimeData && mimeData->hasFormat(AzToolsFramework::AssetBrowser::AssetBrowserEntry::GetMimeType());
     }
 
-    bool DoesMimeDataContainSliceOrComponentAssets(const QMimeData* mimeData)
+    bool DoesMimeDataContainComponentAssets(const QMimeData* mimeData)
     {
         if (AcceptsMimeType(mimeData))
         {
             ComponentAssetHelpers::ComponentAssetPairs componentAssetPairs;
-            AssetList sliceAssets;
-            DecodeSliceAndComponentAssetsFromMimeData(mimeData, componentAssetPairs, sliceAssets);
+            DecodeComponentAssetsFromMimeData(mimeData, componentAssetPairs);
 
-            return (!componentAssetPairs.empty() || !sliceAssets.empty());
+            return !componentAssetPairs.empty();
         }
 
         return false;
     }
 
-    void DecodeSliceAndComponentAssetsFromMimeData(
-        const QMimeData* mimeData, ComponentAssetHelpers::ComponentAssetPairs& componentAssetPairs, AssetList& sliceAssets)
+    void DecodeComponentAssetsFromMimeData(
+        const QMimeData* mimeData, ComponentAssetHelpers::ComponentAssetPairs& componentAssetPairs)
     {
         ProductAssetList products = GetProductsFromAssetMimeData(mimeData);
 
-        // Look at all products and determine if they have a slice asset or an asset with an associated component
+        // Look at all products and determine if they have an asset with an associated component
         for (const auto* product : products)
         {
-            if (product->GetAssetType() == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
-            {
-                sliceAssets.push_back(product->GetAssetId());
-            }
-            else
-            {
-                bool canCreateComponent = false;
-                AZ::AssetTypeInfoBus::EventResult(
-                    canCreateComponent, product->GetAssetType(), &AZ::AssetTypeInfo::CanCreateComponent, product->GetAssetId());
+            bool canCreateComponent = false;
+            AZ::AssetTypeInfoBus::EventResult(
+                canCreateComponent, product->GetAssetType(), &AZ::AssetTypeInfo::CanCreateComponent, product->GetAssetId());
 
-                AZ::TypeId componentType;
-                AZ::AssetTypeInfoBus::EventResult(componentType, product->GetAssetType(), &AZ::AssetTypeInfo::GetComponentTypeId);
+            AZ::TypeId componentType;
+            AZ::AssetTypeInfoBus::EventResult(componentType, product->GetAssetType(), &AZ::AssetTypeInfo::GetComponentTypeId);
 
-                if (canCreateComponent && !componentType.IsNull())
-                {
-                    componentAssetPairs.push_back(AZStd::make_pair(componentType, product->GetAssetId()));
-                }
+            if (canCreateComponent && !componentType.IsNull())
+            {
+                componentAssetPairs.push_back(AZStd::make_pair(componentType, product->GetAssetId()));
             }
         }
     }

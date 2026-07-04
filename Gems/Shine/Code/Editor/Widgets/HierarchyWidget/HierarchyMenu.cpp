@@ -13,23 +13,19 @@
 #include "Helpers/HierarchyHelpers.h"
 #include "Helpers/QtHelpers.h"
 #include "Helpers/SelectionHelpers.h"
-#include "Helpers/SliceMenuHelpers.h"
 #include "HierarchyItem.h"
 #include "HierarchyWidget.h"
 #include "Widgets/ViewportWidget/ViewportWidget.h"
 #include "Windows/EditorCommon.h"
 #include "Windows/EditorWindow/EditorWindow.h"
+#include "Windows/EditorWindow/UiPrefabManager.h"
 
 #include <AzCore/Math/Vector2.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 
 #include <QAction>
 #include <QKeySequence>
 #include <QPoint>
-
-// Define for enabling/disabling the UI Slice system
-#define ENABLE_UI_SLICE_MENU_ITEMS 1
 
 HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy, size_t showMask, bool addMenuForNewElement, const QPoint* optionalPos)
     : QMenu()
@@ -46,16 +42,6 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy, size_t showMask, bool a
         {
             New_EmptyElement(hierarchy, selectedItems, menu, (showMask & Show::kNew_EmptyElementAtRoot), optionalPos);
         }
-
-        if (showMask & (Show::kNew_InstantiateSlice | Show::kNew_InstantiateSliceAtRoot))
-        {
-            New_ElementFromSlice(hierarchy, selectedItems, menu, (showMask & Show::kNew_InstantiateSliceAtRoot), optionalPos);
-        }
-    }
-
-    if (showMask & (Show::kNewSlice | Show::kPushToSlice))
-    {
-        SliceMenuItems(hierarchy, selectedItems, showMask);
     }
 
     addSeparator();
@@ -82,6 +68,13 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy, size_t showMask, bool a
     if (showMask & Show::kFindElements)
     {
         FindElements(hierarchy, selectedItems);
+    }
+
+    addSeparator();
+
+    if (showMask & Show::kPrefab)
+    {
+        Prefab(hierarchy, selectedItems);
     }
 
     addSeparator();
@@ -196,246 +189,10 @@ void HierarchyMenu::CutCopyPaste(HierarchyWidget* hierarchy, QTreeWidgetItemRawP
     }
 }
 
-void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems, size_t showMask)
-{
-#if ENABLE_UI_SLICE_MENU_ITEMS
-    // Get the EntityId's of the selected elements
-    auto selectedEntities = SelectionHelpers::GetSelectedElementIds(hierarchy, selectedItems, false);
-
-    // Determine if any of the selected entities are in a slice
-    AZ::SliceComponent::EntityAncestorList referenceAncestors;
-
-    AZStd::vector<AZ::SliceComponent::SliceInstanceAddress> sliceInstances;
-    for (const AZ::EntityId& entityId : selectedEntities)
-    {
-        AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-        AzFramework::SliceEntityRequestBus::EventResult(
-            sliceAddress, entityId, &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-        if (sliceAddress.IsValid())
-        {
-            if (sliceInstances.end() == AZStd::find(sliceInstances.begin(), sliceInstances.end(), sliceAddress))
-            {
-                if (sliceInstances.empty())
-                {
-                    sliceAddress.GetReference()->GetInstanceEntityAncestry(entityId, referenceAncestors);
-                }
-
-                sliceInstances.push_back(sliceAddress);
-            }
-        }
-    }
-
-    bool sliceSelected = sliceInstances.size() > 0;
-
-    if (sliceSelected)
-    {
-        if (showMask & Show::kPushToSlice)
-        {
-            // Push slice action currently acts on entities and all descendants, so include those as part of the selection
-            AzToolsFramework::EntityIdSet selectedTransformHierarchyEntities =
-                hierarchy->GetEditorWindow()->GetSliceManager()->GatherEntitiesAndAllDescendents(selectedEntities);
-
-            AzToolsFramework::EntityIdList selectedPushEntities;
-            selectedPushEntities.insert(
-                selectedPushEntities.begin(), selectedTransformHierarchyEntities.begin(), selectedTransformHierarchyEntities.end());
-
-            QAction* action = addAction(QObject::tr("&Push to Slice..."));
-            QObject::connect(
-                action,
-                &QAction::triggered,
-                hierarchy,
-                [hierarchy, selectedPushEntities]
-                {
-                    hierarchy->GetEditorWindow()->GetSliceManager()->PushEntitiesModal(selectedPushEntities, nullptr);
-                });
-        }
-
-        if (showMask & Show::kNewSlice)
-        {
-            QAction* action = addAction("Make Cascaded Slice from Selected Slices && Entities...");
-            QObject::connect(
-                action,
-                &QAction::triggered,
-                hierarchy,
-                [hierarchy]
-                {
-                    hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, true);
-                });
-
-            action = addAction(QObject::tr("Make Detached Slice from Selected Entities..."));
-            QObject::connect(
-                action,
-                &QAction::triggered,
-                hierarchy,
-                [hierarchy]
-                {
-                    hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, false);
-                });
-        }
-
-        if (showMask & Show::kPushToSlice) // use the push to slice flag to show detach since it appears in all the same situations
-        {
-            // Detach slice entity
-            {
-                // Detach entities action currently acts on entities and all descendants, so include those as part of the selection
-                AzToolsFramework::EntityIdSet selectedTransformHierarchyEntities =
-                    hierarchy->GetEditorWindow()->GetSliceManager()->GatherEntitiesAndAllDescendents(selectedEntities);
-
-                AzToolsFramework::EntityIdList selectedDetachEntities;
-                selectedDetachEntities.insert(
-                    selectedDetachEntities.begin(), selectedTransformHierarchyEntities.begin(), selectedTransformHierarchyEntities.end());
-
-                QString detachEntitiesActionText;
-                if (selectedDetachEntities.size() == 1)
-                {
-                    detachEntitiesActionText = QObject::tr("Detach slice entity...");
-                }
-                else
-                {
-                    detachEntitiesActionText = QObject::tr("Detach slice entities...");
-                }
-                QAction* action = addAction(detachEntitiesActionText);
-                QObject::connect(
-                    action,
-                    &QAction::triggered,
-                    hierarchy,
-                    [hierarchy, selectedDetachEntities]
-                    {
-                        hierarchy->GetEditorWindow()->GetSliceManager()->DetachSliceEntities(selectedDetachEntities);
-                        hierarchy->UpdateSliceInfo();
-                    });
-            }
-
-            // Detach slice instance
-            {
-                QString detachSlicesActionText;
-                if (sliceInstances.size() == 1)
-                {
-                    detachSlicesActionText = QObject::tr("Detach slice instance...");
-                }
-                else
-                {
-                    detachSlicesActionText = QObject::tr("Detach slice instances...");
-                }
-                QAction* action = addAction(detachSlicesActionText);
-                QObject::connect(
-                    action,
-                    &QAction::triggered,
-                    hierarchy,
-                    [hierarchy, selectedEntities]
-                    {
-                        hierarchy->GetEditorWindow()->GetSliceManager()->DetachSliceInstances(selectedEntities);
-                        hierarchy->UpdateSliceInfo();
-                    });
-            }
-
-            // Edit slice in new tab
-            {
-                QMenu* menu = addMenu("Edit slice in new tab");
-
-                // Catalog all unique slices to which any of the selected entities are associated (anywhere in their ancestry).
-                // This is used to make a menu allowing any of them to be edited in a new tab
-                AZStd::vector<AZ::Data::AssetId> slicesAddedToMenu;
-                AZ::SliceComponent::EntityAncestorList tempAncestors;
-
-                for (AZ::EntityId entityId : selectedEntities)
-                {
-                    AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-                    AzFramework::SliceEntityRequestBus::EventResult(
-                        sliceAddress, entityId, &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-                    if (sliceAddress.IsValid())
-                    {
-                        tempAncestors.clear();
-                        sliceAddress.GetReference()->GetInstanceEntityAncestry(entityId, tempAncestors);
-
-                        for (const AZ::SliceComponent::Ancestor& ancestor : tempAncestors)
-                        {
-                            const AZ::Data::Asset<AZ::SliceAsset>& sliceAsset = ancestor.m_sliceAddress.GetReference()->GetSliceAsset();
-
-                            // If this slice has not already been added to the menu then add it.
-                            if (slicesAddedToMenu.end() ==
-                                AZStd::find(slicesAddedToMenu.begin(), slicesAddedToMenu.end(), sliceAsset.GetId()))
-                            {
-                                const AZStd::string& assetPath = sliceAsset.GetHint();
-                                slicesAddedToMenu.push_back(sliceAsset.GetId());
-
-                                QAction* action = menu->addAction(assetPath.c_str());
-                                QObject::connect(
-                                    action,
-                                    &QAction::triggered,
-                                    [hierarchy, sliceAsset]
-                                    {
-                                        hierarchy->GetEditorWindow()->EditSliceInNewTab(sliceAsset.GetId());
-                                    });
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        if (showMask & Show::kNewSlice)
-        {
-            QAction* action = addAction(QObject::tr("Make New &Slice from Selection..."));
-            QObject::connect(
-                action,
-                &QAction::triggered,
-                hierarchy,
-                [hierarchy]
-                {
-                    hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, false);
-                });
-
-            if (selectedItems.size() == 0)
-            {
-                action->setEnabled(false);
-            }
-        }
-    }
-#endif
-}
-
 void HierarchyMenu::New_EmptyElement(
     HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems, QMenu* menu, bool addAtRoot, const QPoint* optionalPos)
 {
     menu->addAction(HierarchyHelpers::CreateAddElementAction(hierarchy, selectedItems, addAtRoot, optionalPos));
-}
-
-void HierarchyMenu::New_ElementFromSlice(
-    HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems, QMenu* menu, bool addAtRoot, const QPoint* optionalPos)
-{
-#if ENABLE_UI_SLICE_MENU_ITEMS
-    AZ::Vector2 viewportPosition(-1.0f, -1.0f); // indicates no viewport position specified
-    if (optionalPos)
-    {
-        // Convert position to render viewport coords
-        QPointF scaledPosition = *optionalPos * hierarchy->GetEditorWindow()->GetViewport()->WidgetToViewportFactor();
-        viewportPosition = QtHelpers::QPointFToVector2(scaledPosition);
-    }
-
-    SliceMenuHelpers::CreateInstantiateSliceMenu(hierarchy, selectedItems, menu, addAtRoot, viewportPosition);
-
-    QAction* action = menu->addAction(QObject::tr("Element from Slice &Browser..."));
-    QObject::connect(
-        action,
-        &QAction::triggered,
-        hierarchy,
-        [hierarchy, optionalPos]
-        {
-            AZ::Vector2 viewportPosition(-1.0f, -1.0f); // indicates no viewport position specified
-            if (optionalPos)
-            {
-                // Convert position to render viewport coords
-                QPointF scaledPosition = *optionalPos * hierarchy->GetEditorWindow()->GetViewport()->WidgetToViewportFactor();
-                viewportPosition = QtHelpers::QPointFToVector2(scaledPosition);
-            }
-            hierarchy->GetEditorWindow()->GetSliceManager()->InstantiateSliceUsingBrowser(hierarchy, viewportPosition);
-        });
-#endif
 }
 
 void HierarchyMenu::AddComponents(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems)
@@ -489,6 +246,44 @@ void HierarchyMenu::FindElements(HierarchyWidget* hierarchy, [[maybe_unused]] QT
                 hierarchy->GetEditorWindow()->ShowEntitySearchModal();
             });
         addAction(action);
+    }
+}
+
+void HierarchyMenu::Prefab(HierarchyWidget* hierarchy, QTreeWidgetItemRawPtrQList& selectedItems)
+{
+    bool itemsAreSelected = (!selectedItems.isEmpty());
+
+    // Instantiate UI Prefab
+    {
+        QAction* action = new QAction("Instantiate UI Prefab...", this);
+        QObject::connect(
+            action,
+            &QAction::triggered,
+            hierarchy,
+            [hierarchy]([[maybe_unused]] bool checked)
+            {
+                hierarchy->GetEditorWindow()->GetPrefabManager()->InstantiateUsingBrowser(hierarchy);
+            });
+        addAction(action);
+    }
+
+    // Save as UI Prefab
+    {
+        QAction* action = new QAction("Save Selection as UI Prefab...", this);
+        QObject::connect(
+            action,
+            &QAction::triggered,
+            hierarchy,
+            [hierarchy]([[maybe_unused]] bool checked)
+            {
+                hierarchy->GetEditorWindow()->GetPrefabManager()->CreatePrefabFromSelection(hierarchy);
+            });
+        addAction(action);
+
+        if (!itemsAreSelected)
+        {
+            action->setEnabled(false);
+        }
     }
 }
 

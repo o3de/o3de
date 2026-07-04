@@ -125,8 +125,6 @@ set(FILES
     Editor/Helpers/SelectionHelpers.h
     Editor/Helpers/SerializeHelpers.cpp
     Editor/Helpers/SerializeHelpers.h
-    Editor/Helpers/SliceMenuHelpers.cpp
-    Editor/Helpers/SliceMenuHelpers.h
     Editor/Helpers/ViewportHelpers.cpp
     Editor/Helpers/ViewportHelpers.h
     Editor/ShineEditorSystemComponent.cpp
@@ -147,6 +145,8 @@ set(FILES
     Editor/Toolbar/NewElementToolbarSection.h
     Editor/Toolbar/PreviewToolbar.cpp
     Editor/Toolbar/PreviewToolbar.h
+    Editor/UiEditorEntityCompilation.cpp
+    Editor/UiEditorEntityCompilation.h
     Editor/UiEditorEntityContext.cpp
     Editor/UiEditorEntityContext.h
     Editor/UiEditorEntityContextBus.h
@@ -253,14 +253,12 @@ set(FILES
     Editor/Widgets/ViewportWidget/ViewportWidget.h
     Editor/Windows/EditorCommon.cpp
     Editor/Windows/EditorCommon.h
-    Editor/Windows/EditorWindow/AssetTreeEntry.cpp
-    Editor/Windows/EditorWindow/AssetTreeEntry.h
     Editor/Windows/EditorWindow/EditorMenu.cpp
     Editor/Windows/EditorWindow/EditorWindow.cpp
     Editor/Windows/EditorWindow/EditorWindow.h
     Editor/Windows/EditorWindow/UiCanvasEditor.qrc
-    Editor/Windows/EditorWindow/UiSliceManager.cpp
-    Editor/Windows/EditorWindow/UiSliceManager.h
+    Editor/Windows/EditorWindow/UiPrefabManager.cpp
+    Editor/Windows/EditorWindow/UiPrefabManager.h
     Editor/Windows/PreviewAnimationWindow/PreviewAnimationList.cpp
     Editor/Windows/PreviewAnimationWindow/PreviewAnimationList.h
 )

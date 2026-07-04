@@ -48233,7 +48233,7 @@ An Entity can be selected by using the pick button, or by dragging an Entity fro
     </message>
     <message id="UICUSTOMIMAGEBUS_TOOLTIP">
         <source>UICUSTOMIMAGEBUS_TOOLTIP</source>
-        <translation type="unfinished">An example of a custom UI component. Used in canvases in the LyShineExamples gem</translation>
+        <translation type="unfinished">An example of a custom UI component. Used in canvases in the ShineExamples gem</translation>
     </message>
     <message id="UICUSTOMIMAGEBUS_CATEGORY">
         <source>UICUSTOMIMAGEBUS_CATEGORY</source>
@@ -73938,75 +73938,75 @@ The element is removed from its current parent and added as a child of the new p
     </message>
 </context>
 <context>
-    <name>EBus: LyShineExamplesCppExampleBus</name>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_NAME">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_NAME</source>
+    <name>EBus: ShineExamplesCppExampleBus</name>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_NAME">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_NAME</source>
         <translation type="unfinished">LyShine Cpp Example</translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_TOOLTIP">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_TOOLTIP</source>
-        <translation type="unfinished">An example of creating canvases from C++. Used in canvases in the LyShineExamples gem</translation>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_TOOLTIP">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_TOOLTIP</source>
+        <translation type="unfinished">An example of creating canvases from C++. Used in canvases in the ShineExamples gem</translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_CATEGORY">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_CATEGORY</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_CATEGORY">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_CATEGORY</source>
         <translation type="unfinished">UI/LyShine Examples</translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_NAME">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_NAME</source>
-        <comment>Class/Bus: LyShineExamplesCppExampleBus  Event/Method: CreateCanvas</comment>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_NAME">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_NAME</source>
+        <comment>Class/Bus: ShineExamplesCppExampleBus  Event/Method: CreateCanvas</comment>
         <translation type="unfinished">Create Canvas</translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_TOOLTIP">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_TOOLTIP</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_TOOLTIP">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_TOOLTIP</source>
         <translation type="unfinished">Creates a canvas using C++</translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_CATEGORY">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_CATEGORY</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_CATEGORY">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_CATEGORY</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_OUT_NAME">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_OUT_NAME</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_OUT_NAME">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_OUT_NAME</source>
         <translation></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_OUT_TOOLTIP">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_OUT_TOOLTIP</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_OUT_TOOLTIP">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_OUT_TOOLTIP</source>
         <translation></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_IN_NAME">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_IN_NAME</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_IN_NAME">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_IN_NAME</source>
         <translation></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_IN_TOOLTIP">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_IN_TOOLTIP</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_IN_TOOLTIP">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_CREATECANVAS_IN_TOOLTIP</source>
         <translation></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_NAME">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_NAME</source>
-        <comment>Class/Bus: LyShineExamplesCppExampleBus  Event/Method: DestroyCanvas</comment>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_NAME">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_NAME</source>
+        <comment>Class/Bus: ShineExamplesCppExampleBus  Event/Method: DestroyCanvas</comment>
         <translation type="unfinished">Destroy Canvas</translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_TOOLTIP">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_TOOLTIP</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_TOOLTIP">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_TOOLTIP</source>
         <translation type="unfinished">Destroys a canvas using C++</translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_CATEGORY">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_CATEGORY</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_CATEGORY">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_CATEGORY</source>
         <translation type="unfinished"></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_OUT_NAME">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_OUT_NAME</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_OUT_NAME">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_OUT_NAME</source>
         <translation></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_OUT_TOOLTIP">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_OUT_TOOLTIP</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_OUT_TOOLTIP">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_OUT_TOOLTIP</source>
         <translation></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_IN_NAME">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_IN_NAME</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_IN_NAME">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_IN_NAME</source>
         <translation></translation>
     </message>
-    <message id="LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_IN_TOOLTIP">
-        <source>LYSHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_IN_TOOLTIP</source>
+    <message id="SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_IN_TOOLTIP">
+        <source>SHINEEXAMPLESCPPEXAMPLEBUS_DESTROYCANVAS_IN_TOOLTIP</source>
         <translation></translation>
     </message>
 </context>
@@ -74960,7 +74960,7 @@ The element is removed from its current parent and added as a child of the new p
     </message>
     <message id="UIDYNAMICCONTENTDATABASEBUS_TOOLTIP">
         <source>UIDYNAMICCONTENTDATABASEBUS_TOOLTIP</source>
-        <translation type="unfinished">A simple database interface. Used in canvases that display dynamic content in the LyShineExamples gem</translation>
+        <translation type="unfinished">A simple database interface. Used in canvases that display dynamic content in the ShineExamples gem</translation>
     </message>
     <message id="UIDYNAMICCONTENTDATABASEBUS_CATEGORY">
         <source>UIDYNAMICCONTENTDATABASEBUS_CATEGORY</source>

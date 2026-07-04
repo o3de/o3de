@@ -12,7 +12,7 @@
 #include "Helpers/EntityHelpers.h"
 #include "UiEditorEntityContext.h"
 #include "UiEditorInternalBus.h"
-#include "UiSliceManager.h"
+#include "UiPrefabManager.h"
 #include "Widgets/ViewportWidget/Interaction/ViewportInteraction.h"
 #include "Windows/EditorCommon.h"
 
@@ -38,7 +38,6 @@
 #include <QCursor>
 #endif
 
-class AssetTreeEntry;
 class CanvasSizeToolbarSection;
 class CoordinateSystemToolbarSection;
 class EnterPreviewToolbar;
@@ -66,7 +65,6 @@ class EditorWindow
     , public IEditorNotifyListener
     , public UiEditorChangeNotificationBus::Handler
     , public UiEditorDLLBus::Handler
-    , public UiEditorEntityContextNotificationBus::Handler
     , public UiEditorInternalNotificationBus::Handler
     , public UiEditorInternalRequestBus::Handler
 {
@@ -127,11 +125,6 @@ public: // member functions
     void EntryRemoved(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
     // ~AssetBrowserModelNotificationBus
 
-    // UiEditorEntityContextNotificationBus
-    void OnSliceInstantiated(const AZ::Data::AssetId& sliceAssetId, const AZ::SliceComponent::SliceInstanceAddress& sliceAddress, const AzFramework::SliceInstantiationTicket& ticket) override;
-    void OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAssetId, const AzFramework::SliceInstantiationTicket& ticket) override;
-    // ~UiEditorEntityContextNotificationBus
-        
     // EditorEvents
     void OnEscape() override;
     // ~EditorEvents
@@ -149,6 +142,7 @@ public: // member functions
     HierarchyWidget* GetHierarchy();
     ViewportWidget* GetViewport();
     PropertiesWidget* GetProperties();
+    UiPrefabManager* GetPrefabManager();
     MainToolbar* GetMainToolbar();
     ModeToolbar* GetModeToolbar();
     EnterPreviewToolbar* GetEnterPreviewToolbar();
@@ -162,8 +156,6 @@ public: // member functions
     bool CanExitNow();
 
     UndoStack* GetActiveStack();
-
-    AssetTreeEntry* GetSliceLibraryTree();
 
     //! Returns the current mode of the editor (Edit or Preview)
     UiEditorMode GetEditorMode() { return m_editorMode; }
@@ -185,8 +177,6 @@ public: // member functions
 
     void SaveEditorWindowSettings();
 
-    UiSliceManager* GetSliceManager();
-
     UiEditorEntityContext* GetEntityContext();
 
     void ReplaceEntityContext(UiEditorEntityContext* entityContext);
@@ -194,10 +184,7 @@ public: // member functions
     QMenu* createPopupMenu() override;
     AZ::EntityId GetCanvasForEntityContext(const AzFramework::EntityContextId& contextId);
 
-    //! Open a new tab and instantiate the given slice asset for editing in a special slice editing mode
-    void EditSliceInNewTab(AZ::Data::AssetId sliceAssetId);
-
-    //! Called if an asset has changed and been reloaded (used to detect if slice being edited is different to the one on disk)
+    //! Called if an asset has changed and been reloaded
     void UpdateChangedStatusOnAssetChange(const AzFramework::EntityContextId& contextId, const AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
     //! Called when any entities have been added to or removed from the active canvas
@@ -272,12 +259,6 @@ private: // types
         bool m_canvasChangedAndSaved;
         //! State of the viewport and other panes (zoom, pan, scroll, selection, ...)
         UiCanvasEditState m_canvasEditState;
-        //! This is true when the canvas tab was opened in order to edit a slice
-        bool m_isSliceEditing;
-        //! If m_isSliceEditing is true this is the Asset ID of the slice instance that is being edited
-        AZ::Data::AssetId m_sliceAssetId;
-        //! If m_isSliceEditing is true this is the entityId of the one slice instance that is being edited
-        AZ::EntityId m_sliceEntityId;
     };
 
 private: // member functions
@@ -289,9 +270,6 @@ private: // member functions
     //! Return true when ok.
     //! forceAskingForFilename should only be true for "Save As...", not "Save".
     bool SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceAskingForFilename);
-
-    //! Saves a slice tab to its slice with a quick push
-    bool SaveSlice(UiCanvasMetadata& canvasMetadata);
 
     //! Check whether a canvas save should occur even though there were errors on load
     bool CanSaveWithErrors(const UiCanvasMetadata& canvasMetadata);
@@ -343,7 +321,6 @@ private: // member functions
 
     QAction* CreateSaveCanvasAction(AZ::EntityId canvasEntityId, bool forContextMenu = false);
     QAction* CreateSaveCanvasAsAction(AZ::EntityId canvasEntityId, bool forContextMenu = false);
-    QAction* CreateSaveSliceAction(UiCanvasMetadata *canvasMetadata, bool forContextMenu = false);
     QAction* CreateSaveAllCanvasesAction(bool forContextMenu = false);
     QAction* CreateCloseCanvasAction(AZ::EntityId canvasEntityId, bool forContextMenu = false);
     QAction* CreateCloseAllOtherCanvasesAction(AZ::EntityId canvasEntityId, bool forContextMenu = false);
@@ -353,8 +330,6 @@ private: // member functions
     void RestoreModeSettings(UiEditorMode mode);
 
     int GetCanvasMaxHierarchyDepth(const Shine::EntityArray& childElements);
-
-    void DeleteSliceLibraryTree();
 
     void DestroyCanvas(const UiCanvasMetadata& canvasMetadata);
 
@@ -386,8 +361,6 @@ private: // data
 
     QUndoGroup* m_undoGroup;
 
-    UiSliceManager* m_sliceManager;
-
     AzQtComponents::TabWidget* m_canvasTabWidget;
     QWidget* m_canvasTabSectionWidget;
     HierarchyWidget* m_hierarchy;
@@ -409,9 +382,6 @@ private: // data
     QDockWidget* m_previewAnimationListDockWidget;
 
     UiEditorMode m_editorMode;
-
-    //! This tree caches the folder view of all the slice assets under the slice library path
-    AssetTreeEntry* m_sliceLibraryTree = nullptr;
 
     //! Values for setting up undoable canvas/entity changes
     SerializeHelpers::SerializedEntryList m_preChangeState;
@@ -439,6 +409,8 @@ private: // data
     AZ::EntityId m_activeCanvasEntityId;
 
     int m_newCanvasCount;
+
+    UiPrefabManager m_prefabManager;
 
     AZStd::list<QString> m_errors; // the list of errors that occured while loading a canvas
     AZStd::list<QString> m_warnings; // the list of warnings that occured while loading a canvas

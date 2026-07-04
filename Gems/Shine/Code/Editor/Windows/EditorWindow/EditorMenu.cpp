@@ -23,7 +23,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 #include <Shine/Bus/UiEditorCanvasBus.h>
@@ -142,18 +141,8 @@ void EditorWindow::AddMenu_File()
 
     menu->addSeparator();
 
-    UiCanvasMetadata* canvasMetadata = canvasLoaded ? GetCanvasMetadata(GetCanvas()) : nullptr;
+    [[maybe_unused]] UiCanvasMetadata* canvasMetadata = canvasLoaded ? GetCanvasMetadata(GetCanvas()) : nullptr;
 
-    if (canvasMetadata && canvasMetadata->m_isSliceEditing)
-    {
-        // Save the slice
-        {
-            QAction* action = CreateSaveSliceAction(canvasMetadata);
-            menu->addAction(action);
-            addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
-        }
-    }
-    else
     {
         // Save the canvas
         {
@@ -1196,62 +1185,6 @@ QAction* EditorWindow::CreateSaveCanvasAsAction(AZ::EntityId canvasEntityId, boo
     return action;
 }
 
-QAction* EditorWindow::CreateSaveSliceAction(UiCanvasMetadata* canvasMetadata, bool forContextMenu)
-{
-    // We will never call this function unless canvasMetadata is non null and m_isSliceEditing is true
-    AZ_Assert(
-        canvasMetadata && canvasMetadata->m_isSliceEditing,
-        "CreateSaveSliceAction requires valid canvas metadata and to be in slice editing mode");
-
-    // as a safeguard check that the entity still exists
-    AZ::EntityId sliceEntityId = canvasMetadata->m_sliceEntityId;
-    AZ::Entity* sliceEntity = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(sliceEntity, &AZ::ComponentApplicationBus::Events::FindEntity, sliceEntityId);
-    if (!sliceEntity)
-    {
-        // Slice entity not found, disable the menu item but also change it to indicate the error
-        QAction* action = new QAction(QString("&Save Slice (slice entity not found)"), this);
-        action->setEnabled(false);
-        return action;
-    }
-
-    // get the slice address
-    AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-    AzFramework::SliceEntityRequestBus::EventResult(
-        sliceAddress, canvasMetadata->m_sliceEntityId, &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-    // if isSliceEntity is false then something is wrong. The user could have done a detach slice for example
-    if (!sliceAddress.IsValid() || !sliceAddress.GetReference()->GetSliceAsset())
-    {
-        // Slice entity is no longer a slice instance, disable the menu item but also change it to indicate the error
-        QAction* action = new QAction(QString("&Save Slice (slice entity is no longer an instance)"), this);
-        action->setEnabled(false);
-        return action;
-    }
-
-    AZStd::string canvasDisplayName = canvasMetadata->m_canvasDisplayName;
-
-    QAction* action = new QAction(QString("&Save ") + canvasDisplayName.c_str(), this);
-    if (!forContextMenu)
-    {
-        action->setShortcut(QKeySequence::Save);
-        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    }
-
-    // There should always be a valid path for the slice but if there is not we disable the menu item.
-    action->setEnabled(!canvasDisplayName.empty());
-
-    QObject::connect(
-        action,
-        &QAction::triggered,
-        [this, canvasMetadata]([[maybe_unused]] bool checked)
-        {
-            SaveSlice(*canvasMetadata);
-        });
-
-    return action;
-}
-
 QAction* EditorWindow::CreateSaveAllCanvasesAction([[maybe_unused]] bool forContextMenu)
 {
     QAction* action = new QAction(QString("Save All Canvases"), this);
@@ -1266,14 +1199,7 @@ QAction* EditorWindow::CreateSaveAllCanvasesAction([[maybe_unused]] bool forCont
             for (auto mapItem : m_canvasMetadataMap)
             {
                 auto canvasMetadata = mapItem.second;
-                if (canvasMetadata->m_isSliceEditing)
-                {
-                    saved |= SaveSlice(*canvasMetadata);
-                }
-                else
-                {
-                    saved |= SaveCanvasToXml(*canvasMetadata, false);
-                }
+                saved |= SaveCanvasToXml(*canvasMetadata, false);
             }
 
             if (saved)

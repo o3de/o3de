@@ -197,8 +197,17 @@ void HierarchyWidget::CreateItems(const Shine::EntityArray& elements)
     for (auto& e : elementList)
     {
         AZ::Entity* parentElement = EntityHelpers::GetParentElement(e);
+        if (!parentElement)
+        {
+            AZ_Warning("UI", false, "Skipping element '%s' with no parent in hierarchy", e->GetName().c_str());
+            continue;
+        }
         QTreeWidgetItem* parent = HierarchyHelpers::ElementToItem(this, parentElement, true);
         AZ_Assert(parent, "No parent widget item found for parent entity");
+        if (!parent)
+        {
+            continue;
+        }
 
         int childIndex = -1;
         UiElementBus::EventResult(childIndex, parentElement->GetId(), &UiElementBus::Events::GetIndexOfChild, e);
@@ -252,7 +261,6 @@ void HierarchyWidget::contextMenuEvent(QContextMenuEvent* ev)
         HierarchyMenu contextMenu(
             this,
             (HierarchyMenu::Show::kCutCopyPaste | HierarchyMenu::Show::kNew_EmptyElement | HierarchyMenu::Show::kDeleteElement |
-             HierarchyMenu::Show::kNewSlice | HierarchyMenu::Show::kNew_InstantiateSlice | HierarchyMenu::Show::kPushToSlice |
              HierarchyMenu::Show::kFindElements | HierarchyMenu::Show::kEditorOnly),
             true);
 
@@ -578,7 +586,7 @@ void HierarchyWidget::dropEvent(QDropEvent* ev)
             SignalUserSelectionHasChanged(selectedItems());
         }
     }
-    else if (AssetDropHelpers::DoesMimeDataContainSliceOrComponentAssets(ev->mimeData()))
+    else if (AssetDropHelpers::DoesMimeDataContainComponentAssets(ev->mimeData()))
     {
         DropMimeDataAssetsAtHierarchyPosition(ev->mimeData(), ev->pos());
 
@@ -678,7 +686,7 @@ bool HierarchyWidget::AcceptsMimeData(const QMimeData* mimeData)
         return true;
     }
 
-    return AssetDropHelpers::DoesMimeDataContainSliceOrComponentAssets(mimeData);
+    return AssetDropHelpers::DoesMimeDataContainComponentAssets(mimeData);
 }
 
 void HierarchyWidget::DropMimeDataAssetsAtHierarchyPosition(const QMimeData* mimeData, const QPoint& position)
@@ -720,15 +728,14 @@ void HierarchyWidget::DropMimeDataAssets(
     const QMimeData* mimeData, QTreeWidgetItem* targetWidgetItem, bool onElement, int childIndex, const QPoint* newElementPosition)
 {
     ComponentAssetHelpers::ComponentAssetPairs componentAssetPairs;
-    AssetDropHelpers::AssetList sliceAssets;
-    AssetDropHelpers::DecodeSliceAndComponentAssetsFromMimeData(mimeData, componentAssetPairs, sliceAssets);
+    AssetDropHelpers::DecodeComponentAssetsFromMimeData(mimeData, componentAssetPairs);
 
-    if (componentAssetPairs.empty() && sliceAssets.empty())
+    if (componentAssetPairs.empty())
     {
         return;
     }
 
-    // Change current selection so instantiated slices will be parented correctly
+    // Change current selection so dropped assets will be parented correctly
     if (targetWidgetItem)
     {
         SetUniqueSelectionHighlight(targetWidgetItem);
@@ -736,23 +743,6 @@ void HierarchyWidget::DropMimeDataAssets(
     else
     {
         clearSelection();
-    }
-
-    // Instantiate dropped slices
-    for (const AZ::Data::AssetId& sliceAssetId : sliceAssets)
-    {
-        // Instantiate slice under currently selected parent
-        AZ::Vector2 viewportPosition(-1.0f, -1.0f); // indicates no viewport position specified
-        if (newElementPosition)
-        {
-            viewportPosition = QtHelpers::QPointFToVector2(*newElementPosition);
-        }
-        GetEditorWindow()->GetSliceManager()->InstantiateSlice(sliceAssetId, viewportPosition, childIndex);
-    }
-
-    if (componentAssetPairs.empty())
-    {
-        return;
     }
 
     // Add components to the element being hovered or to a newly created element
@@ -1017,17 +1007,6 @@ void HierarchyWidget::ClearItemBeingHovered()
 
     m_itemBeingHovered->SetMouseIsHovering(false);
     m_itemBeingHovered = nullptr;
-}
-
-void HierarchyWidget::UpdateSliceInfo()
-{
-    // Update the slice information (color, font, tooltip) for all elements.
-    // As a simple way of going through all the HierarchyItem's we use the
-    // EntityHelpers::EntityToHierarchyItemMap
-    for (auto mapItem : m_entityItemMap)
-    {
-        mapItem.second->UpdateSliceInfo();
-    }
 }
 
 void HierarchyWidget::DropMimeDataAssets(

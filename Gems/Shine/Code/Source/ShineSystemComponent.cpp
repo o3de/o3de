@@ -119,9 +119,9 @@ namespace Shine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void ShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-#if !defined(SHINE_BUILDER) && !defined(SHINE_TESTS)
-        required.push_back(AZ_CRC_CE("RPISystem"));
-#endif
+        // RPISystem is only available at runtime (Editor/Game), not in builders or tests.
+        // Use GetDependentServices for soft dependency instead of hard requirement,
+        // since this component is also loaded in AssetBuilder where RPI is not present.
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +129,7 @@ namespace Shine
     {
         dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
         dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
+        dependent.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -193,19 +194,21 @@ namespace Shine
         RegisterComponentTypeForMenuOrdering(UiFlipbookAnimationComponent::RTTI_Type());
 
 #if !defined(SHINE_BUILDER) && !defined(SHINE_TESTS)
-        // Add Shine pass
+        // Add Shine pass — only if the RPI is actually available (not in AssetBuilder context)
         auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-        AZ_Assert(passSystem, "Cannot get the pass system.");
-        passSystem->AddPassCreator(AZ::Name("ShinePass"), &Shine::ShinePass::Create);
-        passSystem->AddPassCreator(AZ::Name("ShineChildPass"), &Shine::ShineChildPass::Create);
-        passSystem->AddPassCreator(AZ::Name("RttChildPass"), &Shine::RttChildPass::Create);
+        if (passSystem)
+        {
+            passSystem->AddPassCreator(AZ::Name("ShinePass"), &Shine::ShinePass::Create);
+            passSystem->AddPassCreator(AZ::Name("ShineChildPass"), &Shine::ShineChildPass::Create);
+            passSystem->AddPassCreator(AZ::Name("RttChildPass"), &Shine::RttChildPass::Create);
 
-        // Setup handler for load pass template mappings
-        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
-        AZ::RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
-        
-        // Register feature processor
-        AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<ShineFeatureProcessor>();
+            // Setup handler for load pass template mappings
+            m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+            AZ::RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
+
+            // Register feature processor
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<ShineFeatureProcessor>();
+        }
 #endif
     }
 
@@ -213,8 +216,12 @@ namespace Shine
     void ShineSystemComponent::Deactivate()
     {
 #if !defined(SHINE_BUILDER) && !defined(SHINE_TESTS)
-        m_loadTemplatesHandler.Disconnect();        
-        AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ShineFeatureProcessor>();
+        m_loadTemplatesHandler.Disconnect();
+        auto* featureProcessorFactory = AZ::RPI::FeatureProcessorFactory::Get();
+        if (featureProcessorFactory)
+        {
+            featureProcessorFactory->UnregisterFeatureProcessor<ShineFeatureProcessor>();
+        }
 #endif
 
         UiSystemBus::Handler::BusDisconnect();
@@ -255,10 +262,10 @@ namespace Shine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::Entity* ShineSystemComponent::GetRootSliceEntity(CanvasAssetHandle* canvas)
+    AZStd::vector<AZ::Entity*>& ShineSystemComponent::GetChildEntities(CanvasAssetHandle* canvas)
     {
         UiCanvasFileObject* canvasFileObject = static_cast<UiCanvasFileObject*>(canvas);
-        return canvasFileObject->m_rootSliceEntity;
+        return canvasFileObject->m_childEntities;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -269,32 +276,10 @@ namespace Shine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::SliceComponent* ShineSystemComponent::GetRootSliceSliceComponent(UiSystemToolsInterface::CanvasAssetHandle* canvas)
+    void ShineSystemComponent::ReplaceChildEntities(UiSystemToolsInterface::CanvasAssetHandle* canvas, AZStd::vector<AZ::Entity*> newEntities)
     {
         UiCanvasFileObject* canvasFileObject = static_cast<UiCanvasFileObject*>(canvas);
-        AZ::Entity* rootSliceEntity = canvasFileObject->m_rootSliceEntity;
-
-        if (rootSliceEntity->GetState() == AZ::Entity::State::Constructed)
-        {
-            rootSliceEntity->Init();
-        }
-
-        AZ::SliceComponent* sliceComponent = rootSliceEntity->FindComponent<AZ::SliceComponent>();
-        return sliceComponent;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void ShineSystemComponent::ReplaceRootSliceSliceComponent(UiSystemToolsInterface::CanvasAssetHandle* canvas, AZ::SliceComponent* newSliceComponent)
-    {
-        UiCanvasFileObject* canvasFileObject = static_cast<UiCanvasFileObject*>(canvas);
-        AZ::Entity* oldRootSliceEntity = canvasFileObject->m_rootSliceEntity;
-        AZ::EntityId idToReuse = oldRootSliceEntity->GetId();
-        
-        AZ::Entity* newRootSliceEntity = aznew AZ::Entity(idToReuse, AZStd::to_string(static_cast<AZ::u64>(idToReuse)).c_str());
-        newRootSliceEntity->AddComponent(newSliceComponent);
-        canvasFileObject->m_rootSliceEntity = newRootSliceEntity;
-
-        delete oldRootSliceEntity;
+        canvasFileObject->m_childEntities = AZStd::move(newEntities);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -308,8 +293,6 @@ namespace Shine
     void ShineSystemComponent::DestroyCanvas(CanvasAssetHandle* canvas)
     {
         UiCanvasFileObject* canvasFileObject = static_cast<UiCanvasFileObject*>(canvas);
-        delete canvasFileObject->m_canvasEntity;
-        delete canvasFileObject->m_rootSliceEntity;
         delete canvasFileObject;
     }
 
@@ -345,12 +328,12 @@ namespace Shine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void ShineSystemComponent::HandleEditorOnlyEntities(const EntityList& exportSliceEntities, const EntityIdSet& editorOnlyEntityIds)
+    void ShineSystemComponent::HandleEditorOnlyEntities(const EntityList& exportEntities, const EntityIdSet& editorOnlyEntityIds)
     {
         AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::EntityId>> parentToChildren;
 
         // Build a map of entity Ids to their parent Ids, for faster lookup during processing.
-        for (AZ::Entity* exportParentEntity : exportSliceEntities)
+        for (AZ::Entity* exportParentEntity : exportEntities)
         {
             UiElementComponent* exportParentComponent = exportParentEntity->FindComponent<UiElementComponent>();
             if (!exportParentComponent)
@@ -368,7 +351,7 @@ namespace Shine
         }
 
         // Remove editor-only entities from parent hierarchy
-        for (AZ::Entity* exportParentEntity : exportSliceEntities)
+        for (AZ::Entity* exportParentEntity : exportEntities)
         {
             for (AZ::EntityId exportChildEntity : parentToChildren[exportParentEntity->GetId()])
             {

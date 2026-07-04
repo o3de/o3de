@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Editor/UiEditorEntityCompilation.cpp
+    Editor/UiEditorEntityCompilation.h
     Pipeline/ShineBuilder/ShineBuilderComponent.h
     Pipeline/ShineBuilder/ShineBuilderComponent.cpp
     Pipeline/ShineBuilder/UiCanvasBuilderWorker.h

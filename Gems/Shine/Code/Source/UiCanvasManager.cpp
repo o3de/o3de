@@ -11,6 +11,7 @@
 #include "UiCanvasFileObject.h"
 #include "UiCanvasComponent.h"
 #include "UiGameEntityContext.h"
+#include "UiPrefabInstance.h"
 
 #include <CryCommon/StlUtils.h>
 #include <Shine/UiSerializeHelpers.h>
@@ -162,7 +163,7 @@ AZ::EntityId UiCanvasManager::CreateCanvas()
     m_loadedCanvases.push_back(canvasComponent);
     SortCanvasesByDrawOrder();
 
-    // The game entity context needs to know its corresponding canvas entity for instantiating dynamic slices
+    // The game entity context needs to know its corresponding canvas entity
     entityContext->SetCanvasEntity(canvasComponent->GetEntityId());
 
     // When we create a canvas in game we want it to have the correct viewport size from the first frame rather
@@ -193,7 +194,7 @@ AZ::EntityId UiCanvasManager::LoadCanvas(const AZStd::string& assetIdPathname)
     }
     else
     {
-        // The game entity context needs to know its corresponding canvas entity for instantiating dynamic slices
+        // The game entity context needs to know its corresponding canvas entity
         entityContext->SetCanvasEntity(canvasEntityId);
 
         UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasLoaded, canvasEntityId);
@@ -344,7 +345,7 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
             AZ::EntityId existingCanvasEntityId = canvasComponent->GetEntityId();
 
             //Before unloading the existing canvas, make a copy of its mapping table
-            AZ::SliceComponent::EntityIdToEntityIdMap existingRemapTable = canvasComponent->GetEditorToGameEntityIdMap();
+            AZStd::unordered_map<AZ::EntityId, AZ::EntityId> existingRemapTable = canvasComponent->GetEditorToGameEntityIdMap();
 
             // unload the canvas, just deleting the canvas entity does this
             AZ::Entity* existingCanvasEntity = canvasComponent->GetEntity();
@@ -365,7 +366,7 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
             }
             else
             {
-                // The game entity context needs to know its corresponding canvas entity for instantiating dynamic slices
+                // The game entity context needs to know its corresponding canvas entity
                 entityContext->SetCanvasEntity(newCanvasComponent->GetEntityId());
                 reloadedCanvases.push_back(newCanvasComponent);
             }
@@ -417,9 +418,10 @@ AZ::EntityId UiCanvasManager::ReloadCanvasFromXml(const AZStd::string& xmlString
 {
     // Load new canvas from xml
     AZ::IO::MemoryStream memoryStream(xmlString.c_str(), xmlString.size());
-    AZ::Entity* rootSliceEntity = nullptr;
-    AZ::Entity* newCanvasEntity = UiCanvasFileObject::LoadCanvasEntitiesFromStream(memoryStream, rootSliceEntity);
-    if (newCanvasEntity && rootSliceEntity)
+    AZStd::vector<AZ::Entity*> childEntities;
+    AZStd::vector<UiPrefabInstance> prefabInstances;
+    AZ::Entity* newCanvasEntity = UiCanvasFileObject::LoadCanvasEntitiesFromStream(memoryStream, childEntities, prefabInstances);
+    if (newCanvasEntity)
     {
         // Find the old canvas to replace
         UiCanvasComponent* oldCanvasComponent = nullptr;
@@ -444,7 +446,7 @@ AZ::EntityId UiCanvasManager::ReloadCanvasFromXml(const AZStd::string& xmlString
 
             // Complete initialization of new canvas. We assume this is for editor
             UiCanvasComponent* newCanvasComponent = UiCanvasComponent::FixupReloadedCanvasForEditorInternal(
-                    newCanvasEntity, rootSliceEntity, entityContext, oldCanvasId, oldPathname);
+                    newCanvasEntity, childEntities, entityContext, oldCanvasId, oldPathname);
 
             newCanvasComponent->SetCanvasToViewportMatrix(oldCanvasToViewportMatrix);
 
@@ -907,7 +909,7 @@ bool UiCanvasManager::HandleInputEventForInWorldCanvases(const AzFramework::Inpu
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::EntityId UiCanvasManager::LoadCanvasInternal(const AZStd::string& assetIdPathname, bool forEditor, const AZStd::string& fullSourceAssetPathname, UiEntityContext* entityContext,
-    const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable, AZ::EntityId previousCanvasId)
+    const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* previousRemapTable, AZ::EntityId previousCanvasId)
 {
     // Fix up user defined asset path for runtime. For editor, the asset path should already be valid
     AZStd::string assetIdPath = forEditor ? assetIdPathname : GetAssePathFromUserDefinedPath(assetIdPathname);

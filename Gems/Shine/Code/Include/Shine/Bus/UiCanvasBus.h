@@ -105,7 +105,7 @@ public: // member functions
     virtual bool SaveToXml(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname) = 0;
 
     //! Initialize a set of entities that have been added to the canvas
-    //! Used when instantiating a slice or for undo/redo, copy/paste
+    //! Used for undo/redo, copy/paste
     //! \param topLevelEntities - The elements that were created
     //! \param makeUniqueNamesAndIds If false the entity names and ElementIds in the string are kept, else unique ones are generated
     //! \param insertionPoint The parent element for the created elements, if nullptr the root element is the parent
@@ -118,7 +118,7 @@ public: // member functions
     virtual void AddElement(AZ::Entity* element, AZ::Entity* parent, AZ::Entity* insertBefore) = 0;
 
     //! Go through all elements in the canvas and reinitialize them
-    //! This is done whenever a slice asset changes and the entity context is rebuilt from the root slice asset
+    //! This is done whenever the entity context is rebuilt
     virtual void ReinitializeElements() = 0;
 
     //! Save this canvas to an XML string

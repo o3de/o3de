@@ -274,7 +274,7 @@ Shine::EntityArray UiElementComponent::GetChildElements()
     children.reserve(numChildren);
 
     // This is one of the rare functions that needs to work before FixupPostLoad has been called because it is called
-    // from OnSliceInstantiated, so only use m_childElementComponents if it is setup
+    // from entity loading, so only use m_childElementComponents if it is setup
     if (AreChildPointersValid())
     {
         for (int i = 0; i < numChildren; ++i)
@@ -321,7 +321,11 @@ AZ::Entity* UiElementComponent::CreateChildElement(const Shine::NameType& name)
     UiEntityContextRequestBus::EventResult(child, contextId, &UiEntityContextRequestBus::Events::CreateUiEntity, name.c_str());
     AZ_Assert(child, "Failed to create child entity");
 
-    child->Deactivate();    // deactivate so that we can add components
+    // Ensure entity is in a state where we can add components
+    if (child->GetState() == AZ::Entity::State::Active)
+    {
+        child->Deactivate();
+    }
 
     UiElementComponent* elementComponent = child->CreateComponent<UiElementComponent>();
     AZ_Assert(elementComponent, "Failed to create UiElementComponent");
@@ -330,6 +334,10 @@ AZ::Entity* UiElementComponent::CreateChildElement(const Shine::NameType& name)
     elementComponent->SetParentReferences(m_entity, this);
     elementComponent->m_elementId = m_canvas->GenerateId();
 
+    if (child->GetState() == AZ::Entity::State::Constructed)
+    {
+        child->Init();
+    }
     child->Activate();      // re-activate
 
     if (AreChildPointersValid())    // must test before m_childEntityIdOrder.push_back
@@ -1257,10 +1265,10 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
         AZ::ComponentApplicationBus::BroadcastResult(childEntity, &AZ::ComponentApplicationBus::Events::FindEntity, child.m_entityId);
         if (!childEntity)
         {
-            // with slices it is possible for users to get themselves into situations where a child no
+            // it is possible for users to get themselves into situations where a child no
             // longer exists, we should report an error in this case rather than asserting
             AZ_Error("UI", false, "Child element with Entity ID %llu no longer exists. Data will be lost.", child);
-            // This case could happen if a slice asset has been deleted. We should try to continue and load the
+            // This case could happen if a referenced entity has been deleted. We should try to continue and load the
             // canvas with errors.
             missingChildren.push_back(child);
             continue;
@@ -1269,7 +1277,7 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
         UiElementComponent* elementComponent = childEntity->FindComponent<UiElementComponent>();
         if (!elementComponent)
         {
-            // with slices it is possible for users to get themselves into situations where a child no
+            // it is possible for users to get themselves into situations where a child no
             // longer has an element component. In this case report an error and fail to load the data but do not
             // crash.
             AZ_Error("UI", false, "Child element with Entity ID %llu no longer has a UiElementComponent. Data cannot be loaded.", child);
@@ -1284,7 +1292,7 @@ bool UiElementComponent::FixupPostLoad(AZ::Entity* entity, UiCanvasComponent* ca
     }
 
     // If there were any missing children remove them from the m_childEntityIdOrder list
-    // This is recovery code for the case that a slice asset that we were using has been removed.
+    // This is recovery code for the case that a referenced entity has been removed.
     for (auto child : missingChildren)
     {
         stl::find_and_erase(m_childEntityIdOrder, child);
@@ -1357,15 +1365,13 @@ void UiElementComponent::Reflect(AZ::ReflectContext* context)
 
             editInfo->DataElement("String", &UiElementComponent::m_elementId, "Id",
                 "This read-only ID is used to reference the element from FlowGraph")
-                ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable);
+                ->Attribute(AZ::Edit::Attributes::ReadOnly, true);
 
             editInfo->DataElement(0, &UiElementComponent::m_isEnabled, "Start enabled",
                 "Determines whether the element is enabled upon creation.\n"
                 "If an element is not enabled, neither it nor any of its children are drawn or interactive.");
 
             // These are not visible in the PropertyGrid since they are managed through the Hierarchy Pane
-            // We do want to be able to push them to a slice though.
             editInfo->DataElement(0, &UiElementComponent::m_isVisibleInEditor, "IsVisibleInEditor", "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide);
             editInfo->DataElement(0, &UiElementComponent::m_isSelectableInEditor, "IsSelectableInEditor", "")
@@ -1804,7 +1810,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
             else
             {
                 // index is off the end of m_childEntityIdOrder, this can happen because
-                // elements could be been removed from the slice. But since this override has changed
+                // elements could have been removed. But since this override has changed
                 // the entityId we do not want to remove it. So add at end.
                 m_childEntityIdOrder.push_back({elementChanged.second, m_childEntityIdOrder.size()});
             }
@@ -1814,7 +1820,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
         AZStd::sort(elementsAdded.begin(), elementsAdded.end());
         for (auto& elementAdded : elementsAdded)
         {
-            // elements could have been added or removed in the slice so we don't require that there must be an element 3
+            // elements could have been added or removed so we don't require that there must be an element 3
             // to add element 4, if not we just add it at the end.
             m_childEntityIdOrder.push_back({elementAdded.second, m_childEntityIdOrder.size()});
         }
@@ -1824,7 +1830,7 @@ void UiElementComponent::OnPatchEnd(const AZ::DataPatchNodeInfo& patchInfo)
     // patching to maintain a consecutive set of sort indices
 
     // This will sort all the entity order entries by sort index (primary) and entity id (secondary) which should never result in any collisions
-    // This is used since slice data patching may create duplicate entries for the same sort index, missing indices and the like.
+    // This is used since data patching may create duplicate entries for the same sort index, missing indices and the like.
     // It should never result in multiple entity id entries since the serialization of this data uses a persistent id which is the entity id
     int numChildren = static_cast<int>(m_childEntityIdOrder.size());
     if (numChildren > 0)

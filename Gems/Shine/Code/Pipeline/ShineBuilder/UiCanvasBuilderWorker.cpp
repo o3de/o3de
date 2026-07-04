@@ -7,22 +7,22 @@
  */
 
 #include <Pipeline/ShineBuilder/UiCanvasBuilderWorker.h>
+#include <Source/UiCanvasFileObject.h>
 
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/IO/IOUtils.h>
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/Slice/SliceAsset.h>
-#include <AzCore/Slice/SliceAssetHandler.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
-#include <AzToolsFramework/Slice/SliceCompilation.h>
+#include <AzToolsFramework/Prefab/Spawnable/EditorOnlyEntityHandler/UiEditorOnlyEntityHandler.h>
+
+#include <Editor/UiEditorEntityCompilation.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <Shine/UiAssetTypes.h>
 #include <LmbrCentral/Rendering/TextureAsset.h>
@@ -31,7 +31,7 @@
 
 namespace Shine
 {
-    [[maybe_unused]] static const char* const s_uiSliceBuilder = "UiSliceBuilder";
+    [[maybe_unused]] static const char* const s_uiCanvasBuilder = "UiCanvasBuilder";
 
     void UiCanvasBuilderWorker::ShutDown()
     {
@@ -58,42 +58,28 @@ namespace Shine
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        AZ_TracePrintf(s_uiSliceBuilder, "CreateJobs for UI canvas \"%s\"\n", fullPath.c_str());
+        AZ_TracePrintf(s_uiCanvasBuilder, "CreateJobs for UI canvas \"%s\"\n", fullPath.c_str());
 
         // Open the source canvas file
         AZ::IO::FileIOStream stream(fullPath.c_str(), AZ::IO::OpenMode::ModeRead);
         if (!AZ::IO::RetryOpenStream(stream))
         {
-            AZ_Warning(s_uiSliceBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.c_str());
+            AZ_Warning(s_uiCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.c_str());
             return;
         }
 
-        // Asset filter always returns false to prevent parsing dependencies, but makes note of the slice dependencies
-        auto assetFilter = [&response](const AZ::Data::AssetFilterInfo& filterInfo)
+        // Asset filter returns false to prevent loading assets during deserialization
+        auto assetFilter = [](const AZ::Data::AssetFilterInfo&)
         {
-            if (filterInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
-            {
-                bool isSliceDependency = (filterInfo.m_loadBehavior != AZ::Data::AssetLoadBehavior::NoLoad);
-
-                if (isSliceDependency)
-                {
-                    AssetBuilderSDK::SourceFileDependency dependency;
-                    dependency.m_sourceFileDependencyUUID = filterInfo.m_assetId.m_guid;
-
-                    response.m_sourceFileDependencyList.push_back(dependency);
-                }
-            }
-
             return false;
         };
 
-        // Serialize in the canvas from the stream. This uses the ShineSystemComponent to do it because
-        // it does some complex support for old canvas formats
+        // Serialize in the canvas from the stream
         UiSystemToolsInterface::CanvasAssetHandle* canvasAsset = nullptr;
         UiSystemToolsBus::BroadcastResult(canvasAsset, &UiSystemToolsInterface::LoadCanvasFromStream, stream, AZ::ObjectStream::FilterDescriptor(assetFilter, AZ::ObjectStream::FilterFlags::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
         if (!canvasAsset)
         {
-            AZ_Error(s_uiSliceBuilder, false, "Compiling UI canvas \"%s\" failed to load canvas from stream.", fullPath.c_str());
+            AZ_Error(s_uiCanvasBuilder, false, "Compiling UI canvas \"%s\" failed to load canvas from stream.", fullPath.c_str());
             return;
         }
 
@@ -104,12 +90,12 @@ namespace Shine
         // i.e. missing assets or serialization errors.
         if (assertAndErrorAbsorber.GetErrorCount() > 0)
         {
-            AZ_Error(s_uiSliceBuilder, false, "Compiling UI canvas \"%s\" failed due to errors loading editor UI canvas.", fullPath.c_str());
+            AZ_Error(s_uiCanvasBuilder, false, "Compiling UI canvas \"%s\" failed due to errors loading editor UI canvas.", fullPath.c_str());
             UiSystemToolsBus::Broadcast(&UiSystemToolsInterface::DestroyCanvas, canvasAsset);
             return;
         }
 
-        const char* compilerVersion = "4";
+        const char* compilerVersion = "6";
         for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
         {
             AssetBuilderSDK::JobDescriptor jobDescriptor;
@@ -117,7 +103,7 @@ namespace Shine
             jobDescriptor.m_critical = true;
             jobDescriptor.m_jobKey = "UI Canvas";
             jobDescriptor.SetPlatformIdentifier(info.m_identifier.c_str());
-            jobDescriptor.m_additionalFingerprintInfo = AZStd::string(compilerVersion).append(azrtti_typeid<AZ::SliceAsset>().ToString<AZStd::string>());
+            jobDescriptor.m_additionalFingerprintInfo = AZStd::string(compilerVersion);
 
             response.m_createJobOutputs.push_back(jobDescriptor);
         }
@@ -130,8 +116,7 @@ namespace Shine
     void UiCanvasBuilderWorker::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
     {
         // .uicanvas files are converted as they are copied to the cache
-        // a) to flatten all prefab instances
-        // b) to replace any editor components with runtime components
+        // to replace any editor components with runtime components
 
         // Check for shutdown
         if (m_isShuttingDown)
@@ -150,13 +135,13 @@ namespace Shine
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
         AZ_TraceContext("Source", fullPath.c_str());
-        AZ_TracePrintf(s_uiSliceBuilder, "Processing UI canvas\n");
+        AZ_TracePrintf(s_uiCanvasBuilder, "Processing UI canvas\n");
 
         // Open the source canvas file
         AZ::IO::FileIOStream stream(fullPath.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary);
         if (!AZ::IO::RetryOpenStream(stream))
         {
-            AZ_Warning(s_uiSliceBuilder, false, "Compiling UI canvas failed because source file could not be opened.");
+            AZ_Warning(s_uiCanvasBuilder, false, "Compiling UI canvas failed because source file could not be opened.");
             return;
         }
 
@@ -193,11 +178,11 @@ namespace Shine
                 // switch them back after we write the file so that the source canvas entity gets freed.
                 UiSystemToolsBus::Broadcast(&UiSystemToolsInterface::ReplaceCanvasEntity, canvasAsset, sourceCanvasEntity);
 
-                AZ_TracePrintf(s_uiSliceBuilder, "Output file %s\n", outputPath.c_str());
+                AZ_TracePrintf(s_uiCanvasBuilder, "Output file %s\n", outputPath.c_str());
             }
             else
             {
-                AZ_Error(s_uiSliceBuilder, false, "Failed to open output file %s", outputPath.c_str());
+                AZ_Error(s_uiCanvasBuilder, false, "Failed to open output file %s", outputPath.c_str());
                 return;
             }
 
@@ -212,7 +197,7 @@ namespace Shine
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
 
-        AZ_TracePrintf(s_uiSliceBuilder, "Finished processing uicanvas\n");
+        AZ_TracePrintf(s_uiCanvasBuilder, "Finished processing uicanvas\n");
     }
 
     bool UiCanvasBuilderWorker::ProcessUiCanvasAndGetDependencies(AZ::IO::GenericStream& stream, AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencies, AssetBuilderSDK::ProductPathDependencySet& productPathDependencySet,
@@ -220,13 +205,12 @@ namespace Shine
     {
         AssetBuilderSDK::AssertAndErrorAbsorber assertAndErrorAbsorber(true);
 
-        // Serialize in the canvas from the stream. This uses the ShineSystemComponent to do it because
-        // it does some complex support for old canvas formats
+        // Load the v3 canvas from the stream
         canvasAsset = nullptr;
-        UiSystemToolsBus::BroadcastResult(canvasAsset, &UiSystemToolsInterface::LoadCanvasFromStream, stream, AZ::ObjectStream::FilterDescriptor(&AZ::Data::AssetFilterSourceSlicesOnly, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+        UiSystemToolsBus::BroadcastResult(canvasAsset, &UiSystemToolsInterface::LoadCanvasFromStream, stream, AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
         if (!canvasAsset)
         {
-            AZ_Error(s_uiSliceBuilder, false, "Compiling UI canvas failed to load canvas from stream.");
+            AZ_Error(s_uiCanvasBuilder, false, "Compiling UI canvas failed to load canvas from stream.");
             return false;
         }
 
@@ -234,20 +218,9 @@ namespace Shine
         AZ::Data::AssetManager::Instance().DispatchEvents();
 
         // Fail gracefully if any errors occurred while serializing in the editor UI canvas.
-        // i.e. missing assets or serialization errors.
         if (assertAndErrorAbsorber.GetErrorCount() > 0)
         {
-            AZ_Error(s_uiSliceBuilder, false, "Compiling UI canvas failed due to errors loading editor UI canvas.");
-            return false;
-        }
-
-        // Get the prefab component from the canvas
-        AZ::Entity* canvasSliceEntity = nullptr;
-        UiSystemToolsBus::BroadcastResult(canvasSliceEntity, &UiSystemToolsInterface::GetRootSliceEntity, canvasAsset);
-
-        if (!canvasSliceEntity)
-        {
-            AZ_Error(s_uiSliceBuilder, false, "Compiling UI canvas failed to find the root slice entity.");
+            AZ_Error(s_uiCanvasBuilder, false, "Compiling UI canvas failed due to errors loading editor UI canvas.");
             return false;
         }
 
@@ -255,63 +228,25 @@ namespace Shine
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!context)
         {
-            AZ_Error(s_uiSliceBuilder, context, "Unable to obtain serialize context");
+            AZ_Error(s_uiCanvasBuilder, context, "Unable to obtain serialize context");
             return false;
         }
 
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-        // Save the canvas slice entity into a memory buffer, then hand ownership of the buffer to assetDataStream
-        {
-            AZStd::vector<AZ::u8> prefabBuffer;
-            AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> prefabStream(&prefabBuffer);
-            if (!AZ::Utils::SaveObjectToStream<AZ::Entity>(prefabStream, AZ::ObjectStream::ST_XML, canvasSliceEntity))
-            {
-                AZ_Error(s_uiSliceBuilder, false, "Compiling UI canvas failed due to errors serializing editor UI canvas.");
-                return false;
-            }
-
-            assetDataStream->Open(AZStd::move(prefabBuffer));
-        }
-
-        AZ::Data::Asset<AZ::SliceAsset> sourceSliceAsset;
-        sourceSliceAsset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-        AZ::SliceAssetHandler assetHandler(context);
-
-        if (assetHandler.LoadAssetData(sourceSliceAsset, assetDataStream, &AZ::Data::AssetFilterSourceSlicesOnly) !=
-            AZ::Data::AssetHandler::LoadResult::LoadComplete)
-        {
-            AZ_Error(s_uiSliceBuilder, false, "Failed to load the serialized Slice Asset.");
-            return false;
-        }
-
-        // Flush sourceSliceAsset manager events to ensure no sourceSliceAsset references are held by closures queued on Ebuses.
-        AZ::Data::AssetManager::Instance().DispatchEvents();
-
-        // Fail gracefully if any errors occurred while serializing in the editor UI canvas.
-        // i.e. missing assets or serialization errors.
-        if (assertAndErrorAbsorber.GetErrorCount() > 0)
-        {
-            AZ_Error(s_uiSliceBuilder, false, "Compiling UI canvas failed due to errors deserializing editor UI canvas.");
-            return false;
-        }
+        // Get the child entities from the canvas
+        AZStd::vector<AZ::Entity*> childEntities;
+        UiSystemToolsBus::BroadcastResult(childEntities, &UiSystemToolsInterface::GetChildEntities, canvasAsset);
 
         // Emulate client flags.
         AZ::PlatformTagSet platformTags = { AZ_CRC_CE("renderer") };
 
-        // Compile the source slice into the runtime slice (with runtime components).
-        AzToolsFramework::UiEditorOnlyEntityHandler uiEditorOnlyEntityHandler;
-        AzToolsFramework::EditorOnlyEntityHandlers handlers =
-        {
-            &uiEditorOnlyEntityHandler,
-        };
+        // Compile editor entities to runtime entities.
+        AzToolsFramework::Prefab::PrefabConversionUtils::UiEditorOnlyEntityHandler uiEditorOnlyEntityHandler;
+        Shine::EditorOnlyEntityHandlers handlers = { &uiEditorOnlyEntityHandler };
+        auto compilationResult = Shine::CompileEditorEntities(childEntities, platformTags, *context, handlers);
 
-        // Get the prefab component from the prefab sourceSliceAsset
-        AzToolsFramework::SliceCompilationResult sliceCompilationResult = AzToolsFramework::CompileEditorSlice(sourceSliceAsset, platformTags, *context, handlers);
-
-        if (!sliceCompilationResult)
+        if (!compilationResult)
         {
-            AZ_Error(s_uiSliceBuilder, false, "Failed to export entities for runtime:\n%s", sliceCompilationResult.GetError().c_str());
+            AZ_Error(s_uiCanvasBuilder, false, "Failed to export entities for runtime:\n%s", compilationResult.GetError().c_str());
             return false;
         }
 
@@ -321,11 +256,11 @@ namespace Shine
 
         if (!sourceCanvasEntity)
         {
-            AZ_Error(s_uiSliceBuilder, false, "Compiling UI canvas failed to find the canvas entity.");
+            AZ_Error(s_uiCanvasBuilder, false, "Compiling UI canvas failed to find the canvas entity.");
             return false;
         }
 
-        // create a new canvas entity that will contain the game components rather than editor components
+        // Create a new canvas entity that will contain the game components rather than editor components
         exportCanvasEntity = AZ::Entity{ sourceCanvasEntity->GetName() };
         exportCanvasEntity.SetId(sourceCanvasEntity->GetId());
 
@@ -349,23 +284,25 @@ namespace Shine
             }
             else
             {
-                // The component is already runtime-ready. I.e. it is not an editor component.
-                // Clone the component and add it to the export entity
+                // The component is already runtime-ready. Clone and add to export entity
                 AZ::Component* clonedComponent = context->CloneObject(canvasEntityComponent);
                 exportCanvasEntity.AddComponent(clonedComponent);
             }
         }
 
-        AZ::Data::Asset<AZ::SliceAsset> exportSliceAsset = sliceCompilationResult.GetValue();
-        AZ::Entity* exportSliceAssetEntity = exportSliceAsset.Get()->GetEntity();
-        AZ::SliceComponent* exportSliceComponent = exportSliceAssetEntity->FindComponent<AZ::SliceComponent>();
-        exportSliceAssetEntity->RemoveComponent(exportSliceComponent);
+        AZStd::vector<AZ::Entity*> compiledEntities = compilationResult.TakeValue();
 
-        UiSystemToolsBus::Broadcast(&UiSystemToolsInterface::ReplaceRootSliceSliceComponent, canvasAsset, exportSliceComponent);
+        // Delete the original child entities before replacing
+        for (auto* entity : childEntities)
+        {
+            delete entity;
+        }
+
+        // Replace the canvas child entities with the compiled runtime entities
+        UiSystemToolsBus::Broadcast(&UiSystemToolsInterface::ReplaceChildEntities, canvasAsset, AZStd::move(compiledEntities));
         UiSystemToolsBus::Broadcast(&UiSystemToolsInterface::ReplaceCanvasEntity, canvasAsset, &exportCanvasEntity);
 
         // Now that the runtime canvas is built, go through and find any asset references.
-        // Both the canvas entity and the slice component can have asset references.
         auto callback = [](
             const AZ::SerializeContext& serializeContext,
             void* instancePointer,
@@ -401,7 +338,14 @@ namespace Shine
         };
 
         AssetBuilderSDK::GatherProductDependencies(*context, &exportCanvasEntity, productDependencies, productPathDependencySet, callback);
-        AssetBuilderSDK::GatherProductDependencies(*context, exportSliceComponent, productDependencies, productPathDependencySet, callback);
+
+        // Gather dependencies from each compiled child entity
+        AZStd::vector<AZ::Entity*> finalChildEntities;
+        UiSystemToolsBus::BroadcastResult(finalChildEntities, &UiSystemToolsInterface::GetChildEntities, canvasAsset);
+        for (auto* entity : finalChildEntities)
+        {
+            AssetBuilderSDK::GatherProductDependencies(*context, entity, productDependencies, productPathDependencySet, callback);
+        }
 
         return true;
     }

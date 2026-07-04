@@ -8,11 +8,9 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/containers/list.h>
-#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <Shine/Bus/UiTransform2dBus.h>
 
@@ -85,10 +83,7 @@ public:
     AZ::EntityId GetPreMoveParentId();
     int GetPreMoveChildRow();
 
-    void ReplaceElement(const AZStd::string& buffer, const AZStd::unordered_set<AZ::Data::AssetId>& referencedSliceAssets);
-
-    //! Update the visual look of the element to show slice information
-    void UpdateSliceInfo();
+    void ReplaceElement(const AZStd::string& buffer);
 
     //! Update the visual look of the element to show whether it's editor only
     void UpdateEditorOnlyInfo();

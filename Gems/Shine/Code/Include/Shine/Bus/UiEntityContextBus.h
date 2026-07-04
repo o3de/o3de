@@ -11,7 +11,6 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/ObjectStream.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/EntityContext.h>
@@ -74,11 +73,8 @@ public:
     //! Fired when the context is being reset.
     virtual void OnContextReset() {}
 
-    //! Fired when a slice has been successfully instantiated.
-    virtual void OnSliceInstantiated(const AZ::Data::AssetId& /*sliceAssetId*/, const AZ::SliceComponent::SliceInstanceAddress& /*sliceAddress*/, const AzFramework::SliceInstantiationTicket& /*ticket*/) {}
-
-    //! Fired when a slice has failed to instantiate.
-    virtual void OnSliceInstantiationFailed(const AZ::Data::AssetId& /*sliceAssetId*/, const AzFramework::SliceInstantiationTicket& /*ticket*/) {}
+    //! Fired when a prefab has been successfully loaded and its entities instantiated.
+    virtual void OnPrefabEntitiesLoaded(const AZStd::vector<AZ::EntityId>& /*entityIds*/) {}
 
     //! Fired when the entity stream has been successfully loaded.
     virtual void OnEntityStreamLoadSuccess() {}

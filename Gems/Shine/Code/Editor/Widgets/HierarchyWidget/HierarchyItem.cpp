@@ -13,7 +13,6 @@
 #include "Windows/EditorCommon.h"
 #include "Windows/EditorWindow/EditorWindow.h"
 
-#include <AzCore/Asset/AssetManager.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 #include <Shine/Bus/UiCanvasBus.h>
 #include <Shine/Bus/UiEditorBus.h>
@@ -130,7 +129,6 @@ HierarchyItem::HierarchyItem(
         setFlags(flags() | Qt::ItemIsEditable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled);
 
         UpdateIcon();
-        UpdateSliceInfo();
         UpdateEditorOnlyInfo();
     }
 }
@@ -346,7 +344,7 @@ int HierarchyItem::GetPreMoveChildRow()
     return m_preMoveChildRow;
 }
 
-void HierarchyItem::ReplaceElement(const AZStd::string& xml, const AZStd::unordered_set<AZ::Data::AssetId>& referencedSliceAssets)
+void HierarchyItem::ReplaceElement(const AZStd::string& xml)
 {
     AZ_Assert(!xml.empty(), "XML is empty");
 
@@ -377,14 +375,6 @@ void HierarchyItem::ReplaceElement(const AZStd::string& xml, const AZStd::unorde
         }
     }
 
-    // If restoring to a slice, keep a reference to the slice asset so it isn't released when the entity
-    // is deleted, only to immediately reload upon restoring.
-    AZStd::vector<AZ::Data::Asset<AZ::SliceAsset>> preservedAssetsRefs;
-    for (auto assetId : referencedSliceAssets)
-    {
-        preservedAssetsRefs.push_back(AZ::Data::AssetManager::Instance().FindAsset(assetId, AZ::Data::AssetLoadBehavior::Default));
-    }
-
     // Discard the old element.
     DeleteElement();
 
@@ -394,75 +384,6 @@ void HierarchyItem::ReplaceElement(const AZStd::string& xml, const AZStd::unorde
 
     // Update any visual information that may have changed with this element or any of its descendants
     UpdateEditorOnlyInfoRecursive();
-}
-
-void HierarchyItem::UpdateSliceInfo()
-{
-    // This is deliberately slightly different to the blue color used for hover, so that we can still see a change on hover
-    static const QColor sliceForegroundColor(117, 156, 254);
-
-    // determine if entity belongs to a slice
-    AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-    AzFramework::SliceEntityRequestBus::EventResult(sliceAddress, m_elementId, &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-    bool isSliceEntity = sliceAddress.IsValid();
-
-    AZStd::string sliceAssetName;
-    if (isSliceEntity)
-    {
-        auto sliceReference = sliceAddress.GetReference();
-        auto sliceInstance = sliceAddress.GetInstance();
-
-        // determine slice asset name (for tooltip display)
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            sliceAssetName, &AZ::Data::AssetCatalogRequests::GetAssetPathById, sliceReference->GetSliceAsset().GetId());
-
-        // determine if entity parent belongs to a slice
-        AZ::EntityId parentId;
-        UiElementBus::EventResult(parentId, m_elementId, &UiElementBus::Events::GetParentEntityId);
-
-        AZ::SliceComponent::SliceInstanceAddress parentSliceAddress;
-        AzFramework::SliceEntityRequestBus::EventResult(
-            parentSliceAddress, parentId, &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-
-        // we're a slice root if our parent doesn't have a slice reference or instance or our parent slice reference or instances don't
-        // match ours
-        auto parentSliceReference = parentSliceAddress.GetReference();
-        auto parentSliceInstance = parentSliceAddress.GetInstance();
-        bool isSliceRoot = !parentSliceReference || !parentSliceInstance || (sliceReference != parentSliceReference) ||
-            (sliceInstance->GetId() != parentSliceInstance->GetId());
-
-        // set the text color to the slice color
-        setForeground(0, sliceForegroundColor);
-
-        // use bold or italic to indicate whether this is the root of the slice instance or a child entity within an instance
-        auto itemFont = font(0);
-        if (isSliceRoot)
-        {
-            itemFont.setBold(true);
-        }
-        else
-        {
-            itemFont.setItalic(true);
-        }
-        setFont(0, itemFont);
-    }
-    else
-    {
-        // get the normal text color from the palette
-        auto parentWidgetPtr = static_cast<QWidget*>(m_editorWindow);
-        setForeground(0, QBrush(parentWidgetPtr->palette().color(QPalette::Text)));
-
-        // set to normal font
-        auto itemFont = font(0);
-        itemFont.setBold(false);
-        itemFont.setItalic(false);
-        setFont(0, itemFont);
-    }
-
-    // Set tooltip to indicate which slice this is part of (if any)
-    QString tooltip = !sliceAssetName.empty() ? QString("Slice asset: %1").arg(sliceAssetName.data())
-                                              : QString("Slice asset: This entity is not part of a slice.");
-    setToolTip(0, tooltip);
 }
 
 void HierarchyItem::UpdateEditorOnlyInfo()

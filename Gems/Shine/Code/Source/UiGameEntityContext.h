@@ -9,7 +9,7 @@
 
 #include <Shine/UiEntityContext.h>
 #include <Shine/Bus/UiGameEntityContextBus.h>
-#include <AzFramework/Entity/SliceEntityOwnershipService.h>
+#include "UiSimpleEntityOwnershipService.h"
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -27,8 +27,8 @@ public: // member functions
     UiGameEntityContext(AZ::EntityId canvasEntityId = AZ::EntityId());
     ~UiGameEntityContext() override;
 
-    bool HandleLoadedRootSliceEntity(AZ::Entity* rootEntity, bool remapIds,
-        AZ::SliceComponent::EntityIdToEntityIdMap* idRemapTable = nullptr);
+    bool HandleLoadedEntities(const AZStd::vector<AZ::Entity*>& entities, bool remapIds,
+        AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* idRemapTable = nullptr);
 
     // EntityContext
     bool DestroyEntity(AZ::Entity* entity) override;
@@ -67,7 +67,7 @@ protected: // member functions
     void OnContextEntitiesAdded(const AzFramework::EntityList& entities) override;
     void InitializeEntities(const AzFramework::EntityList& entities);
 
-    // Used to validate that the entities in an instantiated slice are valid entities for this context
+    // Used to validate that entities being loaded are valid for this context
     bool ValidateEntitiesAreValidForContext(const AzFramework::EntityList& entities) override;
 
     // Clone entities from a spawnable and integrate them into the UI context

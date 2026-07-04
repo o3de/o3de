@@ -168,7 +168,7 @@ private:
 
     bool m_isCanvasSelected;
 
-    // Pointer to entity that first entity is compared against for the purpose of rendering deltas vs. slice in the property grid.
+    // Pointer to entity that first entity is compared against for the purpose of rendering deltas in the property grid.
     AZStd::unique_ptr<AZ::Entity> m_compareToEntity;
 
     // Global app serialization context, cached for internal usage during the life of the control.

@@ -1,0 +1,26 @@
+{
+    "gem_name": "LYShineToShine",
+    "version": "0.0.0",
+    "display_name": "LYShine to Shine Canvas Upgrader",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Code",
+    "summary": "Upgrades old LyShine v1/v2 UI canvas assets (with SliceComponent, SliceReference, SliceInstance) to Shine v3 format (flat ChildEntities). Enable this Gem alongside Shine, run the upgrader, then disconnect.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "UI",
+        "Tools",
+        "Migration"
+    ],
+    "icon_path": "",
+    "requirements": "Requires both the old LyShine slice system and the new Shine Gem to be available.",
+    "documentation_url": "",
+    "dependencies": [
+        "Shine",
+        "LmbrCentral"
+    ]
+}

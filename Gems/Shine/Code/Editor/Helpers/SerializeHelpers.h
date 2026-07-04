@@ -10,7 +10,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
@@ -33,23 +32,18 @@ namespace SerializeHelpers
         AZ::EntityId m_insertAboveThisId;
         AZStd::string m_undoXml;
         AZStd::string m_redoXml;
-        AZStd::unordered_set<AZ::Data::AssetId> m_referencedSliceAssets;
     };
 
     //! A list of serialized elements
     using SerializedEntryList = AZStd::list<SerializedEntry>;
 
-    //! A vector of EntityRestoreInfo structs
-    using EntityRestoreVec = AZStd::vector<AZ::SliceComponent::EntityRestoreInfo>;
-
     //! Restore UI elements and their children from the given xml
-    //! Slice instance info is preserved
     //! \param canvasEntityId   The entity ID of the UI canvas that contains the UI elements
     //! \param parent           The parent element that the unserialized top-level elements will be children of, if nullptr the root element
     //! is the parent
     //! \param insertBefore     The sibling element to place the top-level elements before, if nullptr then add as last child
     //! \param entityContext    The UI Editor entity context for this UI canvas
-    //! \param xml              The XML string to unserialize, it contains all the elements puts slice restore info
+    //! \param xml              The XML string to unserialize
     //! \param isCopyOperation  True if we are creating new elements rather than restoring delete elements
     //! \param cumulativeListOfCreatedEntities If this is non-null then all the entities created are added to this list
     void RestoreSerializedElements(
@@ -63,24 +57,19 @@ namespace SerializeHelpers
 
     //! Save the given elements to an XML string
     //! \param elements               The top-level elements to save - all descendant elements will be saved also
-    //! \param rootSlice              The root slice for the canvas
     //! \param isCopyOperation        True if this is a copy or cut operation, false if it is part of undo/redo
-    //! \param referencedSliceAssets  Out param, all prefab assets used by the saved elements
     AZStd::string SaveElementsToXmlString(
         const Shine::EntityArray& elements,
-        AZ::SliceComponent* rootSlice,
-        bool isCopyOperation,
-        AZStd::unordered_set<AZ::Data::AssetId>& referencedSliceAssets);
+        bool isCopyOperation);
 
     //! Load elements from an XML string that was created by SaveElementsToXmlString
     //! \param canvasEntityId   The entity ID of the UI canvas that contains the UI elements
     //! \param string           The XML string containing the elements and associated data
     //! \param makeNewIDs       If true new entity IDs and Element Ids will be created for the created elements
+    //! \param insertionPoint   The parent element for the created elements
     //! \param insertBefore     The sibling element to place the top-level elements before, if nullptr then add as last child
-    //! \param entityContext    The UI Editor entity context for this UI canvas
     //! \param listOfCreatedTopLevelElements    Out param, the top-level elements created
     //! \param listOfAllCreatedElements         Out param, all elements that were created
-    //! \param entityRestoreInfos               Out param, the slice infos in the same order as listOfAllCreatedElements
     void LoadElementsFromXmlString(
         AZ::EntityId canvasEntityId,
         const AZStd::string& string,
@@ -88,7 +77,6 @@ namespace SerializeHelpers
         AZ::Entity* insertionPoint,
         AZ::Entity* insertBefore,
         Shine::EntityArray& listOfCreatedTopLevelElements,
-        Shine::EntityArray& listOfAllCreatedElements,
-        EntityRestoreVec& entityRestoreInfos);
+        Shine::EntityArray& listOfAllCreatedElements);
 
 } // namespace SerializeHelpers

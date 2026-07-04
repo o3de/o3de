@@ -11,9 +11,7 @@
 #include "TreeWidgetItemList.h"
 #include "Widgets/HierarchyWidget/HierarchyItem.h"
 
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <Shine/UiBase.h>
 
@@ -47,13 +45,11 @@ public:
     //! \param widget the HiearchyWidget in the Ui Editor editing the canvas
     //! \param elements the elements to serialize
     //! \param isCopyOperation True if this is a copy or cut operation, false if it is part of undo/redo
-    //! \param referencedSliceAssets an out parameter listing the prefab assets used by the serialized elements
     //! \return a string containing XML or empty
     static AZStd::string GetXml(
         HierarchyWidget* widget,
         const Shine::EntityArray& elements,
-        bool isCopyOperation,
-        AZStd::unordered_set<AZ::Data::AssetId>& referencedSliceAssets);
+        bool isCopyOperation);
 
     //! Get the XML from the given canvas.
     //! The output SHOULDN'T be serialized to disk.

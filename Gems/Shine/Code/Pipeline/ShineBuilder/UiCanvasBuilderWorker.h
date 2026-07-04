@@ -12,7 +12,6 @@
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <Shine/Bus/Tools/UiSystemToolsBus.h>
-#include <AzToolsFramework/Slice/SliceCompilation.h>
 
 namespace Shine
 {

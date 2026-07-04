@@ -173,7 +173,7 @@ namespace HierarchyHelpers
         {
             QTreeWidgetItem* item = _GetItem(widget, i);
 
-            // item can be null in the case of restoring a selection when switching tabs and an entity in a slice has been deleted
+            // item can be null in the case of restoring a selection when switching tabs and an entity has been deleted
             if (item)
             {
                 if (item == _GetItem(widget, list->front()))

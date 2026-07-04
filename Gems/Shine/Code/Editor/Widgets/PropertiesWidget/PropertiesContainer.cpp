@@ -17,7 +17,6 @@
 #include "Commands/CommandHierarchyItemRename.h"
 
 #include <AzQtComponents/Components/Style.h>
-#include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
 #include <Shine/Bus/UiSystemBus.h>
@@ -313,25 +312,7 @@ AZ::Entity::ComponentArrayType PropertiesContainer::GetSelectedComponents()
 
 void PropertiesContainer::BuildSharedComponentList(ComponentTypeMap& sharedComponentsByType, const AzToolsFramework::EntityIdList& entitiesShown)
 {
-    // For single selection of a slice-instanced entity, gather the direct slice ancestor
-    // so we can visualize per-component differences.
     m_compareToEntity.reset();
-    if (1 == entitiesShown.size())
-    {
-        AZ::SliceComponent::SliceInstanceAddress address;
-        AzFramework::SliceEntityRequestBus::EventResult(address, entitiesShown[0],
-            &AzFramework::SliceEntityRequestBus::Events::GetOwningSlice);
-        if (address.IsValid())
-        {
-            AZ::SliceComponent::EntityAncestorList ancestors;
-            address.GetReference()->GetInstanceEntityAncestry(entitiesShown[0], ancestors, 1);
-
-            if (!ancestors.empty())
-            {
-                m_compareToEntity = AzToolsFramework::SliceUtilities::CloneSliceEntityForComparison(*ancestors[0].m_entity, *address.GetInstance(), *m_serializeContext);
-            }
-        }
-    }
 
     // Create a SharedComponentInfo for each component
     // that selected entities have in common.
@@ -477,7 +458,7 @@ void PropertiesContainer::BuildSharedComponentUI(ComponentTypeMap& sharedCompone
     // Add each component instance to its corresponding editor
     // We add them in the order that the component factories were registered in, this provides
     // a consistent order of components. It doesn't appear to be the case that components always
-    // stay in the order they were added to the entity in, some of our slices do not have the
+    // stay in the order they were added to the entity in, some canvases do not have the
     // UiElementComponent first for example.
     const AZStd::vector<AZ::Uuid>* componentTypes;
     UiSystemBus::BroadcastResult(componentTypes, &UiSystemBus::Events::GetComponentTypesForMenuOrdering);
@@ -538,7 +519,7 @@ void PropertiesContainer::BuildSharedComponentUI(ComponentTypeMap& sharedCompone
                 // non-first instances are aggregated under the first instance
                 AZ::Component* aggregateInstance = componentInstance != componentInstances.front() ? componentInstances.front() : nullptr;
 
-                // Reference the slice entity if we are a slice so we can indicate differences from base
+                // Reference the compare entity so we can indicate differences from base
                 AZ::Component* compareInstance = sharedComponent.m_compareInstance;
 
                 componentEditor->AddInstance(componentInstance, aggregateInstance, compareInstance);
@@ -755,7 +736,7 @@ void PropertiesContainer::ShowContextMenu(const QPoint& position)
     ComponentHelpers::UpdatePasteComponentsAction(m_actionToPasteComponents);
 
     HierarchyMenu contextMenu(m_editorWindow->GetHierarchy(),
-        HierarchyMenu::Show::kPushToSlice,
+        0,
         false);
 
     contextMenu.addActions(actions());
@@ -871,16 +852,6 @@ void PropertiesContainer::UpdateEditorOnlyCheckbox()
 
         for (AZ::EntityId id : m_selectedEntities)
         {
-            // If any of the entities is a slice root, grey out the checkbox.
-            bool isSliceRoot = false;
-            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(isSliceRoot, id, &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsSliceRoot);
-            if (isSliceRoot)
-            {
-                m_editorOnlyCheckbox->setChecked(false);
-                m_editorOnlyCheckbox->setEnabled(false);
-                return;
-            }
-
             bool isEditorOnly = false;
             AzToolsFramework::EditorOnlyEntityComponentRequestBus::EventResult(isEditorOnly, id, &AzToolsFramework::EditorOnlyEntityComponentRequests::IsEditorOnlyEntity);
 

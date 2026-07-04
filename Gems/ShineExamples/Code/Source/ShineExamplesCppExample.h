@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#include <AzCore/Slice/SliceAsset.h>
-
 #include <Shine/IDraw2d.h>
 #include <Shine/Bus/UiCanvasBus.h>
 #include <Shine/Bus/UiTransform2dBus.h>

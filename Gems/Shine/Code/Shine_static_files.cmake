@@ -125,6 +125,8 @@ set(FILES
     Source/UiCanvasFileObject.h
     Source/UiCanvasManager.cpp
     Source/UiCanvasManager.h
+    Source/UiPrefabInstance.cpp
+    Source/UiPrefabInstance.h
     Source/UiCheckboxComponent.cpp
     Source/UiCheckboxComponent.h
     Source/UiDraggableComponent.cpp
@@ -147,6 +149,8 @@ set(FILES
     Source/UiFlipbookAnimationComponent.h
     Source/UiGameEntityContext.cpp
     Source/UiGameEntityContext.h
+    Source/UiSimpleEntityOwnershipService.cpp
+    Source/UiSimpleEntityOwnershipService.h
     Source/UiInteractableComponent.cpp
     Source/UiInteractableComponent.h
     Source/UiInteractableState.cpp

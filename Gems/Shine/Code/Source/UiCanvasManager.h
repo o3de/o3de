@@ -125,7 +125,7 @@ private: // member functions
     void GenerateMousePositionInputEvent();
 
     AZ::EntityId LoadCanvasInternal(const AZStd::string& assetIdPathname, bool forEditor, const AZStd::string& fullSourceAssetPathname, UiEntityContext* entityContext,
-        const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
+        const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
 
     void QueueCanvasForDeletion(AZ::EntityId canvasEntityId);
     void DeleteCanvasesQueuedForDeletion();

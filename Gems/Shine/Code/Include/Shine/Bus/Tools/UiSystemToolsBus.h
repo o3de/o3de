@@ -9,7 +9,6 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Serialization/ObjectStream.h>
 
 namespace AZ
@@ -50,24 +49,21 @@ public:
     //! Save a canvas to a stream
     virtual void SaveCanvasToStream(CanvasAssetHandle* canvas, AZ::IO::FileIOStream& stream) = 0;
 
-    //! Get the slice component for a loaded canvas
-    virtual AZ::SliceComponent* GetRootSliceSliceComponent(CanvasAssetHandle* canvas) = 0;
-
-    //! Get the slice entity for a loaded canvas
-    virtual AZ::Entity* GetRootSliceEntity(CanvasAssetHandle* canvas) = 0;
+    //! Get the child entities for a loaded canvas
+    virtual AZStd::vector<AZ::Entity*>& GetChildEntities(CanvasAssetHandle* canvas) = 0;
 
     //! Get the canvas entity for a loaded canvas
     virtual AZ::Entity* GetCanvasEntity(CanvasAssetHandle* canvas) = 0;
 
-    //! Replace the slice component with a new one. The old slice component is not deleted.
+    //! Replace the child entities with new ones. The old entities are not deleted.
     //! The client is responsible for that.
-    virtual void ReplaceRootSliceSliceComponent(CanvasAssetHandle* canvas, AZ::SliceComponent* newSliceComponent) = 0;
+    virtual void ReplaceChildEntities(CanvasAssetHandle* canvas, AZStd::vector<AZ::Entity*> newEntities) = 0;
 
     //! Replace the canvas entity with a new one. The old canvas entity is not deleted.
     //! The client is responsible for that.
     virtual void ReplaceCanvasEntity(CanvasAssetHandle* canvas, AZ::Entity* newCanvasEntity) = 0;
     
-    //! Delete the canvas file object and its canvas entity and slice entity.
+    //! Delete the canvas file object and its canvas entity and child entities.
     virtual void DestroyCanvas(CanvasAssetHandle* canvas) = 0;
 };
 

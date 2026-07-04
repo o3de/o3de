@@ -60,15 +60,15 @@
                     }
                 }
             },
-            "LyShineExamples": {
+            "ShineExamples": {
                 "Targets": {
-                    "LyShineExamples": {
+                    "ShineExamples": {
                         "AutoLoad": false
                     },
-                    "LyShineExamples.Editor": {
+                    "ShineExamples.Editor": {
                         "AutoLoad": false
                     },
-                    "LyShineExamples.Tools": {
+                    "ShineExamples.Tools": {
                         "AutoLoad": false
                     }
                 }

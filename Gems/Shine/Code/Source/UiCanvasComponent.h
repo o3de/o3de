@@ -10,6 +10,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 #include <Shine/Bus/UiCanvasBus.h>
 #include <Shine/Bus/UiInteractableBus.h>
@@ -33,6 +34,8 @@
 #include "TextureAtlas/TextureAtlasNotificationBus.h"
 
 #include "RenderToTextureBus.h"
+
+#include "UiPrefabInstance.h"
 
 namespace AZ
 {
@@ -254,7 +257,7 @@ public: // member functions
     AZ::Vector2 GetTargetCanvasSize();
 
     //! Get the mapping from editor EntityId to game EntityId. This will be empty for canvases loaded for editing
-    AZ::SliceComponent::EntityIdToEntityIdMap GetEditorToGameEntityIdMap() { return m_editorToGameEntityIdMap; }
+    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> GetEditorToGameEntityIdMap() { return m_editorToGameEntityIdMap; }
 
     void ScheduleElementForTransformRecompute(UiElementComponent* elementComponent);
     void UnscheduleElementForTransformRecompute(UiElementComponent* elementComponent);
@@ -317,10 +320,18 @@ public: // static member functions
 
     static UiCanvasComponent* CreateCanvasInternal(UiEntityContext* entityContext, bool forEditor);
     static UiCanvasComponent* LoadCanvasInternal(const AZStd::string& pathToOpen, bool forEditor, const AZStd::string& assetIdPathname, UiEntityContext* entityContext,
-        const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
+        const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
     static UiCanvasComponent* FixupReloadedCanvasForEditorInternal(AZ::Entity* newCanvasEntity,
-        AZ::Entity* rootSliceEntity, UiEntityContext* entityContext,
+        AZStd::vector<AZ::Entity*>& childEntities, UiEntityContext* entityContext,
         Shine::CanvasId existingId, const AZStd::string& existingPathname);
+
+    //! Instantiate all prefab instances and merge their entities into childEntities.
+    //! Called during canvas loading, before FixupPostLoad.
+    //! outPrefabEntityIds is populated with the IDs of all entities that came from prefabs.
+    static void InstantiatePrefabInstances(
+        const AZStd::vector<UiPrefabInstance>& prefabInstances,
+        AZStd::vector<AZ::Entity*>& childEntities,
+        AZStd::unordered_set<AZ::EntityId>& outPrefabEntityIds);
 
 protected: // member functions
 
@@ -431,7 +442,7 @@ private: // member functions
     AZ::Entity* CloneAndAddElementInternal(AZ::Entity* sourceEntity, AZ::Entity* parentEntity, AZ::Entity* insertBeforeEntity);
 
     //! Get any orphaned elements caused by old bugs
-    void GetOrphanedElements(AZ::SliceComponent::EntityList& orphanedEntities);
+    void GetOrphanedElements(AZStd::vector<AZ::Entity*>& orphanedEntities);
 
     void DestroyScheduledElements();
 
@@ -442,8 +453,8 @@ private: // static member functions
 
     static AZ::u64 CreateUniqueId();
 
-    static UiCanvasComponent* FixupPostLoad(AZ::Entity* canvasEntity, AZ::Entity* rootSliceEntity, bool forEditor, UiEntityContext* entityContext,
-        const AZ::Vector2* canvasSize = nullptr, const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
+    static UiCanvasComponent* FixupPostLoad(AZ::Entity* canvasEntity, AZStd::vector<AZ::Entity*>& childEntities, bool forEditor, UiEntityContext* entityContext,
+        const AZ::Vector2* canvasSize = nullptr, const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
 
     static bool VersionConverter(AZ::SerializeContext& context,
         AZ::SerializeContext::DataElementNode& classElement);
@@ -580,7 +591,15 @@ private: // data
     bool m_guidesAreLocked;
 
     UiEntityContext* m_entityContext;
-    AZ::SliceComponent::EntityIdToEntityIdMap m_editorToGameEntityIdMap;
+    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_editorToGameEntityIdMap;
+
+    //! Tracks prefab instances loaded with this canvas. Used during save to separate
+    //! prefab entities from local entities and compute JSON patches.
+    AZStd::vector<UiPrefabInstance> m_prefabInstances;
+
+    //! Set of entity IDs that came from prefab instances (not canvas-local).
+    //! Used during save to determine which entities are local vs from prefabs.
+    AZStd::unordered_set<AZ::EntityId> m_prefabEntityIds;
 
     //! This is an optimization to avoid visiting all elements multiple times every frame to see if any of them need recomputing
     //! We use an intrusive_slist to avoid any memory allocations and also to cheaply be able to tell if an element is already in list

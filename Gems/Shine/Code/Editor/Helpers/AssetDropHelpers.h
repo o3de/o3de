@@ -21,12 +21,12 @@ namespace AssetDropHelpers
     //! Returns whether mime type is accepted as an asset
     bool AcceptsMimeType(const QMimeData* mimeData);
 
-    //! Returns whether mime data contains slice assets or assets that are associated with components
-    bool DoesMimeDataContainSliceOrComponentAssets(const QMimeData* mimeData);
+    //! Returns whether mime data contains assets that are associated with components
+    bool DoesMimeDataContainComponentAssets(const QMimeData* mimeData);
 
-    //! Decode asset mime data and find the slice assets and the assets associated with components
-    void DecodeSliceAndComponentAssetsFromMimeData(
-        const QMimeData* mimeData, ComponentAssetHelpers::ComponentAssetPairs& componentAssetPairs, AssetList& sliceAssets);
+    //! Decode asset mime data and find the assets associated with components
+    void DecodeComponentAssetsFromMimeData(
+        const QMimeData* mimeData, ComponentAssetHelpers::ComponentAssetPairs& componentAssetPairs);
 
     //! Decode asset mime data and find the UiCanvas assets
     void DecodeUiCanvasAssetsFromMimeData(const QMimeData* mimeData, AssetList& canvasAssets);

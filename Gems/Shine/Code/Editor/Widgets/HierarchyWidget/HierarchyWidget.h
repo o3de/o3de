@@ -74,9 +74,6 @@ public:
 
     void ClearItemBeingHovered();
 
-    //! Update the appearance of all hierarchy items to reflect their slice status
-    void UpdateSliceInfo();
-
     //! Drop assets from asset browser
     void DropMimeDataAssets(
         const QMimeData* data,

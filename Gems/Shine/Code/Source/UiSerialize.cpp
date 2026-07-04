@@ -23,7 +23,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptContext.h>
-#include <AzCore/Slice/SliceComponent.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // NAMESPACE FUNCTIONS

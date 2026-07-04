@@ -173,8 +173,8 @@ public: // static member functions
     //! Helper function used during conversion of old format canvas files. Called from
     //! UiCanvasFileObject::VersionConverter and PrefabFileObject::VersionConverter.
     //! In the old format child entities were referenced by Entity* rather than EntityId so each entity
-    //! had all of its children nested under it in the file. In the newer format, that was introduced when
-    //! slice support was added, the entities are owned by the root slice and referenced by entity id.
+    //! had all of its children nested under it in the file. In the newer format the entities are owned by
+    //! the canvas and referenced by entity id.
     //! An index of -1 is used when this is called on the root element of the canvas, otherwise index
     //! is the index of the child entity withing the children container.
     static bool MoveEntityAndDescendantsToListAndReplaceWithEntityId(AZ::SerializeContext& context,
@@ -211,9 +211,9 @@ private: //types
 
     //! ChildEntityIdOrderEntry stores the entity id and the sort index (which is the absolute sort index relative to
     //! the other entries, 0 is the first, 1 is the second, so on). We serialize out the order data in this fashion
-    //! because the slice data patching system will traditionally use the vector index to know what data goes where.
+    //! because the data patching system will traditionally use the vector index to know what data goes where.
     //! In the case of this data, it does not make sense to data patch by vector index since the underlying data may
-    //! have changed and the data patch will create duplicate or incorrect data. The slice data patch system has the
+    //! have changed and the data patch will create duplicate or incorrect data. The data patch system has the
     //! concept of a "Persistent ID" which can be used instead such that data patches will try to match persistent
     //! ids which can be identified regardless of vector index. In this way, our vector order no longer matters and
     //! the EntityId is now the identifier which the data patcher will use to update the sort index.
@@ -292,7 +292,7 @@ private: // data
     bool m_isSelectedInEditor = false;
     bool m_isExpandedInEditor = true;
 
-    // New children array that uses persistent IDs. Required because slices/datapatches do not handle things well
+    // New children array that uses persistent IDs. Required because datapatches do not handle things well
     // for the old m_children because it doesn't use persistent IDs.
     // Note: once loaded and patched this vector is always in the correct order and the sort indices start at zero
     // and are contiguous. OnPatchEnd enforces this after any patching.

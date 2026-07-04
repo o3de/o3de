@@ -452,9 +452,6 @@ void ViewportWidget::contextMenuEvent(QContextMenuEvent* e)
                 HierarchyMenu::Show::kCutCopyPaste |
                 HierarchyMenu::Show::kNew_EmptyElement |
                 HierarchyMenu::Show::kDeleteElement |
-                HierarchyMenu::Show::kNewSlice |
-                HierarchyMenu::Show::kNew_InstantiateSlice |
-                HierarchyMenu::Show::kPushToSlice |
                 HierarchyMenu::Show::kEditorOnly |
                 HierarchyMenu::Show::kFindElements,
                 true,
@@ -861,7 +858,7 @@ bool ViewportWidget::AcceptsMimeData(const QMimeData* mimeData)
         return false;
     }
 
-    return AssetDropHelpers::DoesMimeDataContainSliceOrComponentAssets(mimeData);
+    return AssetDropHelpers::DoesMimeDataContainComponentAssets(mimeData);
 }
 
 void ViewportWidget::dragEnterEvent(QDragEnterEvent* event)

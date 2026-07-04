@@ -14,6 +14,7 @@
 #include "UiGameEntityContext.h"
 #include "UiNavigationHelpers.h"
 #include "UiRenderer.h"
+#include "UiPrefabInstance.h"
 #include "Shine.h"
 
 #include <Random.h>
@@ -34,7 +35,12 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Asset/AssetSerializer.h>
+
+AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
+#include <rapidjson/document.h>
+AZ_POP_DISABLE_WARNING
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/time.h>
@@ -712,8 +718,7 @@ void UiCanvasComponent::AddElement(AZ::Entity* element, AZ::Entity* parent, AZ::
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::ReinitializeElements()
 {
-    // This gets called when a canvas or a slice in the canvas is reloaded. So, for example,
-    // a Push to Slice in the editor causes a reload of that slice. It is only used in the editor.
+    // This gets called when a canvas is reloaded. It is only used in the editor.
 
     AZ::Entity* rootElement = GetRootElement();
 
@@ -881,7 +886,7 @@ AZ::Entity* UiCanvasComponent::CloneCanvas(const AZ::Vector2& canvasSize)
         newCanvasEntity = canvasComponent->GetEntity();
         canvasComponent->m_isLoadedInGame = true;
 
-        // The game entity context needs to know its corresponding canvas entity for instantiating dynamic slices
+        // The game entity context needs to know its corresponding canvas entity
         entityContext->SetCanvasEntity(newCanvasEntity->GetId());
     }
     else
@@ -1819,7 +1824,7 @@ void UiCanvasComponent::SetGuidesAreLocked(bool areLocked)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiCanvasComponent::CheckForOrphanedElements()
 {
-    AZ::SliceComponent::EntityList orphanedEntities;
+    AZStd::vector<AZ::Entity*> orphanedEntities;
     GetOrphanedElements(orphanedEntities);
     return !orphanedEntities.empty();
 }
@@ -1827,7 +1832,7 @@ bool UiCanvasComponent::CheckForOrphanedElements()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::RecoverOrphanedElements()
 {
-    AZ::SliceComponent::EntityList orphanedEntities;
+    AZStd::vector<AZ::Entity*> orphanedEntities;
     GetOrphanedElements(orphanedEntities);
 
     // we will put the orphaned elements under a top-level element called this:
@@ -1877,10 +1882,10 @@ void UiCanvasComponent::RecoverOrphanedElements()
 void UiCanvasComponent::RemoveOrphanedElements()
 {
     // get the orphaned entities
-    AZ::SliceComponent::EntityList orphanedEntities;
+    AZStd::vector<AZ::Entity*> orphanedEntities;
     GetOrphanedElements(orphanedEntities);
 
-    // remove the entities from the entity context, this will remove any slice instances and references that become empty
+    // remove the entities from the entity context
     for (AZ::Entity* orphan : orphanedEntities)
     {
         m_entityContext->DestroyEntity(orphan);
@@ -3552,17 +3557,29 @@ UiCanvasComponent* UiCanvasComponent::CloneAndInitializeCanvas(UiEntityContext* 
 {
     UiCanvasComponent* canvasComponent = nullptr;
 
-    // Clone the root slice entity
-    // Do this in a way that handles this canvas being a Editor canvas.
-    // If it is an editor canvas then slices will be flattened and Editor components will be
+    // Clone the child entities.
+    // Do this in a way that handles this canvas being an Editor canvas.
+    // If it is an editor canvas then Editor components will be
     // replaced with runtime components.
-    AZ::Entity* clonedRootSliceEntity = nullptr;
-    AZStd::string rootSliceBuffer;
-    AZ::IO::ByteContainerStream<AZStd::string > rootSliceStream(&rootSliceBuffer);
-    if (m_entityContext->SaveToStreamForGame(rootSliceStream, AZ::ObjectStream::ST_XML))
+    AZStd::vector<AZ::Entity*> clonedChildEntities;
+    bool childEntitiesLoaded = false;
+    AZStd::string childEntitiesBuffer;
+    AZ::IO::ByteContainerStream<AZStd::string > childEntitiesStream(&childEntitiesBuffer);
+    if (m_entityContext->SaveToStreamForGame(childEntitiesStream, AZ::ObjectStream::ST_XML))
     {
-        rootSliceStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-        clonedRootSliceEntity = AZ::Utils::LoadObjectFromStream<AZ::Entity>(rootSliceStream);
+        childEntitiesStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+        // Use in-place load with a pre-constructed vector: loading a root-level
+        // container of pointers via LoadObjectFromStream crashes in
+        // GetElementStorageAddress because the root container has no parent address.
+        childEntitiesLoaded = AZ::Utils::LoadObjectFromStreamInPlace(childEntitiesStream, clonedChildEntities);
+        if (!childEntitiesLoaded)
+        {
+            AZ_Error("UiCanvas", false, "Failed to deserialize cloned child entities");
+        }
+    }
+    else
+    {
+        AZ_Error("UiCanvas", false, "SaveToStreamForGame failed");
     }
 
     // Clone the canvas entity
@@ -3576,11 +3593,11 @@ UiCanvasComponent* UiCanvasComponent::CloneAndInitializeCanvas(UiEntityContext* 
         clonedCanvasEntity = AZ::Utils::LoadObjectFromStream<AZ::Entity>(canvasStream);
     }
 
-    if (clonedCanvasEntity && clonedRootSliceEntity)
+    if (clonedCanvasEntity && childEntitiesLoaded)
     {
         // complete initialization of cloned entities, we assume this is NOT for editor
         // since we only do this when using canvas in game that is already loaded in editor
-        canvasComponent = FixupPostLoad(clonedCanvasEntity, clonedRootSliceEntity, false, entityContext, canvasSize);
+        canvasComponent = FixupPostLoad(clonedCanvasEntity, clonedChildEntities, false, entityContext, canvasSize);
     }
 
     if (canvasComponent)
@@ -3594,25 +3611,14 @@ UiCanvasComponent* UiCanvasComponent::CloneAndInitializeCanvas(UiEntityContext* 
 
 void UiCanvasComponent::DeactivateElements()
 {
-    AZ::SliceComponent::EntityIdSet entities;
-    AZ::SliceComponent* rootSlice;
-    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSlice, m_entityContext->GetContextId(),
-        &AzFramework::SliceEntityOwnershipServiceRequests::GetRootSlice);
+    AzFramework::EntityList entities;
+    m_entityContext->GetAllEntities(entities);
 
-    bool result = rootSlice->GetEntityIds(entities);
-    if (result)
+    for (AZ::Entity* entity : entities)
     {
-        for (AZ::EntityId& entityId : entities)
+        if (entity && entity->GetState() == AZ::Entity::State::Active)
         {
-            // Look up the entity by ID, as sometimes one of the entities owns others
-            // that will be destroyed when it's destroyed. Since we store pointers,
-            // those will point to freed memory.
-            AZ::Entity* entity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
-            if (entity && entity->GetState() == AZ::Entity::State::Active)
-            {
-                entity->Deactivate();
-            }
+            entity->Deactivate();
         }
     }
 }
@@ -3835,15 +3841,34 @@ bool UiCanvasComponent::SaveCanvasToStream(AZ::IO::GenericStream& stream, AZ::Da
     UiCanvasFileObject fileObject;
     fileObject.m_canvasEntity = this->GetEntity();
 
-    AzFramework::RootSliceAsset rootSliceAsset;
-    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSliceAsset, m_entityContext->GetContextId(),
-        &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootAsset);
-    fileObject.m_rootSliceEntity = rootSliceAsset->GetEntity();
+    AzFramework::EntityList allEntities;
+    m_entityContext->GetAllEntities(allEntities);
+
+    // Separate local entities from prefab-owned entities
+    for (AZ::Entity* entity : allEntities)
+    {
+        if (m_prefabEntityIds.find(entity->GetId()) == m_prefabEntityIds.end())
+        {
+            // This entity is local to the canvas (not from a prefab)
+            fileObject.m_childEntities.push_back(entity);
+        }
+        // Prefab entities are NOT saved to ChildEntities — they'll be
+        // reconstructed from the UiPrefabInstance references at load time
+    }
+
+    // Save the prefab instances (source paths, entity ID maps, and patches)
+    // TODO: Compute JSON patches by diffing current entity state against base .uiprefab
+    // For now, we store the prefab instances as-is (patches from load time are preserved)
+    fileObject.m_prefabInstances = m_prefabInstances;
 
     if (!AZ::Utils::SaveObjectToStream<UiCanvasFileObject>(stream, streamType, &fileObject))
     {
         return false;
     }
+
+    // Don't let the fileObject destructor delete these - we don't own them
+    fileObject.m_canvasEntity = nullptr;
+    fileObject.m_childEntities.clear();
 
     return true;
 }
@@ -3988,14 +4013,10 @@ AZ::Entity* UiCanvasComponent::CloneAndAddElementInternal(AZ::Entity* sourceEnti
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::GetOrphanedElements(AZ::SliceComponent::EntityList& orphanedEntities)
+void UiCanvasComponent::GetOrphanedElements(AZStd::vector<AZ::Entity*>& orphanedEntities)
 {
-    AZ::SliceComponent::EntityList entities;
-    AZ::SliceComponent* rootSlice;
-    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSlice, m_entityContext->GetContextId(),
-        &AzFramework::SliceEntityOwnershipServiceRequests::GetRootSlice);
-
-    rootSlice->GetEntities(entities);
+    AzFramework::EntityList entities;
+    m_entityContext->GetAllEntities(entities);
 
     // We want to quickly check that every UiElement entity is referenced from the canvas.
     // We know that at this point all referenced elements have had FixupPostLoad called but
@@ -4021,9 +4042,8 @@ void UiCanvasComponent::GetOrphanedElements(AZ::SliceComponent::EntityList& orph
                 }
                 else
                 {
-                    // This is some unknown entity. In theory the slice system could create such things but it does
-                    // not appear to.
-                    AZ_Warning("UI", false, "Found entity with no UiElementComponent in a UI canvas root slice.");
+                    // This is some unknown entity.
+                    AZ_Warning("UI", false, "Found entity with no UiElementComponent in a UI canvas entity list.");
                 }
             }
         }
@@ -4066,7 +4086,11 @@ UiCanvasComponent* UiCanvasComponent::CreateCanvasInternal(UiEntityContext* enti
     canvasComponent->m_rootElement = rootEntity->GetId();
     AZ_Assert(rootEntity, "Failed to create root element entity");
 
-    rootEntity->Deactivate(); // so we can add components
+    // Ensure entity is in a state where we can add components
+    if (rootEntity->GetState() == AZ::Entity::State::Active)
+    {
+        rootEntity->Deactivate();
+    }
 
     UiElementComponent* elementComponent = rootEntity->CreateComponent<UiElementComponent>();
     AZ_Assert(elementComponent, "Failed to add UiElementComponent to entity");
@@ -4074,6 +4098,10 @@ UiCanvasComponent* UiCanvasComponent::CreateCanvasInternal(UiEntityContext* enti
     [[maybe_unused]] AZ::Component* transformComponent = rootEntity->CreateComponent<UiTransform2dComponent>();
     AZ_Assert(transformComponent, "Failed to add transform2d component to entity");
 
+    if (rootEntity->GetState() == AZ::Entity::State::Constructed)
+    {
+        rootEntity->Init();
+    }
     rootEntity->Activate();  // re-activate
 
     // init the canvas entity (the canvas entity is not part of the EntityContext so is not automatically initialized)
@@ -4087,15 +4115,12 @@ UiCanvasComponent* UiCanvasComponent::CreateCanvasInternal(UiEntityContext* enti
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& pathnameToOpen, bool forEditor, const AZStd::string& assetIdPathname, UiEntityContext* entityContext,
-    const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable, AZ::EntityId previousCanvasId)
+    const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* previousRemapTable, AZ::EntityId previousCanvasId)
 {
     UiCanvasComponent* canvasComponent = nullptr;
 
-    // Currently LoadObjectFromFile will hang if the file cannot be parsed
-    // (LMBR-10078). So first check that it is in the right format
     if (IsValidAzSerializedFile(pathnameToOpen))
     {
-        // Open a stream on the input path
         AZ::IO::FileIOStream stream(pathnameToOpen.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary);
         if (!stream.IsOpen())
         {
@@ -4103,29 +4128,29 @@ UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& p
         }
         else
         {
-            // Read in the canvas from the stream
             UiCanvasFileObject* canvasFileObject = UiCanvasFileObject::LoadCanvasFromStream(stream);
             AZ_Assert(canvasFileObject, "Failed to load canvas");
 
             if (canvasFileObject)
             {
                 AZ::Entity* canvasEntity = canvasFileObject->m_canvasEntity;
-                AZ::Entity* rootSliceEntity = canvasFileObject->m_rootSliceEntity;
-                AZ_Assert(canvasEntity && rootSliceEntity, "Failed to load canvas");
+                AZ_Assert(canvasEntity, "Failed to load canvas");
 
-                if (canvasEntity && rootSliceEntity)
+                if (canvasEntity)
                 {
-                    // file loaded OK
+                    // Prefab entities are already included in childEntities (flattened during upgrade).
+                    // InstantiatePrefabInstances is skipped — entity IDs in .uiprefab files don't match
+                    // the entityIdMap (different ID generation during standalone slice instantiation vs
+                    // canvas slice reference instantiation). PrefabInstances are kept as metadata only.
+                    AZStd::unordered_set<AZ::EntityId> prefabEntityIds;
 
-                    // no need to check if a canvas with this EntityId is already loaded since we are going
-                    // to generate new entity IDs for all entities loaded from the file.
-
-                    // complete initialization of loaded entities
-                    canvasComponent = FixupPostLoad(canvasEntity, rootSliceEntity, forEditor, entityContext, nullptr, previousRemapTable, previousCanvasId);
+                    canvasComponent = FixupPostLoad(canvasEntity, canvasFileObject->m_childEntities, forEditor, entityContext, nullptr, previousRemapTable, previousCanvasId);
                     if (canvasComponent)
                     {
-                        // The canvas size may get reset on the first call to RenderCanvas to set the size to
-                        // viewport size. So we'll recompute again on first render.
+                        // Store prefab tracking data on the canvas component
+                        canvasComponent->m_prefabInstances = AZStd::move(canvasFileObject->m_prefabInstances);
+                        canvasComponent->m_prefabEntityIds = AZStd::move(prefabEntityIds);
+
                         UiTransformBus::Event(
                             canvasComponent->GetRootElement()->GetId(),
                             &UiTransformBus::Events::SetRecomputeFlags,
@@ -4136,20 +4161,19 @@ UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& p
                     }
                     else
                     {
-                        // cleanup, don't delete rootSliceEntity, deleting the canvasEntity cleans up the EntityContext and root slice
                         delete canvasEntity;
                     }
                 }
 
-                // UiCanvasFileObject is a simple container for the canvas pointers, its destructor
-                // doesn't destroy the canvas, but we need to delete it nonetheless to avoid leaking.
+                // Prevent destructor from deleting entities we've taken ownership of
+                canvasFileObject->m_canvasEntity = nullptr;
+                canvasFileObject->m_childEntities.clear();
                 delete canvasFileObject;
             }
         }
     }
     else
     {
-        // this file is not a valid canvas file
         gEnv->pSystem->Warning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, VALIDATOR_FLAG_FILE,
             pathnameToOpen.c_str(),
             "Invalid XML format or couldn't load file for UI canvas file: %s",
@@ -4161,10 +4185,10 @@ UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& p
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiCanvasComponent* UiCanvasComponent::FixupReloadedCanvasForEditorInternal(AZ::Entity* newCanvasEntity,
-    AZ::Entity* rootSliceEntity, UiEntityContext* entityContext,
+    AZStd::vector<AZ::Entity*>& childEntities, UiEntityContext* entityContext,
     Shine::CanvasId existingId, const AZStd::string& existingPathname)
 {
-    UiCanvasComponent* newCanvasComponent = FixupPostLoad(newCanvasEntity, rootSliceEntity, true, entityContext);
+    UiCanvasComponent* newCanvasComponent = FixupPostLoad(newCanvasEntity, childEntities, true, entityContext);
     if (newCanvasComponent)
     {
         newCanvasComponent->m_id = existingId;
@@ -4174,8 +4198,185 @@ UiCanvasComponent* UiCanvasComponent::FixupReloadedCanvasForEditorInternal(AZ::E
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ::Entity* rootSliceEntity, bool forEditor, UiEntityContext* entityContext, const AZ::Vector2* canvasSize,
-    const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable, AZ::EntityId previousCanvasId)
+void UiCanvasComponent::InstantiatePrefabInstances(
+    const AZStd::vector<UiPrefabInstance>& prefabInstances,
+    AZStd::vector<AZ::Entity*>& childEntities,
+    AZStd::unordered_set<AZ::EntityId>& outPrefabEntityIds)
+{
+    if (prefabInstances.empty())
+    {
+        return;
+    }
+
+    AZ::SerializeContext* serializeContext = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(
+        serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+    if (!serializeContext)
+    {
+        AZ_Error("UiCanvas", false, "SerializeContext not available for prefab instantiation");
+        return;
+    }
+
+    AZ::JsonRegistrationContext* jsonRegistrationContext = nullptr;
+    AZ::ComponentApplicationBus::BroadcastResult(
+        jsonRegistrationContext, &AZ::ComponentApplicationBus::Events::GetJsonRegistrationContext);
+
+    for (const UiPrefabInstance& instance : prefabInstances)
+    {
+        // Load the .uiprefab file
+        AZStd::string resolvedPath;
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        if (!fileIO)
+        {
+            AZ_Warning("UiCanvas", false, "FileIO not available, skipping prefab: %s", instance.m_sourcePath.c_str());
+            continue;
+        }
+
+        // Read the .uiprefab JSON file
+        AZ::IO::HandleType fileHandle;
+        if (!fileIO->Open(instance.m_sourcePath.c_str(), AZ::IO::OpenMode::ModeRead, fileHandle))
+        {
+            AZ_Warning("UiCanvas", false, "Could not open uiprefab: %s", instance.m_sourcePath.c_str());
+            continue;
+        }
+
+        AZ::u64 fileSize = 0;
+        fileIO->Size(fileHandle, fileSize);
+        AZStd::string jsonContent;
+        jsonContent.resize_no_construct(fileSize);
+        fileIO->Read(fileHandle, jsonContent.data(), fileSize);
+        fileIO->Close(fileHandle);
+
+        // Parse the base JSON DOM
+        rapidjson::Document baseDom;
+        baseDom.Parse(jsonContent.c_str());
+        if (baseDom.HasParseError())
+        {
+            AZ_Warning("UiCanvas", false, "Failed to parse uiprefab JSON: %s", instance.m_sourcePath.c_str());
+            continue;
+        }
+
+        // Apply JSON Patch overrides if present
+        if (!instance.m_patchesJson.empty())
+        {
+            rapidjson::Document patchDom;
+            patchDom.Parse(instance.m_patchesJson.c_str());
+            if (!patchDom.HasParseError() && patchDom.IsArray())
+            {
+                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(
+                    baseDom, baseDom.GetAllocator(), patchDom, AZ::JsonMergeApproach::JsonPatch);
+                if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+                {
+                    AZ_Warning("UiCanvas", false, "Failed to apply patches to prefab: %s", instance.m_sourcePath.c_str());
+                }
+            }
+        }
+
+        // Deserialize entities from the patched JSON DOM
+        if (baseDom.HasMember("Entities") && baseDom["Entities"].IsObject())
+        {
+            const rapidjson::Value& entitiesObj = baseDom["Entities"];
+            for (auto it = entitiesObj.MemberBegin(); it != entitiesObj.MemberEnd(); ++it)
+            {
+                AZ::Entity* entity = aznew AZ::Entity();
+                AZ::JsonDeserializerSettings deserializeSettings;
+                deserializeSettings.m_serializeContext = serializeContext;
+                deserializeSettings.m_registrationContext = jsonRegistrationContext;
+
+                AZ::JsonSerializationResult::ResultCode loadResult =
+                    AZ::JsonSerialization::Load(*entity, it->value, deserializeSettings);
+                if (loadResult.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted)
+                {
+                    // Remap entity ID from base to instance using the entity ID map
+                    AZ::EntityId baseId = entity->GetId();
+                    auto mapIt = instance.m_entityIdMap.find(baseId);
+                    if (mapIt != instance.m_entityIdMap.end())
+                    {
+                        entity->SetId(mapIt->second);
+                    }
+
+                    // Fix up entity ID references within the entity's components
+                    AZ::EntityUtils::ReplaceEntityIdsAndEntityRefs(
+                        entity,
+                        [&instance](const AZ::EntityId& originalId, bool /*isEntityId*/) -> AZ::EntityId
+                        {
+                            auto found = instance.m_entityIdMap.find(originalId);
+                            return (found != instance.m_entityIdMap.end()) ? found->second : originalId;
+                        },
+                        serializeContext);
+
+                    childEntities.push_back(entity);
+                    outPrefabEntityIds.insert(entity->GetId());
+                }
+                else
+                {
+                    AZ_Warning("UiCanvas", false, "Failed to deserialize entity from prefab: %s", instance.m_sourcePath.c_str());
+                    delete entity;
+                }
+            }
+        }
+    }
+
+    // Fix up parent IDs for prefab entities.
+    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> childToParentMap;
+    int entitiesWithElemComp = 0;
+    int totalChildMappings = 0;
+    for (AZ::Entity* entity : childEntities)
+    {
+        auto* elemComp = entity->FindComponent<UiElementComponent>();
+        if (!elemComp)
+        {
+            continue;
+        }
+        entitiesWithElemComp++;
+        for (const auto& childEntry : elemComp->m_childEntityIdOrder)
+        {
+            childToParentMap[childEntry.m_entityId] = entity->GetId();
+            totalChildMappings++;
+        }
+    }
+    AZ_TracePrintf("UiCanvas", "Parent fixup: %zu childEntities, %d with UiElementComponent, %d child mappings, %zu prefab entities\n",
+        childEntities.size(), entitiesWithElemComp, totalChildMappings, outPrefabEntityIds.size());
+
+    // Fix parent IDs on prefab entities whose current parent doesn't exist in the canvas
+    AZStd::unordered_set<AZ::EntityId> allEntityIds;
+    for (AZ::Entity* entity : childEntities)
+    {
+        allEntityIds.insert(entity->GetId());
+    }
+
+    for (AZ::Entity* entity : childEntities)
+    {
+        if (!outPrefabEntityIds.count(entity->GetId()))
+        {
+            continue;
+        }
+        auto* elemComp = entity->FindComponent<UiElementComponent>();
+        if (!elemComp)
+        {
+            continue;
+        }
+        // Always fix the parent from the child→parent map for prefab entities
+        auto parentIt = childToParentMap.find(entity->GetId());
+        if (parentIt != childToParentMap.end())
+        {
+            AZ_TracePrintf("UiCanvas", "  Fixed parent of '%s' [%llu]: %llu -> %llu\n",
+                entity->GetName().c_str(), static_cast<AZ::u64>(entity->GetId()),
+                static_cast<AZ::u64>(elemComp->m_parentId), static_cast<AZ::u64>(parentIt->second));
+            elemComp->m_parentId = parentIt->second;
+        }
+        else
+        {
+            AZ_TracePrintf("UiCanvas", "  No parent mapping for prefab entity '%s' [%llu], current parent: %llu\n",
+                entity->GetName().c_str(), static_cast<AZ::u64>(entity->GetId()),
+                static_cast<AZ::u64>(elemComp->m_parentId));
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZStd::vector<AZ::Entity*>& childEntities, bool forEditor, UiEntityContext* entityContext, const AZ::Vector2* canvasSize,
+    const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* previousRemapTable, AZ::EntityId previousCanvasId)
 {
     // When we load in game we always generate new entity IDs.
     bool makeNewEntityIds = (forEditor) ? false : true;
@@ -4189,61 +4390,52 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
         {
             makeNewEntityIds = true;
         }
+
+        // Also check if any child entity IDs conflict with already-registered entities
+        if (!makeNewEntityIds)
+        {
+            for (AZ::Entity* child : childEntities)
+            {
+                AZ::Entity* existing = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(existing, &AZ::ComponentApplicationBus::Events::FindEntity, child->GetId());
+                if (existing)
+                {
+                    makeNewEntityIds = true;
+                    break;
+                }
+            }
+        }
     }
 
     UiCanvasComponent* canvasComponent = canvasEntity->FindComponent<UiCanvasComponent>();
     AZ_Assert(canvasComponent, "No canvas component found on loaded entity");
     if (!canvasComponent)
     {
-        return nullptr;     // unlikely to happen but perhaps possible if a non-canvas file was opened
+        return nullptr;
     }
 
-    // Initialize the entity context for the new canvas and init and activate all the entities
-    // in the root slice
+    // Initialize the entity context for the new canvas
     canvasComponent->m_entityContext = entityContext;
     canvasComponent->m_entityContext->InitUiContext();
 
     // Load atlases before initializing child components
     canvasComponent->LoadAtlases();
-    bool isLoadingRootEntitySuccessful = false;
 
     if (previousRemapTable)
     {
-        // We are reloading a canvas and we want to use the same entity ID mapping (from editor entity to game entity) as in the previously
-        // loaded canvas. The code below is similar to what HandleLoadedRootSliceEntity does for remapping except that if the existing
-        // mapping table already contains an entry for an editor entity ID it will use the existing mapping
-        AZ::SliceComponent* newRootSlice = rootSliceEntity->FindComponent<AZ::SliceComponent>();
-
+        // We are reloading a canvas and we want to use the same entity ID mapping
         AZ::SerializeContext* context = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialization context found");
 
-        AZ::SliceComponent::InstantiatedContainer entityContainer(false);
-        newRootSlice->GetEntities(entityContainer.m_entities);
-
         canvasComponent->m_editorToGameEntityIdMap = *previousRemapTable;
-        ReuseOrGenerateNewIdsAndFixRefs(&entityContainer, canvasComponent->m_editorToGameEntityIdMap, context);
 
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(isLoadingRootEntitySuccessful,
-            canvasComponent->m_entityContext->GetContextId(),
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::HandleRootEntityReloadedFromStream, rootSliceEntity, false, nullptr);
-        if (!isLoadingRootEntitySuccessful)
-        {
-            return nullptr;
-        }
+        // Remap entity IDs in child entities, reusing existing mappings
+        ReuseOrGenerateNewIdsAndFixRefs(&childEntities, canvasComponent->m_editorToGameEntityIdMap, context);
     }
-    else
-    {
-        // we are not reloading a canvas so we let the EntityContext HandleLoadedRootSliceEntity do the entity ID remapping as usual
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(isLoadingRootEntitySuccessful,
-            canvasComponent->m_entityContext->GetContextId(),
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::HandleRootEntityReloadedFromStream, rootSliceEntity,
-            makeNewEntityIds, &canvasComponent->m_editorToGameEntityIdMap);
-        if (!isLoadingRootEntitySuccessful)
-        {
-            return nullptr;
-        }
-    }
+
+    // Load entities into the ownership service (with ID remapping if needed for game mode)
+    canvasComponent->m_entityContext->HandleLoadedEntities(childEntities, makeNewEntityIds && !previousRemapTable, &canvasComponent->m_editorToGameEntityIdMap);
 
     // For the canvas entity itself, handle ID mapping and initialization
     {
@@ -4260,7 +4452,6 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
         // remap entity IDs such as m_rootElement and any entity IDs in the animation data
         if (makeNewEntityIds)
         {
-            // new IDs were generated so we should fix up any internal EntityRefs
             AZ::SerializeContext* context = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialization context found");
@@ -4277,7 +4468,6 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
     UiElementComponent* elementComponent = rootElement->FindComponent<UiElementComponent>();
     AZ_Assert(elementComponent, "No element component found on root element entity");
 
-    // Need to remapIds too (actually I don't think this needs to remap anymore)
     canvasComponent->RestoreAnimationSystemAfterCanvasLoad(makeNewEntityIds, &canvasComponent->m_editorToGameEntityIdMap);
 
     bool fixupSuccess = elementComponent->FixupPostLoad(rootElement, canvasComponent, nullptr, false);
@@ -4287,10 +4477,8 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
     }
 
     // Initialize the target canvas size and uniform scale
-    // This should be done before calling InGamePostActivate so that the
-    // canvas space rects of the elements are accurate
     UiRenderer* uiRenderer = forEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
-    if (uiRenderer) // can be null in automated testing
+    if (uiRenderer)
     {
         AZ::Vector2 targetCanvasSize;
         if (canvasSize)
@@ -4304,8 +4492,6 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
         canvasComponent->SetTargetCanvasSizeAndUniformScale(!forEditor, targetCanvasSize);
     }
 
-    // Set this before calling InGamePostActivate on the created entities. InGamePostActivate could
-    // call CloneElement which checks this flag
     canvasComponent->m_isLoadedInGame = !forEditor;
 
     // Initialize transform properties of children of layout elements
@@ -4313,11 +4499,9 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
 
     if (!forEditor)
     {
-        // Call InGamePostActivate on all the created entities when loading in game
         canvasComponent->InGamePostActivateBottomUp(rootElement);
     }
 
-    // Set the first hover interactable
     if (canvasComponent->m_isNavigationSupported)
     {
         canvasComponent->SetFirstHoverInteractable();

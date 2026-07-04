@@ -27,25 +27,17 @@ UiGameEntityContext::~UiGameEntityContext()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiGameEntityContext::HandleLoadedRootSliceEntity(AZ::Entity* rootEntity, bool remapIds, AZ::SliceComponent::EntityIdToEntityIdMap* idRemapTable)
+bool UiGameEntityContext::HandleLoadedEntities(const AZStd::vector<AZ::Entity*>& entities, bool remapIds, AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* idRemapTable)
 {
     AZ_Assert(m_entityOwnershipService->IsInitialized(), "The context has not been initialized.");
 
-    bool rootEntityReloadSuccessful = false;
-    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootEntityReloadSuccessful, GetContextId(),
-        &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::HandleRootEntityReloadedFromStream, rootEntity, remapIds, idRemapTable);
-    if (!rootEntityReloadSuccessful)
-    {
-        return false;
-    }
+    auto* simpleService = static_cast<UiSimpleEntityOwnershipService*>(m_entityOwnershipService.get());
+    simpleService->LoadEntities(entities, remapIds, idRemapTable);
 
-    AZ::SliceComponent::EntityList entities;
-    m_entityOwnershipService->GetAllEntities(entities);
+    AzFramework::EntityList allEntities;
+    m_entityOwnershipService->GetAllEntities(allEntities);
 
-    AzFramework::SliceEntityOwnershipServiceRequestBus::Event(GetContextId(),
-        &AzFramework::SliceEntityOwnershipServiceRequests::SetIsDynamic, true);
-
-    InitializeEntities(entities);
+    InitializeEntities(allEntities);
 
     return true;
 }
@@ -79,10 +71,7 @@ void UiGameEntityContext::AddUiEntities(const AzFramework::EntityList& entities)
     for (AZ::Entity* entity : entities)
     {
         AZ_Assert(!AzFramework::EntityIdContextQueryBus::MultiHandler::BusIsConnectedId(entity->GetId()), "Entity already in context.");
-        AzFramework::RootSliceAsset rootSliceAsset;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSliceAsset, GetContextId(),
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootAsset);
-        rootSliceAsset->GetComponent()->AddEntity(entity);
+        m_entityOwnershipService->AddEntity(entity);
     }
 
     m_entityOwnershipService->HandleEntitiesAdded(entities);
@@ -93,32 +82,31 @@ bool UiGameEntityContext::CloneUiEntities(const AZStd::vector<AZ::EntityId>& sou
 {
     resultEntities.clear();
 
-    AZ::SliceComponent::InstantiatedContainer sourceObjects(false);
+    AzFramework::EntityList sourceEntityList;
     for (const AZ::EntityId& id : sourceEntities)
     {
         AZ::Entity* entity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
         if (entity)
         {
-            sourceObjects.m_entities.push_back(entity);
+            sourceEntityList.push_back(entity);
         }
     }
 
-    AZ::SliceComponent::EntityIdToEntityIdMap idMap;
-    AZ::SliceComponent::InstantiatedContainer* clonedObjects =
-        AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(&sourceObjects, idMap);
-    if (!clonedObjects)
+    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> idMap;
+    AzFramework::EntityList* clonedEntities =
+        AZ::IdUtils::Remapper<AZ::EntityId>::CloneObjectAndGenerateNewIdsAndFixRefs(&sourceEntityList, idMap);
+    if (!clonedEntities)
     {
         AZ_Error("UiEntityContext", false, "Failed to clone source entities.");
         return false;
     }
 
-    resultEntities = clonedObjects->m_entities;
+    resultEntities = *clonedEntities;
 
     AddUiEntities(resultEntities);
 
-    clonedObjects->m_deleteEntitiesOnDestruction = false;
-    delete clonedObjects;
+    delete clonedEntities;
 
     return true;
 }
@@ -143,10 +131,7 @@ bool UiGameEntityContext::DestroyEntity(AZ::Entity* entity)
     if (owningContextId == m_contextId)
     {
         HandleEntitiesRemoved({ entity->GetId() });
-        AzFramework::RootSliceAsset rootSliceAsset;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSliceAsset, GetContextId(),
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootAsset);
-        rootSliceAsset->GetComponent()->RemoveEntity(entity);
+        m_entityOwnershipService->DestroyEntity(entity);
         return true;
     }
 
@@ -156,10 +141,8 @@ bool UiGameEntityContext::DestroyEntity(AZ::Entity* entity)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiGameEntityContext::InitUiContext()
 {
-    m_entityOwnershipService = AZStd::make_unique<AzFramework::SliceEntityOwnershipService>(GetContextId(), GetSerializeContext());
+    m_entityOwnershipService = AZStd::make_unique<UiSimpleEntityOwnershipService>(GetContextId(), GetSerializeContext());
     InitContext();
-
-    m_entityOwnershipService->InstantiateAllPrefabs();
 
     UiEntityContextRequestBus::Handler::BusConnect(GetContextId());
     UiGameEntityContextBus::Handler::BusConnect(GetContextId());
@@ -177,16 +160,10 @@ void UiGameEntityContext::DestroyUiContext()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiGameEntityContext::SaveToStreamForGame(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType)
 {
-    AzFramework::RootSliceAsset rootSliceAsset;
-    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSliceAsset, GetContextId(),
-        &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootAsset);
-    if (!rootSliceAsset)
-    {
-        return false;
-    }
+    AzFramework::EntityList allEntities;
+    m_entityOwnershipService->GetAllEntities(allEntities);
 
-    AZ::Entity* rootSliceEntity = rootSliceAsset->GetEntity();
-    return AZ::Utils::SaveObjectToStream<AZ::Entity>(stream, streamType, rootSliceEntity);
+    return AZ::Utils::SaveObjectToStream(stream, streamType, &allEntities);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +210,7 @@ void UiGameEntityContext::InitializeEntities(const AzFramework::EntityList& enti
 //////////////////////////////////////////////////////////////////////////
 bool UiGameEntityContext::ValidateEntitiesAreValidForContext(const AzFramework::EntityList& entities)
 {
-    // All entities in a slice being instantiated in the UI editor should
+    // All entities being loaded in the UI context should
     // have the UiElementComponent on them.
     for (AZ::Entity* entity : entities)
     {
@@ -341,7 +318,7 @@ void UiGameEntityContext::ProcessSpawnableEntities(UiSpawnId spawnId, const AzFr
     }
 
     // Clone entities from the spawnable template with new entity IDs
-    AZ::SliceComponent::EntityIdToEntityIdMap idMap;
+    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> idMap;
     AzFramework::EntityList clonedEntities;
     clonedEntities.reserve(templateEntities.size());
 

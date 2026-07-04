@@ -22,11 +22,11 @@
     "dependencies": [
         "GameState",
         "LocalUser",
-        "LyShine",
+        "Shine",
         "SaveData",
         "MessagePopup",
         "LmbrCentral",
         "UiBasics",
-        "LyShineExamples"
+        "ShineExamples"
     ]
 }

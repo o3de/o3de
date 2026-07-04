@@ -1,0 +1,72 @@
+{
+    "Entities": {
+        "Entity_[17633049880828760712]": {
+            "Id": {
+                "id": 17633049880828760712
+            },
+            "Name": "DropTarget2",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 32
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 100.0,
+                        "top": 10.0,
+                        "right": 180.0,
+                        "bottom": 90.0
+                    }
+                },
+                "Component_[17001288831791980728]": {
+                    "$type": "ScriptEditorComponent",
+                    "Id": 17001288831791980728
+                },
+                "Component_[17217584308910145132]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17217584308910145132
+                },
+                "Component_[7997305478627101102]": {
+                    "$type": "UiDropTargetComponent",
+                    "Id": 7997305478627101102,
+                    "DropValidStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17633049880828760712
+                            },
+                            "Color": [
+                                0.6666666865348816,
+                                1.0,
+                                0.498039186000824
+                            ]
+                        }
+                    ],
+                    "DropInvalidStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17633049880828760712
+                            },
+                            "Color": [
+                                1.0,
+                                0.0,
+                                0.0
+                            ]
+                        }
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

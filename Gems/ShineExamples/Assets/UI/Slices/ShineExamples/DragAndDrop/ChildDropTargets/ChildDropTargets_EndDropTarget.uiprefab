@@ -1,0 +1,146 @@
+{
+    "Entities": {
+        "Entity_[17641313041423979144]": {
+            "Id": {
+                "id": 17641313041423979144
+            },
+            "Name": "EndDropTarget",
+            "Components": {
+                "Component_[10132267487687110544]": {
+                    "$type": "UiElementComponent",
+                    "Id": 10132267487687110544,
+                    "Id": 103,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17647743170106806920
+                            }
+                        }
+                    ]
+                },
+                "Component_[15333478216472190740]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 15333478216472190740,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0
+                    },
+                    "Offsets": {
+                        "left": 95.0,
+                        "top": 10.0,
+                        "right": 175.0,
+                        "bottom": 90.0
+                    }
+                },
+                "Component_[15656356774350265324]": {
+                    "$type": "UiDropTargetComponent",
+                    "Id": 15656356774350265324,
+                    "DropValidStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17647743170106806920
+                            },
+                            "Color": [
+                                0.3333333134651184,
+                                1.0,
+                                0.498039186000824
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 17647743170106806920
+                            }
+                        }
+                    ],
+                    "DropInvalidStateActions": [
+                        {
+                            "$type": "UiInteractableStateColor",
+                            "TargetEntity": {
+                                "id": 17647743170106806920
+                            },
+                            "Color": [
+                                1.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        {
+                            "$type": "UiInteractableStateAlpha",
+                            "TargetEntity": {
+                                "id": 17647743170106806920
+                            }
+                        }
+                    ]
+                },
+                "Component_[2491642283471786389]": {
+                    "$type": "ScriptEditorComponent",
+                    "Id": 2491642283471786389,
+                    "ScriptComponent": {
+                        "Script": {
+                            "assetId": {
+                                "guid": "{BF96BC7F-36A9-59D9-8041-6FE553691FE6}",
+                                "subId": 1
+                            },
+                            "assetHint": "ui/scripts/ShineExamples/draganddrop/childdroptargets/childdroptargets_enddroptarget.luac"
+                        }
+                    },
+                    "ScriptAsset": {
+                        "assetId": {
+                            "guid": "{BF96BC7F-36A9-59D9-8041-6FE553691FE6}",
+                            "subId": 1
+                        },
+                        "assetHint": "ui/scripts/ShineExamples/draganddrop/childdroptargets/childdroptargets_enddroptarget.luac"
+                    }
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17647743170106806920]": {
+            "Id": {
+                "id": 17647743170106806920
+            },
+            "Name": "DropIndicator",
+            "Components": {
+                "Component_[17297944035583943276]": {
+                    "$type": "UiImageComponent",
+                    "Id": 17297944035583943276,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/button_normal.tif.streamingimage"
+                    },
+                    "Alpha": 0.0,
+                    "ImageType": 1
+                },
+                "Component_[17594758384579025792]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 17594758384579025792,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": -7.0,
+                        "top": 0.0,
+                        "right": 3.0,
+                        "bottom": 0.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        0.5
+                    ]
+                },
+                "Component_[8387534120646410831]": {
+                    "$type": "UiElementComponent",
+                    "Id": 8387534120646410831,
+                    "Id": 116
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

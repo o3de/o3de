@@ -98,8 +98,7 @@ bool PropertiesWrapper::AcceptsMimeData(const QMimeData* mimeData) const
     }
 
     ComponentAssetHelpers::ComponentAssetPairs componentAssetPairs;
-    AssetDropHelpers::AssetList sliceAssets;
-    AssetDropHelpers::DecodeSliceAndComponentAssetsFromMimeData(mimeData, componentAssetPairs, sliceAssets);
+    AssetDropHelpers::DecodeComponentAssetsFromMimeData(mimeData, componentAssetPairs);
 
     if (componentAssetPairs.empty())
     {
@@ -143,8 +142,7 @@ void PropertiesWrapper::dropEvent(QDropEvent* event)
 void PropertiesWrapper::DropMimeDataAssets(const QMimeData* mimeData)
 {
     ComponentAssetHelpers::ComponentAssetPairs componentAssetPairs;
-    AssetDropHelpers::AssetList sliceAssets;
-    AssetDropHelpers::DecodeSliceAndComponentAssetsFromMimeData(mimeData, componentAssetPairs, sliceAssets);
+    AssetDropHelpers::DecodeComponentAssetsFromMimeData(mimeData, componentAssetPairs);
 
     ComponentHelpers::AddComponentsWithAssetToSelectedEntities(componentAssetPairs);
 }

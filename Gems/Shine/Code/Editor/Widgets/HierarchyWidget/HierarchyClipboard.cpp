@@ -53,10 +53,8 @@ SerializeHelpers::SerializedEntryList& HierarchyClipboard::Serialize(
         AZ::Entity* e = i->GetElement();
         AZ_Assert(e, "No entity found for item");
 
-        // serialize this entity (and its descendants) to XML and get the set of prefab references
-        // used by the serialized entities
-        AZStd::unordered_set<AZ::Data::AssetId> referencedSliceAssets;
-        AZStd::string xml = GetXml(widget, Shine::EntityArray(1, e), false, referencedSliceAssets);
+        // serialize this entity (and its descendants) to XML
+        AZStd::string xml = GetXml(widget, Shine::EntityArray(1, e), false);
         AZ_Assert(!xml.empty(), "Failed to serialize");
 
         if (isUndo)
@@ -79,7 +77,7 @@ SerializeHelpers::SerializedEntryList& HierarchyClipboard::Serialize(
             }
 
             entryList.push_back(
-                SerializeHelpers::SerializedEntry{ i->GetEntityId(), parentId, insertAboveThisId, xml, "", referencedSliceAssets });
+                SerializeHelpers::SerializedEntry{ i->GetEntityId(), parentId, insertAboveThisId, xml, "" });
         }
         else // isRedo.
         {
@@ -118,7 +116,7 @@ bool HierarchyClipboard::Unserialize(HierarchyWidget* widget, SerializeHelpers::
     for (auto&& e : entryList)
     {
         HierarchyItem* item = HierarchyItem::RttiCast(HierarchyHelpers::ElementToItem(widget, e.m_id, false));
-        item->ReplaceElement(isUndo ? e.m_undoXml : e.m_redoXml, e.m_referencedSliceAssets);
+        item->ReplaceElement(isUndo ? e.m_undoXml : e.m_redoXml);
     }
 
     // Editor-side: Highlight.
@@ -143,8 +141,7 @@ void HierarchyClipboard::CopySelectedItemsToClipboard(HierarchyWidget* widget, c
     }
 
     // EntityArray -> XML.
-    AZStd::unordered_set<AZ::Data::AssetId> referencedSliceAssets; // returned from GetXML but not used in this case
-    AZStd::string xml = GetXml(widget, elements, true, referencedSliceAssets);
+    AZStd::string xml = GetXml(widget, elements, true);
 
     // XML -> Clipboard.
     if (!xml.empty())
@@ -197,10 +194,9 @@ void HierarchyClipboard::CreateElementsFromClipboard(
 }
 
 AZStd::string HierarchyClipboard::GetXml(
-    HierarchyWidget* widget,
+    [[maybe_unused]] HierarchyWidget* widget,
     const Shine::EntityArray& elements,
-    bool isCopyOperation,
-    AZStd::unordered_set<AZ::Data::AssetId>& referencedSliceAssets)
+    bool isCopyOperation)
 {
     if (elements.empty())
     {
@@ -208,8 +204,7 @@ AZStd::string HierarchyClipboard::GetXml(
         return "";
     }
 
-    AZ::SliceComponent* rootSlice = widget->GetEditorWindow()->GetSliceManager()->GetRootSlice();
-    AZStd::string result = SerializeHelpers::SaveElementsToXmlString(elements, rootSlice, isCopyOperation, referencedSliceAssets);
+    AZStd::string result = SerializeHelpers::SaveElementsToXmlString(elements, isCopyOperation);
 
     return result;
 }

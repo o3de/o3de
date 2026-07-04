@@ -68,10 +68,9 @@ namespace Shine
         // UiSystemToolsInterface interface implementation
         CanvasAssetHandle* LoadCanvasFromStream(AZ::IO::GenericStream& stream, const AZ::ObjectStream::FilterDescriptor& filterDesc) override;
         void SaveCanvasToStream(CanvasAssetHandle* canvas, AZ::IO::FileIOStream& stream) override;
-        AZ::SliceComponent* GetRootSliceSliceComponent(CanvasAssetHandle* canvas) override;
-        AZ::Entity* GetRootSliceEntity(CanvasAssetHandle* canvas) override;
+        AZStd::vector<AZ::Entity*>& GetChildEntities(CanvasAssetHandle* canvas) override;
         AZ::Entity* GetCanvasEntity(CanvasAssetHandle* canvas) override;
-        void ReplaceRootSliceSliceComponent(CanvasAssetHandle* canvas, AZ::SliceComponent* newSliceComponent) override;
+        void ReplaceChildEntities(CanvasAssetHandle* canvas, AZStd::vector<AZ::Entity*> newEntities) override;
         void ReplaceCanvasEntity(UiSystemToolsInterface::CanvasAssetHandle* canvas, AZ::Entity* newCanvasEntity) override;
         void DestroyCanvas(CanvasAssetHandle* canvas) override;
         ////////////////////////////////////////////////////////////////////////
@@ -80,7 +79,7 @@ namespace Shine
         // UiFrameworkInterface interface implementation
         bool HasUiElementComponent(AZ::Entity* entity) override;
         void AddEditorOnlyEntity(AZ::Entity* editorOnlyEntity, EntityIdSet& editorOnlyEntities) override;
-        void HandleEditorOnlyEntities(const EntityList& exportSliceEntities, const EntityIdSet& editorOnlyEntityIds) override;
+        void HandleEditorOnlyEntities(const EntityList& exportEntities, const EntityIdSet& editorOnlyEntityIds) override;
         ////////////////////////////////////////////////////////////////////////
 
         // CrySystemEventBus ///////////////////////////////////////////////////////

@@ -13,14 +13,16 @@
 #include <Shine/Bus/Tools/UiSystemToolsBus.h>
 #include <AzCore/Script/ScriptAsset.h>
 
+#include "UiPrefabInstance.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//! Wrapper class for canvas file. This allows us to make changes to what the top
-//! level objects are in the canvas file and do some conversion
+//! Wrapper class for canvas file. Supports v3 format (flat ChildEntities) and
+//! v4 format (ChildEntities + PrefabInstances with JSON Patch overrides).
 class UiCanvasFileObject
     : public UiSystemToolsInterface::CanvasAssetHandle
 {
 public:
-    ~UiCanvasFileObject() override { }
+    ~UiCanvasFileObject() override;
     AZ_CLASS_ALLOCATOR(UiCanvasFileObject, AZ::SystemAllocator);
     AZ_RTTI(UiCanvasFileObject, "{1F02632F-F113-49B1-85AD-8CD0FA78B8AA}");
 
@@ -28,28 +30,21 @@ public:
     static UiCanvasFileObject* LoadCanvasFromStream(AZ::IO::GenericStream& stream, const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor());
     static void SaveCanvasToStream(AZ::IO::GenericStream& stream, UiCanvasFileObject* canvasFileObject);
 
-    static AZ::Entity* LoadCanvasEntitiesFromStream(AZ::IO::GenericStream& stream, AZ::Entity*& rootSliceEntity);
+    static AZ::Entity* LoadCanvasEntitiesFromStream(
+        AZ::IO::GenericStream& stream,
+        AZStd::vector<AZ::Entity*>& childEntities,
+        AZStd::vector<UiPrefabInstance>& prefabInstances);
 
     static void Reflect(AZ::ReflectContext* context);
 
 public: // data
 
     AZ::Entity* m_canvasEntity = nullptr;
-    AZ::Entity* m_rootSliceEntity = nullptr;
 
-private: // static methods
+    //! Entities that belong directly to this canvas (not from any prefab reference)
+    AZStd::vector<AZ::Entity*> m_childEntities;
 
-    static UiCanvasFileObject* LoadCanvasEntitiesFromOldFormatFile(const char* buffer, size_t bufferSize, const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor());
-    static UiCanvasFileObject* LoadCanvasFromNewFormatStream(AZ::IO::GenericStream& stream, const AZ::ObjectStream::FilterDescriptor& filterDesc = AZ::ObjectStream::FilterDescriptor());
-
-    static AZ::SerializeContext::DataElementNode* FindRootElementInCanvasEntity(
-        AZ::SerializeContext& context,
-        AZ::SerializeContext::DataElementNode& canvasEntityNode);
-
-    static bool CreateRootSliceNodeAndCopyInEntities(
-        AZ::SerializeContext& context,
-        AZ::SerializeContext::DataElementNode& canvasFileObjectNode,
-        AZStd::vector<AZ::SerializeContext::DataElementNode>& copiedEntities);
-
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
+    //! Prefab instances referenced by this canvas. Each stores a source .uiprefab path,
+    //! entity ID mapping, and JSON Patch overrides. Entities are instantiated at load time.
+    AZStd::vector<UiPrefabInstance> m_prefabInstances;
 };

@@ -9,7 +9,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Slice/SliceAsset.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <Shine/Bus/UiCanvasUpdateNotificationBus.h>
 

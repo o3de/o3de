@@ -1,0 +1,112 @@
+{
+    "Entities": {
+        "Entity_[17239255758366495368]": {
+            "Id": {
+                "id": 17239255758366495368
+            },
+            "Name": "Text",
+            "Components": {
+                "Component_[12566577726618989226]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 12566577726618989226,
+                    "Anchors": {
+                        "left": 0.0,
+                        "top": 0.0,
+                        "right": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": 10.0,
+                        "top": 5.0,
+                        "right": -10.0,
+                        "bottom": -5.0
+                    }
+                },
+                "Component_[13401612511861694669]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 13401612511861694669
+                },
+                "Component_[3068610810953516373]": {
+                    "$type": "UiTextComponent",
+                    "Id": 3068610810953516373,
+                    "MarkupEnabled": true,
+                    "Color": [
+                        0.43137261271476746,
+                        0.43921568989753723,
+                        0.4431372880935669
+                    ],
+                    "FontFileName": {
+                        "AssetPath": "fonts/vera.fontfamily"
+                    },
+                    "WrapTextSetting": 1
+                },
+                "Component_[7596997558223279386]": {
+                    "$type": "UiElementComponent",
+                    "Id": 7596997558223279386,
+                    "Id": 3
+                }
+            },
+            "IsRuntimeActive": true
+        },
+        "Entity_[17239252292327887496]": {
+            "Id": {
+                "id": 17239252292327887496
+            },
+            "Name": "TooltipDisplay",
+            "Components": {
+                "Component_[10724594435242471471]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 10724594435242471471
+                },
+                "Component_[15622388059513698455]": {
+                    "$type": "UiTooltipDisplayComponent",
+                    "Id": 15622388059513698455,
+                    "Text": {
+                        "id": 17239255758366495368
+                    },
+                    "ShowSequence": "<None>",
+                    "HideSequence": "<None>"
+                },
+                "Component_[4402490242805119414]": {
+                    "$type": "UiImageComponent",
+                    "Id": 4402490242805119414,
+                    "SpritePath": {
+                        "AssetPath": "ui/textures/prefab/tooltip_sliced.tif.streamingimage"
+                    },
+                    "ImageType": 1
+                },
+                "Component_[9036244856088839610]": {
+                    "$type": "UiElementComponent",
+                    "Id": 9036244856088839610,
+                    "Id": 2,
+                    "ChildEntityIdOrder": [
+                        {
+                            "ChildEntityId": {
+                                "id": 17239255758366495368
+                            }
+                        }
+                    ]
+                },
+                "Component_[9535417654131057344]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 9535417654131057344,
+                    "Anchors": {
+                        "top": 1.0,
+                        "bottom": 1.0
+                    },
+                    "Offsets": {
+                        "left": -125.0,
+                        "top": -40.0,
+                        "right": 125.0,
+                        "bottom": 0.0
+                    },
+                    "Pivot": [
+                        0.0,
+                        1.0
+                    ]
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}

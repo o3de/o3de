@@ -1,0 +1,36 @@
+{
+    "Entities": {
+        "Entity_[17217477525396705928]": {
+            "Id": {
+                "id": 17217477525396705928
+            },
+            "Name": "LayoutGrid",
+            "Components": {
+                "Component_[14091154463284020414]": {
+                    "$type": "UiTransform2dComponent",
+                    "Id": 14091154463284020414,
+                    "Offsets": {
+                        "left": -250.0,
+                        "top": -250.0,
+                        "right": 250.0,
+                        "bottom": 250.0
+                    }
+                },
+                "Component_[15192607925375851583]": {
+                    "$type": "UiElementComponent",
+                    "Id": 15192607925375851583,
+                    "Id": 2
+                },
+                "Component_[5641567280814705703]": {
+                    "$type": "UiLayoutGridComponent",
+                    "Id": 5641567280814705703
+                },
+                "Component_[7602194099061691629]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 7602194099061691629
+                }
+            },
+            "IsRuntimeActive": true
+        }
+    }
+}
