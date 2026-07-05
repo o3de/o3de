@@ -26,8 +26,7 @@ namespace AZ
 
         RPI::Ptr<AoParentPass> AoParentPass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<AoParentPass> pass = aznew AoParentPass(descriptor);
-            return AZStd::move(pass);
+            return aznew AoParentPass(descriptor);
         }
 
         AoParentPass::AoParentPass(const RPI::PassDescriptor& descriptor)
