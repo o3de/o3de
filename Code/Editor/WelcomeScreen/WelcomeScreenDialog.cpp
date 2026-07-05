@@ -11,18 +11,19 @@
 #include "WelcomeScreenDialog.h"
 
 // Qt
-#include <QTableWidget>
-#include <QTableWidgetItem>
-#include <QToolTip>
-#include <QMenu>
+#include <QDateTime>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QHeaderView>
+#include <QMenu>
 #include <QMessageBox>
-#include <QScreen>
-#include <QTimer>
-#include <QDateTime>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QScreen>
+#include <QTimer>
+#include <QToolTip>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 
 #include <AzCore/Utils/Utils.h>
 
@@ -92,8 +93,11 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->recentLevelTable->setColumnCount(3);
     ui->recentLevelTable->setMouseTracking(true);
     ui->recentLevelTable->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->recentLevelTable->horizontalHeader()->hide();
-    ui->recentLevelTable->verticalHeader()->hide();
+    ui->recentLevelTable->setHeaderHidden(true);
+    ui->recentLevelTable->setRootIsDecorated(false);
+    ui->recentLevelTable->setIndentation(0);
+    ui->recentLevelTable->setUniformRowHeights(true);
+    ui->recentLevelTable->setAllColumnsShowFocus(true);
     ui->recentLevelTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->recentLevelTable->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->recentLevelTable->setIconSize(QSize(20, 20));
@@ -111,8 +115,8 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
 
     connect(ui->recentLevelTable, &QWidget::customContextMenuRequested, this, &WelcomeScreenDialog::OnShowContextMenu);
 
-    connect(ui->recentLevelTable, &QTableWidget::entered, this, &WelcomeScreenDialog::OnShowToolTip);
-    connect(ui->recentLevelTable, &QTableWidget::clicked, this, &WelcomeScreenDialog::OnRecentLevelTableItemClicked);
+    connect(ui->recentLevelTable, &QTreeWidget::entered, this, &WelcomeScreenDialog::OnShowToolTip);
+    connect(ui->recentLevelTable, &QTreeWidget::clicked, this, &WelcomeScreenDialog::OnRecentLevelTableItemClicked);
 
     connect(ui->newLevelButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnNewLevelBtnClicked);
     connect(ui->levelFileLabel, &QLabel::linkActivated, this, &WelcomeScreenDialog::OnNewLevelLabelClicked);
@@ -154,9 +158,9 @@ bool WelcomeScreenDialog::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() == QEvent::Show)
     {
-        ui->recentLevelTable->horizontalHeader()->resizeSection(0, ui->nameLabel->width());
-        ui->recentLevelTable->horizontalHeader()->resizeSection(1, ui->modifiedLabel->width());
-        ui->recentLevelTable->horizontalHeader()->resizeSection(2, ui->typeLabel->width());
+        ui->recentLevelTable->header()->resizeSection(0, ui->nameLabel->width());
+        ui->recentLevelTable->header()->resizeSection(1, ui->modifiedLabel->width());
+        ui->recentLevelTable->header()->resizeSection(2, ui->typeLabel->width());
     }
 
     return QDialog::eventFilter(watched, event);
@@ -200,8 +204,10 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
 
     int recentListSize = pList->GetSize();
     int currentRow = 0;
-    ui->recentLevelTable->setRowCount(recentListSize);
-     for (int i = 0; i < recentListSize; ++i)
+
+    constexpr int rowHeight = 48;
+    ui->recentLevelTable->clear();
+    for (int i = 0; i < recentListSize; ++i)
     {
         const QString& recentFile = pList->m_arrNames[i];
         if (recentFile.endsWith(m_levelExtension) && IsValidLevelName(recentFile))
@@ -228,32 +234,31 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
                     // the active-source check above and skip it.
                     if (isGemRooted || fullPath.contains(gamePath))
                     {
+                        auto* item = new QTreeWidgetItem(ui->recentLevelTable);
+                        item->setText(0, name);
                         if (gSettings.prefabSystem)
                         {
                             QIcon icon;
                             icon.addFile(QString::fromUtf8(":/Level/level.svg"), QSize(), QIcon::Normal, QIcon::Off);
-                            ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(icon, name));
-                        }
-                        else
-                        {
-                            ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(name));
+                            item->setIcon(0, icon);
                         }
                         QFileInfo file(recentFile);
                         QString date = QLocale::system().toString(file.lastModified(), QLocale::ShortFormat);
-                        ui->recentLevelTable->setItem(currentRow, 1, new QTableWidgetItem(date));
-                        ui->recentLevelTable->setItem(currentRow++, 2, new QTableWidgetItem(tr("Level")));
+                        item->setText(1, date);
+                        item->setText(2, tr("Level"));
+                        item->setSizeHint(0, QSize(0, rowHeight));
+                        ++currentRow;
                         m_levels.push_back(std::make_pair(name, recentFile));
                     }
                 }
             }
         }
     }
-    ui->recentLevelTable->setRowCount(currentRow);
-    ui->recentLevelTable->setMinimumHeight(currentRow * ui->recentLevelTable->verticalHeader()->defaultSectionSize());
-    ui->recentLevelTable->setMaximumHeight(currentRow * ui->recentLevelTable->verticalHeader()->defaultSectionSize());
+    ui->recentLevelTable->setMinimumHeight(currentRow * rowHeight);
+    ui->recentLevelTable->setMaximumHeight(currentRow * rowHeight);
     ui->levelFileLabel->setVisible(currentRow ? false : true);
 
-    ui->recentLevelTable->setCurrentIndex(QModelIndex());
+    ui->recentLevelTable->setCurrentItem(nullptr);
 }
 
 
@@ -261,7 +266,7 @@ void WelcomeScreenDialog::RemoveLevelEntry(int index)
 {
     TNamePathPair levelPath = m_levels[index];
 
-    ui->recentLevelTable->removeRow(index);
+    delete ui->recentLevelTable->takeTopLevelItem(index);
     m_levels.erase(m_levels.begin() + index);
 
 
@@ -309,7 +314,7 @@ void WelcomeScreenDialog::OnShowContextMenu(const QPoint& pos)
     QModelIndex index = ui->recentLevelTable->indexAt(pos);
     if (index.isValid())
     {
-        QString level = ui->recentLevelTable->itemAt(pos)->text();
+        QString level = ui->recentLevelTable->itemAt(pos)->text(0);
 
         QPoint globalPos = ui->recentLevelTable->viewport()->mapToGlobal(pos);
 
