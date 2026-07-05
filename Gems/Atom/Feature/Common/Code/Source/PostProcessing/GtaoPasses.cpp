@@ -24,8 +24,7 @@ namespace AZ
 
         RPI::Ptr<GtaoParentPass> GtaoParentPass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<GtaoParentPass> pass = aznew GtaoParentPass(descriptor);
-            return AZStd::move(pass);
+            return aznew GtaoParentPass(descriptor);
         }
 
         GtaoParentPass::GtaoParentPass(const RPI::PassDescriptor& descriptor)
@@ -121,8 +120,7 @@ namespace AZ
 
         RPI::Ptr<GtaoComputePass> GtaoComputePass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<GtaoComputePass> pass = aznew GtaoComputePass(descriptor);
-            return AZStd::move(pass);
+            return aznew GtaoComputePass(descriptor);
         }
 
         GtaoComputePass::GtaoComputePass(const RPI::PassDescriptor& descriptor)
