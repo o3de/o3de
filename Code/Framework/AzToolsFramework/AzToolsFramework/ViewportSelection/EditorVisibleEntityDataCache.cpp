@@ -8,6 +8,7 @@
 
 #include "EditorVisibleEntityDataCache.h"
 
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityModel.h>
@@ -58,9 +59,30 @@ namespace AzToolsFramework
     class EditorVisibleEntityDataCache::EditorVisibleEntityDataCacheImpl
     {
     public:
-        EntityIdList m_visibleEntityIds; //!< The EntityIds that are visible this frame.
-        EntityIdList m_prevVisibleEntityIds; //!< The EntityIds that were visible the previous frame (unsorted).
-        EntityDatas m_visibleEntityDatas; //!< Cached EntityData required by EditorTransformComponentSelection.
+        struct ViewportCache
+        {
+            EntityIdList m_visibleEntityIds; //!< The EntityIds that are visible this frame.
+            EntityIdList m_prevVisibleEntityIds; //!< The EntityIds that were visible the previous frame (unsorted).
+            EntityDatas m_visibleEntityDatas; //!< Cached EntityData required by EditorTransformComponentSelection.
+        };
+
+        template<typename UpdateEntityDataFn>
+        void ForEntityData(const AZ::EntityId entityId, UpdateEntityDataFn&& updateEntityDataFn)
+        {
+            for (auto& viewportCache : m_viewportCaches)
+            {
+                const auto entityIdIt = std::equal_range(
+                    viewportCache.second.m_visibleEntityDatas.begin(), viewportCache.second.m_visibleEntityDatas.end(), entityId,
+                    EntityDataComparer());
+                if (entityIdIt.first != entityIdIt.second)
+                {
+                    updateEntityDataFn(*entityIdIt.first);
+                }
+            }
+        }
+
+        AZStd::unordered_map<AzFramework::ViewportId, ViewportCache> m_viewportCaches;
+        ViewportCache* m_current = nullptr;
     };
 
     // constructor for EntityData to support emplace_back in vector
@@ -163,6 +185,8 @@ namespace AzToolsFramework
     EditorVisibleEntityDataCache::EditorVisibleEntityDataCache()
         : m_impl(AZStd::make_unique<EditorVisibleEntityDataCacheImpl>())
     {
+        m_impl->m_current = &m_impl->m_viewportCaches[AzFramework::InvalidViewportId];
+
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         AZ::TransformNotificationBus::Router::BusRouterConnect();
@@ -195,20 +219,23 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::AddEntityIds(const EntityIdList& entityIds)
     {
-        m_impl->m_visibleEntityIds.insert(m_impl->m_visibleEntityIds.end(), entityIds.begin(), entityIds.end());
+        m_impl->m_current->m_visibleEntityIds.insert(m_impl->m_current->m_visibleEntityIds.end(), entityIds.begin(), entityIds.end());
 
-        m_impl->m_visibleEntityDatas.reserve(m_impl->m_visibleEntityDatas.size() + entityIds.size());
-        for (AZ::EntityId entityId : m_impl->m_visibleEntityIds)
+        m_impl->m_current->m_visibleEntityDatas.reserve(m_impl->m_current->m_visibleEntityDatas.size() + entityIds.size());
+        for (AZ::EntityId entityId : m_impl->m_current->m_visibleEntityIds)
         {
-            m_impl->m_visibleEntityDatas.push_back(EntityDataFromEntityId(entityId));
+            m_impl->m_current->m_visibleEntityDatas.push_back(EntityDataFromEntityId(entityId));
         }
 
-        AZStd::sort(m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end());
+        AZStd::sort(m_impl->m_current->m_visibleEntityDatas.begin(), m_impl->m_current->m_visibleEntityDatas.end());
     }
 
     void EditorVisibleEntityDataCache::CalculateVisibleEntityDatas(const AzFramework::ViewportInfo& viewportInfo)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        EditorVisibleEntityDataCacheImpl::ViewportCache& cache = m_impl->m_viewportCaches[viewportInfo.m_viewportId];
+        m_impl->m_current = &cache;
 
         // request list of visible entities from authoritative system
         EntityIdList nextVisibleEntityIds;
@@ -217,27 +244,27 @@ namespace AzToolsFramework
             nextVisibleEntityIds);
 
         // only bother resorting if we know the lists have changed
-        if (!EntityIdListsEqual(m_impl->m_prevVisibleEntityIds, nextVisibleEntityIds))
+        if (!EntityIdListsEqual(cache.m_prevVisibleEntityIds, nextVisibleEntityIds))
         {
             // make a copy of the list, this will be sorted in-place
-            m_impl->m_visibleEntityIds = nextVisibleEntityIds;
+            cache.m_visibleEntityIds = nextVisibleEntityIds;
             // move/steal the nextVisibleEntityIds we requested for faster equality check next frame
-            m_impl->m_prevVisibleEntityIds = AZStd::move(nextVisibleEntityIds);
+            cache.m_prevVisibleEntityIds = AZStd::move(nextVisibleEntityIds);
 
             // sort copied incoming m_visibleEntityIds - expensive but does not happen often
-            AZStd::sort(m_impl->m_visibleEntityIds.begin(), m_impl->m_visibleEntityIds.end());
+            AZStd::sort(cache.m_visibleEntityIds.begin(), cache.m_visibleEntityIds.end());
 
             // find entities that are visible this frame but weren't last frame
             AZStd::vector<AZ::EntityId> added;
             std::set_difference(
-                m_impl->m_visibleEntityIds.begin(), m_impl->m_visibleEntityIds.end(), m_impl->m_visibleEntityDatas.begin(),
-                m_impl->m_visibleEntityDatas.end(), std::back_inserter(added), EntityDataComparer());
+                cache.m_visibleEntityIds.begin(), cache.m_visibleEntityIds.end(), cache.m_visibleEntityDatas.begin(),
+                cache.m_visibleEntityDatas.end(), std::back_inserter(added), EntityDataComparer());
 
             // find entities that are not visible this frame but were last frame
             AZStd::vector<EntityData> removed;
             std::set_difference(
-                m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(), m_impl->m_visibleEntityIds.begin(),
-                m_impl->m_visibleEntityIds.end(), std::back_inserter(removed), EntityDataComparer());
+                cache.m_visibleEntityDatas.begin(), cache.m_visibleEntityDatas.end(), cache.m_visibleEntityIds.begin(),
+                cache.m_visibleEntityIds.end(), std::back_inserter(removed), EntityDataComparer());
 
             // search for entityData in removed list, return true if it is found
             const auto removePredicate = [&removed](const EntityData& entityData)
@@ -248,86 +275,86 @@ namespace AzToolsFramework
             };
 
             // erase-remove idiom - bubble entities to be removed to the end, then erase them in one go
-            m_impl->m_visibleEntityDatas.erase(
-                AZStd::remove_if(m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(), removePredicate),
-                m_impl->m_visibleEntityDatas.end());
+            cache.m_visibleEntityDatas.erase(
+                AZStd::remove_if(cache.m_visibleEntityDatas.begin(), cache.m_visibleEntityDatas.end(), removePredicate),
+                cache.m_visibleEntityDatas.end());
 
             // for newly added entities, request their initial state when first cached
             // and add them to our tracked entity data
             for (AZ::EntityId entityId : added)
             {
-                m_impl->m_visibleEntityDatas.push_back(EntityDataFromEntityId(entityId));
+                cache.m_visibleEntityDatas.push_back(EntityDataFromEntityId(entityId));
             }
 
             // after inserting added elements, ensure we keep the visible entity data in sorted order
-            AZStd::sort(m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end());
+            AZStd::sort(cache.m_visibleEntityDatas.begin(), cache.m_visibleEntityDatas.end());
         }
     }
 
     size_t EditorVisibleEntityDataCache::VisibleEntityDataCount() const
     {
-        return m_impl->m_visibleEntityDatas.size();
+        return m_impl->m_current->m_visibleEntityDatas.size();
     }
 
     AZ::Vector3 EditorVisibleEntityDataCache::GetVisibleEntityPosition(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_worldFromLocal.GetTranslation();
+        return m_impl->m_current->m_visibleEntityDatas[index].m_worldFromLocal.GetTranslation();
     }
 
     const AZ::Transform& EditorVisibleEntityDataCache::GetVisibleEntityTransform(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_worldFromLocal;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_worldFromLocal;
     }
 
     AZ::EntityId EditorVisibleEntityDataCache::GetVisibleEntityId(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_entityId;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_entityId;
     }
 
     EditorVisibleEntityDataCache::ComponentEntityAccentType EditorVisibleEntityDataCache::GetVisibleEntityAccent(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_accent;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_accent;
     }
 
     bool EditorVisibleEntityDataCache::IsVisibleEntityLocked(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_locked;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_locked;
     }
 
     bool EditorVisibleEntityDataCache::IsVisibleEntityVisible(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_visible;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_visible;
     }
 
     bool EditorVisibleEntityDataCache::IsVisibleEntitySelected(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_selected;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_selected;
     }
 
     bool EditorVisibleEntityDataCache::IsVisibleEntityIconHidden(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_iconHidden;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_iconHidden;
     }
 
     bool EditorVisibleEntityDataCache::IsVisibleEntityIndividuallySelectableInViewport(const size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_visible && !m_impl->m_visibleEntityDatas[index].m_locked &&
-            m_impl->m_visibleEntityDatas[index].m_inFocus && !m_impl->m_visibleEntityDatas[index].m_descendantOfClosedContainer;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_visible && !m_impl->m_current->m_visibleEntityDatas[index].m_locked &&
+            m_impl->m_current->m_visibleEntityDatas[index].m_inFocus && !m_impl->m_current->m_visibleEntityDatas[index].m_descendantOfClosedContainer;
     }
 
     bool EditorVisibleEntityDataCache::IsVisibleEntityInFocusSubTree(size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_inFocus;
+        return m_impl->m_current->m_visibleEntityDatas[index].m_inFocus;
     }
 
     AZStd::optional<size_t> EditorVisibleEntityDataCache::GetVisibleEntityIndexFromId(const AZ::EntityId entityId) const
     {
         const auto entityIdIt =
-            std::equal_range(m_impl->m_visibleEntityDatas.begin(), m_impl->m_visibleEntityDatas.end(), entityId, EntityDataComparer());
+            std::equal_range(m_impl->m_current->m_visibleEntityDatas.begin(), m_impl->m_current->m_visibleEntityDatas.end(), entityId, EntityDataComparer());
 
         if (entityIdIt.first != entityIdIt.second)
         {
-            return AZStd::optional<size_t>(static_cast<size_t>(entityIdIt.first - m_impl->m_visibleEntityDatas.begin()));
+            return AZStd::optional<size_t>(static_cast<size_t>(entityIdIt.first - m_impl->m_current->m_visibleEntityDatas.begin()));
         }
 
         return {};
@@ -337,9 +364,12 @@ namespace AzToolsFramework
     {
         // ensure we refresh all EntityData after an undo/redo action as
         // the notification buses will not be called
-        for (EntityData& entityData : m_impl->m_visibleEntityDatas)
+        for (auto& viewportCache : m_impl->m_viewportCaches)
         {
-            entityData = EntityDataFromEntityId(entityData.m_entityId);
+            for (EntityData& entityData : viewportCache.second.m_visibleEntityDatas)
+            {
+                entityData = EntityDataFromEntityId(entityData.m_entityId);
+            }
         }
     }
 
@@ -347,70 +377,70 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const AZ::EntityId entityId = *EditorEntityVisibilityNotificationBus::GetCurrentBusId();
-
-        if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))
-        {
-            m_impl->m_visibleEntityDatas[entityIndex.value()].m_visible = visibility;
-        }
+        m_impl->ForEntityData(
+            *EditorEntityVisibilityNotificationBus::GetCurrentBusId(),
+            [visibility](EntityData& entityData)
+            {
+                entityData.m_visible = visibility;
+            });
     }
 
     void EditorVisibleEntityDataCache::OnEntityLockChanged(const bool locked)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const AZ::EntityId entityId = *EditorEntityLockComponentNotificationBus::GetCurrentBusId();
-
-        if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))
-        {
-            m_impl->m_visibleEntityDatas[entityIndex.value()].m_locked = locked;
-        }
+        m_impl->ForEntityData(
+            *EditorEntityLockComponentNotificationBus::GetCurrentBusId(),
+            [locked](EntityData& entityData)
+            {
+                entityData.m_locked = locked;
+            });
     }
 
     void EditorVisibleEntityDataCache::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
-
-        if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))
-        {
-            m_impl->m_visibleEntityDatas[entityIndex.value()].m_worldFromLocal = world;
-        }
+        m_impl->ForEntityData(
+            *AZ::TransformNotificationBus::GetCurrentBusId(),
+            [&world](EntityData& entityData)
+            {
+                entityData.m_worldFromLocal = world;
+            });
     }
 
     void EditorVisibleEntityDataCache::OnAccentTypeChanged(const EntityAccentType accent)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const AZ::EntityId entityId = *EditorComponentSelectionNotificationsBus::GetCurrentBusId();
-
-        if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))
-        {
-            m_impl->m_visibleEntityDatas[entityIndex.value()].m_accent = accent;
-        }
+        m_impl->ForEntityData(
+            *EditorComponentSelectionNotificationsBus::GetCurrentBusId(),
+            [accent](EntityData& entityData)
+            {
+                entityData.m_accent = accent;
+            });
     }
 
     void EditorVisibleEntityDataCache::OnSelected()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const AZ::EntityId entityId = *EntitySelectionEvents::Bus::GetCurrentBusId();
-
-        if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))
-        {
-            m_impl->m_visibleEntityDatas[entityIndex.value()].m_selected = true;
-        }
+        m_impl->ForEntityData(
+            *EntitySelectionEvents::Bus::GetCurrentBusId(),
+            [](EntityData& entityData)
+            {
+                entityData.m_selected = true;
+            });
     }
 
     void EditorVisibleEntityDataCache::OnDeselected()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const AZ::EntityId entityId = *EntitySelectionEvents::Bus::GetCurrentBusId();
-
-        if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))
-        {
-            m_impl->m_visibleEntityDatas[entityIndex.value()].m_selected = false;
-        }
+        m_impl->ForEntityData(
+            *EntitySelectionEvents::Bus::GetCurrentBusId(),
+            [](EntityData& entityData)
+            {
+                entityData.m_selected = false;
+            });
     }
 
     void EditorVisibleEntityDataCache::OnEntityIconChanged(const AZ::Data::AssetId& /*entityIconAssetId*/)
@@ -419,14 +449,16 @@ namespace AzToolsFramework
 
         const AZ::EntityId entityId = *EditorEntityIconComponentNotificationBus::GetCurrentBusId();
 
-        if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))
-        {
-            bool iconHidden = false;
-            EditorEntityIconComponentRequestBus::EventResult(
-                iconHidden, entityId, &EditorEntityIconComponentRequests::IsEntityIconHiddenInViewport);
+        bool iconHidden = false;
+        EditorEntityIconComponentRequestBus::EventResult(
+            iconHidden, entityId, &EditorEntityIconComponentRequests::IsEntityIconHiddenInViewport);
 
-            m_impl->m_visibleEntityDatas[entityIndex.value()].m_iconHidden = iconHidden;
-        }
+        m_impl->ForEntityData(
+            entityId,
+            [iconHidden](EntityData& entityData)
+            {
+                entityData.m_iconHidden = iconHidden;
+            });
     }
 
     void EditorVisibleEntityDataCache::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
@@ -440,11 +472,12 @@ namespace AzToolsFramework
         {
             for (AZ::EntityId descendantId : descendantIds)
             {
-                if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(descendantId))
-                {
-                    m_impl->m_visibleEntityDatas[entityIndex.value()].m_descendantOfClosedContainer =
-                        containerEntityInterface->IsUnderClosedContainerEntity(descendantId);
-                }
+                m_impl->ForEntityData(
+                    descendantId,
+                    [containerEntityInterface, descendantId](EntityData& entityData)
+                    {
+                        entityData.m_descendantOfClosedContainer = containerEntityInterface->IsUnderClosedContainerEntity(descendantId);
+                    });
             }
         }
     }
@@ -473,10 +506,12 @@ namespace AzToolsFramework
             {
                 for (const AZ::EntityId& descendantId : descendantsSet)
                 {
-                    if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(descendantId))
-                    {
-                        m_impl->m_visibleEntityDatas[entityIndex.value()].m_inFocus = focusModeInterface->IsInFocusSubTree(descendantId);
-                    }
+                    m_impl->ForEntityData(
+                        descendantId,
+                        [focusModeInterface, &descendantId](EntityData& entityData)
+                        {
+                            entityData.m_inFocus = focusModeInterface->IsInFocusSubTree(descendantId);
+                        });
                 }
             }
         }
@@ -485,11 +520,14 @@ namespace AzToolsFramework
             // If either focus was the invalid entity, refresh all entities.
             if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
             {
-                for (size_t entityIndex = 0; entityIndex < m_impl->m_visibleEntityDatas.size(); ++entityIndex)
+                for (auto& viewportCache : m_impl->m_viewportCaches)
                 {
-                    if (AZ::EntityId descendantId = GetVisibleEntityId(entityIndex); descendantId.IsValid())
+                    for (EntityData& entityData : viewportCache.second.m_visibleEntityDatas)
                     {
-                        m_impl->m_visibleEntityDatas[entityIndex].m_inFocus = focusModeInterface->IsInFocusSubTree(descendantId);
+                        if (entityData.m_entityId.IsValid())
+                        {
+                            entityData.m_inFocus = focusModeInterface->IsInFocusSubTree(entityData.m_entityId);
+                        }
                     }
                 }
             }
