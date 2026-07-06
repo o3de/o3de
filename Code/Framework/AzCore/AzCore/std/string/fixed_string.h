@@ -1503,25 +1503,15 @@ namespace AZStd
             return result;
         }
 
-
         static decltype(auto) format_arg(const wchar_t* format, va_list argList)
         {
             basic_fixed_string<wchar_t, MaxElementCount, char_traits<wchar_t>> result;
-#if defined(AZ_PLATFORM_WINDOWS)
-            int len = _vscwprintf(format, argList);
+            const int len = azvsnwprintf(result.data(), result.capacity() + 1, format, argList);
+            AZ_Assert(len >= 0, "azvsnwprintf failed! The formatted output does not fit in the fixed_string capacity of %zu wide characters.", result.capacity());
             if (len > 0)
             {
                 result.resize_no_construct(len);
-                len = azvsnwprintf(result.data(), result.capacity() + 1, format, argList);
-                AZ_Assert(len == static_cast<int>(result.size()), "azvsnwprintf failed!");
             }
-#else
-            constexpr int maxBufferLength = 2048;
-            wchar_t buffer[maxBufferLength];
-            [[maybe_unused]] const int len = azvsnwprintf(buffer, maxBufferLength, format, argList);
-            AZ_Assert(len != -1, "azvsnwprintf failed increase the buffer size!");
-            result += buffer;
-#endif
             return result;
         }
 

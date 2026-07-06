@@ -25,8 +25,6 @@ set(FILES
     AzCore/std/parallel/internal/thread_Windows.cpp
     ../Common/WinAPI/AzCore/std/parallel/config_WinAPI.h
     AzCore/std/parallel/config_Platform.h
-    AzCore/std/string/fixed_string_Platform.inl
-    ../Common/MSVC/AzCore/std/string/fixed_string_MSVC.inl
     ../Common/VisualStudio/AzCore/Natvis/azcore.natvis
     ../Common/VisualStudio/AzCore/Natvis/azcore.natstepfilter
     ../Common/VisualStudio/AzCore/Natvis/azcore.natjmc

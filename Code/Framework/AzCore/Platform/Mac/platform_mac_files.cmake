@@ -26,8 +26,6 @@ set(FILES
     AzCore/std/parallel/internal/thread_Platform.h
     ../Common/Apple/AzCore/std/parallel/config_Apple.h
     AzCore/std/parallel/config_Platform.h
-    AzCore/std/string/fixed_string_Platform.inl
-    ../Common/Clang/AzCore/std/string/fixed_string_Clang.inl
     ../Common/Apple/AzCore/Process/ProcessInfo_Apple.cpp
     ../Common/UnixLike/AzCore/Debug/StackTracer_UnixLike.cpp
     ../Common/Apple/AzCore/Debug/Trace_Apple.cpp

@@ -22,8 +22,6 @@ set(FILES
     AzCore/std/parallel/internal/thread_Platform.h
     AzCore/std/parallel/config_Android.h
     AzCore/std/parallel/config_Platform.h
-    AzCore/std/string/fixed_string_Platform.inl
-    ../Common/Clang/AzCore/std/string/fixed_string_Clang.inl
     ../Common/Unimplemented/AzCore/PlatformIncl_Unimplemented.h
     ../Common/UnixLike/AzCore/Platform_UnixLike.cpp
     AzCore/PlatformIncl_Platform.h
