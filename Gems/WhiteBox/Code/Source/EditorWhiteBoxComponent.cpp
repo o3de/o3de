@@ -22,7 +22,9 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/utils.h>
 #include <cmath>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
@@ -268,9 +270,69 @@ namespace WhiteBox
             z = static_cast<int>(key & CellMask) - CellBias;
         }
 
-        // Build a watertight, vertex-shared surface for a set of filled unit cells:
-        // for every cell, emit only the faces whose neighbour cell is empty.
-        void GenerateSurface(WhiteBoxMesh& mesh, const AZStd::unordered_set<AZ::u64>& cells)
+        // Voxel sizes are stored per cube (so cubes of different sizes can coexist). To
+        // keep the geometry keyed on a single integer lattice, cells are grouped by size
+        // and each group is meshed on its own grid. Sizes are quantised to this many world
+        // units so tiny float differences map to the same group.
+        constexpr float VoxelSizeQuantum = 1.0e-4f;
+        AZ::s32 QuantizeSize(float size)
+        {
+            const float s = size < 0.05f ? 0.05f : size;
+            return static_cast<AZ::s32>(std::lround(s / VoxelSizeQuantum));
+        }
+        float SizeFromQuantized(AZ::s32 q)
+        {
+            const float s = static_cast<float>(q) * VoxelSizeQuantum;
+            return s < 0.05f ? 0.05f : s;
+        }
+
+        // Voxel cells are stored as two parallel arrays (a packed integer coordinate and a
+        // world-space cube size per cell). Grouping them by quantised size gives one
+        // single-grid cell set per distinct cube size, which the surface/collider builders
+        // consume one size at a time - this is what lets differently sized cubes coexist in
+        // the same mesh without a shared baked grid.
+        using CellSet = AZStd::unordered_set<AZ::u64>;
+        using SizeGroups = AZStd::unordered_map<AZ::s32, CellSet>;
+
+        SizeGroups GroupBySize(const AZStd::vector<AZ::u64>& cells, const AZStd::vector<float>& sizes)
+        {
+            SizeGroups groups;
+            const size_t count = cells.size() < sizes.size() ? cells.size() : sizes.size();
+            for (size_t i = 0; i < count; ++i)
+            {
+                groups[QuantizeSize(sizes[i])].insert(cells[i]);
+            }
+            return groups;
+        }
+
+        void FlattenGroups(
+            const SizeGroups& groups, AZStd::vector<AZ::u64>& outCells, AZStd::vector<float>& outSizes)
+        {
+            outCells.clear();
+            outSizes.clear();
+            for (const auto& group : groups)
+            {
+                if (group.second.empty())
+                {
+                    continue; // drop emptied size groups so they don't linger
+                }
+                const float size = SizeFromQuantized(group.first);
+                for (const AZ::u64 cell : group.second)
+                {
+                    outCells.push_back(cell);
+                    outSizes.push_back(size);
+                }
+            }
+        }
+
+        // Build a light, vertex-shared surface for a set of filled voxel cells (each cell
+        // is a cellSize cube). Exposed faces are greedy-merged into maximal rectangles, so
+        // a single cube stays 8 verts / 6 faces and a wall or block becomes a handful of
+        // quads with only corner vertices - no interior/per-cell vertices exist to weigh
+        // the mesh down or clutter vertex/edge editing. Each merged rectangle is committed
+        // as one quad polygon. (Deliberately written with plain loops - no nested generic
+        // lambdas - so it behaves identically across compilers.)
+        void GenerateSurface(WhiteBoxMesh& mesh, const AZStd::unordered_set<AZ::u64>& cells, const float cellSize)
         {
             AZStd::unordered_map<AZ::u64, Api::VertexHandle> verts;
             const auto vert = [&](int x, int y, int z) -> Api::VertexHandle
@@ -282,44 +344,234 @@ namespace WhiteBox
                     return it->second;
                 }
                 const Api::VertexHandle h = Api::AddVertex(
-                    mesh, AZ::Vector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
+                    mesh, AZ::Vector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)) * cellSize);
                 verts.emplace(key, h);
                 return h;
             };
             const auto filled = [&](int x, int y, int z) { return cells.count(PackCell(x, y, z)) != 0; };
 
+            int polygonCount = 0;
+            const auto addQuad =
+                [&](Api::VertexHandle a, Api::VertexHandle b, Api::VertexHandle c, Api::VertexHandle d)
+            {
+                // One merged rectangle -> one quad polygon (two triangles sharing the four
+                // corner vertices), so its interior reads as a single face.
+                Api::FaceVertHandlesList quadFaces;
+                quadFaces.push_back(Api::FaceVertHandles{{a, b, c}});
+                quadFaces.push_back(Api::FaceVertHandles{{a, c, d}});
+                Api::AddPolygon(mesh, quadFaces);
+                ++polygonCount;
+            };
+
+            // Greedy-merge a plane's exposed footprint cells (packed as PackCell(a, b, 0))
+            // into maximal (a0..a1, b0..b1) rectangles. Returns them as flat quads of four
+            // ints {a0, a1, b0, b1}.
+            struct Rect { int a0, a1, b0, b1; };
+            const auto greedyRects = [](AZStd::unordered_set<AZ::u64> mask) -> AZStd::vector<Rect>
+            {
+                AZStd::vector<Rect> rects;
+                AZStd::vector<AZStd::pair<int, int>> list;
+                list.reserve(mask.size());
+                for (const AZ::u64 k : mask)
+                {
+                    int a, b, unused;
+                    UnpackCell(k, a, b, unused);
+                    list.push_back({ a, b });
+                }
+                AZStd::sort(list.begin(), list.end());
+                const auto has = [&mask](int a, int b) { return mask.count(PackCell(a, b, 0)) != 0; };
+                for (const auto& ab : list)
+                {
+                    const int a = ab.first;
+                    const int b = ab.second;
+                    if (!has(a, b))
+                    {
+                        continue;
+                    }
+                    int b1 = b;
+                    while (has(a, b1 + 1))
+                    {
+                        ++b1;
+                    }
+                    int a1 = a;
+                    bool grow = true;
+                    while (grow)
+                    {
+                        const int na = a1 + 1;
+                        for (int bb = b; bb <= b1; ++bb)
+                        {
+                            if (!has(na, bb))
+                            {
+                                grow = false;
+                                break;
+                            }
+                        }
+                        if (grow)
+                        {
+                            a1 = na;
+                        }
+                    }
+                    for (int aa = a; aa <= a1; ++aa)
+                    {
+                        for (int bb = b; bb <= b1; ++bb)
+                        {
+                            mask.erase(PackCell(aa, bb, 0));
+                        }
+                    }
+                    rects.push_back({ a, a1, b, b1 });
+                }
+                return rects;
+            };
+
+            // Collect exposed footprint cells per plane for one face direction. The plane
+            // key is the coordinate along the face normal; (a, b) are the two in-plane axes.
+            AZStd::unordered_map<int, AZStd::unordered_set<AZ::u64>> planes;
+            const auto clearPlanes = [&]() { planes.clear(); };
+
+            // +X : plane = x, footprint (a = y, b = z), face at px = x + 1.
             for (const AZ::u64 cellKey : cells)
             {
                 int x, y, z;
                 UnpackCell(cellKey, x, y, z);
-                const auto corner = [&](int a, int b, int c) { return vert(x + a, y + b, z + c); };
-
-                // each quad wound CCW as seen from outside (so its normal points out)
-                if (!filled(x + 1, y, z)) // +X
-                    Api::AddQuadPolygon(mesh, corner(1, 0, 0), corner(1, 1, 0), corner(1, 1, 1), corner(1, 0, 1));
-                if (!filled(x - 1, y, z)) // -X
-                    Api::AddQuadPolygon(mesh, corner(0, 1, 0), corner(0, 0, 0), corner(0, 0, 1), corner(0, 1, 1));
-                if (!filled(x, y + 1, z)) // +Y
-                    Api::AddQuadPolygon(mesh, corner(1, 1, 0), corner(0, 1, 0), corner(0, 1, 1), corner(1, 1, 1));
-                if (!filled(x, y - 1, z)) // -Y
-                    Api::AddQuadPolygon(mesh, corner(0, 0, 0), corner(1, 0, 0), corner(1, 0, 1), corner(0, 0, 1));
-                if (!filled(x, y, z + 1)) // +Z
-                    Api::AddQuadPolygon(mesh, corner(0, 0, 1), corner(1, 0, 1), corner(1, 1, 1), corner(0, 1, 1));
-                if (!filled(x, y, z - 1)) // -Z
-                    Api::AddQuadPolygon(mesh, corner(0, 1, 0), corner(1, 1, 0), corner(1, 0, 0), corner(0, 0, 0));
+                if (!filled(x + 1, y, z))
+                {
+                    planes[x].insert(PackCell(y, z, 0));
+                }
             }
+            for (auto& plane : planes)
+            {
+                const int px = plane.first + 1;
+                for (const Rect& r : greedyRects(plane.second))
+                {
+                    addQuad(vert(px, r.a0, r.b0), vert(px, r.a1 + 1, r.b0), vert(px, r.a1 + 1, r.b1 + 1),
+                        vert(px, r.a0, r.b1 + 1));
+                }
+            }
+            clearPlanes();
+
+            // -X : plane = x, footprint (a = y, b = z), face at px = x.
+            for (const AZ::u64 cellKey : cells)
+            {
+                int x, y, z;
+                UnpackCell(cellKey, x, y, z);
+                if (!filled(x - 1, y, z))
+                {
+                    planes[x].insert(PackCell(y, z, 0));
+                }
+            }
+            for (auto& plane : planes)
+            {
+                const int px = plane.first;
+                for (const Rect& r : greedyRects(plane.second))
+                {
+                    addQuad(vert(px, r.a1 + 1, r.b0), vert(px, r.a0, r.b0), vert(px, r.a0, r.b1 + 1),
+                        vert(px, r.a1 + 1, r.b1 + 1));
+                }
+            }
+            clearPlanes();
+
+            // +Y : plane = y, footprint (a = x, b = z), face at py = y + 1.
+            for (const AZ::u64 cellKey : cells)
+            {
+                int x, y, z;
+                UnpackCell(cellKey, x, y, z);
+                if (!filled(x, y + 1, z))
+                {
+                    planes[y].insert(PackCell(x, z, 0));
+                }
+            }
+            for (auto& plane : planes)
+            {
+                const int py = plane.first + 1;
+                for (const Rect& r : greedyRects(plane.second))
+                {
+                    addQuad(vert(r.a1 + 1, py, r.b0), vert(r.a0, py, r.b0), vert(r.a0, py, r.b1 + 1),
+                        vert(r.a1 + 1, py, r.b1 + 1));
+                }
+            }
+            clearPlanes();
+
+            // -Y : plane = y, footprint (a = x, b = z), face at py = y.
+            for (const AZ::u64 cellKey : cells)
+            {
+                int x, y, z;
+                UnpackCell(cellKey, x, y, z);
+                if (!filled(x, y - 1, z))
+                {
+                    planes[y].insert(PackCell(x, z, 0));
+                }
+            }
+            for (auto& plane : planes)
+            {
+                const int py = plane.first;
+                for (const Rect& r : greedyRects(plane.second))
+                {
+                    addQuad(vert(r.a0, py, r.b0), vert(r.a1 + 1, py, r.b0), vert(r.a1 + 1, py, r.b1 + 1),
+                        vert(r.a0, py, r.b1 + 1));
+                }
+            }
+            clearPlanes();
+
+            // +Z : plane = z, footprint (a = x, b = y), face at pz = z + 1.
+            for (const AZ::u64 cellKey : cells)
+            {
+                int x, y, z;
+                UnpackCell(cellKey, x, y, z);
+                if (!filled(x, y, z + 1))
+                {
+                    planes[z].insert(PackCell(x, y, 0));
+                }
+            }
+            for (auto& plane : planes)
+            {
+                const int pz = plane.first + 1;
+                for (const Rect& r : greedyRects(plane.second))
+                {
+                    addQuad(vert(r.a0, r.b0, pz), vert(r.a1 + 1, r.b0, pz), vert(r.a1 + 1, r.b1 + 1, pz),
+                        vert(r.a0, r.b1 + 1, pz));
+                }
+            }
+            clearPlanes();
+
+            // -Z : plane = z, footprint (a = x, b = y), face at pz = z.
+            for (const AZ::u64 cellKey : cells)
+            {
+                int x, y, z;
+                UnpackCell(cellKey, x, y, z);
+                if (!filled(x, y, z - 1))
+                {
+                    planes[z].insert(PackCell(x, y, 0));
+                }
+            }
+            for (auto& plane : planes)
+            {
+                const int pz = plane.first;
+                for (const Rect& r : greedyRects(plane.second))
+                {
+                    addQuad(vert(r.a0, r.b1 + 1, pz), vert(r.a1 + 1, r.b1 + 1, pz), vert(r.a1 + 1, r.b0, pz),
+                        vert(r.a0, r.b0, pz));
+                }
+            }
+            clearPlanes();
+
+            AZ_Printf(
+                "WhiteBoxVoxel", "GenerateSurface: %d cells -> %d quad polygons, %d verts",
+                static_cast<int>(cells.size()), polygonCount, static_cast<int>(verts.size()));
         }
 
-        // Quantize a vertex position to an integer lattice corner. Returns false if
-        // the position is not (near) an integer point - such a vertex cannot belong
-        // to the voxel surface, so its owning face is treated as freeform geometry.
-        bool QuantizeCorner(const AZ::Vector3& p, int& x, int& y, int& z)
+        // Quantize a vertex position to its voxel-grid cell index (positions are cell
+        // indices scaled by VoxelCellSize). Returns false if the position is not on the
+        // grid - such a vertex belongs to freeform geometry, not the voxel surface.
+        bool QuantizeCorner(const AZ::Vector3& p, const float cellSize, int& x, int& y, int& z)
         {
             constexpr float eps = 1e-3f;
-            const float rx = std::round(p.GetX());
-            const float ry = std::round(p.GetY());
-            const float rz = std::round(p.GetZ());
-            if (std::abs(p.GetX() - rx) > eps || std::abs(p.GetY() - ry) > eps || std::abs(p.GetZ() - rz) > eps)
+            const float sx = p.GetX() / cellSize;
+            const float sy = p.GetY() / cellSize;
+            const float sz = p.GetZ() / cellSize;
+            const float rx = std::round(sx);
+            const float ry = std::round(sy);
+            const float rz = std::round(sz);
+            if (std::abs(sx - rx) > eps || std::abs(sy - ry) > eps || std::abs(sz - rz) > eps)
             {
                 return false;
             }
@@ -352,7 +604,8 @@ namespace WhiteBox
         };
         using FaceSignatureSet = AZStd::set<FaceSignature, FaceSignatureLess>;
 
-        bool FaceSignatureFromPositions(const AZStd::vector<AZ::Vector3>& positions, FaceSignature& outSig)
+        bool FaceSignatureFromPositions(
+            const AZStd::vector<AZ::Vector3>& positions, const float cellSize, FaceSignature& outSig)
         {
             if (positions.size() != 3)
             {
@@ -361,7 +614,7 @@ namespace WhiteBox
             for (size_t i = 0; i < 3; ++i)
             {
                 int x, y, z;
-                if (!QuantizeCorner(positions[i], x, y, z))
+                if (!QuantizeCorner(positions[i], cellSize, x, y, z))
                 {
                     return false;
                 }
@@ -374,7 +627,7 @@ namespace WhiteBox
         // The set of triangle signatures that make up the voxel surface for `cells`.
         // Generated through the exact same path as the live mesh, so the signatures
         // match the faces actually present after a stamp/load.
-        FaceSignatureSet SurfaceFaceSignatures(const AZStd::unordered_set<AZ::u64>& cells)
+        FaceSignatureSet SurfaceFaceSignatures(const AZStd::unordered_set<AZ::u64>& cells, const float cellSize)
         {
             FaceSignatureSet sigs;
             if (cells.empty())
@@ -382,21 +635,186 @@ namespace WhiteBox
                 return sigs;
             }
             Api::WhiteBoxMeshPtr temp = Api::CreateWhiteBoxMesh();
-            GenerateSurface(*temp, cells);
+            GenerateSurface(*temp, cells, cellSize);
             for (const Api::FaceHandle& fh : Api::MeshFaceHandles(*temp))
             {
                 FaceSignature sig;
-                if (FaceSignatureFromPositions(Api::FaceVertexPositions(*temp, fh), sig))
+                if (FaceSignatureFromPositions(Api::FaceVertexPositions(*temp, fh), cellSize, sig))
                 {
                     sigs.insert(sig);
                 }
             }
             return sigs;
         }
+
+        // Greedy-mesh the voxel cells into a minimal indexed triangle set for a physics
+        // collider. A PhysX triangle mesh is a plain soup, so coplanar exposed faces can be
+        // merged into big rectangles (2 triangles each) - hugely fewer triangles than one
+        // quad per cell. Triangles are APPENDED to verts/indices (absolute indices).
+        void GreedyColliderTriangles(
+            const AZStd::unordered_set<AZ::u64>& cells, const float cellSize, AZStd::vector<AZ::Vector3>& verts,
+            AZStd::vector<AZ::u32>& indices)
+        {
+            AZStd::unordered_map<AZ::u64, AZ::u32> vmap;
+            const auto vert = [&](int x, int y, int z) -> AZ::u32
+            {
+                const AZ::u64 key = PackCell(x, y, z);
+                const auto it = vmap.find(key);
+                if (it != vmap.end())
+                {
+                    return it->second;
+                }
+                const AZ::u32 idx = static_cast<AZ::u32>(verts.size());
+                verts.push_back(
+                    AZ::Vector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)) * cellSize);
+                vmap.emplace(key, idx);
+                return idx;
+            };
+            const auto filled = [&](int x, int y, int z) { return cells.count(PackCell(x, y, z)) != 0; };
+            const auto packAB = [](int a, int b) -> AZ::u64 { return PackCell(a, b, 0); };
+
+            // A quad (a,b,c,d wound CCW) -> two triangles.
+            const auto quad = [&](AZ::u32 a, AZ::u32 b, AZ::u32 c, AZ::u32 d)
+            {
+                indices.push_back(a);
+                indices.push_back(b);
+                indices.push_back(c);
+                indices.push_back(a);
+                indices.push_back(c);
+                indices.push_back(d);
+            };
+
+            // Greedy-merge a plane's exposed (a,b) cells into maximal rectangles.
+            const auto greedy = [&](AZStd::unordered_set<AZ::u64>& mask, auto&& emit)
+            {
+                AZStd::vector<AZStd::pair<int, int>> list;
+                list.reserve(mask.size());
+                for (const AZ::u64 k : mask)
+                {
+                    int a, b, unused;
+                    UnpackCell(k, a, b, unused);
+                    list.push_back({a, b});
+                }
+                AZStd::sort(list.begin(), list.end());
+                for (const auto& ab : list)
+                {
+                    const int a = ab.first;
+                    const int b = ab.second;
+                    if (mask.count(packAB(a, b)) == 0)
+                    {
+                        continue;
+                    }
+                    int b1 = b;
+                    while (mask.count(packAB(a, b1 + 1)) != 0)
+                    {
+                        ++b1;
+                    }
+                    int a1 = a;
+                    bool grow = true;
+                    while (grow)
+                    {
+                        const int na = a1 + 1;
+                        for (int bb = b; bb <= b1; ++bb)
+                        {
+                            if (mask.count(packAB(na, bb)) == 0)
+                            {
+                                grow = false;
+                                break;
+                            }
+                        }
+                        if (grow)
+                        {
+                            a1 = na;
+                        }
+                    }
+                    for (int aa = a; aa <= a1; ++aa)
+                    {
+                        for (int bb = b; bb <= b1; ++bb)
+                        {
+                            mask.erase(packAB(aa, bb));
+                        }
+                    }
+                    emit(a, a1, b, b1);
+                }
+            };
+
+            const auto buildDir = [&](auto neighbourEmpty, auto planeIndex, auto inA, auto inB, auto makeQuad)
+            {
+                AZStd::unordered_map<int, AZStd::unordered_set<AZ::u64>> planes;
+                for (const AZ::u64 cellKey : cells)
+                {
+                    int x, y, z;
+                    UnpackCell(cellKey, x, y, z);
+                    if (neighbourEmpty(x, y, z))
+                    {
+                        planes[planeIndex(x, y, z)].insert(packAB(inA(x, y, z), inB(x, y, z)));
+                    }
+                }
+                for (auto& plane : planes)
+                {
+                    const int p = plane.first;
+                    greedy(plane.second, [&](int a0, int a1, int b0, int b1) { makeQuad(p, a0, a1, b0, b1); });
+                }
+            };
+
+            buildDir(
+                [&](int x, int y, int z) { return !filled(x + 1, y, z); }, [](int x, int, int) { return x; },
+                [](int, int y, int) { return y; }, [](int, int, int z) { return z; },
+                [&](int px1, int y0, int y1, int z0, int z1)
+                {
+                    const int px = px1 + 1;
+                    quad(vert(px, y0, z0), vert(px, y1 + 1, z0), vert(px, y1 + 1, z1 + 1), vert(px, y0, z1 + 1));
+                });
+            buildDir(
+                [&](int x, int y, int z) { return !filled(x - 1, y, z); }, [](int x, int, int) { return x; },
+                [](int, int y, int) { return y; }, [](int, int, int z) { return z; },
+                [&](int px, int y0, int y1, int z0, int z1)
+                { quad(vert(px, y1 + 1, z0), vert(px, y0, z0), vert(px, y0, z1 + 1), vert(px, y1 + 1, z1 + 1)); });
+            buildDir(
+                [&](int x, int y, int z) { return !filled(x, y + 1, z); }, [](int, int y, int) { return y; },
+                [](int x, int, int) { return x; }, [](int, int, int z) { return z; },
+                [&](int py1, int x0, int x1, int z0, int z1)
+                {
+                    const int py = py1 + 1;
+                    quad(vert(x1 + 1, py, z0), vert(x0, py, z0), vert(x0, py, z1 + 1), vert(x1 + 1, py, z1 + 1));
+                });
+            buildDir(
+                [&](int x, int y, int z) { return !filled(x, y - 1, z); }, [](int, int y, int) { return y; },
+                [](int x, int, int) { return x; }, [](int, int, int z) { return z; },
+                [&](int py, int x0, int x1, int z0, int z1)
+                { quad(vert(x0, py, z0), vert(x1 + 1, py, z0), vert(x1 + 1, py, z1 + 1), vert(x0, py, z1 + 1)); });
+            buildDir(
+                [&](int x, int y, int z) { return !filled(x, y, z + 1); }, [](int, int, int z) { return z; },
+                [](int x, int, int) { return x; }, [](int, int y, int) { return y; },
+                [&](int pz1, int x0, int x1, int y0, int y1)
+                {
+                    const int pz = pz1 + 1;
+                    quad(vert(x0, y0, pz), vert(x1 + 1, y0, pz), vert(x1 + 1, y1 + 1, pz), vert(x0, y1 + 1, pz));
+                });
+            buildDir(
+                [&](int x, int y, int z) { return !filled(x, y, z - 1); }, [](int, int, int z) { return z; },
+                [](int x, int, int) { return x; }, [](int, int y, int) { return y; },
+                [&](int pz, int x0, int x1, int y0, int y1)
+                { quad(vert(x0, y1 + 1, pz), vert(x1 + 1, y1 + 1, pz), vert(x1 + 1, y0, pz), vert(x0, y0, pz)); });
+        }
     } // namespace VoxelDetail
 
+    void EditorWhiteBoxComponent::NormalizeVoxelData()
+    {
+        // Older scenes stored just the cell coordinates plus a single baked cell size
+        // (m_voxelCellSize). Give every such cell its own size entry so the rest of the
+        // pipeline can treat all data as per-cell sized. Also guards against any stale
+        // mismatch between the two parallel arrays.
+        if (m_voxelCellSizes.size() != m_voxelCells.size())
+        {
+            const float legacy = m_voxelCellSize < 0.05f ? 0.05f : m_voxelCellSize;
+            m_voxelCellSizes.assign(m_voxelCells.size(), legacy);
+        }
+    }
+
     void EditorWhiteBoxComponent::RegenerateVoxelMesh(
-        const AZStd::unordered_set<AZ::u64>& oldCells, const AZStd::unordered_set<AZ::u64>& newCells)
+        const AZStd::vector<AZ::u64>& oldCells, const AZStd::vector<float>& oldSizes,
+        const AZStd::vector<AZ::u64>& newCells, const AZStd::vector<float>& newSizes)
     {
         WhiteBoxMesh* mesh = GetWhiteBoxMesh();
         if (mesh == nullptr)
@@ -404,32 +822,63 @@ namespace WhiteBox
             return;
         }
 
-        // Remove ONLY the faces that belong to the previous voxel surface, leaving
-        // every freeform face (and any voxel face the user has since hand-edited off
-        // the integer lattice) untouched. Identifying the old faces by signature -
-        // rather than clearing the whole mesh - is what preserves manual edits.
-        const VoxelDetail::FaceSignatureSet oldSigs = VoxelDetail::SurfaceFaceSignatures(oldCells);
-        if (!oldSigs.empty())
+        const VoxelDetail::SizeGroups oldGroups = VoxelDetail::GroupBySize(oldCells, oldSizes);
+        const VoxelDetail::SizeGroups newGroups = VoxelDetail::GroupBySize(newCells, newSizes);
+
+        // Remove ONLY the faces that belong to the previous voxel surface, leaving every
+        // freeform face (and any voxel face the user has since hand-edited off the lattice)
+        // untouched. Each cube size lives on its own grid, so match faces per size group:
+        // pre-compute the surface signatures for every old size, then keep any mesh face
+        // whose corners quantise (at that size) onto one of those signatures.
+        AZStd::unordered_map<AZ::s32, VoxelDetail::FaceSignatureSet> oldSigsBySize;
+        for (const auto& group : oldGroups)
+        {
+            oldSigsBySize.emplace(
+                group.first, VoxelDetail::SurfaceFaceSignatures(group.second, VoxelDetail::SizeFromQuantized(group.first)));
+        }
+
+        int removedFaces = 0;
+        if (!oldSigsBySize.empty())
         {
             Api::FaceHandles toRemove;
             for (const Api::FaceHandle& fh : Api::MeshFaceHandles(*mesh))
             {
-                VoxelDetail::FaceSignature sig;
-                if (VoxelDetail::FaceSignatureFromPositions(Api::FaceVertexPositions(*mesh, fh), sig) &&
-                    oldSigs.find(sig) != oldSigs.end())
+                const AZStd::vector<AZ::Vector3> positions = Api::FaceVertexPositions(*mesh, fh);
+                for (const auto& sizeSigs : oldSigsBySize)
                 {
-                    toRemove.push_back(fh);
+                    VoxelDetail::FaceSignature sig;
+                    if (VoxelDetail::FaceSignatureFromPositions(
+                            positions, VoxelDetail::SizeFromQuantized(sizeSigs.first), sig) &&
+                        sizeSigs.second.find(sig) != sizeSigs.second.end())
+                    {
+                        toRemove.push_back(fh);
+                        break;
+                    }
                 }
             }
             if (!toRemove.empty())
             {
                 // Single batched removal - handles are invalidated by garbage_collect.
+                removedFaces = static_cast<int>(toRemove.size());
                 Api::RemoveFaces(*mesh, toRemove);
             }
         }
 
-        // Add the new voxel surface (a self-welded, watertight shell).
-        VoxelDetail::GenerateSurface(*mesh, newCells);
+        // Add the new voxel surface, one grid per cube size.
+        for (const auto& group : newGroups)
+        {
+            VoxelDetail::GenerateSurface(*mesh, group.second, VoxelDetail::SizeFromQuantized(group.first));
+        }
+
+        // Purge vertices orphaned by the face removal above. RemoveFaces keeps isolated
+        // vertices, which is why clearing / re-stamping used to leave stray points visible
+        // in vertex and edge editing modes; deleting them here keeps the mesh clean.
+        Api::RemoveIsolatedVertices(*mesh);
+
+        AZ_Printf(
+            "WhiteBoxVoxel", "RegenerateVoxelMesh: old=%d new=%d cells (%d old sizes, %d new sizes), removedFaces=%d",
+            static_cast<int>(oldCells.size()), static_cast<int>(newCells.size()), static_cast<int>(oldGroups.size()),
+            static_cast<int>(newGroups.size()), removedFaces);
 
         Api::CalculateNormals(*mesh);
         Api::CalculatePlanarUVs(*mesh);
@@ -440,23 +889,175 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::SetVoxelCell(const AZ::Vector3& cellMin, const bool filled)
     {
+        NormalizeVoxelData();
+
+        const AZ::s32 sizeKey = VoxelDetail::QuantizeSize(m_drawUnitCubeSize);
         const AZ::u64 key = VoxelDetail::PackCell(
             static_cast<int>(std::floor(cellMin.GetX())), static_cast<int>(std::floor(cellMin.GetY())),
             static_cast<int>(std::floor(cellMin.GetZ())));
 
-        // rebuild the set from the serialized vector each time (keeps in sync with undo)
-        const AZStd::unordered_set<AZ::u64> oldCells(m_voxelCells.begin(), m_voxelCells.end());
-        AZStd::unordered_set<AZ::u64> newCells = oldCells;
-        const bool changed = filled ? newCells.insert(key).second : (newCells.erase(key) > 0);
+        // Snapshot the old state (keeps regen/undo in sync), then add or remove this cell
+        // in the group for the CURRENT Cube Size - existing cubes of other sizes are left
+        // exactly as they are, so the size can change freely without clearing the stamp.
+        const AZStd::vector<AZ::u64> oldCells = m_voxelCells;
+        const AZStd::vector<float> oldSizes = m_voxelCellSizes;
+
+        VoxelDetail::SizeGroups groups = VoxelDetail::GroupBySize(oldCells, oldSizes);
+        const bool changed =
+            filled ? groups[sizeKey].insert(key).second : (groups[sizeKey].erase(key) > 0);
         if (!changed)
         {
             return; // already in the requested state
         }
 
         AzToolsFramework::ScopedUndoBatch undoBatch(filled ? "Stamp Voxel" : "Remove Voxel");
-        m_voxelCells.assign(newCells.begin(), newCells.end());
-        RegenerateVoxelMesh(oldCells, newCells);
+        VoxelDetail::FlattenGroups(groups, m_voxelCells, m_voxelCellSizes);
+        RegenerateVoxelMesh(oldCells, oldSizes, m_voxelCells, m_voxelCellSizes);
         undoBatch.MarkEntityDirty(GetEntityId());
+    }
+
+    void EditorWhiteBoxComponent::SetVoxelCells(const AZStd::vector<AZ::Vector3>& cellMins, const bool filled)
+    {
+        if (cellMins.empty())
+        {
+            return;
+        }
+
+        NormalizeVoxelData();
+
+        const AZ::s32 sizeKey = VoxelDetail::QuantizeSize(m_drawUnitCubeSize);
+
+        // Snapshot the old state, then apply every cell in the CURRENT Cube Size's group in
+        // one shot (single undo step + regen). Cubes already placed at other sizes are
+        // untouched, so mixed sizes coexist and the size can be changed between stamps.
+        const AZStd::vector<AZ::u64> oldCells = m_voxelCells;
+        const AZStd::vector<float> oldSizes = m_voxelCellSizes;
+
+        VoxelDetail::SizeGroups groups = VoxelDetail::GroupBySize(oldCells, oldSizes);
+        VoxelDetail::CellSet& target = groups[sizeKey];
+
+        bool changed = false;
+        for (const AZ::Vector3& cellMin : cellMins)
+        {
+            const AZ::u64 key = VoxelDetail::PackCell(
+                static_cast<int>(std::floor(cellMin.GetX())), static_cast<int>(std::floor(cellMin.GetY())),
+                static_cast<int>(std::floor(cellMin.GetZ())));
+            changed = (filled ? target.insert(key).second : (target.erase(key) > 0)) || changed;
+        }
+
+        if (!changed)
+        {
+            return; // every requested cell was already in the requested state
+        }
+
+        AzToolsFramework::ScopedUndoBatch undoBatch(filled ? "Stamp Cube" : "Remove Cube");
+        VoxelDetail::FlattenGroups(groups, m_voxelCells, m_voxelCellSizes);
+        RegenerateVoxelMesh(oldCells, oldSizes, m_voxelCells, m_voxelCellSizes);
+        undoBatch.MarkEntityDirty(GetEntityId());
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::ClearVoxelCubes()
+    {
+        NormalizeVoxelData();
+
+        if (m_voxelCells.empty())
+        {
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        // Remove the whole voxel surface (regenerate against an empty set) and purge the
+        // orphaned vertices. Freeform / hand-edited faces are left untouched.
+        const AZStd::vector<AZ::u64> oldCells = m_voxelCells;
+        const AZStd::vector<float> oldSizes = m_voxelCellSizes;
+        AzToolsFramework::ScopedUndoBatch undoBatch("Clear Cube Stamp");
+        m_voxelCells.clear();
+        m_voxelCellSizes.clear();
+        RegenerateVoxelMesh(oldCells, oldSizes, m_voxelCells, m_voxelCellSizes);
+        undoBatch.MarkEntityDirty(GetEntityId());
+        return AZ::Edit::PropertyRefreshLevels::None;
+    }
+
+    bool EditorWhiteBoxComponent::BuildColliderMesh(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
+    {
+        vertices.clear();
+        indices.clear();
+
+        // Only override the collider when this mesh actually has stamped cubes; otherwise
+        // let the collider use its normal per-face path (default shapes, freeform, CSG).
+        if (m_voxelCells.empty())
+        {
+            return false;
+        }
+
+        WhiteBoxMesh* mesh = GetWhiteBoxMesh();
+        if (mesh == nullptr)
+        {
+            return false;
+        }
+
+        const float cellSize = m_voxelCellSize < 0.05f ? 0.05f : m_voxelCellSize;
+        const AZStd::unordered_set<AZ::u64> cells(m_voxelCells.begin(), m_voxelCells.end());
+        const VoxelDetail::FaceSignatureSet voxelSigs = VoxelDetail::SurfaceFaceSignatures(cells, cellSize);
+
+        // 1. Keep per-face triangles for anything that is NOT part of the voxel surface
+        //    (hand-edited / freeform faces), welded by white box vertex handle.
+        AZStd::unordered_map<int, AZ::u32> vmap;
+        const auto vtx = [&](const Api::VertexHandle& vh) -> AZ::u32
+        {
+            const int key = vh.Index();
+            const auto it = vmap.find(key);
+            if (it != vmap.end())
+            {
+                return it->second;
+            }
+            const AZ::u32 idx = static_cast<AZ::u32>(vertices.size());
+            vertices.push_back(Api::VertexPosition(*mesh, vh));
+            vmap.emplace(key, idx);
+            return idx;
+        };
+        for (const Api::FaceHandle& fh : Api::MeshFaceHandles(*mesh))
+        {
+            VoxelDetail::FaceSignature sig;
+            if (VoxelDetail::FaceSignatureFromPositions(Api::FaceVertexPositions(*mesh, fh), cellSize, sig) &&
+                voxelSigs.find(sig) != voxelSigs.end())
+            {
+                continue; // voxel face - emitted by the greedy pass below
+            }
+            const auto he = Api::FaceHalfedgeHandles(*mesh, fh);
+            if (he.size() < 3)
+            {
+                continue;
+            }
+            AZStd::vector<AZ::u32> fi;
+            fi.reserve(he.size());
+            for (const auto& h : he)
+            {
+                fi.push_back(vtx(Api::HalfedgeVertexHandleAtTip(*mesh, h)));
+            }
+            for (size_t i = 1; i + 1 < fi.size(); ++i)
+            {
+                if (fi[0] == fi[i] || fi[i] == fi[i + 1] || fi[0] == fi[i + 1])
+                {
+                    continue;
+                }
+                indices.push_back(fi[0]);
+                indices.push_back(fi[i]);
+                indices.push_back(fi[i + 1]);
+            }
+        }
+
+        const int freeformTris = static_cast<int>(indices.size() / 3);
+
+        // 2. Greedy-meshed triangles for the voxel surface (far fewer than per cell).
+        VoxelDetail::GreedyColliderTriangles(cells, cellSize, vertices, indices);
+        const int totalTris = static_cast<int>(indices.size() / 3);
+
+        AZ_Printf(
+            "WhiteBoxCollider", "BuildColliderMesh: cells=%d freeformTris=%d greedyTris=%d totalTris=%d verts=%d",
+            static_cast<int>(cells.size()), freeformTris, totalTris - freeformTris, totalTris,
+            static_cast<int>(vertices.size()));
+
+        return !indices.empty();
     }
 
     WhiteBoxMesh* EditorWhiteBoxComponent::EvaluatedMesh()
@@ -470,19 +1071,27 @@ namespace WhiteBox
         return GetWhiteBoxMesh();
     }
 
-    void EditorWhiteBoxComponent::EvaluateLiveBoolean()
+    WhiteBoxMesh* EditorWhiteBoxComponent::GetEvaluatedWhiteBoxMesh()
     {
-        m_displayMesh.reset();
+        return EvaluatedMesh();
+    }
 
-        if (!m_liveBoolean || !m_booleanSourceEntity.IsValid() || m_booleanSourceEntity == GetEntityId())
+    WhiteBoxMesh* EditorWhiteBoxComponent::GetLiveBooleanDisplayMesh()
+    {
+        return m_displayMesh.get();
+    }
+
+    Api::WhiteBoxMeshPtr EditorWhiteBoxComponent::EvaluateBooleanMesh()
+    {
+        if (!m_booleanSourceEntity.IsValid() || m_booleanSourceEntity == GetEntityId())
         {
-            return;
+            return nullptr;
         }
 
         WhiteBoxMesh* baseMesh = GetWhiteBoxMesh();
         if (baseMesh == nullptr)
         {
-            return;
+            return nullptr;
         }
 
         AZ::Entity* sourceEntity = nullptr;
@@ -490,17 +1099,17 @@ namespace WhiteBox
             sourceEntity, &AZ::ComponentApplicationRequests::FindEntity, m_booleanSourceEntity);
         if (sourceEntity == nullptr)
         {
-            return;
+            return nullptr;
         }
         const auto sourceComponents = sourceEntity->FindComponents<EditorWhiteBoxComponent>();
         if (sourceComponents.empty())
         {
-            return;
+            return nullptr;
         }
         WhiteBoxMesh* sourceMesh = sourceComponents[0]->GetWhiteBoxMesh();
         if (sourceMesh == nullptr)
         {
-            return;
+            return nullptr;
         }
 
         AZ::Transform thisWorldTM = AZ::Transform::CreateIdentity();
@@ -513,21 +1122,56 @@ namespace WhiteBox
         Api::WhiteBoxMeshPtr evaluated = Api::CloneMesh(*baseMesh);
         if (!evaluated)
         {
-            return;
+            return nullptr;
         }
         if (Api::ApplyMeshBoolean(*evaluated, *sourceMesh, operandTransform, m_booleanOperation))
         {
             Api::CalculateNormals(*evaluated);
             Api::CalculatePlanarUVs(*evaluated);
-            m_displayMesh = AZStd::move(evaluated);
+            return evaluated;
         }
-        // on failure (no overlap) m_displayMesh stays null -> falls back to the base.
+        // on failure (no overlap) return null -> callers fall back to the base mesh.
+        return nullptr;
+    }
+
+    void EditorWhiteBoxComponent::EvaluateLiveBoolean()
+    {
+        // Always evaluate the boolean whenever a source is set, independent of the live flag,
+        // so the baked game-mode boolean variant exists even when the live boolean is off.
+        // This is what lets runtime Lua toggle the boolean on from a base start. The live flag
+        // only affects what EvaluatedMesh() returns (what is displayed / used by the edit-time
+        // collider); the game entity always receives both variants when a source is present.
+        m_displayMesh = EvaluateBooleanMesh();
+
+        // Cache the true (uncut) base render data (serialized) so the game-mode bake always has
+        // the base variant, even on a clone where GetWhiteBoxMesh() is null.
+        if (WhiteBoxMesh* baseMesh = GetWhiteBoxMesh())
+        {
+            m_bakedBaseRenderData = CreateWhiteBoxRenderData(*baseMesh, m_material);
+        }
+
+        // Cache the boolean-evaluated render data (serialized) so the game-mode bake can supply
+        // the boolean render variant even when BuildGameEntity runs on a cloned entity, where
+        // the non-serialized m_displayMesh is null.
+        if (m_displayMesh)
+        {
+            m_bakedBooleanRenderData = CreateWhiteBoxRenderData(*m_displayMesh, m_material);
+        }
+        else if (!m_booleanSourceEntity.IsValid() || m_booleanSourceEntity == GetEntityId())
+        {
+            // no boolean source -> there is no boolean variant; clear the cache
+            m_bakedBooleanRenderData = WhiteBoxRenderData{};
+        }
+        // else: a source is set but evaluation transiently failed (e.g. the source entity is
+        // not active yet at load time). Keep any previously cached boolean render data.
     }
 
     void EditorWhiteBoxComponent::UpdateBooleanSourceListener()
     {
         m_booleanSourceListener.BusDisconnect();
-        if (m_liveBoolean && m_booleanSourceEntity.IsValid() && m_booleanSourceEntity != GetEntityId())
+        // listen whenever a source is set (not just while live) so the baked boolean stays
+        // current when the source entity moves, even with the live boolean off.
+        if (m_booleanSourceEntity.IsValid() && m_booleanSourceEntity != GetEntityId())
         {
             m_booleanSourceListener.m_owner = this;
             m_booleanSourceListener.BusConnect(m_booleanSourceEntity);
@@ -557,6 +1201,12 @@ namespace WhiteBox
     {
         return m_booleanSourceEntity.IsValid() ? AZ::Edit::PropertyVisibility::Show
                                                : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::Crc32 EditorWhiteBoxComponent::DrawUnitCubeSizeVisibility() const
+    {
+        // The Cube Size control only matters while the Unit Cube Stamp tool is active.
+        return m_drawUnitCube ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     void EditorWhiteBoxComponent::BooleanSourceListener::OnTransformChanged(
@@ -720,12 +1370,18 @@ namespace WhiteBox
                 ->Field("DrawShapeData", &EditorWhiteBoxComponent::m_drawShapeData)
                 ->Field("DrawCarve", &EditorWhiteBoxComponent::m_drawCarve)
                 ->Field("DrawUnitCube", &EditorWhiteBoxComponent::m_drawUnitCube)
+                ->Field("DrawUnitCubeSize", &EditorWhiteBoxComponent::m_drawUnitCubeSize)
+                ->Field("VoxelCellSize", &EditorWhiteBoxComponent::m_voxelCellSize)
+                ->Field("DrawUnitCubeShowGrid", &EditorWhiteBoxComponent::m_drawUnitCubeShowGrid)
                 ->Field("VoxelCells", &EditorWhiteBoxComponent::m_voxelCells)
+                ->Field("VoxelCellSizes", &EditorWhiteBoxComponent::m_voxelCellSizes)
                 ->Field("BooleanSource", &EditorWhiteBoxComponent::m_booleanSourceEntity)
                 ->Field("BooleanOp", &EditorWhiteBoxComponent::m_booleanOperation)
                 ->Field("BooleanHideSource", &EditorWhiteBoxComponent::m_hideSourceAfterApply)
                 ->Field("BooleanDeleteSource", &EditorWhiteBoxComponent::m_deleteSourceAfterApply)
-                ->Field("BooleanLive", &EditorWhiteBoxComponent::m_liveBoolean);
+                ->Field("BooleanLive", &EditorWhiteBoxComponent::m_liveBoolean)
+                ->Field("BakedBooleanRenderData", &EditorWhiteBoxComponent::m_bakedBooleanRenderData)
+                ->Field("BakedBaseRenderData", &EditorWhiteBoxComponent::m_bakedBaseRenderData);
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
@@ -765,8 +1421,31 @@ namespace WhiteBox
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawUnitCube,
                         QT_TRANSLATE_NOOP("WhiteBox", "Unit Cube Stamp"),
-                        QT_TRANSLATE_NOOP("WhiteBox", "In draw mode, click to stamp a grid-snapped 1x1x1 cube (CSG union; hold Ctrl to subtract) "
-                        "instead of click-drag-pull."))
+                        QT_TRANSLATE_NOOP("WhiteBox", "In draw mode, press to place a grid-snapped cube (of Cube Size) and drag to extrude its "
+                        "depth along the surface, then release to stamp it (union; hold Ctrl before drawing to subtract)."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::SpinBox, &EditorWhiteBoxComponent::m_drawUnitCubeSize,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Cube Size"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "World-space size of the next stamped cube. Each click places a single clean cube (8 verts, "
+                        "6 faces) of this size; drag to lay more. You can change this at any time - each cube keeps "
+                        "its own size, so new cubes of the new size sit alongside ones you already placed (no need "
+                        "to clear the stamp first)."))
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.05f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::DrawUnitCubeSizeVisibility)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_drawUnitCubeShowGrid,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Show Cube Grid Preview"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "When on, the stamp ghost shows the individual cubes (a grid); when off it shows a single "
+                        "outer box."))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::DrawUnitCubeSizeVisibility)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                    QT_TRANSLATE_NOOP("WhiteBox", "Remove every cube placed with the Unit Cube Stamp tool."))
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ClearVoxelCubes)
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Clear Cube Stamp"))
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::DrawUnitCubeSizeVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset,
                         QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"),
@@ -1025,11 +1704,49 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        if (auto* whiteBoxComponent = gameEntity->CreateComponent<WhiteBoxComponent>())
+        auto* whiteBoxComponent = gameEntity->CreateComponent<WhiteBoxComponent>();
+        if (whiteBoxComponent == nullptr)
         {
-            // note: it is important no edit time only functions are called here as BuildGameEntity
-            // will be called by the Asset Processor when creating dynamic slices
+            return;
+        }
+
+        // note: it is important no edit time only functions are called here as BuildGameEntity
+        // will be called by the Asset Processor when creating dynamic slices
+
+        // Base render geometry: the live base mesh, else the cached base data (m_renderData may be the cut result).
+        if (WhiteBoxMesh* baseMesh = GetWhiteBoxMesh())
+        {
+            whiteBoxComponent->GenerateWhiteBoxMesh(CreateWhiteBoxRenderData(*baseMesh, m_material));
+        }
+        else if (!m_bakedBaseRenderData.m_faces.empty())
+        {
+            whiteBoxComponent->GenerateWhiteBoxMesh(m_bakedBaseRenderData);
+        }
+        else
+        {
             whiteBoxComponent->GenerateWhiteBoxMesh(m_renderData);
+        }
+
+        // The boolean variant can only be evaluated in the Editor, and its source is not resolvable during
+        // the game build, so use the cached display mesh, or the serialized render data on a clone.
+        WhiteBoxRenderData booleanRenderData;
+        if (WhiteBoxMesh* displayMesh = GetLiveBooleanDisplayMesh())
+        {
+            booleanRenderData = CreateWhiteBoxRenderData(*displayMesh, m_material);
+        }
+        else
+        {
+            booleanRenderData = m_bakedBooleanRenderData;
+        }
+
+        if (!booleanRenderData.m_faces.empty())
+        {
+            whiteBoxComponent->SetBooleanRenderData(booleanRenderData);
+            whiteBoxComponent->SetLiveBooleanState(true, m_liveBoolean);
+        }
+        else
+        {
+            whiteBoxComponent->SetLiveBooleanState(false, false);
         }
     }
 
@@ -1143,9 +1860,11 @@ namespace WhiteBox
             (*m_renderMesh)->UpdateTransform(world);
         }
 
-        if (m_liveBoolean)
+        // moving this entity changes the cut relative to the source; re-evaluate whenever a
+        // source is set (not only while live) so the baked boolean variant stays current.
+        if (m_booleanSourceEntity.IsValid() && m_booleanSourceEntity != GetEntityId())
         {
-            RebuildWhiteBox(); // moving this entity changes the cut relative to the source
+            RebuildWhiteBox();
         }
     }
 

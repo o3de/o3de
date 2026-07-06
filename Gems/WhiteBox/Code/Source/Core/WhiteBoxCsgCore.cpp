@@ -9,14 +9,15 @@
 #include "WhiteBoxCsgCore.h"
 
 #include <algorithm>
-#include <AzCore/Debug/Trace.h>
-#include <AzCore/std/containers/map.h>
 #include <cmath>
-#include <map>
+#include <AzCore/std/containers/map.h>
 #include <tuple>
+
+#include <AzCore/Debug/Trace.h>
 
 // manifold (Apache-2.0) - see 3rdParty/FindManifold.cmake
 #include <manifold/manifold.h>
+#include <map>
 
 namespace WhiteBox
 {
@@ -105,10 +106,6 @@ namespace WhiteBox
                 return false;
             }
 
-            AZ_Warning("WhiteBox", false,
-                "MeshBoolean: meshA verts=%zu tris=%zu | meshB verts=%zu tris=%zu",
-                meshA.VertexCount(), meshA.TriangleCount(),
-                meshB.VertexCount(), meshB.TriangleCount());
 
             const manifold::Manifold manifoldA = ToManifold(meshA);
             if (manifoldA.Status() != manifold::Manifold::Error::NoError)

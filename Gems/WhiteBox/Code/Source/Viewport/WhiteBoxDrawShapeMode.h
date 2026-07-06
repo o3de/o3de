@@ -146,14 +146,26 @@ namespace WhiteBox
 
         //! Whether the component's "Unit Cube Stamp" mode is active.
         bool UnitCubeMode() const;
+        //! Number of cells per stamped cube - now always 1 (a cube is one cell).
+        int CurrentUnitCubeSize() const;
+        //! World-space size of one cube/cell (grid spacing), read from the component.
+        float CurrentCellSize() const;
+        //! Whether the ghost preview should show the per-cube grid (true) or a single box.
+        bool UnitCubeShowGrid() const;
         //! Snapped local-space min corner of the unit cube targeted by a hit.
         //! @param carve subtract (true) targets the clicked cell; add (false) the empty cell beyond it.
         bool UnitCubeCell(
             const AZ::Transform& worldFromLocal, const AZ::Vector3& hitWorld, const AZ::Vector3& hitNormal, bool carve,
             AZ::Vector3& outMinLocal) const;
-        //! Stamp (union) or remove (subtract) a grid-snapped 1x1x1 cube at a hit.
-        void StampUnitCube(
-            const AZ::Transform& worldFromLocal, const AZ::Vector3& hitWorld, const AZ::Vector3& hitNormal, bool carve);
+        //! Local dominant axis (0=X,1=Y,2=Z) and sign (+/-1) of a world-space surface
+        //! normal - used to pick the region's thickness axis/direction.
+        void UnitCubeAxisFromNormal(
+            const AZ::Transform& worldFromLocal, const AZ::Vector3& worldNormal, int& outAxis, int& outSign) const;
+        //! Recompute the previewed region as the base cube unioned with the cursor cell; it only grows.
+        void UpdateUnitCubeRegion(const AZ::Vector3& cursorCell);
+        //! Stamp (union) or remove (subtract) every cell in the current region box in
+        //! a single undo batch.
+        void StampUnitCubeRegion();
 
         //! Begin a numeric depth session if we're in the height-pull phase.
         //! @return true if numeric input is now active (and the key should apply).
@@ -187,10 +199,36 @@ namespace WhiteBox
         //! World-space Y (up) value of the ground plane established on first click.
         float m_groundZ = 0.f;
 
-        //! Unit-cube stamp hover preview (local-space min corner of the target cell).
+        //! Unit-cube stamp hover/drag preview state.
         bool m_unitCubeHoverValid = false;
         bool m_unitCubeCarve = false;
+        //! True between left-press and release while stretching the region footprint.
+        bool m_unitCubeDragging = false;
+        //! Latches true once the drag moves clearly past the press point (~1 cell), so a
+        //! near-stationary click keeps a fixed preview and can't jitter across a cell edge.
+        bool m_unitCubeDragMoved = false;
+        //! Grow across the surface (true) or extrude along the normal (false); follows the live Ctrl state.
+        bool m_unitCubeAcrossGrow = false;
+        //! Ctrl state captured at press-time (also what decides carve). The drag compares
+        //! the live Ctrl state against this to pick depth vs across.
+        bool m_unitCubeCtrlPrev = false;
+        //! Cells per cube (always 1) and the world-space cube/cell size, cached each event.
+        int m_unitCubeSize = 1;
+        float m_unitCubeCellSize = 1.0f;
+        //! Local grid axis (0/1/2) and sign the block's thickness runs along (the clicked
+        //! surface normal), captured when the drag is anchored.
+        int m_unitCubeAxis = 2;
+        int m_unitCubeSign = 1;
+        //! Anchored corner cell (local min), set on left-press.
+        AZ::Vector3 m_unitCubeAnchorMin = AZ::Vector3::CreateZero();
+        //! Hysteretic cursor cell, so sub-cell jitter does not flip the preview.
+        AZ::Vector3 m_unitCubeCursorCell = AZ::Vector3::CreateZero();
+        //! Anchor point and normal from the press; the drag stays on this plane.
+        AZ::Vector3 m_unitCubeAnchorWorld = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_unitCubeAnchorNormalWorld = AZ::Vector3::CreateAxisZ();
+        //! Previewed region box: local min corner and per-axis cell extents.
         AZ::Vector3 m_unitCubeMinLocal = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_unitCubeExtent = AZ::Vector3::CreateOne();
 
     };
 } // namespace WhiteBox

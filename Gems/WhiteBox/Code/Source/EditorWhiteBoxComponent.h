@@ -73,7 +73,16 @@ namespace WhiteBox
         }
         bool GetDrawCarve() override { return m_drawCarve; }
         bool GetDrawUnitCube() override { return m_drawUnitCube; }
+        //! Size of the next stamped cube; existing cubes keep their own size.
+        float GetDrawUnitCubeSize() override
+        {
+            const float s = m_drawUnitCubeSize;
+            return s < 0.05f ? 0.05f : s;
+        }
+        bool GetDrawUnitCubeShowGrid() override { return m_drawUnitCubeShowGrid; }
         void SetVoxelCell(const AZ::Vector3& cellMin, bool filled) override;
+        void SetVoxelCells(const AZStd::vector<AZ::Vector3>& cellMins, bool filled) override;
+        bool BuildColliderMesh(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices) override;
 
         // EditorComponentSelectionRequestsBus overrides ...
         AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
@@ -97,6 +106,16 @@ namespace WhiteBox
         //! Override the internal EditorWhiteBoxMeshAsset with an external instance.
         //! @note EditorWhiteBoxComponent takes ownership of the editorMeshAsset and will handle deleting it
         void OverrideEditorWhiteBoxMeshAsset(EditorWhiteBoxMeshAsset* editorMeshAsset);
+
+        //! The mesh used for render / collision / selection (the live-boolean result when active).
+        WhiteBoxMesh* GetEvaluatedWhiteBoxMesh();
+        //! Evaluate base [op] source into a new mesh regardless of the live flag; null if unset or failed.
+        //! Editor only (uses the CSG API). Used to bake the boolean variant.
+        Api::WhiteBoxMeshPtr EvaluateBooleanMesh();
+        //! The cached live-boolean result (null when off); safe during the game build, unlike EvaluateBooleanMesh.
+        WhiteBoxMesh* GetLiveBooleanDisplayMesh();
+        //! Whether the live (non-destructive) boolean is currently enabled.
+        bool GetLiveBoolean() const { return m_liveBoolean; }
 
     private:
         //! Staircase-specific settings for the Draw Shape tool (only relevant when the
@@ -165,14 +184,24 @@ namespace WhiteBox
         void ExportToFile();
         void ExportDescendantsToFile();
         AZ::Crc32 SaveAsAsset();
+        //! Remove every cube placed by the Unit Cube Stamp tool (clears the voxel set and
+        //! regenerates the surface, leaving any hand-edited freeform geometry intact).
+        AZ::Crc32 ClearVoxelCubes();
         AZ::Crc32 OnDefaultShapeChange();
         //! Apply a CSG boolean using the White Box mesh on m_booleanSourceEntity.
         void ApplyBoolean();
-        //! Update the voxel-stamped geometry in place: remove the faces belonging to
-        //! the previous voxel surface (@p oldCells) and add the surface for the new
-        //! cell set (@p newCells), leaving all freeform mesh edits intact.
+        //! Update the voxel-stamped geometry in place: remove the faces belonging to the
+        //! previous voxel surface (@p oldCells at @p oldSizes) and add the surface for the
+        //! new cell set (@p newCells at @p newSizes), leaving all freeform mesh edits
+        //! intact. Each cell carries its own cube size (parallel arrays), so cubes of
+        //! different sizes are meshed on their own grids and can coexist. Also purges any
+        //! vertices orphaned by the removal.
         void RegenerateVoxelMesh(
-            const AZStd::unordered_set<AZ::u64>& oldCells, const AZStd::unordered_set<AZ::u64>& newCells);
+            const AZStd::vector<AZ::u64>& oldCells, const AZStd::vector<float>& oldSizes,
+            const AZStd::vector<AZ::u64>& newCells, const AZStd::vector<float>& newSizes);
+        //! Ensure the per-cell size array (m_voxelCellSizes) is consistent with m_voxelCells,
+        //! migrating legacy data that only stored a single baked size (m_voxelCellSize).
+        void NormalizeVoxelData();
 
         //! The mesh used for RENDER / collision / bounds / selection. In live
         //! (non-destructive) boolean mode this is the evaluated result; otherwise
@@ -192,6 +221,8 @@ namespace WhiteBox
 
         void OnMaterialChange();
         AZ::Crc32 AssetVisibility() const;
+        //! The Unit Cube "Cube Size" spin box only shows while the Unit Cube Stamp tool is on.
+        AZ::Crc32 DrawUnitCubeSizeVisibility() const;
 
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate; //!< Responsible for detecting ComponentMode activation
@@ -216,6 +247,9 @@ namespace WhiteBox
         DrawShapeData m_drawShapeData; //!< Draw Shape tool settings (shape, sides and staircase options).
         bool m_drawCarve = false; //!< When set, draw acts as a CSG boolean (same as holding Ctrl).
         bool m_drawUnitCube = false; //!< Draw mode click-stamps grid-snapped unit cubes (CSG) instead of drag-draw.
+        float m_drawUnitCubeSize = 1.0f; //!< Desired world-space size of the next stamped cube.
+        float m_voxelCellSize = 1.0f; //!< Legacy single baked cell size; only used to migrate old scenes.
+        bool m_drawUnitCubeShowGrid = true; //!< Show the individual cubes (grid) in the stamp ghost preview.
 
         AZ::EntityId m_booleanSourceEntity; //!< Another entity whose White Box mesh is used as a boolean operand.
         Api::BooleanOperation m_booleanOperation =
@@ -224,9 +258,14 @@ namespace WhiteBox
         bool m_deleteSourceAfterApply = false; //!< Delete the source entity after a successful Apply Boolean.
 
         AZStd::vector<AZ::u64> m_voxelCells; //!< Packed integer cell coords filled by the Unit Cube Stamp tool.
+        AZStd::vector<float> m_voxelCellSizes; //!< Per-cell world cube size (parallel to m_voxelCells) so mixed sizes coexist.
 
         bool m_liveBoolean = false; //!< Non-destructive: keep the base editable, evaluate the boolean for display only.
         Api::WhiteBoxMeshPtr m_displayMesh; //!< Evaluated (base [op] source) mesh used for display while live.
+        //! Boolean render variant for the game-mode bake (serialized for clones). Empty without a boolean.
+        WhiteBoxRenderData m_bakedBooleanRenderData;
+        //! Uncut base render variant for the game-mode bake (serialized for clones).
+        WhiteBoxRenderData m_bakedBaseRenderData;
 
         //! Re-evaluates this component's live boolean when the source entity moves.
         struct BooleanSourceListener : public AZ::TransformNotificationBus::Handler

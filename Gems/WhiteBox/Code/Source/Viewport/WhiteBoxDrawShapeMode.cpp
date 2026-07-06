@@ -8,40 +8,45 @@
 
 #include "WhiteBoxDrawShapeMode.h"
 
-#include "EditorWhiteBoxComponent.h"
-#include "EditorWhiteBoxComponentModeBus.h"
-#include "EditorWhiteBoxComponentModeTypes.h"
-#include "Util/WhiteBoxMathUtil.h"
-#include "Viewport/WhiteBoxManipulatorBounds.h"
-#include "Viewport/WhiteBoxViewportConstants.h"
 #include "WhiteBoxShapeBuilders.h"
 
-#include <Atom/RPI.Public/ViewportContext.h>
-#include <AzCore/Casting/numeric_cast.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Component/TransformBus.h>
+#include "EditorWhiteBoxComponentModeTypes.h"
+#include "Viewport/WhiteBoxManipulatorBounds.h"
+#include "Viewport/WhiteBoxViewportConstants.h"
+#include "Util/WhiteBoxMathUtil.h"
+
 #include <AzCore/Math/IntersectSegment.h>
-#include <AzCore/Math/MathStringConversions.h>
-#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Plane.h>
-#include <AzCore/std/containers/array.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Render/GeometryIntersectionStructures.h>
-#include <AzFramework/Render/Intersector.h>
-#include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
-#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
-#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
-#include <cmath>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+
+#include <AzFramework/Render/GeometryIntersectionStructures.h>
+#include <AzFramework/Visibility/EntityVisibilityBoundsUnionSystem.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <AzFramework/Render/Intersector.h>           // IntersectorBus / IntersectorInterface
+#include <AzFramework/Render/GeometryIntersectionStructures.h>  // RayRequest / RayResult
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/containers/array.h>
+#include "EditorWhiteBoxComponent.h"
+#include <cmath>
+#include "EditorWhiteBoxComponentModeBus.h"
 
 
 namespace WhiteBox
@@ -779,27 +784,190 @@ namespace WhiteBox
         const bool  rightDown = mi.m_mouseButtons.Right() && mouseInteraction.m_mouseEvent == MouseEvent::Down;
         const bool  moved     = mouseInteraction.m_mouseEvent == MouseEvent::Move;
 
-        // Unit-cube stamp mode: single click places/removes a grid-snapped cube;
-        // no click-drag-pull state machine.
+        // Unit-cube stamp: press anchors, drag stretches a footprint of cells, release stamps it. Ctrl
+        // (or Carve) subtracts.
         if (UnitCubeMode())
         {
-            const bool carve = mi.m_keyboardModifiers.Ctrl() || CurrentCarve();
-            m_unitCubeCarve = carve;
-            if (moved || leftDown)
+            // Right-click aborts an in-progress preview drag (and is consumed only then).
+            if (rightDown)
             {
+                const bool wasDragging = m_unitCubeDragging;
+                m_unitCubeDragging = false;
+                m_unitCubeDragMoved = false;
+                m_unitCubeAcrossGrow = false;
+                m_unitCubeHoverValid = false;
+                return wasDragging;
+            }
+
+            const bool liveCarve = mi.m_keyboardModifiers.Ctrl() || CurrentCarve();
+            m_unitCubeSize = CurrentUnitCubeSize();
+            m_unitCubeCellSize = CurrentCellSize();
+
+            if (leftDown)
+            {
+                // Anchor the region: capture the corner cell, the surface's thickness
+                // axis/sign, the anchor plane, and the carve sign so none flip mid-drag.
+                m_unitCubeCarve = liveCarve;
+                m_unitCubeDragging = true;
+                m_unitCubeDragMoved = false;
+                m_unitCubeAcrossGrow = false; // default to depth extrude
+                m_unitCubeCtrlPrev = mi.m_keyboardModifiers.Ctrl();
+
                 AZ::Vector3 hitNormal;
                 const AZ::Vector3 hitWorld = RaycastToSurface(mi, worldFromLocal, intersectionData, hitNormal);
-                m_unitCubeHoverValid = UnitCubeCell(worldFromLocal, hitWorld, hitNormal, carve, m_unitCubeMinLocal);
+                AZ::Vector3 baseMin;
+                m_unitCubeHoverValid = UnitCubeCell(worldFromLocal, hitWorld, hitNormal, m_unitCubeCarve, baseMin);
+                m_unitCubeAnchorMin = baseMin;
+                m_unitCubeCursorCell = baseMin;
+                m_unitCubeAnchorWorld = hitWorld;
+                m_unitCubeAnchorNormalWorld = hitNormal;
+                UnitCubeAxisFromNormal(worldFromLocal, hitNormal, m_unitCubeAxis, m_unitCubeSign);
+                UpdateUnitCubeRegion(baseMin);
 
-                if (leftDown)
-                {
-                    StampUnitCube(worldFromLocal, hitWorld, hitNormal, carve);
-                    return true;
-                }
+                AZ_Printf(
+                    "WhiteBoxUnitCube",
+                    "DOWN  cubeCells=%d carve=%d axis=%d sign=%d anchorCell=(%.0f,%.0f,%.0f) hitWorld=(%.2f,%.2f,%.2f)",
+                    m_unitCubeSize, m_unitCubeCarve ? 1 : 0, m_unitCubeAxis, m_unitCubeSign, baseMin.GetX(),
+                    baseMin.GetY(), baseMin.GetZ(), hitWorld.GetX(), hitWorld.GetY(), hitWorld.GetZ());
+                return true;
             }
-            return false; // let moves/other buttons pass through (camera etc.)
+
+            if (moved)
+            {
+                if (m_unitCubeDragging)
+                {
+                    // Ctrl changed since press: grow across the surface; unchanged: extrude along the
+                    // normal. Carve stays as it was at press time.
+                    const bool ctrlNow = mi.m_keyboardModifiers.Ctrl();
+                    m_unitCubeAcrossGrow = (ctrlNow != m_unitCubeCtrlPrev);
+
+                    const AZ::Vector3 rayOrigin = mi.m_mousePick.m_rayOrigin;
+                    const AZ::Vector3 rayDir = mi.m_mousePick.m_rayDirection;
+                    const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
+                    const AZ::Vector3 up = m_unitCubeAnchorNormalWorld.GetNormalizedSafe();
+                    constexpr float hysteresis = 0.45f;
+
+                    if (m_unitCubeAcrossGrow)
+                    {
+                        // ACROSS: project the cursor onto the fixed anchor (surface) plane and
+                        // grow the two footprint axes contiguously (can't hop to another face).
+                        float t = 0.f;
+                        AZ::Intersect::IntersectRayPlane(rayOrigin, rayDir, m_unitCubeAnchorWorld, up, t);
+                        if (t > 0.f)
+                        {
+                            const AZ::Vector3 planeHit = rayOrigin + rayDir * t;
+                            if (!m_unitCubeDragMoved &&
+                                (planeHit - m_unitCubeAnchorWorld).GetLength() > m_unitCubeCellSize)
+                            {
+                                m_unitCubeDragMoved = true;
+                            }
+                            if (m_unitCubeDragMoved)
+                            {
+                                const AZ::Vector3 localHitCell = localFromWorld.TransformPoint(planeHit) / m_unitCubeCellSize;
+                                const AZ::Vector3 localNormal =
+                                    AzToolsFramework::TransformDirectionNoScaling(localFromWorld, up).GetNormalizedSafe();
+                                const AZ::Vector3 sample = localHitCell + localNormal * (m_unitCubeCarve ? -0.5f : 0.5f);
+                                for (int a = 0; a < 3; ++a)
+                                {
+                                    if (a == m_unitCubeAxis)
+                                    {
+                                        continue; // depth axis is driven only in depth mode
+                                    }
+                                    const float s = sample.GetElement(a);
+                                    const float last = m_unitCubeCursorCell.GetElement(a);
+                                    if (s < last - hysteresis || s >= last + 1.0f + hysteresis)
+                                    {
+                                        m_unitCubeCursorCell.SetElement(a, std::floor(s));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // DEPTH: project onto a camera-facing plane through the anchor so the
+                        // cursor pulls the block out/in along the surface normal.
+                        AZ::Vector3 planeN = rayDir - up * rayDir.Dot(up);
+                        if (planeN.GetLengthSq() > 1e-4f)
+                        {
+                            planeN.Normalize();
+                            float t = 0.f;
+                            AZ::Intersect::IntersectRayPlane(rayOrigin, rayDir, m_unitCubeAnchorWorld, planeN, t);
+                            if (t > 0.f)
+                            {
+                                const AZ::Vector3 hit = rayOrigin + rayDir * t;
+                                if (!m_unitCubeDragMoved &&
+                                    AZStd::abs((hit - m_unitCubeAnchorWorld).Dot(up)) > m_unitCubeCellSize)
+                                {
+                                    m_unitCubeDragMoved = true;
+                                }
+                                if (m_unitCubeDragMoved)
+                                {
+                                    const float depthCells = (hit - m_unitCubeAnchorWorld).Dot(up) / m_unitCubeCellSize;
+                                    const float anchorAxis = m_unitCubeAnchorMin.GetElement(m_unitCubeAxis);
+                                    const float target = anchorAxis + static_cast<float>(m_unitCubeSign) * depthCells;
+                                    const float last = m_unitCubeCursorCell.GetElement(m_unitCubeAxis);
+                                    if (target < last - hysteresis || target >= last + 1.0f + hysteresis)
+                                    {
+                                        m_unitCubeCursorCell.SetElement(m_unitCubeAxis, std::floor(target));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    m_unitCubeHoverValid = true;
+                    const AZ::Vector3 prevMin = m_unitCubeMinLocal;
+                    const AZ::Vector3 prevExt = m_unitCubeExtent;
+                    UpdateUnitCubeRegion(m_unitCubeCursorCell);
+
+                    // Only log when the previewed region actually changes (avoid per-frame spam).
+                    if (!m_unitCubeMinLocal.IsClose(prevMin) || !m_unitCubeExtent.IsClose(prevExt))
+                    {
+                        AZ_Printf(
+                            "WhiteBoxUnitCube", "DRAG  %s regionMin=(%.0f,%.0f,%.0f) ext=(%.0f,%.0f,%.0f)",
+                            m_unitCubeAcrossGrow ? "ACROSS" : "DEPTH ", m_unitCubeMinLocal.GetX(),
+                            m_unitCubeMinLocal.GetY(), m_unitCubeMinLocal.GetZ(), m_unitCubeExtent.GetX(),
+                            m_unitCubeExtent.GetY(), m_unitCubeExtent.GetZ());
+                    }
+                    return true; // keep the drag captured so the preview follows the cursor
+                }
+
+                // Not dragging: single-cube hover preview under the cursor.
+                AZ::Vector3 hitNormal;
+                const AZ::Vector3 hitWorld = RaycastToSurface(mi, worldFromLocal, intersectionData, hitNormal);
+                AZ::Vector3 baseMin;
+                m_unitCubeHoverValid = UnitCubeCell(worldFromLocal, hitWorld, hitNormal, m_unitCubeCarve, baseMin);
+                m_unitCubeCarve = liveCarve;
+                m_unitCubeAnchorMin = baseMin;
+                m_unitCubeCursorCell = baseMin;
+                UnitCubeAxisFromNormal(worldFromLocal, hitNormal, m_unitCubeAxis, m_unitCubeSign);
+                UpdateUnitCubeRegion(baseMin);
+                return false; // let hover/camera pass through
+            }
+
+            // Release commits the previewed region.
+            if (leftUp && m_unitCubeDragging)
+            {
+                m_unitCubeDragging = false;
+                AZ_Printf(
+                    "WhiteBoxUnitCube", "UP    stamp regionMin=(%.0f,%.0f,%.0f) ext=(%.0f,%.0f,%.0f) valid=%d",
+                    m_unitCubeMinLocal.GetX(), m_unitCubeMinLocal.GetY(), m_unitCubeMinLocal.GetZ(),
+                    m_unitCubeExtent.GetX(), m_unitCubeExtent.GetY(), m_unitCubeExtent.GetZ(),
+                    m_unitCubeHoverValid ? 1 : 0);
+                if (m_unitCubeHoverValid)
+                {
+                    StampUnitCubeRegion();
+                }
+                return true;
+            }
+
+            return false; // let other buttons pass through (camera etc.)
         }
         m_unitCubeHoverValid = false;
+        m_unitCubeDragging = false;
+        m_unitCubeDragMoved = false;
+        m_unitCubeAcrossGrow = false;
 
         if (rightDown)
         {
@@ -1150,26 +1318,74 @@ namespace WhiteBox
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        // Unit-cube stamp hover ghost (drawn even when the draw state is Idle).
+        // Unit-cube stamp hover ghost, showing the individual cubes.
         if (m_unitCubeHoverValid)
         {
-            AZ::Vector3 c[8];
-            for (int i = 0; i < 8; ++i)
-            {
-                const AZ::Vector3 localCorner = m_unitCubeMinLocal +
-                    AZ::Vector3(static_cast<float>(i & 1), static_cast<float>((i >> 1) & 1), static_cast<float>((i >> 2) & 1));
-                c[i] = m_worldFromLocal.TransformPoint(localCorner);
-            }
-            const AZ::Color color = m_unitCubeCarve ? AZ::Color(1.0f, 0.25f, 0.25f, 1.0f) : AZ::Color(0.3f, 1.0f, 0.3f, 1.0f);
+            const int mx = static_cast<int>(std::lround(m_unitCubeMinLocal.GetX()));
+            const int my = static_cast<int>(std::lround(m_unitCubeMinLocal.GetY()));
+            const int mz = static_cast<int>(std::lround(m_unitCubeMinLocal.GetZ()));
+            const int nx = AZ::GetMax(1, static_cast<int>(std::lround(m_unitCubeExtent.GetX())));
+            const int ny = AZ::GetMax(1, static_cast<int>(std::lround(m_unitCubeExtent.GetY())));
+            const int nz = AZ::GetMax(1, static_cast<int>(std::lround(m_unitCubeExtent.GetZ())));
+
+            const AZ::Color color =
+                m_unitCubeCarve ? AZ::Color(1.0f, 0.25f, 0.25f, 1.0f) : AZ::Color(0.3f, 1.0f, 0.3f, 1.0f);
             debugDisplay.DepthTestOff();
             debugDisplay.SetColor(color);
             debugDisplay.SetLineWidth(static_cast<float>(cl_whiteBoxEdgeVisualWidth));
-            // 12 edges of the cube (corner index bits = x,y,z)
-            const int edges[12][2] = {
-                {0,1},{2,3},{4,5},{6,7}, {0,2},{1,3},{4,6},{5,7}, {0,4},{1,5},{2,6},{3,7} };
-            for (const auto& e : edges)
+
+            const auto cellToWorld = [&](int cx, int cy, int cz)
             {
-                debugDisplay.DrawLine(c[e[0]], c[e[1]]);
+                return m_worldFromLocal.TransformPoint(
+                    AZ::Vector3(static_cast<float>(cx), static_cast<float>(cy), static_cast<float>(cz)) * m_unitCubeCellSize);
+            };
+
+            // Grid lines at Cube Size boundaries (one cell per stamped cube), capped for large blocks.
+            const int step = AZ::GetMax(1, m_unitCubeSize);
+            const int cubesX = nx / step;
+            const int cubesY = ny / step;
+            const int cubesZ = nz / step;
+            const bool showGrid = UnitCubeShowGrid() &&
+                (static_cast<AZ::s64>(cubesX + 1) * (cubesY + 1) * (cubesZ + 1)) <= 8192;
+
+            if (showGrid)
+            {
+                for (int j = 0; j <= ny; j += step)
+                {
+                    for (int k = 0; k <= nz; k += step)
+                    {
+                        debugDisplay.DrawLine(cellToWorld(mx, my + j, mz + k), cellToWorld(mx + nx, my + j, mz + k));
+                    }
+                }
+                for (int i = 0; i <= nx; i += step)
+                {
+                    for (int k = 0; k <= nz; k += step)
+                    {
+                        debugDisplay.DrawLine(cellToWorld(mx + i, my, mz + k), cellToWorld(mx + i, my + ny, mz + k));
+                    }
+                }
+                for (int i = 0; i <= nx; i += step)
+                {
+                    for (int j = 0; j <= ny; j += step)
+                    {
+                        debugDisplay.DrawLine(cellToWorld(mx + i, my + j, mz), cellToWorld(mx + i, my + j, mz + nz));
+                    }
+                }
+            }
+            else
+            {
+                AZ::Vector3 c[8];
+                for (int i = 0; i < 8; ++i)
+                {
+                    c[i] = cellToWorld(
+                        mx + ((i & 1) ? nx : 0), my + ((i >> 1) & 1 ? ny : 0), mz + ((i >> 2) & 1 ? nz : 0));
+                }
+                const int edges[12][2] = {
+                    {0, 1}, {2, 3}, {4, 5}, {6, 7}, {0, 2}, {1, 3}, {4, 6}, {5, 7}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
+                for (const auto& e : edges)
+                {
+                    debugDisplay.DrawLine(c[e[0]], c[e[1]]);
+                }
             }
         }
 
@@ -1460,37 +1676,162 @@ namespace WhiteBox
         return unitCube;
     }
 
+    int DrawShapeMode::CurrentUnitCubeSize() const
+    {
+        // Each stamped cube is exactly one grid cell now, so the block is measured in
+        // whole cubes at 1 cell each.
+        return 1;
+    }
+
+    float DrawShapeMode::CurrentCellSize() const
+    {
+        // World-space size of one cube/cell (the grid spacing) from the component.
+        float size = 1.0f;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            size, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetDrawUnitCubeSize);
+        return size < 0.05f ? 0.05f : size;
+    }
+
+    bool DrawShapeMode::UnitCubeShowGrid() const
+    {
+        bool showGrid = true;
+        EditorWhiteBoxComponentRequestBus::EventResult(
+            showGrid, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetDrawUnitCubeShowGrid);
+        return showGrid;
+    }
+
     bool DrawShapeMode::UnitCubeCell(
         const AZ::Transform& worldFromLocal, const AZ::Vector3& hitWorld, const AZ::Vector3& hitNormal, const bool carve,
         AZ::Vector3& outMinLocal) const
     {
         const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
-        const AZ::Vector3 localHit = localFromWorld.TransformPoint(hitWorld);
+        // Work in grid-cell index space (local units divided by the cell size).
+        const AZ::Vector3 localHitCell = localFromWorld.TransformPoint(hitWorld) / m_unitCubeCellSize;
         const AZ::Vector3 localNormal =
             AzToolsFramework::TransformDirectionNoScaling(localFromWorld, hitNormal).GetNormalizedSafe();
 
-        // Nudge half a unit off the surface to pick a cell unambiguously:
+        // Nudge half a cell off the surface to pick a cell unambiguously:
         //   add   -> the empty cell on the +normal side (where the new cube appears)
         //   carve -> the solid cell on the -normal side (the block you clicked)
-        const AZ::Vector3 sample = localHit + localNormal * (carve ? -0.5f : 0.5f);
+        const AZ::Vector3 sample = localHitCell + localNormal * (carve ? -0.5f : 0.5f);
         outMinLocal = AZ::Vector3(std::floor(sample.GetX()), std::floor(sample.GetY()), std::floor(sample.GetZ()));
         return true;
     }
 
-    void DrawShapeMode::StampUnitCube(
-        const AZ::Transform& worldFromLocal, const AZ::Vector3& hitWorld, const AZ::Vector3& hitNormal, const bool carve)
+    void DrawShapeMode::UnitCubeAxisFromNormal(
+        const AZ::Transform& worldFromLocal, const AZ::Vector3& worldNormal, int& outAxis, int& outSign) const
     {
-        AZ::Vector3 minLocal;
-        if (!UnitCubeCell(worldFromLocal, hitWorld, hitNormal, carve, minLocal))
+        const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
+        const AZ::Vector3 n =
+            AzToolsFramework::TransformDirectionNoScaling(localFromWorld, worldNormal).GetNormalizedSafe();
+        const float ax = AZStd::abs(n.GetX());
+        const float ay = AZStd::abs(n.GetY());
+        const float az = AZStd::abs(n.GetZ());
+        if (ax >= ay && ax >= az)
+        {
+            outAxis = 0;
+            outSign = n.GetX() >= 0.f ? 1 : -1;
+        }
+        else if (ay >= az)
+        {
+            outAxis = 1;
+            outSign = n.GetY() >= 0.f ? 1 : -1;
+        }
+        else
+        {
+            outAxis = 2;
+            outSign = n.GetZ() >= 0.f ? 1 : -1;
+        }
+    }
+
+    void DrawShapeMode::UpdateUnitCubeRegion(const AZ::Vector3& cursorCell)
+    {
+        const int cube = m_unitCubeSize < 1 ? 1 : m_unitCubeSize;
+        const auto toCell = [](float v) { return static_cast<int>(std::lround(v)); };
+        const int anchor[3] = {
+            toCell(m_unitCubeAnchorMin.GetX()), toCell(m_unitCubeAnchorMin.GetY()), toCell(m_unitCubeAnchorMin.GetZ())};
+        const int cur[3] = {toCell(cursorCell.GetX()), toCell(cursorCell.GetY()), toCell(cursorCell.GetZ())};
+        const int step = m_unitCubeCarve ? -m_unitCubeSign : m_unitCubeSign;
+
+        int boxMin[3];
+        int ext[3];
+        for (int a = 0; a < 3; ++a)
+        {
+            // The fixed base cube along this axis. The normal axis runs "cube" cells
+            // outward (add) or inward (carve); footprint axes run "cube" cells in +.
+            int baseA;
+            int baseB;
+            if (a == m_unitCubeAxis)
+            {
+                baseA = anchor[a];
+                baseB = anchor[a] + step * (cube - 1);
+            }
+            else
+            {
+                baseA = anchor[a];
+                baseB = anchor[a] + (cube - 1);
+            }
+            const int baseLo = AZStd::min(baseA, baseB);
+            const int baseHi = AZStd::max(baseA, baseB);
+
+            // Grow toward the cursor in whole cubes; the base cube is always kept.
+            int lo = baseLo;
+            int hi = baseHi;
+            if (cur[a] > baseHi)
+            {
+                const int cubes = (cur[a] - baseHi + cube - 1) / cube; // whole cubes past the base
+                hi = baseHi + cubes * cube;
+            }
+            else if (cur[a] < baseLo)
+            {
+                const int cubes = (baseLo - cur[a] + cube - 1) / cube;
+                lo = baseLo - cubes * cube;
+            }
+            boxMin[a] = lo;
+            ext[a] = hi - lo + 1;
+        }
+
+        m_unitCubeMinLocal = AZ::Vector3(
+            static_cast<float>(boxMin[0]), static_cast<float>(boxMin[1]), static_cast<float>(boxMin[2]));
+        m_unitCubeExtent =
+            AZ::Vector3(static_cast<float>(ext[0]), static_cast<float>(ext[1]), static_cast<float>(ext[2]));
+    }
+
+    void DrawShapeMode::StampUnitCubeRegion()
+    {
+        const auto toCount = [](float v) { return AZStd::max(0, static_cast<int>(std::lround(v))); };
+        const int nx = toCount(m_unitCubeExtent.GetX());
+        const int ny = toCount(m_unitCubeExtent.GetY());
+        const int nz = toCount(m_unitCubeExtent.GetZ());
+        if (nx == 0 || ny == 0 || nz == 0)
         {
             return;
         }
 
-        // Fill (add) or clear (carve) the targeted voxel cell. The component
-        // regenerates a clean, watertight, merged surface from its voxel set - no
-        // CSG round-trip, so no slivers/cracks/non-manifolds from grid geometry.
+        AZStd::vector<AZ::Vector3> cells;
+        cells.reserve(static_cast<size_t>(nx) * static_cast<size_t>(ny) * static_cast<size_t>(nz));
+        for (int x = 0; x < nx; ++x)
+        {
+            for (int y = 0; y < ny; ++y)
+            {
+                for (int z = 0; z < nz; ++z)
+                {
+                    cells.push_back(
+                        m_unitCubeMinLocal +
+                        AZ::Vector3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
+                }
+            }
+        }
+
+        AZ_Printf(
+            "WhiteBoxUnitCube", "STAMP %d cells (%dx%dx%d) min=(%.0f,%.0f,%.0f) filled=%d", static_cast<int>(cells.size()),
+            nx, ny, nz, m_unitCubeMinLocal.GetX(), m_unitCubeMinLocal.GetY(), m_unitCubeMinLocal.GetZ(),
+            m_unitCubeCarve ? 0 : 1);
+
+        // Fill (add) or clear (carve) every cell in one undo batch. The component
+        // regenerates a clean, watertight surface (coplanar faces grouped) from its voxel set.
         EditorWhiteBoxComponentRequestBus::Event(
-            m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::SetVoxelCell, minLocal, !carve);
+            m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::SetVoxelCells, cells, !m_unitCubeCarve);
     }
 
     // ----------------------------------------------------------------------- //

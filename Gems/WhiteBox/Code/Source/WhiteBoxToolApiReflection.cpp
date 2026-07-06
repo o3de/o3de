@@ -262,10 +262,7 @@ namespace WhiteBox
                 ->Event(
                     "OnWhiteBoxMeshModified", &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
 
-            behaviorContext->EBus<WhiteBoxComponentRequestBus>("WhiteBoxComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "whitebox.request.bus")
-                ->Event("WhiteBoxIsVisible", &WhiteBoxComponentRequestBus::Events::WhiteBoxIsVisible);
+            // WhiteBoxComponentRequestBus is reflected in WhiteBoxComponent::Reflect (Common scope).
 
             behaviorContext->Class<WhiteBoxUtil>("util")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)

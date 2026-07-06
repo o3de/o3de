@@ -40,8 +40,21 @@ namespace WhiteBox
 
         // WhiteBoxComponentRequestBus ...
         bool WhiteBoxIsVisible() const override;
+        void SetLiveBoolean(bool enabled) override;
+        bool GetLiveBoolean() const override;
+        void BakeWhiteBox() override;
 
+        //! Set the base (un-boolean) render data. This is the geometry used when the
+        //! live-boolean is disabled.
         void GenerateWhiteBoxMesh(const WhiteBoxRenderData& whiteBoxRenderData);
+        //! Set the pre-baked boolean-evaluated render data (used when the live-boolean is
+        //! enabled). Only meaningful when a boolean source was set in the Editor.
+        void SetBooleanRenderData(const WhiteBoxRenderData& booleanRenderData);
+        //! Record whether a boolean variant was baked and the initial live-boolean state.
+        void SetLiveBooleanState(bool hasBoolean, bool live);
+
+        //! The active render data (base or boolean), used for the collider's runtime debug wireframe.
+        const WhiteBoxRenderData& GetActiveRenderData() const;
 
     private:
         // AZ::Component ...
@@ -54,7 +67,15 @@ namespace WhiteBox
         // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
         void BuildVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
 
-        WhiteBoxRenderData m_whiteBoxRenderData; //!< Intermediate format to store White Box render data.
+        //! The render data currently selected by m_liveBoolean.
+        const WhiteBoxRenderData& ActiveRenderData() const;
+        //! (Re)build the render mesh from the currently selected render data.
+        void RebuildRenderMesh();
+
+        WhiteBoxRenderData m_whiteBoxRenderData; //!< Base White Box render data (live-boolean disabled).
+        WhiteBoxRenderData m_booleanRenderData; //!< Pre-baked boolean-evaluated render data (live-boolean enabled).
+        bool m_hasBooleanMesh = false; //!< Whether a boolean-evaluated variant was baked.
+        bool m_liveBoolean = false; //!< Whether the boolean-evaluated variant is currently selected.
         AZStd::unique_ptr<RenderMeshInterface> m_renderMesh; //!< The render mesh to use for White Box rendering.
     };
 } // namespace WhiteBox

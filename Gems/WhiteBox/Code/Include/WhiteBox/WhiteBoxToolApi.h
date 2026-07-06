@@ -577,6 +577,8 @@ namespace WhiteBox
         //! @note Collect all face handles to remove and call once per operation --
         //! do not call in a loop, as handles may be invalidated during garbage_collect.
         void RemoveFaces(WhiteBoxMesh& whiteBox, const FaceHandles& faceHandles);
+        //! Delete vertices that belong to no face and compact the mesh (RemoveFaces keeps them).
+        void RemoveIsolatedVertices(WhiteBoxMesh& whiteBox);
         //! Set the position of the provided vertex handle to the new vertex position.
         void SetVertexPosition(WhiteBoxMesh& whiteBox, VertexHandle vertexHandle, const AZ::Vector3& position);
 

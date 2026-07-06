@@ -11,6 +11,7 @@
 #include "EditorWhiteBoxDefaultShapeTypes.h"
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace WhiteBox
 {
@@ -78,10 +79,30 @@ namespace WhiteBox
         //! subtract with Ctrl) instead of the click-drag-pull workflow.
         virtual bool GetDrawUnitCube() { return false; }
 
+        //! World-space edge length of one stamped cube. Each stamp places a single atomic
+        //! cube (one grid cell) of this size; the grid spacing equals this value.
+        virtual float GetDrawUnitCubeSize() { return 1.0f; }
+
+        //! Whether the Unit Cube ghost preview shows the individual cubes (grid) or just
+        //! the single outer box.
+        virtual bool GetDrawUnitCubeShowGrid() { return true; }
+
         //! Fill (@p filled true) or clear a 1x1x1 voxel cell whose minimum corner is
         //! @p cellMin (integer local coordinates). The mesh is regenerated from the
         //! voxel set as a clean, watertight, merged surface (no CSG round-trip).
         virtual void SetVoxelCell([[maybe_unused]] const AZ::Vector3& cellMin, [[maybe_unused]] bool filled) {}
+
+        //! Fill or clear many voxel cells at once (one undo batch, a single mesh
+        //! regeneration). @p cellMins are the integer-local minimum corners.
+        virtual void SetVoxelCells(
+            [[maybe_unused]] const AZStd::vector<AZ::Vector3>& cellMins, [[maybe_unused]] bool filled) {}
+
+        //! Build a simplified collision triangle set for a voxel-stamped mesh; false if it has no stamps.
+        virtual bool BuildColliderMesh(
+            [[maybe_unused]] AZStd::vector<AZ::Vector3>& vertices, [[maybe_unused]] AZStd::vector<AZ::u32>& indices)
+        {
+            return false;
+        }
 
     protected:
         ~EditorWhiteBoxComponentRequests() = default;

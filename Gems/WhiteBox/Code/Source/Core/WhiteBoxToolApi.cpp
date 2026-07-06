@@ -3040,6 +3040,32 @@ namespace WhiteBox
             }
         }
 
+        void RemoveIsolatedVertices(WhiteBoxMesh& whiteBox)
+        {
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            whiteBox.mesh.request_vertex_status();
+            whiteBox.mesh.request_edge_status();
+            whiteBox.mesh.request_face_status();
+
+            bool removedAny = false;
+            for (const auto& vertexHandle : whiteBox.mesh.vertices())
+            {
+                // RemoveFaces leaves isolated vertices behind, which would show as manipulator dots.
+                if (whiteBox.mesh.is_isolated(vertexHandle))
+                {
+                    whiteBox.mesh.delete_vertex(vertexHandle, false);
+                    removedAny = true;
+                }
+            }
+
+            if (removedAny)
+            {
+                // Purge deleted vertices (renumbers handles; callers rebuild afterwards).
+                whiteBox.mesh.garbage_collection();
+            }
+        }
+
         AZStd::vector<FaceVertHandles> BuildNewVertexFaceHandles(
             WhiteBoxMesh& whiteBox, const Internal::AppendedVerts& appendedVerts, const FaceHandles& existingFaces)
         {
