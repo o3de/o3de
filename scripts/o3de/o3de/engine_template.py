@@ -262,11 +262,14 @@ def _execute_template_json(json_data: dict,
         # create the folder
         os.makedirs(new_dir, exist_ok=True)
 
+    # The path to the shared template items is based off where the template folder itself is, so we'll define it here
+    shared_path = template_path.parent / 'Shared'
+
     # for each copyFiles entry, _transformCopy the templated source file into a concrete instance file or
     # regular copy if not templated
     for copy_file in json_data['copyFiles']:
         # construct the input file name
-        in_file = template_path / 'Template' / copy_file['file']
+        in_file = shared_path / copy_file['file'] if copy_file.get('isShared', False) else template_path / 'Template' / copy_file['file']
         # construct the output file name
         out_file = destination_path / copy_file['file']
 
@@ -312,7 +315,7 @@ def _execute_restricted_template_json(template_json_data: dict,
                                       keep_restricted_in_instance: bool = False,
                                       keep_license_text: bool = False) -> None:
 
-    
+
     ###################################################################################
     # for each createDirectories in the template copy any entries in the json_data that are for this platform
 
@@ -364,7 +367,7 @@ def _execute_restricted_template_json(template_json_data: dict,
     # and prevent creating any empty restricted folders
     if not keep_restricted_in_instance and not had_any_restricted_files:
         return
-    
+
     # Create the restricted.json file in the destination_restricted_path
     if not keep_restricted_in_instance:
         restricted_json = destination_restricted_path / 'restricted.json'
@@ -374,7 +377,7 @@ def _execute_restricted_template_json(template_json_data: dict,
                 restricted_json_data = {}
                 restricted_json_data.update({"restricted_name": destination_name})
                 s.write(json.dumps(restricted_json_data, indent=4) + '\n')
-    
+
     # create dirs first
     # for each createDirectory entry, transform the folder name
     if 'createDirectories' in json_data:
@@ -596,7 +599,7 @@ def create_template(source_path: pathlib.Path,
     if template_name in restricted_platforms:
         logger.error(f'Template path cannot be a restricted name. {template_name}')
         return 1
-    
+
     # there are some reserved words that it is bad idea to use as a template name
     if template_name.lower() in TEMPLATE_RESERVED_WORDS:
         logger.error(f'Template name cannot be "{template_name}" as this might cause issues with compilation.  Please try another name.')
@@ -1281,7 +1284,7 @@ def create_from_template(destination_path: pathlib.Path,
                      "Verify you have provided replacement match and value pairs "
                      "and your replacement arguments are in single quotes "
                      "e.g. -r '${GemName}' 'NameValue'\n\n"
-                     "The current set of replacement pairs are:\n" + 
+                     "The current set of replacement pairs are:\n" +
                      ("\n".join(replacement_pairs)))
         return 1
 
@@ -1753,7 +1756,7 @@ def create_project(project_path: pathlib.Path,
         logger.error(
             f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {project_name}')
         return 1
-    
+
     # there are some reserved words that it is bad idea to use as a project name
     if project_name.lower() in TEMPLATE_RESERVED_WORDS:
         logger.error(f'Project name cannot be "{project_name}" as this might cause issues with compilation.  Please try another name.')
@@ -2174,7 +2177,7 @@ def create_gem(gem_path: pathlib.Path,
     if gem_name in restricted_platforms:
         logger.error(f'Gem path cannot be a restricted name. {gem_name}')
         return 1
-    
+
     # there are some reserved words that it is bad idea to use as a gem name
     if gem_name.lower() in TEMPLATE_RESERVED_WORDS:
         logger.error(f'Project name cannot be "{gem_name}" as this might cause issues with compilation.  Please try another name.')
@@ -2301,7 +2304,7 @@ def create_gem(gem_path: pathlib.Path,
             # note that we should only actually do this if gem_restricted_path already exists
             # if it doesn't it means that there were no restricted platform files anywhere in the template
             # and as such, it is not necessary to make an empty useless restricted object.
-            if os.path.isdir(gem_restricted_path): 
+            if os.path.isdir(gem_restricted_path):
                 # read the restricted_name from the gems restricted.json
                 restricted_json = gem_restricted_path / 'restricted.json'
                 if os.path.isfile(restricted_json):
@@ -2348,7 +2351,7 @@ def create_gem(gem_path: pathlib.Path,
                     except OSError as e:
                         logger.error(f'Failed to write project json {gem_json}.')
                         return 1
-                
+
                 # Register the restricted
                 if not no_register:
                     if register.register(restricted_path=gem_restricted_path):
@@ -2376,7 +2379,7 @@ def create_repo(repo_path: pathlib.Path,
     template_path = manifest.get_registered(template_name=template_name)
 
     template_json = template_path / 'template.json'
-  
+
     # read in the template.json
     with open(template_json) as s:
         try:
@@ -2391,7 +2394,7 @@ def create_repo(repo_path: pathlib.Path,
     if not repo_uri:
         logger.error('Remote repository URI cannot be empty.')
         return 1
-    
+
     repo_json_path = repo_path / 'repo.json'
     # if a repo.json file already exist in directory - can only have one repo.json file per project
     if not force and repo_json_path.is_file():
@@ -2989,7 +2992,7 @@ def add_args(subparsers) -> None:
                                            ' Note: ${Name} is automatically <Name>')
     create_repo_subparser.add_argument('--no-register', action='store_true', default=False,
                                       help='If the repo template is instantiated successfully, it will not register the'
-                                               ' repo with the global manifest file.')                                       
+                                               ' repo with the global manifest file.')
     create_repo_subparser.set_defaults(func=_run_create_repo)
 
 if __name__ == "__main__":

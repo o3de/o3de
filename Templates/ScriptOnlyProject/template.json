@@ -36,7 +36,8 @@
         },
         {
             "file": "cmake/EngineFinder.cmake",
-            "isTemplated": true
+            "isTemplated": true,
+            "isShared": true
         },
         {
             "file": "Config/shader_global_build_options.json",
