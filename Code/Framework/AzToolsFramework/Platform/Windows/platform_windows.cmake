@@ -5,3 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    SET(LY_LINK_OPTIONS
+        PRIVATE
+            /NODEFAULTLIB:LIBCMT
+    )
+endif()
