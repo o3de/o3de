@@ -97,10 +97,10 @@ TEST_TEMPLATE_REPO_JSON = """\
 }
 """
 
-TEST_REPO_JSON = string.Template(TEST_TEMPLATE_REPO_JSON).safe_substitute({'Name': 'TestRepo', 
-                                                                           'RepoURI' : "http://test.com", 
+TEST_REPO_JSON = string.Template(TEST_TEMPLATE_REPO_JSON).safe_substitute({'Name': 'TestRepo',
+                                                                           'RepoURI' : "http://test.com",
                                                                            'Summary': 'summary',
-                                                                           'Origin': 'o3de', 
+                                                                           'Origin': 'o3de',
                                                                            'OriginURL': "https://github.com/o3de/o3de"})
 
 TEST_TEMPLATE_JSON_CONTENTS = """\
@@ -269,6 +269,7 @@ class TestCreateTemplate:
                                      concrete_contents, templated_contents,
                                      keep_license_text, force, expect_failure,
                                      template_json_contents, template_file_creation_map = {},
+                                     shared_file_creation_map = {},
                                      **create_from_template_kwargs) -> pathlib.Path or None:
         # Use a SHA-1 Hash of the destination_name for every Random_Uuid for determinism in the test
         concrete_contents = string.Template(concrete_contents).safe_substitute(
@@ -294,6 +295,12 @@ class TestCreateTemplate:
             file_template_path.parent.mkdir(parents=True, exist_ok=True)
             with file_template_path.open('w') as file_template_handle:
                 file_template_handle.write(file_template_content)
+
+        for shared_template_filename, shared_template_content in shared_file_creation_map.items():
+            shared_template_path = template_default_folder.parent / 'Shared' / shared_template_filename
+            shared_template_path.parent.mkdir(parents=True, exist_ok=True)
+            with shared_template_path.open('w') as shared_template_handle:
+                shared_template_handle.write(shared_template_content)
 
         default_name_bus_dir = template_default_folder / 'Template/Code/Include/${Name}'
         default_name_bus_dir.mkdir(parents=True, exist_ok=True)
@@ -358,7 +365,7 @@ class TestCreateTemplate:
     )
     def test_create_repo(self, tmpdir, force, expect_results):
         concrete_contents = TEST_REPO_JSON
-        templated_contents = TEST_TEMPLATE_REPO_JSON 
+        templated_contents = TEST_TEMPLATE_REPO_JSON
         template_json_contents = TEST_TEMPLATE_REMOTEREPO_JSON_CONTENTS
 
         instantiated_name = 'TestRepo'
@@ -372,14 +379,14 @@ class TestCreateTemplate:
         template_json = template_default_folder / 'template.json'
         with template_json.open('w') as s:
             s.write(template_json_contents)
-        
+
         file_template_path = template_default_folder / 'Template' / "repo.json"
         file_template_path.parent.mkdir(parents=True, exist_ok=True)
         with file_template_path.open('w') as file_template_handle:
             file_template_handle.write(templated_contents)
 
         template_dest_path = engine_root / instantiated_name
-       
+
         # Skip registration in test
         def download_repo_manifest(manifest_uri: str, force_overwrite: bool = True) -> pathlib.Path or None:
             # return the path to the .json file
@@ -390,7 +397,7 @@ class TestCreateTemplate:
                     patch('o3de.manifest.get_registered', return_value=template_default_folder) as get_registered_patch, \
                     patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_o3de_manifest_patch:
                 result = engine_template.create_repo(template_dest_path, repo_name="TestRepo", repo_uri = "http://test.com", summary="summary", origin='o3de', origin_url='https://github.com/o3de/o3de')
-        assert expect_results == result 
+        assert expect_results == result
         if expect_results == 0:
             test_folder = template_dest_path
             assert test_folder.is_dir()
@@ -431,6 +438,47 @@ class TestCreateTemplate:
         self.instantiate_template_wrapper(tmpdir, engine_template.create_from_template, 'TestTemplate', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
                                           template_json_contents, destination_name='TestTemplate', replace=replace_contents)
+
+    @pytest.mark.parametrize(
+        "is_shared, is_templated", [
+            pytest.param(True, True),
+            pytest.param(True, False),
+            pytest.param(False, True),
+        ]
+    )
+    def test_create_from_template_with_shared_file(self, tmpdir, is_shared, is_templated):
+        template_folder_content = '${Name} from Template folder' if is_templated else 'raw content from Template folder'
+        shared_folder_content = '${Name} from Shared folder' if is_templated else 'raw content from Shared folder'
+
+        template_json_dict = json.loads(TEST_TEMPLATE_JSON_CONTENTS)
+        template_json_dict.setdefault('copyFiles', []).append(
+            {
+                "file": "shared_test_file.txt",
+                "isTemplated": is_templated,
+                "isShared": is_shared
+            })
+        template_json_contents = json.dumps(template_json_dict, indent=4)
+
+        instantiated_name = 'TestTemplate'
+        test_folder = self.instantiate_template_wrapper(
+            tmpdir, engine_template.create_from_template, instantiated_name,
+            TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITH_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
+            keep_license_text=True, force=True, expect_failure=False,
+            template_json_contents=template_json_contents,
+            template_file_creation_map={'shared_test_file.txt': template_folder_content},
+            shared_file_creation_map={'shared_test_file.txt': shared_folder_content},
+            destination_name=instantiated_name, replace=None)
+
+        shared_test_file = test_folder / 'shared_test_file.txt'
+        assert shared_test_file.is_file()
+        with shared_test_file.open('r') as s:
+            s_data = s.read()
+
+        if is_shared:
+            expected_content = f'{instantiated_name} from Shared folder' if is_templated else shared_folder_content
+        else:
+            expected_content = f'{instantiated_name} from Template folder' if is_templated else template_folder_content
+        assert s_data == expected_content
 
 
     @pytest.mark.parametrize(
@@ -478,14 +526,14 @@ class TestCreateTemplate:
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITH_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          True, True, False,
                          TEST_TEMPLATE_JSON_CONTENTS,
-                         "Test Gem", "Test Summary", "Test Requirements", "Test License", "https://www.o3de.org/license", 
+                         "Test Gem", "Test Summary", "Test Requirements", "Test License", "https://www.o3de.org/license",
                          "Test Origin", "https://www.o3de.org", "tag1", "Windows", "preview.png", "https://www.o3de.org/docs", "https://www.o3de.org/repo",
                          None,
                          ["tag1","TestGem"], ['Windows']),
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          False, True, False,
                          TEST_TEMPLATE_JSON_CONTENTS,
-                         "Test Gem2", "Test Summary2", "Test Requirements2", "Test License2", "https://www.o3de.org/license2", 
+                         "Test Gem2", "Test Summary2", "Test Requirements2", "Test License2", "https://www.o3de.org/license2",
                          "Test Origin2", "https://www.o3de.org/2", "tag2 tag3  tag4", "MacOS Linux Windows", "preview2.png", "https://www.o3de.org/docs2", "https://www.o3de.org/repo2",
                          "1.2.3",
                          ["tag2","tag3","tag4","TestGem"], ['MacOS', 'Linux', 'Windows']),
@@ -529,7 +577,7 @@ class TestCreateTemplate:
         template_json_contents = json.dumps(template_json_dict, indent=4)
         test_folder = self.instantiate_template_wrapper(tmpdir, engine_template.create_gem, "TestGem", concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, template_file_map, gem_name="TestGem", 
+                                          template_json_contents, template_file_map, gem_name="TestGem",
                                           display_name=display_name, summary=summary, requirements=requirements,
                                           license=license, license_url=license_url, origin=origin, origin_url=origin_url,
                                           user_tags=user_tags, platforms=platforms, icon_path=icon_path, documentation_url=documentation_url,
@@ -545,8 +593,8 @@ class TestCreateTemplate:
                 assert json_data['display_name'] == display_name
                 assert json_data['summary'] == summary
                 assert json_data['requirements'] == requirements
-                assert json_data['license'] == license 
-                assert json_data['license_url'] == license_url 
+                assert json_data['license'] == license
+                assert json_data['license_url'] == license_url
                 assert json_data['origin'] == origin
                 assert json_data['origin_url'] == origin_url
                 assert set(json_data['user_tags']) == set(expected_tags)
@@ -554,3 +602,61 @@ class TestCreateTemplate:
                 assert json_data['icon_path'] == icon_path
                 assert json_data['documentation_url'] == documentation_url
                 assert json_data['repo_uri'] == repo_uri
+
+
+def test_execute_restricted_template_json_ignores_is_shared(tmpdir):
+    # Restricted does not currently support shared files and ignores them.
+    engine_root = (pathlib.Path(tmpdir) / 'engine-root').resolve()
+    template_path = engine_root / 'Templates/Default'
+    destination_path = engine_root / 'TestProject'
+    destination_restricted_path = engine_root / 'Restricted'
+
+    restricted_platform = 'Provo'
+    relative_file = f'Code/Platform/{restricted_platform}/shared_restricted_file.txt'
+
+    template_folder_content = 'content from Template folder'
+    shared_folder_content = 'content from Shared folder'
+
+    template_source_file = template_path / 'Template' / relative_file
+    template_source_file.parent.mkdir(parents=True, exist_ok=True)
+    with template_source_file.open('w') as s:
+        s.write(template_folder_content)
+
+    shared_source_file = template_path.parent / 'Shared' / relative_file
+    shared_source_file.parent.mkdir(parents=True, exist_ok=True)
+    with shared_source_file.open('w') as s:
+        s.write(shared_folder_content)
+
+    template_json_data = {
+        'createDirectories': [],
+        'copyFiles': [
+            {
+                'file': relative_file,
+                'isTemplated': False,
+                'isShared': True
+            }
+        ]
+    }
+
+    engine_template._execute_restricted_template_json(
+        template_json_data=template_json_data,
+        json_data={'copyFiles': []},
+        restricted_platform=restricted_platform,
+        destination_name='TestProject',
+        destination_path=destination_path,
+        destination_restricted_path=destination_restricted_path,
+        template_path=template_path,
+        template_restricted_path=None,
+        destination_restricted_platform_relative_path='',
+        template_restricted_platform_relative_path='',
+        replacements=[],
+        keep_restricted_in_instance=False,
+        keep_license_text=False)
+
+    out_file = destination_restricted_path / restricted_platform / 'Code/shared_restricted_file.txt'
+    assert out_file.is_file()
+    with out_file.open('r') as s:
+        s_data = s.read()
+    # Today, isShared is ignored for restricted/platform files: the source always comes
+    # from the Template folder, never the Shared folder.
+    assert s_data == template_folder_content
