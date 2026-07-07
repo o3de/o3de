@@ -23,6 +23,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -187,6 +188,13 @@ namespace AzToolsFramework
             AZ_Assert(m_serializeContext, "Failed to retrieve serialize context.");
 
             setObjectName("AssetEditorTab");
+
+            // A single edit gesture (e.g. dragging a slider) emits many Before/AfterPropertyModified calls.
+            // This timer is restarted on each change and only fires once the gesture settles, so the gesture
+            // becomes a single undo entry. Undo()/Redo()/save flush any pending entry immediately.
+            m_undoCoalesceTimer.setSingleShot(true);
+            m_undoCoalesceTimer.setInterval(150);
+            connect(&m_undoCoalesceTimer, &QTimer::timeout, this, &AssetEditorTab::CommitPendingUndoEntry);
 
             QWidget* propertyEditor = nullptr;
 
@@ -541,6 +549,9 @@ namespace AzToolsFramework
             SetupHeader();
             m_parentEditorWidget->SetCurrentTab(this);
             m_parentEditorWidget->UpdateSaveMenuActionsStatus();
+
+            // A freshly loaded asset starts with an empty undo history.
+            ClearUndoHistory();
         }
 
         void AssetEditorTab::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -734,6 +745,191 @@ namespace AzToolsFramework
             }
         }
 
+        //////////////////////////////////////////////////////////////////////////
+        // Undo / Redo
+        //////////////////////////////////////////////////////////////////////////
+
+        void AssetEditorTab::CaptureSnapshot(AZStd::vector<AZ::u8>& snapshotOut) const
+        {
+            snapshotOut.clear();
+            if (!m_inMemoryAsset)
+            {
+                return;
+            }
+
+            auto* assetHandler = const_cast<AZ::Data::AssetHandler*>(
+                AZ::Data::AssetManager::Instance().GetHandler(m_inMemoryAsset.GetType()));
+            if (!assetHandler)
+            {
+                return;
+            }
+
+            AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> stream(&snapshotOut);
+            assetHandler->SaveAssetData(m_inMemoryAsset, &stream);
+        }
+
+        bool AssetEditorTab::RestoreSnapshot(const AZStd::vector<AZ::u8>& snapshot)
+        {
+            if (snapshot.empty() || !m_inMemoryAsset || !m_inMemoryAsset.Get() || !m_serializeContext)
+            {
+                return false;
+            }
+
+            // Deserialize the snapshot in place over the existing asset object (stable pointer), so the
+            // property editor's bound instance stays valid; UpdatePropertyEditor then refreshes the display.
+            // The bytes are a standard object stream produced by the handler's SaveAssetData.
+            AZ::IO::MemoryStream stream(snapshot.data(), snapshot.size());
+
+            m_isRestoringSnapshot = true;
+            const bool restored = AZ::Utils::LoadObjectFromStreamInPlace(
+                stream, m_serializeContext, m_inMemoryAsset.GetType(), m_inMemoryAsset.Get());
+            if (restored)
+            {
+                UpdatePropertyEditor(m_inMemoryAsset);
+
+                // The rebuild above discards the focused field, so keyboard focus would leave the Asset Editor
+                // and its action-context watcher would stop receiving Ctrl+Z/Ctrl+Y (the shortcut would then
+                // leak to the main Editor). Refocus the property editor - a descendant of the watched
+                // AssetEditorWidget - so the undo/redo shortcuts keep reaching the Asset Editor. Defer it so it
+                // runs after the rebuild's own posted focus changes settle.
+                QWidget* focusTarget = m_useDPE ? static_cast<QWidget*>(m_filteredWidget)
+                                                : static_cast<QWidget*>(m_propertyEditor);
+                if (focusTarget)
+                {
+                    focusTarget->setFocusPolicy(Qt::StrongFocus);
+                    QTimer::singleShot(0, focusTarget, [focusTarget]() { focusTarget->setFocus(Qt::OtherFocusReason); });
+                }
+            }
+            m_isRestoringSnapshot = false;
+
+            return restored;
+        }
+
+        void AssetEditorTab::BeginUndoableEdit()
+        {
+            // Capture the pre-edit state once per gesture. The flag is cleared when the entry is committed.
+            if (m_isRestoringSnapshot || m_hasPendingUndoEntry)
+            {
+                return;
+            }
+
+            CaptureSnapshot(m_pendingPreEditSnapshot);
+            m_hasPendingUndoEntry = !m_pendingPreEditSnapshot.empty();
+
+            if (m_hasPendingUndoEntry)
+            {
+                NotifyUndoRedoStateChanged();
+            }
+        }
+
+        void AssetEditorTab::CommitPendingUndoEntry()
+        {
+            m_undoCoalesceTimer.stop();
+            if (!m_hasPendingUndoEntry)
+            {
+                return;
+            }
+
+            m_undoStack.push_back(AZStd::move(m_pendingPreEditSnapshot));
+            m_pendingPreEditSnapshot = {};
+            m_hasPendingUndoEntry = false;
+
+            // A new edit invalidates any redo history.
+            m_redoStack.clear();
+
+            // Bound memory by capping the history depth (drop the oldest entries).
+            while (m_undoStack.size() > s_maxUndoLevels)
+            {
+                m_undoStack.erase(m_undoStack.begin());
+            }
+
+            NotifyUndoRedoStateChanged();
+        }
+
+        void AssetEditorTab::Undo()
+        {
+            // Flush any in-flight edit so it becomes the first thing undone.
+            CommitPendingUndoEntry();
+
+            if (m_undoStack.empty())
+            {
+                return;
+            }
+
+            AZStd::vector<AZ::u8> currentState;
+            CaptureSnapshot(currentState);
+
+            AZStd::vector<AZ::u8> target = AZStd::move(m_undoStack.back());
+            m_undoStack.pop_back();
+
+            if (RestoreSnapshot(target))
+            {
+                m_redoStack.push_back(AZStd::move(currentState));
+                DirtyAsset();
+                NotifyUndoRedoStateChanged();
+            }
+            else
+            {
+                // Restore failed - put the entry back so history stays consistent.
+                m_undoStack.push_back(AZStd::move(target));
+            }
+        }
+
+        void AssetEditorTab::Redo()
+        {
+            CommitPendingUndoEntry();
+
+            if (m_redoStack.empty())
+            {
+                return;
+            }
+
+            AZStd::vector<AZ::u8> currentState;
+            CaptureSnapshot(currentState);
+
+            AZStd::vector<AZ::u8> target = AZStd::move(m_redoStack.back());
+            m_redoStack.pop_back();
+
+            if (RestoreSnapshot(target))
+            {
+                m_undoStack.push_back(AZStd::move(currentState));
+                DirtyAsset();
+                NotifyUndoRedoStateChanged();
+            }
+            else
+            {
+                m_redoStack.push_back(AZStd::move(target));
+            }
+        }
+
+        bool AssetEditorTab::CanUndo() const
+        {
+            return !m_undoStack.empty() || m_hasPendingUndoEntry;
+        }
+
+        bool AssetEditorTab::CanRedo() const
+        {
+            return !m_redoStack.empty();
+        }
+
+        void AssetEditorTab::ClearUndoHistory()
+        {
+            m_undoCoalesceTimer.stop();
+            m_undoStack.clear();
+            m_redoStack.clear();
+            m_pendingPreEditSnapshot = {};
+            m_hasPendingUndoEntry = false;
+            NotifyUndoRedoStateChanged();
+        }
+
+        void AssetEditorTab::NotifyUndoRedoStateChanged()
+        {
+            if (m_parentEditorWidget)
+            {
+                m_parentEditorWidget->UpdateUndoRedoActionsStatus();
+            }
+        }
+
         void AssetEditorTab::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
         {
             AZ::Data::AssetInfo assetInfo;
@@ -802,18 +998,41 @@ namespace AzToolsFramework
 
             m_parentEditorWidget->UpdateTabTitle(this);
             m_parentEditorWidget->SetCurrentTab(this);
+
+            // A newly created asset starts with an empty undo history.
+            ClearUndoHistory();
         }
 
         void AssetEditorTab::AfterPropertyModified(InstanceDataNode* /*node*/)
         {
             DirtyAsset();
+
+            // The edit has been applied to the in-memory asset; schedule the pending pre-edit snapshot to be
+            // committed as one undo entry once the gesture settles.
+            if (!m_isRestoringSnapshot)
+            {
+                m_undoCoalesceTimer.start();
+            }
         }
 
         void AssetEditorTab::OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
         {
-            if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+            if (m_isRestoringSnapshot)
+            {
+                return;
+            }
+
+            // The DPE reports the start (ValueChanged) and end (FinishedEdit) of an edit. Capture the pre-edit
+            // state on the first change and commit the undo entry when the edit finishes.
+            if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
+            {
+                BeginUndoableEdit();
+            }
+            else if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
             {
                 DirtyAsset();
+                BeginUndoableEdit();
+                CommitPendingUndoEntry();
             }
         }
 
@@ -852,6 +1071,9 @@ namespace AzToolsFramework
 
         void AssetEditorTab::BeforePropertyModified(InstanceDataNode* node)
         {
+            // Capture the pre-edit state before the legacy property editor applies the change.
+            BeginUndoableEdit();
+
             AssetEditorValidationRequestBus::Event(
                 m_inMemoryAsset.Get()->GetId(), &AssetEditorValidationRequests::BeforePropertyEdit, node, m_inMemoryAsset);
         }
