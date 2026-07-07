@@ -144,7 +144,6 @@ namespace AzQtComponents
 
         if (m_style)
         {
-            delete m_style.data();
             m_style.clear();
         }
     }
