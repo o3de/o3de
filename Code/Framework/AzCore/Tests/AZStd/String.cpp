@@ -968,6 +968,29 @@ namespace UnitTest
         AZ_TEST_ASSERT(*vecIt++ == "Xiph Xlater 10000");
     }
 
+    TEST_F(String, FixedStringFormat)
+    {
+        AZ::Locale::ScopedSerializationLocale scopedLocale; // use the "C" locale for reading/writing floats with "." in them
+
+        AZStd::fixed_string<32> str = AZStd::fixed_string<32>::format("%s %d", "BlaBla", 5);
+        EXPECT_EQ(8, str.size());
+        EXPECT_EQ(8, strlen(str.c_str()));
+        EXPECT_EQ(0, strcmp(str.c_str(), "BlaBla 5"));
+
+        AZStd::fixed_wstring<32> wstr = AZStd::fixed_wstring<32>::format(L"%ls %d", L"BlaBla", 5);
+        EXPECT_EQ(8, wstr.size());
+        EXPECT_EQ(8, wcslen(wstr.c_str()));
+        EXPECT_EQ(0, wcscmp(wstr.c_str(), L"BlaBla 5"));
+
+        AZStd::fixed_wstring<32> convertedWstr = AZStd::fixed_wstring<32>::format(L"%hs %d", "BlaBla", 5);
+        EXPECT_EQ(8, convertedWstr.size());
+        EXPECT_EQ(8, wcslen(convertedWstr.c_str()));
+        EXPECT_EQ(0, wcscmp(convertedWstr.c_str(), L"BlaBla 5"));
+
+        AZStd::fixed_wstring<64> pipeName = AZStd::fixed_wstring<64>::format(LR"(\\.\pipe\capturer.%hs)", "ABC");
+        EXPECT_EQ(0, wcscmp(pipeName.c_str(), LR"(\\.\pipe\capturer.ABC)"));
+    }
+
     // Concept to model if AZStd::to_string(<type>) is a valid expression
     template<class T, class = void>
     constexpr bool IsToStringInvocable = false;

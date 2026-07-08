@@ -1503,26 +1503,9 @@ namespace AZStd
             return result;
         }
 
-        static decltype(auto) format_arg(const wchar_t* format, va_list argList)
-        {
-            basic_fixed_string<wchar_t, MaxElementCount, char_traits<wchar_t>> result;
-            const int len = azvsnwprintf(result.data(), result.capacity() + 1, format, argList);
-            AZ_Assert(len >= 0, "azvsnwprintf failed! The formatted output does not fit in the fixed_string capacity of %zu wide characters.", result.capacity());
-            if (len > 0)
-            {
-                result.resize_no_construct(len);
-            }
-            return result;
-        }
+        static decltype(auto) format_arg(const wchar_t* format, va_list argList);
 
-        static decltype(auto) format(const wchar_t* format, ...)
-        {
-            va_list mark;
-            va_start(mark, format);
-            auto result = format_arg(format, mark);
-            va_end(mark);
-            return result;
-        }
+        static decltype(auto) format(const wchar_t* format, ...);
 
     protected:
         constexpr auto fits_in_capacity(size_type newSize)-> bool
@@ -1894,3 +1877,18 @@ namespace AZStd
     };
 
 } // namespace AZStd
+
+#include <AzCore/std/string/fixed_string_Platform.inl>
+
+namespace AZStd
+{
+    template<class Element, size_t MaxElementCount, class Traits>
+    inline decltype(auto) basic_fixed_string<Element, MaxElementCount, Traits>::format(const wchar_t* format, ...)
+    {
+        va_list mark;
+        va_start(mark, format);
+        auto result = format_arg(format, mark);
+        va_end(mark);
+        return result;
+    }
+}
