@@ -76,7 +76,7 @@ public:
                 remove = QMessageBox::warning(
                              nullptr,
                              tr("Remove Event"),
-                             tr("Remove \"") + eventName + tr("\" event might cause some link breakages in Flow Graph.\nStill continue?"),
+                             tr("Remove \"%1\" event might cause some link breakages in Flow Graph.\nStill continue?").arg(eventName),
                              QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
             }
 

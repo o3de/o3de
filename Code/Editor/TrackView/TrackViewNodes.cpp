@@ -913,7 +913,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                                 break;
                             }
                         }
-                        shortMessages += "Message truncated, please see console for a full list of warnings.\n";
+                        shortMessages += tr("Message truncated, please see console for a full list of warnings.\n").toUtf8().constData();
                     }
                     else
                     {
@@ -1353,7 +1353,7 @@ struct SContextMenu
 
 void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrackViewAnimNode* animNode)
 {
-    contextMenu.main.addAction("Create Folder")->setData(eMI_CreateFolder);
+    contextMenu.main.addAction(tr("Create Folder"))->setData(eMI_CreateFolder);
 
     AzToolsFramework::EntityIdList entityIds;
     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
@@ -1361,7 +1361,7 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
 
     if (!entityIds.empty())
     {
-        const char* msg = entityIds.size() == 1 ? "Add Selected Entity" : "Add Selected Entities";
+        QString msg = entityIds.size() == 1 ? tr("Add Selected Entity") : tr("Add Selected Entities");
         contextMenu.main.addAction(msg)->setData(eMI_AddSelectedEntities);
     }
 
@@ -1370,39 +1370,39 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
 
     if (pDirector->GetAnimNodesByType(AnimNodeType::RadialBlur).GetCount() == 0)
     {
-        contextMenu.main.addAction("Add Radial Blur Node")->setData(eMI_AddRadialBlur);
+        contextMenu.main.addAction(tr("Add Radial Blur Node"))->setData(eMI_AddRadialBlur);
     }
 
     if (pDirector->GetAnimNodesByType(AnimNodeType::ColorCorrection).GetCount() == 0)
     {
-        contextMenu.main.addAction("Add Color Correction Node")->setData(eMI_AddColorCorrection);
+        contextMenu.main.addAction(tr("Add Color Correction Node"))->setData(eMI_AddColorCorrection);
     }
 
     if (pDirector->GetAnimNodesByType(AnimNodeType::DepthOfField).GetCount() == 0)
     {
-        contextMenu.main.addAction("Add Depth of Field Node")->setData(eMI_AddDOF);
+        contextMenu.main.addAction(tr("Add Depth of Field Node"))->setData(eMI_AddDOF);
     }
 
     if (pDirector->GetAnimNodesByType(AnimNodeType::ScreenFader).GetCount() == 0)
     {
-        contextMenu.main.addAction("Add Screen Fader")->setData(eMI_AddScreenfader);
+        contextMenu.main.addAction(tr("Add Screen Fader"))->setData(eMI_AddScreenfader);
     }
 
     if (pDirector->GetAnimNodesByType(AnimNodeType::ShadowSetup).GetCount() == 0)
     {
-        contextMenu.main.addAction("Add Shadows Setup Node")->setData(eMI_AddShadowSetup);
+        contextMenu.main.addAction(tr("Add Shadows Setup Node"))->setData(eMI_AddShadowSetup);
     }
 
     // A director node cannot have another director node as a child.
     if (animNode->GetType() != AnimNodeType::Director)
     {
-        contextMenu.main.addAction("Add Director(Scene) Node")->setData(eMI_AddDirectorNode);
+        contextMenu.main.addAction(tr("Add Director(Scene) Node"))->setData(eMI_AddDirectorNode);
     }
 
-    contextMenu.main.addAction("Add Comment Node")->setData(eMI_AddCommentNode);
-    contextMenu.main.addAction("Add Console Variable Node")->setData(eMI_AddConsoleVariable);
-    contextMenu.main.addAction("Add Script Variable Node")->setData(eMI_AddScriptVariable);
-    contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
+    contextMenu.main.addAction(tr("Add Comment Node"))->setData(eMI_AddCommentNode);
+    contextMenu.main.addAction(tr("Add Console Variable Node"))->setData(eMI_AddConsoleVariable);
+    contextMenu.main.addAction(tr("Add Script Variable Node"))->setData(eMI_AddScriptVariable);
+    contextMenu.main.addAction(tr("Add Event Node"))->setData(eMI_AddEvent);
 }
 
 void CTrackViewNodesCtrl::AddMenuSeperatorConditional(QMenu& menu, bool& bAppended)
@@ -1459,7 +1459,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
 
     if (isOnSequence)
     {
-        contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
+        contextMenu.main.addAction(tr("Select In Viewport"))->setData(eMI_SelectInViewport);
         contextMenu.main.addSeparator();
     }
 
@@ -1468,7 +1468,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
 
-        contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
+        contextMenu.main.addAction(tr("Select In Viewport"))->setData(eMI_SelectInViewport);
 
         bAppended = true;
     }
@@ -1480,19 +1480,19 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
         if ((bOnNode || bOnSequence) && !isOnComponentNode)
         {
             AddMenuSeperatorConditional(contextMenu.main, bAppended);
-            contextMenu.main.addAction("Copy")->setData(eMI_CopyNodes);
+            contextMenu.main.addAction(tr("Copy"))->setData(eMI_CopyNodes);
             bCopyPasteRenameAppended = true;
         }
 
         if (pNode->IsGroupNode() && !isOnAzEntity)
         {
-            contextMenu.main.addAction("Paste")->setData(eMI_PasteNodes);
+            contextMenu.main.addAction(tr("Paste"))->setData(eMI_PasteNodes);
             bCopyPasteRenameAppended = true;
         }
 
         if ((bOnNode || bOnSequence || bOnTrackNotSub) && !isOnComponentNode)
         {
-            contextMenu.main.addAction("Delete")->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
+            contextMenu.main.addAction(tr("Delete"))->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
             bCopyPasteRenameAppended = true;
         }
 
@@ -1500,7 +1500,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
         if (pNode->CanBeRenamed())
         {
             AddMenuSeperatorConditional(contextMenu.main, bAppended);
-            contextMenu.main.addAction("Rename")->setData(eMI_Rename);
+            contextMenu.main.addAction(tr("Rename"))->setData(eMI_Rename);
             bCopyPasteRenameAppended = true;
         }
 
@@ -1511,9 +1511,9 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     {
         // Copy & paste keys
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Copy Keys")->setData(eMI_CopyKeys);
-        contextMenu.main.addAction("Copy Selected Keys")->setData(eMI_CopySelectedKeys);
-        contextMenu.main.addAction("Paste Keys")->setData(eMI_PasteKeys);
+        contextMenu.main.addAction(tr("Copy Keys"))->setData(eMI_CopyKeys);
+        contextMenu.main.addAction(tr("Copy Selected Keys"))->setData(eMI_CopySelectedKeys);
+        contextMenu.main.addAction(tr("Paste Keys"))->setData(eMI_PasteKeys);
         bAppended = true;
     }
 
@@ -1524,7 +1524,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
         if (!bOnSequence)
         {
             AddMenuSeperatorConditional(contextMenu.main, bAppended);
-            QAction* a = contextMenu.main.addAction("Disabled");
+            QAction* a = contextMenu.main.addAction(tr("Disabled"));
             a->setData(eMI_Disable);
             a->setCheckable(true);
             a->setChecked(pNode->IsDisabled());
@@ -1542,7 +1542,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
             {
                 AddMenuSeperatorConditional(contextMenu.main, bAppended);
                 bool bMuted = pTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Muted;
-                QAction* a = contextMenu.main.addAction("Muted");
+                QAction* a = contextMenu.main.addAction(tr("Muted"));
                 a->setData(eMI_Mute);
                 a->setCheckable(true);
                 a->setChecked(bMuted);
@@ -1554,7 +1554,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
         if (bOnNode && animNode->GetType() == AnimNodeType::Director)
         {
             AddMenuSeperatorConditional(contextMenu.main, bAppended);
-            QAction* a = contextMenu.main.addAction("Active Director");
+            QAction* a = contextMenu.main.addAction(tr("Active Director"));
             a->setData(eMI_SetAsActiveDirector);
             a->setCheckable(true);
             a->setChecked(animNode->IsActiveDirector());
@@ -1569,20 +1569,20 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
 
-        contextMenu.expandSub.addAction("Expand all")->setData(eMI_ExpandAll);
-        contextMenu.collapseSub.addAction("Collapse all")->setData(eMI_CollapseAll);
+        contextMenu.expandSub.addAction(tr("Expand all"))->setData(eMI_ExpandAll);
+        contextMenu.collapseSub.addAction(tr("Collapse all"))->setData(eMI_CollapseAll);
         if (!isOnAzEntity)
         {
-            contextMenu.expandSub.addAction("Expand Folders")->setData(eMI_ExpandFolders);
-            contextMenu.collapseSub.addAction("Collapse Folders")->setData(eMI_CollapseFolders);
-            contextMenu.expandSub.addAction("Expand Entities")->setData(eMI_ExpandEntities);
-            contextMenu.collapseSub.addAction("Collapse Entities")->setData(eMI_CollapseEntities);
-            contextMenu.expandSub.addAction("Expand Events")->setData(eMI_ExpandEvents);
-            contextMenu.collapseSub.addAction("Collapse Events")->setData(eMI_CollapseEvents);
+            contextMenu.expandSub.addAction(tr("Expand Folders"))->setData(eMI_ExpandFolders);
+            contextMenu.collapseSub.addAction(tr("Collapse Folders"))->setData(eMI_CollapseFolders);
+            contextMenu.expandSub.addAction(tr("Expand Entities"))->setData(eMI_ExpandEntities);
+            contextMenu.collapseSub.addAction(tr("Collapse Entities"))->setData(eMI_CollapseEntities);
+            contextMenu.expandSub.addAction(tr("Expand Events"))->setData(eMI_ExpandEvents);
+            contextMenu.collapseSub.addAction(tr("Collapse Events"))->setData(eMI_CollapseEvents);
         }
-        contextMenu.expandSub.setTitle("Expand");
+        contextMenu.expandSub.setTitle(tr("Expand"));
         contextMenu.main.addMenu(&contextMenu.expandSub);
-        contextMenu.collapseSub.setTitle("Collapse");
+        contextMenu.collapseSub.setTitle(tr("Collapse"));
         contextMenu.main.addMenu(&contextMenu.collapseSub);
 
         bAppended = true;
@@ -1606,7 +1606,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
                 // Create 'Add Tracks' submenu
                 m_menuParamTypeMap.clear();
 
-                const QString addTracksMenuName = "Add Tracks";
+                const QString addTracksMenuName = tr("Add Tracks");
                 if (FillAddTrackMenu(contextMenu.addTrackSub, animNode))
                 {
                     // add script table properties -> tracks available for adding
@@ -1629,8 +1629,8 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     if (isLegacySequence && bOnNode && !bIsLightAnimationSet && !isOnDirector && !isOnComponentNode && !isOnAzEntityNode)
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Import FBX File...")->setData(eMI_ImportFromFBX);
-        contextMenu.main.addAction("Export FBX File...")->setData(eMI_SaveToFBX);
+        contextMenu.main.addAction(tr("Import FBX File..."))->setData(eMI_ImportFromFBX);
+        contextMenu.main.addAction(tr("Export FBX File..."))->setData(eMI_SaveToFBX);
         bAppended = true;
     }
 
@@ -1638,7 +1638,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     if (bOnSequence || pNode->IsGroupNode() && !bIsLightAnimationSet && !isOnAzEntity)
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Edit Events...")->setData(eMI_EditEvents);
+        contextMenu.main.addAction(tr("Edit Events..."))->setData(eMI_EditEvents);
         bAppended = true;
     }
 
@@ -1650,7 +1650,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
             // Add the set-animation-layer pop-up menu.
             AddMenuSeperatorConditional(contextMenu.main, bAppended);
             CreateSetAnimationLayerPopupMenu(contextMenu.setLayerSub, pTrack);
-            contextMenu.setLayerSub.setTitle("Set Animation Layer");
+            contextMenu.setLayerSub.setTitle(tr("Set Animation Layer"));
             contextMenu.main.addMenu(&contextMenu.setLayerSub);
             bAppended = true;
         }
@@ -1660,10 +1660,10 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     if (bOnTrack)
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Customize Track Color...")->setData(eMI_CustomizeTrackColor);
+        contextMenu.main.addAction(tr("Customize Track Color..."))->setData(eMI_CustomizeTrackColor);
         if (pTrack->HasCustomColor())
         {
-            contextMenu.main.addAction("Clear Custom Track Color")->setData(eMI_ClearCustomTrackColor);
+            contextMenu.main.addAction(tr("Clear Custom Track Color"))->setData(eMI_ClearCustomTrackColor);
         }
         bAppended = true;
     }
@@ -1673,7 +1673,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
 
-        const QString manageTracksMenuName = "Toggle Tracks";
+        const QString manageTracksMenuName = tr("Toggle Tracks");
         auto manageTracksAction = contextMenu.main.addAction(manageTracksMenuName);
 
         bool bAppendedTrackFlag = false;
@@ -1724,15 +1724,15 @@ int CTrackViewNodesCtrl::ShowPopupMenuMultiSelection(SContextMenu& contextMenu)
 
     if (bNodeSelected)
     {
-        contextMenu.main.addAction("Copy Selected Nodes")->setData(eMI_CopySelectedNodes);
+        contextMenu.main.addAction(tr("Copy Selected Nodes"))->setData(eMI_CopySelectedNodes);
     }
 
-    contextMenu.main.addAction("Remove Selected Nodes/Tracks")->setData(eMI_RemoveSelected);
+    contextMenu.main.addAction(tr("Remove Selected Nodes/Tracks"))->setData(eMI_RemoveSelected);
 
     if (bNodeSelected)
     {
         contextMenu.main.addSeparator();
-        contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
+        contextMenu.main.addAction(tr("Select In Viewport"))->setData(eMI_SelectInViewport);
 
         // Importing FBX is currently only supported on legacy entities. Legacy
         // sequences contain only legacy Cry entities and no AZ component entities.
@@ -1743,8 +1743,8 @@ int CTrackViewNodesCtrl::ShowPopupMenuMultiSelection(SContextMenu& contextMenu)
             CTrackViewSequence* sequence = context->GetSequence();
             if (sequence && sequence->GetSequenceType() == SequenceType::Legacy)
             {
-                contextMenu.main.addAction("Import From FBX File")->setData(eMI_ImportFromFBX);
-                contextMenu.main.addAction("Save To FBX File")->setData(eMI_SaveToFBX);
+                contextMenu.main.addAction(tr("Import From FBX File"))->setData(eMI_ImportFromFBX);
+                contextMenu.main.addAction(tr("Save To FBX File"))->setData(eMI_SaveToFBX);
             }
         }
     }
@@ -1924,7 +1924,7 @@ void CTrackViewNodesCtrl::SetPopupMenuLock(QMenu* menu)
         QAction* a = menu->actions()[i];
         QString menuString = a->text();
 
-        if (menuString != "Expand" && menuString != "Collapse")
+        if (menuString != tr("Expand") && menuString != tr("Collapse"))
         {
             a->setEnabled(false);
         }
@@ -2166,7 +2166,7 @@ void CTrackViewNodesCtrl::CreateSetAnimationLayerPopupMenu(QMenu& menuSetLayer, 
     // Add layer items.
     for (int i = 0; i < 16; ++i)
     {
-        QString layerText = QString("Layer #%1").arg(i);
+        QString layerText = tr("Layer #%1").arg(i);
 
         QAction* a = menuSetLayer.addAction(layerText);
         a->setData(eMI_SetAnimationLayerBase + i);

@@ -13,6 +13,8 @@
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -37,22 +39,25 @@ namespace AzToolsFramework
                 {
                     editContext
                         ->Class<EditorNonUniformScaleComponent>(
-                            "Non-uniform Scale", "Non-uniform scale for this entity only (does not propagate through hierarchy)")
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Non-uniform Scale"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Non-uniform scale for this entity only (does not propagate through hierarchy)"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::FixedComponentListIndex, 1)
                         ->Attribute(AZ::Edit::Attributes::RemoveableByUser, true)
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NonUniformScale.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NonUniformScale.svg")
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_scale, "Non-uniform Scale",
-                            "Non-uniform scale for this entity only (does not propagate through hierarchy)")
+                            AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_scale,
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Non-uniform Scale"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Non-uniform scale for this entity only (does not propagate through hierarchy)"))
                         ->Attribute(AZ::Edit::Attributes::Min, AZ::MinTransformScale)
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::MaxTransformScale)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorNonUniformScaleComponent::OnScaleChanged)
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_componentModeDelegate, "Component Mode",
-                            "Non-uniform Scale Component Mode")
+                            AZ::Edit::UIHandlers::Default, &EditorNonUniformScaleComponent::m_componentModeDelegate,
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Component Mode"),
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Non-uniform Scale Component Mode"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
                 }
             }

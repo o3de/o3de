@@ -25,6 +25,9 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include <AzCore/Math/Crc.h>
+
+#include <AzCore/i18n/TranslationMacros.h>
+
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/parallel/thread.h>
@@ -893,19 +896,27 @@ namespace AZ
             EditContext* ec = serializeContext->GetEditContext();
             if (ec)
             {
-                ec->Class<Entity>("Entity", "Base entity class")->
+                ec->Class<Entity>(
+                    QT_TRANSLATE_NOOP("AzCore", "Entity"),
+                    QT_TRANSLATE_NOOP("AzCore", "Base entity class"))->
                     DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_id, "Id", "")->
                         Attribute(Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
                         Attribute(Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
                     DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isDependencyReady, "IsDependencyReady", "")->
                         Attribute(Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->
                         Attribute(Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushable)->
-                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isRuntimeActiveByDefault, "StartActive", "")->
-                    DataElement("String", &Entity::m_name, "Name", "Unique name of the entity")->
+                    DataElement(AZ::Edit::UIHandlers::Default, &Entity::m_isRuntimeActiveByDefault,
+                        QT_TRANSLATE_NOOP("AzCore", "StartActive"), "")->
+                    DataElement("String", &Entity::m_name,
+                        QT_TRANSLATE_NOOP("AzCore", "Name"),
+                        QT_TRANSLATE_NOOP("AzCore", "Unique name of the entity"))->
                         Attribute(Edit::Attributes::ChangeNotify, &Entity::OnNameChanged)->
-                    DataElement("Components", &Entity::m_components, "Components", "");
+                    DataElement("Components", &Entity::m_components,
+                        QT_TRANSLATE_NOOP("AzCore", "Components"), "");
 
-                ec->Class<EntityId>("EntityId", "Entity Unique Id");
+                ec->Class<EntityId>(
+                    QT_TRANSLATE_NOOP("AzCore", "EntityId"),
+                    QT_TRANSLATE_NOOP("AzCore", "Entity Unique Id"));
             }
         }
 
@@ -1372,7 +1383,7 @@ namespace AZ
         if (sortedComponents.size() != componentInfos.size())
         {
             // Format message like: "Cycle exists amongst: ComponentA, ComponentB, ComponentC, ..."
-            AZStd::string message = "Infinite loop of service dependencies amongst components: ";
+            AZStd::string message = QT_TRANSLATE_NOOP("AzCore", "Infinite loop of service dependencies amongst components: ");
             size_t foundUnsorted = 0;
             for (ComponentInfo& componentInfo : componentInfos)
             {

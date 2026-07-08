@@ -11,6 +11,8 @@
 #include "PlatformSettings_common.h"
 #include "Validators.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace ProjectSettingsTool
 {
     void BaseSettings::Reflect(AZ::ReflectContext* context)
@@ -31,22 +33,36 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<BaseSettings>("Project Settings", "All core settings for the game project and package and deployment.")
+                editContext->Class<BaseSettings>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Project Settings"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All core settings for the game project and package and deployment."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(Handlers::LinkedLineEdit, &BaseSettings::m_projectName, "Project Name", "The name of the project.")
+                    ->DataElement(Handlers::LinkedLineEdit, &BaseSettings::m_projectName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Project Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The name of the project."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::FileName))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::ProjectName)
-                    ->DataElement(Handlers::LinkedLineEdit, &BaseSettings::m_productName, "Product Name", "The project's user facing name.")
+                    ->DataElement(Handlers::LinkedLineEdit, &BaseSettings::m_productName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Product Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The project's user facing name."))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::ProductName)
-                    ->DataElement(Handlers::LinkedLineEdit, &BaseSettings::m_executableName, "Executable Name", "The project launcher's name.")
+                    ->DataElement(Handlers::LinkedLineEdit, &BaseSettings::m_executableName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Executable Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The project launcher's name."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::FileNameOrEmpty))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::ExecutableName)
-                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_projectPath, "Project Path", "The project root folder path .")
+                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_projectPath,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Project Path"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The project root folder path."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::FileNameOrEmpty))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::ProductName)
-                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_projectOutputFolder, "Output Folder", "The folder the packed project will be exported to.")
-                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_codeFolder, "Code Folder (legacy)", "A legacy setting specifing the folder for this project's code.")
+                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_projectOutputFolder,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Output Folder"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The folder the packed project will be exported to."))
+                    ->DataElement(Handlers::QValidatedLineEdit, &BaseSettings::m_codeFolder,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Code Folder (legacy)"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "A legacy setting specifying the folder for this project's code."))
                 ;
             }
         }

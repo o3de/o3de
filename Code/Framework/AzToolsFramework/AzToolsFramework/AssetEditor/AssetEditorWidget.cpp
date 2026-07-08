@@ -311,24 +311,24 @@ namespace AzToolsFramework
                 );
             }
 
-            QAction* openAssetAction = fileMenu->addAction("&Open...");
+            QAction* openAssetAction = fileMenu->addAction(tr("&Open..."));
             connect(openAssetAction, &QAction::triggered, this, &AssetEditorWidget::OpenAssetWithDialog);
 
-            m_recentFileMenu = fileMenu->addMenu("Open Recent");
+            m_recentFileMenu = fileMenu->addMenu(tr("Open Recent"));
 
             fileMenu->addSeparator();
 
-            m_saveAssetAction = fileMenu->addAction("&Save");
+            m_saveAssetAction = fileMenu->addAction(tr("&Save"));
             m_saveAssetAction->setShortcut(QKeySequence::Save);
             m_saveAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(m_saveAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAsset);
 
-            m_saveAsAssetAction = fileMenu->addAction("&Save As");
+            m_saveAsAssetAction = fileMenu->addAction(tr("&Save As"));
             m_saveAsAssetAction->setShortcut(QKeySequence::SaveAs);
             m_saveAsAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(m_saveAsAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAssetAs);
 
-            m_saveAllAssetsAction = fileMenu->addAction("Save All");
+            m_saveAllAssetsAction = fileMenu->addAction(tr("Save All"));
             connect(m_saveAllAssetsAction, &QAction::triggered, this, &AssetEditorWidget::SaveAll);
 
             // The Save actions are disabled by default.
@@ -358,10 +358,10 @@ namespace AzToolsFramework
 
             QMenu* viewMenu = mainMenu->addMenu(tr("&View"));
 
-            QAction* expandAll = viewMenu->addAction("&Expand All");
+            QAction* expandAll = viewMenu->addAction(tr("&Expand All"));
             connect(expandAll, &QAction::triggered, this, &AssetEditorWidget::ExpandAll);
 
-            QAction* collapseAll = viewMenu->addAction("&Collapse All");
+            QAction* collapseAll = viewMenu->addAction(tr("&Collapse All"));
             connect(collapseAll, &QAction::triggered, this, &AssetEditorWidget::CollapseAll);
 
             mainLayout->setMenuBar(mainMenu);

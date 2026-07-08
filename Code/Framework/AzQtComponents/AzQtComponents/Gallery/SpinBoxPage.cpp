@@ -22,7 +22,7 @@ class SpinBoxChangedCommand : public QUndoCommand
 {
 public:
     SpinBoxChangedCommand(Spinbox* objectChanging, ValueType oldValue, ValueType newValue)
-        : QUndoCommand(QStringLiteral("Change %1 to %2").arg(oldValue).arg(newValue))
+        : QUndoCommand(QObject::tr("Change %1 to %2").arg(oldValue).arg(newValue))
         , m_spinBox(objectChanging)
         , m_oldValue(oldValue)
         , m_newValue(newValue)
@@ -83,7 +83,7 @@ SpinBoxPage::SpinBoxPage(QWidget* parent)
     ui->metersVectorInput->setSuffix(" m");
 
     {
-        const QStringList labels = {"Top", "Right", "Bottom", "Left"};
+        const QStringList labels = {tr("Top"), tr("Right"), tr("Bottom"), tr("Left")};
         const int size = ui->labelsVectorInput->getSize();
         for (int i = 0; i < size; ++i)
         {
@@ -144,7 +144,7 @@ AzQtComponents::SpinBox::setHasError(doubleSpinBox, true);
     track<AzQtComponents::DoubleSpinBox, double>(ui->focusDoubleSpinBox);
 
     {
-        QAction* action = new QAction("Up", this);
+        QAction* action = new QAction(tr("Up"), this);
         action->setShortcut(QKeySequence(Qt::Key_Up));
         connect(action, &QAction::triggered, []()
         {
@@ -153,7 +153,7 @@ AzQtComponents::SpinBox::setHasError(doubleSpinBox, true);
         addAction(action);
     }
     {
-        QAction* action = new QAction("Down", this);
+        QAction* action = new QAction(tr("Down"), this);
         action->setShortcut(QKeySequence(Qt::Key_Down));
         connect(action, &QAction::triggered, []()
         {

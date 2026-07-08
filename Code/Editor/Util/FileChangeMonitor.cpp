@@ -195,7 +195,7 @@ void CFileChangeMonitor::NotifyListeners(const QString &path, SFileChangeInfo::E
 {
     for (const auto &glob : m_ignoreMasks)
     {
-        if (AZStd::wildcard_match(qPrintable(glob), qPrintable(path)))
+        if (AZStd::wildcard_match(qUtf8Printable(glob), qUtf8Printable(path)))
         {
             return; // mask matches, ignore event
         }

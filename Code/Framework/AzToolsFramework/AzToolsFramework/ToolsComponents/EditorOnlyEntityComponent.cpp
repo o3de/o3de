@@ -11,6 +11,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -26,13 +28,14 @@ namespace AzToolsFramework
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<EditorOnlyEntityComponent>("Editor-Only Flag Handler", "")
+                    editContext->Class<EditorOnlyEntityComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Editor-Only Flag Handler"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                             ->Attribute(AZ::Edit::Attributes::HideIcon, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorOnlyEntityComponent::m_isEditorOnly, 
-                            "Editor Only", 
-                            "Marks the entity for editor-use only. If true, the entity will not be exported for use in runtime contexts (including dynamic slices).")
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Editor Only"), 
+                            QT_TRANSLATE_NOOP("AzToolsFramework", "Marks the entity for editor-use only. If true, the entity will not be exported for use in runtime contexts (including dynamic slices)."))
                         ;
                 }
             }

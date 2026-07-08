@@ -60,7 +60,7 @@ SegmentControlPage::SegmentControlPage(QWidget* parent)
     {
         for (int i = 0; i < 4; i++)
         {
-            sb->addTab(QStringLiteral("Segment Bar %1").arg(i));
+            sb->addTab(tr("Segment Bar %1").arg(i));
         }
     }
 
@@ -69,9 +69,9 @@ SegmentControlPage::SegmentControlPage(QWidget* parent)
                                                              ui->segmentControlVertical };
     for (AzQtComponents::SegmentControl* sc : controls)
     {
-        sc->addTab(new SampleColorSwatch(QColor("#690000"), sc), "Red");
-        sc->addTab(new SampleColorSwatch(QColor("#006900"), sc), "Green");
-        sc->addTab(new SampleColorSwatch(QColor("#000069"), sc), "Blue");
+        sc->addTab(new SampleColorSwatch(QColor("#690000"), sc), tr("Red"));
+        sc->addTab(new SampleColorSwatch(QColor("#006900"), sc), tr("Green"));
+        sc->addTab(new SampleColorSwatch(QColor("#000069"), sc), tr("Blue"));
     }
 
     QString exampleText = R"(

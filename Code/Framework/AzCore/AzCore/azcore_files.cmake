@@ -492,6 +492,7 @@ set(FILES
     NativeUI/NativeUISystemComponent.h
     NativeUI/NativeUIRequests.cpp
     NativeUI/NativeUIRequests.h
+    i18n/TranslationMacros.h
     Outcome/Outcome.h
     Outcome/Internal/OutcomeImpl.h
     Platform.cpp

@@ -9,6 +9,7 @@
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -30,7 +31,8 @@ namespace AzToolsFramework
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
                 if (editContext)
                 {
-                    editContext->Class<EditorPrefabComponent>("Prefab Component", "")
+                    editContext->Class<EditorPrefabComponent>(
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Prefab Component"), "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
                         ->Attribute(AZ::Edit::Attributes::HideIcon, true)

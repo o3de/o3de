@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/i18n/TranslationMacros.h>
 
 namespace AzPhysics
 {
@@ -36,29 +37,38 @@ namespace AzPhysics
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<SceneConfiguration>("Scene Configuration", "Default scene configuration")
+                editContext->Class<SceneConfiguration>(
+                    QT_TRANSLATE_NOOP("PhysX", "Scene Configuration"), QT_TRANSLATE_NOOP("PhysX", "Default scene configuration"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_worldBounds, "World Bounds", "World bounds")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_gravity, "Gravity", "Gravity")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_worldBounds,
+                        QT_TRANSLATE_NOOP("PhysX", "World Bounds"), QT_TRANSLATE_NOOP("PhysX", "World bounds"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_gravity,
+                        QT_TRANSLATE_NOOP("PhysX", "Gravity"), QT_TRANSLATE_NOOP("PhysX", "Gravity"))
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("PhysX", "Continuous Collision Detection"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_enableCcd, "Enable CCD", "Enabled continuous collision detection in the world")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_enableCcd,
+                        QT_TRANSLATE_NOOP("PhysX", "Enable CCD"), QT_TRANSLATE_NOOP("PhysX", "Enabled continuous collision detection in the world"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_maxCcdPasses,
-                        "Max CCD Passes", "Maximum number of continuous collision detection passes")
+                        QT_TRANSLATE_NOOP("PhysX", "Max CCD Passes"), QT_TRANSLATE_NOOP("PhysX", "Maximum number of continuous collision detection passes"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &SceneConfiguration::GetCcdVisibility)
                     ->Attribute(AZ::Edit::Attributes::Min, 1u)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_enableCcdResweep,
-                        "Enable CCD Resweep", "Enable a more accurate but more expensive continuous collision detection method")
+                        QT_TRANSLATE_NOOP("PhysX", "Enable CCD Resweep"), QT_TRANSLATE_NOOP("PhysX", "Enable a more accurate but more expensive continuous collision detection method"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &SceneConfiguration::GetCcdVisibility)
                     ->EndGroup()
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_enablePcm, "Persistent Contact Manifold", "Enabled the persistent contact manifold narrow-phase algorithm")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &SceneConfiguration::m_enablePcm,
+                        QT_TRANSLATE_NOOP("PhysX", "Persistent Contact Manifold"),
+                        QT_TRANSLATE_NOOP("PhysX", "Enabled the persistent contact manifold narrow-phase algorithm"))
                     ->DataElement(AZ::Edit::UIHandlers::Default,&SceneConfiguration::m_enableEnhancedDeterminism,
-                        "Enhanced Determinism", "Improves determinism at a performance cost. Applied at scene creation.")
+                        QT_TRANSLATE_NOOP("PhysX", "Enhanced Determinism"),
+                        QT_TRANSLATE_NOOP("PhysX", "Improves determinism at a performance cost. Applied at scene creation."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SceneConfiguration::m_bounceThresholdVelocity,
-                        "Bounce Threshold Velocity", "Relative velocity below which colliding objects will not bounce")
+                        QT_TRANSLATE_NOOP("PhysX", "Bounce Threshold Velocity"), QT_TRANSLATE_NOOP("PhysX", "Relative velocity below which colliding objects will not bounce"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ;
             }

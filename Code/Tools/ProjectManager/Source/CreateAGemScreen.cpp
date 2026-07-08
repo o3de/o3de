@@ -227,7 +227,7 @@ namespace O3DE::ProjectManager
 
         LoadButtonsFromGemTemplatePaths(gemSetupLayout);
 
-        m_formFolderRadioButton = new QRadioButton("Choose existing template");
+        m_formFolderRadioButton = new QRadioButton(tr("Choose existing template"));
         m_formFolderRadioButton->setObjectName("createAGem");
         m_radioButtonGroup->addButton(m_formFolderRadioButton);
 

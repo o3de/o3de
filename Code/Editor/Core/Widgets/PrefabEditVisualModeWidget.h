@@ -12,6 +12,7 @@
 #include <AzQtComponents/Components/Widgets/ComboBox.h>
 
 #include <QComboBox>
+#include <QCoreApplication>
 #include <QLabel>
 #include <QWidget>
 
@@ -19,6 +20,8 @@
 class PrefabEditVisualModeWidget
     : public QWidget
 {
+    Q_DECLARE_TR_FUNCTIONS(PrefabEditVisualModeWidget)
+
 public:
     PrefabEditVisualModeWidget();
     ~PrefabEditVisualModeWidget();

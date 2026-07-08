@@ -671,7 +671,7 @@ namespace LUAEditor
             if ((!isModified) && (isascii(ev->key()) || isUseful))
             {
                 QMessageBox msgBox;
-                msgBox.setText("Checkout This File To Edit?");
+                msgBox.setText(tr("Checkout This File To Edit?"));
                 msgBox.setInformativeText(m_Info.m_assetName.c_str());
                 msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
                 msgBox.setDefaultButton(QMessageBox::Ok);

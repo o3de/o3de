@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyColorCtrl.hxx>
@@ -30,22 +31,26 @@ namespace AzToolsFramework
                 // we want to use the ColorEditorConfiguration to control the Color Picker widget for the Color field.
                 // The ColorEditorConfiguration and the Color picker widget are defined at the AzToolsFramework level, so the
                 // EditContext needs to be at this level as well to be able to refer to them.
-                editContext->Class<PaintBrushSettings>("Paint Brush", "")
+                editContext->Class<PaintBrushSettings>(
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Paint Brush"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         // There's no special meaning to 100, we just want the PaintBrushSettings to display after the GlobalPaintBrushSettings
                         ->Attribute(AZ::Edit::Attributes::DisplayOrder, 100)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size, "Size",
-                        "Size/diameter of the brush stamp in meters.")
+                        AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_size,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Size"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Size/diameter of the brush stamp in meters."))
                         ->Attribute(AZ::Edit::Attributes::Min, &PaintBrushSettings::GetSizeMin)
                         ->Attribute(AZ::Edit::Attributes::Max, &PaintBrushSettings::GetSizeMax)
                         ->Attribute(AZ::Edit::Attributes::Step, &PaintBrushSettings::GetSizeStep)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 2)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " m")
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AzToolsFramework", " m"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSizeVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &PaintBrushSettings::m_brushColor, "Color", "Color of the paint brush.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &PaintBrushSettings::m_brushColor,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Color"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Color of the paint brush."))
                     ->Attribute(
                         "ColorEditorConfiguration",
                         []([[maybe_unused]] void* voidHandler) -> AzToolsFramework::ColorEditorConfiguration
@@ -96,94 +101,103 @@ namespace AzToolsFramework
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &PaintBrushSettings::m_intensityPercent,
-                        "Intensity",
-                        "Intensity/color percent of the paint brush. 0% = black, 100% = white.")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Intensity"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Intensity/color percent of the paint brush. 0% = black, 100% = white."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AzToolsFramework", " %"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetIntensityVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnIntensityChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &PaintBrushSettings::m_opacityPercent,
-                        "Opacity",
-                        "Opacity percent of each paint brush stroke. 0% = transparent, 100% = opaque.")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Opacity"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Opacity percent of each paint brush stroke. 0% = transparent, 100% = opaque."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AzToolsFramework", " %"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetOpacityVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnOpacityChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider,
                         &PaintBrushSettings::m_hardnessPercent,
-                        "Hardness",
-                        "Falloff percent around the edges of each paint brush stamp. 0% = soft falloff, 100% = hard edges.")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Hardness"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Falloff percent around the edges of each paint brush stamp. 0% = soft falloff, 100% = hard edges."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AzToolsFramework", " %"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetHardnessVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_flowPercent, "Flow",
-                        "The opacity percent of each paint brush stamp. 0% = transparent, 100% = opaque.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_flowPercent,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Flow"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "The opacity percent of each paint brush stamp. 0% = transparent, 100% = opaque."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AzToolsFramework", " %"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetFlowVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_distancePercent, "Distance",
-                        "Brush distance to move between stamps in % of brush size. 1% = high overlap, 100% = non-overlapping stamps.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_distancePercent,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Distance"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Brush distance to move between stamps in % of brush size. 1% = high overlap, 100% = non-overlapping stamps."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 300.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.5f)
                         ->Attribute(AZ::Edit::Attributes::DisplayDecimals, 1)
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("AzToolsFramework", " %"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetDistanceVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode, "Blend Mode", "Blend mode of the brush stroke.")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Normal, "Normal")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Multiply, "Multiply")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Screen, "Screen")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Add, "Linear Dodge (Add)")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Subtract, "Subtract")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Darken, "Darken (Min)")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Lighten, "Lighten (Max)")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Average, "Average")
-                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Overlay, "Overlay")
+                        AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_blendMode,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Blend Mode"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Blend mode of the brush stroke."))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Normal, QT_TRANSLATE_NOOP("AzToolsFramework", "Normal"))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Multiply, QT_TRANSLATE_NOOP("AzToolsFramework", "Multiply"))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Screen, QT_TRANSLATE_NOOP("AzToolsFramework", "Screen"))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Add, QT_TRANSLATE_NOOP("AzToolsFramework", "Linear Dodge (Add)"))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Subtract, QT_TRANSLATE_NOOP("AzToolsFramework", "Subtract"))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Darken, QT_TRANSLATE_NOOP("AzToolsFramework", "Darken (Min)"))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Lighten, QT_TRANSLATE_NOOP("AzToolsFramework", "Lighten (Max)"))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Average, QT_TRANSLATE_NOOP("AzToolsFramework", "Average"))
+                        ->EnumAttribute(AzFramework::PaintBrushBlendMode::Overlay, QT_TRANSLATE_NOOP("AzToolsFramework", "Overlay"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetBlendModeVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &PaintBrushSettings::m_smoothMode,
-                        "Smooth Mode", "Smooth mode of the brush stroke.")
-                        ->EnumAttribute(AzFramework::PaintBrushSmoothMode::Gaussian, "Weighted Average (Gaussian)")
-                        ->EnumAttribute(AzFramework::PaintBrushSmoothMode::Mean, "Average (Mean)")
-                        ->EnumAttribute(AzFramework::PaintBrushSmoothMode::Median, "Middle Value (Median)")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Smooth Mode"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Smooth mode of the brush stroke."))
+                        ->EnumAttribute(AzFramework::PaintBrushSmoothMode::Gaussian, QT_TRANSLATE_NOOP("AzToolsFramework", "Weighted Average (Gaussian)"))
+                        ->EnumAttribute(AzFramework::PaintBrushSmoothMode::Mean, QT_TRANSLATE_NOOP("AzToolsFramework", "Average (Mean)"))
+                        ->EnumAttribute(AzFramework::PaintBrushSmoothMode::Median, QT_TRANSLATE_NOOP("AzToolsFramework", "Middle Value (Median)"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothModeVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingRadius, "Smoothing Radius",
-                        "The number of values in each direction to use for smoothing (a radius of 1 = 3x3 smoothing kernel).")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrushSettings::m_smoothingRadius,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Smoothing Radius"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "The number of values in each direction to use for smoothing (a radius of 1 = 3x3 smoothing kernel)."))
                         ->Attribute(AZ::Edit::Attributes::Min, MinSmoothingRadius)
                         ->Attribute(AZ::Edit::Attributes::Max, MaxSmoothingRadius)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &PaintBrushSettings::GetSmoothingRadiusVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrushSettings::OnSettingsChanged)
                     ;
 
-                editContext->Class<GlobalPaintBrushSettings>("Global Paint Brush Settings", "")
+                editContext->Class<GlobalPaintBrushSettings>(
+                    QT_TRANSLATE_NOOP("AzToolsFramework", "Global Paint Brush Settings"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &GlobalPaintBrushSettings::m_brushMode, "Brush Mode", "Brush functionality.")
+                        AZ::Edit::UIHandlers::ComboBox, &GlobalPaintBrushSettings::m_brushMode,
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Brush Mode"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Brush functionality."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<AzToolsFramework::PaintBrushMode>())
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GlobalPaintBrushSettings::OnBrushModeChanged)
                     ;

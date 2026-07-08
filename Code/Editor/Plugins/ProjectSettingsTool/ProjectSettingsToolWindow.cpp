@@ -485,8 +485,8 @@ namespace ProjectSettingsTool
                 QMessageBox::critical
                 (
                     this,
-                    "Critical",
-                    "Android settings is invalid. Project Settings Tool must close.",
+                    tr("Critical"),
+                    tr("Android settings is invalid. Project Settings Tool must close."),
                     QMessageBox::Abort
                 );
                 ForceClose();
@@ -512,8 +512,8 @@ namespace ProjectSettingsTool
                 QMessageBox::critical
                 (
                     this,
-                    "Critical",
-                    "Ios pList is invalid. Project Settings Tool must close.",
+                    tr("Critical"),
+                    tr("iOS pList is invalid. Project Settings Tool must close."),
                     QMessageBox::Abort
                 );
                 ForceClose();
@@ -539,8 +539,8 @@ namespace ProjectSettingsTool
                 QMessageBox::critical
                 (
                     this,
-                    "Critical",
-                    "Windows settings is invalid. Project Settings Tool must close.",
+                    tr("Critical"),
+                    tr("Windows settings is invalid. Project Settings Tool must close."),
                     QMessageBox::Abort
                 );
                 ForceClose();

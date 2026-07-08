@@ -12,6 +12,7 @@
 #include "Validators.h"
 
 #include <AzCore/IO/FileIO.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace ProjectSettingsTool
 {
@@ -35,7 +36,8 @@ namespace ProjectSettingsTool
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &WindowsGraphics::m_graphicsAPI,
-                        "Graphics API", "Select the primary graphics API")
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Graphics API"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Select the primary graphics API"))
                     ->Attribute(
                         AZ::Edit::Attributes::StringList,
                         []()
@@ -45,16 +47,20 @@ namespace ProjectSettingsTool
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &WindowsGraphics::m_validationMode,
-                        "Validation Layers", "Set the validation mode for the RHI.")
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Validation Layers"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Set the validation mode for the RHI."))
                     ->Attribute(
                         AZ::Edit::Attributes::EnumValues,
                         AZStd::vector<AZ::Edit::EnumConstant<ValidationMode>>{
                             AZ::Edit::EnumConstant<ValidationMode>(
-                                ValidationMode::Disabled, "Disabled"),
+                                ValidationMode::Disabled,
+                                QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Disabled")),
                             AZ::Edit::EnumConstant<ValidationMode>(
-                                ValidationMode::Enabled, "Enabled  (Shows warnings and error messages)"),
+                                ValidationMode::Enabled,
+                                QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enabled  (Shows warnings and error messages)")),
                             AZ::Edit::EnumConstant<ValidationMode>(
-                                ValidationMode::Verbose, "Verbose  (Shows warnings, errors, and informational messages)"),
+                                ValidationMode::Verbose,
+                                QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Verbose  (Shows warnings, errors, and informational messages)")),
                             AZ::Edit::EnumConstant<ValidationMode>(
                                 ValidationMode::GPU, "GPU"),
                         });
@@ -123,15 +129,17 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<WindowsSettings>("Windows Settings", "Configure settings for Windows platform")
+                editContext->Class<WindowsSettings>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Windows Settings"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Configure settings for Windows platform"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &WindowsSettings::m_graphics,
-                        "Graphics Settings",
-                        "Configure Graphics settings for Windows platform");
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Graphics Settings"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Configure Graphics settings for Windows platform"));
             }
         }
     }

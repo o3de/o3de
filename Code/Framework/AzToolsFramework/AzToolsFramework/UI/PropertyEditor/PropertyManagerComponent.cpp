@@ -7,6 +7,7 @@
  */
 #include "PropertyManagerComponent.h"
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
@@ -343,9 +344,10 @@ namespace AzToolsFramework
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<PropertyManagerComponent>(
-                        "Property Manager", "Provides services for registration of property editors")
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Property Manager"),
+                        QT_TRANSLATE_NOOP("AzToolsFramework", "Provides services for registration of property editors"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Editor")
+                            ->Attribute(AZ::Edit::Attributes::Category, QT_TRANSLATE_NOOP("AzToolsFramework", "Editor"))
                         ;
                 }
             }

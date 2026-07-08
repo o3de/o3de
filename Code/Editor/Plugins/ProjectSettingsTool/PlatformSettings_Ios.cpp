@@ -11,6 +11,8 @@
 #include "PlatformSettings_common.h"
 #include "Validators.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace ProjectSettingsTool
 {
     namespace Icons
@@ -65,59 +67,79 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<IosIcons>("Icons", "All png icon overrides for iOS.")
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_appStore, "App Store (1024px)", "")
+                editContext->Class<IosIcons>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Icons"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All png icon overrides for iOS."))
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_appStore,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "App Store (1024px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<1024>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::appStore))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneApp120, "iPhone App (120px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneApp120,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone App (120px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<120>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::iphoneApp120))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneApp180, "iPhone App (180px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneApp180,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone App (180px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<180>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::iphoneApp180))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneNotification40, "iPhone Notification (40px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneNotification40,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone Notification (40px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<40>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::iphoneNotification40))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneNotification60, "iPhone Notification (60px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneNotification60,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone Notification (60px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<60>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::iphoneNotification60))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneSettings58, "iPhone Settings (58px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneSettings58,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone Settings (58px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<58>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::iphoneSettings58))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneSettings87, "iPhone Settings (87px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneSettings87,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone Settings (87px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<87>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::iphoneSettings87))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneSpotlight80, "iPhone Spotlight (80px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneSpotlight80,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone Spotlight (80px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<80>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::iphoneSpotlight80))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneSpotlight120, "iPhone Spotlight (120px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_iphoneSpotlight120,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone Spotlight (120px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<120>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::iphoneSpotlight120))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadApp76, "iPad App (76px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadApp76,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad App (76px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<76>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadApp76))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadApp152, "iPad App (152px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadApp152,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad App (152px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<152>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadApp152))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadProApp, "iPad Pro App (167px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadProApp,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad Pro App (167px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<167>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadProApp))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadNotification20, "iPad Notification (20px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadNotification20,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad Notification (20px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<20>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadNotification20))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadNotification40, "iPad Notification (40px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadNotification40,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad Notification (40px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<40>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadNotification40))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadSettings29, "iPad Settings (29px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadSettings29,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad Settings (29px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<29>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadSettings29))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadSettings58, "iPad Settings (58px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadSettings58,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad Settings (58px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<58>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadSettings58))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadSpotlight40, "iPad Spotlight (40px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadSpotlight40,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad Spotlight (40px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<40>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadSpotlight40))
-                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadSpotlight80, "iPad Spotlight (80px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosIcons::m_ipadSpotlight80,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad Spotlight (80px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<80>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosIcons, Icons::ipadSpotlight80))
                 ;
@@ -163,38 +185,51 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<IosLaunchscreens>("Launchscreens", "All png launchscreen overrides for iOS.")
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone640x960, "iPhone (640x960px)", "")
+                editContext->Class<IosLaunchscreens>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Launchscreens"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All png launchscreen overrides for iOS."))
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone640x960,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone (640x960px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<640, 960>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::iphone640x960))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone640x1136, "iPhone (640x1136px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone640x1136,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone (640x1136px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<640, 1136>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::iphone640x1136))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone750x1334, "iPhone (750x1334px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone750x1334,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone (750x1334px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<750, 1334>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::iphone750x1334))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone1125x2436, "iPhone (1125x2436px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone1125x2436,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone (1125x2436px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<1125, 2436>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::iphone1125x2436))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone2436x1125, "iPhone (2436x1125px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone2436x1125,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone (2436x1125px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<2436, 1125>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::iphone2436x1125))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone1242x2208, "iPhone (1242x2208px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone1242x2208,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone (1242x2208px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<1242, 2208>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::iphone1242x2208))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone2208x1242, "iPhone (2208x1242px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_iphone2208x1242,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone (2208x1242px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<2208, 1242>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::iphone2208x1242))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_ipad768x1024, "iPad (768x1024px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_ipad768x1024,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad (768x1024px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<768, 1024>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::ipad768x1024))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_ipad1024x768, "iPad (1024x768px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_ipad1024x768,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad (1024x768px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<1024, 768>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::ipad1024x768))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_ipad1536x2048, "iPad (1536x2048px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_ipad1536x2048,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad (1536x2048px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<1536, 2048>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::ipad1536x2048))
-                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_ipad2048x1536, "iPad (2048x1536px)", "")
+                    ->DataElement(Handlers::ImagePreview, &IosLaunchscreens::m_ipad2048x1536,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad (2048x1536px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<2048, 1536>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::IosLaunchScreens, Launchscreens::ipad2048x1536))
                 ;
@@ -218,11 +253,21 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<IosOrientations>("Orientations", "All supported orientations for iOS.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosOrientations::m_landscapeRight, "Landscape (right home button)", "Enable landscape orientation with home button on right side of device.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosOrientations::m_landscapeLeft, "Landscape (left home button)", "Enable landscape orientation with home button on left side of device.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosOrientations::m_portraitBottom, "Portrait (bottom home button)", "Enable portrait orientation with home button on bottom of device.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosOrientations::m_portraitTop, "Portrait (top home button)", "Enable portrait orientation with home button on top of device.")
+                editContext->Class<IosOrientations>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Orientations"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All supported orientations for iOS."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosOrientations::m_landscapeRight,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Landscape (right home button)"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enable landscape orientation with home button on right side of device."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosOrientations::m_landscapeLeft,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Landscape (left home button)"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enable landscape orientation with home button on left side of device."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosOrientations::m_portraitBottom,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Portrait (bottom home button)"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enable portrait orientation with home button on bottom of device."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosOrientations::m_portraitTop,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Portrait (top home button)"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enable portrait orientation with home button on top of device."))
                 ;
             }
         }
@@ -257,30 +302,46 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<IosSettings>("Ios Settings", "All settings iOS settings.")
+                editContext->Class<IosSettings>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iOS Settings"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All iOS settings."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_bundleName, "Bundle Name", "The name of the bundle.")
+                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_bundleName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Bundle Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The name of the bundle."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::IOSFileName))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::IosBundleName)
-                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_bundleDisplayName, "Display Name", "The user visible name of the bundle.")
+                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_bundleDisplayName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Display Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The user visible name of the bundle."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::IsNotEmpty))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::IosDisplayName)
-                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_executableName, "Executable Name", "Name of the bundle's executable file.")
+                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_executableName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Executable Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Name of the bundle's executable file."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::IOSFileName))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::IosExecutableName)
-                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_bundleIdentifier, "Bundle Identifier", "Uniquely identifies the bundle. Should be in reverse-DNS format.")
+                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_bundleIdentifier,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Bundle Identifier"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Uniquely identifies the bundle. Should be in reverse-DNS format."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PackageName))
                         ->Attribute(Attributes::LinkOptional, true)
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::IosBundleIdentifer)
-                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_versionName, "Version Name", "The release version number string for the app. Displayed in the app store.")
+                    ->DataElement(Handlers::LinkedLineEdit, &IosSettings::m_versionName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Version Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The release version number string for the app. Displayed in the app store."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::IOSVersionNumber))
                         ->Attribute(Attributes::LinkOptional, true)
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::IosVersionName)
-                    ->DataElement(Handlers::QValidatedLineEdit, &IosSettings::m_versionNumber, "Version Number", "The build version number string for the bundle.")
+                    ->DataElement(Handlers::QValidatedLineEdit, &IosSettings::m_versionNumber,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Version Number"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The build version number string for the bundle."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::IOSVersionNumber))
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &IosSettings::m_developmentRegion, "Development Region", "The default language and region for the app.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &IosSettings::m_developmentRegion,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Development Region"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The default language and region for the app."))
                         ->Attribute(AZ::Edit::Attributes::StringList, AZStd::vector<AZStd::string>
                         {
                             "en_US",
@@ -295,10 +356,18 @@ namespace ProjectSettingsTool
                             "zh_TW",
                             "en_GB"
                         })
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_requiresFullscreen, "Requires Fullscreen", "Specifies whether the app is required to run in fullscreen mode.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_hideStatusBar, "Hide Status Bar", "Specifies whether the status bar is initially hidden when the app launches.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_iphoneOrientations, "iPhone Orientations", "Enable support for iPhone orientations.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_ipadOrientations, "iPad Orientations", "Enable support for iPad orientations.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_requiresFullscreen,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Requires Fullscreen"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Specifies whether the app is required to run in fullscreen mode."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_hideStatusBar,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Hide Status Bar"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Specifies whether the status bar is initially hidden when the app launches."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_iphoneOrientations,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPhone Orientations"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enable support for iPhone orientations."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_ipadOrientations,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "iPad Orientations"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enable support for iPad orientations."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_icons)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &IosSettings::m_launchscreens)
                 ;

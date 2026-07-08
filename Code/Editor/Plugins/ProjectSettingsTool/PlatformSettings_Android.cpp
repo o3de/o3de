@@ -11,9 +11,11 @@
 #include "PlatformSettings_common.h"
 #include "Validators.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace ProjectSettingsTool
 {
-    static const char* defaultImageTooltip = "Default image used if a specific DPI override is not given.";
+    static const char* defaultImageTooltip = QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Default image used if a specific DPI override is not given.");
     static void* xmlFunctor = reinterpret_cast<void*>(&SelectXmlFromFileDialog);
 
     void AndroidIcons::Reflect(AZ::ReflectContext* context)
@@ -34,27 +36,35 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<AndroidIcons>("Icons", "All icon overrides for android.")
-                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_default, "Default", defaultImageTooltip)
+                editContext->Class<AndroidIcons>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Icons"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All icon overrides for android."))
+                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_default,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Default"), defaultImageTooltip)
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::AndroidIconDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_mdpi, "Medium Dpi (48px)", "")
+                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_mdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Medium Dpi (48px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<48>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidIcons, "mdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidIconDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_hdpi, "High Dpi (72px)", "")
+                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_hdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "High Dpi (72px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<72>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidIcons, "hdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidIconDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_xhdpi, "XHigh Dpi (96px)", "")
+                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_xhdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "XHigh Dpi (96px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<96>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidIcons, "xhdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidIconDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_xxhdpi, "XXHigh Dpi (144px)", "")
+                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_xxhdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "XXHigh Dpi (144px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<144>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidIcons, "xxhdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidIconDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_xxxhdpi, "XXXHigh Dpi (192px)", "")
+                    ->DataElement(Handlers::ImagePreview, &AndroidIcons::m_xxxhdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "XXXHigh Dpi (192px)"), "")
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PngImageSetSizeOrEmpty<192>))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidIcons, "xxxhdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidIconDefault)
@@ -80,23 +90,34 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<AndroidLandscapeSplashscreens>("Landscape", "All landscape splashscreen overrides for Android.")
-                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_default, "Default", defaultImageTooltip)
+                editContext->Class<AndroidLandscapeSplashscreens>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Landscape"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All landscape splashscreen overrides for Android."))
+                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_default,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Default"), defaultImageTooltip)
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::AndroidLandDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_mdpi, "Medium Dpi", "Suggested 1024 x 640 png.")
+                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_mdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Medium Dpi"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Suggested 1024 x 640 png."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidLandscape, "mdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidLandDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_hdpi, "High Dpi", "Suggested 1280 x 800 png.")
+                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_hdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "High Dpi"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Suggested 1280 x 800 png."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidLandscape, "hdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidLandDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_xhdpi, "XHigh Dpi", "Suggested 1920 x 1200 png.")
+                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_xhdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "XHigh Dpi"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Suggested 1920 x 1200 png."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidLandscape, "xhdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidLandDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_xxhdpi, "XXHigh Dpi", "Suggested 2560 x 1600 png.")
+                    ->DataElement(Handlers::ImagePreview, &AndroidLandscapeSplashscreens::m_xxhdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "XXHigh Dpi"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Suggested 2560 x 1600 png."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidLandscape, "xxhdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidLandDefault)
@@ -122,23 +143,34 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<AndroidPortraitSplashscreens>("Portrait", "All portrait splashscreen overrides for Android.")
-                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_default, "Default", defaultImageTooltip)
+                editContext->Class<AndroidPortraitSplashscreens>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Portrait"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All portrait splashscreen overrides for Android."))
+                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_default,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Default"), defaultImageTooltip)
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::AndroidPortDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_mdpi, "Medium Dpi", "Suggested 640 x 1024 png.")
+                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_mdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Medium Dpi"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Suggested 640 x 1024 png."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidPortrait, "mdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidPortDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_hdpi, "High Dpi", "Suggested 800 x 1280 png.")
+                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_hdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "High Dpi"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Suggested 800 x 1280 png."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidPortrait, "hdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidPortDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_xhdpi, "XHigh Dpi", "Suggested 1200 x 1920 png.")
+                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_xhdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "XHigh Dpi"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Suggested 1200 x 1920 png."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidPortrait, "xhdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidPortDefault)
-                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_xxhdpi, "XXHigh Dpi", "Suggested 1600 x 2560 png.")
+                    ->DataElement(Handlers::ImagePreview, &AndroidPortraitSplashscreens::m_xxhdpi,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "XXHigh Dpi"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Suggested 1600 x 2560 png."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidPngOrEmpty))
                         ->Attribute(Attributes::DefaultPath, GenDefaultImagePath(ImageGroup::AndroidPortrait, "xxhdpi"))
                         ->Attribute(Attributes::DefaultImagePreview, Identfiers::AndroidPortDefault)
@@ -164,7 +196,9 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<AndroidSplashscreens>("Splashscreens", "All splashscreen overrides for Android.")
+                editContext->Class<AndroidSplashscreens>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Splashscreens"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All splashscreen overrides for Android."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSplashscreens::m_landscapeSplashscreens)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSplashscreens::m_portraitSplashscreens)
                 ;
@@ -201,22 +235,32 @@ namespace ProjectSettingsTool
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<AndroidSettings>("Android Settings", "All settings related to Android not already defined by base settings.")
+                editContext->Class<AndroidSettings>(
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Android Settings"),
+                    QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "All settings related to Android not already defined by base settings."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(Handlers::LinkedLineEdit, &AndroidSettings::m_packageName, "Package Name", "Android application package identifier. Used for generating the project specific Java activity class and in the AndroidManifest.xml. Must be in dot separated format.")
+                    ->DataElement(Handlers::LinkedLineEdit, &AndroidSettings::m_packageName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Package Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Android application package identifier. Used for generating the project specific Java activity class and in the AndroidManifest.xml. Must be in dot separated format."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PackageName))
                         ->Attribute(Attributes::LinkOptional, true)
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::AndroidPackageName)
-                    ->DataElement(Handlers::LinkedLineEdit, &AndroidSettings::m_versionName, "Version Name", "Human readable version number. Used to set the \"android: versionName\" tag in the AndroidManifest.xml and ultimately what will be displayed in the App Store.")
+                    ->DataElement(Handlers::LinkedLineEdit, &AndroidSettings::m_versionName,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Version Name"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Human readable version number. Used to set the \"android: versionName\" tag in the AndroidManifest.xml and ultimately what will be displayed in the App Store."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::IOSVersionNumber))
                         ->Attribute(Attributes::LinkOptional, true)
                         ->Attribute(Attributes::PropertyIdentfier, Identfiers::AndroidVersionName)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_versionNumber, "Version Number", "Internal application version number. Used to set the \"android:versionCode\" tag in the AndroidManifest.xml.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_versionNumber,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Version Number"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Internal application version number. Used to set the \"android:versionCode\" tag in the AndroidManifest.xml."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                         ->Attribute(AZ::Edit::Attributes::Max, Validators::maxAndroidVersion)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AndroidSettings::m_orientation, "Orientation", "Desired orientation of the Android application. Used to set the \"android:screenOrientation\" tag in the AndroidManifest.xml.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AndroidSettings::m_orientation,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Orientation"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Desired orientation of the Android application. Used to set the \"android:screenOrientation\" tag in the AndroidManifest.xml."))
                         ->Attribute(AZ::Edit::Attributes::StringList, AZStd::vector<AZStd::string>
                         {
                             "landscape",
@@ -236,21 +280,37 @@ namespace ProjectSettingsTool
                             "behind",
                             "unspecified"
                         })
-                    ->DataElement(Handlers::LinkedLineEdit, &AndroidSettings::m_appPublicKey, "Public App Key", "The application license key provided by Google Play. Required for using APK expansion files or other Google Play Services.")
+                    ->DataElement(Handlers::LinkedLineEdit, &AndroidSettings::m_appPublicKey,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Public App Key"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "The application license key provided by Google Play. Required for using APK expansion files or other Google Play Services."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::PublicAppKeyOrEmpty))
                         ->Attribute(Attributes::Obfuscated, true)
-                    ->DataElement(Handlers::LinkedLineEdit, &AndroidSettings::m_appObfuscatorSalt, "App Obfuscation Salt", "Application specific salt value for (un)obfuscation when using APK expansion files.")
+                    ->DataElement(Handlers::LinkedLineEdit, &AndroidSettings::m_appObfuscatorSalt,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "App Obfuscation Salt"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Application specific salt value for (un)obfuscation when using APK expansion files."))
                         ->Attribute(Attributes::Obfuscated, true)
-                    ->DataElement(Handlers::FileSelect, &AndroidSettings::m_rcPakJob, "Rc Job PAK Override", "Path to the RC job XML file used to override the normal PAK files generation used in release builds. Path must be relative to <build dir>.")
+                    ->DataElement(Handlers::FileSelect, &AndroidSettings::m_rcPakJob,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Rc Job PAK Override"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Path to the RC job XML file used to override the normal PAK files generation used in release builds. Path must be relative to <build dir>."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidXmlOrEmpty))
                         ->Attribute(Attributes::SelectFunction, xmlFunctor)
-                    ->DataElement(Handlers::FileSelect, &AndroidSettings::m_rcObbJob, "Rc Job APK Override", "Path to the RC job XML file used to override the normal APK Expansion file(s) generation used in release builds. Path must be relative to <build dir>.")
+                    ->DataElement(Handlers::FileSelect, &AndroidSettings::m_rcObbJob,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Rc Job APK Override"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Path to the RC job XML file used to override the normal APK Expansion file(s) generation used in release builds. Path must be relative to <build dir>."))
                         ->Attribute(Attributes::FuncValidator, ConvertFunctorToVoid(&Validators::ValidXmlOrEmpty))
                         ->Attribute(Attributes::SelectFunction, xmlFunctor)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_useMainObb, "Use Main APK", "Specify if the \"Main\" APK Expansion file should be used.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_usePatchObb, "Use Patch APK", "Specify if the \"Patch\" APK Expansion file should be used.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_enableKeyScreenOn, "Enable Screen Wake Lock", "Enabled or disable the screen wake lock (device won't go to sleep while the application is running).")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_disableImmersiveMode, "Disable Immersive Mode", "Disable hiding of top and bottom system bars.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_useMainObb,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Use Main APK"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Specify if the \"Main\" APK Expansion file should be used."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_usePatchObb,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Use Patch APK"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Specify if the \"Patch\" APK Expansion file should be used."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_enableKeyScreenOn,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enable Screen Wake Lock"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Enable or disable the screen wake lock (device won't go to sleep while the application is running)."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_disableImmersiveMode,
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Disable Immersive Mode"),
+                        QT_TRANSLATE_NOOP("ReflectedPropertyEditor", "Disable hiding of top and bottom system bars."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_icons)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSettings::m_splashscreens)
                 ;

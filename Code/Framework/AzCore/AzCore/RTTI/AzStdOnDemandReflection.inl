@@ -13,6 +13,8 @@
 #include <AzCore/ScriptCanvas/ScriptCanvasOnDemandNames.h>
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflectionLuaFunctions.inl>
+
+#include <AzCore/i18n/TranslationMacros.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/typetraits/has_member_function.h>
 
@@ -352,13 +354,13 @@ namespace AZ
             {
                 BranchOnResultInfo emptyBranchInfo;
                 emptyBranchInfo.m_returnResultInBranches = true;
-                emptyBranchInfo.m_trueToolTip = "The container is empty";
-                emptyBranchInfo.m_falseToolTip = "The container is not empty";
+                emptyBranchInfo.m_trueToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is empty");
+                emptyBranchInfo.m_falseToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is not empty");
 
                 BranchOnResultInfo hasElementsBranchInfo;
                 hasElementsBranchInfo.m_returnResultInBranches = true;
-                hasElementsBranchInfo.m_trueToolTip = "The container has elements";
-                hasElementsBranchInfo.m_falseToolTip = "The container has no elements";
+                hasElementsBranchInfo.m_trueToolTip = QT_TRANSLATE_NOOP("AzCore", "The container has elements");
+                hasElementsBranchInfo.m_falseToolTip = QT_TRANSLATE_NOOP("AzCore", "The container has no elements");
 
                 behaviorContext->Class<ContainerType>()
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
@@ -819,8 +821,8 @@ namespace AZ
             {
                 BranchOnResultInfo emptyBranchInfo;
                 emptyBranchInfo.m_returnResultInBranches = true;
-                emptyBranchInfo.m_trueToolTip = "The container is empty";
-                emptyBranchInfo.m_falseToolTip = "The container is not empty";
+                emptyBranchInfo.m_trueToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is empty");
+                emptyBranchInfo.m_falseToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is not empty");
 
                 auto ContainsTransparent = [](const ContainerType& containerType, typename ContainerType::key_type& key)->bool
                 {
@@ -974,8 +976,8 @@ namespace AZ
             {
                 BranchOnResultInfo emptyBranchInfo;
                 emptyBranchInfo.m_returnResultInBranches = true;
-                emptyBranchInfo.m_trueToolTip = "The container is empty";
-                emptyBranchInfo.m_falseToolTip = "The container is not empty";
+                emptyBranchInfo.m_trueToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is empty");
+                emptyBranchInfo.m_falseToolTip = QT_TRANSLATE_NOOP("AzCore", "The container is not empty");
 
                 auto ContainsTransparent = [](const ContainerType& containerType, typename ContainerType::key_type& key)->bool
                 {
