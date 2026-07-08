@@ -251,12 +251,12 @@ namespace AZ
             }
             UpdateViewForContext(contextName);
         }
-        
+
         bool ViewportContextManager::PopViewGroup(const Name& contextName, ViewGroupPtr viewGroup)
         {
             {
                 AZStd::lock_guard lock(m_containerMutex);
-                
+
                 auto viewStackIt = m_viewportViews.find(contextName);
                 if (viewStackIt == m_viewportViews.end())
                 {
@@ -266,7 +266,8 @@ namespace AZ
                 AZ_Assert(!associatedViews.empty(), "There are no associated views for context %s", contextName.GetCStr());
                 if (viewGroup == associatedViews[0])
                 {
-                    AZ_Error("ViewportContextManager", false, "Attempted to pop the root view for context \"%s\"", contextName.GetCStr());
+                    // AZ_Error("ViewportContextManager", false, "Attempted to pop the root view for context \"%s\"", contextName.GetCStr());
+                    // Letting the return value dictate root view pop instead of error logging on focus change.
                     return false;
                 }
 
@@ -277,7 +278,7 @@ namespace AZ
                     return false;
                 }
             }
-            
+
             UpdateViewForContext(contextName);
             return true;
         }
@@ -314,7 +315,7 @@ namespace AZ
                 if (xrViewIndex < viewIt->second.back()->GetNumViews())
                 {
                     return viewIt->second.back()->GetView(static_cast<ViewType>(xrViewIndex));
-                }      
+                }
             }
             return {};
         }
