@@ -1644,7 +1644,7 @@ void EditorViewportWidget::CycleCamera()
     auto&& currentCameraIterator = AZStd::find(results.values.begin(), results.values.end(), m_viewEntityId);
     if (currentCameraIterator != results.values.end())
     {
-        if (++currentCameraIterator != results.values.end()) // Found -> check that a next one exists ... 
+        if (++currentCameraIterator != results.values.end()) // Found -> check that a next one exists ...
         {
             SetEntityAsCamera(*currentCameraIterator); // ... and then select it.
             return;
@@ -2234,4 +2234,3 @@ AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetVie
 
     return AZStd::nullopt;
 }
-
