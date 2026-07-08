@@ -688,19 +688,17 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
-    RenderAll();
+    AZ::u32 prevState = 0;
+    (m_pPrimaryViewport == this) &&
+        (RenderAll(),
 
-    // Draw 2D helpers.
-    m_debugDisplay->DepthTestOff();
-    auto prevState = m_debugDisplay->GetState();
-    m_debugDisplay->SetState(0x0u | AzFramework::e_Mode3D | AzFramework::e_AlphaBlended | AzFramework::e_FillModeSolid | AzFramework::e_CullModeBack | AzFramework::e_DepthWriteOn | AzFramework::e_DepthTestOn);
-
-    AzFramework::ViewportDebugDisplayEventBus::Event(
-        AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
-        AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay);
-
-    m_debugDisplay->SetState(prevState);
-    m_debugDisplay->DepthTestOn();
+         // Draw 2D helpers.
+         m_debugDisplay->DepthTestOff(), prevState = m_debugDisplay->GetState(),
+         m_debugDisplay->SetState(0x0u | AzFramework::e_Mode3D | AzFramework::e_AlphaBlended | AzFramework::e_FillModeSolid | AzFramework::e_CullModeBack | AzFramework::e_DepthWriteOn | AzFramework::e_DepthTestOn),
+         AzFramework::ViewportDebugDisplayEventBus::Event(
+             AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
+             AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay),
+         m_debugDisplay->SetState(prevState), m_debugDisplay->DepthTestOn(), true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2017,7 +2015,9 @@ void EditorViewportWidget::SetAsActiveViewport()
         {
             // Remove the old viewport's camera from the stack, as it's no longer the owning viewport
             viewportContextManager->PopViewGroup(defaultContextName, viewportContext->GetViewGroup());
-            viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
+            viewportContextManager->RenameViewportContext(
+                viewportContext,
+                AZ::Name(AZStd::string::format("ViewportContext%i", m_pPrimaryViewport->GetViewportId())));
         }
     }
 
