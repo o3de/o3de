@@ -27,6 +27,9 @@ if(NOT o3de_project_json)
         if(EXISTS ${O3DE_USER_PROJECT_JSON_PATH})
             file(READ "${O3DE_USER_PROJECT_JSON_PATH}" o3de_user_project_json)
             string(JSON user_project_engine ERROR_VARIABLE json_error GET ${o3de_user_project_json} engine)
+            if(json_error)
+                string(JSON user_project_engine ERROR_VARIABLE json_error GET ${o3de_user_project_json} engine_path)
+            endif()
             if(user_project_engine AND NOT json_error)
                 # The user has taken some action to set what engine to use.
                 # Trust the user that the engine is compatible.
