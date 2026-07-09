@@ -4173,14 +4173,16 @@ UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& p
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiCanvasComponent* UiCanvasComponent::FixupReloadedCanvasForEditorInternal(AZ::Entity* newCanvasEntity,
-    AZStd::vector<AZ::Entity*>& childEntities, UiEntityContext* entityContext,
-    Shine::CanvasId existingId, const AZStd::string& existingPathname)
+    AZStd::vector<AZ::Entity*>& childEntities, AZStd::vector<UiPrefabInstance>& prefabInstances,
+    UiEntityContext* entityContext, Shine::CanvasId existingId, const AZStd::string& existingPathname)
 {
     UiCanvasComponent* newCanvasComponent = FixupPostLoad(newCanvasEntity, childEntities, true, entityContext);
     if (newCanvasComponent)
     {
         newCanvasComponent->m_id = existingId;
         newCanvasComponent->m_pathname = existingPathname;
+        // Preserve the prefab instance metadata so it is not lost when the canvas is saved again
+        newCanvasComponent->m_prefabInstances = AZStd::move(prefabInstances);
     }
     return newCanvasComponent;
 }
@@ -4247,7 +4249,13 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
     }
 
     // Load entities into the ownership service (with ID remapping if needed for game mode)
-    canvasComponent->m_entityContext->HandleLoadedEntities(childEntities, makeNewEntityIds && !previousRemapTable, &canvasComponent->m_editorToGameEntityIdMap);
+    bool entitiesLoaded = canvasComponent->m_entityContext->HandleLoadedEntities(
+        childEntities, makeNewEntityIds && !previousRemapTable, &canvasComponent->m_editorToGameEntityIdMap);
+    if (!entitiesLoaded)
+    {
+        AZ_Error("UI", false, "Failed to load entities into the UI entity context.");
+        return nullptr;
+    }
 
     // For the canvas entity itself, handle ID mapping and initialization
     {

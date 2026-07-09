@@ -98,10 +98,10 @@ namespace LYShineToShine
 
         if (!upgrader.UpgradeFile(sourcePath, error))
         {
-            if (error == "already_v3")
+            if (error == "already_upgraded")
             {
                 // Race: file was already upgraded (maybe by a concurrent run)
-                AZ_TracePrintf(s_builderName, "Canvas already v3, skipping: %s\n", request.m_sourceFile.c_str());
+                AZ_TracePrintf(s_builderName, "Canvas already upgraded, skipping: %s\n", request.m_sourceFile.c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }

@@ -7,7 +7,7 @@
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
-    "summary": "The Message Popup Gem provides an example implementation of popup messages using LyShine in Open 3D Engine.",
+    "summary": "The Message Popup Gem provides an example implementation of popup messages using Shine in Open 3D Engine.",
     "canonical_tags": [
         "Gem"
     ],

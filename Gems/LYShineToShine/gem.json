@@ -7,7 +7,7 @@
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
-    "summary": "Upgrades old LyShine v1/v2 UI canvas assets (with SliceComponent, SliceReference, SliceInstance) to Shine v3 format (flat ChildEntities). Enable this Gem alongside Shine, run the upgrader, then disconnect.",
+    "summary": "Upgrades old LyShine slice-based UI assets to the Shine prefab-based format: .uicanvas files to v4 (flat ChildEntities) and UI .slice files to .uiprefab. Enable this Gem alongside Shine, run 'convert_slices' then 'upgrade_canvases', verify, then disable.",
     "canonical_tags": [
         "Gem"
     ],

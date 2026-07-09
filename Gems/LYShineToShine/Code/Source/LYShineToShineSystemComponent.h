@@ -14,7 +14,7 @@
 namespace LYShineToShine
 {
     //! System component that provides the "upgrade_canvases" console command
-    //! for batch-converting old LyShine v1/v2 .uicanvas files to Shine v3 format.
+    //! for batch-converting old LyShine v1/v2 .uicanvas files to Shine v4 format.
     class LYShineToShineSystemComponent
         : public AZ::Component
     {

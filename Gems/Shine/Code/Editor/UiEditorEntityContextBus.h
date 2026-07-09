@@ -40,9 +40,6 @@ public:
     static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
     //////////////////////////////////////////////////////////////////////////
 
-    //! Retrieves the list of child entities for the UI entity context.
-    virtual AZStd::vector<AZ::Entity*>& GetChildEntities() = 0;
-
     //! Use an undoable command to delete the given entities
     virtual void DeleteElements(AzToolsFramework::EntityIdList elements) = 0;
 

@@ -13,11 +13,11 @@
 namespace LYShineToShine
 {
     //! Asset builder that detects old LyShine v1/v2 .uicanvas files and upgrades them
-    //! to Shine v3 format in-place. This is a one-time migration builder:
-    //!   - If the source .uicanvas is already v3, no job is emitted.
+    //! to Shine v4 format in-place. This is a one-time migration builder:
+    //!   - If the source .uicanvas is already v4, no job is emitted.
     //!   - If v1/v2, a job is emitted. ProcessJob converts the source file in-place
-    //!     and produces no product asset (the Shine builder handles v3 → product).
-    //!   - After AP detects the source change, the Shine builder processes the now-v3 file.
+    //!     and produces no product asset (the Shine builder handles v4 → product).
+    //!   - After AP detects the source change, the Shine builder processes the now-v4 file.
     //!
     //! Once all canvases are converted, remove the LYShineToShine gem entirely.
     class CanvasUpgradeBuilderComponent

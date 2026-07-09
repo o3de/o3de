@@ -205,7 +205,7 @@ namespace Shine
     {
         AssetBuilderSDK::AssertAndErrorAbsorber assertAndErrorAbsorber(true);
 
-        // Load the v3 canvas from the stream
+        // Load the canvas from the stream
         canvasAsset = nullptr;
         UiSystemToolsBus::BroadcastResult(canvasAsset, &UiSystemToolsInterface::LoadCanvasFromStream, stream, AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
         if (!canvasAsset)

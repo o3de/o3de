@@ -294,15 +294,6 @@ bool UiEditorEntityContext::SupportsViewportEntityIdPicking()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZStd::vector<AZ::Entity*>& UiEditorEntityContext::GetChildEntities()
-{
-    static AZStd::vector<AZ::Entity*> entities;
-    entities.clear();
-    m_entityOwnershipService->GetAllEntities(entities);
-    return entities;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiEditorEntityContext::DeleteElements(AzToolsFramework::EntityIdList elements)
 {
     // Deletes the specified elements using an undoable command
@@ -341,7 +332,7 @@ void UiEditorEntityContext::DeleteElements(AzToolsFramework::EntityIdList elemen
         // Attempt to set the selection back to what it was but first remove any items from the selected
         // list that no longer exist
         selectedEntities.erase(
-            std::remove_if(
+            AZStd::remove_if(
                 selectedEntities.begin(), selectedEntities.end(),
                 [](AZ::EntityId entityId)
                 {
@@ -418,7 +409,7 @@ void UiEditorEntityContext::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData>
     {
         // Ensure selection set is preserved after loading entities.
         selectedEntities.erase(
-            std::remove_if(
+            AZStd::remove_if(
                 selectedEntities.begin(), selectedEntities.end(),
                 [](AZ::EntityId entityId)
                 {

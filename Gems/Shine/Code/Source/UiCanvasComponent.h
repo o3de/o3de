@@ -322,8 +322,8 @@ public: // static member functions
     static UiCanvasComponent* LoadCanvasInternal(const AZStd::string& pathToOpen, bool forEditor, const AZStd::string& assetIdPathname, UiEntityContext* entityContext,
         const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
     static UiCanvasComponent* FixupReloadedCanvasForEditorInternal(AZ::Entity* newCanvasEntity,
-        AZStd::vector<AZ::Entity*>& childEntities, UiEntityContext* entityContext,
-        Shine::CanvasId existingId, const AZStd::string& existingPathname);
+        AZStd::vector<AZ::Entity*>& childEntities, AZStd::vector<UiPrefabInstance>& prefabInstances,
+        UiEntityContext* entityContext, Shine::CanvasId existingId, const AZStd::string& existingPathname);
 
 protected: // member functions
 

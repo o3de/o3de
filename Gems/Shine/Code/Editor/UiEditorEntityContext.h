@@ -71,7 +71,6 @@ public: // member functions
     // ~EditorEntityContextPickingRequestBus
 
     // UiEditorEntityContextRequestBus
-    AZStd::vector<AZ::Entity*>& GetChildEntities() override;
     void DeleteElements(AzToolsFramework::EntityIdList elements) override;
     bool HasPendingRequests() override;
     // ~UiEditorEntityContextRequestBus

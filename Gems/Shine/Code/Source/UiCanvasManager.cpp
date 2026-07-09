@@ -446,7 +446,7 @@ AZ::EntityId UiCanvasManager::ReloadCanvasFromXml(const AZStd::string& xmlString
 
             // Complete initialization of new canvas. We assume this is for editor
             UiCanvasComponent* newCanvasComponent = UiCanvasComponent::FixupReloadedCanvasForEditorInternal(
-                    newCanvasEntity, childEntities, entityContext, oldCanvasId, oldPathname);
+                    newCanvasEntity, childEntities, prefabInstances, entityContext, oldCanvasId, oldPathname);
 
             newCanvasComponent->SetCanvasToViewportMatrix(oldCanvasToViewportMatrix);
 

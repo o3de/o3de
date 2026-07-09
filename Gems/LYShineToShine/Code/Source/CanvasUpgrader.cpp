@@ -85,9 +85,9 @@ namespace LYShineToShine
             AZStd::string error;
             if (!UpgradeFile(filePath, error))
             {
-                if (error == "already_v3")
+                if (error == "already_upgraded")
                 {
-                    report.m_alreadyV3++;
+                    report.m_alreadyUpgraded++;
                 }
                 else
                 {
@@ -144,7 +144,7 @@ namespace LYShineToShine
 
         if (version == 3 || version == 4)
         {
-            outError = "already_v3";
+            outError = "already_upgraded";
             return false;
         }
 
@@ -414,7 +414,7 @@ namespace LYShineToShine
         fileObject.m_childEntities.clear();
 
         delete rootSliceEntity;
-        // canvasEntity is deleted by rootSliceEntity? No, it's separate. Delete it.
+        // The canvas entity is owned by this function, not by the root slice entity.
         delete canvasEntity;
         return true;
     }
@@ -428,12 +428,12 @@ namespace LYShineToShine
         //
         // Strategy:
         //   1. Get SerializeContext from the application
-        //   2. Extract the CanvasEntity XML, deserialize and re-serialize to normalize to v3 format
+        //   2. Extract the CanvasEntity XML, deserialize and re-serialize to normalize to v4 format
         //   3. Extract the RootSliceEntity XML, wrap in ObjectStream, deserialize as AZ::Entity
         //   4. Find SliceComponent on the entity
         //   5. Call SliceComponent::GetEntities() (triggers Instantiate, resolves all refs + DataPatches)
         //   6. Serialize each entity to XML
-        //   7. Build v3 canvas and write to disk
+        //   7. Build the v4 canvas and write to disk
         //
         // Requirements:
         //   - Must run inside the Editor (or any app with AssetManager running)
@@ -484,6 +484,7 @@ namespace LYShineToShine
         if (rootSliceEntityXml.empty())
         {
             outError = "Could not find RootSliceEntity";
+            delete canvasEntity;
             return false;
         }
 
@@ -499,6 +500,7 @@ namespace LYShineToShine
         if (!rootSliceEntity)
         {
             outError = "Failed to deserialize RootSliceEntity";
+            delete canvasEntity;
             return false;
         }
 
@@ -508,6 +510,7 @@ namespace LYShineToShine
         {
             outError = "No SliceComponent found on RootSliceEntity";
             delete rootSliceEntity;
+            delete canvasEntity;
             return false;
         }
 
@@ -594,6 +597,7 @@ namespace LYShineToShine
             fileObject.m_canvasEntity = nullptr;
             fileObject.m_childEntities.clear();
             delete rootSliceEntity;
+            delete canvasEntity;
             return false;
         }
 
@@ -609,6 +613,8 @@ namespace LYShineToShine
 
         // rootSliceEntity owns the instantiated entities via SliceComponent
         delete rootSliceEntity;
+        // The canvas entity is owned by this function, not by the root slice entity.
+        delete canvasEntity;
         return true;
     }
 

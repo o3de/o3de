@@ -49,7 +49,7 @@ namespace LYShineToShine
         struct UpgradeReport
         {
             size_t m_filesScanned = 0;
-            size_t m_alreadyV3 = 0;
+            size_t m_alreadyUpgraded = 0;
             size_t m_upgradedSimple = 0;
             size_t m_upgradedWithSliceRefs = 0;
             size_t m_failed = 0;
@@ -72,7 +72,7 @@ namespace LYShineToShine
         bool UpgradeFile(const AZ::IO::Path& filePath, AZStd::string& outError);
 
         //! Detects the canvas format version from the raw XML content.
-        //! Returns 1, 2, or 3 (or 0 if unrecognized).
+        //! Returns the version (1 to 4), or 0 if unrecognized.
         int DetectVersion(const AZStd::string& xmlContent) const;
 
         //! Recursively converts all .slice files in the given directory to .uiprefab format.

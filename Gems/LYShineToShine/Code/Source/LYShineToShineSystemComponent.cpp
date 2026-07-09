@@ -27,9 +27,9 @@ namespace LYShineToShine
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<LYShineToShineSystemComponent>(
-                    "LYShineToShine", "Upgrades old LyShine v1/v2 .uicanvas files to Shine v3 format")
+                    "LYShineToShine", "Upgrades old LyShine v1/v2 .uicanvas files to Shine v4 format")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -37,12 +37,12 @@ namespace LYShineToShine
 
     void LYShineToShineSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("LYShineToShineService"));
+        provided.push_back(AZ_CRC_CE("LYShineToShineService"));
     }
 
     void LYShineToShineSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LYShineToShineService"));
+        incompatible.push_back(AZ_CRC_CE("LYShineToShineService"));
     }
 
     void LYShineToShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -82,7 +82,7 @@ void upgrade_canvases(const AZ::ConsoleCommandContainer& args)
 
     AZ_TracePrintf("LYShineToShine", "=== Canvas Upgrade Report ===\n");
     AZ_TracePrintf("LYShineToShine", "  Files scanned:    %zu\n", report.m_filesScanned);
-    AZ_TracePrintf("LYShineToShine", "  Already v4:       %zu\n", report.m_alreadyV3);
+    AZ_TracePrintf("LYShineToShine", "  Already upgraded: %zu\n", report.m_alreadyUpgraded);
     AZ_TracePrintf("LYShineToShine", "  Upgraded (simple): %zu\n", report.m_upgradedSimple);
     AZ_TracePrintf("LYShineToShine", "  Upgraded (slices): %zu\n", report.m_upgradedWithSliceRefs);
     AZ_TracePrintf("LYShineToShine", "  Failed:           %zu\n", report.m_failed);
