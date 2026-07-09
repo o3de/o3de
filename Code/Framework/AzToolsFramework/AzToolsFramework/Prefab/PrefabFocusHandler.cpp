@@ -120,22 +120,6 @@ namespace AzToolsFramework::Prefab
         }
     }
 
-    PrefabFocusHandler::FocusData& PrefabFocusHandler::GetFocusData(AzFramework::ViewportId viewportId) const
-    {
-        const AzFramework::ViewportId resolvedViewportId = (viewportId != AzFramework::InvalidViewportId) ? viewportId : m_activeViewportId;
-        return m_focusDataByViewport[resolvedViewportId];
-    }
-
-    void PrefabFocusHandler::SetActivePrefabFocusViewportId(AzFramework::ViewportId viewportId)
-    {
-        m_activeViewportId = viewportId;
-    }
-
-    AzFramework::ViewportId PrefabFocusHandler::GetActivePrefabFocusViewportId() const
-    {
-        return m_activeViewportId;
-    }
-
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
         // Initialize Undo Batch object
@@ -163,16 +147,14 @@ namespace AzToolsFramework::Prefab
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefab(
         [[maybe_unused]] AzFramework::EntityContextId entityContextId)
     {
-        FocusData& focusData = GetFocusData(AzFramework::InvalidViewportId);
-
         // If only one instance is in the hierarchy, this operation is invalid
-        if (focusData.m_rootAliasFocusPathLength <= 1)
+        if (m_rootAliasFocusPathLength <= 1)
         {
             return AZ::Failure(AZStd::string(
                 "Prefab Focus Handler: Could not complete FocusOnParentOfFocusedPrefab operation while focusing on the root."));
         }
 
-        RootAliasPath parentPath = focusData.m_rootAliasFocusPath;
+        RootAliasPath parentPath = m_rootAliasFocusPath;
         parentPath.RemoveFilename();
 
         // Retrieve parent of currently focused prefab.
@@ -212,16 +194,14 @@ namespace AzToolsFramework::Prefab
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex([[maybe_unused]] AzFramework::EntityContextId entityContextId, int index)
     {
-        FocusData& focusData = GetFocusData(AzFramework::InvalidViewportId);
-
-        if (index < 0 || index >= focusData.m_rootAliasFocusPathLength)
+        if (index < 0 || index >= m_rootAliasFocusPathLength)
         {
             return AZ::Failure(AZStd::string("Prefab Focus Handler: Invalid index on FocusOnPathIndex."));
         }
 
         int i = 0;
         RootAliasPath indexedPath;
-        for (const auto& pathElement : focusData.m_rootAliasFocusPath)
+        for (const auto& pathElement : m_rootAliasFocusPath)
         {
             indexedPath.Append(pathElement);
 
@@ -261,10 +241,8 @@ namespace AzToolsFramework::Prefab
         return AZ::Failure(AZStd::string::format("Prefab Focus Handler: Could not find owning instance of entity"));
     }
 
-    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId, AzFramework::ViewportId viewportId)
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
     {
-        (viewportId != AzFramework::InvalidViewportId) && (m_activeViewportId = viewportId, true);
-
         InstanceOptionalReference focusedInstance;
 
         if (!entityId.IsValid())
@@ -285,31 +263,29 @@ namespace AzToolsFramework::Prefab
             focusedInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         }
 
-        return FocusOnPrefabInstance(focusedInstance, viewportId);
+        return FocusOnPrefabInstance(focusedInstance);
     }
 
-    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstance(InstanceOptionalReference focusedInstance, AzFramework::ViewportId viewportId)
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstance(InstanceOptionalReference focusedInstance)
     {
         if (!focusedInstance.has_value())
         {
             return AZ::Failure(AZStd::string("Prefab Focus Handler: invalid instance to focus on."));
         }
 
-        FocusData& focusData = GetFocusData(viewportId);
-
         // Close all container entities in the old path.
-        SetInstanceContainersOpenState(focusData.m_rootAliasFocusPath, false);
+        SetInstanceContainersOpenState(m_rootAliasFocusPath, false);
 
         if (IsOutlinerOverrideManagementEnabled())
         {
             // Always close all nested instances in the old focus subtree.
-            SetInstanceContainersOpenStateOfAllDescendantContainers(GetInstanceReference(focusData.m_rootAliasFocusPath), false);
+            SetInstanceContainersOpenStateOfAllDescendantContainers(GetInstanceReference(m_rootAliasFocusPath), false);
         }
 
-        const RootAliasPath previousContainerRootAliasPath = focusData.m_rootAliasFocusPath;
+        const RootAliasPath previousContainerRootAliasPath = m_rootAliasFocusPath;
         const InstanceOptionalReference previousFocusedInstance = GetInstanceReference(previousContainerRootAliasPath);
-        focusData.m_rootAliasFocusPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
-        focusData.m_rootAliasFocusPathLength = aznumeric_cast<int>(AZStd::distance(focusData.m_rootAliasFocusPath.begin(), focusData.m_rootAliasFocusPath.end()));
+        m_rootAliasFocusPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
+        m_rootAliasFocusPathLength = aznumeric_cast<int>(AZStd::distance(m_rootAliasFocusPath.begin(), m_rootAliasFocusPath.end()));
 
         // Unset the DOM caching for previous focus and enabled it in new focus to optimize editing.
         if (previousFocusedInstance.has_value())
@@ -357,15 +333,15 @@ namespace AzToolsFramework::Prefab
         }
 
         // Refresh path variables.
-        RefreshInstanceFocusPath(viewportId);
+        RefreshInstanceFocusPath();
 
         // Open all container entities in the new path.
-        SetInstanceContainersOpenState(focusData.m_rootAliasFocusPath, true);
+        SetInstanceContainersOpenState(m_rootAliasFocusPath, true);
 
         if (IsOutlinerOverrideManagementEnabled())
         {
             // Set open state on all nested instances in the new focus subtree based on edit scope.
-            SetInstanceContainersOpenStateOfAllDescendantContainers(GetInstanceReference(focusData.m_rootAliasFocusPath), true);
+            SetInstanceContainersOpenStateOfAllDescendantContainers(GetInstanceReference(m_rootAliasFocusPath), true);
         }
 
         AZ::EntityId previousFocusedInstanceContainerEntityId = previousFocusedInstance.has_value() ?
@@ -396,7 +372,7 @@ namespace AzToolsFramework::Prefab
     
     TemplateId PrefabFocusHandler::GetFocusedPrefabTemplateId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        InstanceOptionalReference instance = GetInstanceReference(GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath);
+        InstanceOptionalReference instance = GetInstanceReference(m_rootAliasFocusPath);
 
         if (instance.has_value())
         {
@@ -411,12 +387,12 @@ namespace AzToolsFramework::Prefab
     InstanceOptionalReference PrefabFocusHandler::GetFocusedPrefabInstance(
         [[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        return GetInstanceReference(GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath);
+        return GetInstanceReference(m_rootAliasFocusPath);
     }
 
     bool PrefabFocusHandler::IsFocusedPrefabInstanceReadOnly([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        InstanceOptionalReference instance = GetInstanceReference(GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath);
+        InstanceOptionalReference instance = GetInstanceReference(m_rootAliasFocusPath);
 
         if (instance.has_value())
         {
@@ -434,7 +410,7 @@ namespace AzToolsFramework::Prefab
             "The owning instance of the given entity id is null.");
 
         // Retrieve the path from the focused prefab instance to the owningInstance of the given entity id.
-        InstanceOptionalReference focusedInstance = GetInstanceReference(GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath);
+        InstanceOptionalReference focusedInstance = GetInstanceReference(m_rootAliasFocusPath);
         AZ_Assert(focusedInstance.has_value(), "PrefabFocusHandler::ClimbUpToFocusedOrRootInstanceFromEntity - "
             "The focused instance is null.");
         const Instance* focusedInstancePtr = &(focusedInstance->get());
@@ -476,10 +452,10 @@ namespace AzToolsFramework::Prefab
         }
     }
 
-    AZ::EntityId PrefabFocusHandler::GetFocusedPrefabContainerEntityId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
+    AZ::EntityId PrefabFocusHandler::GetFocusedPrefabContainerEntityId(
+        [[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        if (const InstanceOptionalReference instance = GetInstanceReference(GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath);
-            instance.has_value())
+        if (const InstanceOptionalReference instance = GetInstanceReference(m_rootAliasFocusPath); instance.has_value())
         {
             return instance->get().GetContainerEntityId();
         }
@@ -500,7 +476,7 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        return (instance->get().GetAbsoluteInstanceAliasPath() == GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath);
+        return (instance->get().GetAbsoluteInstanceAliasPath() == m_rootAliasFocusPath);
     }
 
     bool PrefabFocusHandler::IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const
@@ -510,11 +486,10 @@ namespace AzToolsFramework::Prefab
             return false;
         }
 
-        const RootAliasPath& focusPath = GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath;
         InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
         while (instance.has_value())
         {
-            if (instance->get().GetAbsoluteInstanceAliasPath() == focusPath)
+            if (instance->get().GetAbsoluteInstanceAliasPath() == m_rootAliasFocusPath)
             {
                 return true;
             }
@@ -527,12 +502,12 @@ namespace AzToolsFramework::Prefab
 
     const AZ::IO::Path& PrefabFocusHandler::GetPrefabFocusPath([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        return GetFocusData(AzFramework::InvalidViewportId).m_filenameFocusPath;
+        return m_filenameFocusPath;
     }
 
     const int PrefabFocusHandler::GetPrefabFocusPathLength([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        return GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPathLength;
+        return m_rootAliasFocusPathLength;
     }
 
     void PrefabFocusHandler::SetPrefabEditScope([[maybe_unused]] AzFramework::EntityContextId entityContextId, PrefabEditScope prefabEditScope)
@@ -543,8 +518,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnPrepareForContextReset()
     {
-        // Reset every viewport to the root prefab (AZ::EntityId() will default to it).
-        m_focusDataByViewport.clear();
+        // Focus on the root prefab (AZ::EntityId() will default to it)
         FocusOnPrefabInstanceOwningEntityId(AZ::EntityId());
     }
 
@@ -557,7 +531,7 @@ namespace AzToolsFramework::Prefab
         {
             // Determine if the entityId is the container for any of the instances in the vector.
             bool match = prefabEditorEntityOwnershipInterface->GetInstancesInRootAliasPath(
-                GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath,
+                m_rootAliasFocusPath,
                 [&](const Prefab::InstanceOptionalReference instance)
                 {
                     if (instance->get().GetContainerEntityId() == entityId)
@@ -599,7 +573,7 @@ namespace AzToolsFramework::Prefab
         {
             // Determine if the templateId matches any of the instances in the vector.
             bool match = prefabEditorEntityOwnershipInterface->GetInstancesInRootAliasPath(
-                GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath,
+                m_rootAliasFocusPath,
                 [&](const Prefab::InstanceOptionalReference instance)
                 {
                     if (instance->get().GetTemplateId() == templateId)
@@ -620,11 +594,10 @@ namespace AzToolsFramework::Prefab
         }
     }
 
-    void PrefabFocusHandler::RefreshInstanceFocusPath(AzFramework::ViewportId viewportId)
+    void PrefabFocusHandler::RefreshInstanceFocusPath()
     {
-        FocusData& focusData = GetFocusData(viewportId);
-        focusData.m_filenameFocusPath.clear();
-
+        m_filenameFocusPath.clear();
+        
         PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
             AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
         PrefabSystemComponentInterface* prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
@@ -634,14 +607,14 @@ namespace AzToolsFramework::Prefab
             int i = 0;
 
             prefabEditorEntityOwnershipInterface->GetInstancesInRootAliasPath(
-                focusData.m_rootAliasFocusPath,
+                m_rootAliasFocusPath,
                 [&](const Prefab::InstanceOptionalReference instance)
                 {
                     if (instance.has_value())
                     {
                         AZStd::string prefabName;
 
-                        if (i == focusData.m_rootAliasFocusPathLength - 1)
+                        if (i == m_rootAliasFocusPathLength - 1)
                         {
                             // Get the full filename.
                             prefabName = instance->get().GetTemplateSourcePath().Filename().Native();
@@ -657,7 +630,7 @@ namespace AzToolsFramework::Prefab
                             prefabName += "*";
                         }
 
-                        focusData.m_filenameFocusPath.Append(prefabName);
+                        m_filenameFocusPath.Append(prefabName);
                     }
 
                     ++i;
@@ -737,7 +710,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::SwitchToEditScope() const
     {
-        auto focusInstance = GetInstanceReference(GetFocusData(AzFramework::InvalidViewportId).m_rootAliasFocusPath);
+        auto focusInstance = GetInstanceReference(m_rootAliasFocusPath);
 
         switch (m_prefabEditScope)
         {           
