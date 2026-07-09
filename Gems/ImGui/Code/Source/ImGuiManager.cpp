@@ -220,7 +220,7 @@ void ImGuiManager::Initialize()
     const AzFramework::InputDevice* mouseDevice = AzFramework::InputDeviceRequests::FindInputDevice(AzFramework::InputDeviceMouse::Id);
     m_hardwardeMouseConnected = mouseDevice && mouseDevice->IsConnected();
 
-    m_consoleKeyInputChannelId = InputDeviceKeyboard::Key::NavigationHome;
+    m_consoleKeyInputChannelId = InputDeviceKeyboard::Key::PunctuationTilde;
     if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
     {
         AZStd::string consoleKeyName;
