@@ -325,14 +325,6 @@ public: // static member functions
         AZStd::vector<AZ::Entity*>& childEntities, UiEntityContext* entityContext,
         Shine::CanvasId existingId, const AZStd::string& existingPathname);
 
-    //! Instantiate all prefab instances and merge their entities into childEntities.
-    //! Called during canvas loading, before FixupPostLoad.
-    //! outPrefabEntityIds is populated with the IDs of all entities that came from prefabs.
-    static void InstantiatePrefabInstances(
-        const AZStd::vector<UiPrefabInstance>& prefabInstances,
-        AZStd::vector<AZ::Entity*>& childEntities,
-        AZStd::unordered_set<AZ::EntityId>& outPrefabEntityIds);
-
 protected: // member functions
 
     // AZ::Component
@@ -593,13 +585,10 @@ private: // data
     UiEntityContext* m_entityContext;
     AZStd::unordered_map<AZ::EntityId, AZ::EntityId> m_editorToGameEntityIdMap;
 
-    //! Tracks prefab instances loaded with this canvas. Used during save to separate
-    //! prefab entities from local entities and compute JSON patches.
+    //! Metadata about the prefab instances this canvas was originally assembled from.
+    //! The instance entities themselves are flattened into the canvas's child entities;
+    //! this list is informational and preserved through save/load.
     AZStd::vector<UiPrefabInstance> m_prefabInstances;
-
-    //! Set of entity IDs that came from prefab instances (not canvas-local).
-    //! Used during save to determine which entities are local vs from prefabs.
-    AZStd::unordered_set<AZ::EntityId> m_prefabEntityIds;
 
     //! This is an optimization to avoid visiting all elements multiple times every frame to see if any of them need recomputing
     //! We use an intrusive_slist to avoid any memory allocations and also to cheaply be able to tell if an element is already in list

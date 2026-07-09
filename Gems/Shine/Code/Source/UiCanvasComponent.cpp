@@ -3844,21 +3844,14 @@ bool UiCanvasComponent::SaveCanvasToStream(AZ::IO::GenericStream& stream, AZ::Da
     AzFramework::EntityList allEntities;
     m_entityContext->GetAllEntities(allEntities);
 
-    // Separate local entities from prefab-owned entities
+    // All entities are local to the canvas: prefab entities were flattened into
+    // ChildEntities during the canvas upgrade, and PrefabInstances are metadata only.
     for (AZ::Entity* entity : allEntities)
     {
-        if (m_prefabEntityIds.find(entity->GetId()) == m_prefabEntityIds.end())
-        {
-            // This entity is local to the canvas (not from a prefab)
-            fileObject.m_childEntities.push_back(entity);
-        }
-        // Prefab entities are NOT saved to ChildEntities — they'll be
-        // reconstructed from the UiPrefabInstance references at load time
+        fileObject.m_childEntities.push_back(entity);
     }
 
-    // Save the prefab instances (source paths, entity ID maps, and patches)
-    // TODO: Compute JSON patches by diffing current entity state against base .uiprefab
-    // For now, we store the prefab instances as-is (patches from load time are preserved)
+    // Save the prefab instance metadata (source paths, entity ID maps, and patches)
     fileObject.m_prefabInstances = m_prefabInstances;
 
     if (!AZ::Utils::SaveObjectToStream<UiCanvasFileObject>(stream, streamType, &fileObject))
@@ -4138,18 +4131,13 @@ UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& p
 
                 if (canvasEntity)
                 {
-                    // Prefab entities are already included in childEntities (flattened during upgrade).
-                    // InstantiatePrefabInstances is skipped — entity IDs in .uiprefab files don't match
-                    // the entityIdMap (different ID generation during standalone slice instantiation vs
-                    // canvas slice reference instantiation). PrefabInstances are kept as metadata only.
-                    AZStd::unordered_set<AZ::EntityId> prefabEntityIds;
-
+                    // Prefab entities are already included in childEntities (flattened during the
+                    // canvas upgrade). PrefabInstances are kept as metadata only.
                     canvasComponent = FixupPostLoad(canvasEntity, canvasFileObject->m_childEntities, forEditor, entityContext, nullptr, previousRemapTable, previousCanvasId);
                     if (canvasComponent)
                     {
                         // Store prefab tracking data on the canvas component
                         canvasComponent->m_prefabInstances = AZStd::move(canvasFileObject->m_prefabInstances);
-                        canvasComponent->m_prefabEntityIds = AZStd::move(prefabEntityIds);
 
                         UiTransformBus::Event(
                             canvasComponent->GetRootElement()->GetId(),
@@ -4198,182 +4186,6 @@ UiCanvasComponent* UiCanvasComponent::FixupReloadedCanvasForEditorInternal(AZ::E
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::InstantiatePrefabInstances(
-    const AZStd::vector<UiPrefabInstance>& prefabInstances,
-    AZStd::vector<AZ::Entity*>& childEntities,
-    AZStd::unordered_set<AZ::EntityId>& outPrefabEntityIds)
-{
-    if (prefabInstances.empty())
-    {
-        return;
-    }
-
-    AZ::SerializeContext* serializeContext = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(
-        serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-    if (!serializeContext)
-    {
-        AZ_Error("UiCanvas", false, "SerializeContext not available for prefab instantiation");
-        return;
-    }
-
-    AZ::JsonRegistrationContext* jsonRegistrationContext = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(
-        jsonRegistrationContext, &AZ::ComponentApplicationBus::Events::GetJsonRegistrationContext);
-
-    for (const UiPrefabInstance& instance : prefabInstances)
-    {
-        // Load the .uiprefab file
-        AZStd::string resolvedPath;
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        if (!fileIO)
-        {
-            AZ_Warning("UiCanvas", false, "FileIO not available, skipping prefab: %s", instance.m_sourcePath.c_str());
-            continue;
-        }
-
-        // Read the .uiprefab JSON file
-        AZ::IO::HandleType fileHandle;
-        if (!fileIO->Open(instance.m_sourcePath.c_str(), AZ::IO::OpenMode::ModeRead, fileHandle))
-        {
-            AZ_Warning("UiCanvas", false, "Could not open uiprefab: %s", instance.m_sourcePath.c_str());
-            continue;
-        }
-
-        AZ::u64 fileSize = 0;
-        fileIO->Size(fileHandle, fileSize);
-        AZStd::string jsonContent;
-        jsonContent.resize_no_construct(fileSize);
-        fileIO->Read(fileHandle, jsonContent.data(), fileSize);
-        fileIO->Close(fileHandle);
-
-        // Parse the base JSON DOM
-        rapidjson::Document baseDom;
-        baseDom.Parse(jsonContent.c_str());
-        if (baseDom.HasParseError())
-        {
-            AZ_Warning("UiCanvas", false, "Failed to parse uiprefab JSON: %s", instance.m_sourcePath.c_str());
-            continue;
-        }
-
-        // Apply JSON Patch overrides if present
-        if (!instance.m_patchesJson.empty())
-        {
-            rapidjson::Document patchDom;
-            patchDom.Parse(instance.m_patchesJson.c_str());
-            if (!patchDom.HasParseError() && patchDom.IsArray())
-            {
-                AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(
-                    baseDom, baseDom.GetAllocator(), patchDom, AZ::JsonMergeApproach::JsonPatch);
-                if (result.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
-                {
-                    AZ_Warning("UiCanvas", false, "Failed to apply patches to prefab: %s", instance.m_sourcePath.c_str());
-                }
-            }
-        }
-
-        // Deserialize entities from the patched JSON DOM
-        if (baseDom.HasMember("Entities") && baseDom["Entities"].IsObject())
-        {
-            const rapidjson::Value& entitiesObj = baseDom["Entities"];
-            for (auto it = entitiesObj.MemberBegin(); it != entitiesObj.MemberEnd(); ++it)
-            {
-                AZ::Entity* entity = aznew AZ::Entity();
-                AZ::JsonDeserializerSettings deserializeSettings;
-                deserializeSettings.m_serializeContext = serializeContext;
-                deserializeSettings.m_registrationContext = jsonRegistrationContext;
-
-                AZ::JsonSerializationResult::ResultCode loadResult =
-                    AZ::JsonSerialization::Load(*entity, it->value, deserializeSettings);
-                if (loadResult.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted)
-                {
-                    // Remap entity ID from base to instance using the entity ID map
-                    AZ::EntityId baseId = entity->GetId();
-                    auto mapIt = instance.m_entityIdMap.find(baseId);
-                    if (mapIt != instance.m_entityIdMap.end())
-                    {
-                        entity->SetId(mapIt->second);
-                    }
-
-                    // Fix up entity ID references within the entity's components
-                    AZ::EntityUtils::ReplaceEntityIdsAndEntityRefs(
-                        entity,
-                        [&instance](const AZ::EntityId& originalId, bool /*isEntityId*/) -> AZ::EntityId
-                        {
-                            auto found = instance.m_entityIdMap.find(originalId);
-                            return (found != instance.m_entityIdMap.end()) ? found->second : originalId;
-                        },
-                        serializeContext);
-
-                    childEntities.push_back(entity);
-                    outPrefabEntityIds.insert(entity->GetId());
-                }
-                else
-                {
-                    AZ_Warning("UiCanvas", false, "Failed to deserialize entity from prefab: %s", instance.m_sourcePath.c_str());
-                    delete entity;
-                }
-            }
-        }
-    }
-
-    // Fix up parent IDs for prefab entities.
-    AZStd::unordered_map<AZ::EntityId, AZ::EntityId> childToParentMap;
-    int entitiesWithElemComp = 0;
-    int totalChildMappings = 0;
-    for (AZ::Entity* entity : childEntities)
-    {
-        auto* elemComp = entity->FindComponent<UiElementComponent>();
-        if (!elemComp)
-        {
-            continue;
-        }
-        entitiesWithElemComp++;
-        for (const auto& childEntry : elemComp->m_childEntityIdOrder)
-        {
-            childToParentMap[childEntry.m_entityId] = entity->GetId();
-            totalChildMappings++;
-        }
-    }
-    AZ_TracePrintf("UiCanvas", "Parent fixup: %zu childEntities, %d with UiElementComponent, %d child mappings, %zu prefab entities\n",
-        childEntities.size(), entitiesWithElemComp, totalChildMappings, outPrefabEntityIds.size());
-
-    // Fix parent IDs on prefab entities whose current parent doesn't exist in the canvas
-    AZStd::unordered_set<AZ::EntityId> allEntityIds;
-    for (AZ::Entity* entity : childEntities)
-    {
-        allEntityIds.insert(entity->GetId());
-    }
-
-    for (AZ::Entity* entity : childEntities)
-    {
-        if (!outPrefabEntityIds.count(entity->GetId()))
-        {
-            continue;
-        }
-        auto* elemComp = entity->FindComponent<UiElementComponent>();
-        if (!elemComp)
-        {
-            continue;
-        }
-        // Always fix the parent from the child→parent map for prefab entities
-        auto parentIt = childToParentMap.find(entity->GetId());
-        if (parentIt != childToParentMap.end())
-        {
-            AZ_TracePrintf("UiCanvas", "  Fixed parent of '%s' [%llu]: %llu -> %llu\n",
-                entity->GetName().c_str(), static_cast<AZ::u64>(entity->GetId()),
-                static_cast<AZ::u64>(elemComp->m_parentId), static_cast<AZ::u64>(parentIt->second));
-            elemComp->m_parentId = parentIt->second;
-        }
-        else
-        {
-            AZ_TracePrintf("UiCanvas", "  No parent mapping for prefab entity '%s' [%llu], current parent: %llu\n",
-                entity->GetName().c_str(), static_cast<AZ::u64>(entity->GetId()),
-                static_cast<AZ::u64>(elemComp->m_parentId));
-        }
-    }
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZStd::vector<AZ::Entity*>& childEntities, bool forEditor, UiEntityContext* entityContext, const AZ::Vector2* canvasSize,
     const AZStd::unordered_map<AZ::EntityId, AZ::EntityId>* previousRemapTable, AZ::EntityId previousCanvasId)

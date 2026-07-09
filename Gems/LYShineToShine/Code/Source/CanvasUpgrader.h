@@ -101,24 +101,5 @@ namespace LYShineToShine
         //! expected nesting depth. Returns the full block including open/close tags.
         //! Returns empty string if not found.
         AZStd::string ExtractXmlBlock(const AZStd::string& xml, const char* fieldName, size_t startSearchPos = 0) const;
-
-        //! Extract all entity blocks from inside a SliceComponent's Entities vector.
-        //! Returns the individual <Class name="AZ::Entity" ...>...</Class> blocks.
-        AZStd::vector<AZStd::string> ExtractEntitiesFromSliceComponent(const AZStd::string& sliceComponentXml) const;
-
-        //! Build v4 format XML from a CanvasEntity block, entity blocks, and optional prefab instances.
-        AZStd::string BuildV4Canvas(
-            const AZStd::string& objectStreamVersion,
-            const AZStd::string& canvasEntityXml,
-            const AZStd::vector<AZStd::string>& entityXmlBlocks,
-            const AZStd::vector<AZStd::string>& prefabInstanceXmlBlocks = {}) const;
-
-        //! Serialize an AZ::Entity to XML and inject a field attribute.
-        //! Returns the entity's XML with the given field name, stripped of ObjectStream wrapper.
-        //! Returns empty string on failure.
-        AZStd::string SerializeEntityToXml(
-            AZ::Entity* entity,
-            AZ::SerializeContext* serializeContext,
-            const char* fieldName) const;
     };
 } // namespace LYShineToShine

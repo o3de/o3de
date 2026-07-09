@@ -78,7 +78,6 @@ namespace LYShineToShine
         // before canvases so that UiPrefabInstance references can be created).
         AZ_UNUSED(request);
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-        response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
 
     void CanvasUpgradeBuilderComponent::ProcessJob(
