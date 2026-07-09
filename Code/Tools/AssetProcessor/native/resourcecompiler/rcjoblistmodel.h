@@ -8,7 +8,6 @@
 #ifndef RCQUEUEMODEL_H
 #define RCQUEUEMODEL_H
 
-#if !defined(Q_MOC_RUN)
 #include "RCCommon.h"
 
 #include <QAbstractItemModel>
@@ -17,7 +16,6 @@
 #include <QMultiMap>
 
 #include "rcjob.h"
-#endif
 
 namespace AssetProcessor
 {

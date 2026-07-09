@@ -152,8 +152,8 @@ public:
     ISplineInterpolator* GetSpline() const { return (m_pAnimTrack) ? m_pAnimTrack->GetSpline() : nullptr; }
 
     // Color
-    ColorB GetCustomColor() const;
-    void SetCustomColor(ColorB color);
+    AZ::Color GetCustomColor() const;
+    void SetCustomColor(const AZ::Color& color);
     bool HasCustomColor() const;
     void ClearCustomColor();
 

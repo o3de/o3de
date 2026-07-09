@@ -1,0 +1,133 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <scenesrg_all.srgi>
+#include <viewsrg_all.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialInputs/AlphaInput.azsli>
+
+option bool o_baseColor_useTexture = false;
+option bool o_opacity_useTexture = false;
+option bool o_billboardEnabled = false;
+
+ShaderResourceGroup UnlitDrawSrg : SRG_PerDraw
+{
+}
+
+ShaderResourceGroup UnlitColorSrg : SRG_PerMaterial
+{
+    float3 m_unlitColor;
+    float m_padding1;
+    Texture2D m_baseColorTexture;
+    Sampler m_textureSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+    float3x3 m_uvMatrix;
+    float2 m_uvMatrixPadding;
+    uint m_baseColorMapUvIndex;
+    Texture2D m_opacityMap;
+    uint m_opacityMapUvIndex;
+    float m_opacityFactor;
+    float m_padding0;
+}
+
+struct VertexShaderInput
+{
+    float3 m_position : POSITION;
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+};
+
+struct VertexShaderOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_uvs[2] : TEXCOORD0;
+};
+
+float2 TransformUv(float2 uv, uint uvIndex)
+{
+    return uvIndex == 0 ? mul(UnlitColorSrg::m_uvMatrix, float3(uv, 1.0)).xy : uv;
+}
+
+float3 CalculateBillboardPosition(float4x4 objectToWorld, float3 localPosition)
+{
+    float3 worldCenter = mul(objectToWorld, float4(0.0, 0.0, 0.0, 1.0)).xyz;
+
+    float scaleX = length(mul(objectToWorld, float4(1.0, 0.0, 0.0, 0.0)).xyz);
+    float scaleY = length(mul(objectToWorld, float4(0.0, 1.0, 0.0, 0.0)).xyz);
+    float scaleZ = length(mul(objectToWorld, float4(0.0, 0.0, 1.0, 0.0)).xyz);
+
+    float3 cameraRight = normalize(mul(ViewSrg::m_viewMatrixInverse, float4(1.0, 0.0, 0.0, 0.0)).xyz);
+    float3 cameraUp = normalize(mul(ViewSrg::m_viewMatrixInverse, float4(0.0, 1.0, 0.0, 0.0)).xyz);
+    float3 cameraForward = normalize(mul(ViewSrg::m_viewMatrixInverse, float4(0.0, 0.0, 1.0, 0.0)).xyz);
+
+    return worldCenter
+        + cameraRight * (localPosition.x * scaleX)
+        + cameraUp * (localPosition.y * scaleY)
+        + cameraForward * (localPosition.z * scaleZ);
+}
+
+VertexShaderOutput TransformVertex(VertexShaderInput IN, uint instanceId)
+{
+    VertexShaderOutput OUT;
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+
+    float3 worldPosition = o_billboardEnabled
+        ? CalculateBillboardPosition(objectToWorld, IN.m_position)
+        : mul(objectToWorld, float4(IN.m_position, 1.0)).xyz;
+
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    OUT.m_uvs[0] = TransformUv(IN.m_uv0, 0);
+    OUT.m_uvs[1] = TransformUv(IN.m_uv1, 1);
+
+    return OUT;
+}
+
+float4 SampleBaseColorTexture(VertexShaderOutput IN)
+{
+    if (!o_baseColor_useTexture)
+    {
+        return float4(1.0, 1.0, 1.0, 1.0);
+    }
+
+    const float2 baseColorUv = IN.m_uvs[UnlitColorSrg::m_baseColorMapUvIndex];
+    return UnlitColorSrg::m_baseColorTexture.Sample(UnlitColorSrg::m_textureSampler, baseColorUv);
+}
+
+real ResolveOpacityAlpha(VertexShaderOutput IN, real baseColorAlpha = 1.0)
+{
+    switch (o_opacity_source)
+    {
+    case OpacitySource::Packed:
+        return o_baseColor_useTexture ? baseColorAlpha : 1.0;
+    case OpacitySource::Split:
+        if (o_opacity_useTexture)
+        {
+            const float2 opacityUv = IN.m_uvs[UnlitColorSrg::m_opacityMapUvIndex];
+            return real(UnlitColorSrg::m_opacityMap.Sample(UnlitColorSrg::m_textureSampler, opacityUv).r);
+        }
+        return 1.0;
+    case OpacitySource::None:
+    default:
+        return 1.0;
+    }
+}
+
+void ApplyAlphaClip(VertexShaderOutput IN, real baseColorAlpha = 1.0)
+{
+    CheckClipping(ResolveOpacityAlpha(IN, baseColorAlpha), real(UnlitColorSrg::m_opacityFactor));
+}

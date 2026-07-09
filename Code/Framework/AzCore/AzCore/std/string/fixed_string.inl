@@ -991,7 +991,7 @@ namespace AZStd
             size_type newSize = m_size + count - ranges::distance(first, last);
             if (fits_in_capacity(newSize))
             {
-                Traits::move(first + count, last, m_size - postInsertOffset); // empty out hole
+                Traits::move(m_buffer + insertOffset + count, m_buffer + postInsertOffset, m_size - postInsertOffset); // empty out hole
                 for (size_t updateIndex = insertOffset; replaceFirst != replaceLast; ++replaceFirst, ++updateIndex)
                 {
                     Traits::assign(m_buffer[updateIndex], static_cast<Element>(*replaceFirst));

@@ -332,6 +332,12 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::OnPrefabEditScopeChanged()
     {
+        // Clear the outliner selection when entering/exiting prefab edit mode
+        // so the inspector doesn't show stale entity data from a different scope.
+        if (m_gui->m_objectTree->selectionModel())
+        {
+            m_gui->m_objectTree->selectionModel()->clearSelection();
+        }
         update();
     }
 
@@ -1259,4 +1265,3 @@ namespace AzToolsFramework
 
 }
 
-#include <UI/Outliner/moc_EntityOutlinerWidget.cpp>

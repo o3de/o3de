@@ -284,10 +284,12 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
     {
         QAction* action = new QAction("Select &All", this);
         action->setShortcut(QKeySequence::SelectAll);
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         action->setEnabled(canvasLoaded);
         QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::selectAll);
         menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
+        GetHierarchy()->addAction(action);
+        GetViewport()->addAction(action);
     }
 
     menu->addSeparator();
@@ -299,10 +301,14 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
     {
         QAction* action = new QAction("Cu&t", this);
         action->setShortcut(QKeySequence::Cut);
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         action->setEnabled(itemsAreSelected);
         QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::Cut);
         menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
+        GetHierarchy()->addAction(action);
+        // Also scope the shortcut to the canvas viewport so element cut/copy/paste/duplicate work while
+        // editing directly in the canvas (where focus is on the viewport, not the hierarchy panel).
+        GetViewport()->addAction(action);
 
         m_actionsEnabledWithSelection.push_back(action);
     }
@@ -311,24 +317,28 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
     {
         QAction* action = new QAction("&Copy", this);
         action->setShortcut(QKeySequence::Copy);
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         action->setEnabled(itemsAreSelected);
         QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::Copy);
         menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
+        GetHierarchy()->addAction(action);
+        GetViewport()->addAction(action);
 
         m_actionsEnabledWithSelection.push_back(action);
     }
 
     // Paste.
     {
-        // Paste as silbing.
+        // Paste as sibling.
         {
             QAction* action = new QAction(itemsAreSelected ? "&Paste as sibling" : "&Paste", this);
             action->setShortcut(QKeySequence::Paste);
+            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             action->setEnabled(canvasLoaded && thereIsContentInTheClipboard);
             QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::PasteAsSibling);
             menu->addAction(action);
-            addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
+            GetHierarchy()->addAction(action);
+            GetViewport()->addAction(action);
 
             m_pasteAsSiblingAction = action;
         }
@@ -340,13 +350,29 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
                 action->setShortcuts(
                     QList<QKeySequence>{ QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V), QKeySequence(Qt::META | Qt::SHIFT | Qt::Key_V) });
             }
+            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             action->setEnabled(canvasLoaded && thereIsContentInTheClipboard && itemsAreSelected);
             QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::PasteAsChild);
             menu->addAction(action);
-            addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
+            GetHierarchy()->addAction(action);
+            GetViewport()->addAction(action);
 
             m_pasteAsChildAction = action;
         }
+    }
+
+    // Duplicate.
+    {
+        QAction* action = new QAction("&Duplicate", this);
+        action->setShortcut(QKeySequence("Ctrl+D"));
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        action->setEnabled(itemsAreSelected);
+        QObject::connect(action, &QAction::triggered, GetHierarchy(), &HierarchyWidget::Duplicate);
+        menu->addAction(action);
+        GetHierarchy()->addAction(action);
+        GetViewport()->addAction(action);
+
+        m_actionsEnabledWithSelection.push_back(action);
     }
 
     if (debugViewUndoStack)
@@ -400,6 +426,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
     {
         QAction* action = new QAction("Delete", this);
         action->setShortcut(QKeySequence::Delete);
+        action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         action->setEnabled(itemsAreSelected);
         QObject::connect(
             action,
@@ -410,7 +437,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
                 GetHierarchy()->DeleteSelectedItems();
             });
         menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
+        GetHierarchy()->addAction(action);
 
         m_actionsEnabledWithSelection.push_back(action);
     }

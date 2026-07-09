@@ -7,7 +7,6 @@
  */
 
 #include <QApplication>
-#include <QtGui/private/qguiapplication_p.h>
 #include <QShortcutEvent>
 
 #include <AzQtComponents/Components/StyledDockWidget.h>
@@ -547,7 +546,7 @@ namespace AzToolsFramework
             ));
         }
 
-        m_actionUpdaters.insert({ actionUpdaterIdentifier, {} });
+        m_actionUpdaters.try_emplace(actionUpdaterIdentifier);
         return AZ::Success();
     }
 
@@ -841,7 +840,7 @@ namespace AzToolsFramework
                 actionContextIdentifier.c_str()));
         }
 
-        return AZ::Success(AZStd::move(actionContextIterator->second->GetActiveMode()));
+        return AZ::Success(actionContextIterator->second->GetActiveMode());
     }
 
     QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)

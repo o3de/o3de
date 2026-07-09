@@ -554,12 +554,8 @@ namespace AZStd
     {
         return AZStd::Internal::uninitialized_move(first, last, result, {});
     }
-    // 25.3.2 Move
-    template<class InputIterator, class OutputIterator>
-    OutputIterator move(InputIterator first, InputIterator last, OutputIterator result)
-    {
-        return AZStd::Internal::move(first, last, result, {});
-    }
+
+    using std::move;
 
     template<class BidirectionalIterator1, class BidirectionalIterator2>
     BidirectionalIterator2 move_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result)

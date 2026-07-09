@@ -8,8 +8,6 @@
 #pragma once
 
 
-#if !defined(Q_MOC_RUN)
-
 #include <QObject>
 #include <QFileInfo>
 #include <QString>
@@ -18,7 +16,6 @@
 #include <AzQtComponents/Buses/DragAndDrop.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzCore/std/smart_ptr/scoped_ptr.h>
-#endif
 
 class MainWindow;
 class AssetImporterManager;

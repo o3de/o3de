@@ -8,11 +8,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Graph/GraphView.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-#endif
 
 namespace AtomToolsFramework
 {

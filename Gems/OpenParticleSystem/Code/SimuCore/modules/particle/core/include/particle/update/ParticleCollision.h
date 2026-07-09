@@ -35,8 +35,8 @@ namespace SimuCore::ParticleCore {
     };
 
     struct CollisionPlane {
-        Vector3 normal = { 0.f, 1.f, 0.f };
-        Vector3 position = { 0.f, 0.f, 0.f };
+        AZ::Vector3 normal = { 0.f, 1.f, 0.f };
+        AZ::Vector3 position = { 0.f, 0.f, 0.f };
     };
 
     struct CollisionParam {

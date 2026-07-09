@@ -20,7 +20,7 @@ cd $DIR
 
 install_dependencies () {
     echo installing via pip...
-    $DIR/pip.sh install -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
+    $DIR/pip.sh install --no-deps -r $DIR/requirements.txt --disable-pip-version-check --no-warn-script-location
     retVal=$?
     if [ $retVal -ne 0 ]; then
         echo "Failed to install the packages listed in $DIR/requirements.txt.  Check the log above!"
@@ -67,6 +67,17 @@ if [[ "$OSTYPE" = *"darwin"* ]];
 then
     PAL=Mac
     CMAKE_FOLDER_RELATIVE_TO_ROOT=CMake.app/Contents/bin
+
+    MAC_HOST_ARCHITECTURE=$( uname -m )
+    if [[ "$MAC_HOST_ARCHITECTURE" == "arm64" ]]; then
+        PAL_ARCH="_arm64"
+    elif [[ "$MAC_HOST_ARCHITECTURE" == "x86_64" ]]; then
+        PAL_ARCH="_x86_64"
+    else
+        echo "Mac host architecture ${MAC_HOST_ARCHITECTURE} not supported."
+        exit 1
+    fi
+
 elif [[ "$OSTYPE" == "msys" ]]; then #git bash
     PAL=Windows
     CMAKE_FOLDER_RELATIVE_TO_ROOT=bin
@@ -88,9 +99,15 @@ fi
 
 if ! [ -x "$(command -v cmake)" ]; then
     if [ -z ${LY_CMAKE_PATH} ]; then
-        echo "ERROR: Could not find cmake on the PATH and LY_CMAKE_PATH is not defined, cannot continue."
-        echo "Please add cmake to your PATH, or define LY_CMAKE_PATH"
-        exit 1
+        # Check for the bundled cmake that ships with the installer at <engineRoot>/cmake/runtime/bin
+        BUNDLED_CMAKE_PATH="$DIR/../cmake/runtime/bin"
+        if [ -x "${BUNDLED_CMAKE_PATH}/cmake" ]; then
+            export LY_CMAKE_PATH="${BUNDLED_CMAKE_PATH}"
+        else
+            echo "ERROR: Could not find cmake on the PATH and LY_CMAKE_PATH is not defined, cannot continue."
+            echo "Please add cmake to your PATH, or define LY_CMAKE_PATH"
+            exit 1
+        fi
     fi
 
     export PATH=$LY_CMAKE_PATH:$PATH

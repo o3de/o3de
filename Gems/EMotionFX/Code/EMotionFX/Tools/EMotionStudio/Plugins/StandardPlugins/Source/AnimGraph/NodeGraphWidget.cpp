@@ -32,8 +32,7 @@ namespace EMStudio
 {
     //NodeGraphWidget::NodeGraphWidget(NodeGraph* activeGraph, QWidget* parent) : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
     NodeGraphWidget::NodeGraphWidget(AnimGraphPlugin* plugin, NodeGraph* activeGraph, QWidget* parent)
-        : QOpenGLWidget(parent)
-        , QOpenGLFunctions()
+        : QWidget(parent)
     {
         setObjectName("NodeGraphWidget");
 
@@ -84,18 +83,10 @@ namespace EMStudio
         delete m_fontMetrics;
     }
 
-
-    // initialize opengl
-    void NodeGraphWidget::initializeGL()
+    void NodeGraphWidget::resizeEvent(QResizeEvent* event)
     {
-        initializeOpenGLFunctions();
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    }
-
-
-    //
-    void NodeGraphWidget::resizeGL(int w, int h)
-    {
+        const int w = event->size().width();
+        const int h = event->size().height();
         static QPoint sizeDiff(0, 0);
 
         m_curWidth = w;
@@ -139,9 +130,7 @@ namespace EMStudio
             m_activeGraph->SetScrollOffset(QPoint(scrollOffsetX, scrollOffsetY));
             //MCore::LOG("%d, %d", scrollOffsetX, scrollOffsetY);
         }
-
-        QOpenGLWidget::resizeGL(w, h);
-
+        QWidget::resizeEvent(event);
         m_prevWidth = w;
         m_prevHeight = h;
     }
@@ -176,10 +165,9 @@ namespace EMStudio
         return m_activeGraph;
     }
 
-
-    // paint event
-    void NodeGraphWidget::paintGL()
+    void NodeGraphWidget::paintEvent(QPaintEvent* event)
     {
+        QWidget::paintEvent(event);
         if (visibleRegion().isEmpty())
         {
             return;
@@ -189,8 +177,6 @@ namespace EMStudio
         {
             return;
         }
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // calculate the time passed since the last render
         const float timePassedInSeconds = m_renderTimer.StampAndGetDeltaTimeInSeconds();
@@ -516,30 +502,30 @@ namespace EMStudio
         {
             // handle mouse wrapping, to enable smoother panning
             bool mouseWrapped = false;
-            if (event->x() > (int32)width())
+            if (event->position().x() > (int32)width())
             {
                 mouseWrapped = true;
-                QCursor::setPos(QPoint(event->globalX() - width(), event->globalY()));
-                m_mouseLastPos = QPoint(event->x() - width(), event->y());
+                QCursor::setPos(QPoint(event->globalPosition().x() - width(), event->globalPosition().y()));
+                m_mouseLastPos = QPoint(event->position().x() - width(), event->position().y());
             }
-            else if (event->x() < 0)
+            else if (event->position().x() < 0)
             {
                 mouseWrapped = true;
-                QCursor::setPos(QPoint(event->globalX() + width(), event->globalY()));
-                m_mouseLastPos = QPoint(event->x() + width(), event->y());
+                QCursor::setPos(QPoint(event->globalPosition().x() + width(), event->globalPosition().y()));
+                m_mouseLastPos = QPoint(event->position().x() + width(), event->position().y());
             }
 
-            if (event->y() > (int32)height())
+            if (event->position().y() > (int32)height())
             {
                 mouseWrapped = true;
-                QCursor::setPos(QPoint(event->globalX(), event->globalY() - height()));
-                m_mouseLastPos = QPoint(event->x(), event->y() - height());
+                QCursor::setPos(QPoint(event->globalPosition().x(), event->globalPosition().y() - height()));
+                m_mouseLastPos = QPoint(event->position().x(), event->position().y() - height());
             }
-            else if (event->y() < 0)
+            else if (event->position().y() < 0)
             {
                 mouseWrapped = true;
-                QCursor::setPos(QPoint(event->globalX(), event->globalY() + height()));
-                m_mouseLastPos = QPoint(event->x(), event->y() + height());
+                QCursor::setPos(QPoint(event->globalPosition().x(), event->globalPosition().y() + height()));
+                m_mouseLastPos = QPoint(event->position().x(), event->position().y() + height());
             }
 
             // don't apply the delta, if mouse has been wrapped
@@ -650,7 +636,7 @@ namespace EMStudio
         const AnimGraphActionFilter& actionFilter = m_plugin->GetActionFilter();
 
         // check if we can start panning
-        if ((event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton) || event->button() == Qt::RightButton || event->button() == Qt::MidButton)
+        if ((event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton) || event->button() == Qt::RightButton || event->button() == Qt::MiddleButton)
         {
             // update button booleans
             if (event->buttons() & Qt::RightButton && event->buttons() & Qt::LeftButton)
@@ -683,7 +669,7 @@ namespace EMStudio
                 }
             }
 
-            if (event->button() == Qt::MidButton)
+            if (event->button() == Qt::MiddleButton)
             {
                 m_middleMousePressed = true;
             }
@@ -1023,7 +1009,7 @@ namespace EMStudio
         }
 
         // middle mouse button
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_middleMousePressed = false;
             m_panning            = false;
@@ -1472,14 +1458,6 @@ namespace EMStudio
         return node;
     }
 
-
-    // resize
-    void NodeGraphWidget::resizeEvent(QResizeEvent* event)
-    {
-        QOpenGLWidget::resizeEvent(event);
-    }
-
-
     // calculate the selection rect
     void NodeGraphWidget::CalcSelectRect(QRect& outRect)
     {
@@ -1665,4 +1643,3 @@ namespace EMStudio
     }
 } // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/moc_NodeGraphWidget.cpp>

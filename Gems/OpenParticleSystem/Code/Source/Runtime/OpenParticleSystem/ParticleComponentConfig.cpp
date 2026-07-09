@@ -19,10 +19,10 @@ namespace OpenParticle
         {
             serializeContext->Class<ParticleComponentConfig, AZ::ComponentConfig>()
                 ->Version(0)
-                ->Field("particleAsset", &ParticleComponentConfig::m_particleAsset)
-                ->Field("enable", &ParticleComponentConfig::m_enable)
-                ->Field("followActiveCamera", &ParticleComponentConfig::m_followActiveCamera)
-                ->Field("autoPlay", &ParticleComponentConfig::m_autoPlay);
+                ->Field("Asset", &ParticleComponentConfig::m_particleAsset)
+                ->Field("Enable", &ParticleComponentConfig::m_enable)
+                ->Field("FollowActiveCamera", &ParticleComponentConfig::m_followActiveCamera)
+                ->Field("AutoPlay", &ParticleComponentConfig::m_autoPlay);
         }
     }
 } // namespace OpenParticle

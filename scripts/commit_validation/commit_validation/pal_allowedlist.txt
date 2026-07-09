@@ -25,6 +25,7 @@
 */Code/Framework/AzCore/AzCore/std/parallel/binary_semaphore.h
 */Code/Framework/AzCore/AzCore/std/parallel/semaphore.h
 */Code/Framework/AzCore/Platform/Android/AzCore/AzCore_Traits_Android.h
+*/Code/Framework/AzCore/Platform/Emscripten/AzCore/AzCore_Traits_Emscripten.h
 */Code/Framework/AzCore/Platform/iOS/AzCore/AzCore_Traits_iOS.h
 */Code/Framework/AzCore/Platform/Jasper/AzCore/AzCore_Traits_Jasper.h
 */Code/Framework/AzCore/Platform/Linux/AzCore/AzCore_Traits_Linux.h

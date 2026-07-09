@@ -11,7 +11,6 @@
 #define CRYINCLUDE_EDITOR_CONTROLS_SPLINECTRLEX_H
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <ISplines.h>
 #include "Controls/WndGridHelper.h"
 #include "IKeyTimeSet.h"
@@ -19,7 +18,6 @@
 #include <Util/EditorUtils.h>
 #include <QWidget>
 #include <Range.h>
-#endif
 
 // Custom styles for this control.
 #define SPLINE_STYLE_NOGRID 0x0001

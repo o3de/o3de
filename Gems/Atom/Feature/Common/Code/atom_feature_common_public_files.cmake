@@ -41,7 +41,6 @@ set(FILES
     Include/Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h
     Include/Atom/Feature/ImGui/ImGuiUtils.h
     Include/Atom/Feature/ImGui/SystemBus.h
-    Include/Atom/Feature/ImGui/ImGuiPass.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/LightingChannel/LightingChannelConfiguration.h
     Include/Atom/Feature/Material/ConvertEmissiveUnitFunctor.h
@@ -130,7 +129,6 @@ set(FILES
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h
-    Include/Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyBoxFogSettings.h
@@ -166,5 +164,4 @@ set(FILES
     Source/Utils/GpuBufferHandler.cpp
     Source/Utils/LightingPreset.cpp
     Source/Utils/ModelPreset.cpp
-    Source/ImGui/ImGuiPass.cpp
 )

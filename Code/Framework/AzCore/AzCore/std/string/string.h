@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <wchar.h>
@@ -914,7 +915,7 @@ namespace AZStd
                 if (grow(newSize))
                 {
                     pointer buffer = data();
-                    Traits::move(first + count, last, oldSize - postInsertOffset); // empty out hole
+                    Traits::move(buffer + insertOffset + count, buffer + postInsertOffset, oldSize - postInsertOffset); // empty out hole
                     for (size_t updateIndex = insertOffset; replaceFirst != replaceLast; ++replaceFirst, ++updateIndex)
                     {
                         Traits::assign(buffer[updateIndex], static_cast<Element>(*replaceFirst));

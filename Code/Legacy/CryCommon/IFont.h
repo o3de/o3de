@@ -23,6 +23,8 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Matrix3x4.h>
 
 struct ISystem;
 
@@ -153,9 +155,9 @@ struct STextDrawContext
     bool m_clippingEnabled;
     bool m_framed;
 
-    ColorB m_colorOverride;
+    AZ::Color m_colorOverride;
 
-    Matrix34 m_transform;
+    AZ::Matrix3x4 m_transform;
 
     int m_baseState;
     bool m_overrideViewProjMatrices;
@@ -181,7 +183,7 @@ struct STextDrawContext
         , m_framed(false)
         , m_colorOverride(0, 0, 0, 0)
         , m_drawTextFlags(0)
-        , m_transform(IDENTITY)
+        , m_transform(AZ::Matrix3x4::CreateIdentity())
         , m_baseState(-1) // indicates not set, would like to set to GS_DEPTHFUNC_LEQUAL but header dependencies preclude that
         , m_overrideViewProjMatrices(true) // the old behavior that overrides the currently set view and projection matrices
         , m_kerningEnabled(true)
@@ -200,9 +202,9 @@ struct STextDrawContext
     void SetSizeIn800x600(bool sizeIn800x600) { m_sizeIn800x600 = sizeIn800x600; }
     void EnableClipping(bool enable) { m_clippingEnabled = enable; }
     void EnableFrame(bool enable) { m_framed = enable; }
-    void SetColor(const ColorF& col) { m_colorOverride = col; }
+    void SetColor(const AZ::Color& col) { m_colorOverride = col; }
     void SetFlags(int flags) { m_drawTextFlags = flags; }
-    void SetTransform(const Matrix34& transform) { m_transform = transform; }
+    void SetTransform(const AZ::Matrix3x4& transform) { m_transform = transform; }
     void SetBaseState(int baseState) { m_baseState = baseState; }
     void SetOverrideViewProjMatrices(bool overrideViewProjMatrices) { m_overrideViewProjMatrices = overrideViewProjMatrices; }
     void SetLineSpacing(float lineSpacing) { m_lineSpacing = lineSpacing; }
@@ -213,7 +215,7 @@ struct STextDrawContext
     int GetFlags() const { return m_drawTextFlags; }
     float GetLineSpacing() const { return m_lineSpacing; }
 
-    bool IsColorOverridden() const { return m_colorOverride.a != 0; }
+    bool IsColorOverridden() const { return m_colorOverride.GetA8() != 0; }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////

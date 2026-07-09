@@ -29,7 +29,29 @@ float3 GetFallbackPBRBaseColor(float2 uv)
         return float3(0, 0, 0);
     }
     TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingGlobalSrg::LinearSampler, uv);
-    return textureData.m_baseColor;
+    return textureData.m_baseColor.rgb;
+}
+
+float3 GetEmissiveColor(float2 uv)
+{
+    MaterialInfo materialInfo;
+    if(!GetMaterialInfoEntry(InstanceID(), materialInfo))
+    {
+        return float3(0, 0, 0);
+    }
+
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingGlobalSrg::LinearSampler, uv);
+    return textureData.m_emissiveColor.rgb;
+}
+
+float3 GetIrradianceColor()
+{
+    MaterialInfo materialInfo;
+    if(!GetMaterialInfoEntry(InstanceID(), materialInfo))
+    {
+        return float3(0, 0, 0);
+    }
+    return materialInfo.m_irradianceColor.rgb;
 }
 
 [shader("closesthit")]
@@ -37,12 +59,14 @@ void ClosestHitProcedural(inout PayloadData payload, ProceduralGeometryIntersect
 {
     switch (GetRayTracingDebugViewMode())
     {
-    case RayTracingDebugViewMode::InstanceID:     payload.m_color = GetRandomColor(InstanceID());       break;
-    case RayTracingDebugViewMode::InstanceIndex:  payload.m_color = GetRandomColor(InstanceIndex());    break;
-    case RayTracingDebugViewMode::PrimitiveIndex: payload.m_color = GetRandomColor(PrimitiveIndex());   break;
-    case RayTracingDebugViewMode::Normals:        payload.m_color = GetNormalColor(attrib.GetNormal()); break;
-    case RayTracingDebugViewMode::UVs:            payload.m_color = GetUVColor(attrib.GetUv());         break;
-    case RayTracingDebugViewMode::BaseColor:      payload.m_color = GetFallbackPBRBaseColor(attrib.GetUv()); break;
-    default:                                      payload.m_noData = true;                              break;
+    case RayTracingDebugViewMode::InstanceID:      payload.m_color = GetRandomColor(InstanceID());            break;
+    case RayTracingDebugViewMode::InstanceIndex:   payload.m_color = GetRandomColor(InstanceIndex());         break;
+    case RayTracingDebugViewMode::PrimitiveIndex:  payload.m_color = GetRandomColor(PrimitiveIndex());        break;
+    case RayTracingDebugViewMode::Normals:         payload.m_color = GetNormalColor(attrib.GetNormal());      break;
+    case RayTracingDebugViewMode::UVs:             payload.m_color = GetUVColor(attrib.GetUv());              break;
+    case RayTracingDebugViewMode::BaseColor:       payload.m_color = GetFallbackPBRBaseColor(attrib.GetUv()); break;
+    case RayTracingDebugViewMode::EmissiveColor:   payload.m_color = GetEmissiveColor(attrib.GetUv());   break;
+    case RayTracingDebugViewMode::IrradianceColor: payload.m_color = GetIrradianceColor(); break;
+    default:                                       payload.m_noData = true;                                   break;
     }
 }

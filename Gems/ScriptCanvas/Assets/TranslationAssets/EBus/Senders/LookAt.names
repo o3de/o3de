@@ -10,6 +10,222 @@
             },
             "methods": [
                 {
+                    "base": "SetFixatePitch",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fixate Pitch"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fixate Pitch is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fixate Pitch",
+                        "tooltip": "Set whether the pitch is fixated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Fixate Pitch",
+                                "tooltip": "Whether the pitch is fixated towards the Look At entity / point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFixateRoll",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fixate Roll"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fixate Roll is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fixate Roll",
+                        "tooltip": "Set whether the roll is fixated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Fixate Roll",
+                                "tooltip": "Whether the roll is fixated towards the Look At entity / point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFixateYaw",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fixate Yaw"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fixate Yaw is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fixate Yaw",
+                        "tooltip": "Get whether the yaw is fixated"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Fixated Yaw",
+                                "tooltip": "Whether the yaw is fixated towards the Look At entity / point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTargetPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Target Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Target Position is invoked"
+                    },
+                    "details": {
+                        "name": "Set Target Position",
+                        "tooltip": "Set the target position to look at."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The position to look at"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAxis",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Axis"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Axis is invoked"
+                    },
+                    "details": {
+                        "name": "Get Axis",
+                        "tooltip": "Get the forward axis being used as reference for the look at"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "Axis",
+                                "tooltip": "The forward axis being used as reference"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetStrength",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Strength"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Strength is invoked"
+                    },
+                    "details": {
+                        "name": "Get Strength",
+                        "tooltip": "Get the strength / quickness of the look at rotation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Strength",
+                                "tooltip": "How quickly the rotation is performed and how much it resists changes in the rotation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetApplyLookAtTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Apply Look At Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Apply Look At Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Set Apply Look At Transform",
+                        "tooltip": "Set whether the Look At transform is applied when the component is enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled",
+                                "tooltip": "Whether the Look At transform is applied when calculated"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTargetPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Target Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Target Position is invoked"
+                    },
+                    "details": {
+                        "name": "Get Target Position",
+                        "tooltip": "Get the target position being looked at."
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The position being looked at"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAxis",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Axis"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Axis is invoked"
+                    },
+                    "details": {
+                        "name": "Set Axis",
+                        "tooltip": "Set the forward axis to use as reference for the look at"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "Axis",
+                                "tooltip": "The forward axis to use as reference"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "SetTarget",
                     "entry": {
                         "name": "In",
@@ -34,49 +250,217 @@
                     ]
                 },
                 {
-                    "base": "SetTargetPosition",
+                    "base": "GetLookAtTransform",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Target Position"
+                        "tooltip": "When signaled, this will invoke Get Look At Transform"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Target Position is invoked"
+                        "tooltip": "Signaled after Get Look At Transform is invoked"
                     },
                     "details": {
-                        "name": "Set Target Position",
-                        "tooltip": "Sets the target position to look at."
+                        "name": "Get Look At Transform",
+                        "tooltip": "Get the target Look At transform."
                     },
-                    "params": [
+                    "results": [
                         {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
                             "details": {
-                                "name": "Position",
-                                "tooltip": "The position to look at"
+                                "name": "Look At Transform",
+                                "tooltip": "The transform when looking at the target"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetAxis",
+                    "base": "SetStrength",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Axis"
+                        "tooltip": "When signaled, this will invoke Set Strength"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Axis is invoked"
+                        "tooltip": "Signaled after Set Strength is invoked"
                     },
                     "details": {
-                        "name": "Set Axis",
-                        "tooltip": "Specify the forward axis to use as reference for the look at"
+                        "name": "Set Strength",
+                        "tooltip": "Set the strength / quickness of the look at rotation"
                     },
                     "params": [
                         {
-                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Axis",
-                                "tooltip": "The forward axis to use as reference"
+                                "name": "Strength",
+                                "tooltip": "Determines how quickly the rotation is performed and how much it resists changes in the rotation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFixateRoll",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fixate Roll"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fixate Roll is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fixate Roll",
+                        "tooltip": "Get whether the roll is fixated"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Fixated Roll",
+                                "tooltip": "Whether the roll is fixated towards the Look At entity / point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFixateYaw",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fixate Yaw"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fixate Yaw is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fixate Yaw",
+                        "tooltip": "Set whether the yaw is fixated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Fixate Yaw",
+                                "tooltip": "Whether the yaw is fixated towards the Look At entity / point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetApplyLookAtTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Apply Look At Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Apply Look At Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Get Apply Look At Transform",
+                        "tooltip": "Get whether the Look At transform is applied"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled",
+                                "tooltip": "Whether the Look At transform is applied when calculated"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTarget",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Target"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Target is invoked"
+                    },
+                    "details": {
+                        "name": "Get Target",
+                        "tooltip": "Get the entity being looked at"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target",
+                                "tooltip": "The entity being looked at"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFixatePitch",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fixate Pitch"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fixate Pitch is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fixate Pitch",
+                        "tooltip": "Get whether the pitch is fixated"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Fixated Pitch",
+                                "tooltip": "Whether the pitch is fixated towards the Look At entity / point"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enabled",
+                        "tooltip": "Get whether the Look At component is enabled or disabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled",
+                                "tooltip": "Whether the Look At component is enabled or disabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Enabled",
+                        "tooltip": "Set whether the Look At component is enabled or disabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled",
+                                "tooltip": "Whether the Look At component is enabled or disabled"
                             }
                         }
                     ]

@@ -1,9 +1,131 @@
 {
     "name": "ParticleSystem",
     "systemConfig": {
-        "loop": true
+        "loop": true,
+        "parallel": true
     },
     "emitters": [
+        {
+            "name": "Emitter1",
+            "config": {
+                "type": "CPU",
+                "maxSize": 500,
+                "startTime": 2.0,
+                "localSpace": false,
+                "duration": 2.0,
+                "loop": true
+            },
+            "material": {
+                "assetId": {
+                    "guid": "{EBE3E883-8FE6-5A24-BE49-729E3AD42668}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlemesh.azmaterial"
+            },
+            "model": {
+                "assetId": {
+                    "guid": "{B991E03B-F50D-552E-9E2D-64FA6DAB1CCB}",
+                    "subId": 285127096
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materialeditor/viewportmodels/cube.fbx.azmodel"
+            },
+            "OpenParticle::MeshConfig": {
+                "facing": "CUSTOM",
+                "sortId": 0
+            },
+            "OpenParticle::EmitBurstList": {
+                "isProcessBurstList": true,
+                "burstList": [
+                    {
+                        "time": 0.0,
+                        "count": 100,
+                        "minCount": -1
+                    }
+                ]
+            },
+            "OpenParticle::SpawnVelSphere": {
+                "strengthObject": {
+                    "dataValue": [
+                        5.0,
+                        5.0,
+                        5.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLocPoint": {
+                "positionObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        10.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::SpawnLifetime": {
+                "lifeTimeObject": {
+                    "dataValue": 1.0,
+                    "isUniform": false,
+                    "distType": "Random",
+                    "distIndex": [
+                        1
+                    ]
+                }
+            },
+            "OpenParticle::UpdateSubUv": {
+                "framePerSecond": 5,
+                "frameNum": 16,
+                "spawnOnly": false,
+                "IndexByEventOrder": false
+            },
+            "OpenParticle::UpdateConstForce": {
+                "forceObject": {
+                    "dataValue": [
+                        0.0,
+                        0.0,
+                        -5.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "OpenParticle::UpdateSizeLinear": {
+                "sizeObject": {
+                    "dataValue": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "isUniform": false,
+                    "distType": "Constant",
+                    "distIndex": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            }
+        },
         {
             "name": "Emitter0",
             "config": {
@@ -14,8 +136,22 @@
                 "duration": 4.0,
                 "loop": true
             },
-            "material": "Materials/OpenParticle/ParticleMesh.material",
-            "model": "MaterialEditor/ViewportModels/Cube.fbx.azmodel",
+            "material": {
+                "assetId": {
+                    "guid": "{EBE3E883-8FE6-5A24-BE49-729E3AD42668}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlemesh.azmaterial"
+            },
+            "model": {
+                "assetId": {
+                    "guid": "{B991E03B-F50D-552E-9E2D-64FA6DAB1CCB}",
+                    "subId": 285127096
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materialeditor/viewportmodels/cube.fbx.azmodel"
+            },
             "OpenParticle::MeshConfig": {
                 "facing": "CUSTOM",
                 "sortId": 0
@@ -86,111 +222,6 @@
                         0.0,
                         0.0,
                         -5.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Emitter1",
-            "config": {
-                "type": "CPU",
-                "maxSize": 500,
-                "startTime": 2.0,
-                "localSpace": false,
-                "duration": 2.0,
-                "loop": true
-            },
-            "material": "Materials/OpenParticle/ParticleMesh.material",
-            "model": "MaterialEditor/ViewportModels/Cube.fbx.azmodel",
-            "OpenParticle::MeshConfig": {
-                "facing": "CUSTOM",
-                "sortId": 0
-            },
-            "OpenParticle::EmitBurstList": {
-                "isProcessBurstList": true,
-                "burstList": [
-                    {
-                        "time": 0.0,
-                        "count": 100,
-                        "minCount": -1
-                    }
-                ]
-            },
-            "OpenParticle::SpawnVelSphere": {
-                "strengthObject": {
-                    "dataValue": [
-                        5.0,
-                        5.0,
-                        5.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnLocPoint": {
-                "positionObject": {
-                    "dataValue": [
-                        0.0,
-                        0.0,
-                        10.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::SpawnLifetime": {
-                "lifeTimeObject": {
-                    "dataValue": 1.0,
-                    "isUniform": false,
-                    "distType": "Random",
-                    "distIndex": [
-                        1
-                    ]
-                }
-            },
-            "OpenParticle::UpdateSubUv": {
-                "framePerSecond": 5,
-                "frameNum": 16
-            },
-            "OpenParticle::UpdateConstForce": {
-                "forceObject": {
-                    "dataValue": [
-                        0.0,
-                        0.0,
-                        -5.0
-                    ],
-                    "isUniform": false,
-                    "distType": "Constant",
-                    "distIndex": [
-                        0,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "OpenParticle::UpdateSizeLinear": {
-                "sizeObject": {
-                    "dataValue": [
-                        1.0,
-                        1.0,
-                        1.0
                     ],
                     "isUniform": false,
                     "distType": "Constant",

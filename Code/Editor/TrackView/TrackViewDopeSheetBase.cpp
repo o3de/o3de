@@ -524,22 +524,24 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
         return;
     }
 
+    if (m_rubberBand)
+    {
+        m_rubberBand->deleteLater();
+        m_rubberBand = nullptr;
+    }
+
     if (m_mouseMode == eTVMouseMode_Select)
     {
         // Check if any key are selected.
         m_rcSelect.translate(-m_scrollOffset);
         SelectKeys(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
-        m_rubberBand->deleteLater();
-        m_rubberBand = nullptr;
     }
     else if (m_mouseMode == eTVMouseMode_SelectWithinTime)
     {
         m_rcSelect.translate(-m_scrollOffset);
         SelectAllKeysWithinTimeFrame(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
-        m_rubberBand->deleteLater();
-        m_rubberBand = nullptr;
     }
     else if (m_mouseMode == eTVMouseMode_DragTime)
     {
@@ -551,7 +553,6 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
             GetIEditor()->GetAnimation()->SetRecording(true);   // re-enable recording that was disabled while dragging time
             m_stashedRecordModeWhileTimeDragging = false;       // reset stashed value
         }
-
     }
     else if (m_mouseMode == eTVMouseMode_Paste)
     {
@@ -1424,7 +1425,7 @@ void CTrackViewDopeSheetBase::MouseMoveSelect(const QPoint& point)
     QRect rcClient = rect();
     rc = rc.intersected(rcClient);
 
-    if (m_rubberBand == nullptr)
+    if (!m_rubberBand)
     {
         m_rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
     }
@@ -1996,9 +1997,9 @@ bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyT
     pTrack->GetValue(keyTime, vColor);
 
     const AZ::Color defaultColor(
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetX())), 0, 255),
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetY())), 0, 255),
-        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.GetZ())), 0, 255),
+        clamp_tpl(FloatToIntRet(vColor.GetX()), 0, 255),
+        clamp_tpl(FloatToIntRet(vColor.GetY()), 0, 255),
+        clamp_tpl(FloatToIntRet(vColor.GetZ()), 0, 255),
         255);
     AzQtComponents::ColorPicker dlg(AzQtComponents::ColorPicker::Configuration::RGB, QString(), this);
     dlg.setWindowTitle(tr("Select Color"));
@@ -2007,7 +2008,6 @@ bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyT
     if (dlg.exec() == QDialog::Accepted)
     {
         const AZ::Color col = dlg.currentColor();
-        ColorF colArray(col.GetR8(), col.GetG8(), col.GetB8(), col.GetA8());
 
         CTrackViewSequence* sequence = pTrack->GetSequence();
         if (nullptr != sequence)
@@ -2025,7 +2025,7 @@ bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyT
 
                     I2DBezierKey bezierKey;
                     newKey.GetKey(&bezierKey);
-                    bezierKey.value = Vec2(keyTime, colArray[i]);
+                    bezierKey.value = Vec2(keyTime, col.GetElement(i));
                     newKey.SetKey(&bezierKey);
 
                     keyCreated = true;
@@ -2047,8 +2047,7 @@ void CTrackViewDopeSheetBase::OnCurrentColorChange(const AZ::Color& color)
 
 void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo)
 {
-    ColorF colArray(static_cast<f32>(color.red()), static_cast<f32>(color.green()), static_cast<f32>(color.blue()), static_cast<f32>(color.alpha()));
-
+    AZ::Color colArray(color.red(), color.green(), color.blue(), color.alpha());
 
     CTrackViewSequence* sequence = m_colorUpdateTrack->GetSequence();
     if (nullptr != sequence)
@@ -2074,7 +2073,7 @@ void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo
     }
 }
 
-void CTrackViewDopeSheetBase::UpdateColorKeyHelper(const ColorF& color)
+void CTrackViewDopeSheetBase::UpdateColorKeyHelper(const AZ::Color& color)
 {
     const unsigned int numChildNodes = m_colorUpdateTrack->GetChildCount();
     for (unsigned int i = 0; i < numChildNodes; ++i)
@@ -2094,7 +2093,7 @@ void CTrackViewDopeSheetBase::UpdateColorKeyHelper(const ColorF& color)
         }
 
         bezierKey.value.x = m_colorUpdateKeyTime;
-        bezierKey.value.y = color[i];
+        bezierKey.value.y = color.GetElement(i);
         subTrackKey.SetKey(&bezierKey);
     }
 }
@@ -2114,9 +2113,9 @@ void CTrackViewDopeSheetBase::EditSelectedColorKey(CTrackViewTrack* pTrack)
             pTrack->GetValue(m_colorUpdateKeyTime, color);
 
             const AZ::Color defaultColor(
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetX())), AZ::u8(0), AZ::u8(255)),
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetY())), AZ::u8(0), AZ::u8(255)),
-                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.GetZ())), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(FloatToIntRet(color.GetX()), 0, 255),
+                clamp_tpl(FloatToIntRet(color.GetY()), 0, 255),
+                clamp_tpl(FloatToIntRet(color.GetZ()), 0, 255),
                 255);
 
             AzQtComponents::ColorPicker picker(AzQtComponents::ColorPicker::Configuration::RGB);
@@ -2545,8 +2544,8 @@ void CTrackViewDopeSheetBase::DrawTrack(CTrackViewTrack* pTrack, QPainter* paint
     QColor trackColor = CTVCustomizeTrackColorsDlg::GetTrackColor(pTrack->GetParameterType());
     if (pTrack->HasCustomColor())
     {
-        ColorB customColor = pTrack->GetCustomColor();
-        trackColor = QColor(customColor.r, customColor.g, customColor.b);
+        AZ::Color customColor = pTrack->GetCustomColor();
+        trackColor = QColor(customColor.GetR8(), customColor.GetG8(), customColor.GetB8());
     }
     // For the case of tracks belonging to an inactive director node,
     // changes the track color to a custom one.
@@ -2901,11 +2900,11 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
                     // Show its time or frame number additionally.
                     if (GetTickDisplayMode() == eTVTickMode_InSeconds)
                     {
-                        sprintf_s(keydesc, "%.3f, {", time);
+                        azsprintf(keydesc, "%.3f, {", time);
                     }
                     else
                     {
-                        sprintf_s(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
+                        azsprintf(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
                     }
                 }
                 else

@@ -110,7 +110,6 @@ set(FILES
     containers/set.h
     containers/span_fwd.h
     containers/span.h
-    containers/span.inl
     containers/stack.h
     containers/unordered_map.h
     containers/unordered_set.h
@@ -273,7 +272,6 @@ set(FILES
     utility/move.h
     utility/pair_fwd.h
     utility/pair.h
-    utility/pair.inl
     utility/to_underlying.h
     utility/tuple_concepts.h
     utility/tuple_fwd.h

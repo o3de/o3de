@@ -22,20 +22,16 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
-        bool AppendToPath(QString newPath)
+        QChar GetPlatformPathEnvSeparator()
         {
-            QString pathEnv = qEnvironmentVariable("Path");
-            QStringList pathEnvList = pathEnv.split(";");
-            if (!pathEnvList.contains(newPath, Qt::CaseInsensitive))
-            {
-                pathEnv += ";" + newPath;
-                if (!qputenv("Path", pathEnv.toStdString().c_str()))
-                {
-                    return false;
-                }
-            }
-            return true;
+            return QChar(';');
         }
+
+        QString GetPlatformPathEnvVariableName()
+        {
+            // Qt: do not translate this string, it is the name of an environment variable not a user facing view
+            return QString("Path"); 
+        }    
 
         AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
@@ -47,26 +43,21 @@ namespace O3DE::ProjectManager
             }
             auto engineInfo = engineInfoResult.GetValue();
 
-            // Append cmake path to the current environment PATH incase it is missing, since if
-            // we are starting CMake itself the current application needs to find it using Path
-            // This also takes affect for all child processes.
+            // prepend cmake path to the current environment PATH - we prefer to use the one we ship O3DE
+            // with since its the one we know works.
             QDir cmakePath(engineInfo.m_path);
             cmakePath.cd("cmake/runtime/bin");
-            if (!AppendToPath(cmakePath.path()))
+            if (!AddPathToPathEnv(cmakePath.path(), /*prepend=*/true))
             {
-                return AZ::Failure(QObject::tr("Failed to append the path to CMake to the PATH environment variable"));
+                return AZ::Failure(QObject::tr("Failed to add the path of the CMake binary to the PATH environment variable"));
             }
 
-            // if we don't have ninja, use one that might come with the installer
-            auto ninjaQueryResult = ExecuteCommandResult("ninja", QStringList{ "--version" });
-            if (!ninjaQueryResult.IsSuccess())
+            // if we ship with a specific version of ninja, preppend ito the PATH as well,  we prefer to use it.
+            QDir ninjaPath(engineInfo.m_path);
+            ninjaPath.cd("ninja");
+            if (!AddPathToPathEnv(ninjaPath.path(), /*prepend=*/true))
             {
-                QDir ninjaPath(engineInfo.m_path);
-                ninjaPath.cd("ninja");
-                if (!AppendToPath(ninjaPath.path()))
-                {
-                    return AZ::Failure(QObject::tr("Failed to append the path to ninja to the PATH environment variable"));
-                }
+                return AZ::Failure(QObject::tr("Failed to add the path of the ninja binary to the PATH environment variable"));
             }
 
             return AZ::Success();
@@ -127,26 +118,57 @@ namespace O3DE::ProjectManager
             {
                 if (auto ninjaVersionQueryResult = FindSupportedNinja(); !ninjaVersionQueryResult.IsSuccess())
                 {
+                    // if we FAIL to find ninja, we need to fail here and advise the user to install it.
                     return ninjaVersionQueryResult;
                 }
+                // if we ARE able to find ninja, and in script only mode, we dont need to verify anything else
+                return AZ::Success(QString());
             }
+
+            // we want to help the user here, by showing a helpful error message depending on their situation
+            // 1. Known, supported version of the compiler installed:  No message
+            // 2. Known, deprecated version of the compiler installed:  Warning message
+            // 3. Future unsupported version of the compiler installed:  Warning message
+            // 4. No supported version of the compiler installed:  Error message
 
             // Validate that the minimal version of visual studio is installed
             QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
             QString programFilesPath = environment.value("ProgramFiles(x86)");
             QString vsWherePath = QDir(programFilesPath).filePath("Microsoft Visual Studio/Installer/vswhere.exe");
 
+            // Range which represents an ideal supported version of Visual Studio
+            QStringList versionArgumentsIdeal{ "-version", "[17.14, 19)" }; // 17.14 is VS2022, 18.xxxx is VS2026
+
+            // Range which represents a deprecated, but still functional version of Visual Studio
+            QStringList versionArgumentsDeprecated{ "-version", "[16.11, 19)" }; // 16.11 is last of VS2019.
+
+            // Range which represents a future version of Visual Studio which we don't know about and was released
+            // as a surprise.
+            QStringList versionArgumentsFutureVS{ "-version", "[16.11, )" };
+
+
             QFileInfo vsWhereFile(vsWherePath);
             if (vsWhereFile.exists() && vsWhereFile.isFile())
             {
-                QStringList vsWhereBaseArguments =
-                    QStringList{ "-version", "[16.11,18)", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" };
+                QStringList vsWhereBaseArguments { "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" };
+                QStringList isCompleteArguments{ "-property", "isComplete" }; // returns a 1 if all components are available.
 
+                // Check 1: are we in a perfect situation, where we are exactly on the supported versions?
+                
                 QProcess vsWhereIsCompleteProcess;
                 vsWhereIsCompleteProcess.setProcessChannelMode(QProcess::MergedChannels);
+                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArgumentsIdeal + isCompleteArguments);
+                if (vsWhereIsCompleteProcess.waitForStarted() && vsWhereIsCompleteProcess.waitForFinished())
+                {
+                    QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
+                    if (vsWhereIsCompleteOutput.startsWith("1"))
+                    {
+                        return AZ::Success(QString()); // No issues, we are in the golden range.
+                    }
+                }
 
-                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "isComplete" });
-
+                // If we get here, we are not in the perfect supported version range, but might still be in the deprecated range.
+                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArgumentsDeprecated + isCompleteArguments);
                 if (vsWhereIsCompleteProcess.waitForStarted() && vsWhereIsCompleteProcess.waitForFinished())
                 {
                     QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
@@ -154,21 +176,57 @@ namespace O3DE::ProjectManager
                     {
                         QProcess vsWhereCompilerVersionProcess;
                         vsWhereCompilerVersionProcess.setProcessChannelMode(QProcess::MergedChannels);
-                        vsWhereCompilerVersionProcess.start(
-                            vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "catalog_productDisplayVersion" });
+                        vsWhereCompilerVersionProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "displayName" });
+                        // note that displayname includes product so will be something like "Visual Studio 2019"
+                        if (vsWhereCompilerVersionProcess.waitForStarted() && vsWhereCompilerVersionProcess.waitForFinished())
+                        {
+                            QString vsWhereCompilerVersionOutput(vsWhereCompilerVersionProcess.readAllStandardOutput());
+                            return AZ::Success(
+                                       QObject::tr(
+                                           "%1 is being used - this will be deprecated in future releases.<br><br>"
+                                           "Please consider upgrading soon.<br><br>"
+                                           "<br><br>Refer to the <a "
+                                           "href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual "
+                                           "Studio requirements</a> for more information."))
+                                .arg(vsWhereCompilerVersionOutput.trimmed());
+                        }
+                    }
+                }
+
+                // if we get here, we might be on an unknown, perhaps supported future version, denoted with
+                // the open range with no parameter `, )` at the end:
+                vsWhereIsCompleteProcess.start(vsWherePath, vsWhereBaseArguments + versionArgumentsFutureVS + isCompleteArguments);
+                if (vsWhereIsCompleteProcess.waitForStarted() && vsWhereIsCompleteProcess.waitForFinished())
+                {
+                    QString vsWhereIsCompleteOutput(vsWhereIsCompleteProcess.readAllStandardOutput());
+                    if (vsWhereIsCompleteOutput.startsWith("1"))
+                    {
+                        QProcess vsWhereCompilerVersionProcess;
+                        vsWhereCompilerVersionProcess.setProcessChannelMode(QProcess::MergedChannels);
+                        vsWhereCompilerVersionProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "displayName" });
 
                         if (vsWhereCompilerVersionProcess.waitForStarted() && vsWhereCompilerVersionProcess.waitForFinished())
                         {
                             QString vsWhereCompilerVersionOutput(vsWhereCompilerVersionProcess.readAllStandardOutput());
-                            return AZ::Success(vsWhereCompilerVersionOutput);
+                            return AZ::Success(
+                                       QObject::tr(
+                                           "A version of Visual Studio was found that isn't supported: %1<br><br>"
+                                           "O3DE will attempt to build the project with it, but there may be issues."
+                                           "  O3DE officially supports Visual Studio 2022 v17.14 or higher, and 2026 v18.1 or higher."
+                                           "<br><br>Refer to the <a "
+                                           "href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual "
+                                           "Studio requirements</a> for more information."))
+                                .arg(vsWhereCompilerVersionOutput.trimmed());
                         }
                     }
                 }
             }
 
             return AZ::Failure(
-                QObject::tr("Visual Studio 2019 version 16.11 or higher or Visual Studio 2022 version 17.0 or higher not found.<br><br>"
-                            "A compatible version of Visual Studio is required to build this project.<br>"
+                QObject::tr("No compatible C++ Compiler found.<br><br>"
+                            "O3DE officially supports Visual Studio 2022 v17.14 or higher, and 2026 v18.1 or higher.<br>"
+                            "Visual Studio does not automatically include the C++ compiler by default, so please ensure that "
+                            "the 'Desktop development with C++' workload is installed in the Visual Studio Installer.<br><br>"
                             "Refer to the <a href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual "
                             "Studio requirements</a> for more information."));
         }

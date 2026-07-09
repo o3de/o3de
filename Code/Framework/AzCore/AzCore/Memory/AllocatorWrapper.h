@@ -18,7 +18,7 @@ namespace AZ
     * Safe wrapper for an instance of an allocator.
     *
     * Generally it is preferred to use AllocatorInstance<> for allocator singletons over this wrapper,
-    * but you may want to use this wrapper in particular when scoping a custom allocator to the lifetime 
+    * but you may want to use this wrapper in particular when scoping a custom allocator to the lifetime
     * of some other object.
     */
     template<class Allocator>
@@ -86,6 +86,6 @@ namespace AZ
 
     private:
         Allocator* m_allocator = nullptr;
-        typename AZStd::aligned_storage<sizeof(Allocator), AZStd::alignment_of<Allocator>::value>::type m_storage;
+        AZStd::aligned_storage_t<sizeof(Allocator), AZStd::alignment_of_v<Allocator>> m_storage;
     };
 }

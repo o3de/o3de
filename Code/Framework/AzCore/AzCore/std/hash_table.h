@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzCore/std/containers/containers_concepts.h>
@@ -123,7 +124,7 @@ namespace AZStd
 
             void pre_copy(const this_type& rhs)
             {
-                m_vector.assign(rhs.m_vector.size(), vector_value_type(0));
+                m_vector.assign(rhs.m_vector.size(), vector_value_type(0, {}));
                 m_numBuckets = rhs.m_numBuckets;
                 m_max_load_factor = rhs.m_max_load_factor;
                 m_list.clear();
@@ -169,7 +170,7 @@ namespace AZStd
 #endif
 
                 list_type newList(m_list.get_allocator());
-                vector_type newBuckets(num_buckets, vector_value_type(0), m_vector.get_allocator());
+                vector_type newBuckets(num_buckets, vector_value_type(0, {}), m_vector.get_allocator());
                 typename list_type::iterator cur, last = m_list.end();
                 while (!m_list.empty())
                 {
@@ -326,12 +327,12 @@ namespace AZStd
 
             AZ_FORCE_INLINE void init_buckets()
             {
-                m_vector.assign(m_vector.capacity(), vector_value_type(0));
+                m_vector.assign(m_vector.capacity(), vector_value_type(0, {}));
             }
 
             AZ_FORCE_INLINE void pre_copy(const this_type&)
             {
-                m_vector.assign(m_vector.capacity(), vector_value_type(0));
+                m_vector.assign(m_vector.capacity(), vector_value_type(0, {}));
                 m_list.clear();
             }
 
@@ -453,7 +454,8 @@ namespace AZStd
         {}
 
 
-        AZ_FORCE_INLINE hash_table(const value_type* first, const value_type* last, const hasher& hash, const key_equal& keyEqual, const allocator_type& alloc)
+        template<class InputIterator>
+        AZ_FORCE_INLINE hash_table(InputIterator first, InputIterator last, const hasher& hash, const key_equal& keyEqual, const allocator_type& alloc)
             : m_data(alloc)
             , m_keyEqual(keyEqual)
             , m_hasher(hash)

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
@@ -19,7 +18,6 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QComboBox>
-#endif
 
 namespace ShaderManagementConsole
 {

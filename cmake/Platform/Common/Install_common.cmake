@@ -287,7 +287,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
 set_target_properties(${RUN_TARGET_NAME} PROPERTIES
     FOLDER \"O3DE_SDK\"
     VS_DEBUGGER_COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${NAME_PLACEHOLDER},IMPORTED_LOCATION>>
-    VS_DEBUGGER_COMMAND_ARGUMENTS \"--project-path=\${LY_DEFAULT_PROJECT_PATH}\"
+    VS_DEBUGGER_COMMAND_ARGUMENTS \"--project-path=\\\"\${LY_DEFAULT_PROJECT_PATH}\\\"\"
 )
 set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${RUN_TARGET_NAME})
 "
@@ -912,7 +912,7 @@ function(ly_setup_assets)
     # this first loop real-path-izes all the paths to avoid doing so repeatedly.
     get_external_subdirectories_in_use(external_subdirs_non_realpath)
     foreach(gem_candidate_dir IN LISTS external_subdirs_non_realpath)
-        file(REAL_PATH ${gem_candidate_dir} gem_candidate_dir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        cmake_path(ABSOLUTE_PATH gem_candidate_dir OUTPUT_VARIABLE gem_candidate_dir NORMALIZE BASE_DIRECTORY ${LY_ROOT_FOLDER})
         list(APPEND external_subdirs ${gem_candidate_dir})
     endforeach()
 

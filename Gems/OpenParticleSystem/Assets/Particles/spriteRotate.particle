@@ -1,7 +1,8 @@
 {
     "name": "ParticleSystem",
     "systemConfig": {
-        "loop": true
+        "loop": true,
+        "parallel": true
     },
     "emitters": [
         {
@@ -14,7 +15,14 @@
                 "duration": 2.0,
                 "loop": true
             },
-            "material": "Materials/OpenParticle/ParticleSprite.material",
+            "material": {
+                "assetId": {
+                    "guid": "{CAD0A32B-2303-5C68-92A7-F648257BEFAF}",
+                    "subId": 0
+                },
+                "loadBehavior": "PreLoad",
+                "assetHint": "materials/openparticle/particlesprite.azmaterial"
+            },
             "OpenParticle::SpriteConfig": {
                 "facing": "CUSTOM",
                 "sortId": 0,
@@ -30,7 +38,7 @@
                     "isUniform": false,
                     "distType": "Constant",
                     "distIndex": [
-                        3
+                        0
                     ]
                 }
             },

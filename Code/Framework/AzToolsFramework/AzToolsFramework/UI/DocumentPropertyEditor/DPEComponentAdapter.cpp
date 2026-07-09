@@ -79,14 +79,39 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
-        m_entityId = componentInstance->GetEntityId();
+        AZ_Assert(componentInstance, "ComponentAdapter::SetComponent - component is null.");
+        if (!componentInstance)
+        {
+            return;
+        }
+
+        AZ::EntityId newEntityId = componentInstance->GetEntityId();
+
+        bool reconnectToSpecificEntityBus = false;
+        if (m_entityId != newEntityId)
+        {
+            if (m_entityId.IsValid())
+            {
+                AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_entityId);
+            }
+            reconnectToSpecificEntityBus = true;
+        }
+
+        m_entityId = newEntityId;
         m_componentId = componentInstance->GetId();
-        AZ::EntitySystemBus::Handler::BusConnect();
 
-        AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
-        AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+        if (!AZ::EntitySystemBus::Handler::BusIsConnected())
+        {
+            AZ::EntitySystemBus::Handler::BusConnect(); // listens for "On Entity Destruction" / "On Entity Initialized".
+            AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+        }
 
+        if (reconnectToSpecificEntityBus)
+        {
+            AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
+        }
+        
         AZ::Uuid instanceTypeId = azrtti_typeid(componentInstance);
         SetValue(componentInstance, instanceTypeId);
     }
@@ -115,7 +140,7 @@ namespace AZ::DocumentPropertyEditor
         if (IsComponentValid())
         {
             m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
-            NotifyResetDocument();
+            QueueResetDocument();
         }
     }
 
@@ -123,6 +148,11 @@ namespace AZ::DocumentPropertyEditor
     {
         auto handlePropertyEditorChanged = [&]([[maybe_unused]] const Dom::Value& valueFromEditor, Nodes::ValueChangeType changeType)
         {
+            if (!IsComponentValid())
+            {
+                return;
+            }
+
             switch (changeType)
             {
             case Nodes::ValueChangeType::InProgressEdit:
@@ -172,12 +202,22 @@ namespace AZ::DocumentPropertyEditor
     {
         if (entityId == m_entityId)
         {
+            // stop listening for all events except Entity Initialized, which will be reconnected when the entity is re-initialized
+            // in case its an undo / redo op.
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
             AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
             AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_entityId);
-            
-            m_entityId.SetInvalid();
-            AZ::EntitySystemBus::Handler::BusDisconnect();
+        }
+    }
+
+    void ComponentAdapter::OnEntityInitialized(const AZ::EntityId& entityId)
+    {
+        if (entityId == m_entityId)
+        {
+            // reconnect to the various busses as our entity has been restored.
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+            AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
+            AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
         }
     }
 

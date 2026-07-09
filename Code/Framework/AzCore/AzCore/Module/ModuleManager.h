@@ -69,7 +69,7 @@ namespace AZ
     {
         AZ_CLASS_ALLOCATOR(ModuleDataImpl, SystemAllocator);
 
-        ModuleDataImpl() = default;
+        ModuleDataImpl();
         ~ModuleDataImpl() override;
 
         // no copy/move allowed

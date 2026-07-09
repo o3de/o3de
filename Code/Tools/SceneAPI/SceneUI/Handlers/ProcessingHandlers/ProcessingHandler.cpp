@@ -23,4 +23,3 @@ namespace AZ
     }
 }
 
-#include <Handlers/ProcessingHandlers/moc_ProcessingHandler.cpp>

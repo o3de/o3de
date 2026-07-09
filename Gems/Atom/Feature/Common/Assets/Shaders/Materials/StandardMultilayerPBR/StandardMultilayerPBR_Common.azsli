@@ -298,7 +298,8 @@ float3 GetLayerDepthValues(const MaterialParameters params, float2 uv, float2 uv
             float2 layerUv = uv;
             if(params.m_parallaxUvIndex == 0)
             {
-                layerUv = mul(params.m_layer1_m_uvMatrix, float3(uv, 1.0)).xy;
+                float3 _l1uvh = float3(uv, 1.0); 
+                layerUv = float2(dot(params.m_layer1_m_uvMatrixRow0.xyz, _l1uvh), dot(params.m_layer1_m_uvMatrixRow1.xyz, _l1uvh));
             }
 
             layerDepthValues.r = SampleDepthFromHeightmap(GetMaterialTexture(params.m_layer1_m_heightmap), GetMaterialTextureSampler(), layerUv, uv_ddx, uv_ddy).m_depth;
@@ -315,7 +316,8 @@ float3 GetLayerDepthValues(const MaterialParameters params, float2 uv, float2 uv
             float2 layerUv = uv;
             if(params.m_parallaxUvIndex == 0)
             {
-                layerUv = mul(params.m_layer2_m_uvMatrix, float3(uv, 1.0)).xy;
+                float3 _l2uvh = float3(uv, 1.0); 
+                layerUv = float2(dot(params.m_layer2_m_uvMatrixRow0.xyz, _l2uvh), dot(params.m_layer2_m_uvMatrixRow1.xyz, _l2uvh));
             }
 
             layerDepthValues.g = SampleDepthFromHeightmap(GetMaterialTexture(params.m_layer2_m_heightmap), GetMaterialTextureSampler(), layerUv, uv_ddx, uv_ddy).m_depth;
@@ -333,7 +335,8 @@ float3 GetLayerDepthValues(const MaterialParameters params, float2 uv, float2 uv
             float2 layerUv = uv;
             if(params.m_parallaxUvIndex == 0)
             {
-                layerUv = mul(params.m_layer3_m_uvMatrix, float3(uv, 1.0)).xy;
+                float3 _l3uvh = float3(uv, 1.0); 
+                layerUv = float2(dot(params.m_layer3_m_uvMatrixRow0.xyz, _l3uvh), dot(params.m_layer3_m_uvMatrixRow1.xyz, _l3uvh));
             }
 
             layerDepthValues.b = SampleDepthFromHeightmap(GetMaterialTexture(params.m_layer3_m_heightmap), GetMaterialTextureSampler(), layerUv, uv_ddx, uv_ddy).m_depth;

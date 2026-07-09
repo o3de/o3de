@@ -18,35 +18,22 @@
 #include <QPaintEvent>
 #include <QMenu>
 
-#include <MCore/Source/LogManager.h>
 #include <MCore/Source/Algorithms.h>
 
 #include <MysticQt/Source/MysticQtManager.h>
-
-#include <EMotionFX/Source/BlendTree.h>
-#include <EMotionFX/Source/AnimGraphMotionNode.h>
-#include <EMotionFX/Source/AnimGraphStateMachine.h>
-
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/MotionEvent.h>
-#include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/Recorder.h>
-#include <EMotionFX/Source/MotionEventTable.h>
-#include <EMotionFX/Source/MotionManager.h>
-#include <EMotionFX/Source/AnimGraphManager.h>
-#include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "../../../../EMStudioSDK/Source/MainWindow.h"
 
 
 namespace EMStudio
 {
     // the constructor
     TrackDataHeaderWidget::TrackDataHeaderWidget(TimeViewPlugin* plugin, QWidget* parent)
-        : QOpenGLWidget(parent)
-        , QOpenGLFunctions()
+        : QWidget(parent)
         , m_plugin(plugin)
         , m_lastMouseX(0)
         , m_lastMouseY(0)
@@ -101,31 +88,20 @@ namespace EMStudio
     {
     }
 
-
-    // init gl
-    void TrackDataHeaderWidget::initializeGL()
+    void TrackDataHeaderWidget::resizeEvent(QResizeEvent* event)
     {
-        initializeOpenGLFunctions();
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    }
-
-
-    // resize
-    void TrackDataHeaderWidget::resizeGL(int w, int h)
-    {
-        MCORE_UNUSED(w);
-        MCORE_UNUSED(h);
+        QWidget::resizeEvent(event);
         if (m_plugin)
         {
             m_plugin->SetRedrawFlag();
         }
     }
 
-    void TrackDataHeaderWidget::paintGL()
+    void TrackDataHeaderWidget::paintEvent(QPaintEvent* event)
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        QWidget::paintEvent(event);
 
-        // start painting
+        // start painting using standard Qt painter
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing, false);
 
@@ -167,7 +143,7 @@ namespace EMStudio
         }
 
         // if double clicked in the timeline
-        m_plugin->MakeTimeVisible(m_plugin->PixelToTime(event->x()), 0.5);
+        m_plugin->MakeTimeVisible(m_plugin->PixelToTime(event->position().x()), 0.5);
     }
 
     // when the mouse is moving, while a button is pressed
@@ -175,13 +151,13 @@ namespace EMStudio
     {
         m_plugin->SetRedrawFlag();
 
-        const int32 deltaRelX = event->x() - m_lastMouseX;
-        m_lastMouseX = event->x();
-        m_plugin->m_curMouseX = event->x();
-        m_plugin->m_curMouseY = event->y();
+        const int32 deltaRelX = event->position().x() - m_lastMouseX;
+        m_lastMouseX = event->position().x();
+        m_plugin->m_curMouseX = event->position().x();
+        m_plugin->m_curMouseY = event->position().y();
 
-        const int32 deltaRelY = event->y() - m_lastMouseY;
-        m_lastMouseY = event->y();
+        const int32 deltaRelY = event->position().y() - m_lastMouseY;
+        m_lastMouseY = event->position().y();
 
         const bool altPressed = event->modifiers() & Qt::AltModifier;
         const bool isZooming = m_mouseLeftClicked == false && m_mouseRightClicked && altPressed;
@@ -201,7 +177,7 @@ namespace EMStudio
         if (m_mouseLeftClicked)
         {
             // update the current time marker
-            int newX = event->x();
+            int newX = event->position().x();
             newX = AZ::GetClamp(newX, 0, geometry().width() - 1);
             m_plugin->m_curTime = m_plugin->PixelToTime(newX);
 
@@ -292,7 +268,7 @@ namespace EMStudio
             m_mouseRightClicked = true;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_mouseMidClicked = true;
         }
@@ -305,7 +281,7 @@ namespace EMStudio
             if (!m_plugin->m_nodeHistoryItem && !altPressed)
             {
                 // update the current time marker
-                int newX = event->x();
+                int newX = event->position().x();
                 newX = AZ::GetClamp(newX, 0, geometry().width() - 1);
                 m_plugin->m_curTime = m_plugin->PixelToTime(newX);
 
@@ -372,7 +348,7 @@ namespace EMStudio
             m_isScrolling = false;
         }
 
-        if (event->button() == Qt::MidButton)
+        if (event->button() == Qt::MiddleButton)
         {
             m_mouseMidClicked = false;
         }
@@ -444,7 +420,7 @@ namespace EMStudio
     void TrackDataHeaderWidget::dragMoveEvent(QDragMoveEvent* event)
     {
         m_plugin->SetRedrawFlag();
-        QPoint mousePos = event->pos();
+        QPoint mousePos = event->position().toPoint();
 
         double dropTime = m_plugin->PixelToTime(mousePos.x());
         m_plugin->SetCurrentTime(dropTime);
@@ -850,4 +826,3 @@ namespace EMStudio
 
 }   // namespace EMStudio
 
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/TimeView/moc_TrackDataHeaderWidget.cpp>

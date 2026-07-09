@@ -111,4 +111,3 @@ namespace PhysX
     } // namespace PhysXConfigurationWidget
 } // namespace AzToolsFramework
 
-#include <Editor/moc_ConfigurationWidget.cpp>

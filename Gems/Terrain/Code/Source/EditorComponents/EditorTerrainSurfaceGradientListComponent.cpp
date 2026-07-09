@@ -85,12 +85,12 @@ namespace Terrain
             tagsInUse.insert(mapping.m_surfaceTag);
         }
 
-        return AZStd::move(tagsInUse);
+        return tagsInUse;
     }
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> TerrainSurfaceGradientMapping::BuildSelectableTagList() const
     {
-        return AZStd::move(Terrain::BuildSelectableTagList(m_tagListProvider, m_surfaceTag));
+        return Terrain::BuildSelectableTagList(m_tagListProvider, m_surfaceTag);
     }
 
     void TerrainSurfaceGradientMapping::SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider)

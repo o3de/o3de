@@ -17,6 +17,7 @@
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Debug/Budget.h>
+#include <AzCore/std/parallel/thread.h>
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
@@ -210,8 +211,6 @@ CSystem::CSystem()
     m_pUserCallback = NULL;
     m_sys_firstlaunch = NULL;
 
-    m_gpu_particle_physics = NULL;
-
     m_bInitializedSuccessfully = false;
     m_bRelaunch = false;
     m_iLoadingMode = 0;
@@ -254,7 +253,7 @@ CSystem::~CSystem()
     UnregisterWindowMessageHandler(this);
 #endif
 
-    CRY_ASSERT(m_windowMessageHandlers.empty() && "There exists a dangling window message handler somewhere");
+    AZ_Assert(m_windowMessageHandlers.empty(), "There exists a dangling window message handler somewhere");
 
     SAFE_DELETE(m_pXMLUtils);
     SAFE_DELETE(m_pSystemEventDispatcher);
@@ -414,12 +413,16 @@ void CSystem::ShutDown()
 /////////////////////////////////////////////////////////////////////////////////
 void CSystem::Quit()
 {
-    CryLogAlways("CSystem::Quit invoked from thread %" PRI_THREADID " (main is %" PRI_THREADID ")", GetCurrentThreadId(), gEnv->mMainThreadId);
+    AZ_Printf(
+        "System",
+        "CSystem::Quit invoked from thread %p (main is %p)",
+        AZStd::this_thread::get_id().m_id,
+        gEnv->mMainThreadId.m_id);
 
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
 
     // If this was set from anywhere but the main thread, bail and let the main thread handle shutdown
-    if (GetCurrentThreadId() != gEnv->mMainThreadId)
+    if (AZStd::this_thread::get_id() != gEnv->mMainThreadId)
     {
         return;
     }
@@ -502,7 +505,7 @@ void CSystem::SleepIfNeeded()
     if (sleepMS > 0)
     {
         AZ_PROFILE_FUNCTION(CrySystem);
-        Sleep(sleepMS);
+        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(sleepMS));
     }
 
     const AZ::TimeMs lastTimeMs = AZ::GetRealElapsedTimeMs();
@@ -510,7 +513,7 @@ void CSystem::SleepIfNeeded()
     m_lastTickTime = CTimeValue(lastTimeSec);
 }
 
-extern DWORD g_idDebugThreads[];
+extern AZStd::thread_id g_idDebugThreads[];
 extern int g_nDebugThreads;
 int prev_sys_float_exceptions = -1;
 
@@ -929,7 +932,7 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
     }
 
     AZStd::fixed_string<MAX_WARNING_LENGTH> fmt;
-    vsnprintf_s(fmt.data(), MAX_WARNING_LENGTH, MAX_WARNING_LENGTH - 1, format, args);
+    azvsnprintf(fmt.data(), MAX_WARNING_LENGTH - 1, format, args);
 
     if (file && *file)
     {
@@ -1250,7 +1253,7 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
     assert(pHandler && !stl::find(m_windowMessageHandlers, pHandler) && "This IWindowMessageHandler is already registered");
     m_windowMessageHandlers.push_back(pHandler);
 #else
-    CRY_ASSERT(false && "This platform does not support window message handlers");
+    AZ_Assert(false, "This platform does not support window message handlers");
 #endif
 }
 
@@ -1261,7 +1264,7 @@ void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
     [[maybe_unused]] bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);
     assert(pHandler && bRemoved && "This IWindowMessageHandler was not registered");
 #else
-    CRY_ASSERT(false && "This platform does not support window message handlers");
+    AZ_Assert(false, "This platform does not support window message handlers");
 #endif
 }
 
@@ -1389,10 +1392,10 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
         LPBYTE rawInputBytes = rawInputBytesArray.data();
 
         [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
-        CRY_ASSERT(bytesCopied == rawInputSize);
+        AZ_Assert(bytesCopied == rawInputSize, "bytesCopied must match rawInputSize");
 
         [[maybe_unused]] RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
-        CRY_ASSERT(rawInput);
+        AZ_Assert(rawInput, "rawInput must be valid");
 
         AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
 

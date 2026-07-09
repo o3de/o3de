@@ -84,7 +84,6 @@ typedef long long                       LONGLONG;
 typedef ULONG_PTR                       SIZE_T;
 typedef unsigned char               byte;
 
-#define ILINE __forceinline
 
 #define _A_RDONLY (0x01)
 #define _A_SUBDIR (0x10)
@@ -120,8 +119,6 @@ extern int wcsnicmp (const wchar_t* s1, const wchar_t* s2, size_t count);
 #undef wcsnlen
 extern size_t wcsnlen(const wchar_t* str, size_t maxLen);
 
-#undef stpcpy
-extern char* stpcpy(char* dest, const char* str);
 // end android-19
 
 
@@ -143,7 +140,6 @@ extern char* stpcpy(char* dest, const char* str);
 
 #define S_IWRITE S_IWUSR
 
-#define ILINE __forceinline
 #define _A_RDONLY (0x01)
 #define _A_SUBDIR (0x10)
 #define _A_HIDDEN (0x02)

@@ -11,7 +11,7 @@ from os import path
 from typing import List
 
 # 3rdParty Imports
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 # O3DE Imports
 import azlmbr.legacy.general as general

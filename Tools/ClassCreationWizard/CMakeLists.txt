@@ -20,7 +20,7 @@ add_custom_target(ClassWizard
 )
 
 # Launch the wizard GUI through the engine's bundled Python.
-set(class_wizard_args "\"${CMAKE_CURRENT_SOURCE_DIR}/ClassWizard.py\" --gui --engine-path \"${LY_ROOT_FOLDER}\"")
+set(class_wizard_args "\"${CMAKE_CURRENT_SOURCE_DIR}/ClassWizard.py\" --engine-path \"${LY_ROOT_FOLDER}\"")
 if(LY_DEFAULT_PROJECT_PATH)
     string(APPEND class_wizard_args " --project-path \"${LY_DEFAULT_PROJECT_PATH}\"")
 endif()

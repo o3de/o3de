@@ -11,7 +11,6 @@
 #include <AzQtComponents/Utilities/ScreenUtilities.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QMainWindow>
 #include <QPainter>
 #include <QDockWidget>
@@ -25,7 +24,7 @@ namespace AzQtComponents
     QRect GetTotalScreenGeometry()
     {
         QRect totalScreenRect;
-        int numScreens = QApplication::screens().count();
+        int numScreens = static_cast<int>(QApplication::screens().count());
         for (int i = 0; i < numScreens; ++i)
         {
             totalScreenRect = totalScreenRect.united(QApplication::screens().at(i)->geometry());
@@ -176,6 +175,23 @@ namespace AzQtComponents
             ::SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 #endif // Q_OS_WIN
         });
+    }
+
+    bool ClearFocusWithin(QWidget* parent)
+    {
+        if (!parent)
+        {
+            return false;
+        }
+
+        QWidget* focusWidget = QApplication::focusWidget();
+        if (focusWidget && parent->isAncestorOf(focusWidget))
+        {
+            focusWidget->clearFocus();
+            return true;
+        }
+
+        return false;
     }
 } // namespace AzQtComponents
 

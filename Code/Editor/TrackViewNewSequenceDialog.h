@@ -9,10 +9,8 @@
 #pragma once
 
 // Qt
-#if !defined(Q_MOC_RUN)
 #include <QScopedPointer>
 #include <QDialog>
-#endif
 
 // CryCommon
 #include <CryCommon/Maestro/Types/SequenceType.h>

@@ -8,13 +8,12 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
+
 #include <QDialog>
-#endif
 
 namespace AtomToolsFramework
 {

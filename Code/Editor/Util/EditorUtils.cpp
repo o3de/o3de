@@ -143,7 +143,8 @@ QCursor CMFCUtils::LoadCursor(unsigned int nIDResource, int hotX, int hotY)
     if (!pm.isNull() && (hotX < 0 || hotY < 0))
     {
         QFile f(path);
-        f.open(QFile::ReadOnly);
+        [[maybe_unused]] const bool res = f.open(QFile::ReadOnly);
+        AZ_Assert(res, "Failed to open %s", qPrintable(path));
         QDataStream stream(&f);
         stream.setByteOrder(QDataStream::LittleEndian);
         f.read(10);
@@ -161,7 +162,7 @@ QString TrimTrailingZeros(QString str)
 {
     if (str.contains('.'))
     {
-        for (int p = str.size() - 1; p >= 0; --p)
+        for (int p = static_cast<int>(str.size()) - 1; p >= 0; --p)
         {
             if (str.at(p) == '.')
             {
@@ -178,31 +179,17 @@ QString TrimTrailingZeros(QString str)
 }
 
 //////////////////////////////////////////////////////////////////////////
-QColor ColorLinearToGamma(ColorF col)
+QColor ColorLinearToGamma(const AZ::Color& col)
 {
-    float r = clamp_tpl(col.r, 0.0f, 1.0f);
-    float g = clamp_tpl(col.g, 0.0f, 1.0f);
-    float b = clamp_tpl(col.b, 0.0f, 1.0f);
-    float a = clamp_tpl(col.a, 0.0f, 1.0f);
-
-    r = AZ::Color::ConvertSrgbLinearToGamma(r);
-    g = AZ::Color::ConvertSrgbLinearToGamma(g);
-    b = AZ::Color::ConvertSrgbLinearToGamma(b);
-
-    return QColor(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f), int(a * 255.0f));
+    AZ::Color gammaColor = col.GetSaturated().LinearToGamma();
+    return QColor(gammaColor.GetR8(), gammaColor.GetG8(), gammaColor.GetB8(), gammaColor.GetA8());
 }
 
 //////////////////////////////////////////////////////////////////////////
-ColorF ColorGammaToLinear(const QColor& col)
+AZ::Color ColorGammaToLinear(const QColor& col)
 {
-    float r = (float)col.red() / 255.0f;
-    float g = (float)col.green() / 255.0f;
-    float b = (float)col.blue() / 255.0f;
-    float a = (float)col.alpha() / 255.0f;
-
-    return ColorF(AZ::Color::ConvertSrgbGammaToLinear(r),
-        AZ::Color::ConvertSrgbGammaToLinear(g),
-        AZ::Color::ConvertSrgbGammaToLinear(b), a);
+    AZ::Color gammaColor(col.red(), col.green(), col.blue(), col.alpha());
+    return gammaColor.GammaToLinear();
 }
 
 QColor ColorToQColor(uint32 color)

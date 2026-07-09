@@ -8,10 +8,9 @@
 
 #include "ComponentButton.h"
 
-#include "Widgets/HierarchyWidget/HierarchyMenu.h"
 #include "Widgets/HierarchyWidget/HierarchyWidget.h"
-
-#include <QCursor>
+#include "Windows/EditorWindow/EditorWindow.h"
+#include "Widgets/PropertiesWidget/PropertiesWidget.h"
 
 ComponentButton::ComponentButton(HierarchyWidget* hierarchy, QWidget* parent)
     : QPushButton(parent)
@@ -24,9 +23,7 @@ ComponentButton::ComponentButton(HierarchyWidget* hierarchy, QWidget* parent)
         hierarchy,
         [hierarchy]([[maybe_unused]] bool checked)
         {
-            HierarchyMenu contextMenu(hierarchy, HierarchyMenu::Show::kAddComponents, true);
-
-            contextMenu.exec(QCursor::pos());
+            hierarchy->GetEditorWindow()->GetProperties()->ShowComponentPalette();
         });
 
     QObject::connect(hierarchy, SIGNAL(SetUserSelection(HierarchyItemRawPtrList*)), SLOT(UserSelectionChanged(HierarchyItemRawPtrList*)));
@@ -36,5 +33,3 @@ void ComponentButton::UserSelectionChanged([[maybe_unused]] HierarchyItemRawPtrL
 {
     // no longer need to enable/disable because we always show the button, if nothing is selected it adds to the canvas entity
 }
-
-#include <moc_ComponentButton.cpp>

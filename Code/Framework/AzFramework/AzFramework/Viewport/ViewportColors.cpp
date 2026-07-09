@@ -19,7 +19,7 @@ namespace AzFramework
         const AZ::Color DeselectedColor(1.0f, 1.0f, 0.78f, 0.4f);
 
         /// Color to use for a selected object
-        const AZ::Color SelectedColor(1.0, 1.0f, 0.0f, 0.9f);
+        const AZ::Color SelectedColor(1.0f, 1.0f, 0.0f, 0.9f);
 
         /// Color to use when hovering
         const AZ::Color HoverColor(1.0f, 1.0f, 0.0f, 0.9f);

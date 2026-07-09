@@ -56,8 +56,8 @@ def Pane_PropertiesChanged_RetainsOnRestart():
     import azlmbr.legacy.general as general
 
     # Pyside imports
-    from PySide2 import QtCore, QtWidgets
-    from PySide2.QtCore import Qt
+    from PySide6 import QtCore, QtWidgets
+    from PySide6.QtCore import Qt
 
     # Constants
     TEST_CONDITION = sys.argv[1]

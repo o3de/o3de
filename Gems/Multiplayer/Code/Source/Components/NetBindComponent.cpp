@@ -464,7 +464,7 @@ namespace Multiplayer
         for (size_t i = 0; i < multiplayerComponentSize; ++i)
         {
             const NetComponentId netComponentId = m_multiplayerInputComponentVector[i]->GetNetComponentId();
-            AZStd::unique_ptr<IMultiplayerComponentInput> componentInput = AZStd::move(GetMultiplayerComponentRegistry()->AllocateComponentInput(netComponentId));
+            AZStd::unique_ptr<IMultiplayerComponentInput> componentInput = GetMultiplayerComponentRegistry()->AllocateComponentInput(netComponentId);
 
             if (componentInput != nullptr)
             {

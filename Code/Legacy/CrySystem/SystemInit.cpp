@@ -443,8 +443,8 @@ void CSystem::OpenPlatformPaks()
     const char* const assetsDir = "@products@";
     // Load Android Obb files if available
     const char* obbStorage = AZ::Android::Utils::GetObbStoragePath();
-    AZStd::string mainObbPath = AZStd::move(AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(true)));
-    AZStd::string patchObbPath = AZStd::move(AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(false)));
+    AZStd::string mainObbPath = AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(true));
+    AZStd::string patchObbPath = AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(false));
     m_env.pCryPak->OpenPack(assetsDir, mainObbPath.c_str());
     m_env.pCryPak->OpenPack(assetsDir, patchObbPath.c_str());
 #endif // AZ_PLATFORM_ANDROID
@@ -729,7 +729,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     }
 
     SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_INIT);
-    gEnv->mMainThreadId = GetCurrentThreadId(); // Set this ASAP on startup
+    gEnv->mMainThreadId = AZStd::this_thread::get_id(); // Set this ASAP on startup
 
     InlineInitializationProcessing("CSystem::Init start");
 
@@ -1101,7 +1101,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     InlineInitializationProcessing("CSystem::Init End");
 
     // All CVARs should now be registered, load and apply quality settings for the default quality group
-    // using device rules to auto-detected the correct quality level 
+    // using device rules to auto-detected the correct quality level
     AzFramework::QualitySystemEvents::Bus::Broadcast(
         &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
         AzFramework::QualityLevel::LevelFromDeviceRules);
@@ -1384,10 +1384,6 @@ void CSystem::CreateSystemVars()
     REGISTER_STRING(
         "capture_file_prefix", "", 0, "If set, specifies the prefix to use for the captured frame instead of the default 'Frame'.");
 
-    m_gpu_particle_physics =
-        REGISTER_INT("gpu_particle_physics", 0, VF_REQUIRE_APP_RESTART, "Enable GPU physics if available (0=off / 1=enabled).");
-    assert(m_gpu_particle_physics);
-
     REGISTER_COMMAND(
         "LoadConfig",
         &LoadConfigurationCmd,
@@ -1452,7 +1448,7 @@ void CSystem::AddCVarGroupDirectory(const AZStd::string& sPath)
                 AddCVarGroupDirectory(ConcatPath(sPath.c_str(), handle.m_filename.data()));
             }
         }
-    } while (handle = gEnv->pCryPak->FindNext(handle));
+    } while ((handle = gEnv->pCryPak->FindNext(handle)));
 
     gEnv->pCryPak->FindClose(handle);
 }

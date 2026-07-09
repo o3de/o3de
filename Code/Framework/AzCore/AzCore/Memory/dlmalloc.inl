@@ -1791,7 +1791,7 @@ struct win32_mlock_t
 };
 
 #define MLOCK_T               struct win32_mlock_t
-#define CURRENT_THREAD        GetCurrentThreadId()
+#define CURRENT_THREAD        AZStd::this_thread::get_id()
 #define INITIAL_LOCK(sl)      ((sl)->threadid = 0, (sl)->l = (sl)->c = 0, 0)
 #define ACQUIRE_LOCK(sl)      win32_acquire_lock(sl)
 #define RELEASE_LOCK(sl)      win32_release_lock(sl)
@@ -1915,7 +1915,7 @@ static int pthread_init_lock (MLOCK_T* sl)
 #else /* WIN32 */
 /* Win32 critical sections */
 #define MLOCK_T               CRITICAL_SECTION
-#define CURRENT_THREAD        GetCurrentThreadId()
+#define CURRENT_THREAD        AZStd::this_thread::get_id().m_id
 #define INITIAL_LOCK(s)       (!InitializeCriticalSectionAndSpinCount((s), 0x80000000 | 4000))
 #define ACQUIRE_LOCK(s)       (EnterCriticalSection(sl), 0)
 #define RELEASE_LOCK(s)       LeaveCriticalSection(sl)

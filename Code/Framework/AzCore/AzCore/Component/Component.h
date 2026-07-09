@@ -395,6 +395,13 @@ namespace AZ
     AZ_COMPONENT_BASE_DECL() \
     AZ_CLASS_ALLOCATOR_DECL
 
+    #define AZ_COMPONENT_DECL_API(_Api, _ComponentClass) \
+    AZ_TYPE_INFO_WITH_NAME_DECL_API(_Api, _ComponentClass) \
+    AZ_RTTI_NO_TYPE_INFO_DECL() \
+    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClass))) \
+    AZ_COMPONENT_BASE_DECL() \
+    AZ_CLASS_ALLOCATOR_DECL
+
     // Helper macro for allowing expansion of macro parameters
     // in the second pass over the AZ_COMPONENT_IMPL when making a call
     // The reason these macros are needed, is to avoid recursively invoking

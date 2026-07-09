@@ -8,11 +8,12 @@
 #ifndef RCJOB_H
 #define RCJOB_H
 
-#if !defined(Q_MOC_RUN)
 #include <QObject>
 #include <QString>
 #include <QDateTime>
 #include <QStringList>
+#include <QFileInfoList>
+
 #include <AzCore/base.h>
 #include "RCCommon.h"
 #include "native/utilities/PlatformConfiguration.h"
@@ -20,8 +21,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include "native/assetprocessor.h"
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
-#include <QFileInfoList>
-#endif
+
 
 namespace AssetProcessor
 {

@@ -31,7 +31,7 @@ public:
     void Release();
     void ShowAbout();
     const char* GetPluginGUID();
-    DWORD GetPluginVersion();
+    AZ::u32 GetPluginVersion();
     const char* GetPluginName();
     bool CanExitNow();
     static QString GetFFMPEGExectablePath();

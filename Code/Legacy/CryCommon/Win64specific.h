@@ -17,9 +17,6 @@
 
 #define _CPU_AMD64
 #define _CPU_SSE
-#define ILINE __forceinline
-
-#define DEPRECATED __declspec(deprecated)
 
 #ifndef _WIN32_WINNT
 # define _WIN32_WINNT 0x501
@@ -50,7 +47,6 @@
 
 typedef long LONG;
 typedef unsigned char BYTE;
-typedef unsigned long threadID;
 typedef unsigned long DWORD;
 typedef double        real;  //biggest float-type on this machine
 typedef long          LONG;
@@ -68,21 +64,6 @@ typedef ULONG_PTR DWORD_PTR, * PDWORD_PTR;
 
 int64 CryGetTicks();
 int64 CryGetTicksPerSec();
-
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(p) { if (p) { delete (p); (p) = NULL; } \
-}
-#endif
-
-#ifndef SAFE_DELETE_ARRAY
-#define SAFE_DELETE_ARRAY(p) { if (p) { delete [] (p); (p) = NULL; } \
-}
-#endif
-
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } \
-}
-#endif
 
 #ifndef FILE_ATTRIBUTE_NORMAL
     #define FILE_ATTRIBUTE_NORMAL 0x00000080

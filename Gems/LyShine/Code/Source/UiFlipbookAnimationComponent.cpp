@@ -181,7 +181,7 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
                     "Animates image sequences or images configured as sprite sheets.");
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Category, "UI")
+                ->Attribute(AZ::Edit::Attributes::Category, "UI/Visual")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Flipbook.png")
                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Flipbook.svg")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))

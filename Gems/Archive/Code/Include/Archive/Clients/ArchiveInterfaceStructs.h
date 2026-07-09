@@ -180,7 +180,9 @@ namespace Archive
             []() constexpr
         {
             AZStd::array<Compression::CompressionAlgorithmId, UncompressedAlgorithmIndex> compressionIdInitArray{};
-            compressionIdInitArray.fill(Compression::Invalid);
+            std::fill_n(compressionIdInitArray.begin(), compressionIdInitArray.size(), Compression::Invalid);
+            // TODO: Replace with the following code once we are using v26+ of the Android NDK
+            // compressionIdInitArray.fill(Compression::Invalid);
             return compressionIdInitArray;
         }();
 

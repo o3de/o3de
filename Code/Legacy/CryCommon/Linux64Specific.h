@@ -47,9 +47,9 @@
 
 typedef double real;
 
-typedef uint32      DWORD;
-typedef DWORD*      LPDWORD;
-typedef uint64      DWORD_PTR;
+//typedef uint32      DWORD;
+//typedef DWORD*      LPDWORD;
+//typedef uint64      DWORD_PTR;
 typedef intptr_t INT_PTR, * PINT_PTR;
 typedef uintptr_t UINT_PTR, * PUINT_PTR;
 typedef char* LPSTR, * PSTR;
@@ -64,7 +64,6 @@ typedef long LONG_PTR, * PLONG_PTR, * PLONG;
 typedef unsigned long ULONG_PTR, * PULONG_PTR;
 
 typedef uint8               BYTE;
-typedef uint16              WORD;
 typedef void*               HWND;
 typedef UINT_PTR            WPARAM;
 typedef LONG_PTR            LPARAM;
@@ -74,7 +73,7 @@ typedef const char* LPCSTR, * PCSTR;
 typedef long long           LONGLONG;
 typedef ULONG_PTR           SIZE_T;
 typedef uint8               byte;
-#define ILINE __forceinline
+
 #define _A_RDONLY (0x01)
 #define _A_SUBDIR (0x10)
 #define _A_HIDDEN (0x02)

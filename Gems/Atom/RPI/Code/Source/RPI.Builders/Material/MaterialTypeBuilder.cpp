@@ -161,6 +161,8 @@ namespace AZ
             outputJobDescriptor.m_jobKey = PipelineStageJobKey;
             outputJobDescriptor.m_additionalFingerprintInfo = GetBuilderSettingsFingerprint();
             outputJobDescriptor.SetPlatformIdentifier(AssetBuilderSDK::CommonPlatformName);
+            outputJobDescriptor.m_critical = true;
+            outputJobDescriptor.m_priority = 3; // we'd like this job to process before other jobs that might depend on it's outputs.
 
             MaterialBuilderUtils::AddFingerprintForDependency(materialTypeSourcePath, outputJobDescriptor);
 
@@ -712,7 +714,7 @@ namespace AZ
                 AZStd::to_upper(materialTypeNameUpper);
                 generatedAzsl += AZStd::string::format("#define MATERIAL_TYPE_%s 1 \n", materialTypeNameUpper.c_str());
 
-                generatedAzsl += AZStd::string::format("#include \"%s\" \n", shaderTemplate.m_azsli.c_str());
+                generatedAzsl += AZStd::string::format("#include \"%s\" \n", AZ::IO::PathView(shaderTemplate.m_azsli).StringAsPosix().c_str());
 
                 AZ::IO::Path shaderName = shaderTemplate.m_shader;
                 shaderName = shaderName.Filename(); // Removes the folder path

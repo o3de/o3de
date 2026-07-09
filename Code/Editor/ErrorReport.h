@@ -14,12 +14,15 @@
 #define CRYINCLUDE_EDITOR_ERRORREPORT_H
 #pragma once
 
-// forward declarations.
-class CParticleItem;
-
+#include "ErrorRecorder.h"
 #include "Include/EditorCoreAPI.h"
 #include "Include/IErrorReport.h"
-#include "ErrorRecorder.h"
+#include "ISystem.h"
+
+#include <QString>
+
+// forward declarations.
+class CParticleItem;
 
 /*! Single error entry in error report.
  */
@@ -105,7 +108,6 @@ private:
     std::vector<CErrorRecord> m_errors;
     bool m_bImmediateMode;
     bool m_bShowErrors;
-    CParticleItem* m_pParticle;
     QString m_currentFilename;
 };
 

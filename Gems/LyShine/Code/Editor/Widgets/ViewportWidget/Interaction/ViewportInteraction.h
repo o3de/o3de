@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "Helpers/SerializeHelpers.h"
 #include "Helpers/ViewportHelpers.h"
 #include "Widgets/HierarchyWidget/TreeWidgetItemList.h"
@@ -25,7 +24,6 @@
 
 #include <QObject>
 #include <QCursor>
-#endif
 
 class Draw2dHelper;
 class EditorWindow;

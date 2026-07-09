@@ -8,11 +8,9 @@
 #ifndef WINDOWSCREEN_H
 #define WINDOWSCREEN_H
 
-#if !defined(Q_MOC_RUN)
 #include <QObject>
 #include <QString>
 #include <QWindow>
-#endif
 
 
 /** The WindowScreenInfo struct stores the x, y, width, height and

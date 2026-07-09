@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <QStringList>
+
 #include <ui/ui_MessageWindow.h>
-#endif
 
 class MessageWindow
     : public QDialog

@@ -10,6 +10,10 @@ set(LY_TARGET_PROPERTIES
     BUILD_RPATH @executable_path/
 )
 
+if(launcher_generator_BUILD_GENERIC)
+    return()
+endif()
+
 # Add resources and app icons to launchers
 list(APPEND candidate_paths ${project_real_path}/Resources/Platform/Mac)
 list(APPEND candidate_paths ${project_real_path}/Gem/Resources/Platform/Mac) # Legacy projects

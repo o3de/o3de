@@ -19,7 +19,7 @@ namespace TestNodes
 {
     //////////////////////////////////////////////////////////////////////////////
     void TestResult::OnInit()
-    {        
+    {
         Node::AddSlot(ScriptCanvas::CommonSlots::GeneralInSlot());
         Node::AddSlot(ScriptCanvas::CommonSlots::GeneralOutSlot());
 
@@ -210,7 +210,7 @@ namespace TestNodes
 
             slotConfiguration.m_name = "View";
             slotConfiguration.m_toolTip = "Input string_view object";
-            slotConfiguration.ConfigureDatum(AZStd::move(ScriptCanvas::Datum(ScriptCanvas::Data::Type::String(), ScriptCanvas::Datum::eOriginality::Copy)));
+            slotConfiguration.ConfigureDatum(ScriptCanvas::Datum(ScriptCanvas::Data::Type::String(), ScriptCanvas::Datum::eOriginality::Copy));
             slotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Input);
 
             AddSlot(slotConfiguration);
@@ -277,7 +277,7 @@ namespace TestNodes
         Node::AddSlot(ScriptCanvas::CommonSlots::GeneralOutSlot());
         Node::AddSlot(ScriptCanvas::DataSlotConfiguration(ScriptCanvas::Data::Type::String(), "Result", ScriptCanvas::ConnectionType::Output));
     }
-    
+
     /////////////////////////////
     // ConfigurableUnitTestNode
     /////////////////////////////

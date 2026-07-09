@@ -261,7 +261,7 @@ namespace AzToolsFramework
         }
 
         // 2a - Detect number of keys in lineEdit; if more than m_autocompleteAfterNumberOfChars, activate autocompleter
-        int chars = text.size();
+        int chars = static_cast<int>(text.size());
         if (chars >= s_autocompleteAfterNumberOfChars && !m_completerIsActive)
         {
             EnableAutocompleter();
@@ -397,7 +397,7 @@ namespace AzToolsFramework
         {
             if (!m_optionalValidDragDropExtensions.isEmpty())
             {
-                const int dotIndex = path.lastIndexOf('.');
+                const int dotIndex = static_cast<int>(path.lastIndexOf('.'));
                 if (dotIndex >= 0)
                 {
                     const QString& extension = path.mid(dotIndex);
@@ -877,7 +877,7 @@ namespace AzToolsFramework
             }
             else if (entry->GetEntryType() == AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder)
             {
-                SetFolderSelection(entry->GetRelativePath());
+                SetFolderSelection(entry->GetFullPath());
                 SetSelectedAssetID(AZ::Data::AssetId());
             }
         }
@@ -1667,14 +1667,19 @@ namespace AzToolsFramework
         (void)index;
         (void)node;
 
+        // Preserve the desired load behavior
+        AZ::Data::AssetLoadBehavior oldBehavior = instance.GetAutoLoadBehavior();
         if (!GUI->GetSelectedAssetID().IsValid())
         {
+            
             instance = property_t(AZ::Data::AssetId(), GUI->GetCurrentAssetType(), "");
         }
         else
         {
             instance = property_t(GUI->GetSelectedAssetID(), GUI->GetCurrentAssetType(), GUI->GetCurrentAssetHint());
         }
+        instance.SetAutoLoadBehavior(oldBehavior);
+
     }
 
     void AssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
@@ -1832,4 +1837,3 @@ namespace AzToolsFramework
     }
 }
 
-#include "UI/PropertyEditor/moc_PropertyAssetCtrl.cpp"

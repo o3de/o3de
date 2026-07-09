@@ -7,10 +7,13 @@
  */
 #include "DocumentPropertyEditor.h"
 
+#include <QAbstractSpinBox>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QDialog>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QSignalBlocker>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -423,7 +426,7 @@ namespace AzToolsFramework
         m_expanderWidget = new QCheckBox(parentWidget());
         m_expanderWidget->setCheckState(m_expanded ? Qt::Checked : Qt::Unchecked);
         AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
-        connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
+        connect(m_expanderWidget, &QCheckBox::checkStateChanged, this, &DPELayout::onCheckstateChanged);
     }
 
     void DPELayout::SetAsStartOfNewColumn(size_t widgetIndex)
@@ -1405,6 +1408,60 @@ namespace AzToolsFramework
         return hint;
     }
 
+    // =========================================================================
+    // Tab Navigation for DPE
+    // =========================================================================
+    // Skips non-input widgets (QToolButton indicators, expanders, etc.) that
+    // clutter the tab chain. Only stops on actual input widgets.
+
+    static bool IsInputWidget(QWidget* w)
+    {
+        if (!w)
+        {
+            return false;
+        }
+        // Input widgets that should receive tab focus
+        if (qobject_cast<QAbstractSpinBox*>(w))  return true;  // SpinBox, DoubleSpinBox
+        if (qobject_cast<QComboBox*>(w))          return true;
+        if (qobject_cast<QCheckBox*>(w))          return true;
+        if (qobject_cast<QLineEdit*>(w))          return true;  // EntityIdQLineEdit, BrowseEdit line
+        if (qobject_cast<QPushButton*>(w))        return true;  // Browse buttons, action buttons
+        return false;
+    }
+
+    bool DocumentPropertyEditor::focusNextPrevChild(bool next)
+    {
+        QWidget* before = focusWidget();
+
+        // Try up to 50 hops to find the next input widget, skipping
+        // QToolButtons, expanders, and other non-input widgets.
+        for (int hops = 0; hops < 50; ++hops)
+        {
+            bool result = QScrollArea::focusNextPrevChild(next);
+            if (!result)
+            {
+                return false;
+            }
+
+            QWidget* after = focusWidget();
+            if (!after || after == before)
+            {
+                return result;
+            }
+
+            if (IsInputWidget(after))
+            {
+                return true;
+            }
+
+            // Not an input widget -- continue hopping
+            before = after;
+        }
+
+        // Safety: give up after too many hops
+        return false;
+    }
+
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)
     {
         if (precursor == m_rootNode)
@@ -1791,11 +1848,25 @@ namespace AzToolsFramework
             }
         };
 
+        auto handlePropertyEditorChanged = [&](const AZ::Dom::Value&, AZ::DocumentPropertyEditor::Nodes::ValueChangeType)
+        {
+            // When a value changes, we'd like to queue the execution of any property editor tree updates.
+            QTimer::singleShot(
+                0,
+                this,
+                [this]()
+                {
+                    m_adapter->ExecuteQueuedReset();
+                });
+        };
+
         message.Match(
             AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey,
             showKeyQueryDialog,
             AZ::DocumentPropertyEditor::Nodes::Adapter::QuerySubclass,
-            showQuerySubclassDialog);
+            showQuerySubclassDialog,
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged,
+            handlePropertyEditorChanged);
     }
 
     void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)

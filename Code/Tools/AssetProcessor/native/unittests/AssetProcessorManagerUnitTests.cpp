@@ -653,7 +653,7 @@ namespace AssetProcessor
 
                     {
                         escalated = true;
-                        numEscalated = jobList.size();
+                        numEscalated = static_cast<int>(jobList.size());
                     });
 
             AssetJobsInfoResponse jobResponse;

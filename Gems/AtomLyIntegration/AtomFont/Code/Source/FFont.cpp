@@ -726,7 +726,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
 
     bool passZeroColorOverridden = ctx.IsColorOverridden();
 
-    uint32_t alphaBlend = passZeroColorOverridden ? ctx.m_colorOverride.a : fx.m_passes[0].m_color.a;
+    uint32_t alphaBlend = passZeroColorOverridden ? ctx.m_colorOverride.GetA8() : fx.m_passes[0].m_color.GetA8();
     if (alphaBlend > 128)
     {
         ++alphaBlend; // 0..256 for proper blending
@@ -779,7 +779,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             alphaBlend = 256;
         }
 
-        const ColorB& passColor = !i && passZeroColorOverridden ? ctx.m_colorOverride : fx.m_passes[i].m_color;
+        const Color& passColor = !i && passZeroColorOverridden ? ctx.m_colorOverride : fx.m_passes[i].m_color;
 
         // gather pass data
         Vec2 offset = pass->m_posOffset; // in pixels
@@ -787,14 +787,13 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
         float charX = baseXY.x + offset.x; // in pixels
         float charY = baseXY.y + offset.y; // in pixels
 
-        ColorB color = passColor;
+        Color color = passColor;
 
         bool drawFrame = ctx.m_framed && i == numPasses - 1;
 
         if (drawFrame)
         {
-            ColorB tempColor(255, 255, 255, 255);
-            uint32_t frameColor = tempColor.pack_argb8888();        //note: this ends up in r,g,b,a order on little-endian machines
+            uint32_t frameColor = Colors::White.ToU32();
 
             Vec2 textSize = GetTextSizeUInternal(viewport, str, asciiMultiLine, ctx);
 
@@ -831,10 +830,10 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
 
                 if (ctx.m_drawTextFlags & eDrawText_UseTransform)
                 {
-                    v0 = ctx.m_transform * v0;
-                    v2 = ctx.m_transform * v2;
-                    v1 = ctx.m_transform * v1;
-                    v3 = ctx.m_transform * v3;
+                    v0 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v0));
+                    v2 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v2));
+                    v1 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v1));
+                    v3 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v3));
                 }
 
                 Vec2 gradientUvMin, gradientUvMax;
@@ -927,10 +926,8 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
                             };
 
                             int colorIndex = (*pChar) - '0';
-                            ColorB newColor = AZColorToLYColorB(ColorTable[colorIndex]);
-                            color.r = newColor.r;
-                            color.g = newColor.g;
-                            color.b = newColor.b;
+                            Color newColor = ColorTable[colorIndex];
+                            color = Color::CreateFromVector3AndFloat(newColor.GetAsVector3(), color.GetA());
                             // Leave alpha at original value!
                         }
                         ++pChar;
@@ -1053,17 +1050,18 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
 
             uint32_t packedColor = 0xffffffff;
             {
-                ColorB tempColor = color;
-                tempColor.a = static_cast<uint8_t>(((uint32_t) tempColor.a * alphaBlend) >> 8);
-                packedColor = tempColor.pack_argb8888();                    //note: this ends up in r,g,b,a order on little-endian machines
+                Color tempColor = color;
+                tempColor.SetA8(static_cast<uint8_t>(((uint32_t) tempColor.GetA8() * alphaBlend) >> 8));
+                // note: this ends up in r,g,b,a order on little-endian machines
+                packedColor = Color::CreateU32(tempColor.GetB8(), tempColor.GetG8(), tempColor.GetR8(), tempColor.GetA8());
             }
 
             if (ctx.m_drawTextFlags & eDrawText_UseTransform)
             {
-                v0 = ctx.m_transform * v0;
-                v2 = ctx.m_transform * v2;
-                v1 = ctx.m_transform * v1;
-                v3 = ctx.m_transform * v3;
+                v0 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v0));
+                v2 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v2));
+                v1 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v1));
+                v3 = AZVec3ToLYVec3(ctx.m_transform * LYVec3ToAZVec3(v3));
             }
 
             if (AddQuad(v0, v1, v2, v3, tc0, tc1, tc2, tc3, packedColor))
@@ -1384,7 +1382,7 @@ bool AZ::FFont::DoesEffectHaveTransparency(unsigned int effectId) const
     for (auto& pass : fx.m_passes)
     {
         // if the alpha is not 255 then there is transparency
-        if (pass.m_color.a != 255)
+        if (pass.m_color.GetA8() != 255)
         {
             return true;
         }
@@ -1593,7 +1591,7 @@ static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::T
         if (params.m_useTransform)
         {
             ctx.m_drawTextFlags |= eDrawText_UseTransform;
-            ctx.SetTransform(AZMatrix3x4ToLYMatrix3x4(params.m_transform));
+            ctx.SetTransform(params.m_transform);
         }
 }
 
@@ -1618,7 +1616,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
         posY *= WindowScaleHeight / (viewport.m_maxY - viewport.m_minY);
     }
     internalParams.m_ctx.SetBaseState(GS_NODEPTHTEST);
-    internalParams.m_ctx.SetColor(AZColorToLYColorF(params.m_color));
+    internalParams.m_ctx.SetColor(params.m_color);
     internalParams.m_ctx.SetEffect(params.m_effectIndex);
     internalParams.m_ctx.SetCharWidthScale((params.m_monospace || params.m_scaleWithWindow) ? 0.5f : 1.0f);
     internalParams.m_ctx.EnableFrame(false);
@@ -1728,9 +1726,9 @@ void AZ::FFont::DrawScreenAlignedText3d(
     DrawStringUInternal(
         internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        positionNdc.GetX() * internalParams.m_viewport.GetWidth() + internalParams.m_position.GetX(), 
-        (1.0f - positionNdc.GetY()) * internalParams.m_viewport.GetHeight() + internalParams.m_position.GetY(), 
-        positionNdc.GetZ(), // Z
+        positionNdc.GetX() * internalParams.m_viewport.GetWidth(),
+        (1.0f - positionNdc.GetY()) * internalParams.m_viewport.GetHeight(),
+        positionNdc.GetZ(),
         text.data(),
         params.m_multiline,
         internalParams.m_ctx

@@ -12,9 +12,9 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
+#include "IEditor.h"
+
 #include <QDialog>
-#endif
 
 class CConsoleSCB;
 

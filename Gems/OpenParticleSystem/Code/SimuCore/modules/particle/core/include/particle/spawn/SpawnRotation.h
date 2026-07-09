@@ -18,8 +18,8 @@ namespace SimuCore::ParticleCore {
 
         ValueObjFloat initAngle { 0.f };
         ValueObjFloat rotateSpeed { 0.f };
-        Vector3 initAxis = { 0.f, 1.f, 0.f };
-        Vector3 rotateAxis = { 1.f, 0.f, 0.f };
+        AZ::Vector3 initAxis = { 0.f, 1.f, 0.f };
+        AZ::Vector3 rotateAxis = { 1.f, 0.f, 0.f };
     };
 }
 

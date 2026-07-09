@@ -58,4 +58,3 @@ void CUiAVNewSequenceDialog::OnOK()
     accept();
 }
 
-#include <Animation/moc_UiAnimViewNewSequenceDialog.cpp>

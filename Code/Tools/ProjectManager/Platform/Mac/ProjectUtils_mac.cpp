@@ -20,22 +20,24 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
+        QChar GetPlatformPathEnvSeparator()
+        {
+            return QChar(':');
+        }
+
+        QString GetPlatformPathEnvVariableName()
+        {
+            // Qt: do not translate this string, it is the name of an environment variable not a user facing view
+            return QString("PATH"); 
+        }
+
         AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
             // For CMake on Mac, if its installed through home-brew, then it will be installed
             // under /usr/local/bin, which may not be in the system PATH environment.
             // Add that path for the command line process so that it will be able to locate
             // a home-brew installed version of CMake
-            QString pathEnv = qEnvironmentVariable("PATH");
-            QStringList pathEnvList = pathEnv.split(":");
-            if (!pathEnvList.contains("/usr/local/bin"))
-            {
-                pathEnv += ":/usr/local/bin";
-                if (!qputenv("PATH", pathEnv.toStdString().c_str()))
-                {
-                    return AZ::Failure(QObject::tr("Failed to set PATH environment variable"));
-                }
-            }
+            AddPathToPathEnv("/usr/local/bin", false);
 
             return AZ::Success();
         }
@@ -89,7 +91,7 @@ namespace O3DE::ProjectManager
             QString xcodeBuilderVersionNumber = queryXcodeBuildVersion.GetValue().split("\n")[0];
             AZ_TracePrintf("Project Manager", "XcodeBuilder version %s detected.", xcodeBuilderVersionNumber.toUtf8().constData());
 
-            return AZ::Success(xcodeBuilderVersionNumber);
+            return AZ::Success(QString());
         }
 
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)

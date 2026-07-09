@@ -25,6 +25,8 @@ enum class RayTracingDebugViewMode
     Normals,
     UVs,
     BaseColor,
+    EmissiveColor,
+    IrradianceColor,
 };
 
 RayTracingDebugViewMode GetRayTracingDebugViewMode()

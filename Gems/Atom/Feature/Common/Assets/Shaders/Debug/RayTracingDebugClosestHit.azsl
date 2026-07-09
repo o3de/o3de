@@ -46,6 +46,29 @@ float3 GetFallbackPBRBaseColor(float2 barycentrics)
     return textureData.m_baseColor.rgb;
 }
 
+float3 GetEmissiveColor(float2 barycentrics)
+{
+    MaterialInfo materialInfo;
+    if(!GetMaterialInfoEntry(InstanceID(), materialInfo))
+    {
+        return float3(0, 0, 0);
+    }
+    VsInput vertexData = GetVertexData(barycentrics);
+
+    TextureData textureData = GetFallbackPBRMaterialTextureData(materialInfo, RayTracingGlobalSrg::LinearSampler, vertexData.uv0);
+    return textureData.m_emissiveColor.rgb;
+}
+
+float3 GetIrradianceColor()
+{
+    MaterialInfo materialInfo;
+    if(!GetMaterialInfoEntry(InstanceID(), materialInfo))
+    {
+        return float3(0, 0, 0);
+    }
+    return materialInfo.m_irradianceColor.rgb;
+}
+
 float3 GetClusterColor(inout bool noData)
 {
     if (GetClusterId() == -1)
@@ -61,14 +84,16 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
 {
     switch (GetRayTracingDebugViewMode())
     {
-    case RayTracingDebugViewMode::InstanceID:     payload.m_color = GetRandomColor(InstanceID());             break;
-    case RayTracingDebugViewMode::ClusterID:      payload.m_color = GetClusterColor(payload.m_noData);        break;
-    case RayTracingDebugViewMode::InstanceIndex:  payload.m_color = GetRandomColor(InstanceIndex());          break;
-    case RayTracingDebugViewMode::PrimitiveIndex: payload.m_color = GetRandomColor(PrimitiveIndex());         break;
-    case RayTracingDebugViewMode::Barycentrics:   payload.m_color = GetBarycentricColor(attrib.barycentrics); break;
-    case RayTracingDebugViewMode::Normals:        payload.m_color = GetNormalColor(attrib.barycentrics);      break;
-    case RayTracingDebugViewMode::UVs:            payload.m_color = GetUVColor(attrib.barycentrics);          break;
-    case RayTracingDebugViewMode::BaseColor:      payload.m_color = GetFallbackPBRBaseColor(attrib.barycentrics); break;
-    default:                                      payload.m_noData = true;                                    break;
+    case RayTracingDebugViewMode::InstanceID:       payload.m_color = GetRandomColor(InstanceID());                 break;
+    case RayTracingDebugViewMode::ClusterID:        payload.m_color = GetClusterColor(payload.m_noData);            break;
+    case RayTracingDebugViewMode::InstanceIndex:    payload.m_color = GetRandomColor(InstanceIndex());              break;
+    case RayTracingDebugViewMode::PrimitiveIndex:   payload.m_color = GetRandomColor(PrimitiveIndex());             break;
+    case RayTracingDebugViewMode::Barycentrics:     payload.m_color = GetBarycentricColor(attrib.barycentrics);     break;
+    case RayTracingDebugViewMode::Normals:          payload.m_color = GetNormalColor(attrib.barycentrics);          break;
+    case RayTracingDebugViewMode::UVs:              payload.m_color = GetUVColor(attrib.barycentrics);              break;
+    case RayTracingDebugViewMode::BaseColor:        payload.m_color = GetFallbackPBRBaseColor(attrib.barycentrics); break;
+    case RayTracingDebugViewMode::EmissiveColor:    payload.m_color = GetEmissiveColor(attrib.barycentrics);        break;
+    case RayTracingDebugViewMode::IrradianceColor:  payload.m_color = GetIrradianceColor();      break;
+    default:                                        payload.m_noData = true;                                        break;
     }
 }

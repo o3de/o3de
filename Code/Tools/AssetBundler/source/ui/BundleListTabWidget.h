@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <source/ui/AssetBundlerTabWidget.h>
 
 #include <QItemSelection>
@@ -17,7 +16,6 @@
 #include <QString>
 #include <QStringListModel>
 #include <QWidget>
-#endif
 
 namespace Ui
 {

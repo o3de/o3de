@@ -413,7 +413,7 @@ namespace UnitTest
                 {
                     EXPECT_STRCASENE("levelinfo.xml", handle.m_filename.data()); // you may not find files inside the archive in this folder.
                 }
-            } while (handle = archive->FindNext(handle));
+            } while ((handle = archive->FindNext(handle)));
 
             archive->FindClose(handle);
         }
@@ -442,7 +442,7 @@ namespace UnitTest
                     EXPECT_STRCASENE("levels\\mylevel", handle.m_filename.data());
                     EXPECT_STRCASENE("levels//mylevel", handle.m_filename.data());
                 }
-            } while (handle = archive->FindNext(handle));
+            } while ((handle = archive->FindNext(handle)));
 
             archive->FindClose(handle);
         }
@@ -511,7 +511,7 @@ namespace UnitTest
                         found_mylevel_folder = true;
                     }
                 }
-            } while (handle = archive->FindNext(handle));
+            } while ((handle = archive->FindNext(handle)));
 
             archive->FindClose(handle);
         }
@@ -534,7 +534,7 @@ namespace UnitTest
                         found_mylevel_file = true;
                     }
                 }
-            } while (handle = archive->FindNext(handle));
+            } while ((handle = archive->FindNext(handle)));
 
             archive->FindClose(handle);
         }
@@ -563,7 +563,7 @@ namespace UnitTest
                         found_mylevel_folder = true;
                     }
                 }
-            } while (handle = archive->FindNext(handle));
+            } while ((handle = archive->FindNext(handle)));
 
             archive->FindClose(handle);
         }

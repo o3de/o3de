@@ -321,19 +321,19 @@ namespace AtomFontInternal
                 }
                 if (name == "r")
                 {
-                    m_pass->m_color.r = (uint8_t)((float)atof(value.c_str()) * 255.0f);
+                    m_pass->m_color.SetR(static_cast<float>(atof(value.c_str())));
                 }
                 else if (name == "g")
                 {
-                    m_pass->m_color.g = (uint8_t)((float)atof(value.c_str()) * 255.0f);
+                    m_pass->m_color.SetG(static_cast<float>(atof(value.c_str())));
                 }
                 else if (name == "b")
                 {
-                    m_pass->m_color.b = (uint8_t)((float)atof(value.c_str()) * 255.0f);
+                    m_pass->m_color.SetB(static_cast<float>(atof(value.c_str())));
                 }
                 else if (name == "a")
                 {
-                    m_pass->m_color.a = (uint8_t)((float)atof(value.c_str()) * 255.0f);
+                    m_pass->m_color.SetA(static_cast<float>(atof(value.c_str())));
                 }
                 break;
 

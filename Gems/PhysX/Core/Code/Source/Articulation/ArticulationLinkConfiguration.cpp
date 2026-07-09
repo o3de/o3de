@@ -124,7 +124,8 @@ namespace PhysX
                 ->Field("Motor configuration", &ArticulationLinkConfiguration::m_motorConfiguration)
                 ->Field("Armature", &ArticulationLinkConfiguration::m_armature)
                 ->Field("Friction", &ArticulationLinkConfiguration::m_jointFriction)
-                ->Field("Sensor Configurations", &ArticulationLinkConfiguration::m_sensorConfigs);
+                ->Field("Sensor Configuration", &ArticulationLinkConfiguration::m_sensorConfigs)
+                ->Field("Offset", &ArticulationLinkConfiguration::m_offset);
         }
     }
 

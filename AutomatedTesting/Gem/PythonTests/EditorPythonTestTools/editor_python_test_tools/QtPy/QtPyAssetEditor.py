@@ -8,7 +8,7 @@ Object to house all the Qt Objects and behavior used in testing the asset editor
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 import pyside_utils
 import azlmbr.editor as editor
 import azlmbr.bus as bus

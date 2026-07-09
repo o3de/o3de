@@ -15,6 +15,7 @@
 #include <AzCore/std/typetraits/is_enum.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/utility/pair.h>
 
 #include <AzCore/Math/Uuid.h>
 
@@ -26,7 +27,7 @@ namespace AZ
 
 namespace AZStd
 {
-    class allocator;
+    struct allocator;
     template <class T>
     struct less;
     template <class T>
@@ -39,12 +40,8 @@ namespace AZStd
     struct equal_to;
     template <class T>
     struct hash;
-    template< class T1, class T2>
-    struct pair;
     template< class T, class Allocator/* = AZStd::allocator*/ >
     class vector;
-    template< class T, AZStd::size_t N >
-    class array;
     template< class T, class Allocator/* = AZStd::allocator*/ >
     class list;
     template< class T, class Allocator/* = AZStd::allocator*/ >
@@ -484,7 +481,6 @@ namespace AZStd
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::greater_equal, "AZStd::greater_equal", "{EB00488F-E20F-471A-B862-F1E3C39DDA1D}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::equal_to, "AZStd::equal_to", "{4377BCED-F78C-4016-80BB-6AFACE6E5137}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::hash, "AZStd::hash", "{EFA74E54-BDFA-47BE-91A7-5A05DA0306D7}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::pair, "AZStd::pair", "{919645C1-E464-482B-A69B-04AA688B6847}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::vector, "AZStd::vector", "{A60E3E61-1FF6-4982-B6B8-9E4350C4C679}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::list, "AZStd::list", "{E1E05843-BB02-4F43-B7DC-3ADB28DF42AC}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::forward_list, "AZStd::forward_list", "{D7E91EA3-326F-4019-87F0-6F45924B909A}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
@@ -499,7 +495,6 @@ namespace AZStd
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::fixed_vector, "AZStd::fixed_vector", "{74044B6F-E922-4FD7-915D-EFC5D1DC59AE}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::fixed_list, "AZStd::fixed_list", "{508B9687-8410-4A73-AE0C-0BA15CF3F773}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::fixed_forward_list, "AZStd::fixed_forward_list", "{0D9D2AB2-F0CC-4E30-A209-A33D78717649}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::array, "AZStd::array", "{911B2EA8-CCB1-4F0C-A535-540AD00173AE}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::bitset, "AZStd::bitset", "{6BAE9836-EC49-466A-85F2-F4B1B70839FB}", AZ_TYPE_INFO_INTERNAL_AUTO);
 
     static constexpr const char* s_variantTypeId{ "{1E8BB1E5-410A-4367-8FAA-D43A4DE14D4B}" };
@@ -517,8 +512,10 @@ namespace AZStd
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_BOTHFIX_UUID_DECL_API(AZCORE_API, AZStd::basic_fixed_string, AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO, AZ_TYPE_INFO_INTERNAL_TYPENAME);
 }
 
-namespace AZStd
+namespace std
 {
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::array, "AZStd::array", "{911B2EA8-CCB1-4F0C-A535-540AD00173AE}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_AUTO);
+
     // GetO3deTypeName/GetO3deTypeId overload for AZStd::span<T, Extent>
     // Note the type ID only takes the type T template parameter into account, not the Extent template parameter.
     // An `AZStd::span<AZ::Component*, 50>` and `AZStd::span<AZ::Component*, 100>` will have the same type ID, as the second template argument is not aggregated to the AZStd::span template ID.
@@ -599,13 +596,11 @@ namespace AZStd
         {
             return AZ::TemplateId{};
         }
-    };
-}
+    }
 
-namespace std
-{
     // AZStd::optional is std::optional brought into the AZStd:: namespace
     AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::optional, "AZStd::optional", "{AB8C50C0-23A7-4333-81CD-46F648938B1C}", AZ_TYPE_INFO_INTERNAL_TYPENAME);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_POSTFIX_UUID(AZStd::pair, "AZStd::pair", "{919645C1-E464-482B-A69B-04AA688B6847}", AZ_TYPE_INFO_INTERNAL_TYPENAME, AZ_TYPE_INFO_INTERNAL_TYPENAME);
 
     // Adding overloads for GetO3deTypeName/GetO3deTypeId/GetO3deClassTemplateId and GetO3deTemplateId in the std:: namespace since AZStd::tuple is just std::tuple brought into the AZStd namespace
     // This allows ADL to add those function to the list of function overloads when evaulating the overload set

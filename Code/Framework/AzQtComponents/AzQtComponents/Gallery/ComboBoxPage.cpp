@@ -121,4 +121,3 @@ ComboBoxPage::~ComboBoxPage()
 {
 }
 
-#include "Gallery/moc_ComboBoxPage.cpp"

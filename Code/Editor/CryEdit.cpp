@@ -39,6 +39,7 @@ AZ_POP_DISABLE_WARNING
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QUrlQuery>
+#include <QThread>
 
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
@@ -61,6 +62,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzFramework/Network/SocketConnection.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
@@ -154,6 +156,8 @@ static const char O3DEApplicationName[] = "O3DEApplication";
 
 static AZ::EnvironmentVariable<bool> inEditorBatchMode = nullptr;
 
+AzToolsFramework::ProgressShield* CCryEditApp::s_progressShield = nullptr;
+
 namespace Platform
 {
     bool OpenUri(const QUrl& uri);
@@ -185,7 +189,7 @@ void RecentFileList::Add(const QString& f)
 
 int RecentFileList::GetSize()
 {
-    return m_arrNames.count();
+    return static_cast<int>(m_arrNames.count());
 }
 
 void RecentFileList::GetDisplayName(QString& name, int index, const QString& curDir)
@@ -261,8 +265,7 @@ void CCryDocManager::OnFileNew()
     m_pDefTemplate->OpenDocumentFile(nullptr);
     // if returns NULL, the user has already been alerted
 }
-bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT nIDSTitle,
-    [[maybe_unused]] DWORD lFlags, bool bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
+bool CCryDocManager::DoPromptFileName(QString& fileName, bool bOpenFileDialog)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
     levelFileDialog.show();
@@ -1537,6 +1540,11 @@ bool CCryEditApp::InitInstance()
     auto mainWindowWrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
 #endif
     mainWindowWrapper->setGuest(mainWindow);
+
+    // Note: we should use getNativeHandle to get the HWND from the widget, but
+    // it returns an invalid handle unless the widget has been shown and polished and even then
+    // it sometimes returns an invalid handle.
+    // So instead, we use winId(), which does consistently work
     HWND mainWindowWrapperHwnd = (HWND)mainWindowWrapper->winId();
 
     AZ::IO::FixedMaxPath engineRootPath;
@@ -1552,15 +1560,11 @@ bool CCryEditApp::InitInstance()
         engineRootPath);
     AzQtComponents::StyleManager::setStyleSheet(mainWindow, QStringLiteral("style:Editor.qss"));
 
-    // Note: we should use getNativeHandle to get the HWND from the widget, but
-    // it returns an invalid handle unless the widget has been shown and polished and even then
-    // it sometimes returns an invalid handle.
-    // So instead, we use winId(), which does consistently work
-    //mainWindowWrapperHwnd = QtUtil::getNativeHandle(mainWindowWrapper);
-
     // Connect to the AssetProcessor at this point
     // It will be launched if not running
     ConnectToAssetProcessor();
+
+    AzFramework::SocketConnection::SetKeepAliveCallback(SocketConnectionKeepAliveCallback);
 
     CCryEditApp::OutputStartupMessage(QString("Initializing Game System..."));
 
@@ -1744,7 +1748,7 @@ void CCryEditApp::LoadFile([[maybe_unused]] QString fileName)
 inline void ExtractMenuName(QString& str)
 {
     // eliminate &
-    int pos = str.indexOf('&');
+    int pos = static_cast<int>(str.indexOf('&'));
     if (pos >= 0)
     {
         str = str.left(pos) + str.right(str.length() - pos - 1);
@@ -1752,7 +1756,7 @@ inline void ExtractMenuName(QString& str)
     // cut the string
     for (int i = 0; i < str.length(); i++)
     {
-        if (str[i] == 9)
+        if (str[i].toLatin1() == 9)
         {
             str = str.left(i);
         }
@@ -1964,6 +1968,8 @@ bool CCryEditApp::FixDanglingSharedMemory(const QString& sharedMemName) const
 
 int CCryEditApp::ExitInstance(int exitCode)
 {
+    AzFramework::SocketConnection::SetKeepAliveCallback(nullptr);
+
     if (m_pEditor)
     {
         m_pEditor->OnBeginShutdownSequence();
@@ -2514,7 +2520,7 @@ void CCryEditApp::OnUpdatePlayGame(QAction* action)
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */)
+CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& templateName, const QString& levelName, QString& fullyQualifiedLevelName /* ={} */, const QString& levelsRootAbsolutePath /* ={} */)
 {
     // If we are creating a new level and we're in simulate mode, then switch it off before we do anything else
     if (GetIEditor()->GetGameEngine() && GetIEditor()->GetGameEngine()->GetSimulationMode())
@@ -2543,7 +2549,18 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& template
     }
 
     QString cryFileName = levelName.mid(levelName.lastIndexOf('/') + 1, levelName.length() - levelName.lastIndexOf('/') + 1);
-    QString levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
+    // Compose the absolute level folder. When the caller specifies a root
+    // (e.g. a gem root), use it directly; otherwise fall back to the
+    // project's "Levels" folder for backwards compatibility.
+    QString levelPath;
+    if (!levelsRootAbsolutePath.isEmpty())
+    {
+        levelPath = QStringLiteral("%1/%2/").arg(levelsRootAbsolutePath, levelName);
+    }
+    else
+    {
+        levelPath = QStringLiteral("%1/Levels/%2/").arg(Path::GetEditingGameDataFolder().c_str(), levelName);
+    }
     fullyQualifiedLevelName = levelPath + cryFileName + EditorUtils::LevelFile::GetDefaultFileExtension();
 
     //_MAX_PATH includes null terminator, so we actually want to cap at _MAX_PATH-1
@@ -2711,7 +2728,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     GetIEditor()->StartLevelErrorReportRecording();
 
     QString fullyQualifiedLevelName;
-    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName);
+    ECreateLevelResult result = CreateLevel(dlg.GetTemplateName(), levelNameWithPath, fullyQualifiedLevelName, dlg.GetLevelsFolder());
 
     if (result == ECLR_ALREADY_EXISTS)
     {
@@ -2724,9 +2741,9 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
         QByteArray windowsErrorMessage(ERROR_LEN, 0);
         QByteArray cwd(ERROR_LEN, 0);
-        DWORD dw = GetLastError();
 
 #ifdef WIN32
+        DWORD dw = GetLastError();
         wchar_t windowsErrorMessageW[ERROR_LEN];
         windowsErrorMessageW[0] = L'\0';
         FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -2738,7 +2755,8 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         _getcwd(cwd.data(), cwd.length());
         AZStd::to_string(windowsErrorMessage.data(), ERROR_LEN, windowsErrorMessageW);
 #else
-        windowsErrorMessage = strerror(dw);
+        int errorNum = errno;
+        windowsErrorMessage = strerror(errorNum);
         cwd = QDir::currentPath().toUtf8();
 #endif
 
@@ -3189,10 +3207,29 @@ void CCryEditApp::OpenLUAEditor(const char* files)
     AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
     AZStd::vector<AZStd::string> launchCmd = { executablePath.String() };
+
     launchCmd.emplace_back("--engine-path");
-    launchCmd.emplace_back(AZStd::string_view{ enginePath });
+
+    {
+        AZ::IO::FixedMaxPathString enginePathQuoted{};
+        enginePathQuoted += '"';
+        enginePathQuoted += enginePath;
+        enginePathQuoted += '"';
+
+        launchCmd.emplace_back(enginePathQuoted);
+    }
+
     launchCmd.emplace_back("--project-path");
-    launchCmd.emplace_back(AZStd::string_view{ projectPath });
+
+    {
+        AZ::IO::FixedMaxPathString projectPathQuoted{};
+        projectPathQuoted += '"';
+        projectPathQuoted += projectPath;
+        projectPathQuoted += '"';
+
+        launchCmd.emplace_back(projectPathQuoted);
+    }
+
     launchCmd.emplace_back("--launch");
     launchCmd.emplace_back("lua");
 
@@ -3207,7 +3244,13 @@ void CCryEditApp::OpenLUAEditor(const char* files)
             {
                 fullPathFound = true;
                 launchCmd.emplace_back("--files");
-                launchCmd.emplace_back(AZStd::move(assetFullPath.Native()));
+
+                AZ::IO::FixedMaxPathString fileArgQuoted{};
+                fileArgQuoted += '"';
+                fileArgQuoted += AZ::IO::PathView(assetFullPath).Native();
+                fileArgQuoted += '"';
+
+                launchCmd.emplace_back(fileArgQuoted);
             }
         };
         AzToolsFramework::AssetSystemRequestBus::Broadcast(AZStd::move(GetFullSourcePath));
@@ -3221,7 +3264,13 @@ void CCryEditApp::OpenLUAEditor(const char* files)
                 && fileIo->Exists(resolvedFilePath.c_str()))
             {
                 launchCmd.emplace_back("--files");
-                launchCmd.emplace_back(resolvedFilePath.String());
+
+                AZ::IO::FixedMaxPathString fileArgQuoted{};
+                fileArgQuoted += '"';
+                fileArgQuoted += AZ::IO::PathView(resolvedFilePath).Native();
+                fileArgQuoted += '"';
+
+                launchCmd.emplace_back(fileArgQuoted);
             }
         }
     };
@@ -3264,6 +3313,74 @@ void CCryEditApp::OnOpenProceduralMaterialEditor()
 {
     QtViewPaneManager::instance()->OpenPane(LyViewPane::SubstanceEditor);
 }
+
+// Now that we're connected, attach a hearbeat function
+void CCryEditApp::SocketConnectionKeepAliveCallback(bool operationIsComplete)
+{
+    if (QApplication::instance()->thread() != QThread::currentThread())
+    {
+        return; // only do anything if we're actually blocking the gui thread
+    }
+
+    // show a progress shield.
+    static bool s_isFirstCall = true;
+    static AZStd::chrono::steady_clock::time_point timeSinceFirstAppearing;
+
+    if (!operationIsComplete)
+    {
+        if (s_isFirstCall)
+        {
+            s_isFirstCall = false;
+            timeSinceFirstAppearing = AZStd::chrono::steady_clock::now();
+        }
+
+        // 2 seconds is most operating systems limit on how long a process can not respond before being considered unresponsive.
+        // Give it 1.5 seconds.
+        if (AZStd::chrono::steady_clock::now() < timeSinceFirstAppearing + AZStd::chrono::milliseconds(1500))
+        {
+            // we have not yet waited long enough to show the shield, this prevents flicker when
+            // a lot of assets are quickly processing.
+            return;
+        }
+
+        QWidget* target = QApplication::activeWindow();
+
+        if (!target)
+        {
+            target = g_splashScreen;
+            if (!target)
+            {
+                CCryEditApp::OutputStartupMessage(QString("First-time Asset Processing..."));
+                return; // no window to attach to.
+            }
+        }
+
+        if (!CCryEditApp::s_progressShield)
+        {
+            CCryEditApp::s_progressShield = new AzToolsFramework::ProgressShield(target);
+            CCryEditApp::s_progressShield->show();
+            CCryEditApp::s_progressShield->setProgress(0, 0, "Processing critical assets...");
+        }
+
+        if ((CCryEditApp::s_progressShield->parent() != target) && (target != s_progressShield))
+        {
+            CCryEditApp::s_progressShield->setParent(target);
+            CCryEditApp::s_progressShield->show();
+        }
+        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+    else
+    {
+        s_isFirstCall = true;
+        // op is complete, remove the shield
+        if (CCryEditApp::s_progressShield)
+        {
+            CCryEditApp::s_progressShield->hide();
+            CCryEditApp::s_progressShield->deleteLater();
+            CCryEditApp::s_progressShield = nullptr;
+        }
+    }
+};
 
 namespace Editor
 {
@@ -3324,8 +3441,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
     // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
     // on Windows 10
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     // QtOpenGL attributes and surface format setup.
@@ -3345,6 +3460,18 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     Editor::EditorQtApplication::InstallQtLogHandler();
+
+#ifdef AZ_PLATFORM_LINUX
+    // Force the QPA platform so Qt does not load a platform plugin that AzFramework doesn't support.
+    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
+    {
+#if !PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
+        qputenv("QT_QPA_PLATFORM", "xcb");
+#elif !PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        qputenv("QT_QPA_PLATFORM", "wayland");
+#endif
+    }
+#endif
 
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     Editor::EditorQtApplication* app = Editor::EditorQtApplication::newInstance(argc, argv);
@@ -3388,7 +3515,21 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             registry, Editor::GetBuildTargetName());
 
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
+        AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+        console->PerformCommand("sv_isDedicated false");
+#ifdef AZ_PLATFORM_LINUX
+        //Ensure we don't use Wayland implementations when Qt is using Xcb.
+        auto platformName = QGuiApplication::platformName();
+        if (platformName == "wayland")
+        {
+            //If a user already disabled it, we should re-enable it.
+            console->PerformCommand("wl_enable 1");
+        }
+        else
+        {
+            console->PerformCommand("wl_enable 0");
+        }
+#endif
 
         if (!AZToolsApp.Start())
         {
@@ -3430,4 +3571,3 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
 AZ_DECLARE_MODULE_INITIALIZATION
 
-#include <moc_CryEdit.cpp>

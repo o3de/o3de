@@ -81,9 +81,6 @@
     #include AZ_RESTRICTED_FILE(ProjectDefines_h)
 #else
     #define PROJECTDEFINES_H_TRAIT_DISABLE_MONOLITHIC_PROFILING_MARKERS 1
-    #if defined(WIN32) || defined(WIN64) || defined(LINUX) || defined(APPLE)
-        #define PROJECTDEFINES_H_TRAIT_USE_GPU_PARTICLES 1
-    #endif
     #define PROJECTDEFINES_H_TRAIT_USE_MESH_TESSELLATION 1
     #if defined(WIN32)
         #define PROJECTDEFINES_H_TRAIT_USE_SVO_GI 1
@@ -125,7 +122,6 @@
     #ifdef TESSELLATION
         // Specific features flags
         #define WATER_TESSELLATION
-        #define PARTICLES_TESSELLATION
 
         #if PROJECTDEFINES_H_TRAIT_USE_MESH_TESSELLATION
             // Mesh tessellation (displacement, smoothing, subd)
@@ -142,14 +138,11 @@
             #ifdef WATER_TESSELLATION
                 #define WATER_TESSELLATION_RENDERER
             #endif
-            #ifdef PARTICLES_TESSELLATION
-                #define PARTICLES_TESSELLATION_RENDERER
-            #endif
             #ifdef MESH_TESSELLATION_ENGINE
                 #define MESH_TESSELLATION_RENDERER
             #endif
 
-            #if defined(WATER_TESSELLATION_RENDERER) || defined(PARTICLES_TESSELLATION_RENDERER) || defined(MESH_TESSELLATION_RENDERER)
+            #if defined(WATER_TESSELLATION_RENDERER) || defined(MESH_TESSELLATION_RENDERER)
                 // Common tessellation flag enabling tessellation stages in renderer
                 #define TESSELLATION_RENDERER
             #endif

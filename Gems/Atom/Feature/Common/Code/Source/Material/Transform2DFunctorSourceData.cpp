@@ -20,7 +20,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<Transform2DFunctorSourceData, RPI::MaterialFunctorSourceData>()
-                    ->Version(4) // added base class
+                    ->Version(4)
                     ->Field("transformOrder", &Transform2DFunctorSourceData::m_transformOrder)
                     ->Field("centerProperty", &Transform2DFunctorSourceData::m_center)
                     ->Field("scaleProperty", &Transform2DFunctorSourceData::m_scale)
@@ -62,10 +62,28 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_translateY);
             AddMaterialPropertyDependency(functor, functor->m_rotateDegrees);
 
-            functor->m_transformMatrix = MaterialShaderParameterNameIndex{ m_transformMatrix, context.GetNameContext() };
+            // Derive Row1/Row2 names by replacing the trailing "Row0" suffix on the Row0 base name.
+            auto MakeRowName = [](const AZStd::string& row0Name, int row) -> AZStd::string
+            {
+                AZStd::string result = row0Name;
+                const AZStd::string suffix0 = "Row0";
+                auto pos = result.rfind(suffix0);
+                if (pos != AZStd::string::npos)
+                {
+                    result.replace(pos, suffix0.size(), AZStd::string::format("Row%d", row));
+                }
+                return result;
+            };
+
+            functor->m_transformMatrixRow0 = MaterialShaderParameterNameIndex{ m_transformMatrix, context.GetNameContext() };
+            functor->m_transformMatrixRow1 = MaterialShaderParameterNameIndex{ MakeRowName(m_transformMatrix, 1), context.GetNameContext() };
+            functor->m_transformMatrixRow2 = MaterialShaderParameterNameIndex{ MakeRowName(m_transformMatrix, 2), context.GetNameContext() };
+
             if (m_transformMatrixInverse.empty() == false)
             {
-                functor->m_transformMatrixInverse = MaterialShaderParameterNameIndex{ m_transformMatrixInverse, context.GetNameContext() };
+                functor->m_transformMatrixInverseRow0 = MaterialShaderParameterNameIndex{ m_transformMatrixInverse, context.GetNameContext() };
+                functor->m_transformMatrixInverseRow1 = MaterialShaderParameterNameIndex{ MakeRowName(m_transformMatrixInverse, 1), context.GetNameContext() };
+                functor->m_transformMatrixInverseRow2 = MaterialShaderParameterNameIndex{ MakeRowName(m_transformMatrixInverse, 2), context.GetNameContext() };
             }
             functor->m_transformOrder = m_transformOrder;
 

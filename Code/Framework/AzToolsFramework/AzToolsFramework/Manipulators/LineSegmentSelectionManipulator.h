@@ -92,7 +92,7 @@ namespace AzToolsFramework
         ViewportInteraction::KeyboardModifiers
             m_keyboardModifiers; //!< What modifier keys are pressed when interacting with this manipulator.
 
-        AZStd::unique_ptr<ManipulatorView> m_manipulatorView = nullptr; //!< Look of manipulator.
+        AZStd::unique_ptr<ManipulatorView> m_manipulatorView; //!< Look of manipulator.
     };
 
     AZTF_API LineSegmentSelectionManipulator::Action CalculateManipulationDataAction(

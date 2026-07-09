@@ -13,6 +13,7 @@ set(FILES
     CalculateEnginePathId.cmake
     CMakeFiles.cmake
     CommandExecution.cmake
+    CompilerLauncher.cmake
     Configurations.cmake
     Dependencies.cmake
     Deployment.cmake
@@ -33,6 +34,7 @@ set(FILES
     Packaging.cmake
     PAL.cmake
     PALTools.cmake
+    Policy.cmake
     Projects.cmake
     RuntimeDependencies.cmake
     SettingsRegistry.cmake

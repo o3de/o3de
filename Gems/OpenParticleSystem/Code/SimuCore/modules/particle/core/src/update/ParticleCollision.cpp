@@ -9,13 +9,15 @@
 #include "particle/update/ParticleCollision.h"
 #include "particle/core/ParticleHelper.h"
 
+#include <AzCore/Math/Matrix3x3.h>
+
 namespace SimuCore::ParticleCore {
 
-    static float GetBound(const Vector3& max, const Vector3& min, const Vector3 particleSize)
+    static float GetBound(const AZ::Vector3& max, const AZ::Vector3& min, const AZ::Vector3 particleSize)
     {
-        Vector3 maxExtend = max * particleSize;
-        Vector3 minExtend = min * particleSize;
-        Vector3 center = (maxExtend + minExtend) * 0.5f;
+        AZ::Vector3 maxExtend = max * particleSize;
+        AZ::Vector3 minExtend = min * particleSize;
+        AZ::Vector3 center = (maxExtend + minExtend) * 0.5f;
         float radius = (maxExtend - center).GetLength();
         return radius;
     }
@@ -23,11 +25,11 @@ namespace SimuCore::ParticleCore {
     static float CalculateSpriteRadius(const ParticleCollision& data, const Particle& particle, const UpdateInfo& info)
     {
         AZ::Vector2 size;
-        if (info.front.IsClose(Vector3::CreateAxisZ()) || info.front.IsClose(-Vector3::CreateAxisZ()))
+        if (info.front.IsClose(AZ::Vector3::CreateAxisZ()) || info.front.IsClose(-AZ::Vector3::CreateAxisZ()))
         {
             size = AZ::Vector2(particle.scale.GetElement(0), particle.scale.GetElement(1));
         }
-        else if (info.front.IsClose(Vector3::CreateAxisY()) || info.front.IsClose(-Vector3::CreateAxisY()))
+        else if (info.front.IsClose(AZ::Vector3::CreateAxisY()) || info.front.IsClose(-AZ::Vector3::CreateAxisY()))
         {
             size = AZ::Vector2(particle.scale.GetElement(0), particle.scale.GetElement(2));
         }
@@ -74,14 +76,14 @@ namespace SimuCore::ParticleCore {
         }
     }
 
-    static Vector3 CalculateNormal(const Vector3 planeNormal, const UpdateInfo& info, float angleCof)
+    static AZ::Vector3 CalculateNormal(const AZ::Vector3 planeNormal, const UpdateInfo& info, float angleCof)
     {
         float th = 2.f * AZ::Constants::Pi * info.randomStream->Rand();
         // normal (0, 1] -> (0, Pi]
         float ap = (AZ::Constants::Pi * angleCof / 2.f) * info.randomStream->Rand();
-        Vector3 vel(cos(th) * sin(ap), sin(th) * sin(ap), -cos(ap));
-        Transform d = AZ::Transform::CreateLookAt(Vector3(0.0f), planeNormal, AZ::Transform::Axis::YPositive);
-        return (Matrix3::CreateFromTransform(d) * vel).GetNormalized();
+        AZ::Vector3 vel(cos(th) * sin(ap), sin(th) * sin(ap), -cos(ap));
+        AZ::Transform d = AZ::Transform::CreateLookAt(AZ::Vector3(0.0f), planeNormal, AZ::Transform::Axis::YPositive);
+        return (AZ::Matrix3x3::CreateFromTransform(d) * vel).GetNormalized();
     }
 
     static void HandleCollision(const ParticleCollision* data, Particle& particle, const UpdateInfo& info,
@@ -115,10 +117,10 @@ namespace SimuCore::ParticleCore {
             distance = 0.0f;
         }
 
-        Vector3 normal;
+        AZ::Vector3 normal;
         float vDotN = particle.velocity.Dot(collision.localPlane.normal);
         float time = std::abs(distance / vDotN);
-        Vector3 collisionPos = particle.localPosition + particle.velocity * time;
+        AZ::Vector3 collisionPos = particle.localPosition + particle.velocity * time;
         collisionPos = info.localSpace ?
             info.emitterTrans.TransformPoint(collisionPos) :
             particle.spawnTrans.TransformPoint(collisionPos);
@@ -155,13 +157,13 @@ namespace SimuCore::ParticleCore {
             if (info.localSpace) {
                 collisionParam.localPlane = plane;
             } else {
-                Transform inverse = particle.spawnTrans.GetInverse();
+                AZ::Transform inverse = particle.spawnTrans.GetInverse();
                 collisionParam.localPlane.position = inverse.TransformPoint(plane.position);
                 collisionParam.localPlane.normal = inverse.TransformVector(plane.normal);
             }
         
-            Vector3 lastDir = particle.localPosition - collisionParam.localPlane.position;
-            Vector3 newDir = lastDir + particle.velocity * info.tickTime;
+            AZ::Vector3 lastDir = particle.localPosition - collisionParam.localPlane.position;
+            AZ::Vector3 newDir = lastDir + particle.velocity * info.tickTime;
             collisionParam.lastDotPlane = collisionParam.localPlane.normal.Dot(lastDir);
             collisionParam.newDotPlane = collisionParam.localPlane.normal.Dot(newDir);
             HandleCollision(data, particle, info, collisionParam);

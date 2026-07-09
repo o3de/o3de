@@ -134,7 +134,7 @@ namespace UnitTest
     TEST_F(EnumTests, ToString_WithInvalidEnumValue_ReturnsEmptyString)
     {
         static_assert(ToString(static_cast<TestEnum>(40)).empty());
-        static_assert(ToString(static_cast<TestEnumUnscoped>(15)).empty());
+        EXPECT_TRUE(ToString(static_cast<TestEnumUnscoped>(15)).empty());
         static_assert(ToString(static_cast<TestEnum8>(20)).empty());
     }
 

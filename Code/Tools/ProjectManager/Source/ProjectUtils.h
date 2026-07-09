@@ -11,11 +11,9 @@
 #include <ProjectInfo.h>
 #include <ProjectManagerDefs.h>
 
-#if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QMessageBox>
 #include <QProcessEnvironment>
-#endif
 
 #include <AzCore/Dependency/Dependency.h>
 #include <AzCore/IO/Path/Path_fwd.h>
@@ -39,7 +37,21 @@ namespace O3DE::ProjectManager
         bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
         bool FindSupportedCompiler(const ProjectInfo& projectInfo, QWidget* parent = nullptr);
+
+        // Returns a failure string, or a success with message notes.
+        // If there are no notes, return an empty string on success.
+        // Any notes returned will be showend as a message box or output log, regardless of success or failure.
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform(const ProjectInfo& projectInfo);
+
+        //! Return the platform specific path separator for the PATH environment variable, e.g. ';' on windows and ':' on unix
+        QChar GetPlatformPathEnvSeparator();
+
+        //! Return the platform specific name of the PATH environment variable, e.g. 'Path' on windows and 'PATH' on unix
+        QString GetPlatformPathEnvVariableName();
+
+        //! modify the process environment to prepent the given path to the front of the system environment path
+        //! Prepend it, if prepend is true, otherwise append it.
+        bool AddPathToPathEnv(QString newPath, bool prepend = true);
 
         //! Detect if cmake is installed
         //! Does NOT detect if the version of cmake required to run O3DE

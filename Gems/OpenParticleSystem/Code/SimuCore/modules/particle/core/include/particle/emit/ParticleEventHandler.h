@@ -9,7 +9,6 @@
 #pragma once
 
 #include <cstdint>
-#include <core/math/VectorX.h>
 #include "particle/core/Particle.h"
 
 namespace SimuCore::ParticleCore {
@@ -30,9 +29,9 @@ namespace SimuCore::ParticleCore {
         static void Execute(const InheritanceHandler* data, const EmitInfo& info, EmitSpawnParam& emitSpawnParam);
         static void UpdateDistPtr(const InheritanceHandler* data, const Distribution& distribution);
 
-        Vector3 positionOffset;
-        Vector3 velocityRatio;
-        Vector4 colorRatio;
+        AZ::Vector3 positionOffset;
+        AZ::Vector3 velocityRatio;
+        AZ::Vector4 colorRatio;
         AZ::u32 emitterIndex = UINT32_MAX;
         float spawnRate = 0.0f;
         bool calculateSpawnRate = false;

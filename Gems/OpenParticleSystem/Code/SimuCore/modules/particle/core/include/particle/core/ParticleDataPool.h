@@ -12,8 +12,51 @@
 #include <AzCore/std/containers/vector.h>
 #include "particle/core/Particle.h"
 
-namespace SimuCore::ParticleCore {
-    class ParticleDataSet {
+namespace SimuCore::ParticleCore
+{
+    //! A class allocator which always aligns to at least 16 byte alignment
+    class ParticleAlignedAllocator
+    {
+    public:
+        using value_type = void;
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using align_type = AZStd::size_t;
+
+        AZ_FORCE_INLINE ParticleAlignedAllocator() = default;
+        AZ_FORCE_INLINE ParticleAlignedAllocator(const char*) {};
+        AZ_FORCE_INLINE ParticleAlignedAllocator(const ParticleAlignedAllocator& rhs) = default;
+        AZ_FORCE_INLINE ParticleAlignedAllocator([[maybe_unused]] const ParticleAlignedAllocator& rhs, [[maybe_unused]] const char* name)
+        {
+        }
+        AZ_FORCE_INLINE ParticleAlignedAllocator& operator=(const ParticleAlignedAllocator& rhs) = default;
+
+        pointer allocate(size_type byteSize, size_type alignment);
+        void deallocate(pointer ptr, size_type byteSize, size_type alignment);
+        pointer reallocate(pointer ptr, size_type newSize, align_type alignment);
+    };
+
+    AZ_FORCE_INLINE bool operator==(const ParticleAlignedAllocator& a, const ParticleAlignedAllocator& b)
+    {
+        (void)a;
+        (void)b;
+        return true;
+    }
+
+    AZ_FORCE_INLINE bool operator!=(const ParticleAlignedAllocator& a, const ParticleAlignedAllocator& b)
+    {
+        (void)a;
+        (void)b;
+        return false;
+    }
+
+    AZ_TYPE_INFO_SPECIALIZE_WITH_NAME(ParticleAlignedAllocator, "{08DEB93F-D7A1-4494-B772-008C185D7E20}", "ParticleAlignedAllocator");
+    
+    using SIMDAlignedBuffer = AZStd::vector<AZ::u8, ParticleAlignedAllocator>;
+
+    class ParticleDataSet
+    {
     public:
         explicit ParticleDataSet(AZ::u32 dataSize)
             : stride(dataSize)
@@ -34,7 +77,10 @@ namespace SimuCore::ParticleCore {
 
     protected:
         AZ::u32 stride;
-        AZStd::vector<AZ::u8> rawData;
+        // the rawData buffer is organized as a vector of pooled data, but that pooled data contains objects at fixed stride offsets,
+        // and those objects might themselves be SIMD aligned structures.  The code internally aligns everything inside the buffer, but we must make sure
+        // the buffer itself is aligned so that all the internal alignments are valid.
+        SIMDAlignedBuffer rawData;
         AZStd::vector<AZ::u32> freeList;
     };
 

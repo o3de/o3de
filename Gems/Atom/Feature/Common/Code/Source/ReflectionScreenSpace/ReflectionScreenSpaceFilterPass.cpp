@@ -22,7 +22,7 @@ namespace AZ
         RPI::Ptr<ReflectionScreenSpaceFilterPass> ReflectionScreenSpaceFilterPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<ReflectionScreenSpaceFilterPass> pass = aznew ReflectionScreenSpaceFilterPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         ReflectionScreenSpaceFilterPass::ReflectionScreenSpaceFilterPass(const RPI::PassDescriptor& descriptor)
@@ -47,11 +47,11 @@ namespace AZ
         {
             // retrieve the input reflection image descriptor to get the size
             RHI::ImageDescriptor reflectionImageDesc = m_ownedAttachments[0]->m_descriptor.m_image;
-            
+
             // create the history attachment
             RHI::ImageBindFlags imageBindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderReadWrite;
             RHI::ImageDescriptor historyImageDesc = RHI::ImageDescriptor::Create2D(imageBindFlags, reflectionImageDesc.m_size.m_width, reflectionImageDesc.m_size.m_height, RHI::Format::R16G16B16A16_FLOAT);
-            
+
             RPI::Ptr<RPI::PassAttachment> historyAttachment = aznew RPI::PassAttachment();
             AZStd::string historyAttachmentName = AZStd::string::format("%s.ReflectionScreenSpace_HistoryImage", GetPathName().GetCStr());
             historyAttachment->m_name = historyAttachmentName;
@@ -122,7 +122,7 @@ namespace AZ
             RHI::Size& reflectionImageSize = m_ownedAttachments[0]->m_descriptor.m_image.m_size;
 
             if (historyImageSize != reflectionImageSize)
-            {              
+            {
                 historyImageSize = reflectionImageSize;
 
                 CreateHistoryAttachmentImage(historyAttachment);

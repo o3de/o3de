@@ -6,11 +6,41 @@
  *
  */
 
+#include <AzCore/Memory/SystemAllocator.h>
 #include "particle/core/ParticleDataPool.h"
 #include <cstring>
 
-namespace SimuCore::ParticleCore {
+namespace SimuCore::ParticleCore
+{
     constexpr AZ::u32 ALIGNMENT = 16;
+
+        ParticleAlignedAllocator::pointer ParticleAlignedAllocator::allocate(
+        ParticleAlignedAllocator::size_type byteSize, ParticleAlignedAllocator::size_type alignment)
+        {
+            if (alignment < 16)
+            {
+                alignment = 16;
+            }
+            return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().allocate(byteSize, alignment);
+        }
+        void ParticleAlignedAllocator::deallocate(
+            ParticleAlignedAllocator::pointer ptr, ParticleAlignedAllocator::size_type byteSize, ParticleAlignedAllocator::size_type alignment)
+        {
+            if (alignment < 16)
+            {
+                alignment = 16;
+            }
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Get().deallocate(ptr, byteSize, alignment);
+        }
+        ParticleAlignedAllocator::pointer reallocate(
+            ParticleAlignedAllocator::pointer ptr, ParticleAlignedAllocator::size_type newSize, ParticleAlignedAllocator::align_type newAlignment)
+        {
+            if (newAlignment < 16)
+            {
+                newAlignment = 16;
+            }
+            return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().reallocate(ptr, newSize, newAlignment);
+        }
 
     template <typename T>
     constexpr T AlignUp(const T& value, size_t alignment)

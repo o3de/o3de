@@ -32,7 +32,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridRayTracingPass> DiffuseProbeGridRayTracingPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridRayTracingPass> pass = aznew DiffuseProbeGridRayTracingPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridRayTracingPass::DiffuseProbeGridRayTracingPass(const RPI::PassDescriptor& descriptor)
@@ -304,7 +304,7 @@ namespace AZ
                 m_rayTracingShaderTable->Build(descriptor);
             }
         }
-    
+
         void DiffuseProbeGridRayTracingPass::BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
@@ -317,6 +317,7 @@ namespace AZ
                 rayTracingFeatureProcessor->GetSubMeshCount() &&
                 m_rayTracingShaderTable)
             {
+                const RHI::ShaderResourceGroup* sceneSrg = m_pipeline->GetScene()->GetRHIShaderResourceGroup();
                 // submit the DispatchRaysItems for each DiffuseProbeGrid in this range
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
                 {
@@ -324,7 +325,8 @@ namespace AZ
 
                     const RHI::DeviceShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
-                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get()
+                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
+                        sceneSrg->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get()
                     };
 
                     RHI::DeviceDispatchRaysItem dispatchRaysItem;

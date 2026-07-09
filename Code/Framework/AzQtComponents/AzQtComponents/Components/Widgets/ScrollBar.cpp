@@ -20,8 +20,6 @@
 #include <QScrollBar>
 #include <QEvent>
 
-#include <QtWidgets/private/qstylesheetstyle_p.h>
-
 namespace AzQtComponents
 {
     static constexpr const char* g_showBackgroundProperty = "ShowBackground";
@@ -169,7 +167,8 @@ namespace AzQtComponents
                     {
                         if (auto styleSheet = StyleManager::styleSheetStyle(cornerWidget))
                         {
-                            styleSheet->repolish(cornerWidget);
+                            styleSheet->unpolish(cornerWidget);
+                            styleSheet->polish(cornerWidget);
                         }
                     }
                     break;
@@ -306,10 +305,10 @@ namespace AzQtComponents
     {
         Q_UNUSED(config);
 
-        auto styleSheetStyle = qobject_cast<QStyleSheetStyle*>(style->baseStyle());
+        QStyle* styleSheetStyle = style->baseStyle();
         if (styleSheetStyle)
         {
-            styleSheetStyle->QWindowsStyle::drawComplexControl(QStyle::CC_ScrollBar, option, painter, widget);
+            styleSheetStyle->drawComplexControl(QStyle::CC_ScrollBar, option, painter, widget);
             return true;
         }
 

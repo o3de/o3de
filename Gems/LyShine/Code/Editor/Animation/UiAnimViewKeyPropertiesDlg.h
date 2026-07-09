@@ -9,16 +9,14 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include "UiAnimViewSequence.h"
 #include "UiAnimViewNode.h"
 #include "UiAnimViewDopeSheetBase.h"
 
-#include <QScopedPointer>
 #include <Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.h>
 
+#include <QScopedPointer>
 #include <QDockWidget>
-#endif
 
 namespace Ui {
     class CUiAnimViewTrackPropsDlg;

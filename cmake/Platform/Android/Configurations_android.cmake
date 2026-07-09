@@ -42,10 +42,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         COMPILATION
             -femulated-tls           # All accesses to TLS variables are converted to calls to __emutls_get_address in the runtime library
             -fno-aligned-allocation  # Disable use of C++17 aligned_alloc for operator new/delete
-
         COMPILATION_DEBUG
             -gdwarf-2            # DWARF 2 debugging information
-
         COMPILATION_PROFILE
             -g                  # debugging information
             -gdwarf-2           # DWARF 2 debugging information
@@ -54,19 +52,18 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -rdynamic            # add ALL symbols to the dynamic symbol table
             -Wl,--no-undefined   # tell the gcc linker to fail if it finds undefined references
             -Wl,--gc-sections    # discards unused sections
+            
+            # Guarantees that the native android activity entry point is present in the final binary
+            -u ANativeActivity_onCreate
 
             -landroid            # Android Library
             -llog                # log library for android
             -lc++_shared
             -ldl                 # Dynamic
             -stdlib=libc++
-
-            -u ANativeActivity_onCreate
-
         LINK_NON_STATIC_DEBUG
             -Wl,--build-id       # Android Studio needs the libraries to have an id in order to match them with what"s running on the device.
             -shared
-
         LINK_NON_STATIC_PROFILE
             -Wl,--build-id       # Android Studio needs the libraries to have an id in order to match them with what"s running on the device.
             -shared
@@ -84,4 +81,3 @@ else()
     message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
 
 endif()
-

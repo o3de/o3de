@@ -138,7 +138,8 @@ namespace AZ::Internal
 #   define azfopen(_fp, _filename, _attrib)                 *(_fp) = fopen(_filename, _attrib)
 #   define azfscanf                                         fscanf
 
-#   define azsprintf                                        sprintf
+#   define azsprintf(_buffer, ...)                          snprintf(_buffer, AZ_ARRAY_SIZE(_buffer), __VA_ARGS__)
+
 #   define azstrlwr(_buffer, _size)                         strlwr(_buffer)
 #   define azvsprintf                                       vsprintf
 #   define azwcscpy(_dest, _size, _buffer)                  wcscpy(_dest, _buffer)
@@ -499,3 +500,23 @@ constexpr bool operator!=(EnumType lhs, EnumType rhs) \
         using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
         return static_cast<UnderlyingType>(lhs) != static_cast<UnderlyingType>(rhs); \
     }
+
+// Macros to safely delete raw pointers and set them to nullptr afterwards
+
+#ifndef SAFE_DELETE
+// Delete a raw pointer and set it to nullptr to prevent dangling pointers
+#define SAFE_DELETE(p) { if (p) { delete (p); (p) = NULL; } \
+}
+#endif
+
+#ifndef SAFE_DELETE_ARRAY
+// Delete a raw pointer to an array and set it to nullptr to prevent dangling pointers
+#define SAFE_DELETE_ARRAY(p) { if (p) { delete [] (p); (p) = NULL; } \
+}
+#endif
+
+#ifndef SAFE_RELEASE
+// For object pointers that releases itself using a `Release()` call, call the release on the pointer and set it to nullptr
+#define SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } \
+}
+#endif

@@ -33,7 +33,7 @@ Tenets:
 What is provided (High Level):
 
 - DCC-Agnostic Python Framework (as a modular Gem) related to multiple integrations for:
-    O3DE Editor (python scripting, utils and PySide2 tools)
+    O3DE Editor (python scripting, utils and PySide tools)
     DCC applications and their Python APIs/SDKs
     Custom standalone tools and utils (python based)
   
@@ -74,7 +74,7 @@ What is provided (by folder):
                             If the following if found, it will be executed when the Editor boots:
                                 "Editor\Scripts\bootstrap.py"
 
-                            This can be used to initialize code access, extend the editor (PySide2), etc.
+                            This can be used to initialize code access, extend the editor (PySide), etc.
 
 \Tools                        This is where the following is maintained:
 

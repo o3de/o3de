@@ -74,7 +74,11 @@ AssetImporterWindow::AssetImporterWindow(QWidget* parent)
 
 AssetImporterWindow::~AssetImporterWindow()
 {
-    disconnect();
+    while (QLayoutItem* cardToDelete = ui->m_cardAreaLayout->takeAt(0))
+    {
+        delete cardToDelete->widget();
+        delete cardToDelete;
+    }
 }
 
 void AssetImporterWindow::OpenFile(const AZStd::string& filePath)
@@ -740,7 +744,11 @@ void AssetImporterWindow::ReloadCurrentScene(bool warnUser)
 
     if (warnUser || foundSharedScene)
     {
-        QMessageBox::question(this, tr("Reloading Scene Settings"), promptMessage.arg(m_fullSourcePath.c_str()), QMessageBox::Ok);
+        QMessageBox::question(
+            this,
+            tr("Reloading Scene Settings"),
+            promptMessage.arg(m_fullSourcePath.c_str()),
+            QMessageBox::StandardButtons(QMessageBox::StandardButton::Ok));
     }
 
     OpenFileInternal(m_fullSourcePath);
@@ -751,4 +759,3 @@ void AssetImporterWindow::FileChanged([[maybe_unused]] QString path)
     ReloadCurrentScene(true);
 }
 
-#include <moc_AssetImporterWindow.cpp>

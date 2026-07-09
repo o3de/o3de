@@ -16,8 +16,8 @@ namespace SimuCore::ParticleCore {
         static void Execute(const SpawnLocBox* data, const SpawnInfo& info, Particle& particle);
         static void UpdateDistPtr(const SpawnLocBox* data, const Distribution& distribution);
 
-        Vector3 center = { 0.f, 0.f, 0.f };
-        Vector3 size = { 1.f, 1.f, 1.f };
+        AZ::Vector3 center = { 0.f, 0.f, 0.f };
+        AZ::Vector3 size = { 1.f, 1.f, 1.f };
     };
 
     struct SpawnLocPoint {
@@ -33,7 +33,7 @@ namespace SimuCore::ParticleCore {
         static void Execute(const SpawnLocSphere* data, const SpawnInfo& info, Particle& particle);
         static void UpdateDistPtr(const SpawnLocSphere* data, const Distribution& distribution);
 
-        Vector3 center = { 0.f, 0.f, 0.f };
+        AZ::Vector3 center = { 0.f, 0.f, 0.f };
         float radius = 1.f;
         float ratio = 1.f;
         float angle = 360.f;
@@ -46,10 +46,10 @@ namespace SimuCore::ParticleCore {
         static void Execute(const SpawnLocSkeleton* data, const SpawnInfo& info, Particle& particle);
         static void UpdateDistPtr(const SpawnLocSkeleton* data, const Distribution& distribution);
 
-        Vector3 scale {1.f, 1.f, 1.f};
+        AZ::Vector3 scale {1.f, 1.f, 1.f};
         MeshSampleType sampleType = MeshSampleType::BONE;
     private:
-        static Vector3 SamplePointViaArea(const SpawnInfo& info);
+        static AZ::Vector3 SamplePointViaArea(const SpawnInfo& info);
     };
 
     struct SpawnLocCylinder {
@@ -57,7 +57,7 @@ namespace SimuCore::ParticleCore {
         static void Execute(const SpawnLocCylinder* data, const SpawnInfo& info, Particle& particle);
         static void UpdateDistPtr(const SpawnLocCylinder* data, const Distribution& distribution);
 
-        Vector3 center = { 0.f, 0.f, 0.f };
+        AZ::Vector3 center = { 0.f, 0.f, 0.f };
         float radius = 1.f; // length
         float height = 1.f;
         float angle = 360.f;
@@ -71,10 +71,10 @@ namespace SimuCore::ParticleCore {
         static void Execute(const SpawnLocTorus* data, const SpawnInfo& info, Particle& particle);
         static void UpdateDistPtr(const SpawnLocTorus* data, const Distribution& distribution);
 
-        Vector3 center = { 0.f, 0.f, 0.f };
-        Vector3 torusAxis = { 0.f, 0.f, 1.f };
-        Vector3 xAxis = { 1.f, 0.f, 0.f };
-        Vector3 yAxis = { 0.f, 1.f, 0.f };
+        AZ::Vector3 center = { 0.f, 0.f, 0.f };
+        AZ::Vector3 torusAxis = { 0.f, 0.f, 1.f };
+        AZ::Vector3 xAxis = { 1.f, 0.f, 0.f };
+        AZ::Vector3 yAxis = { 0.f, 1.f, 0.f };
         float torusRadius = 5.f;  // the distance from the center of the tube to the center of the torus
         float tubeRadius = 1.f;   // the radius of the tube
     };

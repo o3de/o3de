@@ -6,8 +6,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
 
-from PySide2 import QtWidgets, QtCore
-from PySide2.QtCore import Signal
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtCore import Signal
 
 
 class DragAndDrop(QtWidgets.QWidget):

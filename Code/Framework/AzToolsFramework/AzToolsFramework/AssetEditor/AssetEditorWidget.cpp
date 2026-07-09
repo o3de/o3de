@@ -28,6 +28,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -43,7 +44,10 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzQtComponents/Utilities/QtWindowUtilities.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -56,8 +60,11 @@ AZ_POP_DISABLE_WARNING
 #include <UI/DocumentPropertyEditor/FilteredDPE.h>
 
 #include <QAction>
+#include <QApplication>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QMenuBar>
+#include <QTimer>
 #include <QMessageBox>
 #include <QVBoxLayout>
 
@@ -70,6 +77,10 @@ namespace AzToolsFramework
         //////////////////////////////////
 
         static constexpr const char* k_assetEditorSettingsPath = "/O3DE/Preferences/AssetEditor/Settings";
+
+        // Dedicated Action Manager context for the Asset Editor so its shortcuts (e.g. Ctrl+S) win over the
+        // main Editor's identical ones while focus is inside the Asset Editor. See RegisterShortcutActionContext.
+        static constexpr const char* k_assetEditorActionContextId = "o3de.context.assetEditor";
 
         void AssetEditorWidgetUserSettings::Reflect(AZ::ReflectContext* context)
         {
@@ -102,18 +113,28 @@ namespace AzToolsFramework
                 absolutePath = AZStd::string::format("%s/%s", projectPath, recentPath.c_str());
             }
 
-            const auto& it = m_recentPathPerAssetType.find(assetType);
-            if (it != m_recentPathPerAssetType.end())
+            // Normalize the path (consistent separators, no double slashes, resolved case)
+            // to ensure reliable deduplication and lookup via GetSourceInfoBySourcePath.
+            AZ::StringFunc::Path::Normalize(absolutePath);
+
+            // Only store the recent folder path if it is within the project directory.
+            // Paths pointing to the Cache or other non-project locations should not be
+            // used as defaults for Save As dialogs.
+            if (AZ::StringFunc::StartsWith(folderPath, projectPath, false))
             {
-                // Case insensitive compare, the asset path passed in may come from the asset hint which is lowercase
-                if (!AZ::StringFunc::Equal(folderPath, it->second, false))
+                const auto& it = m_recentPathPerAssetType.find(assetType);
+                if (it != m_recentPathPerAssetType.end())
                 {
-                    m_recentPathPerAssetType.insert_or_assign(assetType, folderPath.c_str());
+                    // Case insensitive compare, the asset path passed in may come from the asset hint which is lowercase
+                    if (!AZ::StringFunc::Equal(folderPath, it->second, false))
+                    {
+                        m_recentPathPerAssetType.insert_or_assign(assetType, folderPath.c_str());
+                    }
                 }
-            }
-            else
-            {
-                m_recentPathPerAssetType.insert_or_assign(assetType, folderPath);
+                else
+                {
+                    m_recentPathPerAssetType.insert_or_assign(assetType, folderPath);
+                }
             }
 
             auto item = AZStd::find_if(m_recentFiles.begin(), m_recentFiles.end(), [&absolutePath](const AZStd::string& path)
@@ -195,24 +216,99 @@ namespace AzToolsFramework
             // Add Create New Asset menu and populate it with all asset types that have GenericAssetHandler
             m_newAssetMenu = fileMenu->addMenu(tr("&New"));
 
+            // ----------------------------------------------------------------
+            // Build nested submenus from asset group strings
+            // e.g. "GS/Core" -> [GS] -> [Core] -> [assets]
+            // Single-entry groups are collapsed into their parent menu.
+            // ----------------------------------------------------------------
+
+            // Pass 1: Collect asset entries with their resolved group paths
+            struct NewMenuEntry
+            {
+                AZ::Data::AssetType assetType;
+                QString displayName;
+                QStringList groupSegments;
+            };
+            QVector<NewMenuEntry> menuEntries;
+
             for (const auto& assetType : m_genericAssetTypes)
             {
                 QString assetTypeName;
                 AZ::AssetTypeInfoBus::EventResult(assetTypeName, assetType, &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
-
-                if (!assetTypeName.isEmpty())
+                if (assetTypeName.isEmpty())
                 {
-                    QAction* newAssetAction = m_newAssetMenu->addAction(assetTypeName);
-                    connect(
-                        newAssetAction,
-                        &QAction::triggered,
-                        this,
-                        [assetType, this]()
-                        {
-                            CreateAsset(assetType, AZ::Uuid::CreateNull());
-                        }
-                    );
+                    continue;
                 }
+
+                const char* groupRaw = nullptr;
+                AZ::AssetTypeInfoBus::EventResult(groupRaw, assetType, &AZ::AssetTypeInfo::GetGroup);
+                QString group = groupRaw ? QString(groupRaw).trimmed() : QString();
+
+                NewMenuEntry entry;
+                entry.assetType = assetType;
+                entry.displayName = assetTypeName;
+                entry.groupSegments = group.isEmpty()
+                    ? QStringList()
+                    : group.split('/', Qt::SkipEmptyParts);
+                menuEntries.push_back(entry);
+            }
+
+            // Pass 2: Count how many entries share each group prefix.
+            // A prefix path maps to the total number of entries underneath it.
+            QMap<QString, int> prefixCounts;
+            for (const auto& entry : menuEntries)
+            {
+                QString path;
+                for (const QString& seg : entry.groupSegments)
+                {
+                    if (!path.isEmpty())
+                    {
+                        path += '/';
+                    }
+                    path += seg;
+                    prefixCounts[path]++;
+                }
+            }
+
+            // Pass 3: Build menus, skipping group levels that contain only 1 entry
+            QMap<QString, QMenu*> groupMenuCache;
+
+            for (const auto& entry : menuEntries)
+            {
+                QMenu* targetMenu = m_newAssetMenu;
+
+                QString path;
+                for (const QString& segment : entry.groupSegments)
+                {
+                    if (!path.isEmpty())
+                    {
+                        path += '/';
+                    }
+                    path += segment;
+
+                    // Only create a submenu if this group level has more than 1 entry
+                    if (prefixCounts.value(path) <= 1)
+                    {
+                        continue;
+                    }
+
+                    if (!groupMenuCache.contains(path))
+                    {
+                        groupMenuCache[path] = targetMenu->addMenu(segment);
+                    }
+                    targetMenu = groupMenuCache[path];
+                }
+
+                QAction* newAssetAction = targetMenu->addAction(entry.displayName);
+                connect(
+                    newAssetAction,
+                    &QAction::triggered,
+                    this,
+                    [assetType = entry.assetType, this]()
+                    {
+                        CreateAsset(assetType, AZ::Uuid::CreateNull());
+                    }
+                );
             }
 
             QAction* openAssetAction = fileMenu->addAction("&Open...");
@@ -224,10 +320,12 @@ namespace AzToolsFramework
 
             m_saveAssetAction = fileMenu->addAction("&Save");
             m_saveAssetAction->setShortcut(QKeySequence::Save);
+            m_saveAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(m_saveAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAsset);
 
             m_saveAsAssetAction = fileMenu->addAction("&Save As");
             m_saveAsAssetAction->setShortcut(QKeySequence::SaveAs);
+            m_saveAsAssetAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(m_saveAsAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAssetAs);
 
             m_saveAllAssetsAction = fileMenu->addAction("Save All");
@@ -238,6 +336,25 @@ namespace AzToolsFramework
             m_saveAssetAction->setEnabled(false);
             m_saveAsAssetAction->setEnabled(false);
             m_saveAllAssetsAction->setEnabled(false);
+
+            QMenu* editMenu = mainMenu->addMenu(tr("&Edit"));
+
+            m_undoAction = editMenu->addAction(tr("&Undo"));
+            m_undoAction->setShortcut(QKeySequence::Undo);
+            connect(m_undoAction, &QAction::triggered, this, &AssetEditorWidget::Undo);
+
+            m_redoAction = editMenu->addAction(tr("&Redo"));
+            m_redoAction->setShortcut(QKeySequence::Redo);
+            connect(m_redoAction, &QAction::triggered, this, &AssetEditorWidget::Redo);
+
+            // Like the save actions, the undo/redo shortcuts are scoped to this widget for their menu labels;
+            // the actual key handling is claimed in event() so it cannot be lost to the main Editor's identical
+            // Undo/Redo (which would otherwise undo the level while the Asset Editor has focus).
+            m_undoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            m_redoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+            m_undoAction->setEnabled(false);
+            m_redoAction->setEnabled(false);
 
             QMenu* viewMenu = mainMenu->addMenu(tr("&View"));
 
@@ -250,6 +367,8 @@ namespace AzToolsFramework
             mainLayout->setMenuBar(mainMenu);
 
             setLayout(mainLayout);
+
+            RegisterShortcutActionContext();
 
             QObject::connect(m_recentFileMenu, &QMenu::aboutToShow, this, &AssetEditorWidget::PopulateRecentMenu);
 
@@ -286,6 +405,7 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::SaveAll()
         {
+            CommitInProgressEdit();
 
             for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
             {
@@ -371,13 +491,23 @@ namespace AzToolsFramework
                 return;
             }
 
-            bool hasResult = false;
-            AZStd::string fullPath;
+            // Resolve the source path via the source UUID so that the stored path
+            // round-trips through GetSourceInfoBySourcePath (used by Open Recent).
+            AZ::Data::AssetInfo sourceInfo;
+            AZStd::string watchFolder;
+            bool sourceFound = false;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                hasResult,
-                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath,
-                typeInfo.m_relativePath,
-                fullPath);
+                sourceFound,
+                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourceUUID,
+                asset.GetId().m_guid,
+                sourceInfo,
+                watchFolder);
+
+            AZStd::string fullPath;
+            if (sourceFound)
+            {
+                AzFramework::StringFunc::Path::Join(watchFolder.c_str(), sourceInfo.m_relativePath.c_str(), fullPath);
+            }
 
             AZStd::string fileName = typeInfo.m_relativePath;
 
@@ -386,7 +516,10 @@ namespace AzToolsFramework
                 AzFramework::StringFunc::Path::StripPath(fileName);
             }
 
-            AddRecentPath(asset.GetType(), fullPath.c_str());
+            if (!fullPath.empty())
+            {
+                AddRecentPath(asset.GetType(), fullPath.c_str());
+            }
 
             AssetEditorTab* tab = FindTabForAsset(asset.GetId());
             if (tab)
@@ -427,41 +560,100 @@ namespace AzToolsFramework
 
         void AssetEditorWidget::OpenAssetFromPath(const AZStd::string& assetPath)
         {
+            // ----------------------------------------------------------------
+            // Step 1: Resolve the path to an asset ID and type.
+            //         Try as a source path first. If that fails, treat it as
+            //         a product/cache path (legacy recent entries stored cache
+            //         paths before the fix).
+            // ----------------------------------------------------------------
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetType assetType;
+
+            // Try source path resolution.
             bool hasResult = false;
-            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetInfo sourceInfo;
             AZStd::string watchFolder;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                 hasResult,
                 &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
                 assetPath.c_str(),
-                assetInfo,
+                sourceInfo,
                 watchFolder);
 
             if (hasResult)
             {
-                AZStd::string fileName = assetPath;
-
-                if (AzFramework::StringFunc::Path::Normalize(fileName))
-                {
-                    AzFramework::StringFunc::Path::StripPath(fileName);
-                }
-
-                AZ::Data::AssetInfo typeInfo;
+                AZ::Data::AssetInfo productInfo;
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    typeInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetInfo.m_assetId);
+                    productInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, sourceInfo.m_assetId);
 
-                AssetEditorTab* tab = FindTabForAsset(assetInfo.m_assetId);
-                if (tab)
+                if (!productInfo.m_assetType.IsNull())
                 {
-                    // This asset is already open, just switch to the correct tab.
-                    m_tabs->setCurrentWidget(tab);
+                    assetId = sourceInfo.m_assetId;
+                    assetType = productInfo.m_assetType;
                 }
-                else
+            }
+
+            // Fallback: treat the path as a product/cache path.
+            if (assetId.IsValid() == false)
+            {
+                AZStd::string relativePath;
+                bool productResult = false;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    productResult,
+                    &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath,
+                    assetPath,
+                    relativePath);
+
+                if (productResult && !relativePath.empty())
                 {
-                    AssetEditorTab* newTab = MakeNewTab(fileName.c_str());
-                    newTab->LoadAsset(assetInfo.m_assetId, typeInfo.m_assetType, fileName.c_str());
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetId,
+                        &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                        relativePath.c_str(),
+                        AZ::Data::s_invalidAssetType,
+                        false);
+
+                    if (assetId.IsValid())
+                    {
+                        AZ::Data::AssetInfo catalogInfo;
+                        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                            catalogInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+                        assetType = catalogInfo.m_assetType;
+                    }
                 }
-                
+            }
+
+            if (!assetId.IsValid() || assetType.IsNull())
+            {
+                AZ_Warning("AssetEditor", false, "Open Recent: could not resolve asset for path '%s'.", assetPath.c_str());
+                return;
+            }
+
+            if (!IsValidAssetType(assetType))
+            {
+                AZ_Warning("AssetEditor", false, "Open Recent: asset type %s is not editable (path: %s).",
+                    assetType.ToFixedString().c_str(), assetPath.c_str());
+                return;
+            }
+
+            // ----------------------------------------------------------------
+            // Step 2: Open the asset.
+            // ----------------------------------------------------------------
+            AZStd::string fileName = assetPath;
+            if (AzFramework::StringFunc::Path::Normalize(fileName))
+            {
+                AzFramework::StringFunc::Path::StripPath(fileName);
+            }
+
+            AssetEditorTab* tab = FindTabForAsset(assetId);
+            if (tab)
+            {
+                m_tabs->setCurrentWidget(tab);
+            }
+            else
+            {
+                AssetEditorTab* newTab = MakeNewTab(fileName.c_str());
+                newTab->LoadAsset(assetId, assetType, fileName.c_str());
             }
         }
 
@@ -473,6 +665,47 @@ namespace AzToolsFramework
             return tab->SaveAssetToPath(assetPath.data());
         }
 
+        void AssetEditorWidget::RegisterShortcutActionContext()
+        {
+            // The Asset Editor pane shares its top-level window with the main Editor, whose Ctrl+S (save level)
+            // and Ctrl+Z/Ctrl+Y (undo/redo) are dispatched by the Action Manager: a per-context event filter
+            // installed on the context's widget claims the shortcut on QEvent::ShortcutOverride and consumes it
+            // before it reaches parent widgets. Giving the Asset Editor its own action context installs that
+            // filter on this widget - a descendant of the main window - so it runs first and triggers the Asset
+            // Editor's own actions (registered on this widget via addAction below) instead of the main Editor's.
+            // This is the standard O3DE way to let duplicated shortcut hotkeys coexist, and keeps the shortcuts
+            // rebindable through the Hotkey Manager (no hard-coded key handling).
+            auto* actionManager = AZ::Interface<ActionManagerInterface>::Get();
+            auto* hotKeyManager = AZ::Interface<HotKeyManagerInterface>::Get();
+            if (!actionManager || !hotKeyManager)
+            {
+                return;
+            }
+
+            if (!actionManager->IsActionContextRegistered(k_assetEditorActionContextId))
+            {
+                ActionContextProperties contextProperties;
+                contextProperties.m_name = "O3DE Asset Editor";
+                actionManager->RegisterActionContext(k_assetEditorActionContextId, contextProperties);
+            }
+
+            // The context's widget watcher triggers matching actions found on the watched widget, so these
+            // actions must be added to this widget (not just the menus) to be reachable.
+            addAction(m_saveAssetAction);
+            addAction(m_saveAsAssetAction);
+            addAction(m_undoAction);
+            addAction(m_redoAction);
+
+            hotKeyManager->AssignWidgetToActionContext(k_assetEditorActionContextId, this);
+        }
+
+        void AssetEditorWidget::CommitInProgressEdit()
+        {
+            // Clearing focus fires the editor's focus-out, which writes the value (and its undo entry) into the
+            // model so the save below captures the committed data.
+            AzQtComponents::ClearFocusWithin(this);
+        }
+
         void AssetEditorWidget::SaveAsset()
         {
             if (!m_tabs->count())
@@ -480,11 +713,13 @@ namespace AzToolsFramework
                 return;
             }
 
+            CommitInProgressEdit();
+
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
             tab->SaveAsset();
 
         }
-        
+
         void AssetEditorWidget::SaveAssetAs()
         {
             if (!m_tabs->count())
@@ -492,13 +727,49 @@ namespace AzToolsFramework
                 return;
             }
 
+            CommitInProgressEdit();
+
             AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
             tab->SaveAsDialog();
+        }
+
+        void AssetEditorWidget::Undo()
+        {
+            if (AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget()))
+            {
+                tab->Undo();
+            }
+        }
+
+        void AssetEditorWidget::Redo()
+        {
+            if (AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget()))
+            {
+                tab->Redo();
+            }
+        }
+
+        void AssetEditorWidget::UpdateUndoRedoActionsStatus()
+        {
+            // Keep Undo/Redo enabled whenever a tab is open - even with empty history - so the action-context
+            // watcher always claims Ctrl+Z / Ctrl+Y while an asset is open and they never fall through to the
+            // main Editor's level undo. The tab's Undo()/Redo() are no-ops when there is nothing to undo/redo.
+            // (When no tab is open the actions are disabled, releasing the shortcut back to the level.)
+            AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
+            if (m_undoAction)
+            {
+                m_undoAction->setEnabled(tab != nullptr);
+            }
+            if (m_redoAction)
+            {
+                m_redoAction->setEnabled(tab != nullptr);
+            }
         }
 
         void AssetEditorWidget::currentTabChanged(int /*newCurrentIndex*/)
         {
             UpdateSaveMenuActionsStatus();
+            UpdateUndoRedoActionsStatus();
         }
 
         void AssetEditorWidget::onTabCloseButtonPressed(int tabIndexToClose)
@@ -718,6 +989,7 @@ namespace AzToolsFramework
 
                 for (const AZStd::string& recentFile : m_userSettings.GetRecentFiles())
                 {
+                    // Try to get a short display name from the product path.
                     bool hasResult = false;
                     AZStd::string relativePath;
                     AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
@@ -726,18 +998,26 @@ namespace AzToolsFramework
                         recentFile,
                         relativePath);
 
-                    if (hasResult)
+                    if (!hasResult)
                     {
-                        QAction* action = m_recentFileMenu->addAction(relativePath.c_str());
-                        connect(
-                            action,
-                            &QAction::triggered,
-                            this,
-                            [recentFile, this]()
-                            {
-                                this->OpenAssetFromPath(recentFile);
-                            });
+                        // Fall back to the filename portion of the stored path.
+                        relativePath = recentFile;
+                        AzFramework::StringFunc::Path::StripPath(relativePath);
+                        if (relativePath.empty())
+                        {
+                            continue;
+                        }
                     }
+
+                    QAction* action = m_recentFileMenu->addAction(relativePath.c_str());
+                    connect(
+                        action,
+                        &QAction::triggered,
+                        this,
+                        [recentFile, this]()
+                        {
+                            this->OpenAssetFromPath(recentFile);
+                        });
                 }
             }
         }
@@ -813,4 +1093,3 @@ namespace AzToolsFramework
     } // namespace AssetEditor
 } // namespace AzToolsFramework
 
-#include "AssetEditor/moc_AssetEditorWidget.cpp"

@@ -42,15 +42,11 @@ set(FILES
     Components/FilteredSearchWidget.cpp
     Components/FilteredSearchWidget.h
     Components/FilteredSearchWidget.ui
-    Components/GlobalEventFilter.h
-    Components/GlobalEventFilter.cpp
     Components/InputDialog.h
     Components/InputDialog.cpp
     Components/O3DEStylesheet.h
     Components/Titlebar.cpp
     Components/Titlebar.h
-    Components/TitleBarOverdrawHandler.cpp
-    Components/TitleBarOverdrawHandler.h
     Components/ToastNotification.cpp
     Components/ToastNotification.h
     Components/ToastNotificationConfiguration.h
@@ -101,7 +97,6 @@ set(FILES
     Components/WindowDecorationWrapper.h
     Components/ExtendedLabel.cpp
     Components/ExtendedLabel.h
-    Components/RepolishMinimizer.h
     Components/FlowLayout.h
     Components/FlowLayout.cpp
     Components/resources.qrc
@@ -165,6 +160,8 @@ set(FILES
     Components/Widgets/LineEdit.h
     Components/Widgets/LineEdit.qss
     Components/Widgets/LineEditConfig.ini
+    Components/Widgets/LineEditRevertHandler.cpp
+    Components/Widgets/LineEditRevertHandler.h
     Components/Widgets/LogicalTabOrderingWidget.cpp
     Components/Widgets/LogicalTabOrderingWidget.h
     Components/Widgets/Menu.cpp
@@ -277,7 +274,7 @@ set(FILES
     Components/Widgets/ColorPicker/Swatch.cpp
     Components/Widgets/ColorPicker/ColorWarning.h
     Components/Widgets/ColorPicker/ColorWarning.cpp
-    Images/resources.qrc
+    Images/img_resources.qrc
     PropertyInput/PropertyInputWidgets.h
     PropertyInput/PropertyInputWidgets.cpp
     Utilities/AutoSettingsGroup.h

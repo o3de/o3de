@@ -19,8 +19,6 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
 
-#include <QtWidgets/private/qstylesheetstyle_p.h>
-
 namespace AzQtComponents
 {
     constexpr const char* g_branchLinesEnabledProperty = "BranchLinesEnabled";
@@ -46,7 +44,8 @@ namespace AzQtComponents
                         auto styleSheet = StyleManager::styleSheetStyle(widget);
                         if (styleSheet)
                         {
-                            styleSheet->repolish(widget);
+                            styleSheet->unpolish(widget);
+                            styleSheet->polish(widget);
                         }
                         widget->update();
                         break;
@@ -360,4 +359,3 @@ namespace AzQtComponents
     }
 
 } // namespace AzQtComponents
-#include <Components/Widgets/moc_TreeView.cpp>

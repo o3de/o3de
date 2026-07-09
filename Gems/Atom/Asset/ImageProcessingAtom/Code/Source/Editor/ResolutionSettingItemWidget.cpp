@@ -135,4 +135,3 @@ namespace ImageProcessingAtomEditor
         }
     }
 }//namespace ImageProcessingAtomEditor
-#include <Source/Editor/moc_ResolutionSettingItemWidget.cpp>

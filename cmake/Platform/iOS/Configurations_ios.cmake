@@ -17,15 +17,15 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
             IOS
             MOBILE
             APPLE_BUNDLE
+
         COMPILATION
             -miphoneos-version-min=${LY_IOS_DEPLOYMENT_TARGET}
             -Wno-shorten-64-to-32
             -fno-aligned-allocation
-        LINK_NON_STATIC
 
+        LINK_NON_STATIC
             -Wl,-dead_strip
             -miphoneos-version-min=${LY_IOS_DEPLOYMENT_TARGET}
-
             -lpthread
     )
     ly_set(CMAKE_CXX_EXTENSIONS OFF)

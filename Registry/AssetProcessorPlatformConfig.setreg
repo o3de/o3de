@@ -398,7 +398,7 @@
                     "params": "copy"
                 },
                 "RC txt": {
-                    "pattern": "^(?!.*PreloadLibs.txt).*\\\\.txt",
+                    "glob": "*.txt",
                     "params": "copy"
                 },
                 "RC cal": {

@@ -241,10 +241,15 @@ namespace OpenParticleSystemEditor
         {
             m_materialAssetWidget->setVisible(true);
         }
-        else if (m_moduleName.c_str() == m_rendererClasses[MESH_RENDERER_INDEX].first)
+        else if (IsMeshRenderer())
         {
             m_materialAssetWidget->setVisible(true);
             m_modelAssetWidget->setVisible(true);
         }
     }
-}
+
+    bool ComboBoxWidget::IsMeshRenderer() const
+    {
+        return m_moduleName.c_str() == m_rendererClasses[MESH_RENDERER_INDEX].first;
+    }
+} // namespace OpenParticleSystemEditor

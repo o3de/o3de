@@ -8,7 +8,6 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <source/ui/AssetBundlerTabWidget.h>
 
 #include <AzCore/Debug/TraceMessageBus.h>
@@ -21,7 +20,6 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QWidget>
-#endif
 
 namespace Ui
 {

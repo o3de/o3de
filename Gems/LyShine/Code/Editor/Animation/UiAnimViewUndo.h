@@ -123,8 +123,7 @@ class CUndoSequenceAdd
     : public CAbstractUndoSequenceTransaction
 {
 public:
-    CUndoSequenceAdd(CUiAnimViewSequence* pNewSequence)
-        : CAbstractUndoSequenceTransaction(pNewSequence) {}
+    CUndoSequenceAdd(CUiAnimViewSequence* pNewSequence);
 
 protected:
     virtual int GetSize() override { return sizeof(*this); };

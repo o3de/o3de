@@ -88,7 +88,6 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     # Android
     android.add_args(subparsers)
 
-
 if __name__ == "__main__":
     # parse the command line args
     the_parser = argparse.ArgumentParser()

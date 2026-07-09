@@ -3736,4 +3736,3 @@ namespace LandscapeCanvasEditor
     }
 }
 
-#include <Source/Editor/moc_MainWindow.cpp>

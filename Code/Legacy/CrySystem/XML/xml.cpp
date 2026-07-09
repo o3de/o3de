@@ -257,23 +257,21 @@ void CXmlNode::setAttr(const char* key, const char* value)
 
 void CXmlNode::setAttr(const char* key, int value)
 {
-    char str[128];
-    azitoa(value, str, AZ_ARRAY_SIZE(str), 10);
-    setAttr(key, str);
+    AZStd::string str = AZStd::to_string(value);
+    setAttr(key, str.c_str());
 }
 
 void CXmlNode::setAttr(const char* key, unsigned int value)
 {
-    char str[128];
-    azui64toa(value, str, AZ_ARRAY_SIZE(str), 10);
-    setAttr(key, str);
+    AZStd::string uintStr = AZStd::to_string(value);
+    setAttr(key, uintStr.c_str());
 }
 
 void CXmlNode::setAttr(const char* key, float value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT, value);
+    azsprintf(str, FLOAT_FMT, value);
     setAttr(key, str);
 }
 
@@ -281,7 +279,7 @@ void CXmlNode::setAttr(const char* key, double value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, DOUBLE_FMT, value);
+    azsprintf(str, DOUBLE_FMT, value);
     setAttr(key, str);
 }
 
@@ -289,7 +287,7 @@ void CXmlNode::setAttr(const char* key, double value)
 void CXmlNode::setAttr(const char* key, int64 value)
 {
     char str[32];
-    sprintf_s(str, "%" PRId64, value);
+    azsprintf(str, "%" PRId64, aznumeric_cast<int64_t>(value));
     setAttr(key, str);
 }
 
@@ -299,11 +297,11 @@ void CXmlNode::setAttr(const char* key, uint64 value, bool useHexFormat)
     char str[32] = { 0 };
     if (useHexFormat)
     {
-        sprintf_s(str, "%" PRIX64, value);
+        azsprintf(str, "%" PRIX64, aznumeric_cast<uint64_t>(value));
     }
     else
     {
-        sprintf_s(str, "%" PRIu64, value);
+        azsprintf(str, "%" PRIu64, aznumeric_cast<uint64_t>(value));
     }
     setAttr(key, str);
 }
@@ -312,21 +310,21 @@ void CXmlNode::setAttr(const char* key, const Ang3& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
     setAttr(key, str);
 }
 void CXmlNode::setAttr(const char* key, const Vec3& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z);
     setAttr(key, str);
 }
 void CXmlNode::setAttr(const char* key, const Vec4& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z, value.w);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.x, value.y, value.z, value.w);
     setAttr(key, str);
 }
 
@@ -334,15 +332,15 @@ void CXmlNode::setAttr(const char* key, const Vec2& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT, value.x, value.y);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT, value.x, value.y);
     setAttr(key, str);
 }
 
-void CXmlNode::setAttr(const char* key, const Quat& value)
+void CXmlNode::setAttr(const char* key, const AZ::Quaternion& value)
 {
     char str[128];
     AZ::Locale::ScopedSerializationLocale localeResetter;
-    sprintf_s(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.w, value.v.x, value.v.y, value.v.z);
+    azsprintf(str, FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT "," FLOAT_FMT, value.GetW(), value.GetX(), value.GetY(), value.GetZ());
     setAttr(key, str);
 }
 
@@ -508,7 +506,7 @@ bool CXmlNode::getAttr(const char* key, Vec2& value) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CXmlNode::getAttr(const char* key, Quat& value) const
+bool CXmlNode::getAttr(const char* key, AZ::Quaternion& value) const
 {
     const char* svalue = GetValue(key);
     if (svalue)
@@ -519,10 +517,8 @@ bool CXmlNode::getAttr(const char* key, Quat& value) const
         {
             if (fabs(w) > VEC_EPSILON || fabs(x) > VEC_EPSILON || fabs(y) > VEC_EPSILON || fabs(z) > VEC_EPSILON)
             {
-                //[AlexMcC|02.03.10] directly assign to members to avoid triggering the assert in Quat() with data from bad assets
-                value.w = w;
-                value.v = Vec3(x, y, z);
-                return value.IsValid();
+                value.Set(x, y, z, w);
+                return value.IsFinite();
             }
         }
     }
@@ -530,7 +526,7 @@ bool CXmlNode::getAttr(const char* key, Quat& value) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CXmlNode::getAttr(const char* key, ColorB& value) const
+bool CXmlNode::getAttr(const char* key, AZ::Color& value) const
 {
     const char* svalue = GetValue(key);
     if (svalue)
@@ -543,7 +539,7 @@ bool CXmlNode::getAttr(const char* key, ColorB& value) const
             // If we only found 3 values, a should be unchanged, and still be 255
             if (r < 256 && g < 256 && b < 256 && a < 256)
             {
-                value = ColorB(static_cast<uint8>(r), static_cast<uint8>(g), static_cast<uint8>(b), static_cast<uint8>(a));
+                value = AZ::Color(r, g, b, a);
                 return true;
             }
         }
@@ -943,123 +939,6 @@ void CXmlNode::AddToXmlString(XmlString& xml, int level, AZ::IO::HandleType file
     xml += ">\n";
 }
 
-#if !defined(APPLE) && !defined(LINUX) && !defined(AZ_LEGACY_CRYSYSTEM_TRAIT_HASSTPCPY)
-ILINE static char* stpcpy(char* dst, const char* src)
-{
-    while (src[0])
-    {
-        dst[0] = src[0];
-        dst++;
-        src++;
-    }
-    return dst;
-}
-#endif
-
-char* CXmlNode::AddToXmlStringUnsafe(char* xml, int level, char* endPtr, AZ::IO::HandleType fileHandle, size_t chunkSize) const
-{
-    const bool bHasChildren = (m_pChilds && !m_pChilds->empty());
-
-    for (int i = 0; i < level; i++)
-    {
-        *(xml++) = ' ';
-        *(xml++) = ' ';
-    }
-
-    // Begin Tag
-    if (!m_pAttributes || m_pAttributes->empty())
-    {
-        *(xml++) = '<';
-        xml = stpcpy(xml, m_tag);
-        if (*m_content == 0 && !bHasChildren)
-        {
-            *(xml++) = '/';
-            *(xml++) = '>';
-            *(xml++) = '\n';
-            return xml;
-        }
-        *(xml++) = '>';
-    }
-    else
-    {
-        *(xml++) = '<';
-        xml = stpcpy(xml, m_tag);
-        *(xml++) = ' ';
-
-        // Put attributes.
-        for (XmlAttributes::const_iterator it = m_pAttributes->begin(); it != m_pAttributes->end(); )
-        {
-            xml = stpcpy(xml, it->key);
-            *(xml++) = '=';
-            *(xml++) = '\"';
-#ifndef _RELEASE
-            if (it->value[strcspn(it->value, "\"\'&><")])
-            {
-                __debugbreak();
-            }
-#endif
-            xml = stpcpy(xml, it->value);
-            ++it;
-            *(xml++) = '\"';
-            if (it != m_pAttributes->end())
-            {
-                *(xml++) = ' ';
-            }
-        }
-        if (*m_content == 0 && !bHasChildren)
-        {
-            // Compact tag form.
-            *(xml++) = '/';
-            *(xml++) = '>';
-            *(xml++) = '\n';
-            return xml;
-        }
-        *(xml++) = '>';
-    }
-
-#ifndef _RELEASE
-    if (m_content[strcspn(m_content, "\"\'&><")])
-    {
-        __debugbreak();
-    }
-#endif
-    xml = stpcpy(xml, m_content);
-
-    if (!bHasChildren)
-    {
-        *(xml++) = '<';
-        *(xml++) = '/';
-        xml = stpcpy(xml, m_tag);
-        *(xml++) = '>';
-        *(xml++) = '\n';
-        return xml;
-    }
-
-    *(xml++) = '\n';
-
-    // Add sub nodes.
-    for (XmlNodes::iterator it = m_pChilds->begin(), itEnd = m_pChilds->end(); it != itEnd; ++it)
-    {
-        IXmlNode* node = *it;
-        xml = ((CXmlNode*)node)->AddToXmlStringUnsafe(xml, level + 1, endPtr, fileHandle, chunkSize);
-    }
-
-    for (int i = 0; i < level; i++)
-    {
-        *(xml++) = ' ';
-        *(xml++) = ' ';
-    }
-    *(xml++) = '<';
-    *(xml++) = '/';
-    xml = stpcpy(xml, m_tag);
-    *(xml++) = '>';
-    *(xml++) = '\n';
-
-    assert(xml < endPtr);
-
-    return xml;
-}
-
 //////////////////////////////////////////////////////////////////////////
 IXmlStringData* CXmlNode::getXMLData(int nReserveMem) const
 {
@@ -1435,7 +1314,7 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
         else
         {
             char str[1024];
-            sprintf_s(str, "%s%s at line %d", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser));
+            azsprintf(str, "%s%s at line %d", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser));
             errorString = str;
             if (!bSuppressWarnings)
             {
@@ -1475,7 +1354,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
 
         if (!xmlFile.Open(filename, "rb"))
         {
-            sprintf_s(str, "%sCan't open file (%s)", errorPrefix, filename);
+            azsprintf(str, "%sCan't open file (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
@@ -1484,7 +1363,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         fileSize = xmlFile.GetLength();
         if (fileSize <= 0)
         {
-            sprintf_s(str, "%sFile is empty (%s)", errorPrefix, filename);
+            azsprintf(str, "%sFile is empty (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
@@ -1493,7 +1372,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         pFileContents = new char[fileSize];
         if (!pFileContents)
         {
-            sprintf_s(str, "%sCan't allocate %u bytes of memory (%s)", errorPrefix, static_cast<unsigned>(fileSize), filename);
+            azsprintf(str, "%sCan't allocate %u bytes of memory (%s)", errorPrefix, static_cast<unsigned>(fileSize), filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
@@ -1502,7 +1381,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         if (xmlFile.ReadRaw(pFileContents, fileSize) != fileSize)
         {
             delete [] pFileContents;
-            sprintf_s(str, "%sCan't read file (%s)", errorPrefix, filename);
+            azsprintf(str, "%sCan't read file (%s)", errorPrefix, filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
             return 0;
@@ -1531,7 +1410,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
     if (result != XMLBinary::XMLBinaryReader::eResult_NotBinXml)
     {
         delete [] pFileContents;
-        sprintf_s(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
+        azsprintf(str, "%s%s (%s)", errorPrefix, reader.GetErrorDescription(), filename);
         errorString = str;
         CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
         return 0;
@@ -1563,7 +1442,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         }
         else
         {
-            sprintf_s(str, "%s%s at line %d (%s)", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser), filename);
+            azsprintf(str, "%s%s at line %d (%s)", errorPrefix, XML_ErrorString(XML_GetErrorCode(m_parser)), (int)XML_GetCurrentLineNumber(m_parser), filename);
             errorString = str;
             CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s", str);
         }

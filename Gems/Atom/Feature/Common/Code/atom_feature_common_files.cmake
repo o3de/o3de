@@ -324,16 +324,12 @@ set(FILES
     Source/SkinnedMesh/SkinnedMeshVertexStreamProperties.h
     Source/SkyBox/SkyBoxFeatureProcessor.cpp
     Source/SkyBox/SkyBoxFeatureProcessor.h
-    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.cpp
-    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.h
-    Source/SkyAtmosphere/SkyAtmosphereParentPass.cpp
-    Source/SkyAtmosphere/SkyAtmosphereParentPass.h
-    Source/SkyAtmosphere/SkyAtmospherePass.cpp
-    Source/SkyAtmosphere/SkyAtmospherePass.h
     Source/SplashScreen/SplashScreenFeatureProcessor.cpp
     Source/SplashScreen/SplashScreenFeatureProcessor.h
     Source/SplashScreen/SplashScreenPass.cpp
     Source/SplashScreen/SplashScreenPass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/TransformService/TransformServiceFeatureProcessor.h
+    Source/ImGui/ImGuiPass.cpp
+    Source/ImGui/ImGuiPass.h
 )

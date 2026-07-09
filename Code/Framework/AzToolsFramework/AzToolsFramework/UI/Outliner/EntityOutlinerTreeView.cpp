@@ -20,13 +20,31 @@
 
 #include <AzQtComponents/Components/Style.h>
 
+#include <QApplication>
 #include <QDrag>
 #include <QHeaderView>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QTimer>
 
 namespace AzToolsFramework
 {
+    // Helper: walks up the widget parent chain to check if the widget is inside
+    // Returns true if the widget is inside an Asset Browser panel.
+    static bool IsInsideAssetBrowser(QWidget* widget)
+    {
+        while (widget)
+        {
+            const char* className = widget->metaObject()->className();
+            if (qstrcmp(className, "AzAssetBrowserWindow") == 0)
+            {
+                return true;
+            }
+            widget = widget->parentWidget();
+        }
+        return false;
+    }
+
     EntityOutlinerTreeView::EntityOutlinerTreeView(QWidget* pParent)
         : AzQtComponents::StyledTreeView(pParent)
         , m_queuedMouseEvent(nullptr)
@@ -50,6 +68,17 @@ namespace AzToolsFramework
         FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         viewport()->setMouseTracking(true);
+
+        // Clear outliner selection when ANY widget inside an Asset Browser gains focus.
+        // This covers both direct (outliner -> asset browser) and indirect (viewport -> asset browser)
+        // transitions, since focusOutEvent alone only fires when the tree view itself loses focus.
+        connect(qApp, &QApplication::focusChanged, this, [this](QWidget* /*old*/, QWidget* now)
+        {
+            if (now && IsInsideAssetBrowser(now) && selectionModel() && selectionModel()->hasSelection())
+            {
+                selectionModel()->clearSelection();
+            }
+        });
     }
 
     EntityOutlinerTreeView::~EntityOutlinerTreeView()
@@ -124,7 +153,7 @@ namespace AzToolsFramework
         // Postponing normal mouse press logic until mouse is released or dragged.
         // This allows drag/drop of non-selected items.
         ClearQueuedMouseEvent();
-        m_queuedMouseEvent = new QMouseEvent(*event);
+        m_queuedMouseEvent = event->clone();
     }
 
     void EntityOutlinerTreeView::mouseMoveEvent(QMouseEvent* event)
@@ -445,9 +474,9 @@ namespace AzToolsFramework
             //interpret the mouse event as a button press
             QMouseEvent mousePressedEvent(
                 QEvent::MouseButtonPress,
-                event->localPos(),
-                event->windowPos(),
-                event->screenPos(),
+                event->position(),
+                event->scenePosition(),
+                event->globalPosition(),
                 event->button(),
                 event->buttons(),
                 event->modifiers(),
@@ -484,4 +513,3 @@ namespace AzToolsFramework
     }
 }
 
-#include <UI/Outliner/moc_EntityOutlinerTreeView.cpp>

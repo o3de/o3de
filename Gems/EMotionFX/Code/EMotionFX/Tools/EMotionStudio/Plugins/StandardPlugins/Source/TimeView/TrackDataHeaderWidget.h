@@ -8,26 +8,26 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
-#include <AzCore/std/containers/vector.h>
 #include "../StandardPluginsConfig.h"
+#include <AzCore/std/string/string.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
 #include <EMotionFX/Source/Recorder.h>
 #include "TimeTrack.h"
-#include <QOpenGLWidget>
+
 #include <QPen>
 #include <QFont>
-#include <QOpenGLFunctions>
-#endif
+#include <QPixmap>
+#include <QBrush>
+#include <QWidget>
+
 
 namespace EMStudio
 {
     class TimeViewPlugin;
 
     class TrackDataHeaderWidget
-        : public QOpenGLWidget
-        , public QOpenGLFunctions
+        : public QWidget
     {
         MCORE_MEMORYOBJECTCATEGORY(TrackDataHeaderWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
         Q_OBJECT
@@ -41,9 +41,8 @@ namespace EMStudio
         static void DoWheelEvent(QWheelEvent* event, TimeViewPlugin* plugin);
         static void DoMouseYMoveZoom(int32 deltaY, TimeViewPlugin* plugin);
 
-        void initializeGL() override;
-        void resizeGL(int w, int h) override;
-        void paintGL() override;
+        void paintEvent(QPaintEvent* event) override;
+        void resizeEvent(QResizeEvent* event) override;
 
     protected:
         void mouseDoubleClickEvent(QMouseEvent* event) override;

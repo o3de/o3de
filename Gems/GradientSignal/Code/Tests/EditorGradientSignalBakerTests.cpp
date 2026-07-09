@@ -27,8 +27,20 @@ AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 // constant expression, but other compilers dont. To fix this without needing to update the library, define an empty FMT_CONSTEVAL macro,
 // which disables constexpr format strings for the library entirely
 #define FMT_CONSTEVAL
+
+#ifdef _SECURE_SCL
+#   define OLD_SECURE_SCL _SECURE_SCL
+#   undef _SECURE_SCL
+#endif
 #include <OpenImageIO/imageio.h>
+
+#ifdef OLD_SECURE_SCL
+#   define _SECURE_SCL OLD_SECURE_SCL
+#   undef OLD_SECURE_SCL
+#endif
+
 #undef FMT_CONSTEVAL
+
 AZ_POP_DISABLE_WARNING
 
 

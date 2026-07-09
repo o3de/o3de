@@ -413,7 +413,8 @@ namespace O3DE::ProjectManager
         }
         
         //UX prefers that we show platforms in reverse alphabetical order
-        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+        const int numPlatforms = GemInfo::NumPlatforms;
+        for (int i = numPlatforms - 1; i >= 0; i--)
         {
             const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
             if (platforms & platform)

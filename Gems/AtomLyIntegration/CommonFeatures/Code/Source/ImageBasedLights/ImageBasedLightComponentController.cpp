@@ -40,6 +40,8 @@ namespace AZ
                     ->Event("GetSpecularImageAssetPath", &ImageBasedLightComponentRequestBus::Events::GetSpecularImageAssetPath)
                     ->Event("SetDiffuseImageAssetPath", &ImageBasedLightComponentRequestBus::Events::SetDiffuseImageAssetPath)
                     ->Event("GetDiffuseImageAssetPath", &ImageBasedLightComponentRequestBus::Events::GetDiffuseImageAssetPath)
+                    ->Event("SetExposure", &ImageBasedLightComponentRequestBus::Events::SetExposure)
+                    ->Event("GetExposure", &ImageBasedLightComponentRequestBus::Events::GetExposure)
                     ->VirtualProperty("SpecularImageAssetId", "GetSpecularImageAssetId", "SetSpecularImageAssetId")
                     ->VirtualProperty("DiffuseImageAssetId", "GetDiffuseImageAssetId", "SetDiffuseImageAssetId")
                     ->VirtualProperty("SpecularImageAssetPath", "GetSpecularImageAssetPath", "SetSpecularImageAssetPath")

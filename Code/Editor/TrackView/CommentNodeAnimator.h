@@ -29,7 +29,7 @@ struct CCommentContext
         , m_align(0)
         , m_color(0.f, 0.f, 0.f, 1.f)
     {
-        sprintf_s(m_strFont, sizeof(m_strFont), "default");
+        azsnprintf(m_strFont, sizeof(m_strFont), "default");
         m_unitPos = Vec2(0.f, 0.f);
     }
 
@@ -57,7 +57,7 @@ private:
     void AnimateCommentTextTrack(CTrackViewTrack* pTrack, const SAnimContext& ac);
     CTrackViewKeyHandle GetActiveKeyHandle(CTrackViewTrack* pTrack, float fTime);
     Vec2 GetScreenPosFromNormalizedPos(const Vec2& unitPos);
-    void DrawText(const char* szFontName, float fSize, const Vec2& unitPos, const ColorF col, const char* szText, int align);
+    void DrawText(const char* szFontName, float fSize, const Vec2& unitPos, const AZ::Color col, const char* szText, int align);
 
     CTrackViewAnimNode* m_pCommentNode;
     CCommentContext m_commentContext;

@@ -45,6 +45,7 @@
 #include "UiEditorAnimationBus.h"
 
 #include <QAction>
+#include <QActionGroup>
 #include <QComboBox>
 #include <QInputDialog>
 #include <QKeyEvent>
@@ -113,7 +114,7 @@ public:
                         }
                     }
 
-                    menu->exec(mouseEvent->globalPos());
+                    menu->exec(mouseEvent->globalPosition().toPoint());
                     return true;
                 }
 
@@ -219,7 +220,7 @@ void CUiAnimViewDialog::OnAddEntityNodeMenu()
 }
 
 //////////////////////////////////////////////////////////////////////////
-BOOL CUiAnimViewDialog::OnInitDialog()
+bool CUiAnimViewDialog::OnInitDialog()
 {
     InitToolbar();
     InitMenu();
@@ -341,6 +342,7 @@ void CUiAnimViewDialog::InitToolbar()
     qaction = m_viewToolBar->addAction(QIcon(":/Trackview/view/tvview-00.png"), "Track Editor");
     qaction->setData(ID_TV_MODE_DOPESHEET);
     qaction->setShortcut(QKeySequence("Ctrl+D"));
+    qaction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     qaction->setCheckable(true);
     qaction->setChecked(true);
     m_actions[ID_TV_MODE_DOPESHEET] = qaction;
@@ -1838,4 +1840,3 @@ void CUiAnimViewDialog::EndUndoTransaction()
     m_bDoingUndoOperation = false;
 }
 
-#include <Animation/moc_UiAnimViewDialog.cpp>

@@ -15,9 +15,6 @@
 #include <QLoggingCategory>
 #include <QTimer>
 
-#include <QtGui/private/qhighdpiscaling_p.h>
-#include <QtGui/qpa/qplatformnativeinterface.h>
-
 // AzQtComponents
 #include <AzQtComponents/Components/Titlebar.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -36,7 +33,7 @@ namespace Editor
         return new EditorQtApplicationWindows(argc, argv);
     }
 
-    bool EditorQtApplicationWindows::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long* result)
+    bool EditorQtApplicationWindows::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, qintptr* result)
     {
         MSG* msg = (MSG*)message;
 
@@ -66,7 +63,7 @@ namespace Editor
                         const short global_x = static_cast<short>(LOWORD(msg->lParam));
                         const short global_y = static_cast<short>(HIWORD(msg->lParam));
 
-                        const QPoint globalPos = QHighDpi::fromNativePixels(QPoint(global_x, global_y), widget->window()->windowHandle());
+                        const QPoint globalPos = QPoint(global_x, global_y);
                         const QPoint local = titleBar->mapFromGlobal(globalPos);
                         if (titleBar->draggableRect().contains(local) && !titleBar->isTopResizeArea(globalPos))
                         {
@@ -101,10 +98,10 @@ namespace Editor
 
                 [[maybe_unused]] const UINT bytesCopied =
                     GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
-                CRY_ASSERT(bytesCopied == rawInputSize);
+                AZ_Assert(bytesCopied == rawInputSize, "bytesCopied (%d) must be equal to rawInputSize (%d)", bytesCopied, rawInputSize);
 
                 RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
-                CRY_ASSERT(rawInput);
+                AZ_Assert(rawInput, "rawInput is null");
 
                 AzFramework::RawInputNotificationBusWindows::Broadcast(
                     &AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);

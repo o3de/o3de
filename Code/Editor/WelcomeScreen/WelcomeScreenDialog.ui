@@ -538,7 +538,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QTableWidget" name="recentLevelTable">
+           <widget class="QTreeWidget" name="recentLevelTable">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -554,33 +554,36 @@
             <property name="horizontalScrollBarPolicy">
              <enum>Qt::ScrollBarAlwaysOff</enum>
             </property>
+            <property name="rootIsDecorated">
+             <bool>false</bool>
+            </property>
+            <property name="uniformRowHeights">
+             <bool>true</bool>
+            </property>
+            <property name="itemsExpandable">
+             <bool>false</bool>
+            </property>
             <property name="columnCount">
              <number>3</number>
             </property>
-            <attribute name="horizontalHeaderVisible">
+            <attribute name="headerVisible">
              <bool>false</bool>
             </attribute>
-            <attribute name="horizontalHeaderStretchLastSection">
-             <bool>false</bool>
-            </attribute>
-            <attribute name="verticalHeaderVisible">
-             <bool>false</bool>
-            </attribute>
-            <attribute name="verticalHeaderMinimumSectionSize">
-             <number>1</number>
-            </attribute>
-            <attribute name="verticalHeaderDefaultSectionSize">
-             <number>48</number>
-            </attribute>
-            <attribute name="verticalHeaderHighlightSections">
-             <bool>false</bool>
-            </attribute>
-            <attribute name="verticalHeaderStretchLastSection">
-             <bool>false</bool>
-            </attribute>
-            <column/>
-            <column/>
-            <column/>
+            <column>
+             <property name="text">
+              <string notr="true">Name</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string notr="true">Modified</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string notr="true">Type</string>
+             </property>
+            </column>
            </widget>
           </item>
           <item>

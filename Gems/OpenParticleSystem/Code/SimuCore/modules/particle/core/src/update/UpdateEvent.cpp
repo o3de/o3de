@@ -48,7 +48,7 @@ namespace SimuCore::ParticleCore {
             if (particle.currentLife >= particle.lifeTime) {
                 ParticleEventInfo e;
                 e.eventTimeBeforeTick = particle.currentLife - particle.lifeTime;
-                Vector3 tmpVel = info.localSpace ? info.emitterTrans.TransformVector(particle.velocity) :
+                AZ::Vector3 tmpVel = info.localSpace ? info.emitterTrans.TransformVector(particle.velocity) :
                     particle.spawnTrans.TransformVector(particle.velocity);
                 e.eventPosition = particle.globalPosition - tmpVel * e.eventTimeBeforeTick;
                 e.particleId = particle.id;

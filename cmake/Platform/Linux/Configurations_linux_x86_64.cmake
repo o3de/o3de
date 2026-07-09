@@ -22,8 +22,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 LINUX
                 __linux__
                 LINUX64
+
             COMPILATION
                 -msse4.1
+
             LINK_NON_STATIC
                 ${SPECIFY_LINKER_FLAG}
                 -Wl,--no-undefined
@@ -47,8 +49,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 LINUX
                 __linux__
                 LINUX64
+
             COMPILATION
                 -msse4.1
+
             LINK_NON_STATIC
                 ${SPECIFY_LINKER_FLAG}
                 -Wl,--no-undefined
@@ -81,8 +85,10 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             LINUX
             __linux__
             LINUX64
+
         COMPILATION
             -msse4.1
+
         LINK_NON_STATIC
             ${LY_GCC_GCOV_LFLAGS}
             ${LY_GCC_GPROF_LFLAGS}

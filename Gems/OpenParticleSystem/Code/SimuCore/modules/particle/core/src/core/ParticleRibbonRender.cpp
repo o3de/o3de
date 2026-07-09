@@ -10,6 +10,7 @@
 #include "particle/core/ParticlePool.h"
 #include "particle/core/ParticleDriver.h"
 #include "particle/core/ParticleHelper.h"
+#include "core/math/Constants.h"
 #include "core/math/Math.h"
 
 namespace SimuCore::ParticleCore {
@@ -50,7 +51,7 @@ namespace SimuCore::ParticleCore {
         item.indexBuffer = indexBufferViews[world.viewKey.v];
     }
 
-    void ParticleRibbonRender::SortParticles(const ParticlePool& pool, AZStd::vector<Vector3>& positionBuffer, const BaseInfo& emitterInfo,
+    void ParticleRibbonRender::SortParticles(const ParticlePool& pool, AZStd::vector<AZ::Vector3>& positionBuffer, const BaseInfo& emitterInfo,
             const RibbonConfig& config)
     {
         sortedParticleIndices.clear();
@@ -61,7 +62,7 @@ namespace SimuCore::ParticleCore {
             }
             float width = CalcDistributionTickValue(config.ribbonWidth, emitterInfo, curParticleCopy);
             if ((!config.inheritSize && config.mode == TrailMode::TRAIL) || config.mode == TrailMode::RIBBON) {
-                const_cast<Particle&>(particle[current]).scale = Vector3(width);
+                const_cast<Particle&>(particle[current]).scale = AZ::Vector3(width);
             }
 
             if (config.mode == TrailMode::RIBBON && config.ribbonParam.ribbonCount > 0) {
@@ -115,12 +116,12 @@ namespace SimuCore::ParticleCore {
             if (indicesInRibbon.size() <= 1) {
                 continue;
             }
-            Vector3& fistTangent =  segments[0].tangent0;
-            Vector3& nextToFirstTangent = segments[0].tangent1;
+            AZ::Vector3& fistTangent =  segments[0].tangent0;
+            AZ::Vector3& nextToFirstTangent = segments[0].tangent1;
             fistTangent = (2.f * fistTangent.Dot(nextToFirstTangent)) * fistTangent - nextToFirstTangent;
 
-            Vector3& lastTangent =  segments[segments.size() - 1].tangent1;
-            Vector3& preToLastTangent = segments[segments.size() - 1].tangent0;
+            AZ::Vector3& lastTangent =  segments[segments.size() - 1].tangent1;
+            AZ::Vector3& preToLastTangent = segments[segments.size() - 1].tangent0;
             lastTangent = (2.f * lastTangent.Dot(preToLastTangent)) * lastTangent - preToLastTangent;
 
             ribbonCount++;
@@ -143,7 +144,7 @@ namespace SimuCore::ParticleCore {
             Particle lastParticle = particle[lastIndex];
             AZ::u32 currentIndex = sortedIndices[i].first;
             Particle currentParticle = particle[currentIndex];
-            Vector3 curDir = currentParticle.globalPosition - lastParticle.globalPosition;
+            AZ::Vector3 curDir = currentParticle.globalPosition - lastParticle.globalPosition;
             float localDistance = curDir.GetLengthSq();
             if (localDistance > AZ::Constants::FloatEpsilon)
             {
@@ -155,7 +156,7 @@ namespace SimuCore::ParticleCore {
                 continue;
             }
 
-            Vector3 lastDir = Vector3::CreateZero();
+            AZ::Vector3 lastDir = AZ::Vector3::CreateZero();
             if (indicesInRibbon.size() > 1)
             {
                 AZ::u32 lastLast = indicesInRibbon[indicesInRibbon.size() - 2];
@@ -167,7 +168,7 @@ namespace SimuCore::ParticleCore {
                 }
             }
 
-            Vector3 dir = curDir + lastDir;
+            AZ::Vector3 dir = curDir + lastDir;
             RibbonSegment segment;
             (void)indicesInRibbon.emplace_back(currentIndex);
             segment.head = lastIndex;
@@ -175,8 +176,13 @@ namespace SimuCore::ParticleCore {
             segment.segmentLength = localDistance;
             segment.tangent0 = segments.empty() ? curDir.GetNormalized() : segments[segments.size() - 1].tangent1;
             segment.tangent1 = (1.f - config.curveTension) * (dir.GetNormalized());
-            segment.interpCount = static_cast<AZ::u32>(std::ceil(localDistance / config.tesselationFactor));
-            segmentCount += segment.interpCount;
+
+            const float tesselationFactor = AZStd::GetMax(config.tesselationFactor, 1.f - SimuCore::ALMOST_ONE);
+            segment.interpCount = static_cast<AZ::u32>(std::ceil(localDistance / tesselationFactor));
+
+            // each segment added to this map causes at least one quad to be generated even if there is 0 interp.
+            // and segmentCount is used to calculate the total vertex and index count.
+            segmentCount = segmentCount + (segment.interpCount == 0 ? 1 : segment.interpCount);
             totalDistance += localDistance;
             segment.tileV = totalDistance / config.tilingDistance;
             segment.distance = totalDistance;
@@ -200,6 +206,24 @@ namespace SimuCore::ParticleCore {
         auto& indexBufferView = indexBufferViews[world.viewKey.v];
         auto& ib = ibs[world.viewKey.v];
 
+        // Note that there is a condition where a ribbon could look like this:
+        // Segments (3)
+        // [0] : interpCount = 0    - 0 interpcount still generates 1 quad.
+        // [1] : interpCount = 1    - 1 interpcount means 1 quad is generated.
+        // [2] : interpCount = 2    - 2 interpcount means 2 quads are generated.
+
+        // Each "Ribbon" always calls FillHeadVertex() for the first segment, which uses up 2 indices, and 2 vertices.
+        // Each "Ribbon" always calls FillEndVertex() after the last one, which also uses up 4 indices and 2 vertices.
+        // So at the very least, a ribbon costs one quad (two triangles, which is 4 verts and 6 indices).
+        // 
+        // It also calls FillVertex() for each segment that is not the first one, which uses up 6 indices and 2 vertices (another quad)
+        // It also calls FillVertex() again for each interpCount greater than 1 to generate middle vertices (another quad each).
+
+        // "segmentCount" is calculated while building the particle ribbon segments, and represents
+        // the number of quads that will be rendered, including the interps.  so in this case, segmentCount will be
+        // 4 (1 for the first segment, 1 for second segment, 2 for the third segment since it has an extra interpcount).
+
+        // so to calculate the vertex count, its going to be 2 verts per segmentCount, plus 2 verts for the head/end of each ribbon.
         bool reCreateVb = false;
         AZ::u32 vertexCount = (segmentCount + ribbonCount) * 2;
         if (vertexCount > vb.size()) {
@@ -209,6 +233,7 @@ namespace SimuCore::ParticleCore {
             reCreateVb = true;
         }
 
+        // and to calculate the index count, its going to be 6 indexes per quad rendered.
         bool reCreateIb = false;
         AZ::u32 indexCount = segmentCount * INDEX_COUNT_IN_ONE_SEGMENT;
         if (indexCount > ib.size()) {
@@ -239,21 +264,21 @@ namespace SimuCore::ParticleCore {
                 Particle end = particle[segment.end];
 
                 float curTexV = bTileV ? preTileV : travelingDistance / totalDistance;
-                Vector3 right = CalRightVector(world, config, segment.tangent0, head.globalPosition);
+                AZ::Vector3 right = CalRightVector(world, config, segment.tangent0, head.globalPosition);
                 BufferInfo bInfo{head.globalPosition, head.color,
                     right, head.scale.GetX(), vertexIdx, indexIdx, curTexV, vb, ib};
                 (segmentId == 0) ? FillHeadVertex(bInfo) : FillVertex(bInfo);
 
                 for (AZ::u32 interpId = 1; interpId < segment.interpCount; interpId++) {
                     float step = interpId * 1.0f / segment.interpCount;
-                    std::pair<Vector3, Vector3> pair0 = {head.globalPosition, segment.tangent0};
-                    std::pair<Vector3, Vector3> pair1 = {end.globalPosition, segment.tangent1};
-                    auto pos = Math::CubicInterp<Vector3>(pair0, pair1, step, segment.segmentLength);
+                    std::pair<AZ::Vector3, AZ::Vector3> pair0 = {head.globalPosition, segment.tangent0};
+                    std::pair<AZ::Vector3, AZ::Vector3> pair1 = {end.globalPosition, segment.tangent1};
+                    auto pos = Math::CubicInterp<AZ::Vector3>(pair0, pair1, step, segment.segmentLength);
                     AZ::Color color = head.color.Lerp(end.color, step);
                     auto width = AZStd::lerp(head.scale.GetX(), end.scale.GetX(), step);
                     curTexV = bTileV ? AZStd::lerp(preTileV, segment.tileV, step) :
                             (pos.GetDistance(head.globalPosition) + travelingDistance) / totalDistance;
-                    Vector3 up = segment.tangent0.Lerp(segment.tangent1, step);
+                    AZ::Vector3 up = segment.tangent0.Lerp(segment.tangent1, step);
                     right = CalRightVector(world, config, up, head.globalPosition);
                     BufferInfo info{pos, color, right, width, vertexIdx, indexIdx, curTexV, vb, ib};
                     FillVertex(info);
@@ -278,12 +303,12 @@ namespace SimuCore::ParticleCore {
         ParticleRibbonVertex* prv = info.vb.data();
         AZ::u32* idx = info.ib.data();
 
-        prv[info.vertexIdx].position = Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
+        prv[info.vertexIdx].position = AZ::Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
         prv[info.vertexIdx].uv = AZ::Vector2(0.f, info.texV);
         idx[info.indexIdx++] = info.vertexIdx++;
 
-        prv[info.vertexIdx].position = Vector4(info.pos + info.right * info.width * 0.5f, 0.f);
+        prv[info.vertexIdx].position = AZ::Vector4(info.pos + info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
         prv[info.vertexIdx].uv = AZ::Vector2(1.f, info.texV);
         idx[info.indexIdx++] = info.vertexIdx++;
@@ -293,14 +318,14 @@ namespace SimuCore::ParticleCore {
     {
         ParticleRibbonVertex* prv = info.vb.data();
         AZ::u32* idx = info.ib.data();
-        prv[info.vertexIdx].position = Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
+        prv[info.vertexIdx].position = AZ::Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
         prv[info.vertexIdx].uv = AZ::Vector2(0.f, info.texV);
         idx[info.indexIdx++] = info.vertexIdx++;
 
         idx[info.indexIdx] = idx[info.indexIdx - 2];
         info.indexIdx++;
-        prv[info.vertexIdx].position = Vector4(info.pos + info.right * info.width * 0.5f, 0.f);
+        prv[info.vertexIdx].position = AZ::Vector4(info.pos + info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
         prv[info.vertexIdx].uv = AZ::Vector2(1.f, info.texV);
         idx[info.indexIdx++] = info.vertexIdx++;
@@ -317,14 +342,14 @@ namespace SimuCore::ParticleCore {
     {
         ParticleRibbonVertex* prv = info.vb.data();
         AZ::u32* idx = info.ib.data();
-        prv[info.vertexIdx].position = Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
+        prv[info.vertexIdx].position = AZ::Vector4(info.pos - info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
         prv[info.vertexIdx].uv = AZ::Vector2(0.f, info.texV);
         idx[info.indexIdx++] = info.vertexIdx++;
 
         idx[info.indexIdx] = idx[info.indexIdx - 2];
         info.indexIdx++;
-        prv[info.vertexIdx].position = Vector4(info.pos + info.right * info.width * 0.5f, 0.f);
+        prv[info.vertexIdx].position = AZ::Vector4(info.pos + info.right * info.width * 0.5f, 0.f);
         prv[info.vertexIdx].color = info.color;
         prv[info.vertexIdx].uv = AZ::Vector2(1.f, info.texV);
         idx[info.indexIdx++] = info.vertexIdx++;
@@ -332,10 +357,10 @@ namespace SimuCore::ParticleCore {
         info.indexIdx++;
     }
 
-    Vector3 ParticleRibbonRender::CalRightVector(const WorldInfo& world, const RibbonConfig& config,
-        const Vector3& up, const Vector3& position) const
+    AZ::Vector3 ParticleRibbonRender::CalRightVector(const WorldInfo& world, const RibbonConfig& config,
+        const AZ::Vector3& up, const AZ::Vector3& position) const
     {
-        Vector3 facing;
+        AZ::Vector3 facing;
         switch (config.facing) {
             case RibbonFacing::CAMERA:
                 facing = world.cameraPosition - position;

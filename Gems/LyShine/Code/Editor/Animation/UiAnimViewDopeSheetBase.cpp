@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 #include "Editor/Resource.h"
+#include "MathConversion.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewDopeSheetBase.h"
 
@@ -30,9 +31,6 @@
 #include <QScrollBar>
 #include <QStaticText>
 #include <QToolTip>
-#if defined(Q_OS_WIN)
-#include <QtWinExtras/QtWin>
-#endif
 
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 
@@ -85,7 +83,7 @@ CUiAnimViewDopeSheetBase::CUiAnimViewDopeSheetBase(QWidget* parent)
     m_currentTime = 0.0f;
     m_storedTime = m_currentTime;
     m_rcSelect = QRect(0, 0, 0, 0);
-    m_rubberBand = 0;
+    m_rubberBand = nullptr;
     m_scrollBar = new QScrollBar(Qt::Horizontal, this);
     connect(m_scrollBar, &QScrollBar::valueChanged, this, &CUiAnimViewDopeSheetBase::OnHScroll);
     m_keyTimeOffset = 0;
@@ -528,22 +526,24 @@ void CUiAnimViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, [[ma
         return;
     }
 
+    if (m_rubberBand)
+    {
+        m_rubberBand->deleteLater();
+        m_rubberBand = nullptr;
+    }
+
     if (m_mouseMode == eUiAVMouseMode_Select)
     {
         // Check if any key are selected.
         m_rcSelect.translate(-m_scrollOffset);
         SelectKeys(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
-        m_rubberBand->deleteLater();
-        m_rubberBand = 0;
     }
     else if (m_mouseMode == eUiAVMouseMode_SelectWithinTime)
     {
         m_rcSelect.translate(-m_scrollOffset);
         SelectAllKeysWithinTimeFrame(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
-        m_rubberBand->deleteLater();
-        m_rubberBand = 0;
     }
     else if (m_mouseMode == eUiAVMouseMode_DragTime)
     {
@@ -1761,7 +1761,6 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
     if (dlg.exec() == QDialog::Accepted)
     {
         const AZ::Color col = dlg.selectedColor().GammaToLinear();
-        const ColorF colArray(col.GetR(), col.GetG(), col.GetB(), col.GetA());
 
         RecordTrackUndo(pTrack);
         CUiAnimViewSequenceNotificationContext context(pTrack->GetSequence());
@@ -1776,7 +1775,7 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
 
                 I2DBezierKey bezierKey;
                 newKey.GetKey(&bezierKey);
-                bezierKey.value = Vec2(keyTime, colArray[i]);
+                bezierKey.value = Vec2(keyTime, col.GetElement(i));
                 newKey.SetKey(&bezierKey);
 
                 keyCreated = true;
@@ -2071,8 +2070,8 @@ void CUiAnimViewDopeSheetBase::DrawTrack(CUiAnimViewTrack* pTrack, QPainter* pai
     QColor trackColor = CUiAVCustomizeTrackColorsDlg::GetTrackColor(pTrack->GetParameterType());
     if (pTrack->HasCustomColor())
     {
-        ColorB customColor = pTrack->GetCustomColor();
-        trackColor = QColor(customColor.r, customColor.g, customColor.b);
+        AZ::Color customColor = pTrack->GetCustomColor();
+        trackColor = QColor(customColor.GetR8(), customColor.GetG8(), customColor.GetB8());
     }
     // For the case of tracks belonging to an inactive director node,
     // changes the track color to a custom one.
@@ -2340,11 +2339,11 @@ void CUiAnimViewDopeSheetBase::DrawKeys(CUiAnimViewTrack* pTrack, QPainter* pain
                     // Show its time or frame number additionally.
                     if (GetTickDisplayMode() == eUiAVTickMode_InSeconds)
                     {
-                        sprintf_s(keydesc, "%.3f, {", time);
+                        azsprintf(keydesc, "%.3f, {", time);
                     }
                     else
                     {
-                        sprintf_s(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
+                        azsprintf(keydesc, "%d, {", ftoi(time / m_snapFrameTime));
                     }
                 }
                 else
@@ -3065,7 +3064,7 @@ void CUiAnimViewDopeSheetBase::DrawColorGradient(QPainter* painter, const QRect&
         Vec3 vColor(0, 0, 0);
         pTrack->GetValue(TimeFromPointUnsnapped(QPoint(x, rc.top())), vColor);
 
-        painter->setPen(ColorLinearToGamma(vColor / 255.0f));
+        painter->setPen(ColorLinearToGamma(LYVec3ToAZColor(vColor / 255.0f)));
         painter->drawLine(x, rc.top(), x, rc.bottom());
     }
     painter->setPen(pOldPen);

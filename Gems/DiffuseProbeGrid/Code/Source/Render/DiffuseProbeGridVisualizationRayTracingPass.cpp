@@ -26,7 +26,7 @@ namespace AZ
         RPI::Ptr<DiffuseProbeGridVisualizationRayTracingPass> DiffuseProbeGridVisualizationRayTracingPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridVisualizationRayTracingPass> pass = aznew DiffuseProbeGridVisualizationRayTracingPass(descriptor);
-            return AZStd::move(pass);
+            return pass;
         }
 
         DiffuseProbeGridVisualizationRayTracingPass::DiffuseProbeGridVisualizationRayTracingPass(const RPI::PassDescriptor& descriptor)
@@ -272,7 +272,7 @@ namespace AZ
                 BindSrg(viewSRG->GetRHIShaderResourceGroup());
             }
         }
-    
+
         void DiffuseProbeGridVisualizationRayTracingPass::BuildCommandListInternal([[maybe_unused]] const RHI::FrameGraphExecuteContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
@@ -285,6 +285,8 @@ namespace AZ
             {
                 return;
             }
+
+            const RHI::ShaderResourceGroup* sceneSrg = m_pipeline->GetScene()->GetRHIShaderResourceGroup();
 
             // submit the DispatchRaysItems for each DiffuseProbeGrid in this range
             for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
@@ -300,6 +302,7 @@ namespace AZ
                     diffuseProbeGrid->GetVisualizationRayTraceSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
                     rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
                     views[0]->GetRHIShaderResourceGroup()->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get(),
+                    sceneSrg->GetDeviceShaderResourceGroup(context.GetDeviceIndex()).get()
                 };
 
                 RHI::DeviceDispatchRaysItem dispatchRaysItem;

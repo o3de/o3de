@@ -16,6 +16,7 @@
 #include <AzCore/std/hash.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <AzFramework/Physics/RigidBodyBus.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 
 namespace UnitTest

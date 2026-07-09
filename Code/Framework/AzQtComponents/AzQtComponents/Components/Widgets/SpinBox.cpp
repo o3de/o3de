@@ -18,6 +18,7 @@
 #include <QDoubleSpinBox>
 #include <QEvent>
 #include <QGuiApplication>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMouseEvent>
 #include <QObject>
@@ -30,8 +31,6 @@
 #include <QTimer>
 #include <QWindow>
 #include <QTextLayout>
-
-#include <QtWidgets/private/qstylesheetstyle_p.h>
 #include <qcoreevent.h>
 
 namespace AzQtComponents
@@ -82,7 +81,7 @@ private:
     QAbstractSpinBox* m_mouseFocusedSpinBox = nullptr;
     QAbstractSpinBox* m_mouseFocusedSpinBoxSingleClicked = nullptr;
 
-    bool filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event);
+    bool filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event, QLabel* label = nullptr);
     bool filterLineEditEvents(QLineEdit* lineEdit, QEvent* event);
     void setInitializeSpinboxValue(QAbstractSpinBox* spinBox, bool clearText = false);
 
@@ -94,7 +93,7 @@ private:
     void emitValueChangeBegan(QAbstractSpinBox* spinBox);
     void emitValueChangeEnded(QAbstractSpinBox* spinBox);
 
-    void resetCursor(QAbstractSpinBox* spinBox);
+    void resetCursor(QAbstractSpinBox* spinBox, QLabel* label = nullptr);
 };
 
 SpinBoxWatcher::SpinBoxWatcher(QObject* parent)
@@ -115,15 +114,28 @@ bool SpinBoxWatcher::eventFilter(QObject* watched, QEvent* event)
     {
         filterEvent = filterLineEditEvents(lineEdit, event);
     }
+    else if (auto label = qobject_cast<QLabel*>(watched))
+    {
+        QWidget* parent = label->parentWidget();
+        QAbstractSpinBox* spin = parent ? parent->findChild<QAbstractSpinBox*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+        if (spin)
+            filterEvent = filterSpinBoxEvents(spin, event, label);
+    }
 
     return filterEvent ? filterEvent : QObject::eventFilter(watched, event);
 }
 
-bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event)
+bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event, QLabel* label)
 {
     if (!spinBox || !spinBox->isEnabled())
     {
         return false;
+    }
+
+    if (!label)
+    {
+        QWidget* parent = spinBox->parentWidget();
+        label = parent ? parent->findChild<QLabel*>(SpinBox::s_draggableLabelName, Qt::FindDirectChildrenOnly) : nullptr;
     }
 
     bool filterEvent = false;
@@ -134,13 +146,13 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             auto mouseEvent = static_cast<QMouseEvent*>(event);
             if ((mouseEvent->buttons() & (Qt::LeftButton | Qt::MiddleButton)) && m_state == Dragging)
             {
-                const int delta = mouseEvent->x() - m_xPos;
+                const int delta = mouseEvent->position().x() - m_xPos;
                 if (qAbs(delta) <= qAbs(m_config.pixelsPerStep))
                 {
                     break;
                 }
 
-                m_xPos = mouseEvent->x();
+                m_xPos = mouseEvent->position().x();
                 int step = delta > 0 ? 1 : -1;
                 if (mouseEvent->modifiers() & Qt::ShiftModifier)
                 {
@@ -168,7 +180,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
                 {
                     const QPoint hotspot = spinBox->cursor().hotSpot();
                     const QRect screenRect = m_activeScreen->geometry().adjusted(hotspot.x(), hotspot.y(), -hotspot.x(), -hotspot.y());
-                    QPoint screenPos = mouseEvent->screenPos().toPoint();
+                    QPoint screenPos = mouseEvent->globalPosition().toPoint();
                     const int xPos = screenPos.x();
                     int newXPos = xPos;
                     // cursor bounces on the left and right side of the screen
@@ -211,7 +223,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             // on an arrow button
             if (!buttonUpPressed && !buttonDownPressed)
             {
-                resetCursor(spinBox);
+                resetCursor(spinBox, label);
             }
             break;
         }
@@ -259,7 +271,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
                 const QPoint pos = spinBox->mapFromGlobal(QCursor::pos());
                 if (spinBox->rect().contains(pos))
                 {
-                    resetCursor(spinBox);
+                    resetCursor(spinBox, label);
                 }
             }
             break;
@@ -417,8 +429,8 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
 
             if(m_state == Dragging) 
             {
-                m_activeScreen = QGuiApplication::screenAt(mouseEvent->globalPos());
-                m_xPos = mouseEvent->x();
+                m_activeScreen = QGuiApplication::screenAt(mouseEvent->globalPosition().toPoint());
+                m_xPos = mouseEvent->position().x();
                 spinBox->grabMouse();
             }
             spinBox->setProperty(g_spinBoxDraggingName, m_state == Dragging);
@@ -434,7 +446,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             spinBox->setProperty(g_spinBoxDownPressedPropertyName, false);
             spinBox->setProperty(g_spinBoxValueDecreasingName, false);
             spinBox->setProperty(g_spinBoxValueIncreasingName, false);
-            resetCursor(spinBox);
+            resetCursor(spinBox, label);
             spinBox->releaseMouse();
             spinBox->update();
             break;
@@ -444,9 +456,11 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
         {
             if (!spinBox->hasFocus())
             {
-                // To prevent the event being turned into a focus event, be sure to install an
-                // AzQtComponents::GlobalEventFilter on your QApplication instance.
-                event->accept();
+                // When the spinbox does not have focus, ignore the wheel event so it
+                // propagates to the parent scroll area instead of being swallowed.
+                // This prevents scroll hijacking when the mouse passes over spinboxes
+                // in scrollable containers like the Entity Inspector.
+                event->ignore();
                 return true;
             }
 
@@ -513,7 +527,8 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
         case QEvent::DynamicPropertyChange:
         {
             auto styleSheet = StyleManager::styleSheetStyle(spinBox);
-            styleSheet->repolish(spinBox);
+            styleSheet->unpolish(spinBox);
+            styleSheet->polish(spinBox);
             break;
         }
 
@@ -609,7 +624,7 @@ bool SpinBoxWatcher::filterLineEditEvents(QLineEdit* lineEdit, QEvent* event)
                 if (mouseEvent->button() == Qt::LeftButton && m_mouseFocusedSpinBoxSingleClicked == spinBox)
                 {
                     // fake a single click event to place the mouse button
-                    QMouseEvent fake(QEvent::MouseButtonPress, mouseEvent->localPos(), mouseEvent->button(), mouseEvent->buttons(), mouseEvent->modifiers());
+                    QMouseEvent fake(QEvent::MouseButtonPress, mouseEvent->position(), mouseEvent->globalPosition(), mouseEvent->button(), mouseEvent->buttons(), mouseEvent->modifiers());
                     QCoreApplication::sendEvent(lineEdit, &fake);
                     m_mouseFocusedSpinBoxSingleClicked = nullptr;
                     return true;
@@ -774,6 +789,7 @@ void SpinBoxWatcher::emitValueChangeBegan(QAbstractSpinBox* spinBox)
         m_spinBoxChanging = spinBox;
         emit azDoubleSpinBox->valueChangeBegan();
     }
+
 }
 
 void SpinBoxWatcher::emitValueChangeEnded(QAbstractSpinBox* spinBox)
@@ -801,9 +817,10 @@ void SpinBoxWatcher::emitValueChangeEnded(QAbstractSpinBox* spinBox)
         emit azDoubleSpinBox->valueChangeEnded();
         m_spinBoxChanging.clear();
     }
+
 }
 
-void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox)
+void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox, QLabel* label)
 {
     QStyleOptionSpinBox styleOption;
     initStyleOption(spinBox, &styleOption);
@@ -826,10 +843,14 @@ void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox)
             if (enabledSteps & QSpinBox::StepUpEnabled)
             {
                 spinBox->setCursor(m_config.scrollCursorRight);
+                if (label)
+                    label->setCursor(m_config.scrollCursorRight);
             }
             else
             {
                 spinBox->setCursor(m_config.scrollCursorRightMax);
+                if (label)
+                    label->setCursor(m_config.scrollCursorRightMax);
             }
         }
         else if (spinBox->property(g_spinBoxScrollDecreasingName).toBool())
@@ -837,15 +858,21 @@ void SpinBoxWatcher::resetCursor(QAbstractSpinBox* spinBox)
             if (enabledSteps & QSpinBox::StepDownEnabled)
             {
                 spinBox->setCursor(m_config.scrollCursorLeft);
+                if (label)
+                    label->setCursor(m_config.scrollCursorLeft);
             }
             else
             {
                 spinBox->setCursor(m_config.scrollCursorLeftMax);
+                if (label)
+                    label->setCursor(m_config.scrollCursorLeftMax);
             }
         }
         else
         {
             spinBox->setCursor(m_config.scrollCursor);
+            if (label)
+                label->setCursor(m_config.scrollCursor);
         }
 
         // Need to update lineEdit cursor in case we started dragging using the
@@ -930,6 +957,21 @@ void SpinBox::uninitializeWatcher()
         delete s_spinBoxWatcher;
         s_spinBoxWatcher = nullptr;
     }
+}
+
+void SpinBox::registerLabelToWatcher(QLabel* label, bool shouldRegister)
+{
+    if (!s_spinBoxWatcher)
+    {
+        Q_ASSERT(s_spinBoxWatcher);
+        return;
+    }
+
+    Q_ASSERT(label->objectName().compare(SpinBox::s_draggableLabelName) == 0);
+    if (shouldRegister)
+        label->installEventFilter(s_spinBoxWatcher);
+    else
+        label->removeEventFilter(s_spinBoxWatcher);
 }
 
 bool SpinBox::drawSpinBox(const QProxyStyle* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const SpinBox::Config& config)
@@ -1094,6 +1136,10 @@ void SpinBox::setButtonSymbolsForStyle(QAbstractSpinBox* spinBox)
 SpinBox::SpinBox(QWidget* parent)
     : QSpinBox(parent)
 {
+    // Use StrongFocus so that mouse wheel alone cannot grant focus to the spinbox.
+    // This prevents scroll hijacking when the cursor passes over spinboxes in scrollable containers.
+    setFocusPolicy(Qt::StrongFocus);
+
 #if !defined(AZ_PLATFORM_LINUX)
 #if QT_VERSION < QT_VERSION_CHECK(5,11,1)
     setShiftIncreasesStepRate(true);
@@ -1103,6 +1149,18 @@ SpinBox::SpinBox(QWidget* parent)
     m_lineEdit = new internal::SpinBoxLineEdit(this);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalUndoTriggered, this, &SpinBox::globalUndoTriggered);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalRedoTriggered, this, &SpinBox::globalRedoTriggered);
+    connect(m_lineEdit, &internal::SpinBoxLineEdit::editCancelTriggered, this, [this]()
+    {
+        // Always restore the focus-in value. When keyboardTracking is off the
+        // committed value() may still match m_valueOnFocusIn even though the
+        // user has typed a different number into the line edit. Setting the
+        // value unconditionally ensures both the committed value and the line
+        // edit text are reset before clearFocus triggers a final commit.
+        const bool blocked = blockSignals(value() == m_valueOnFocusIn);
+        QSpinBox::setValue(m_valueOnFocusIn);
+        blockSignals(blocked);
+        clearFocus();
+    });
     connect(this, &SpinBox::cutTriggered, this, [this]()
     {
         setInitialValueWasSetting(true);
@@ -1144,6 +1202,19 @@ QSize SpinBox::minimumSizeHint() const
     return size;
 }
 
+bool SpinBox::hasInProgressEdit() const
+{
+    // Check committed value first. When keyboardTracking is off (the default
+    // in O3DE property controls), value() is not updated while the user types,
+    // so also compare the line edit text against the display of the committed
+    // value to detect uncommitted typing.
+    if (value() != m_valueOnFocusIn)
+    {
+        return true;
+    }
+    return lineEdit()->text() != textFromValue(value());
+}
+
 bool SpinBox::isUndoAvailable() const
 {
     return lineEdit()->isUndoAvailable();
@@ -1156,6 +1227,12 @@ bool SpinBox::isRedoAvailable() const
 
 void SpinBox::focusInEvent(QFocusEvent* event)
 {
+    // Store current value so Ctrl+Z can revert the entire edit.
+    if (event->reason() != Qt::PopupFocusReason)
+    {
+        m_valueOnFocusIn = value();
+    }
+
     // Remove the suffix while editing. Check focus reason so we don't clash
     // with context menus
     if (event->reason() != Qt::PopupFocusReason)
@@ -1319,6 +1396,10 @@ DoubleSpinBox::DoubleSpinBox(QWidget* parent)
     : QDoubleSpinBox(parent)
     , m_displayDecimals(g_decimalDisplayPrecisionDefault)
 {
+    // Use StrongFocus so that mouse wheel alone cannot grant focus to the spinbox.
+    // This prevents scroll hijacking when the cursor passes over spinboxes in scrollable containers.
+    setFocusPolicy(Qt::StrongFocus);
+
 #if !defined(AZ_PLATFORM_LINUX)
 #if QT_VERSION < QT_VERSION_CHECK(5,11,1)
     setShiftIncreasesStepRate(true);
@@ -1328,6 +1409,18 @@ DoubleSpinBox::DoubleSpinBox(QWidget* parent)
     m_lineEdit = new internal::SpinBoxLineEdit(this);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalUndoTriggered, this, &DoubleSpinBox::globalUndoTriggered);
     connect(m_lineEdit, &internal::SpinBoxLineEdit::globalRedoTriggered, this, &DoubleSpinBox::globalRedoTriggered);
+    connect(m_lineEdit, &internal::SpinBoxLineEdit::editCancelTriggered, this, [this]()
+    {
+        // Always restore the focus-in value. When keyboardTracking is off the
+        // committed value() may still match m_valueOnFocusIn even though the
+        // user has typed a different number into the line edit. Setting the
+        // value unconditionally ensures both the committed value and the line
+        // edit text are reset before clearFocus triggers a final commit.
+        const bool blocked = blockSignals(qFuzzyCompare(value(), m_valueOnFocusIn));
+        QDoubleSpinBox::setValue(m_valueOnFocusIn);
+        blockSignals(blocked);
+        clearFocus();
+    });
     connect(this, &DoubleSpinBox::cutTriggered, this, [this]()
     {
         setInitialValueWasSetting(true);
@@ -1375,6 +1468,19 @@ QSize DoubleSpinBox::minimumSizeHint() const
     QSize size = QDoubleSpinBox::sizeHint();
     size.setWidth(minimumWidth());
     return size;
+}
+
+bool DoubleSpinBox::hasInProgressEdit() const
+{
+    // Check committed value first. When keyboardTracking is off (the default
+    // in O3DE property controls), value() is not updated while the user types,
+    // so also compare the line edit text against the display of the committed
+    // value to detect uncommitted typing.
+    if (!qFuzzyCompare(value(), m_valueOnFocusIn))
+    {
+        return true;
+    }
+    return lineEdit()->text() != textFromValue(value());
 }
 
 bool DoubleSpinBox::isUndoAvailable() const
@@ -1438,12 +1544,18 @@ QString DoubleSpinBox::textFromValue(double value) const
 
 void DoubleSpinBox::focusInEvent(QFocusEvent* event)
 {
-    // We need to set the special value text to an empty string, which
-    // effectively makes no change, but actually triggers the line edit
-    // display value to be updated so that when we receive focus to
-    // begin editing, we display the full decimal precision instead of
-    // the truncated display value
+    // Store current value so Ctrl+Z can revert the entire edit.
+    if (event->reason() != Qt::PopupFocusReason)
+    {
+        m_valueOnFocusIn = value();
+    }
+
+    // Trigger the line edit to display full decimal precision instead of the
+    // truncated display value. Block signals to prevent the text update from
+    // firing valueChanged and creating spurious undo entries.
+    const bool blocked = blockSignals(true);
     setSpecialValueText(QString());
+    blockSignals(blocked);
 
     // Remove the suffix while editing. Check focus reason so we don't clash
     // with context menus
@@ -1502,14 +1614,55 @@ namespace internal
     {
         switch (ev->type())
         {
+            case QEvent::ShortcutOverride:
+            {
+                auto keyEvent = static_cast<QKeyEvent*>(ev);
+
+                // Claim the Escape key so the MainWindow's escape action
+                // (entity deselect) does not fire while editing a spinbox.
+                if (keyEvent->key() == Qt::Key_Escape)
+                {
+                    ev->accept();
+                    return true;
+                }
+
+                // Only claim Ctrl+Z if the parent spinbox has a local edit
+                // to cancel. Otherwise let it propagate to the global editor
+                // undo system. Return true in both branches to prevent
+                // QLineEdit from also claiming the shortcut.
+                if (keyEvent->matches(QKeySequence::Undo))
+                {
+                    bool localEdit = false;
+                    if (auto* sb = qobject_cast<SpinBox*>(parent()))
+                        localEdit = sb->hasInProgressEdit();
+                    else if (auto* dsb = qobject_cast<DoubleSpinBox*>(parent()))
+                        localEdit = dsb->hasInProgressEdit();
+
+                    if (localEdit)
+                    {
+                        ev->accept();
+                    }
+                    else
+                    {
+                        ev->ignore();
+                    }
+                    return true;
+                }
+            }
+            break;
+
             case QEvent::FocusOut:
             {
-                // Explicitly set the text again on focusOut, so that the undo/redo queue for the line edit clears and the global undo/redo can kick in
+                // Clear the line edit's internal undo/redo queue so the global undo/redo can kick in.
+                // Block signals to prevent setText from re-triggering valueChanged/editingFinished,
+                // which would create spurious undo entries and prefab override markers.
                 if (const auto focusEvent = static_cast<QFocusEvent*>(ev))
                 {
                     if (focusEvent->reason() != Qt::PopupFocusReason)
                     {
+                        const bool blocked = blockSignals(true);
                         setText(text());
+                        blockSignals(blocked);
                     }
                 }
             }
@@ -1521,18 +1674,38 @@ namespace internal
 
     void SpinBoxLineEdit::keyPressEvent(QKeyEvent* ev)
     {
-        if (overrideUndoRedo())
+        // Escape always cancels the current edit and clears focus.
+        if (ev->key() == Qt::Key_Escape)
         {
-            // QLineEdit overrides the key press event handler
-            // so we have to trap that too, directly, without assuming
-            // that QAction's with shortcuts will do it.
-            if (ev->matches(QKeySequence::Undo))
+            Q_EMIT editCancelTriggered();
+            ev->accept();
+            return;
+        }
+
+        // Ctrl+Z cancels a local edit. When there is no local edit the
+        // ShortcutOverride handler already declined the key so this path
+        // normally won't be reached, but guard it here as well.
+        if (ev->matches(QKeySequence::Undo))
+        {
+            bool localEdit = false;
+            if (auto* sb = qobject_cast<SpinBox*>(parent()))
+                localEdit = sb->hasInProgressEdit();
+            else if (auto* dsb = qobject_cast<DoubleSpinBox*>(parent()))
+                localEdit = dsb->hasInProgressEdit();
+
+            if (localEdit)
             {
-                Q_EMIT globalUndoTriggered();
+                Q_EMIT editCancelTriggered();
                 ev->accept();
                 return;
             }
-            else if (ev->matches(QKeySequence::Redo))
+            ev->ignore();
+            return;
+        }
+
+        if (overrideUndoRedo())
+        {
+            if (ev->matches(QKeySequence::Redo))
             {
                 Q_EMIT globalRedoTriggered();
                 ev->accept();
@@ -1593,7 +1766,7 @@ namespace internal
         QAbstractSpinBox* abstractSpinBox = qobject_cast<QAbstractSpinBox*>(parent());
         QSpinBox* spinBox = reinterpret_cast<QSpinBox*>(abstractSpinBox);
         bool fixLeftAlignment = !spinBox->property(g_hoveredPropertyName).toBool() && !hasFocus();
-        int suffixSize = spinBox->suffix().size();
+        int suffixSize = static_cast<int>(spinBox->suffix().size());
         QString beforeText;
         int cursorPos = 0;
         if (fixLeftAlignment)
@@ -1605,7 +1778,7 @@ namespace internal
         if (suffixSize)
         {
             QList<QTextLayout::FormatRange> formats;
-            int size = text().size();
+            int size = static_cast<int>(text().size());
 
             QTextCharFormat f;
             f.setForeground(QColor(0x888888));
@@ -1633,5 +1806,4 @@ namespace internal
 
 } // namespace AzQtComponents
 
-#include "Components/Widgets/moc_SpinBox.cpp"
 

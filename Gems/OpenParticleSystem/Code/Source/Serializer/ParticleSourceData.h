@@ -18,6 +18,7 @@
 #include <AzCore/std/string/string.h>
 #include <Serializer/ParticleAssetData.h>
 
+
 namespace OpenParticle
 {
     class ParticleSourceData final
@@ -267,7 +268,7 @@ namespace OpenParticle
         void DistributionToRuntime();
         void ToEditor();
 
-        AZ::Outcome<AZ::Data::Asset<ParticleAsset>> CreateParticleAsset(
+        ParticleAssetData::CreateParticleResult CreateParticleAsset(
             AZ::Data::AssetId assetId, AZStd::string_view sourceFilePath, bool elevateWarnings = true) const;
 
         bool CheckDistributionIndex();

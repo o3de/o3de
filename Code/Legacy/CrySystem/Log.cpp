@@ -161,7 +161,7 @@ CLog::CLog(ISystem* pSystem)
     m_topIndenter = NULL;
 #endif
 
-    m_nMainThreadId = CryGetCurrentThreadId();
+    m_nMainThreadId = AZStd::this_thread::get_id();
 
     m_iLastHistoryItem = 0;
     memset(m_history, 0, sizeof(m_history));
@@ -323,7 +323,7 @@ void CLog::LogWarning(const char* szFormat, ...)
     va_list ArgList;
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, szFormat);
-    vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, szFormat, ArgList);
+    azvsnprintf(szBuffer, sizeof(szBuffer) - 1, szFormat, ArgList);
     szBuffer[sizeof(szBuffer) - 1] = '\0';
     va_end(ArgList);
 
@@ -343,7 +343,7 @@ void CLog::LogError(const char* szFormat, ...)
     va_list ArgList;
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, szFormat);
-    vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, szFormat, ArgList);
+    azvsnprintf(szBuffer, sizeof(szBuffer) - 1, szFormat, ArgList);
     szBuffer[sizeof(szBuffer) - 1] = '\0';
     va_end(ArgList);
 
@@ -539,7 +539,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]] int flags, const char* szF
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-        int count = vsnprintf_s(szString, bufferlen, bufferlen - 1, szCommand, args);
+        int count = azvsnprintf(szString, bufferlen - 1, szCommand, args);
 #endif
         if (count == -1 || count >= bufferlen)
         {
@@ -957,7 +957,7 @@ void CLog::LogAppendWithPrevLine(const char* szFormat, ...)
 
     char szTemp[MAX_TEMP_LENGTH_SIZE];
     va_start(arglist, szFormat);
-    vsnprintf_s(szTemp, sizeof(szTemp), sizeof(szTemp) - 1, szCommand, arglist);
+    azvsnprintf(szTemp, sizeof(szTemp) - 1, szCommand, arglist);
     szTemp[sizeof(szTemp) - 1] = 0;
     va_end(arglist);
 
@@ -1045,7 +1045,7 @@ void CLog::LogToConsole(const char* szFormat, ...)
 
     char szBuffer[MAX_WARNING_LENGTH];
     va_start(arglist, szFormat);
-    vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, szCommand, arglist);
+    azvsnprintf(szBuffer, sizeof(szBuffer) - 1, szCommand, arglist);
     szBuffer[sizeof(szBuffer) - 1] = 0;
     va_end(arglist);
 
@@ -1081,7 +1081,7 @@ void CLog::LogToConsoleAppendWithPrevLine(const char* szFormat, ...)
 
     char szTemp[MAX_TEMP_LENGTH_SIZE];
     va_start(arglist, szFormat);
-    vsnprintf_s(szTemp, sizeof(szTemp), sizeof(szTemp) - 1, szCommand, arglist);
+    azvsnprintf(szTemp, sizeof(szTemp) - 1, szCommand, arglist);
     szTemp[sizeof(szTemp) - 1] = 0;
     va_end(arglist);
 
@@ -1184,7 +1184,7 @@ const char* CLog::GetAssetScopeString()
 
 bool CLog::LogToMainThread(AZStd::string_view szString, ELogType logType, bool appendToPrevLine, SLogMsg::Destination destination)
 {
-    if (CryGetCurrentThreadId() != m_nMainThreadId)
+    if (AZStd::this_thread::get_id().m_id != m_nMainThreadId)
     {
         // When logging from other thread then main, push all log strings to queue.
         constexpr size_t fixedBufferMaxSize = AZStd::variant_alternative_t<0, SLogMsg::MessageString>{}.max_size();
@@ -1693,7 +1693,7 @@ void CLog::RemoveCallback(ILogCallback* pCallback)
 //////////////////////////////////////////////////////////////////////////
 void CLog::Update()
 {
-    if (CryGetCurrentThreadId() == m_nMainThreadId)
+    if (AZStd::this_thread::get_id().m_id == m_nMainThreadId)
     {
         if (!m_threadSafeMsgQueue.empty())
         {

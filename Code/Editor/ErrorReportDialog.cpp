@@ -305,7 +305,7 @@ void CErrorReportDialog::OnReportColumnRClick()
     // process column selection item
     if (menuColumns.actions().contains(nMenuResult))
     {
-        ui->treeView->header()->setSectionHidden(menuColumns.actions().indexOf(nMenuResult), !nMenuResult->isChecked());
+        ui->treeView->header()->setSectionHidden(static_cast<int>(menuColumns.actions().indexOf(nMenuResult)), !nMenuResult->isChecked());
     }
 
 
@@ -492,8 +492,8 @@ void CErrorReportDialog::OnReportItemDblClick(const QModelIndex& index)
         if (GetPositionFromString(pError->error, &x, &y, &z))
         {
             CViewport* vp = GetIEditor()->GetActiveView();
-            Matrix34 tm = vp->GetViewTM();
-            tm.SetTranslation(Vec3(x, y, z));
+            AZ::Matrix3x4 tm = vp->GetViewTM();
+            tm.SetTranslation(x, y, z);
             vp->SetViewTM(tm);
         }
     }
@@ -522,8 +522,8 @@ void CErrorReportDialog::OnReportHyperlink(const QModelIndex& index)
         if (GetPositionFromString(pError->error, &x, &y, &z))
         {
             CViewport* vp = GetIEditor()->GetActiveView();
-            Matrix34 tm = vp->GetViewTM();
-            tm.SetTranslation(Vec3(x, y, z));
+            AZ::Matrix3x4 tm = vp->GetViewTM();
+            tm.SetTranslation(x, y, z);
             vp->SetViewTM(tm);
         }
     }
@@ -542,4 +542,3 @@ void CErrorReportDialog::OnShowFieldChooser()
 }
 */
 
-#include <moc_ErrorReportDialog.cpp>

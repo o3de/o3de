@@ -63,7 +63,8 @@ VsOutput EvaluateVertexGeometry_Skin(
     // The detail layer has a dedicated UV transform which we apply here. The detail layer does have the option of using
     // either UV0 or UV1, in either case we apply the transform.
     output.detailUvs[0] = params.m_detail_allMapsUvIndex == 0 ? uv0_tiled : uv1_unwrapped;
-    output.detailUvs[0] = mul(params.m_detailUvMatrix, float3(output.detailUvs[0], 1.0)).xy;
+    float3 _duvh = float3(output.detailUvs[0], 1.0);
+    output.detailUvs[0] = float2(dot(params.m_detailUvMatrixRow0.xyz, _duvh), dot(params.m_detailUvMatrixRow1.xyz, _duvh));
     output.detailUvs[1] = output.detailUvs[0];
 
 #endif // MATERIAL_USES_VERTEX_DETAIL_UV

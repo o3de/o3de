@@ -349,7 +349,7 @@ namespace Multiplayer
             AZ::Vector2(0, 0.5f),
             0,
             AZ::Color(0.f, 0.f, 0.f, 0.f),
-            AZ::Color(0, 0, 0, ScrimAlpha * alphaMultiplier));
+            AZ::Color(0.f, 0.f, 0.f, ScrimAlpha * alphaMultiplier));
 
         debugDisplay->DrawQuad2dGradient(
             AZ::Vector2(0, 0.5f),
@@ -357,7 +357,7 @@ namespace Multiplayer
             AZ::Vector2(1.f, 1.f),
             AZ::Vector2(0, 1.f),
             0,
-            AZ::Color(0, 0, 0, ScrimAlpha * alphaMultiplier),
+            AZ::Color(0.f, 0.f, 0.f, ScrimAlpha * alphaMultiplier),
             AZ::Color(0.f, 0.f, 0.f, 0.f));
 
         debugDisplay->SetState(previousState);

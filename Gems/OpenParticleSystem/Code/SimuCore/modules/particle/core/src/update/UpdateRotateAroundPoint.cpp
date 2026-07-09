@@ -15,7 +15,7 @@ namespace SimuCore::ParticleCore {
     {
         particle.rotateAroundPoint.SetW(particle.rotateAroundPoint.GetW() + data->rotateRate * info.tickTime);
         float theta = particle.rotateAroundPoint.GetW();
-        Vector3 lastPosition = particle.localPosition;
+        AZ::Vector3 lastPosition = particle.localPosition;
         particle.localPosition =
             data->xAxis * data->radius * cos(theta) + data->yAxis * data->radius * sin(theta) + data->center;
         if (info.tickTime > AZ::Constants::FloatEpsilon) {
