@@ -38,6 +38,7 @@ namespace AzToolsFramework::Prefab
         //! Sets the focused instance to the owning instance of the entity id provided.
         //! If the entity id is invalid, then focus on the root prefab instance.
         //! @param EntityId The entity id of the entity whose owning instance we want the prefab system to focus on.
+        //! @param viewportId The viewport that entered prefab edit mode, so only it shows the edit-mode border.
         //! @return PrefabFocusOperationResult that shows if the operation succeeds.
         virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(
             AZ::EntityId entityId, AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId) = 0;
@@ -62,14 +63,8 @@ namespace AzToolsFramework::Prefab
         //! @return LinkId stored in the instance closest to the focused instance in hierarchy.
         virtual LinkId PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const = 0;
 
-        //! Tells the prefab system which viewport is active, so edits with no viewport specified
-        //! target the prefab focused in the viewport the user is working in.
-        virtual void SetActivePrefabFocusViewportId(AzFramework::ViewportId viewportId) = 0;
-
-        //! Returns the viewport that currently drives prefab focus when no viewport is specified.
-        virtual AzFramework::ViewportId GetActivePrefabFocusViewportId() const = 0;
-
-        //! Returns whether the given viewport is focused inside a nested prefab, i.e. showing prefab edit mode.
+        //! Returns whether the given viewport is the one that entered the current prefab edit session.
+        //! Only that viewport shows prefab edit mode; the others stay on the level.
         virtual bool IsViewportInPrefabEditMode(AzFramework::ViewportId viewportId) const = 0;
     };
 } // namespace AzToolsFramework::Prefab
