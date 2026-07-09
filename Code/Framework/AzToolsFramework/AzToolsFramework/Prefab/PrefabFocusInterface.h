@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzFramework/Entity/EntityContext.h>
+#include <AzFramework/Viewport/ViewportId.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
@@ -38,7 +39,8 @@ namespace AzToolsFramework::Prefab
         //! If the entity id is invalid, then focus on the root prefab instance.
         //! @param EntityId The entity id of the entity whose owning instance we want the prefab system to focus on.
         //! @return PrefabFocusOperationResult that shows if the operation succeeds.
-        virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) = 0;
+        virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(
+            AZ::EntityId entityId, AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId) = 0;
 
         //! Returns the template id of the currently focused instance.
         //! @param entityContextId The entity context id.
@@ -59,5 +61,12 @@ namespace AzToolsFramework::Prefab
         //! @param patches The provided patch array to prepend path to.
         //! @return LinkId stored in the instance closest to the focused instance in hierarchy.
         virtual LinkId PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const = 0;
+
+        //! Tells the prefab system which viewport is active, so edits with no viewport specified
+        //! target the prefab focused in the viewport the user is working in.
+        virtual void SetActivePrefabFocusViewportId(AzFramework::ViewportId viewportId) = 0;
+
+        //! Returns the viewport that currently drives prefab focus when no viewport is specified.
+        virtual AzFramework::ViewportId GetActivePrefabFocusViewportId() const = 0;
     };
 } // namespace AzToolsFramework::Prefab

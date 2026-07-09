@@ -10,6 +10,9 @@
 
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/unordered_map.h>
+
+#include <AzFramework/Viewport/ViewportId.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -54,11 +57,14 @@ namespace AzToolsFramework::Prefab
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
 
-        PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
+        PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(
+            AZ::EntityId entityId, AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
         bool IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId entityContextId) const override;
         LinkId PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const override;
+        void SetActivePrefabFocusViewportId(AzFramework::ViewportId viewportId) override;
+        AzFramework::ViewportId GetActivePrefabFocusViewportId() const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
@@ -66,7 +72,7 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
         PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
-        
+
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
@@ -86,8 +92,8 @@ namespace AzToolsFramework::Prefab
     private:
         InstanceClimbUpResult ClimbUpToFocusedOrRootInstanceFromEntity(AZ::EntityId entityId) const;
 
-        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
-        void RefreshInstanceFocusPath();
+        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance, AzFramework::ViewportId viewportId);
+        void RefreshInstanceFocusPath(AzFramework::ViewportId viewportId = AzFramework::InvalidViewportId);
 
         void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
         void SetInstanceContainersOpenStateOfAllDescendantContainers(InstanceOptionalReference instance, bool openState) const;
@@ -96,12 +102,22 @@ namespace AzToolsFramework::Prefab
 
         InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
 
-        //! The alias path for the instance the editor is currently focusing on, starting from the root instance.
-        RootAliasPath m_rootAliasFocusPath = RootAliasPath();
-        //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
-        AZ::IO::Path m_filenameFocusPath;
-        //! The length of the current focus path. Stored to simplify internal checks.
-        int m_rootAliasFocusPathLength = 0;
+        struct FocusData
+        {
+            //! The alias path for the instance the viewport is currently focusing on, starting from the root instance.
+            RootAliasPath m_rootAliasFocusPath = RootAliasPath();
+            //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
+            AZ::IO::Path m_filenameFocusPath;
+            //! The length of the current focus path. Stored to simplify internal checks.
+            int m_rootAliasFocusPathLength = 0;
+        };
+
+        FocusData& GetFocusData(AzFramework::ViewportId viewportId) const;
+
+        //! Per-viewport focus state. A viewport with no entry (default) resolves to the level root.
+        mutable AZStd::unordered_map<AzFramework::ViewportId, FocusData> m_focusDataByViewport;
+        //! The viewport used to resolve focus operations that don't name one. Set by the active editor viewport.
+        AzFramework::ViewportId m_activeViewportId = AzFramework::InvalidViewportId;
         //! The current focus mode.
         PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
 
