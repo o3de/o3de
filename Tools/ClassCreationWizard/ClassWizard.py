@@ -26,14 +26,151 @@ from command_plugin import (
 )
 from commands.exclude_conditional_files import ConditionalFileExcluder
 
-from PySide6.QtCore import Qt, Signal, QTimer, QSettings
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QLineEdit, QPushButton, QComboBox, QCheckBox,
-    QSpinBox, QDoubleSpinBox,
-    QTextEdit, QGroupBox, QFileDialog, QMessageBox, QFormLayout
-)
-from PySide6.QtGui import QIcon
+
+# ============================================================================
+# PySide6 Bootstrap
+# ============================================================================
+# O3DE ships PySide6 as a C++ runtime dependency of the QtForPython gem: the
+# native libraries are copied next to Editor.exe, but PySide6 is never installed
+# into the o3de Python venv (python/requirements.txt does not list it). The
+# Editor's embedded interpreter can therefore "import PySide6" -- it is
+# bootstrapped by Gems/QtForPython/Editor/Scripts/bootstrap.py -- but a
+# standalone tool launched through python/python.cmd cannot.
+#
+# To run standalone we locate the exact Qt-matched pyside6 and qt 3rdParty
+# packages the engine downloaded and place the PySide6 Python package plus the
+# native DLL folders on the path BEFORE importing PySide6. This reuses the
+# shipped, ABI-correct build: no PyPI wheel, no venv mutation, no dependence on
+# the host machine's Python. The whole step is skipped when PySide6 already
+# imports (e.g. a developer running under a system Python that provides it).
+
+
+def _pyside6_engine_root() -> Optional[Path]:
+    """Engine tree to resolve 3rdParty packages from: an explicit --engine-path
+    if one was passed, otherwise the engine this script lives in."""
+    argv = sys.argv
+    for i, arg in enumerate(argv):
+        value = None
+        if arg == "--engine-path" and i + 1 < len(argv):
+            value = argv[i + 1]
+        elif arg.startswith("--engine-path="):
+            value = arg.split("=", 1)[1]
+        if value and (Path(value) / "engine.json").exists():
+            return Path(value).resolve()
+    # <engine>/Tools/ClassCreationWizard/ClassWizard.py -> <engine>
+    fallback = Path(__file__).resolve().parents[2]
+    return fallback if (fallback / "engine.json").exists() else None
+
+
+def _pyside6_packages_folder(engine_root: Path) -> Path:
+    """The o3de 3rdParty 'packages' folder (shared across engines). Resolved via
+    the o3de manifest API when available, else the default ~/.o3de location."""
+    scripts = engine_root / "scripts" / "o3de"
+    sys.path.insert(0, str(scripts))
+    try:
+        from o3de import manifest
+        return Path(manifest.get_o3de_third_party_folder()) / "packages"
+    except Exception:
+        return Path.home() / ".o3de" / "3rdParty" / "packages"
+    finally:
+        if sys.path and sys.path[0] == str(scripts):
+            sys.path.pop(0)
+
+
+def _pyside6_newest_package(packages: Path, prefix: str, subpath: str) -> Optional[Path]:
+    """Newest downloaded package matching '<prefix>*' whose <subpath> exists.
+    'Newest' == highest folder name, which orders revisions correctly
+    (e.g. pyside6-6.10.2-py3.10-rev4 sorts above ...-rev1)."""
+    matches = sorted((p for p in packages.glob(prefix + "*") if p.is_dir()), reverse=True)
+    for pkg in matches:
+        target = pkg / subpath
+        if target.exists():
+            return target
+    return None
+
+
+def _pyside6_add_dll_dir(path: Path) -> None:
+    """Make a native DLL folder discoverable to the dynamic loader."""
+    if not path.is_dir():
+        return
+    if hasattr(os, "add_dll_directory"):        # Windows, Python 3.8+
+        try:
+            os.add_dll_directory(str(path))
+        except OSError:
+            pass
+    os.environ["PATH"] = str(path) + os.pathsep + os.environ.get("PATH", "")
+
+
+def _bootstrap_pyside6() -> None:
+    """Put O3DE's shipped PySide6 on the path so a standalone launch can import
+    it. Safe to call when PySide6 is partially available."""
+    import importlib.util
+    engine_root = _pyside6_engine_root()
+    if engine_root is None:
+        return
+    packages = _pyside6_packages_folder(engine_root)
+
+    # 1. Ensure the importable PySide6 Python package is on sys.path. An engine
+    #    venv may already expose it (via a .pth into the build's 3rdParty copy),
+    #    so only add it ourselves when it is genuinely missing.
+    if importlib.util.find_spec("PySide6") is None:
+        site_packages = _pyside6_newest_package(packages, "pyside6-", "pyside6/lib/site-packages")
+        if site_packages is None or not (site_packages / "PySide6").is_dir():
+            return
+        sys.path.insert(0, str(site_packages))
+
+    # 2. Make PySide6's native Qt6 dependencies discoverable. This is required
+    #    even when the PySide6 package itself is already importable: the Qt6 DLLs
+    #    it links against are not on a standalone interpreter's DLL search path,
+    #    so 'import PySide6.QtCore' fails with "DLL load failed" without it. The
+    #    pyside6 and qt 3rdParty package bin folders are build-independent; the
+    #    engine's built bin/<config> is added too when present as an exact match.
+    pyside6_bin = _pyside6_newest_package(packages, "pyside6-", "pyside6/bin")
+    if pyside6_bin is not None:
+        _pyside6_add_dll_dir(pyside6_bin)
+    qt_bin = _pyside6_newest_package(packages, "qt-", "qt/bin")
+    if qt_bin is not None:
+        _pyside6_add_dll_dir(qt_bin)
+    for built_bin in engine_root.glob("build/*/bin/*"):
+        if (built_bin / "Qt6Core.dll").exists() or (built_bin / "libQt6Core.so.6").exists():
+            _pyside6_add_dll_dir(built_bin)
+
+    # 3. Point Qt at its platform plugins. The o3de pyside6 package does not
+    #    bundle a 'platforms/' folder -- it links against the engine's Qt, whose
+    #    plugins live in the qt 3rdParty package. Without QT_PLUGIN_PATH, Qt fails
+    #    to load the platform plugin (qwindows / qoffscreen) and the GUI aborts on
+    #    startup ("could not find or load the Qt platform plugin"). Mirrors the
+    #    editor's Gems/QtForPython/Editor/Scripts/bootstrap.py. Do not clobber a
+    #    value the caller already set (e.g. when embedded in the Editor).
+    if not os.environ.get("QT_PLUGIN_PATH"):
+        qt_plugins = _pyside6_newest_package(packages, "qt-", "qt/plugins")
+        if qt_plugins is not None:
+            os.environ["QT_PLUGIN_PATH"] = str(qt_plugins)
+
+
+try:
+    _bootstrap_pyside6()
+except Exception:
+    pass  # Fall through: the import below raises a clear, actionable error.
+
+try:
+    from PySide6.QtCore import Qt, Signal, QTimer, QSettings
+    from PySide6.QtWidgets import (
+        QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+        QLabel, QLineEdit, QPushButton, QComboBox, QCheckBox,
+        QSpinBox, QDoubleSpinBox,
+        QTextEdit, QGroupBox, QFileDialog, QMessageBox, QFormLayout
+    )
+    from PySide6.QtGui import QIcon
+except ImportError as pyside_import_error:
+    raise ImportError(
+        "PySide6 could not be imported. O3DE ships PySide6 as a runtime "
+        "dependency of the QtForPython gem (copied next to Editor.exe), not in "
+        "the Python venv, so the standalone ClassWizard bootstraps it from the "
+        "engine's 3rdParty packages. Ensure --engine-path points at an engine "
+        "whose 'pyside6' and 'qt' 3rdParty packages have been downloaded (they "
+        "are fetched during the engine's CMake configure)."
+    ) from pyside_import_error
 
 
 # ============================================================================
