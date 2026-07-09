@@ -68,5 +68,8 @@ namespace AzToolsFramework::Prefab
 
         //! Returns the viewport that currently drives prefab focus when no viewport is specified.
         virtual AzFramework::ViewportId GetActivePrefabFocusViewportId() const = 0;
+
+        //! Returns whether the given viewport is focused inside a nested prefab, i.e. showing prefab edit mode.
+        virtual bool IsViewportInPrefabEditMode(AzFramework::ViewportId viewportId) const = 0;
     };
 } // namespace AzToolsFramework::Prefab

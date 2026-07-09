@@ -65,6 +65,7 @@ namespace AzToolsFramework::Prefab
         LinkId PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const override;
         void SetActivePrefabFocusViewportId(AzFramework::ViewportId viewportId) override;
         AzFramework::ViewportId GetActivePrefabFocusViewportId() const override;
+        bool IsViewportInPrefabEditMode(AzFramework::ViewportId viewportId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;

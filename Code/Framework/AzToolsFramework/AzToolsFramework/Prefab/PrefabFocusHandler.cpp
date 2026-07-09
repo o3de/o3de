@@ -136,6 +136,12 @@ namespace AzToolsFramework::Prefab
         return m_activeViewportId;
     }
 
+    bool PrefabFocusHandler::IsViewportInPrefabEditMode(AzFramework::ViewportId viewportId) const
+    {
+        InstanceOptionalReference focusedInstance = GetInstanceReference(GetFocusData(viewportId).m_rootAliasFocusPath);
+        return focusedInstance.has_value() && focusedInstance->get().GetParentInstance() != AZStd::nullopt;
+    }
+
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
     {
         // Initialize Undo Batch object
