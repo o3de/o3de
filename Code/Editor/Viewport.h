@@ -241,6 +241,7 @@ public:
     virtual void OnTitleMenu([[maybe_unused]] QMenu* menu) {}
 
     void SetViewPane(CLayoutViewPane* viewPane) { m_viewPane = viewPane; }
+    CLayoutViewPane* GetViewPane() const { return m_viewPane; }
 
     CViewport *asCViewport() override { return this; }
 

@@ -269,7 +269,7 @@ namespace AZ
             m_outputScope = OutputScopeType::RenderPipeline;
             m_scene = pipeline->GetScene();
             m_pass = nullptr;
-            m_drawFilter = pipeline->GetDrawFilterMask();
+            m_drawFilter = pipeline->GetPipelineInstanceDrawFilterMask();
 
             // The scope may already be set to a pipeline in a different scene, and this bus is addressed by scene id.
             SceneNotificationBus::Handler::BusDisconnect();

@@ -14,7 +14,11 @@
 
 #include "ViewManager.h"
 
+// Qt
+#include <QTimer>
+
 // AzCore
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 // AzToolsFramework
@@ -22,12 +26,17 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 
+// Atom
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
 // Editor
 #include "Settings.h"
 #include "MainWindow.h"
 #include "LayoutWnd.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
+#include "QtViewPaneManager.h"
+#include "ViewPane.h"
 
 #include <AzCore/Console/IConsole.h>
 
@@ -66,9 +75,60 @@ CViewManager::CViewManager()
     QtViewOptions viewportOptions;
     viewportOptions.paneRect = QRect(0, 0, 400, 400);
     viewportOptions.canHaveMultipleInstances = true;
+    // The raw widget registration only serves CLayoutViewPane::SetViewClass (preview mode); a bare
+    // EditorViewportWidget never receives a viewport id, so opening it as a pane would be inert.
+    viewportOptions.showInMenu = false;
 
     viewportOptions.viewportType = ET_ViewportCamera;
     RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
+
+    // Additional dockable viewports: each instance is a self-hosting CLayoutViewPane (toolbar included)
+    // wrapping its own EditorViewportWidget on the lowest free viewport id.
+    QtViewOptions dockableViewportOptions;
+    dockableViewportOptions.paneRect = QRect(0, 0, 800, 450);
+    dockableViewportOptions.canHaveMultipleInstances = true;
+    dockableViewportOptions.viewportType = ET_ViewportCamera;
+    QtViewPaneManager::instance()->RegisterPane(
+        LyViewPane::EditorViewport,
+        LyViewPane::CategoryViewport,
+        [](QWidget* parent = nullptr) -> QWidget*
+        {
+            auto* pane = new CLayoutViewPane(parent);
+
+            // The first pane adopts the live viewport born in the boot layout window: moved within
+            // the same toplevel and reattached under its existing id, its native window, swapchain,
+            // viewport context and camera all survive (the Hammer gem shipped this maneuver).
+            MainWindow* mainWindow = MainWindow::instance();
+            if (QWidget* adopted = mainWindow ? mainWindow->TakeCentralViewportForDocking() : nullptr)
+            {
+                pane->SetId(qobject_cast<QtViewport*>(adopted)->GetViewportId());
+                pane->AttachViewport(adopted);
+                return pane;
+            }
+
+            // Fresh viewports are created one event-loop tick later, once the pane is wrapped in
+            // its dock: the swapchain binds to the native window that exists at attach time, and
+            // reparenting afterwards would recreate that window and orphan the swapchain (the
+            // viewport then shows stale surface garbage while input still works).
+            QTimer::singleShot(
+                0, pane,
+                [pane]
+                {
+                    auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+                    int viewportId = 0;
+                    while (viewportContextManager && viewportContextManager->GetViewportContextById(viewportId))
+                    {
+                        ++viewportId;
+                    }
+
+                    pane->SetId(viewportId);
+                    auto* viewport = new EditorViewportWidget("Perspective", pane);
+                    viewport->setProperty("IsViewportWidget", true);
+                    pane->AttachViewport(viewport);
+                });
+            return pane;
+        },
+        dockableViewportOptions);
 
     GetIEditor()->RegisterNotifyListener(this);
 }
@@ -266,9 +326,23 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 
     m_pSelectedView = pViewport;
 
+    if (MainWindow* mainWindow = MainWindow::instance())
+    {
+        mainWindow->SetActiveView(m_pSelectedView ? m_pSelectedView->GetViewPane() : nullptr);
+    }
+
     if (m_pSelectedView != nullptr)
     {
         m_pSelectedView->SetSelected(true);
+
+        // The focused viewport is what the default viewport context alias resolves to.
+        if (auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
+        {
+            if (viewportContextManager->GetViewportContextById(m_pSelectedView->GetViewportId()))
+            {
+                viewportContextManager->SetDefaultViewportContext(m_pSelectedView->GetViewportId());
+            }
+        }
     }
 }
 

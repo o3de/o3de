@@ -175,6 +175,15 @@ CLayoutViewPane::~CLayoutViewPane()
 
 void CLayoutViewPane::OnMenuRegistrationHook()
 {
+    // The viewport menus, actions and toolbar definitions are shared by every CLayoutViewPane
+    // instance; only the first pane registers them.
+    static bool menusRegistered = false;
+    if (menusRegistered)
+    {
+        return;
+    }
+    menusRegistered = true;
+
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "Viewport Camera Settings";
@@ -219,10 +228,15 @@ void CLayoutViewPane::OnMenuRegistrationHook()
 
 void CLayoutViewPane::OnToolBarRegistrationHook()
 {
-    // Register top viewport toolbar.
-    AzToolsFramework::ToolBarProperties toolBarProperties;
-    toolBarProperties.m_name = "Viewport ToolBar";
-    m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
+    // Register top viewport toolbar. The definition is shared; each pane generates its own instance.
+    static bool toolBarRegistered = false;
+    if (!toolBarRegistered)
+    {
+        toolBarRegistered = true;
+        AzToolsFramework::ToolBarProperties toolBarProperties;
+        toolBarProperties.m_name = "Viewport ToolBar";
+        m_toolBarManagerInterface->RegisterToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, toolBarProperties);
+    }
 
     // Add toolbar to top of viewport.
     QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier);
@@ -231,6 +245,13 @@ void CLayoutViewPane::OnToolBarRegistrationHook()
 
 void CLayoutViewPane::OnActionRegistrationHook()
 {
+    static bool actionsRegistered = false;
+    if (actionsRegistered)
+    {
+        return;
+    }
+    actionsRegistered = true;
+
     // Dummy Action with Resize Icon
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.resizeIcon";
@@ -585,6 +606,13 @@ void CLayoutViewPane::OnActionRegistrationHook()
 
 void CLayoutViewPane::OnMenuBindingHook()
 {
+    static bool menusBound = false;
+    if (menusBound)
+    {
+        return;
+    }
+    menusBound = true;
+
     // Camera
     {
         m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::ViewportCameraMenuIdentifier, "o3de.widgetAction.viewport.fieldOfView", 100);
@@ -673,6 +701,13 @@ void CLayoutViewPane::OnMenuBindingHook()
 
 void CLayoutViewPane::OnToolBarBindingHook()
 {
+    static bool toolBarBound = false;
+    if (toolBarBound)
+    {
+        return;
+    }
+    toolBarBound = true;
+
     m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.expander", 300);
     m_toolBarManagerInterface->AddWidgetToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.editVisualMode", 400);

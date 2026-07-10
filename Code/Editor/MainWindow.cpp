@@ -405,10 +405,49 @@ void MainWindow::InitCentralWidget()
         }
     }
 
-    // make sure the layout wnd knows to reset it's layout and settings
-    connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
+    if (!MainWindow::instance()->IsPreview())
+    {
+        // Re-home the viewport the layout window just created into a dockable "Editor Viewport"
+        // pane and clear the fixed central slot, so the center becomes dock space. The pane factory
+        // adopts the live viewport — moved within the same toplevel and without a rebuild, its
+        // swapchain, viewport context and camera stay intact (the Hammer gem shipped this exact
+        // maneuver for months).
+        if (const QtViewPane* viewportPane = m_viewPaneManager->OpenPane(LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState))
+        {
+            m_viewPaneHost->addDockWidget(Qt::LeftDockWidgetArea, viewportPane->m_dockWidget);
+            viewportPane->m_dockWidget->setFloating(false);
+        }
+    }
+
+    if (m_viewPaneHost->centralWidget() == m_pLayoutWnd)
+    {
+        // Only while the layout window still occupies the central slot (preview mode, or the
+        // viewport pane failed to adopt): resetting the layout would otherwise rebuild a viewport
+        // inside the hidden layout window and collide with the adopted one's viewport id.
+        connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
+    }
 
     AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::Bus::Events::NotifyCentralWidgetInitialized);
+}
+
+QWidget* MainWindow::TakeCentralViewportForDocking()
+{
+    if (!m_pLayoutWnd || m_viewPaneHost->centralWidget() != m_pLayoutWnd)
+    {
+        return nullptr;
+    }
+
+    CLayoutViewPane* bootPane = m_pLayoutWnd->GetViewPaneByIndex(0);
+    QWidget* viewport = bootPane ? bootPane->GetViewport() : nullptr;
+    if (!viewport)
+    {
+        return nullptr;
+    }
+
+    bootPane->DetachViewport();
+    m_viewPaneHost->takeCentralWidget();
+    m_pLayoutWnd->hide();
+    return viewport;
 }
 
 void MainWindow::Initialize()

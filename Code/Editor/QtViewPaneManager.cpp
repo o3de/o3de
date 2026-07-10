@@ -1046,8 +1046,9 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         }
     }
 
-    // First, close all the open panes
-    if (!ClosePanesWithRollback(QVector<QString>()))
+    // First, close all the open panes. The viewport pane stays open: destroying it would tear down
+    // the live render viewport it hosts; the default layout re-docks it instead.
+    if (!ClosePanesWithRollback(QVector<QString>{ QString(LyViewPane::EditorViewport) }))
     {
         return;
     }
@@ -1071,6 +1072,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
 
         ViewLayoutState state;
 
+        state.viewPanes.push_back(LyViewPane::EditorViewport);
         state.viewPanes.push_back(LyViewPane::EntityOutliner);
         state.viewPanes.push_back(LyViewPane::Inspector);
         state.viewPanes.push_back(LyViewPane::AssetBrowser);
@@ -1095,6 +1097,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     }
 
     // Reset the default view panes to be opened. Used for restoring default layout and component entity layout.
+    const QtViewPane* viewportViewPane = OpenPane(LyViewPane::EditorViewport, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* entityOutlinerViewPane = OpenPane(LyViewPane::EntityOutliner, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* assetBrowserViewPane = OpenPane(LyViewPane::AssetBrowser, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* InspectorViewPane = OpenPane(LyViewPane::Inspector, QtViewPane::OpenMode::UseDefaultState);
@@ -1105,11 +1108,18 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     // This class does all kinds of behind the scenes magic to make docking / restore work, especially with groups
     // so instead of doing our special default layout attach / docking right now, we want to make it happen
     // after all of the other events have been processed.
-    QTimer::singleShot(0, [this, consoleViewPane, assetBrowserViewPane, InspectorViewPane, levelInspectorPane, entityOutlinerViewPane, resetSettings, selectedEntityIds]
+    QTimer::singleShot(0, [this, viewportViewPane, consoleViewPane, assetBrowserViewPane, InspectorViewPane, levelInspectorPane, entityOutlinerViewPane, resetSettings, selectedEntityIds]
     {
         // If we are using the new docking, set the right dock area to be absolute
         // so that the inspector will be to the right of the viewport and console
         m_advancedDockManager->setAbsoluteCornersForDockArea(m_mainWindow, Qt::RightDockWidgetArea);
+
+        // The viewport pane docks first so it claims the central dock space; the other panes split around it.
+        if (viewportViewPane)
+        {
+            m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, viewportViewPane->m_dockWidget);
+            viewportViewPane->m_dockWidget->setFloating(false);
+        }
 
         // Retrieve the width and height of the screen that our main window is on so we can
         // use it later for resizing our panes. The main window ends up being maximized
@@ -1415,6 +1425,16 @@ bool QtViewPaneManager::RestoreLayout(QString layoutName)
 
             return false;
         }
+    }
+
+    // Layout states saved before the viewport became a dockable pane cannot position it (the dock
+    // manager hides docks it does not know). Save the old layout aside and fall back to the default
+    // layout, which docks the viewport pane and saves a state that includes it.
+    if (layoutName == s_lastLayoutName && !state.viewPanes.contains(LyViewPane::EditorViewport))
+    {
+        static const QString preViewportPaneLayout = "User Pre-Viewport-Pane Layout";
+        SaveStateToLayout(state, preViewportPaneLayout);
+        return false;
     }
 
     if (!ClosePanesWithRollback(state.viewPanes))

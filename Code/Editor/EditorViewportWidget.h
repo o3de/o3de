@@ -105,8 +105,6 @@ public:
         return QtViewport::GetClassID<EditorViewportWidget>();
     }
 
-    static EditorViewportWidget* GetPrimaryViewport();
-
     // Used by ViewPan in some circumstances
     void ConnectViewportInteractionRequestBus();
     void DisconnectViewportInteractionRequestBus();
@@ -267,7 +265,8 @@ private:
     void BuildDragDropContext(
         AzQtComponents::ViewportDragContext& context, AzFramework::ViewportId viewportId, const QPoint& point) override;
 
-    void SetAsActiveViewport();
+    void PushViewGroupForThisViewport();
+    void PopViewGroupForThisViewport();
     void PushDisableRendering();
     void PopDisableRendering();
     bool IsRenderingDisabled() const;
@@ -298,9 +297,6 @@ private:
     // Members ...
     friend class AZ::ViewportHelpers::EditorEntityNotifications;
 
-    // Singleton for the primary viewport
-    static EditorViewportWidget* m_pPrimaryViewport;
-
     // The simulation (play-game in editor) state
     PlayInEditorState m_playInEditorState = PlayInEditorState::Editor;
 
@@ -318,9 +314,6 @@ private:
 
     // Disables rendering during some periods of time, e.g. undo/redo, resize events
     uint m_disableRenderingCount = 0;
-
-    // Determines if the viewport needs updating (false when out of focus for example)
-    bool m_bUpdateViewport = false;
 
     // Avoid re-entering PostCameraSet->OnActiveViewChanged->PostCameraSet
     bool m_sendingOnActiveChanged = false;

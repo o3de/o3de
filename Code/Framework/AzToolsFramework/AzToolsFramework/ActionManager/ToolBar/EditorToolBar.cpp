@@ -308,12 +308,39 @@ namespace AzToolsFramework
                         }
                         break;
                     case ToolBarItemType::ActionAndSubMenu:
+                        {
+                            // Widgets can only live in one container, so each toolbar gets its own
+                            // button; the action and menu are shared.
+                            QAction* action = s_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier);
+                            QMenu* subMenu = s_menuManagerInternalInterface->GetMenu(toolBarItem.m_subMenuIdentifier);
+
+                            if (action && subMenu)
+                            {
+                                EnumerateToolBars(
+                                    [action, subMenu, &toolBarItem](QToolBar* toolBar) -> bool
+                                    {
+                                        QToolButton* toolButton = new QToolButton(toolBar);
+                                        toolButton->setPopupMode(QToolButton::MenuButtonPopup);
+                                        toolButton->setAutoRaise(true);
+                                        toolButton->setMenu(subMenu);
+                                        toolButton->setDefaultAction(action);
+
+                                        toolBar->addWidget(toolButton)->setObjectName(toolBarItem.m_subMenuIdentifier.c_str());
+                                        return false;
+                                    }
+                                );
+                            }
+                        }
+                        break;
                     case ToolBarItemType::Widget:
                         {
                             EnumerateToolBars(
-                                [toolBarItem](QToolBar* toolBar) -> bool
+                                [&toolBarItem](QToolBar* toolBar) -> bool
                                 {
-                                    toolBar->addAction(toolBarItem.m_widgetAction);
+                                    if (QWidget* widget = s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(toolBarItem.m_identifier))
+                                    {
+                                        toolBar->addWidget(widget)->setObjectName(toolBarItem.m_identifier.c_str());
+                                    }
                                     return false;
                                 }
                             );
@@ -331,45 +358,6 @@ namespace AzToolsFramework
         , m_identifier(AZStd::move(identifier))
         , m_subMenuIdentifier(AZStd::move(subMenuIdentifier))
     {
-        switch (m_type)
-        {
-            case ToolBarItemType::Widget:
-                {
-                    if (QWidget* widget = s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
-                    {
-                        m_widgetAction = new QWidgetAction(nullptr);
-                        m_widgetAction->setDefaultWidget(widget);
-                        m_widgetAction->setObjectName(m_identifier.c_str());
-                    }
-                }
-                break;
-
-            case ToolBarItemType::ActionAndSubMenu:
-                {
-                    QAction* action = s_actionManagerInternalInterface->GetAction(m_identifier);
-                    QMenu* subMenu = s_menuManagerInternalInterface->GetMenu(m_subMenuIdentifier);
-
-                    if (action && subMenu)
-                    {
-                        QToolButton* toolButton = new QToolButton(s_defaultParentWidget);
-
-                        toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-                        toolButton->setAutoRaise(true);
-                        toolButton->setMenu(subMenu);
-                        toolButton->setDefaultAction(action);
-
-                        m_widgetAction = new QWidgetAction(s_defaultParentWidget);
-                        m_widgetAction->setDefaultWidget(toolButton);
-                        m_widgetAction->setObjectName(m_subMenuIdentifier.c_str());
-                    }
-                }
-                break;
-
-            case ToolBarItemType::Action:
-            case ToolBarItemType::Separator:
-            default:
-                break;
-        }
     }
 
     void EditorToolBar::Initialize(QWidget* defaultParentWidget)

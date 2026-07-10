@@ -97,6 +97,7 @@ namespace AZ::Render
         if (!pipeline)
         {
             AZ_Warning("AtomRenderOptions", false, "Failed to find default viewport pipeline. No render options will be visible");
+            return;
         }
 
         AZStd::vector<AZ::Name> passNames;

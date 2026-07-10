@@ -54,4 +54,3 @@ namespace LyViewPane
 
     const int NO_BUILTIN_ACTION = -1;
 }
-

@@ -89,8 +89,6 @@
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 
-EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
-
 #if AZ_TRAIT_OS_PLATFORM_APPLE
 void StopFixedCursorMode();
 void StartFixedCursorMode(QObject* viewport);
@@ -160,45 +158,33 @@ static void MarkCameraEntityDirty(const AZ::EntityId entityId)
     undoBatch.MarkEntityDirty(entityId);
 }
 
-static void PopViewGroupForDefaultContext()
+void EditorViewportWidget::PopViewGroupForThisViewport()
 {
     auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    if (!atomViewportRequests)
+    auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
+    if (!atomViewportRequests || !viewportContext)
     {
         return;
     }
 
-    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-    if (!viewSystem)
+    if (auto viewGroup = atomViewportRequests->GetCurrentViewGroup(viewportContext->GetName()))
     {
-        return;
-    }
-
-    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
-    {
-        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        atomViewportRequests->PopViewGroup(contextName, viewGroup);
+        atomViewportRequests->PopViewGroup(viewportContext->GetName(), viewGroup);
     }
 }
 
-static void PushViewGroupForDefaultContext()
+void EditorViewportWidget::PushViewGroupForThisViewport()
 {
     auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    if (!atomViewportRequests)
+    auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
+    if (!atomViewportRequests || !viewportContext)
     {
         return;
     }
 
-    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-    if (!viewSystem)
+    if (auto viewGroup = atomViewportRequests->GetCurrentViewGroup(viewportContext->GetName()))
     {
-        return;
-    }
-
-    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
-    {
-        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        atomViewportRequests->PushViewGroup(contextName, viewGroup);
+        atomViewportRequests->PushViewGroup(viewportContext->GetName(), viewGroup);
     }
 }
 
@@ -237,20 +223,11 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
     m_manipulatorManager = GetIEditor()->GetViewManager()->GetManipulatorManager();
-    if (!m_pPrimaryViewport)
-    {
-        SetAsActiveViewport();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 EditorViewportWidget::~EditorViewportWidget()
 {
-    if (m_pPrimaryViewport == this)
-    {
-        m_pPrimaryViewport = nullptr;
-    }
-
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
 
     m_editorViewportSettings.Disconnect();
@@ -401,10 +378,6 @@ bool EditorViewportWidget::event(QEvent* event)
 void EditorViewportWidget::UpdateContent(int flags)
 {
     QtViewport::UpdateContent(flags);
-    if (flags & eUpdateObjects)
-    {
-        m_bUpdateViewport = true;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -423,29 +396,6 @@ void EditorViewportWidget::Update()
     if (!isVisible())
     {
         return;
-    }
-
-    // Don't wait for changes to update the focused viewport.
-    if (CheckRespondToInput())
-    {
-        m_bUpdateViewport = true;
-    }
-
-    // While Renderer doesn't support fast rendering of the scene to more then 1 viewport
-    // render only focused viewport if more then 1 are opened and always update is off.
-    if (!m_isOnPaint && m_viewManager->GetNumberOfGameViewports() > 1 && GetType() == ET_ViewportCamera)
-    {
-        if (m_pPrimaryViewport != this)
-        {
-            if (CheckRespondToInput()) // If this is the focused window, set primary viewport.
-            {
-                SetAsActiveViewport();
-            }
-            else if (!m_bUpdateViewport) // Skip this viewport.
-            {
-                return;
-            }
-        }
     }
 
     const bool isGameMode = GetIEditor()->IsInGameMode();
@@ -542,7 +492,6 @@ void EditorViewportWidget::Update()
     QtViewport::Update();
 
     PopDisableRendering();
-    m_bUpdateViewport = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -685,17 +634,23 @@ void EditorViewportWidget::OnBeginPrepareRender()
         return;
     }
 
-    AZ::u32 prevState = 0;
-    (void)((m_pPrimaryViewport == this) && (RenderAll(),
+    RenderAll();
+
     // Draw 2D helpers.
-    m_debugDisplay->DepthTestOff(), prevState = m_debugDisplay->GetState(),
-    m_debugDisplay->SetState(0x0u | AzFramework::e_Mode3D | AzFramework::e_AlphaBlended | AzFramework::e_FillModeSolid | AzFramework::e_CullModeBack | AzFramework::e_DepthWriteOn | AzFramework::e_DepthTestOn),
+    m_debugDisplay->DepthTestOff();
+    auto prevState = m_debugDisplay->GetState();
+    m_debugDisplay->SetState(
+        0x0u | AzFramework::e_Mode3D | AzFramework::e_AlphaBlended | AzFramework::e_FillModeSolid | AzFramework::e_CullModeBack |
+        AzFramework::e_DepthWriteOn | AzFramework::e_DepthTestOn);
+
     AzFramework::ViewportDebugDisplayEventBus::Event(
         AzToolsFramework::GetEntityContextId(),
         &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
         AzFramework::ViewportInfo{ GetViewportId() },
-        *m_debugDisplay),
-    m_debugDisplay->SetState(prevState), m_debugDisplay->DepthTestOn(), true));
+        *m_debugDisplay);
+
+    m_debugDisplay->SetState(prevState);
+    m_debugDisplay->DepthTestOn();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -734,7 +689,8 @@ void EditorViewportWidget::RenderAll()
 //////////////////////////////////////////////////////////////////////////
 float EditorViewportWidget::GetAspectRatio() const
 {
-    return gSettings.viewports.fDefaultAspectRatio;
+    return height() > 0 ? aznumeric_cast<float>(width()) / aznumeric_cast<float>(height())
+                        : gSettings.viewports.fDefaultAspectRatio;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -783,6 +739,13 @@ bool EditorViewportWidget::ShowingWorldSpace()
 
 void EditorViewportWidget::SetViewportId(int id)
 {
+    // Reattaching under the same id (e.g. a pane adopting a live viewport) must not rebuild the
+    // render viewport: that would destroy its swapchain, viewport context and camera state.
+    if (m_renderViewport && id == GetViewportId())
+    {
+        return;
+    }
+
     CViewport::SetViewportId(id);
 
     // Clear the cached DebugDisplay pointer. we're about to delete that render viewport, and deleting the render
@@ -823,9 +786,12 @@ void EditorViewportWidget::SetViewportId(int id)
 
     UpdateScene();
 
-    if (m_pPrimaryViewport == this)
+    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
     {
-        SetAsActiveViewport();
+        if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
+        {
+            atomViewportRequests->SetDefaultViewportContext(id);
+        }
     }
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
@@ -1153,12 +1119,6 @@ void EditorViewportWidget::ResizeView(int width, int height)
 }
 
 //////////////////////////////////////////////////////////////////////////
-EditorViewportWidget* EditorViewportWidget::GetPrimaryViewport()
-{
-    return m_pPrimaryViewport;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::focusOutEvent([[maybe_unused]] QFocusEvent* event)
 {
     // if we lose focus, the keyboard map needs to be cleared immediately
@@ -1445,12 +1405,13 @@ void EditorViewportWidget::SetFOV(const float fov)
     else
     {
         auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-        if (!viewSystem)
+        auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
+        if (!viewSystem || !viewportContext)
         {
             return;
         }
 
-        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewportContext->GetName()))
         {
             auto viewToClip = viewGroup->GetView()->GetViewToClipMatrix();
             AZ::SetPerspectiveMatrixFOV(viewToClip, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
@@ -1471,12 +1432,13 @@ float EditorViewportWidget::GetFOV() const
     else
     {
         auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-        if (!viewSystem)
+        auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
+        if (!viewSystem || !viewportContext)
         {
             return AZ::Constants::HalfPi; // 90 degrees (default)
         }
 
-        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewportContext->GetName()))
         {
             return AZ::GetPerspectiveMatrixFOV(viewGroup->GetView()->GetViewToClipMatrix());
         }
@@ -1502,6 +1464,17 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
     // if they've picked the same camera, then that means they want to toggle
     if (viewEntityId.IsValid())
     {
+        // The camera view group was pushed onto the focused viewport's context; only that viewport adopts
+        // the camera entity. Any other viewport still displaying an older camera resets to its own camera.
+        if (GetIEditor()->GetViewManager()->GetSelectedViewport() != this)
+        {
+            if (m_viewEntityId.IsValid())
+            {
+                SetDefaultCamera();
+            }
+            return;
+        }
+
         // Any such events for game entities should be filtered out by the check above
         AZ_Error(
             "EditorViewportWidget", Camera::EditorCameraViewRequestBus::FindFirstHandler(viewEntityId) != nullptr,
@@ -1515,7 +1488,7 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
 
         PostCameraSet();
     }
-    else
+    else if (m_viewEntityId.IsValid())
     {
         SetDefaultCamera();
     }
@@ -1527,7 +1500,7 @@ void EditorViewportWidget::SetDefaultCamera()
     if (m_viewEntityId.IsValid())
     {
         // remove pushed view group for view entity (editor camera component in 'Be this camera' mode
-        PopViewGroupForDefaultContext();
+        PopViewGroupForThisViewport();
     }
 
     m_viewEntityId.SetInvalid();
@@ -1544,7 +1517,7 @@ void EditorViewportWidget::SetDefaultCamera()
     // update camera matrix according to near / far values
     SetDefaultCameraNearFar();
 
-    PushViewGroupForDefaultContext();
+    PushViewGroupForThisViewport();
 
     PostCameraSet();
 }
@@ -1552,12 +1525,13 @@ void EditorViewportWidget::SetDefaultCamera()
 void EditorViewportWidget::SetDefaultCameraNearFar()
 {
     auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
-    if (!viewSystem)
+    auto viewportContext = m_renderViewport ? m_renderViewport->GetViewportContext() : nullptr;
+    if (!viewSystem || !viewportContext)
     {
         return;
     }
 
-    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewportContext->GetName()))
     {
         auto viewToClip = viewGroup->GetView()->GetViewToClipMatrix();
         AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
@@ -1671,6 +1645,13 @@ void EditorViewportWidget::CycleCamera()
 
 void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& entityId)
 {
+    // Camera view changes target the focused viewport; the camera component pushes its view group onto that
+    // viewport's context when it activates.
+    if (GetIEditor()->GetViewManager()->GetSelectedViewport() != this)
+    {
+        return;
+    }
+
     // This is an editor event, so is only serviced during edit mode, not play game mode
     if (m_playInEditorState != PlayInEditorState::Editor)
     {
@@ -1692,7 +1673,7 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
         // assigned, ensure we pop it from the stack before assigning a new one
         if (m_viewEntityId.IsValid())
         {
-            PopViewGroupForDefaultContext();
+            PopViewGroupForThisViewport();
         }
 
         Camera::CameraRequestBus::Event(entityId, &Camera::CameraRequestBus::Events::MakeActiveView);
@@ -1707,7 +1688,7 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
 
 bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
 {
-    if (m_pPrimaryViewport == this)
+    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -1727,7 +1708,7 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
 
 AZStd::optional<AZ::Transform> EditorViewportWidget::GetActiveCameraTransform()
 {
-    if (m_pPrimaryViewport == this)
+    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -1744,7 +1725,7 @@ AZStd::optional<AZ::Transform> EditorViewportWidget::GetActiveCameraTransform()
 
 AZStd::optional<float> EditorViewportWidget::GetCameraFoV()
 {
-    if (m_pPrimaryViewport == this)
+    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
     {
         return GetFOV();
     }
@@ -1753,7 +1734,7 @@ AZStd::optional<float> EditorViewportWidget::GetCameraFoV()
 
 bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)
 {
-    if (m_pPrimaryViewport == this)
+    if (GetIEditor()->GetViewManager()->GetSelectedViewport() == this)
     {
         cameraState = m_renderViewport->GetCameraState();
         return true;
@@ -2016,37 +1997,6 @@ void EditorViewportWidget::UpdateScene()
     }
 }
 
-void EditorViewportWidget::SetAsActiveViewport()
-{
-    auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-
-    const AZ::Name defaultContextName = viewportContextManager->GetDefaultViewportContextName();
-
-    if (m_pPrimaryViewport && m_pPrimaryViewport != this && m_pPrimaryViewport->m_renderViewport)
-    {
-        auto viewportContext = m_pPrimaryViewport->m_renderViewport->GetViewportContext();
-        if (viewportContext)
-        {
-            viewportContextManager->PopViewGroup(defaultContextName, viewportContext->GetViewGroup());
-            viewportContextManager->RenameViewportContext(viewportContext,
-                AZ::Name(AZStd::string::format("ViewportContext%i", m_pPrimaryViewport->GetViewportId())));
-        }
-    }
-
-    m_pPrimaryViewport = this;
-    if (m_renderViewport)
-    {
-        auto viewportContext = m_renderViewport->GetViewportContext();
-        if (viewportContext)
-        {
-            // Push our camera onto the default viewport's view stack to preserve camera state continuity
-            // Other views can still be pushed on top of our view for e.g. game mode
-            viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
-            viewportContextManager->PushViewGroup(defaultContextName, viewportContext->GetViewGroup());
-        }
-    }
-}
-
 void EditorViewportSettings::Connect(const AzFramework::ViewportId viewportId)
 {
     AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(viewportId);
@@ -2126,15 +2076,9 @@ AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const
 {
-    CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
-    if (!layout)
-    {
-        AZ_Assert(false, "CRenderViewport: No View Manager layout");
-        return false;
-    }
-
     // Doesn't work with split layout
-    if (layout->GetLayout() != EViewLayout::ET_Layout0)
+    CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
+    if (layout && layout->GetLayout() != EViewLayout::ET_Layout0)
     {
         return false;
     }
@@ -2195,8 +2139,14 @@ void EditorViewportWidget::StopFullscreenPreview()
     setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     setMinimumSize(50, 50);
 
+    // Attach this viewport back to its own dockable view pane.
+    if (m_viewPane)
+    {
+        m_viewPane->DetachViewport();
+        m_viewPane->AttachViewport(this);
+    }
     // Attach this viewport to the primary view pane (whose index is 0).
-    if (CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout())
+    else if (CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout())
     {
         if (CLayoutViewPane* viewPane = layout->GetViewPaneByIndex(0))
         {

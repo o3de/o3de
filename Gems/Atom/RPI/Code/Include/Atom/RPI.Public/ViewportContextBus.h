@@ -57,6 +57,19 @@ namespace AZ
             //! Get the ViewportConext which has default ViewportContext name
             virtual ViewportContextPtr GetDefaultViewportContext() const = 0;
 
+            //! Designates the ViewportContext the default viewport context name resolves to.
+            //! Name-based lookups and view group operations addressed with the default name are redirected to the
+            //! designated context, and its per-name notifications are mirrored onto the default name, so contexts
+            //! keep their own registered names permanently. Pass AzFramework::InvalidViewportId to clear the
+            //! designation and fall back to a context registered under the default name itself.
+            virtual void SetDefaultViewportContext(AzFramework::ViewportId viewportId) = 0;
+
+            //! Resolves the default-viewport-context name alias to the designated context's registered name.
+            //! Any other name, or the default name while no designation is set, is returned unchanged.
+            //! Use this to record the concrete context a view group was pushed to, so the matching pop reaches
+            //! the same context even if the designation changes in between.
+            virtual Name ResolveViewportContextName(const Name& contextName) const = 0;
+
             //! Creates a ViewportContext and registers it by name.
             //! There may only be one context registered to a given name at any time.
             //! The ViewportContext will be automatically assigned a View from the stack registered to this context name.

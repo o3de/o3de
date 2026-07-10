@@ -43,6 +43,8 @@ namespace AZ
             ViewGroupPtr GetCurrentViewGroup(const Name& contextName) override;
             ViewportContextPtr GetDefaultViewportContext() const override;
             ViewportContextPtr GetViewportContextByScene(const Scene* scene) const override;
+            void SetDefaultViewportContext(AzFramework::ViewportId viewportId) override;
+            Name ResolveViewportContextName(const Name& contextName) const override;
 
             ViewPtr GetCurrentView(const Name& context);
             ViewPtr GetCurrentStereoscopicView(const Name& context, ViewType viewType);
@@ -72,6 +74,7 @@ namespace AZ
             AZStd::atomic<AzFramework::ViewportId> m_currentViewportId = StartingViewportId;
 
             AZ::Name m_defaultViewportContextName;
+            AZStd::atomic<AzFramework::ViewportId> m_defaultViewportContextId = AzFramework::InvalidViewportId;
 
             friend class RPISystem;
             friend class ViewportContext;

@@ -187,6 +187,11 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RPI);
             ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
+            if (m_mirrorNotificationsToDefaultContextName && m_manager)
+            {
+                ViewportContextNotificationBus::Event(
+                    m_manager->GetDefaultViewportContextName(), &ViewportContextNotificationBus::Events::OnRenderTick);
+            }
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
         }
 
@@ -194,6 +199,11 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RPI);
             ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::WaitForRender);
+            if (m_mirrorNotificationsToDefaultContextName && m_manager)
+            {
+                ViewportContextNotificationBus::Event(
+                    m_manager->GetDefaultViewportContextName(), &ViewportContextNotificationBus::Events::WaitForRender);
+            }
             ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::WaitForRender);
         }
 

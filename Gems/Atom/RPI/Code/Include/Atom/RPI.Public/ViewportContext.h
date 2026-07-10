@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/parallel/atomic.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <AzFramework/Windowing/WindowBus.h>
 #include <Atom/RPI.Public/Configuration.h>
@@ -168,6 +169,9 @@ namespace AZ
             AZStd::fixed_vector<RenderPipelinePtr, MaxViewTypes> m_currentPipelines;
             Name m_name;
             AzFramework::ViewportId m_id;
+            // Set by the manager on the designated default context so name-addressed listeners
+            // bound to the default context name keep receiving its notifications without renames.
+            AZStd::atomic_bool m_mirrorNotificationsToDefaultContextName = false;
 
             friend class ViewportContextManager;
         };
