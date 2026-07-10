@@ -1157,20 +1157,9 @@ namespace AzToolsFramework
             // Get owning instance
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
 
-            // Get level root instance
-            auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-            if (!prefabEditorEntityOwnershipInterface)
-            {
-                AZ_Assert(
-                    false,
-                    "Could not get owning instance of common root entity :"
-                    "PrefabEditorEntityOwnershipInterface unavailable.");
-            }
-            InstanceOptionalReference levelInstance = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
-
+            // Every root instance is a level, and several can be loaded at once.
             return owningInstance
-                && levelInstance
-                && (&owningInstance->get() == &levelInstance->get())
+                && !owningInstance->get().GetParentInstance().has_value()
                 && (owningInstance->get().GetContainerEntityId() == entityId);
         }
 

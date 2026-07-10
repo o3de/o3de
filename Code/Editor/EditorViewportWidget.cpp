@@ -746,6 +746,23 @@ void EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView()
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
 {
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
+
+    const auto* visibilityFilter = AZ::Interface<AzToolsFramework::ViewportInteraction::EditorEntityVisibilityFilterInterface>::Get();
+    if (!visibilityFilter)
+    {
+        return;
+    }
+
+    const AzFramework::ViewportId viewportId = GetViewportId();
+    visibleEntitiesOut.erase(
+        AZStd::remove_if(
+            visibleEntitiesOut.begin(),
+            visibleEntitiesOut.end(),
+            [visibilityFilter, viewportId](const AZ::EntityId entityId)
+            {
+                return !visibilityFilter->IsEntityVisibleInViewport(viewportId, entityId);
+            }),
+        visibleEntitiesOut.end());
 }
 
 QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()

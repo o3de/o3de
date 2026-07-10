@@ -19,6 +19,7 @@
 #include <Atom/RPI.Public/View.h>
 
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobEmpty.h>
 
@@ -91,6 +92,15 @@ namespace AZ
 
         Scene* Scene::GetSceneForEntityId(AZ::EntityId entityId)
         {
+            // Entities a registered resolver declines fall through to the default EntityContext mapping.
+            if (auto* sceneResolver = AZ::Interface<SceneResolverInterface>::Get())
+            {
+                if (Scene* resolvedScene = sceneResolver->ResolveSceneForEntity(entityId))
+                {
+                    return resolvedScene;
+                }
+            }
+
             // Find the entity context for the entity ID.
             AzFramework::EntityContextId entityContextId = AzFramework::EntityContextId::CreateNull();
             AzFramework::EntityIdContextQueryBus::EventResult(entityContextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);

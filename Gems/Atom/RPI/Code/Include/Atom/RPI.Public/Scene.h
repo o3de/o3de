@@ -52,6 +52,20 @@ namespace AZ
         class ShaderResourceGroupAsset;
         class CullingScene;
         class DynamicDrawSystem;
+        class Scene;
+
+        //! Overrides which Scene an entity's feature processors bind to. Entities normally share their
+        //! EntityContext's Scene; a tool rendering several worlds in one context routes them individually here.
+        //! Consulted by Scene::GetSceneForEntityId, and therefore by GetFeatureProcessorForEntity.
+        class SceneResolverInterface
+        {
+        public:
+            AZ_RTTI(SceneResolverInterface, "{7C3D9F51-2A64-4E7B-9C15-8B0E6D4A1F32}");
+            virtual ~SceneResolverInterface() = default;
+
+            //! Returns the Scene this entity belongs to, or nullptr to resolve it through its EntityContext.
+            virtual Scene* ResolveSceneForEntity(AZ::EntityId entityId) = 0;
+        };
 
         // Callback function to modify values of a ShaderResourceGroup
         using ShaderResourceGroupCallback = AZStd::function<void(ShaderResourceGroup*)>;

@@ -47,6 +47,10 @@ namespace AzToolsFramework
     bool EditorInteractionSystemComponent::InternalHandleMouseViewportInteraction(
         const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
+        // The cache was last filled by whichever viewport drew most recently; refill it for this interaction's viewport.
+        m_entityDataCache->CalculateVisibleEntityDatas(
+            AzFramework::ViewportInfo{ mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId });
+
         return m_interactionRequests->InternalHandleMouseViewportInteraction(mouseInteraction);
     }
 

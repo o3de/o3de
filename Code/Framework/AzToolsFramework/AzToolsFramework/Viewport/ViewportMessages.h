@@ -302,6 +302,17 @@ namespace AzToolsFramework
 
         using EditorEntityViewportInteractionRequestBus = AZ::EBus<EditorEntityViewportInteractionRequests, ViewportRequestsEBusTraits>;
 
+        //! Narrows the set of entities a viewport reports as visible. Tools showing a different world per
+        //! viewport register this; with no filter, every entity in the frustum is visible in every viewport.
+        class EditorEntityVisibilityFilterInterface
+        {
+        public:
+            AZ_RTTI(EditorEntityVisibilityFilterInterface, "{4F2A9E7C-1B63-4D08-8E5A-3C7D6B0F2914}");
+            virtual ~EditorEntityVisibilityFilterInterface() = default;
+
+            virtual bool IsEntityVisibleInViewport(AzFramework::ViewportId viewportId, AZ::EntityId entityId) const = 0;
+        };
+
         //! An interface to query editor modifier keys.
         class EditorModifierKeyRequests : public AZ::EBusTraits
         {

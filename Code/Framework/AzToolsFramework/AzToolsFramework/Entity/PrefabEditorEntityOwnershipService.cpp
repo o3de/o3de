@@ -10,6 +10,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
@@ -61,8 +62,10 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        m_rootInstance =
-            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab"));
+        m_rootInstances.clear();
+        m_rootInstances.push_back(
+            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab")));
+        m_rootInstance = m_rootInstances.front().get();
     }
 
     bool PrefabEditorEntityOwnershipService::IsInitialized()
@@ -76,7 +79,8 @@ namespace AzToolsFramework
 
         if (m_rootInstance != nullptr)
         {
-            m_rootInstance.reset();
+            m_rootInstance = nullptr;
+            m_rootInstances.clear();
             m_prefabSystemComponent->RemoveAllTemplates();
         }
     }
@@ -84,6 +88,13 @@ namespace AzToolsFramework
     void PrefabEditorEntityOwnershipService::Reset()
     {
         m_isRootPrefabAssigned = false;
+
+        // A context reset drops every tool-added root and returns to the level the editor opened.
+        if (m_rootInstances.size() > 1)
+        {
+            m_rootInstances.erase(m_rootInstances.begin() + 1, m_rootInstances.end());
+        }
+        m_rootInstance = m_rootInstances.empty() ? nullptr : m_rootInstances.front().get();
 
         if (m_rootInstance)
         {
@@ -430,6 +441,114 @@ namespace AzToolsFramework
         return AZStd::nullopt;
     }
 
+    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::AddRootPrefabInstance(AZ::IO::PathView filePath)
+    {
+        Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(filePath);
+        if (templateId == Prefab::InvalidTemplateId)
+        {
+            templateId = m_loaderInterface->LoadTemplateFromFile(filePath);
+        }
+
+        if (templateId == Prefab::InvalidTemplateId)
+        {
+            AZ_Error("Prefab", false, "Could not load a level template from '%.*s'.", AZ_STRING_ARG(filePath.Native()));
+            return AZStd::nullopt;
+        }
+
+        // No parent makes this a root, and no entities-added callback: a template DOM has no Source field for its
+        // own top level, so the template id and source path must be applied before the entities activate below.
+        AZStd::unique_ptr<Prefab::Instance> rootPrefabInstance =
+            m_prefabSystemComponent->InstantiatePrefab(templateId, AZStd::nullopt, {});
+
+        if (!rootPrefabInstance)
+        {
+            return AZStd::nullopt;
+        }
+
+        rootPrefabInstance->SetTemplateId(templateId);
+        rootPrefabInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filePath));
+        rootPrefabInstance->SetContainerEntityName("Level");
+
+        m_rootInstances.push_back(AZStd::move(rootPrefabInstance));
+        Prefab::Instance& addedRootInstance = *m_rootInstances.back();
+
+        EntityList entities;
+        addedRootInstance.GetAllEntitiesInHierarchy(
+            [&entities](AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                entities.emplace_back(entity.get());
+                return true;
+            });
+        HandleEntitiesAdded(entities);
+
+        return addedRootInstance;
+    }
+
+    bool PrefabEditorEntityOwnershipService::RemoveRootPrefabInstance(AZ::EntityId containerEntityId)
+    {
+        if (m_rootInstances.empty())
+        {
+            return false;
+        }
+
+        // Index 0 is the level the editor opened; only Reset and Destroy may take that one away.
+        auto rootIt = AZStd::find_if(
+            m_rootInstances.begin() + 1, m_rootInstances.end(),
+            [containerEntityId](const AZStd::unique_ptr<Prefab::Instance>& rootPrefabInstance)
+            {
+                return rootPrefabInstance->GetContainerEntityId() == containerEntityId;
+            });
+        if (rootIt == m_rootInstances.end())
+        {
+            return false;
+        }
+
+        if (m_rootInstance == rootIt->get())
+        {
+            m_rootInstance = m_rootInstances.front().get();
+        }
+        m_rootInstances.erase(rootIt);
+        return true;
+    }
+
+    bool PrefabEditorEntityOwnershipService::SetActiveRootPrefabInstance(AZ::EntityId containerEntityId)
+    {
+        Prefab::Instance* rootPrefabInstance = FindRootInstanceByContainerEntityId(containerEntityId);
+        if (!rootPrefabInstance)
+        {
+            return false;
+        }
+
+        m_rootInstance = rootPrefabInstance;
+        return true;
+    }
+
+    Prefab::Instance* PrefabEditorEntityOwnershipService::FindRootInstanceByAlias(AZStd::string_view instanceAlias) const
+    {
+        for (const AZStd::unique_ptr<Prefab::Instance>& rootPrefabInstance : m_rootInstances)
+        {
+            if (rootPrefabInstance->GetInstanceAlias() == instanceAlias)
+            {
+                return rootPrefabInstance.get();
+            }
+        }
+
+        return nullptr;
+    }
+
+    Prefab::Instance* PrefabEditorEntityOwnershipService::FindRootInstanceByContainerEntityId(AZ::EntityId containerEntityId) const
+    {
+        for (const AZStd::unique_ptr<Prefab::Instance>& rootPrefabInstance : m_rootInstances)
+        {
+            if (rootPrefabInstance->GetContainerEntityId() == containerEntityId)
+            {
+                return rootPrefabInstance.get();
+            }
+        }
+
+        return nullptr;
+    }
+
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetRootPrefabInstance()
     {
         AZ_Assert(m_rootInstance, "A valid root prefab instance couldn't be found in PrefabEditorEntityOwnershipService.");
@@ -621,17 +740,19 @@ namespace AzToolsFramework
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetInstanceReferenceFromRootAliasPath(
         Prefab::RootAliasPath rootAliasPath) const
     {
-        Prefab::InstanceOptionalReference instance = *m_rootInstance;
+        Prefab::InstanceOptionalReference instance;
 
         for (const auto& pathElement : rootAliasPath)
         {
             if (pathElement.Native() == rootAliasPath.begin()->Native())
             {
-                // If the root is not the root Instance, the rootAliasPath is invalid.
-                if (pathElement.Native() != instance->get().GetInstanceAlias())
+                // If no root Instance carries this alias, the rootAliasPath is invalid.
+                Prefab::Instance* rootPrefabInstance = FindRootInstanceByAlias(pathElement.Native());
+                if (!rootPrefabInstance)
                 {
                     return Prefab::InstanceOptionalReference();
                 }
+                instance = *rootPrefabInstance;
             }
             else
             {
@@ -661,7 +782,8 @@ namespace AzToolsFramework
         {
             if (!instance.has_value())
             {
-                instance = *m_rootInstance;
+                // IsValidRootAliasPath already established that a root instance carries this alias.
+                instance = *FindRootInstanceByAlias(pathElement.Native());
             }
             else
             {

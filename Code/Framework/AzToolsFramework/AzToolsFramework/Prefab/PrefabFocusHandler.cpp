@@ -657,7 +657,12 @@ namespace AzToolsFramework::Prefab
                 rootAliasPath,
                 [&](const Prefab::InstanceOptionalReference instance)
                 {
-                    m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), openState);
+                    // A root instance is a level, and a level container is never closed; closing one would strand
+                    // every entity in it under a closed container when focus moves to another root.
+                    if (openState || instance->get().GetParentInstance().has_value())
+                    {
+                        m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), openState);
+                    }
 
                     return false;
                 }

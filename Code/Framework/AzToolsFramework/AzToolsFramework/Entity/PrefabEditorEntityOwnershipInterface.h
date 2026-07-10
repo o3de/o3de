@@ -68,6 +68,17 @@ namespace AzToolsFramework
         virtual Prefab::InstanceOptionalReference InstantiatePrefab(
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder = AZStd::nullopt) = 0;
 
+        //! Loads a level prefab as an additional root instance alongside the one the editor opened:
+        //! its own template, its own file, no prefab focus restriction. Roots share the editor entity context.
+        virtual Prefab::InstanceOptionalReference AddRootPrefabInstance(AZ::IO::PathView filePath) = 0;
+
+        //! Unloads a root added by AddRootPrefabInstance, destroying its entities.
+        //! The editor's own level is the first root and cannot be removed this way.
+        virtual bool RemoveRootPrefabInstance(AZ::EntityId containerEntityId) = 0;
+
+        //! Chooses the root that saving, play-in-editor, and anything else asking for "the level" resolves to.
+        virtual bool SetActiveRootPrefabInstance(AZ::EntityId containerEntityId) = 0;
+
         virtual void StartPlayInEditor() = 0;
         virtual void StopPlayInEditor() = 0;
 
