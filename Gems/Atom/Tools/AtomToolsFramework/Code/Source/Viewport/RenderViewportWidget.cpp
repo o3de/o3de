@@ -150,8 +150,10 @@ namespace AtomToolsFramework
             return;
         }
 
-        // Check if the scene already has an atom scene attached. In this case we don't need to create a new atom scene.
-        if (auto existingScene = scene->FindSubsystem<AZ::RPI::ScenePtr>())
+        // Check if the scene itself already has an atom scene attached. In this case we don't need to create a new atom scene.
+        // Deliberately not consulting parent scenes: binding a child scene means it renders in its own
+        // atom scene (callers wanting an ancestor's atom scene pass that ancestor instead).
+        if (auto existingScene = scene->FindSubsystemInScene<AZ::RPI::ScenePtr>())
         {
             m_viewportContext->SetRenderScene(*existingScene);
 

@@ -201,6 +201,7 @@ private:
     void OnStartPlayInEditor();
     void OnStopPlayInEditor();
     void OnStartPlayInEditorBegin();
+    void OnViewportWorldChanged(AzFramework::ViewportId viewportId);
 
     // IUndoManagerListener
     void BeginUndoTransaction() override;

@@ -30,10 +30,16 @@
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/Render/Intersector.h>
+#include <AzFramework/Scene/Scene.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponent.h>
@@ -71,6 +77,147 @@ namespace AzToolsFramework
             }
         };
     }
+
+    //! An additional editor world: a real entity context owning one level as its root prefab,
+    //! living in its own scene (child of Main). Its entities receive the same editor treatment as
+    //! world 0's — the owning component's SetupEditorEntities runs for everything added here. The
+    //! render scene is attached on demand by the first viewport that binds to the world's scene.
+    class EditorEntityContextComponent::EditorWorld
+        : public AzFramework::EntityContext
+    {
+    public:
+        EditorWorld(EditorEntityContextComponent& owner, AZ::IO::PathView levelPrefabPath)
+            : AzFramework::EntityContext(AzFramework::EntityContextId::CreateRandom())
+            , m_owner(owner)
+        {
+            m_entityOwnershipService = AZStd::make_unique<PrefabEditorEntityOwnershipService>(GetContextId(), GetSerializeContext());
+            InitContext();
+
+            // The scene (with this context as its subsystem) must exist before the level's entities
+            // activate, so their render components resolve to this world's scene and not Main's.
+            auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+            AZStd::shared_ptr<AzFramework::Scene> mainScene =
+                sceneSystem ? sceneSystem->GetScene(AzFramework::Scene::MainSceneName) : nullptr;
+            AZ_Assert(mainScene, "Editor world created without a main scene to parent its scene under");
+            if (mainScene)
+            {
+                m_sceneName = AZStd::string::format("Editor World %s", GetContextId().ToFixedString().c_str());
+                auto sceneOutcome = sceneSystem->CreateSceneWithParent(m_sceneName, mainScene);
+                AZ_Assert(sceneOutcome.IsSuccess(), "Failed to create an editor world scene: %s",
+                    sceneOutcome.IsSuccess() ? "" : sceneOutcome.GetError().c_str());
+                if (sceneOutcome.IsSuccess())
+                {
+                    m_scene = sceneOutcome.GetValue();
+                    AzFramework::EntityContext* worldContext = this;
+                    [[maybe_unused]] const bool contextAdded =
+                        m_scene->SetSubsystem<AzFramework::EntityContext::SceneStorageType&>(worldContext);
+                    AZ_Assert(contextAdded, "Unable to add an editor world's entity context to its scene");
+                }
+            }
+
+            m_intersector = AZStd::make_unique<AzFramework::RenderGeometry::Intersector>(GetContextId());
+
+            auto* editorModeTracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get();
+            AZ_Assert(editorModeTracker, "Editor world created before the viewport editor mode tracker");
+            if (editorModeTracker)
+            {
+                editorModeTracker->ActivateMode({ GetContextId() }, ViewportEditorMode::Default);
+            }
+
+            // Only the level's template loads now (no entities). Instantiation waits until a
+            // viewport has bound and attached a render scene to this world's scene — entities
+            // activating before that resolve their render components to the Main scene instead.
+            auto* prefabLoader = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
+            auto* prefabSystem = AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get();
+            AZ_Assert(prefabLoader && prefabSystem, "Editor world created without the prefab system");
+            if (prefabLoader && prefabSystem)
+            {
+                Prefab::TemplateId templateId = prefabSystem->GetTemplateIdFromFilePath(levelPrefabPath);
+                if (templateId == Prefab::InvalidTemplateId)
+                {
+                    templateId = prefabLoader->LoadTemplateFromFile(levelPrefabPath);
+                }
+                if (templateId != Prefab::InvalidTemplateId)
+                {
+                    m_levelPath = prefabLoader->GenerateRelativePath(levelPrefabPath);
+                    m_pendingLevelLoad = true;
+                }
+            }
+        }
+
+        void LoadPendingLevel()
+        {
+            if (!m_pendingLevelLoad)
+            {
+                return;
+            }
+            m_pendingLevelLoad = false;
+
+            PrefabEditorEntityOwnershipInterface* prefabService =
+                static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+            Prefab::InstanceOptionalReference rootInstance = prefabService->LoadRootPrefab(m_levelPath);
+            AZ_Error("EditorWorld", rootInstance.has_value(), "Could not instantiate the level '%s' in its world",
+                m_levelPath.c_str());
+        }
+
+        ~EditorWorld() override
+        {
+            if (auto* editorModeTracker = AZ::Interface<ViewportEditorModeTrackerInterface>::Get())
+            {
+                editorModeTracker->DeactivateMode({ GetContextId() }, ViewportEditorMode::Default);
+            }
+
+            m_intersector.reset();
+            DestroyContext();
+            m_entityOwnershipService.reset();
+
+            if (m_scene)
+            {
+                m_scene.reset();
+                AzFramework::SceneSystemInterface::Get()->RemoveScene(m_sceneName);
+            }
+        }
+
+        bool IsValid() const
+        {
+            return !m_levelPath.empty();
+        }
+
+        const AZ::IO::Path& GetLevelPath() const
+        {
+            return m_levelPath;
+        }
+
+        AZStd::shared_ptr<AzFramework::Scene> GetScene() const
+        {
+            return m_scene;
+        }
+
+        PrefabEditorEntityOwnershipInterface* GetOwnershipService() const
+        {
+            return static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+        }
+
+    protected:
+        void OnContextEntitiesAdded(const EntityList& entities) override
+        {
+            EntityContext::OnContextEntitiesAdded(entities);
+            m_owner.SetupEditorEntities(entities);
+        }
+
+        void OnContextEntityRemoved(const AZ::EntityId& entityId) override
+        {
+            EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnEditorEntityDeleted, entityId);
+        }
+
+    private:
+        EditorEntityContextComponent& m_owner;
+        AZStd::string m_sceneName;
+        AZStd::shared_ptr<AzFramework::Scene> m_scene;
+        AZStd::unique_ptr<AzFramework::RenderGeometry::Intersector> m_intersector;
+        AZ::IO::Path m_levelPath;
+        bool m_pendingLevelLoad = false;
+    };
 
     //=========================================================================
     // Reflect
@@ -173,6 +320,9 @@ namespace AzToolsFramework
         EditorLegacyGameModeNotificationBus::Handler::BusDisconnect();
         EditorEntityContextRequestBus::Handler::BusDisconnect();
         EditorEntityContextPickingRequestBus::Handler::BusDisconnect();
+
+        m_viewportWorlds.clear();
+        m_worlds.clear();
 
         DestroyContext();
 
@@ -482,12 +632,7 @@ namespace AzToolsFramework
         AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
         AzFramework::EntityIdContextQueryBus::EventResult(contextId, id, &EntityIdContextQueries::GetOwningContextId);
 
-        if (contextId == GetContextId())
-        {
-            return true;
-        }
-
-        return false;
+        return contextId == GetContextId() || m_worlds.find(contextId) != m_worlds.end();
     }
 
     //=========================================================================
@@ -540,6 +685,150 @@ namespace AzToolsFramework
         }
 
         return false;
+    }
+
+    AzFramework::EntityContextId EditorEntityContextComponent::LoadWorld(AZ::IO::PathView levelPrefabPath)
+    {
+        auto* prefabLoader = AZ::Interface<Prefab::PrefabLoaderInterface>::Get();
+        AZ_Assert(prefabLoader, "LoadWorld called without a prefab loader");
+        if (!prefabLoader)
+        {
+            return AzFramework::EntityContextId::CreateNull();
+        }
+        const AZ::IO::Path relativePath = prefabLoader->GenerateRelativePath(levelPrefabPath);
+
+        // A level is never loaded into two worlds: the editor's own level is world 0, and a world
+        // already showing the level is returned as-is.
+        if (auto* ownService = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get())
+        {
+            Prefab::InstanceOptionalReference rootInstance = ownService->GetRootPrefabInstance();
+            if (rootInstance.has_value() && rootInstance->get().GetTemplateSourcePath() == relativePath)
+            {
+                return GetContextId();
+            }
+        }
+
+        for (const auto& [existingWorldId, world] : m_worlds)
+        {
+            if (world->GetLevelPath() == relativePath)
+            {
+                return existingWorldId;
+            }
+        }
+
+        auto world = AZStd::make_unique<EditorWorld>(*this, levelPrefabPath);
+        if (!world->IsValid())
+        {
+            return AzFramework::EntityContextId::CreateNull();
+        }
+
+        const AzFramework::EntityContextId worldId = world->GetContextId();
+        m_worlds.emplace(worldId, AZStd::move(world));
+        return worldId;
+    }
+
+    void EditorEntityContextComponent::BindViewportToWorld(
+        AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId)
+    {
+        const AzFramework::EntityContextId previousWorldId = GetViewportWorld(viewportId);
+
+        if (worldId.IsNull() || worldId == GetContextId())
+        {
+            m_viewportWorlds.erase(viewportId);
+        }
+        else
+        {
+            m_viewportWorlds[viewportId] = worldId;
+        }
+
+        // A world whose last viewport unbound is torn down.
+        if (!previousWorldId.IsNull() && previousWorldId != GetContextId() && previousWorldId != worldId)
+        {
+            bool worldStillBound = false;
+            for (const auto& [boundViewportId, boundWorldId] : m_viewportWorlds)
+            {
+                worldStillBound = worldStillBound || boundWorldId == previousWorldId;
+            }
+            if (!worldStillBound)
+            {
+                m_worlds.erase(previousWorldId);
+            }
+        }
+
+        const AzFramework::EntityContextId newWorldId = GetViewportWorld(viewportId);
+        if (newWorldId != previousWorldId)
+        {
+            EditorEntityContextNotificationBus::Broadcast(
+                &EditorEntityContextNotification::OnViewportWorldChanged, viewportId, newWorldId);
+
+            // The viewport's synchronous rebind above attached a render scene to the world's scene;
+            // the world's level instantiates only now so its entities resolve there, not to Main.
+            if (auto worldIt = m_worlds.find(newWorldId); worldIt != m_worlds.end())
+            {
+                worldIt->second->LoadPendingLevel();
+            }
+
+            if (viewportId == m_focusedViewportId)
+            {
+                EditorEntityContextNotificationBus::Broadcast(
+                    &EditorEntityContextNotification::OnActiveWorldChanged, previousWorldId, newWorldId);
+            }
+        }
+    }
+
+    AzFramework::EntityContextId EditorEntityContextComponent::GetViewportWorld(AzFramework::ViewportId viewportId)
+    {
+        auto viewportWorldIt = m_viewportWorlds.find(viewportId);
+        return viewportWorldIt != m_viewportWorlds.end() ? viewportWorldIt->second : GetContextId();
+    }
+
+    AzFramework::EntityContextId EditorEntityContextComponent::GetActiveWorldId()
+    {
+        return GetViewportWorld(m_focusedViewportId);
+    }
+
+    void EditorEntityContextComponent::SetFocusedViewport(AzFramework::ViewportId viewportId)
+    {
+        const AzFramework::EntityContextId previousWorldId = GetActiveWorldId();
+        m_focusedViewportId = viewportId;
+        const AzFramework::EntityContextId newWorldId = GetActiveWorldId();
+        if (newWorldId != previousWorldId)
+        {
+            EditorEntityContextNotificationBus::Broadcast(
+                &EditorEntityContextNotification::OnActiveWorldChanged, previousWorldId, newWorldId);
+        }
+    }
+
+    PrefabEditorEntityOwnershipInterface* EditorEntityContextComponent::GetWorldEntityOwnershipService(
+        const AzFramework::EntityContextId& worldId)
+    {
+        const AzFramework::EntityContextId resolvedWorldId =
+            (worldId.IsNull() || worldId == GetContextId()) ? GetActiveWorldId() : worldId;
+
+        if (resolvedWorldId == GetContextId())
+        {
+            return static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get());
+        }
+
+        auto worldIt = m_worlds.find(resolvedWorldId);
+        return worldIt != m_worlds.end() ? worldIt->second->GetOwnershipService() : nullptr;
+    }
+
+    AZStd::shared_ptr<AzFramework::Scene> EditorEntityContextComponent::GetWorldScene(const AzFramework::EntityContextId& worldId)
+    {
+        const AzFramework::EntityContextId resolvedWorldId =
+            (worldId.IsNull() || worldId == GetContextId()) ? GetActiveWorldId() : worldId;
+
+        if (resolvedWorldId == GetContextId())
+        {
+            // World 0 renders in the main scene (its editor child scene carries no render scene of
+            // its own), exactly as the stock viewport always bound.
+            auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+            return sceneSystem ? sceneSystem->GetScene(AzFramework::Scene::MainSceneName) : nullptr;
+        }
+
+        auto worldIt = m_worlds.find(resolvedWorldId);
+        return worldIt != m_worlds.end() ? worldIt->second->GetScene() : nullptr;
     }
 
     //=========================================================================

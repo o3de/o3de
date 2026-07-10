@@ -36,12 +36,23 @@ namespace AzToolsFramework
         : m_entityContextId(entityContextId)
         , m_serializeContext(serializeContext)
     {
-        AZ::Interface<PrefabEditorEntityOwnershipInterface>::Register(this);
+        // Only the first service (the editor's world 0) owns the global interface and the
+        // single-address override handler; additional per-world services coexist alongside it.
+        m_ownsInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get() == nullptr;
+        if (m_ownsInterface)
+        {
+            AZ::Interface<PrefabEditorEntityOwnershipInterface>::Register(this);
+            m_prefabOverridePublicHandler = AZStd::make_unique<Prefab::PrefabOverridePublicHandler>();
+        }
     }
 
     PrefabEditorEntityOwnershipService::~PrefabEditorEntityOwnershipService()
     {
-        AZ::Interface<PrefabEditorEntityOwnershipInterface>::Unregister(this);
+        if (m_ownsInterface)
+        {
+            m_prefabOverridePublicHandler.reset();
+            AZ::Interface<PrefabEditorEntityOwnershipInterface>::Unregister(this);
+        }
     }
 
     void PrefabEditorEntityOwnershipService::Initialize()
@@ -62,10 +73,8 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        m_rootInstances.clear();
-        m_rootInstances.push_back(
-            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab")));
-        m_rootInstance = m_rootInstances.front().get();
+        m_rootInstance =
+            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab"));
     }
 
     bool PrefabEditorEntityOwnershipService::IsInitialized()
@@ -79,22 +88,20 @@ namespace AzToolsFramework
 
         if (m_rootInstance != nullptr)
         {
-            m_rootInstance = nullptr;
-            m_rootInstances.clear();
-            m_prefabSystemComponent->RemoveAllTemplates();
+            m_rootInstance.reset();
+
+            // The template registry is shared by every world's service; only the editor's primary
+            // service tears it down.
+            if (m_ownsInterface)
+            {
+                m_prefabSystemComponent->RemoveAllTemplates();
+            }
         }
     }
 
     void PrefabEditorEntityOwnershipService::Reset()
     {
         m_isRootPrefabAssigned = false;
-
-        // A context reset drops every tool-added root and returns to the level the editor opened.
-        if (m_rootInstances.size() > 1)
-        {
-            m_rootInstances.erase(m_rootInstances.begin() + 1, m_rootInstances.end());
-        }
-        m_rootInstance = m_rootInstances.empty() ? nullptr : m_rootInstances.front().get();
 
         if (m_rootInstance)
         {
@@ -441,7 +448,7 @@ namespace AzToolsFramework
         return AZStd::nullopt;
     }
 
-    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::AddRootPrefabInstance(AZ::IO::PathView filePath)
+    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::LoadRootPrefab(AZ::IO::PathView filePath)
     {
         Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(filePath);
         if (templateId == Prefab::InvalidTemplateId)
@@ -469,11 +476,11 @@ namespace AzToolsFramework
         rootPrefabInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filePath));
         rootPrefabInstance->SetContainerEntityName("Level");
 
-        m_rootInstances.push_back(AZStd::move(rootPrefabInstance));
-        Prefab::Instance& addedRootInstance = *m_rootInstances.back();
+        m_rootInstance = AZStd::move(rootPrefabInstance);
+        m_isRootPrefabAssigned = true;
 
         EntityList entities;
-        addedRootInstance.GetAllEntitiesInHierarchy(
+        m_rootInstance->GetAllEntitiesInHierarchy(
             [&entities](AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 entities.emplace_back(entity.get());
@@ -481,72 +488,7 @@ namespace AzToolsFramework
             });
         HandleEntitiesAdded(entities);
 
-        return addedRootInstance;
-    }
-
-    bool PrefabEditorEntityOwnershipService::RemoveRootPrefabInstance(AZ::EntityId containerEntityId)
-    {
-        if (m_rootInstances.empty())
-        {
-            return false;
-        }
-
-        // Index 0 is the level the editor opened; only Reset and Destroy may take that one away.
-        auto rootIt = AZStd::find_if(
-            m_rootInstances.begin() + 1, m_rootInstances.end(),
-            [containerEntityId](const AZStd::unique_ptr<Prefab::Instance>& rootPrefabInstance)
-            {
-                return rootPrefabInstance->GetContainerEntityId() == containerEntityId;
-            });
-        if (rootIt == m_rootInstances.end())
-        {
-            return false;
-        }
-
-        if (m_rootInstance == rootIt->get())
-        {
-            m_rootInstance = m_rootInstances.front().get();
-        }
-        m_rootInstances.erase(rootIt);
-        return true;
-    }
-
-    bool PrefabEditorEntityOwnershipService::SetActiveRootPrefabInstance(AZ::EntityId containerEntityId)
-    {
-        Prefab::Instance* rootPrefabInstance = FindRootInstanceByContainerEntityId(containerEntityId);
-        if (!rootPrefabInstance)
-        {
-            return false;
-        }
-
-        m_rootInstance = rootPrefabInstance;
-        return true;
-    }
-
-    Prefab::Instance* PrefabEditorEntityOwnershipService::FindRootInstanceByAlias(AZStd::string_view instanceAlias) const
-    {
-        for (const AZStd::unique_ptr<Prefab::Instance>& rootPrefabInstance : m_rootInstances)
-        {
-            if (rootPrefabInstance->GetInstanceAlias() == instanceAlias)
-            {
-                return rootPrefabInstance.get();
-            }
-        }
-
-        return nullptr;
-    }
-
-    Prefab::Instance* PrefabEditorEntityOwnershipService::FindRootInstanceByContainerEntityId(AZ::EntityId containerEntityId) const
-    {
-        for (const AZStd::unique_ptr<Prefab::Instance>& rootPrefabInstance : m_rootInstances)
-        {
-            if (rootPrefabInstance->GetContainerEntityId() == containerEntityId)
-            {
-                return rootPrefabInstance.get();
-            }
-        }
-
-        return nullptr;
+        return *m_rootInstance;
     }
 
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetRootPrefabInstance()
@@ -687,8 +629,7 @@ namespace AzToolsFramework
             m_playInEditorData.m_entities.DespawnAllEntities();
             m_playInEditorData.m_entities.Alert(
                 [allSpawnableAssetData = m_playInEditorData.m_assetsCache.GetAssetContainer().MoveAllInMemorySpawnableAssets(),
-                 deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities),
-                 this]([[maybe_unused]] uint32_t generation) mutable
+                 deactivatedEntities = AZStd::move(m_playInEditorData.m_deactivatedEntities)]([[maybe_unused]] uint32_t generation) mutable
                 {
                     auto end = deactivatedEntities.rend();
                     for (auto it = deactivatedEntities.rbegin(); it != end; ++it)
@@ -740,19 +681,17 @@ namespace AzToolsFramework
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetInstanceReferenceFromRootAliasPath(
         Prefab::RootAliasPath rootAliasPath) const
     {
-        Prefab::InstanceOptionalReference instance;
+        Prefab::InstanceOptionalReference instance = *m_rootInstance;
 
         for (const auto& pathElement : rootAliasPath)
         {
             if (pathElement.Native() == rootAliasPath.begin()->Native())
             {
-                // If no root Instance carries this alias, the rootAliasPath is invalid.
-                Prefab::Instance* rootPrefabInstance = FindRootInstanceByAlias(pathElement.Native());
-                if (!rootPrefabInstance)
+                // If the root is not the root Instance, the rootAliasPath is invalid.
+                if (pathElement.Native() != instance->get().GetInstanceAlias())
                 {
                     return Prefab::InstanceOptionalReference();
                 }
-                instance = *rootPrefabInstance;
             }
             else
             {
@@ -782,8 +721,7 @@ namespace AzToolsFramework
         {
             if (!instance.has_value())
             {
-                // IsValidRootAliasPath already established that a root instance carries this alias.
-                instance = *FindRootInstanceByAlias(pathElement.Native());
+                instance = *m_rootInstance;
             }
             else
             {

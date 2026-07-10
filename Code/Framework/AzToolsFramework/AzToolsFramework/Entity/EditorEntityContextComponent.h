@@ -107,6 +107,14 @@ namespace AzToolsFramework
 
         bool MapEditorIdToRuntimeId(const AZ::EntityId& editorId, AZ::EntityId& runtimeId) override;
         bool MapRuntimeIdToEditorId(const AZ::EntityId& runtimeId, AZ::EntityId& editorId) override;
+
+        AzFramework::EntityContextId LoadWorld(AZ::IO::PathView levelPrefabPath) override;
+        void BindViewportToWorld(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId) override;
+        AzFramework::EntityContextId GetViewportWorld(AzFramework::ViewportId viewportId) override;
+        AzFramework::EntityContextId GetActiveWorldId() override;
+        void SetFocusedViewport(AzFramework::ViewportId viewportId) override;
+        PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) override;
+        AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -174,6 +182,13 @@ namespace AzToolsFramework
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
 
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;
+
+        //! Additional editor worlds: real entity contexts, each owning one level root prefab and
+        //! rendering in its own scene. This component itself is world 0.
+        class EditorWorld;
+        AZStd::unordered_map<AzFramework::EntityContextId, AZStd::unique_ptr<EditorWorld>> m_worlds;
+        AZStd::unordered_map<AzFramework::ViewportId, AzFramework::EntityContextId> m_viewportWorlds;
+        AzFramework::ViewportId m_focusedViewportId = AzFramework::InvalidViewportId;
     };
 } // namespace AzToolsFramework
 

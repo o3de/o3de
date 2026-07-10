@@ -32,7 +32,7 @@ namespace AzToolsFramework
 
     class AZTF_API PrefabEditorEntityOwnershipService
         : public AzFramework::PrefabEntityOwnershipService
-        , private PrefabEditorEntityOwnershipInterface
+        , public PrefabEditorEntityOwnershipInterface
     {
     public:
         using OnEntitiesAddedCallback = AzFramework::OnEntitiesAddedCallback;
@@ -118,9 +118,6 @@ namespace AzToolsFramework
     private:
         bool IsValidRootAliasPath(Prefab::RootAliasPath rootAliasPath) const;
 
-        Prefab::Instance* FindRootInstanceByAlias(AZStd::string_view instanceAlias) const;
-        Prefab::Instance* FindRootInstanceByContainerEntityId(AZ::EntityId containerEntityId) const;
-
         struct PlayInEditorData
         {
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabInMemorySpawnableConverter m_assetsCache;
@@ -139,9 +136,7 @@ namespace AzToolsFramework
         Prefab::InstanceOptionalReference InstantiatePrefab(
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
-        Prefab::InstanceOptionalReference AddRootPrefabInstance(AZ::IO::PathView filePath) override;
-        bool RemoveRootPrefabInstance(AZ::EntityId containerEntityId) override;
-        bool SetActiveRootPrefabInstance(AZ::EntityId containerEntityId) override;
+        Prefab::InstanceOptionalReference LoadRootPrefab(AZ::IO::PathView filePath) override;
 
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
         Prefab::TemplateId GetRootPrefabTemplateId() override;
@@ -156,13 +151,11 @@ namespace AzToolsFramework
         ValidateEntitiesCallback m_validateEntitiesCallback;
 
         AZStd::string m_rootPath;
+        AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
 
-        //! The loaded level prefabs. The first is the level the editor opened; a tool may add more alongside it.
-        AZStd::vector<AZStd::unique_ptr<Prefab::Instance>> m_rootInstances;
-
-        //! The root the editor is currently working on. Points into m_rootInstances; never owns.
-        Prefab::Instance* m_rootInstance = nullptr;
-        Prefab::PrefabOverridePublicHandler m_prefabOverridePublicHandler;
+        //! Only the first service instance (world 0) owns the global interface registration and the
+        //! single-address override handler; per-world services coexist without them.
+        AZStd::unique_ptr<Prefab::PrefabOverridePublicHandler> m_prefabOverridePublicHandler;
 
         Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
         Prefab::InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -170,7 +163,11 @@ namespace AzToolsFramework
         Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
-        AZ::Event<GameModeState> m_gameModeEvent;
+
+        //! Game mode is a single editor-wide session that any world's service may run; handlers
+        //! registered against the interface must hear it regardless of which service signals.
+        static inline AZ::Event<GameModeState> m_gameModeEvent;
         bool m_isRootPrefabAssigned = false;
+        bool m_ownsInterface = false;
     };
 }

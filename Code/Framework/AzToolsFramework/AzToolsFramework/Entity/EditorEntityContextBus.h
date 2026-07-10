@@ -9,11 +9,13 @@
 
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Entity/EntityContextBus.h>
+#include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzToolsFramework/AzToolsFrameworkAPI.h>
@@ -23,8 +25,15 @@ namespace AZ
     class Entity;
 }
 
+namespace AzFramework
+{
+    class Scene;
+}
+
 namespace AzToolsFramework
 {
+    class PrefabEditorEntityOwnershipInterface;
+
     /**
      * Bus for making requests to the edit-time entity context component.
      */
@@ -147,6 +156,30 @@ namespace AzToolsFramework
         /// \param destination parameter for editor entity Id
         /// \return true if runtime Id was found in the Id map
         virtual bool MapRuntimeIdToEditorId(const AZ::EntityId& runtimeId, AZ::EntityId& editorId) = 0;
+
+        //! Editor worlds: additional edit-time entity contexts, each owning one level as its root
+        //! prefab and rendering in its own scene. World 0 is the editor entity context itself.
+
+        //! Loads the level at the given source path as a world, or returns the world already
+        //! showing it — a level is never loaded into two worlds. Null on failure.
+        virtual AzFramework::EntityContextId LoadWorld(AZ::IO::PathView levelPrefabPath) = 0;
+
+        //! Binds a viewport to a world; unbound viewports show world 0. A world whose last
+        //! viewport unbinds is torn down.
+        virtual void BindViewportToWorld(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId& worldId) = 0;
+        virtual AzFramework::EntityContextId GetViewportWorld(AzFramework::ViewportId viewportId) = 0;
+
+        //! The world of the focused viewport. Purely derived state: recording the focused viewport
+        //! has no side effects beyond the OnActiveWorldChanged notification when the world differs.
+        virtual AzFramework::EntityContextId GetActiveWorldId() = 0;
+        virtual void SetFocusedViewport(AzFramework::ViewportId viewportId) = 0;
+
+        //! The ownership service holding a world's root level. The editor context id or a null id
+        //! resolves to the active world.
+        virtual PrefabEditorEntityOwnershipInterface* GetWorldEntityOwnershipService(const AzFramework::EntityContextId& worldId) = 0;
+
+        //! The scene a world's entities live and render in (world 0 = the editor scene).
+        virtual AZStd::shared_ptr<AzFramework::Scene> GetWorldScene(const AzFramework::EntityContextId& worldId) = 0;
     };
 
     using EditorEntityContextRequestBus = AZ::EBus<EditorEntityContextRequests>;
@@ -165,6 +198,14 @@ namespace AzToolsFramework
 
         /// Fired after the context is reset.
         virtual void OnContextReset() {}
+
+        //! Fired when the focused viewport's world changed (per-world editor state follows it).
+        virtual void OnActiveWorldChanged(
+            const AzFramework::EntityContextId& /*previousWorldId*/, const AzFramework::EntityContextId& /*newWorldId*/) {}
+
+        //! Fired when a viewport was bound to a different world (the viewport rebinds its scene).
+        virtual void OnViewportWorldChanged(
+            AzFramework::ViewportId /*viewportId*/, const AzFramework::EntityContextId& /*worldId*/) {}
 
         //! Fired when an Editor entity is created
         virtual void OnEditorEntityCreated(const AZ::EntityId& /*entityId*/) {}

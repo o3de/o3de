@@ -23,6 +23,7 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 
@@ -335,7 +336,8 @@ void CViewManager::SelectViewport(CViewport* pViewport)
     {
         m_pSelectedView->SetSelected(true);
 
-        // The focused viewport is what the default viewport context alias resolves to.
+        // The focused viewport is what the default viewport context alias resolves to, and its
+        // world is the active world for selection, undo and focus.
         if (auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
         {
             if (viewportContextManager->GetViewportContextById(m_pSelectedView->GetViewportId()))
@@ -343,6 +345,9 @@ void CViewManager::SelectViewport(CViewport* pViewport)
                 viewportContextManager->SetDefaultViewportContext(m_pSelectedView->GetViewportId());
             }
         }
+
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequests::SetFocusedViewport, m_pSelectedView->GetViewportId());
     }
 }
 

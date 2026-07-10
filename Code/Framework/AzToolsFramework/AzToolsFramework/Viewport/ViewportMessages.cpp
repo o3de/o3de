@@ -84,9 +84,13 @@ namespace AzToolsFramework
         using AzFramework::Terrain::TerrainDataRequestBus;
 
         // attempt a ray intersection with any visible mesh or terrain and return the intersection position if successful
+        // (each editor world owns an intersector at its own context id; picking targets the focused viewport's world)
+        AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+        EditorEntityContextRequestBus::BroadcastResult(worldId, &EditorEntityContextRequests::GetActiveWorldId);
+
         AZ::EBusReduceResult<RayResult, RayResultClosestAggregator> renderGeometryIntersectionResult;
         IntersectorBus::EventResult(
-            renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(), &IntersectorBus::Events::RayIntersect, rayRequest);
+            renderGeometryIntersectionResult, worldId, &IntersectorBus::Events::RayIntersect, rayRequest);
         TerrainDataRequestBus::BroadcastResult(
             renderGeometryIntersectionResult, &TerrainDataRequestBus::Events::GetClosestIntersection, rayRequest);
 

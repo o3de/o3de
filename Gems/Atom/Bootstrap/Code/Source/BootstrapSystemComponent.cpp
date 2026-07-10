@@ -571,11 +571,18 @@ namespace AZ
                     return atomSceneHandle.lock();
                 }
 
-                // Create and register a scene with all available feature processors
+                // Create and register a scene with all available feature processors. The render
+                // scene carries its framework scene's name so several can coexist (editor worlds).
                 RPI::SceneDescriptor sceneDesc;
-                sceneDesc.m_nameId = AZ::Name("Main");
+                sceneDesc.m_nameId = AZ::Name(scene->GetName());
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
                 atomScene->EnableAllFeatureProcessors();
+                if (scene->GetName() != AzFramework::Scene::MainSceneName)
+                {
+                    // EditorModeFeedback's pass system registers process-wide pass templates and may
+                    // only live in the main scene.
+                    atomScene->DisableFeatureProcessor(AZ::RPI::FeatureProcessorId{ "AZ::Render::EditorModeFeatureProcessor" });
+                }
                 atomScene->Activate();
 
                 // Register scene to RPI system so it will be processed/rendered per tick

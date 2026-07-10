@@ -131,6 +131,11 @@ namespace AZ::ViewportHelpers
             m_editorViewportWidget.OnStartPlayInEditorBegin();
         }
 
+        void OnViewportWorldChanged(AzFramework::ViewportId viewportId, const AzFramework::EntityContextId&) override
+        {
+            m_editorViewportWidget.OnViewportWorldChanged(viewportId);
+        }
+
     private:
         EditorViewportWidget& m_editorViewportWidget;
     };
@@ -228,6 +233,12 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 EditorViewportWidget::~EditorViewportWidget()
 {
+    // A world whose last viewport goes away is torn down.
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+        &AzToolsFramework::EditorEntityContextRequests::BindViewportToWorld,
+        static_cast<AzFramework::ViewportId>(GetViewportId()),
+        AzFramework::EntityContextId::CreateNull());
+
     AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
 
     m_editorViewportSettings.Disconnect();
@@ -703,20 +714,28 @@ void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visi
 {
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
 
-    const auto* visibilityFilter = AZ::Interface<AzToolsFramework::ViewportInteraction::EditorEntityVisibilityFilterInterface>::Get();
-    if (!visibilityFilter)
+    // The visibility octree spans every world; only entities owned by this viewport's world are
+    // visible here. Game mode spawns runtime entities outside any editor world, so everything
+    // stays visible while it runs.
+    if (GetIEditor()->IsInGameMode())
     {
         return;
     }
 
-    const AzFramework::ViewportId viewportId = GetViewportId();
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
+
     visibleEntitiesOut.erase(
         AZStd::remove_if(
             visibleEntitiesOut.begin(),
             visibleEntitiesOut.end(),
-            [visibilityFilter, viewportId](const AZ::EntityId entityId)
+            [&worldId](const AZ::EntityId entityId)
             {
-                return !visibilityFilter->IsEntityVisibleInViewport(viewportId, entityId);
+                AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
+                AzFramework::EntityIdContextQueryBus::EventResult(
+                    owningContextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
+                return owningContextId != worldId;
             }),
         visibleEntitiesOut.end());
 }
@@ -1800,6 +1819,14 @@ void EditorViewportWidget::OnStopPlayInEditor()
     m_playInEditorState = PlayInEditorState::Stopping;
 }
 
+void EditorViewportWidget::OnViewportWorldChanged(AzFramework::ViewportId viewportId)
+{
+    if (viewportId == GetViewportId())
+    {
+        UpdateScene();
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::HideCursor()
 {
@@ -1965,34 +1992,61 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
 
 void EditorViewportWidget::UpdateScene()
 {
-    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-    if (sceneSystem)
-    {
-        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
-        if (mainScene)
-        {
-            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
-            m_renderViewport->SetScene(mainScene);
-            auto viewportContext = m_renderViewport->GetViewportContext();
-            AZ::RPI::SceneNotificationBus::Handler::BusConnect(viewportContext->GetRenderScene()->GetId());
+    AzFramework::EntityContextId worldId = AzFramework::EntityContextId::CreateNull();
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldId, &AzToolsFramework::EditorEntityContextRequests::GetViewportWorld, GetViewportId());
 
-            // Don't enable the render pipeline until a level has been loaded
-            // Also show/hide the RenderViewportWidget accordingly so that we get the
-            // expected gradient background when no level is loaded
-            auto renderPipeline = viewportContext->GetCurrentPipeline();
-            if (renderPipeline)
-            {
-                if (GetIEditor()->IsLevelLoaded())
-                {
-                    m_renderViewport->show();
-                    renderPipeline->AddToRenderTick();
-                }
-                else
-                {
-                    m_renderViewport->hide();
-                    renderPipeline->RemoveFromRenderTick();
-                }
-            }
+    AZStd::shared_ptr<AzFramework::Scene> worldScene;
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        worldScene, &AzToolsFramework::EditorEntityContextRequests::GetWorldScene, worldId);
+    if (!worldScene || !m_renderViewport)
+    {
+        return;
+    }
+
+    auto viewportContext = m_renderViewport->GetViewportContext();
+    AZ::RPI::ScenePtr previousRenderScene = viewportContext ? viewportContext->GetRenderScene() : nullptr;
+
+    AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
+    m_renderViewport->SetScene(worldScene);
+    if (!viewportContext)
+    {
+        return;
+    }
+
+    AZ::RPI::ScenePtr renderScene = viewportContext->GetRenderScene();
+
+    // SetScene installs this viewport's pipeline in the new scene but leaves the previous scene's
+    // behind, still presenting to this window; a window's pipeline may only live in one scene.
+    if (previousRenderScene && previousRenderScene != renderScene)
+    {
+        if (auto previousPipeline = previousRenderScene->FindRenderPipelineForWindow(viewportContext->GetWindowHandle()))
+        {
+            previousRenderScene->RemoveRenderPipeline(previousPipeline->GetId());
+        }
+    }
+
+    if (!renderScene)
+    {
+        return;
+    }
+    AZ::RPI::SceneNotificationBus::Handler::BusConnect(renderScene->GetId());
+
+    // Don't enable the render pipeline until a level has been loaded
+    // Also show/hide the RenderViewportWidget accordingly so that we get the
+    // expected gradient background when no level is loaded
+    auto renderPipeline = viewportContext->GetCurrentPipeline();
+    if (renderPipeline)
+    {
+        if (GetIEditor()->IsLevelLoaded())
+        {
+            m_renderViewport->show();
+            renderPipeline->AddToRenderTick();
+        }
+        else
+        {
+            m_renderViewport->hide();
+            renderPipeline->RemoveFromRenderTick();
         }
     }
 }
