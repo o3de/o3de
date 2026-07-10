@@ -12,7 +12,7 @@ include(cmake/LySet.cmake)
 include(cmake/3rdPartyPackages.cmake)
 
 # this script exists to make sure a python interpreter is immediately available
-# it will both locate and run pip on python for our requirements.txt
+# it will both locate and run pip on python for our requirements.txt 
 # but you can also call update_pip_requirements(filename) at any time after.
 
 # this is different from the usual package usage, because even if we are targeting
