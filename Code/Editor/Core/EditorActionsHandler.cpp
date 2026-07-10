@@ -1693,8 +1693,7 @@ void EditorActionsHandler::OnMenuRegistrationHook()
             menuProperties.m_name = "Open Recent";
             m_menuManagerInterface->RegisterMenu(EditorIdentifiers::RecentFilesMenuIdentifier, menuProperties);
 
-            // Legacy - the menu should update when the files list is changed.
-            QMenu* menu = m_menuManagerInternalInterface->GetMenu(EditorIdentifiers::FileMenuIdentifier);
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu(EditorIdentifiers::RecentFilesMenuIdentifier);
             QObject::connect(
                 menu,
                 &QMenu::aboutToShow,
