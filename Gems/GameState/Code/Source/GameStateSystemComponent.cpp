@@ -12,8 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-
-#include <AzFramework/Translation/TranslationDef.h>
+#include <AzCore/i18n/TranslationMacros.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace GameState

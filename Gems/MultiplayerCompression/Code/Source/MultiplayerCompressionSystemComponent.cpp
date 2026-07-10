@@ -10,7 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Translation/TranslationDef.h>
+#include <AzCore/i18n/TranslationMacros.h>
 #include <AzNetworking/Framework/INetworking.h>
 
 #include "MultiplayerCompressionSystemComponent.h"
