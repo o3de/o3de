@@ -20,6 +20,8 @@
 #include <LyShine/Bus/UiIndexableImageBus.h>
 #include <LyShine/UiSerializeHelpers.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace
 {
     const char* notConfiguredMessage = "<Spritesheet/image index unavailable>";
@@ -177,8 +179,8 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            auto editInfo = editContext->Class<UiFlipbookAnimationComponent>("FlipbookAnimation",
-                    "Animates image sequences or images configured as sprite sheets.");
+            auto editInfo = editContext->Class<UiFlipbookAnimationComponent>(QT_TRANSLATE_NOOP("LyShine", "FlipbookAnimation"),
+                    QT_TRANSLATE_NOOP("LyShine", "Animates image sequences or images configured as sprite sheets."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Visual")
@@ -188,59 +190,59 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ;
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_startFrame, "Start frame", "Frame to start at")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_startFrame, QT_TRANSLATE_NOOP("LyShine", "Start frame"), QT_TRANSLATE_NOOP("LyShine", "Frame to start at"))
                 ->Attribute("EnumValues", &UiFlipbookAnimationComponent::PopulateIndexStringList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnStartFrameChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             ;
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_endFrame, "End frame", "Frame to end at")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_endFrame, QT_TRANSLATE_NOOP("LyShine", "End frame"), QT_TRANSLATE_NOOP("LyShine", "Frame to end at"))
                 ->Attribute("EnumValues", &UiFlipbookAnimationComponent::PopulateIndexStringList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnEndFrameChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
             ;
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_loopStartFrame, "Loop start frame", "Frame to start looping from")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_loopStartFrame, QT_TRANSLATE_NOOP("LyShine", "Loop start frame"), QT_TRANSLATE_NOOP("LyShine", "Frame to start looping from"))
                 ->Attribute("EnumValues", &UiFlipbookAnimationComponent::PopulateConstrainedIndexStringList)
             ;
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_loopType, "Loop type", "Go from start to end continuously or start to end and back to start")
-                ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::None, "None")
-                ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::Linear, "Linear")
-                ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::PingPong, "PingPong")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_loopType, QT_TRANSLATE_NOOP("LyShine", "Loop type"), QT_TRANSLATE_NOOP("LyShine", "Go from start to end continuously or start to end and back to start"))
+                ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::None, QT_TRANSLATE_NOOP("LyShine", "None"))
+                ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::Linear, QT_TRANSLATE_NOOP("LyShine", "Linear"))
+                ->EnumAttribute(UiFlipbookAnimationInterface::LoopType::PingPong, QT_TRANSLATE_NOOP("LyShine", "PingPong"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
             ;
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_framerateUnit, "Framerate unit", "Unit of measurement for framerate")
-                ->EnumAttribute(UiFlipbookAnimationInterface::FramerateUnits::FPS, "FPS")
-                ->EnumAttribute(UiFlipbookAnimationInterface::FramerateUnits::SecondsPerFrame, "Seconds Per Frame")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiFlipbookAnimationComponent::m_framerateUnit, QT_TRANSLATE_NOOP("LyShine", "Framerate unit"), QT_TRANSLATE_NOOP("LyShine", "Unit of measurement for framerate"))
+                ->EnumAttribute(UiFlipbookAnimationInterface::FramerateUnits::FPS, QT_TRANSLATE_NOOP("LyShine", "FPS"))
+                ->EnumAttribute(UiFlipbookAnimationInterface::FramerateUnits::SecondsPerFrame, QT_TRANSLATE_NOOP("LyShine", "Seconds Per Frame"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFlipbookAnimationComponent::OnFramerateUnitChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_framerate, "Framerate", "Determines transition speed between frames")
+            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_framerate, QT_TRANSLATE_NOOP("LyShine", "Framerate"), QT_TRANSLATE_NOOP("LyShine", "Determines transition speed between frames"))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::FloatMax)
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_startDelay, "Start delay", "Number of seconds to wait before playing the flipbook (applied only once).")
+            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_startDelay, QT_TRANSLATE_NOOP("LyShine", "Start delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to wait before playing the flipbook (applied only once)."))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::FloatMax)
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_loopDelay, "Loop delay", "Number of seconds to delay until the loop sequence plays")
+            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_loopDelay, QT_TRANSLATE_NOOP("LyShine", "Loop delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to delay until the loop sequence plays"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiFlipbookAnimationComponent::IsLoopingType)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::FloatMax)
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_reverseDelay, "Reverse delay", "Number of seconds to delay until the reverse sequence plays (PingPong loop types only)")
+            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_reverseDelay, QT_TRANSLATE_NOOP("LyShine", "Reverse delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to delay until the reverse sequence plays (PingPong loop types only)"))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiFlipbookAnimationComponent::IsPingPongLoopType)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::FloatMax)
                 ;
 
-            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_isAutoPlay, "Auto Play", "Automatically starts playing the animation")
+            editInfo->DataElement(0, &UiFlipbookAnimationComponent::m_isAutoPlay, QT_TRANSLATE_NOOP("LyShine", "Auto Play"), QT_TRANSLATE_NOOP("LyShine", "Automatically starts playing the animation"))
             ;
         }
     }

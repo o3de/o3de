@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <LookupTable/LookupTableAsset.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
@@ -165,7 +166,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<CommonSystemComponent>("CommonSystemComponent", "System Component for common render features")
+                    ec->Class<CommonSystemComponent>(QT_TRANSLATE_NOOP("Atom::Feature", "CommonSystemComponent"), QT_TRANSLATE_NOOP("Atom::Feature", "System Component for common render features"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;

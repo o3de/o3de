@@ -26,6 +26,8 @@
 
 #include "UiElementComponent.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // STATIC MEMBER DATA
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1137,7 +1139,7 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiParticleEmitterComponent>("ParticleEmitter", "A visual component that emits 2D particles.");
+            auto editInfo = ec->Class<UiParticleEmitterComponent>(QT_TRANSLATE_NOOP("LyShine", "ParticleEmitter"), QT_TRANSLATE_NOOP("LyShine", "A visual component that emits 2D particles."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Visual")
@@ -1145,198 +1147,198 @@ void UiParticleEmitterComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Emitter Settings")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Emitter Settings"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isEmitOnActivate, "Emit on activate", "Emitter starts emitting on activate.");
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isHitParticleCountOnActivate, "Hit particle count on activate", "Emitter hits the particle count when it starts emitting.");
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isEmitterLifetimeInfinite, "Infinite life time", "The life time of the emitter is infinite")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isEmitOnActivate, QT_TRANSLATE_NOOP("LyShine", "Emit on activate"), QT_TRANSLATE_NOOP("LyShine", "Emitter starts emitting on activate."));
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isHitParticleCountOnActivate, QT_TRANSLATE_NOOP("LyShine", "Hit particle count on activate"), QT_TRANSLATE_NOOP("LyShine", "Emitter hits the particle count when it starts emitting."));
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isEmitterLifetimeInfinite, QT_TRANSLATE_NOOP("LyShine", "Infinite life time"), QT_TRANSLATE_NOOP("LyShine", "The life time of the emitter is infinite"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("EmitterLifetime", &UiParticleEmitterComponent::m_emitterLifetime, "Emitter lifetime", "The amount of time (in seconds) that the emitter emits.")
+                editInfo->DataElement("EmitterLifetime", &UiParticleEmitterComponent::m_emitterLifetime, QT_TRANSLATE_NOOP("LyShine", "Emitter lifetime"), QT_TRANSLATE_NOOP("LyShine", "The amount of time (in seconds) that the emitter emits."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsEmitterLifetimeFinite)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f);
-                editInfo->DataElement("EmitRate", &UiParticleEmitterComponent::m_emitRate, "Emit rate", "The amount of particles emitted per second.")
+                editInfo->DataElement("EmitRate", &UiParticleEmitterComponent::m_emitRate, QT_TRANSLATE_NOOP("LyShine", "Emit rate"), QT_TRANSLATE_NOOP("LyShine", "The amount of particles emitted per second."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Max, m_emitRateLimit)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::ResetParticleBuffers);
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isParticleCountLimited, "Particle count limit", "Sets whether there is a limit on the amount of active particles.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isParticleCountLimited, QT_TRANSLATE_NOOP("LyShine", "Particle count limit"), QT_TRANSLATE_NOOP("LyShine", "Sets whether there is a limit on the amount of active particles."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLimitToggleable)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("MaxParticles", &UiParticleEmitterComponent::m_maxParticles, "Active particles limit", "The maximum amount of particles that can be active.")
+                editInfo->DataElement("MaxParticles", &UiParticleEmitterComponent::m_maxParticles, QT_TRANSLATE_NOOP("LyShine", "Active particles limit"), QT_TRANSLATE_NOOP("LyShine", "The maximum amount of particles that can be active."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLimitRequired)
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, m_activeParticlesLimit)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::ResetParticleBuffers);
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isRandomSeedFixed, "Fixed random seed", "Sets whether the random seed for this emitter is fixed. If unchecked, a random seed will be automatically generated each time the emitter starts emitting.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isRandomSeedFixed, QT_TRANSLATE_NOOP("LyShine", "Fixed random seed"), QT_TRANSLATE_NOOP("LyShine", "Sets whether the random seed for this emitter is fixed. If unchecked, a random seed will be automatically generated each time the emitter starts emitting."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("RandomSeed", &UiParticleEmitterComponent::m_randomSeed, "Random seed", "The seed to use for the particle emitter.")
+                editInfo->DataElement("RandomSeed", &UiParticleEmitterComponent::m_randomSeed, QT_TRANSLATE_NOOP("LyShine", "Random seed"), QT_TRANSLATE_NOOP("LyShine", "The seed to use for the particle emitter."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::m_isRandomSeedFixed);
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_emitShape, "Emitter shape", "The shape of the emitter.")
-                    ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Point, "Point")
-                    ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Circle, "Circle")
-                    ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Quad, "Quad")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_emitShape, QT_TRANSLATE_NOOP("LyShine", "Emitter shape"), QT_TRANSLATE_NOOP("LyShine", "The shape of the emitter."))
+                    ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Point, QT_TRANSLATE_NOOP("LyShine", "Point"))
+                    ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Circle, QT_TRANSLATE_NOOP("LyShine", "Circle"))
+                    ->EnumAttribute(UiParticleEmitterInterface::EmitShape::Quad, QT_TRANSLATE_NOOP("LyShine", "Quad"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("IsEmitOnEdge", &UiParticleEmitterComponent::m_isEmitOnEdge, "Emit on edge", "The particles are emitted from the edge of the emitter shape.")
+                editInfo->DataElement("IsEmitOnEdge", &UiParticleEmitterComponent::m_isEmitOnEdge, QT_TRANSLATE_NOOP("LyShine", "Emit on edge"), QT_TRANSLATE_NOOP("LyShine", "The particles are emitted from the edge of the emitter shape."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsShapeWithEdge)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("EmitInsideDistance", &UiParticleEmitterComponent::m_insideDistance, "Emit inside distance", "The distance inside the emitter shape edge that particles should be emitted.")
+                editInfo->DataElement("EmitInsideDistance", &UiParticleEmitterComponent::m_insideDistance, QT_TRANSLATE_NOOP("LyShine", "Emit inside distance"), QT_TRANSLATE_NOOP("LyShine", "The distance inside the emitter shape edge that particles should be emitted."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsEmittingFromEdge);
-                editInfo->DataElement("EmitOutsideDistance", &UiParticleEmitterComponent::m_outsideDistance, "Emit outside distance", "The distance outside the emitter shape edge that particles should be emitted.")
+                editInfo->DataElement("EmitOutsideDistance", &UiParticleEmitterComponent::m_outsideDistance, QT_TRANSLATE_NOOP("LyShine", "Emit outside distance"), QT_TRANSLATE_NOOP("LyShine", "The distance outside the emitter shape edge that particles should be emitted."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsEmittingFromEdge);
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_particleInitialDirectionType, "Initial direction type", "Sets how the initial direction is calculated.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_particleInitialDirectionType, QT_TRANSLATE_NOOP("LyShine", "Initial direction type"), QT_TRANSLATE_NOOP("LyShine", "Sets how the initial direction is calculated."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::CanEmitFromCenter)
-                    ->EnumAttribute(UiParticleEmitterInterface::ParticleInitialDirectionType::RelativeToEmitAngle, "Relative to emit angle")
-                    ->EnumAttribute(UiParticleEmitterInterface::ParticleInitialDirectionType::RelativeToEmitterCenter, "Relative to emitter center")
+                    ->EnumAttribute(UiParticleEmitterInterface::ParticleInitialDirectionType::RelativeToEmitAngle, QT_TRANSLATE_NOOP("LyShine", "Relative to emit angle"))
+                    ->EnumAttribute(UiParticleEmitterInterface::ParticleInitialDirectionType::RelativeToEmitterCenter, QT_TRANSLATE_NOOP("LyShine", "Relative to emitter center"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("EmitAngle", &UiParticleEmitterComponent::m_emitAngle, "Emit angle", "The angle to emit particles, measured clockwise in degrees from straight up.")
+                editInfo->DataElement("EmitAngle", &UiParticleEmitterComponent::m_emitAngle, QT_TRANSLATE_NOOP("LyShine", "Emit angle"), QT_TRANSLATE_NOOP("LyShine", "The angle to emit particles, measured clockwise in degrees from straight up."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsEmitAngleRequired);
-                editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiParticleEmitterComponent::m_emitAngleVariation, "Emit angle variation", "The spread of particles emitted about the emit angle in degrees.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiParticleEmitterComponent::m_emitAngleVariation, QT_TRANSLATE_NOOP("LyShine", "Emit angle variation"), QT_TRANSLATE_NOOP("LyShine", "The spread of particles emitted about the emit angle in degrees."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsMovementCoordinateTypeCartesian)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f);
             }
 
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Particle Settings")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Particle Settings"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
-                editInfo->DataElement("IsParticleLifetimeInfinite", &UiParticleEmitterComponent::m_isParticleLifetimeInfinite, "Infinite life time", "The life time of the emitted particles is infinite.")
+                editInfo->DataElement("IsParticleLifetimeInfinite", &UiParticleEmitterComponent::m_isParticleLifetimeInfinite, QT_TRANSLATE_NOOP("LyShine", "Infinite life time"), QT_TRANSLATE_NOOP("LyShine", "The life time of the emitted particles is infinite."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::CheckMaxParticleValidity)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("ParticleLife", &UiParticleEmitterComponent::m_particleLifetime, "Life time", "The life time of the emitted particles in seconds.")
+                editInfo->DataElement("ParticleLife", &UiParticleEmitterComponent::m_particleLifetime, QT_TRANSLATE_NOOP("LyShine", "Life time"), QT_TRANSLATE_NOOP("LyShine", "The life time of the emitted particles in seconds."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::ResetParticleBuffers);
-                editInfo->DataElement("ParticleLifeVariation", &UiParticleEmitterComponent::m_particleLifetimeVariation, "Life time variation", "The random variation of the life time of the emitted particles.")
+                editInfo->DataElement("ParticleLifeVariation", &UiParticleEmitterComponent::m_particleLifetimeVariation, QT_TRANSLATE_NOOP("LyShine", "Life time variation"), QT_TRANSLATE_NOOP("LyShine", "The random variation of the life time of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
-                editInfo->DataElement("Sprite", &UiParticleEmitterComponent::m_spritePathname, "Sprite pathname", "The sprite path.")
+                editInfo->DataElement("Sprite", &UiParticleEmitterComponent::m_spritePathname, QT_TRANSLATE_NOOP("LyShine", "Sprite pathname"), QT_TRANSLATE_NOOP("LyShine", "The sprite path."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSpritePathnameChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetAnimated, "Animated sprite sheet", "The sprite sheet cell index is animated over time.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetAnimated, QT_TRANSLATE_NOOP("LyShine", "Animated sprite sheet"), QT_TRANSLATE_NOOP("LyShine", "The sprite sheet cell index is animated over time."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsSpriteTypeSpriteSheet)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetAnimationLooped, "Loop sprite sheet animation", "The sprite sheet animation is looped.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetAnimationLooped, QT_TRANSLATE_NOOP("LyShine", "Loop sprite sheet animation"), QT_TRANSLATE_NOOP("LyShine", "The sprite sheet animation is looped."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::m_isSpriteSheetAnimated);
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetIndexRandom, "Random sprite sheet index", "The sprite sheet cell index is randomly chosen from the given range.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiParticleEmitterComponent::m_isSpriteSheetIndexRandom, QT_TRANSLATE_NOOP("LyShine", "Random sprite sheet index"), QT_TRANSLATE_NOOP("LyShine", "The sprite sheet cell index is randomly chosen from the given range."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsSpriteTypeSpriteSheet)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_spriteSheetCellIndex, "Sprite sheet Index", "Sprite sheet index. Defines which cell in a sprite sheet is displayed.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_spriteSheetCellIndex, QT_TRANSLATE_NOOP("LyShine", "Sprite sheet Index"), QT_TRANSLATE_NOOP("LyShine", "Sprite sheet index. Defines which cell in a sprite sheet is displayed."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsSpriteTypeSpriteSheet)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &UiParticleEmitterComponent::GetSpriteSheetIndexPropertyLabel)
                     ->Attribute("EnumValues", &UiParticleEmitterComponent::PopulateSpriteSheetIndexStringList)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSpriteSheetCellIndexChanged)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_spriteSheetCellEndIndex, "Sprite sheet end frame", "Defines which cell in a sprite sheet is displayed.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_spriteSheetCellEndIndex, QT_TRANSLATE_NOOP("LyShine", "Sprite sheet end frame"), QT_TRANSLATE_NOOP("LyShine", "Defines which cell in a sprite sheet is displayed."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsSpriteSheetCellRangeRequired)
                     ->Attribute("EnumValues", &UiParticleEmitterComponent::PopulateSpriteSheetIndexStringList)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSpriteSheetCellEndIndexChanged)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"));
-                editInfo->DataElement("SpriteSheetFrameDelay", &UiParticleEmitterComponent::m_spriteSheetFrameDelay, "Sprite sheet frame delay", "Number of seconds to delay until the next frame.")
+                editInfo->DataElement("SpriteSheetFrameDelay", &UiParticleEmitterComponent::m_spriteSheetFrameDelay, QT_TRANSLATE_NOOP("LyShine", "Sprite sheet frame delay"), QT_TRANSLATE_NOOP("LyShine", "Number of seconds to delay until the next frame."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::m_isSpriteSheetAnimated)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_blendMode, "Blend mode", "The blend mode used to draw the particles")
-                    ->EnumAttribute(LyShine::BlendMode::Normal, "Normal")
-                    ->EnumAttribute(LyShine::BlendMode::Add, "Add")
-                    ->EnumAttribute(LyShine::BlendMode::Screen, "Screen")
-                    ->EnumAttribute(LyShine::BlendMode::Darken, "Darken")
-                    ->EnumAttribute(LyShine::BlendMode::Lighten, "Lighten");
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_blendMode, QT_TRANSLATE_NOOP("LyShine", "Blend mode"), QT_TRANSLATE_NOOP("LyShine", "The blend mode used to draw the particles"))
+                    ->EnumAttribute(LyShine::BlendMode::Normal, QT_TRANSLATE_NOOP("LyShine", "Normal"))
+                    ->EnumAttribute(LyShine::BlendMode::Add, QT_TRANSLATE_NOOP("LyShine", "Add"))
+                    ->EnumAttribute(LyShine::BlendMode::Screen, QT_TRANSLATE_NOOP("LyShine", "Screen"))
+                    ->EnumAttribute(LyShine::BlendMode::Darken, QT_TRANSLATE_NOOP("LyShine", "Darken"))
+                    ->EnumAttribute(LyShine::BlendMode::Lighten, QT_TRANSLATE_NOOP("LyShine", "Lighten"));
             }
 
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Particle Movement")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Particle Movement"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
-                editInfo->DataElement("IsPositionRelativeToEmitter", &UiParticleEmitterComponent::m_isPositionRelativeToEmitter, "Relative to emitter", "The particles move relative to the emitter.");
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_particleMovementCoordinateType, "Movement co-ordinate type", "The co-ordinate system to use for particle movement.")
-                    ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Cartesian, "Cartesian")
-                    ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Polar, "Polar")
+                editInfo->DataElement("IsPositionRelativeToEmitter", &UiParticleEmitterComponent::m_isPositionRelativeToEmitter, QT_TRANSLATE_NOOP("LyShine", "Relative to emitter"), QT_TRANSLATE_NOOP("LyShine", "The particles move relative to the emitter."));
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_particleMovementCoordinateType, QT_TRANSLATE_NOOP("LyShine", "Movement co-ordinate type"), QT_TRANSLATE_NOOP("LyShine", "The co-ordinate system to use for particle movement."))
+                    ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Cartesian, QT_TRANSLATE_NOOP("LyShine", "Cartesian"))
+                    ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Polar, QT_TRANSLATE_NOOP("LyShine", "Polar"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("ParticleInitialVelocity", &UiParticleEmitterComponent::m_particleInitialVelocity, "Initial velocity", "The initial velocity of the emitted particles.")
+                editInfo->DataElement("ParticleInitialVelocity", &UiParticleEmitterComponent::m_particleInitialVelocity, QT_TRANSLATE_NOOP("LyShine", "Initial velocity"), QT_TRANSLATE_NOOP("LyShine", "The initial velocity of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsMovementCoordinateTypePolar);
-                editInfo->DataElement("ParticleInitialVelocityVariation", &UiParticleEmitterComponent::m_particleInitialVelocityVariation, "Initial Velocity Variation", "The random variation in the initial velocity of emitted particles.")
+                editInfo->DataElement("ParticleInitialVelocityVariation", &UiParticleEmitterComponent::m_particleInitialVelocityVariation, QT_TRANSLATE_NOOP("LyShine", "Initial Velocity Variation"), QT_TRANSLATE_NOOP("LyShine", "The random variation in the initial velocity of emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsMovementCoordinateTypePolar)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
-                editInfo->DataElement("ParticleSpeed", &UiParticleEmitterComponent::m_particleSpeed, "Speed", "The speed of the emitted particles.")
+                editInfo->DataElement("ParticleSpeed", &UiParticleEmitterComponent::m_particleSpeed, QT_TRANSLATE_NOOP("LyShine", "Speed"), QT_TRANSLATE_NOOP("LyShine", "The speed of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsMovementCoordinateTypeCartesian);
-                editInfo->DataElement("ParticleSpeedVariation", &UiParticleEmitterComponent::m_particleSpeedVariation, "Speed variation", "The random variation in speed of the emitted particles.")
+                editInfo->DataElement("ParticleSpeedVariation", &UiParticleEmitterComponent::m_particleSpeedVariation, QT_TRANSLATE_NOOP("LyShine", "Speed variation"), QT_TRANSLATE_NOOP("LyShine", "The random variation in speed of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsMovementCoordinateTypeCartesian);
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_particleAccelerationCoordinateType, "Acceleration co-ordinate type", "The co-ordinate system to use for particle acceleration.")
-                    ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Cartesian, "Cartesian")
-                    ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Polar, "Polar")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiParticleEmitterComponent::m_particleAccelerationCoordinateType, QT_TRANSLATE_NOOP("LyShine", "Acceleration co-ordinate type"), QT_TRANSLATE_NOOP("LyShine", "The co-ordinate system to use for particle acceleration."))
+                    ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Cartesian, QT_TRANSLATE_NOOP("LyShine", "Cartesian"))
+                    ->EnumAttribute(UiParticleEmitterInterface::ParticleCoordinateType::Polar, QT_TRANSLATE_NOOP("LyShine", "Polar"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("ParticleAcceleration", &UiParticleEmitterComponent::m_particleAcceleration, "Acceleration", "The acceleration of the particles.");
-                editInfo->DataElement("IsParticleRotationFromVelocity", &UiParticleEmitterComponent::m_isParticleRotationFromVelocity, "Orientation velocity based", "The particle orientation is based on the current velocity.")
+                editInfo->DataElement("ParticleAcceleration", &UiParticleEmitterComponent::m_particleAcceleration, QT_TRANSLATE_NOOP("LyShine", "Acceleration"), QT_TRANSLATE_NOOP("LyShine", "The acceleration of the particles."));
+                editInfo->DataElement("IsParticleRotationFromVelocity", &UiParticleEmitterComponent::m_isParticleRotationFromVelocity, QT_TRANSLATE_NOOP("LyShine", "Orientation velocity based"), QT_TRANSLATE_NOOP("LyShine", "The particle orientation is based on the current velocity."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("IsParticleInitialRotationFromInitialVelocity", &UiParticleEmitterComponent::m_isParticleInitialRotationFromInitialVelocity, "Initial orientation velocity based", "The particle orientation is based on the current velocity.")
+                editInfo->DataElement("IsParticleInitialRotationFromInitialVelocity", &UiParticleEmitterComponent::m_isParticleInitialRotationFromInitialVelocity, QT_TRANSLATE_NOOP("LyShine", "Initial orientation velocity based"), QT_TRANSLATE_NOOP("LyShine", "The particle orientation is based on the current velocity."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsRotationRequired)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("ParticleInitialRotation", &UiParticleEmitterComponent::m_particleInitialRotation, "Initial rotation", "The initial rotation of the emitted particles in degrees.")
+                editInfo->DataElement("ParticleInitialRotation", &UiParticleEmitterComponent::m_particleInitialRotation, QT_TRANSLATE_NOOP("LyShine", "Initial rotation"), QT_TRANSLATE_NOOP("LyShine", "The initial rotation of the emitted particles in degrees."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsInitialRotationRequired);
-                editInfo->DataElement("ParticleIntiialRotationVariation", &UiParticleEmitterComponent::m_particleInitialRotationVariation, "Initial rotation variation", "The random variation in the initial rotation of the emitted particles in degrees.")
+                editInfo->DataElement("ParticleIntiialRotationVariation", &UiParticleEmitterComponent::m_particleInitialRotationVariation, QT_TRANSLATE_NOOP("LyShine", "Initial rotation variation"), QT_TRANSLATE_NOOP("LyShine", "The random variation in the initial rotation of the emitted particles in degrees."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsInitialRotationRequired)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
-                editInfo->DataElement("ParticleRotation", &UiParticleEmitterComponent::m_particleRotationSpeed, "Rotation speed", "The rotation speed of the emitted particles.")
+                editInfo->DataElement("ParticleRotation", &UiParticleEmitterComponent::m_particleRotationSpeed, QT_TRANSLATE_NOOP("LyShine", "Rotation speed"), QT_TRANSLATE_NOOP("LyShine", "The rotation speed of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsRotationRequired);
-                editInfo->DataElement("ParticleRotationVariation", &UiParticleEmitterComponent::m_particleRotationSpeedVariation, "Rotation speed variation", "The random variation in the rotation speed of the emitted particles.")
+                editInfo->DataElement("ParticleRotationVariation", &UiParticleEmitterComponent::m_particleRotationSpeedVariation, QT_TRANSLATE_NOOP("LyShine", "Rotation speed variation"), QT_TRANSLATE_NOOP("LyShine", "The random variation in the rotation speed of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsRotationRequired)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
             }
 
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Particle Size")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Particle Size"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
-                editInfo->DataElement("ParticleAspectRatioLocked", &UiParticleEmitterComponent::m_isParticleAspectRatioLocked, "Lock aspect ratio", "Locks the size of the particles to the current aspect ratio.")
+                editInfo->DataElement("ParticleAspectRatioLocked", &UiParticleEmitterComponent::m_isParticleAspectRatioLocked, QT_TRANSLATE_NOOP("LyShine", "Lock aspect ratio"), QT_TRANSLATE_NOOP("LyShine", "Locks the size of the particles to the current aspect ratio."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement("ParticlePivot", &UiParticleEmitterComponent::m_particlePivot, "Pivot", "The pivot of the emitted particles.");
-                editInfo->DataElement("ParticleSize", &UiParticleEmitterComponent::m_particleSize, "Size", "The size of the emitted particles.")
+                editInfo->DataElement("ParticlePivot", &UiParticleEmitterComponent::m_particlePivot, QT_TRANSLATE_NOOP("LyShine", "Pivot"), QT_TRANSLATE_NOOP("LyShine", "The pivot of the emitted particles."));
+                editInfo->DataElement("ParticleSize", &UiParticleEmitterComponent::m_particleSize, QT_TRANSLATE_NOOP("LyShine", "Size"), QT_TRANSLATE_NOOP("LyShine", "The size of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnParticleSizeChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.1f);
-                editInfo->DataElement("ParticleSizeVariation", &UiParticleEmitterComponent::m_particleSizeVariation, "Size variation", "The random variation in size of the emitted particles.")
+                editInfo->DataElement("ParticleSizeVariation", &UiParticleEmitterComponent::m_particleSizeVariation, QT_TRANSLATE_NOOP("LyShine", "Size variation"), QT_TRANSLATE_NOOP("LyShine", "The random variation in size of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
             }
 
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Particle Color")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Particle Color"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
-                editInfo->DataElement("ParticleColor", &UiParticleEmitterComponent::m_particleColor, "Color", "The color of the emitted particles.");
-                editInfo->DataElement("ParticleColorBrightnessVariation", &UiParticleEmitterComponent::m_particleColorBrightnessVariation, "Color brightness variation", "The color brightness random variation of the emitted particles.")
+                editInfo->DataElement("ParticleColor", &UiParticleEmitterComponent::m_particleColor, QT_TRANSLATE_NOOP("LyShine", "Color"), QT_TRANSLATE_NOOP("LyShine", "The color of the emitted particles."));
+                editInfo->DataElement("ParticleColorBrightnessVariation", &UiParticleEmitterComponent::m_particleColorBrightnessVariation, QT_TRANSLATE_NOOP("LyShine", "Color brightness variation"), QT_TRANSLATE_NOOP("LyShine", "The color brightness random variation of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
-                editInfo->DataElement("ParticleColorTintVariation", &UiParticleEmitterComponent::m_particleColorTintVariation, "Color tint variation", "The color tint random variation of the emitted particles.")
+                editInfo->DataElement("ParticleColorTintVariation", &UiParticleEmitterComponent::m_particleColorTintVariation, QT_TRANSLATE_NOOP("LyShine", "Color tint variation"), QT_TRANSLATE_NOOP("LyShine", "The color tint random variation of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
-                editInfo->DataElement("ParticleAlpha", &UiParticleEmitterComponent::m_particleAlpha, "Alpha", "The initial alpha of the emitted particles.")
+                editInfo->DataElement("ParticleAlpha", &UiParticleEmitterComponent::m_particleAlpha, QT_TRANSLATE_NOOP("LyShine", "Alpha"), QT_TRANSLATE_NOOP("LyShine", "The initial alpha of the emitted particles."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
             }
 
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Timelines")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Timelines"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
-                editInfo->DataElement("ParticleSpeedMultiplier", &UiParticleEmitterComponent::m_particleSpeedMultiplier, "Speed multiplier", "The speed multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
+                editInfo->DataElement("ParticleSpeedMultiplier", &UiParticleEmitterComponent::m_particleSpeedMultiplier, QT_TRANSLATE_NOOP("LyShine", "Speed multiplier"), QT_TRANSLATE_NOOP("LyShine", "The speed multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSpeedMultiplierChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
-                editInfo->DataElement("ParticleWidthMultiplier", &UiParticleEmitterComponent::m_particleWidthMultiplier, "Width multiplier", "The width multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
+                editInfo->DataElement("ParticleWidthMultiplier", &UiParticleEmitterComponent::m_particleWidthMultiplier, QT_TRANSLATE_NOOP("LyShine", "Width multiplier"), QT_TRANSLATE_NOOP("LyShine", "The width multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSizeXMultiplierChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &UiParticleEmitterComponent::GetParticleWidthMultiplierPropertyLabel)
                     ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &UiParticleEmitterComponent::GetParticleWidthMultiplierPropertyDescription)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
-                editInfo->DataElement("ParticleHeightMultiplier", &UiParticleEmitterComponent::m_particleHeightMultiplier, "Height multiplier", "The height multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
+                editInfo->DataElement("ParticleHeightMultiplier", &UiParticleEmitterComponent::m_particleHeightMultiplier, QT_TRANSLATE_NOOP("LyShine", "Height multiplier"), QT_TRANSLATE_NOOP("LyShine", "The height multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnSizeYMultiplierChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsAspectRatioUnlocked)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
-                editInfo->DataElement("ParticleColorMultiplier", &UiParticleEmitterComponent::m_particleColorMultiplier, "Color multiplier", "The color multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
+                editInfo->DataElement("ParticleColorMultiplier", &UiParticleEmitterComponent::m_particleColorMultiplier, QT_TRANSLATE_NOOP("LyShine", "Color multiplier"), QT_TRANSLATE_NOOP("LyShine", "The color multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnColorMultiplierChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, "Keyframe");
-                editInfo->DataElement("ParticleAlphaMultiplier", &UiParticleEmitterComponent::m_particleAlphaMultiplier, "Alpha multiplier", "The alpha multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime.")
+                editInfo->DataElement("ParticleAlphaMultiplier", &UiParticleEmitterComponent::m_particleAlphaMultiplier, QT_TRANSLATE_NOOP("LyShine", "Alpha multiplier"), QT_TRANSLATE_NOOP("LyShine", "The alpha multiplier over time. Time range is [0,1] where 0 is the start of the particle lifetime and 1 is the end of the particle lifetime."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiParticleEmitterComponent::OnAlphaMultiplierChange)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshAttributesAndValues"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiParticleEmitterComponent::IsParticleLifetimeFinite)

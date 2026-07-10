@@ -975,8 +975,8 @@ void CUiAnimViewNodesCtrl::AddGroupNodeAddItems(UiAnimContextMenu& contextMenu, 
     // only want this item on sequence node
     if (pAnimNode->GetNodeType() == eUiAVNT_Sequence)
     {
-        contextMenu.main.addAction("Add Selected UI Element(s)")->setData(eMI_AddSelectedUiElements);
-        contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
+        contextMenu.main.addAction(tr("Add Selected UI Element(s)"))->setData(eMI_AddSelectedUiElements);
+        contextMenu.main.addAction(tr("Add Event Node"))->setData(eMI_AddEvent);
     }
 }
 
@@ -1017,7 +1017,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
 
     if (bOnNode || bOnSequence || bOnTrackNotSub)
     {
-        contextMenu.main.addAction("Delete")->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
+        contextMenu.main.addAction(tr("Delete"))->setData(bOnTrackNotSub ? eMI_RemoveTrack : eMI_RemoveSelected);
         bAppended = true;
     }
 
@@ -1025,9 +1025,9 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     {
         // Copy & paste keys
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Copy Keys")->setData(eMI_CopyKeys);
-        contextMenu.main.addAction("Copy Selected Keys")->setData(eMI_CopySelectedKeys);
-        contextMenu.main.addAction("Paste Keys")->setData(eMI_PasteKeys);
+        contextMenu.main.addAction(tr("Copy Keys"))->setData(eMI_CopyKeys);
+        contextMenu.main.addAction(tr("Copy Selected Keys"))->setData(eMI_CopySelectedKeys);
+        contextMenu.main.addAction(tr("Paste Keys"))->setData(eMI_PasteKeys);
         bAppended = true;
     }
 
@@ -1038,7 +1038,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
         if (!bOnSequence)
         {
             AddMenuSeperatorConditional(contextMenu.main, bAppended);
-            QAction* a = contextMenu.main.addAction("Disabled");
+            QAction* a = contextMenu.main.addAction(tr("Disabled"));
             a->setData(eMI_Disable);
             a->setCheckable(true);
             a->setChecked(pNode->IsDisabled());
@@ -1062,7 +1062,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     if (bOnSequence || pNode->IsGroupNode() && !bIsLightAnimationSet)
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        contextMenu.main.addAction("Edit Events...")->setData(eMI_EditEvents);
+        contextMenu.main.addAction(tr("Edit Events..."))->setData(eMI_EditEvents);
         bAppended = true;
     }
 
@@ -1085,7 +1085,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
     if (bOnNode && !pNode->IsGroupNode())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        QString string = QString("%1 Tracks").arg(QString::fromUtf8(pAnimNode->GetName().c_str()));
+        QString string = tr("%1 Tracks").arg(QString::fromUtf8(pAnimNode->GetName().c_str()));
         contextMenu.main.addAction(string)->setEnabled(false);
 
         bool bAppendedTrackFlag = false;
@@ -1133,12 +1133,12 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuMultiSelection(UiAnimContextMenu& context
         }
     }
 
-    contextMenu.main.addAction("Remove Selected Nodes/Tracks")->setData(eMI_RemoveSelected);
+    contextMenu.main.addAction(tr("Remove Selected Nodes/Tracks"))->setData(eMI_RemoveSelected);
 
     if (bNodeSelected)
     {
         contextMenu.main.addSeparator();
-        contextMenu.main.addAction("Select In Viewport")->setData(eMI_SelectInViewport);
+        contextMenu.main.addAction(tr("Select In Viewport"))->setData(eMI_SelectInViewport);
     }
 
     return 0;

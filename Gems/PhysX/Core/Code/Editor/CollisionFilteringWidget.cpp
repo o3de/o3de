@@ -17,7 +17,6 @@ namespace PhysX
 {
     namespace Editor
     {
-        static const char* const s_collisionFilteringLink = "Learn more about <a href=%1>configuring collision filtering.</a>";
         static const char* const s_collisionFilteringAddress = "configuring/configuration-collision-layers";
 
         CollisionFilteringWidget::CollisionFilteringWidget(QWidget* parent)
@@ -27,13 +26,13 @@ namespace PhysX
             verticalLayout->setContentsMargins(0, 0, 0, 0);
             verticalLayout->setSpacing(0);
 
-            m_documentationLinkWidget = new DocumentationLinkWidget(s_collisionFilteringLink, (UXNameConstants::GetPhysXDocsRoot() + s_collisionFilteringAddress).c_str());
+            m_documentationLinkWidget = new DocumentationLinkWidget(tr("Learn more about <a href=%1>configuring collision filtering.</a>"), (UXNameConstants::GetPhysXDocsRoot() + s_collisionFilteringAddress).c_str());
             m_collisionLayersWidget = new CollisionLayersWidget();
             m_collisionGroupsWidget = new CollisionGroupsWidget();
 
             m_tabs = new AzQtComponents::SegmentControl();
-            m_tabs->addTab(m_collisionLayersWidget, "Layers");
-            m_tabs->addTab(m_collisionGroupsWidget, "Groups");
+            m_tabs->addTab(m_collisionLayersWidget, tr("Layers"));
+            m_tabs->addTab(m_collisionGroupsWidget, tr("Groups"));
             
             verticalLayout->addWidget(m_documentationLinkWidget);
             verticalLayout->addWidget(m_tabs);

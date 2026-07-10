@@ -29,6 +29,8 @@
 #include <LyShine/ISprite.h>
 #include <LyShine/IRenderGraph.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 #include "MathConversion.h"
 #include "UiSerialize.h"
 #include "UiLayoutHelpers.h"
@@ -996,7 +998,7 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiImageComponent>("Image", "A visual component to draw a rectangle with an optional sprite/texture");
+            auto editInfo = ec->Class<UiImageComponent>(QT_TRANSLATE_NOOP("LyShine", "Image"), QT_TRANSLATE_NOOP("LyShine", "A visual component to draw a rectangle with an optional sprite/texture"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Visual")
@@ -1005,88 +1007,88 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteType, "SpriteType", "The sprite type.")
-                ->EnumAttribute(UiImageInterface::SpriteType::SpriteAsset, "Sprite/Texture asset")
-                ->EnumAttribute(UiImageInterface::SpriteType::RenderTarget, "Render target")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteType, QT_TRANSLATE_NOOP("LyShine", "SpriteType"), QT_TRANSLATE_NOOP("LyShine", "The sprite type."))
+                ->EnumAttribute(UiImageInterface::SpriteType::SpriteAsset, QT_TRANSLATE_NOOP("LyShine", "Sprite/Texture asset"))
+                ->EnumAttribute(UiImageInterface::SpriteType::RenderTarget, QT_TRANSLATE_NOOP("LyShine", "Render target"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpriteTypeChange)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-            editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, "Sprite path", "The sprite path. Can be overridden by another component such as an interactable.")
+            editInfo->DataElement("Sprite", &UiImageComponent::m_spritePathname, QT_TRANSLATE_NOOP("LyShine", "Sprite path"), QT_TRANSLATE_NOOP("LyShine", "The sprite path. Can be overridden by another component such as an interactable."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeAsset)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorSpritePathnameChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteSheetCellIndex, "Index", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_spriteSheetCellIndex, QT_TRANSLATE_NOOP("LyShine", "Index"), QT_TRANSLATE_NOOP("LyShine", "Sprite-sheet index. Defines which cell in a sprite-sheet is displayed."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeSpriteSheet)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnIndexChange)
                 ->Attribute("EnumValues", &UiImageComponent::PopulateIndexStringList);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiImageComponent::m_attachmentImageAsset, "Attachment Image Asset", "The render target associated with the sprite.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiImageComponent::m_attachmentImageAsset, QT_TRANSLATE_NOOP("LyShine", "Attachment Image Asset"), QT_TRANSLATE_NOOP("LyShine", "The render target associated with the sprite."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnSpriteAttachmentImageAssetChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isRenderTargetSRGB, "Render Target sRGB", "Check this box if the render target is in sRGB space instead of linear RGB space.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isRenderTargetSRGB, QT_TRANSLATE_NOOP("LyShine", "Render Target sRGB"), QT_TRANSLATE_NOOP("LyShine", "Check this box if the render target is in sRGB space instead of linear RGB space."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiImageComponent::m_color, "Color", "The color tint for the image. Can be overridden by another component such as an interactable.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiImageComponent::m_color, QT_TRANSLATE_NOOP("LyShine", "Color"), QT_TRANSLATE_NOOP("LyShine", "The color tint for the image. Can be overridden by another component such as an interactable."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnColorChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_alpha, "Alpha", "The transparency. Can be overridden by another component such as an interactable.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_alpha, QT_TRANSLATE_NOOP("LyShine", "Alpha"), QT_TRANSLATE_NOOP("LyShine", "The transparency. Can be overridden by another component such as an interactable."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnColorChange)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_imageType, "ImageType", "The image type. Affects how the texture/sprite is mapped to the image rectangle.")
-                ->EnumAttribute(UiImageInterface::ImageType::Stretched, "Stretched")
-                ->EnumAttribute(UiImageInterface::ImageType::Sliced, "Sliced")
-                ->EnumAttribute(UiImageInterface::ImageType::Fixed, "Fixed")
-                ->EnumAttribute(UiImageInterface::ImageType::Tiled, "Tiled")
-                ->EnumAttribute(UiImageInterface::ImageType::StretchedToFit, "Stretched To Fit")
-                ->EnumAttribute(UiImageInterface::ImageType::StretchedToFill, "Stretched To Fill")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_imageType, QT_TRANSLATE_NOOP("LyShine", "ImageType"), QT_TRANSLATE_NOOP("LyShine", "The image type. Affects how the texture/sprite is mapped to the image rectangle."))
+                ->EnumAttribute(UiImageInterface::ImageType::Stretched, QT_TRANSLATE_NOOP("LyShine", "Stretched"))
+                ->EnumAttribute(UiImageInterface::ImageType::Sliced, QT_TRANSLATE_NOOP("LyShine", "Sliced"))
+                ->EnumAttribute(UiImageInterface::ImageType::Fixed, QT_TRANSLATE_NOOP("LyShine", "Fixed"))
+                ->EnumAttribute(UiImageInterface::ImageType::Tiled, QT_TRANSLATE_NOOP("LyShine", "Tiled"))
+                ->EnumAttribute(UiImageInterface::ImageType::StretchedToFit, QT_TRANSLATE_NOOP("LyShine", "Stretched To Fit"))
+                ->EnumAttribute(UiImageInterface::ImageType::StretchedToFill, QT_TRANSLATE_NOOP("LyShine", "Stretched To Fill"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorImageTypeChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillCenter, "Fill Center", "Sliced image center is filled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillCenter, QT_TRANSLATE_NOOP("LyShine", "Fill Center"), QT_TRANSLATE_NOOP("LyShine", "Sliced image center is filled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSliced)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isSlicingStretched, "Stretch Center/Edges",
-                "If true, sliced image center and edges are stretched. If false, they act as fixed in the same way as the corners and the pivot controls how they are anchored.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isSlicingStretched, QT_TRANSLATE_NOOP("LyShine", "Stretch Center/Edges"),
+                QT_TRANSLATE_NOOP("LyShine", "If true, sliced image center and edges are stretched. If false, they act as fixed in the same way as the corners and the pivot controls how they are anchored."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSliced)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_blendMode, "BlendMode", "The blend mode used to draw the image")
-                ->EnumAttribute(LyShine::BlendMode::Normal, "Normal")
-                ->EnumAttribute(LyShine::BlendMode::Add, "Add")
-                ->EnumAttribute(LyShine::BlendMode::Screen, "Screen")
-                ->EnumAttribute(LyShine::BlendMode::Darken, "Darken")
-                ->EnumAttribute(LyShine::BlendMode::Lighten, "Lighten")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_blendMode, QT_TRANSLATE_NOOP("LyShine", "BlendMode"), QT_TRANSLATE_NOOP("LyShine", "The blend mode used to draw the image"))
+                ->EnumAttribute(LyShine::BlendMode::Normal, QT_TRANSLATE_NOOP("LyShine", "Normal"))
+                ->EnumAttribute(LyShine::BlendMode::Add, QT_TRANSLATE_NOOP("LyShine", "Add"))
+                ->EnumAttribute(LyShine::BlendMode::Screen, QT_TRANSLATE_NOOP("LyShine", "Screen"))
+                ->EnumAttribute(LyShine::BlendMode::Darken, QT_TRANSLATE_NOOP("LyShine", "Darken"))
+                ->EnumAttribute(LyShine::BlendMode::Lighten, QT_TRANSLATE_NOOP("LyShine", "Lighten"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillType, "Fill Type", "The fill style used to draw the image.")
-                ->EnumAttribute(UiImageComponent::FillType::None, "None")
-                ->EnumAttribute(UiImageComponent::FillType::Linear, "Linear")
-                ->EnumAttribute(UiImageComponent::FillType::Radial, "Radial")
-                ->EnumAttribute(UiImageComponent::FillType::RadialCorner, "RadialCorner")
-                ->EnumAttribute(UiImageComponent::FillType::RadialEdge, "RadialEdge")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillType, QT_TRANSLATE_NOOP("LyShine", "Fill Type"), QT_TRANSLATE_NOOP("LyShine", "The fill style used to draw the image."))
+                ->EnumAttribute(UiImageComponent::FillType::None, QT_TRANSLATE_NOOP("LyShine", "None"))
+                ->EnumAttribute(UiImageComponent::FillType::Linear, QT_TRANSLATE_NOOP("LyShine", "Linear"))
+                ->EnumAttribute(UiImageComponent::FillType::Radial, QT_TRANSLATE_NOOP("LyShine", "Radial"))
+                ->EnumAttribute(UiImageComponent::FillType::RadialCorner, QT_TRANSLATE_NOOP("LyShine", "RadialCorner"))
+                ->EnumAttribute(UiImageComponent::FillType::RadialEdge, QT_TRANSLATE_NOOP("LyShine", "RadialEdge"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillAmount, "Fill Amount", "The amount of the image to be filled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillAmount, QT_TRANSLATE_NOOP("LyShine", "Fill Amount"), QT_TRANSLATE_NOOP("LyShine", "The amount of the image to be filled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsFilled)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillStartAngle, "Fill Start Angle", "The start angle for the fill in degrees measured clockwise from straight up.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiImageComponent::m_fillStartAngle, QT_TRANSLATE_NOOP("LyShine", "Fill Start Angle"), QT_TRANSLATE_NOOP("LyShine", "The start angle for the fill in degrees measured clockwise from straight up."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsRadialFilled)
                 ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
-                ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
+                ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("LyShine", " degrees"))
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 360.0f)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillCornerOrigin, "Corner Fill Origin", "The corner from which the image is filled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillCornerOrigin, QT_TRANSLATE_NOOP("LyShine", "Corner Fill Origin"), QT_TRANSLATE_NOOP("LyShine", "The corner from which the image is filled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsCornerFilled)
-                ->EnumAttribute(UiImageComponent::FillCornerOrigin::TopLeft, "TopLeft")
-                ->EnumAttribute(UiImageComponent::FillCornerOrigin::TopRight, "TopRight")
-                ->EnumAttribute(UiImageComponent::FillCornerOrigin::BottomRight, "BottomRight")
-                ->EnumAttribute(UiImageComponent::FillCornerOrigin::BottomLeft, "BottomLeft")
+                ->EnumAttribute(UiImageComponent::FillCornerOrigin::TopLeft, QT_TRANSLATE_NOOP("LyShine", "TopLeft"))
+                ->EnumAttribute(UiImageComponent::FillCornerOrigin::TopRight, QT_TRANSLATE_NOOP("LyShine", "TopRight"))
+                ->EnumAttribute(UiImageComponent::FillCornerOrigin::BottomRight, QT_TRANSLATE_NOOP("LyShine", "BottomRight"))
+                ->EnumAttribute(UiImageComponent::FillCornerOrigin::BottomLeft, QT_TRANSLATE_NOOP("LyShine", "BottomLeft"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillEdgeOrigin, "Edge Fill Origin", "The edge from which the image is filled.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiImageComponent::m_fillEdgeOrigin, QT_TRANSLATE_NOOP("LyShine", "Edge Fill Origin"), QT_TRANSLATE_NOOP("LyShine", "The edge from which the image is filled."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsEdgeFilled)
-                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Left, "Left")
-                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Top, "Top")
-                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Right, "Right")
-                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Bottom, "Bottom")
+                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Left, QT_TRANSLATE_NOOP("LyShine", "Left"))
+                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Top, QT_TRANSLATE_NOOP("LyShine", "Top"))
+                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Right, QT_TRANSLATE_NOOP("LyShine", "Right"))
+                ->EnumAttribute(UiImageComponent::FillEdgeOrigin::Bottom, QT_TRANSLATE_NOOP("LyShine", "Bottom"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillClockwise, "Fill Clockwise", "Image is filled clockwise about the origin.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_fillClockwise, QT_TRANSLATE_NOOP("LyShine", "Fill Clockwise"), QT_TRANSLATE_NOOP("LyShine", "Image is filled clockwise about the origin."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsRadialAnyFilled)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
         }

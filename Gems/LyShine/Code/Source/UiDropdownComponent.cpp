@@ -20,6 +20,8 @@
 #include <LyShine/UiSerializeHelpers.h>
 #include "UiNavigationHelpers.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiDropdownNotificationBusBehaviorHandler  Behavior context handler class
 class UiDropdownNotificationBusBehaviorHandler
@@ -510,7 +512,7 @@ void UiDropdownComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiDropdownComponent>("Dropdown", "An interactable component for Dropdown behavior.");
+            auto editInfo = ec->Class<UiDropdownComponent>(QT_TRANSLATE_NOOP("LyShine", "Dropdown"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for Dropdown behavior."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -521,55 +523,55 @@ void UiDropdownComponent::Reflect(AZ::ReflectContext* context)
 
             // Elements group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Elements")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Elements"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownComponent::m_content, "Content", "The element that contains the dropdown list.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownComponent::m_content, QT_TRANSLATE_NOOP("LyShine", "Content"), QT_TRANSLATE_NOOP("LyShine", "The element that contains the dropdown list."))
                     ->Attribute(AZ::Edit::Attributes::ChangeValidate, &UiDropdownComponent::ValidatePotentialContent)
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiDropdownComponent::PopulateChildEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::EntityId, &UiDropdownComponent::m_expandedParentId, "Expanded Parent", "The element the dropdown content should parent to when expanded (the canvas by default)."
-                    "This is used for layering, to display the dropdown content over other elements in the canvas that might be after it in the hierarchy.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::EntityId, &UiDropdownComponent::m_expandedParentId, QT_TRANSLATE_NOOP("LyShine", "Expanded Parent"), QT_TRANSLATE_NOOP("LyShine", "The element the dropdown content should parent to when expanded (the canvas by default)."
+                    "This is used for layering, to display the dropdown content over other elements in the canvas that might be after it in the hierarchy."))
                     ->Attribute(AZ::Edit::Attributes::ChangeValidate, &UiDropdownComponent::ValidatePotentialExpandedParent);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownComponent::m_textElement, "Text Element", "The text element to use to display which option is selected.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownComponent::m_textElement, QT_TRANSLATE_NOOP("LyShine", "Text Element"), QT_TRANSLATE_NOOP("LyShine", "The text element to use to display which option is selected."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiDropdownComponent::PopulateChildEntityList);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownComponent::m_iconElement, "Icon Element", "The icon element to use to display which option is selected.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiDropdownComponent::m_iconElement, QT_TRANSLATE_NOOP("LyShine", "Icon Element"), QT_TRANSLATE_NOOP("LyShine", "The icon element to use to display which option is selected."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiDropdownComponent::PopulateChildEntityList);
             }
 
             // Options group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Options")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Options"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiDropdownComponent::m_expandOnHover, "Expand on Hover", "Whether this dropdown should be expanded upon hover, and collapse upon exit.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiDropdownComponent::m_expandOnHover, QT_TRANSLATE_NOOP("LyShine", "Expand on Hover"), QT_TRANSLATE_NOOP("LyShine", "Whether this dropdown should be expanded upon hover, and collapse upon exit."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
 
-                editInfo->DataElement(0, &UiDropdownComponent::m_waitTime, "Wait Time", "How long the dropdown should wait before expanding on hover or collapsing on exit.")
+                editInfo->DataElement(0, &UiDropdownComponent::m_waitTime, QT_TRANSLATE_NOOP("LyShine", "Wait Time"), QT_TRANSLATE_NOOP("LyShine", "How long the dropdown should wait before expanding on hover or collapsing on exit."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiDropdownComponent::GetExpandOnHover);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiDropdownComponent::m_collapseOnOutsideClick, "Collapse on Outside Click", "Whether this dropdown should be collapsed upon clicking outside the menu.");
+                editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiDropdownComponent::m_collapseOnOutsideClick, QT_TRANSLATE_NOOP("LyShine", "Collapse on Outside Click"), QT_TRANSLATE_NOOP("LyShine", "Whether this dropdown should be collapsed upon clicking outside the menu."));
             }
 
             // Dropdown States group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Dropdown States")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Dropdown States"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiDropdownComponent::m_expandedStateActions, "Expanded", "The expanded state actions.")
+                editInfo->DataElement(0, &UiDropdownComponent::m_expandedStateActions, QT_TRANSLATE_NOOP("LyShine", "Expanded"), QT_TRANSLATE_NOOP("LyShine", "The expanded state actions."))
                     ->Attribute(AZ::Edit::Attributes::AddNotify, &UiDropdownComponent::OnExpandedStateActionsChanged);
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiDropdownComponent::m_expandedActionName, "Expanded", "The action triggered when the dropdown is expanded.");
-                editInfo->DataElement(0, &UiDropdownComponent::m_collapsedActionName, "Collapsed", "The action triggered when the dropdown is collapsed.");
-                editInfo->DataElement(0, &UiDropdownComponent::m_optionSelectedActionName, "Option Selected", "The action triggered when an option is selected.");
+                editInfo->DataElement(0, &UiDropdownComponent::m_expandedActionName, QT_TRANSLATE_NOOP("LyShine", "Expanded"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the dropdown is expanded."));
+                editInfo->DataElement(0, &UiDropdownComponent::m_collapsedActionName, QT_TRANSLATE_NOOP("LyShine", "Collapsed"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the dropdown is collapsed."));
+                editInfo->DataElement(0, &UiDropdownComponent::m_optionSelectedActionName, QT_TRANSLATE_NOOP("LyShine", "Option Selected"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when an option is selected."));
             }
         }
     }

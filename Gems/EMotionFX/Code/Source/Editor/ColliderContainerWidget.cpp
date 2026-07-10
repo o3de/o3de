@@ -349,12 +349,12 @@ namespace EMotionFX
         QMenu* contextMenu = new QMenu(this);
         contextMenu->setObjectName("EMFX.ColliderContainerWidget.ContextMenu");
 
-        QAction* copyAction = contextMenu->addAction("Copy collider");
+        QAction* copyAction = contextMenu->addAction(tr("Copy collider"));
         copyAction->setObjectName("EMFX.ColliderContainerWidget.CopyColliderAction");
         copyAction->setProperty("colliderIndex", QVariant::fromValue(colliderIndex));
         connect(copyAction, &QAction::triggered, this, &ColliderWidget::OnCopyCollider);
 
-        QAction* pasteAction = contextMenu->addAction("Paste collider");
+        QAction* pasteAction = contextMenu->addAction(tr("Paste collider"));
         pasteAction->setObjectName("EMFX.ColliderContainerWidget.PasteColliderAction");
         pasteAction->setProperty("colliderIndex", QVariant::fromValue(colliderIndex));
         connect(pasteAction, &QAction::triggered, this, &ColliderWidget::OnPasteCollider);
@@ -364,7 +364,7 @@ namespace EMotionFX
         const QByteArray clipboardContents = mimeData->data(ColliderHelpers::GetMimeTypeForColliderShape());
         pasteAction->setEnabled(!clipboardContents.isEmpty());
 
-        QAction* deleteAction = contextMenu->addAction("Delete collider");
+        QAction* deleteAction = contextMenu->addAction(tr("Delete collider"));
         deleteAction->setObjectName("EMFX.ColliderContainerWidget.DeleteColliderAction");
         deleteAction->setProperty("colliderIndex", QVariant::fromValue(colliderIndex));
         connect(deleteAction, &QAction::triggered, this, &ColliderWidget::OnRemoveCollider);
@@ -446,7 +446,7 @@ namespace EMotionFX
                     continue;
                 }
                 const char* visualName = PhysicsSetup::GetVisualNameForColliderConfigType(copyFromType);
-                QAction* copyColliderAction = contextMenu->addAction(QString("Copy from %1").arg(visualName));
+                QAction* copyColliderAction = contextMenu->addAction(tr("Copy from %1").arg(visualName));
                 copyColliderAction->setProperty("copyFromType", i);
 
                 const bool canCopyFrom = ColliderHelpers::CanCopyFrom(skeletonModel->GetSelectionModel().selectedIndexes(), copyFromType);

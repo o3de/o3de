@@ -8,6 +8,7 @@
 
 #include "EditorStarsComponent.h"
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <StarsFeatureProcessor.h>
 
@@ -24,39 +25,51 @@ namespace AZ::Render
                 ;
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<StarsComponentConfig>("Stars Config", "Star Config Data")
+                editContext->Class<StarsComponentConfig>(
+                    QT_TRANSLATE_NOOP("AZ::Render", "Stars Config"),
+                    QT_TRANSLATE_NOOP("AZ::Render", "Star Config Data"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Game") }))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_exposure, "Exposure", "Exposure")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_exposure,
+                        QT_TRANSLATE_NOOP("AZ::Render", "Exposure"),
+                        QT_TRANSLATE_NOOP("AZ::Render", "Exposure"))
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 32.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_radiusFactor, "Radius factor", "Star radius factor")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_radiusFactor,
+                        QT_TRANSLATE_NOOP("AZ::Render", "Radius factor"),
+                        QT_TRANSLATE_NOOP("AZ::Render", "Star radius factor"))
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 64.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_twinkleRate, "Twinkle rate", "How quickly the stars twinkle")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &StarsComponentConfig::m_twinkleRate,
+                        QT_TRANSLATE_NOOP("AZ::Render", "Twinkle rate"),
+                        QT_TRANSLATE_NOOP("AZ::Render", "How quickly the stars twinkle"))
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 3.0f)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentConfig::m_starsAsset, "Stars Asset", "Stars asset")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentConfig::m_starsAsset,
+                        QT_TRANSLATE_NOOP("AZ::Render", "Stars Asset"),
+                        QT_TRANSLATE_NOOP("AZ::Render", "Stars asset"))
                     ;
 
                 editContext->Class<StarsComponentController>(
                     "StarsComponentController", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentController::m_configuration, "Configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &StarsComponentController::m_configuration,
+                        QT_TRANSLATE_NOOP("AZ::Render", "Configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
 
                 editContext->Class<EditorStarsComponent>(
-                    "Stars", "Renders stars in the background")
+                    QT_TRANSLATE_NOOP("AZ::Render", "Stars"),
+                    QT_TRANSLATE_NOOP("AZ::Render", "Renders stars in the background"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Environment")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")

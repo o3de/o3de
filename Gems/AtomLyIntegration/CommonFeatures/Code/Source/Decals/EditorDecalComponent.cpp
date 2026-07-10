@@ -11,6 +11,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzCore/Math/IntersectSegment.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AZ
 {
     namespace Render
@@ -32,7 +34,8 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDecalComponent>(
-                        "Decal", "The Decal component allows an entity to project a texture or material onto a mesh")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Decal"),
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "The Decal component allows an entity to project a texture or material onto a mesh"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Decal.svg")
@@ -46,7 +49,8 @@ namespace AZ
                         "DecalComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentController::m_configuration,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
 
@@ -54,27 +58,41 @@ namespace AZ
                         "DecalComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_attenuationAngle, "Attenuation Angle", "Controls how much the angle between geometry and the decal affects decal opacity.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_attenuationAngle,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Attenuation Angle"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls how much the angle between geometry and the decal affects decal opacity."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_opacity, "Opacity", "The opacity of the decal.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_opacity,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Opacity"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The opacity of the decal."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_normalMapOpacity, "Normal Map Opacity", "The opacity of the decal's normal map.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_normalMapOpacity,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Normal Map Opacity"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The opacity of the decal's normal map."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_sortKey, "Sort Key", "Decals with a larger sort key appear over top of smaller sort keys.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_sortKey,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Sort Key"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Decals with a larger sort key appear over top of smaller sort keys."))
                         ->Attribute(AZ::Edit::Attributes::Min, std::numeric_limits<uint8_t>::min())
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<uint8_t>::max())
 
-                        ->DataElement(AZ::Edit::UIHandlers::Color, &DecalComponentConfig::m_decalColor, "Decal Color", "Decal Color can be applied as a multiplier")
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_decalColorFactor, "Decal Color Factor", "The factor associated with decal color which also acts as a multiplier. ")
+                        ->DataElement(AZ::Edit::UIHandlers::Color, &DecalComponentConfig::m_decalColor,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Decal Color"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Decal Color can be applied as a multiplier"))
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &DecalComponentConfig::m_decalColorFactor,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Decal Color Factor"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The factor associated with decal color which also acts as a multiplier. "))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 5.f)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentConfig::m_materialAsset, "Material", "The material of the decal.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DecalComponentConfig::m_materialAsset,
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Material"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The material of the decal."))
                         ;
                 }
             }

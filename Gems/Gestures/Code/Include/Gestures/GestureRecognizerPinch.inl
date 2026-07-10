@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,12 +25,18 @@ inline void Gestures::RecognizerPinch::Config::Reflect(AZ::ReflectContext* conte
 
         if (AZ::EditContext* ec = serialize->GetEditContext())
         {
-            ec->Class<Config>("Pinch Config", "Configuration values used to setup a gesture recognizer for pinches.")
+            ec->Class<Config>(
+                QT_TRANSLATE_NOOP("Gestures", "Pinch Config"),
+                QT_TRANSLATE_NOOP("Gestures", "Configuration values used to setup a gesture recognizer for pinches."))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minPixelsMoved, "Min Pixels Moved", "The min distance in pixels that must be pinched before a pinch will be recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::minPixelsMoved,
+                    QT_TRANSLATE_NOOP("Gestures", "Min Pixels Moved"),
+                    QT_TRANSLATE_NOOP("Gestures", "The min distance in pixels that must be pinched before a pinch will be recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxAngleDegrees, "Max Angle Degrees", "The max angle in degrees that a pinch can deviate before it will be recognized.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &Config::maxAngleDegrees,
+                    QT_TRANSLATE_NOOP("Gestures", "Max Angle Degrees"),
+                    QT_TRANSLATE_NOOP("Gestures", "The max angle in degrees that a pinch can deviate before it will be recognized."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
             ;
         }

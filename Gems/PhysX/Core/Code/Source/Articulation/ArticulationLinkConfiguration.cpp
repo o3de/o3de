@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace PhysX
 {
@@ -34,32 +35,32 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<ArticulationSensorConfiguration>("PhysX Articulation Sensor Configuration", "")
+                editContext->Class<ArticulationSensorConfiguration>(QT_TRANSLATE_NOOP("PhysX", "PhysX Articulation Sensor Configuration"), "")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationSensorConfiguration::m_localPosition,
-                        "Local Position",
-                        "The local position of the sensor relative to the articulation link")
+                        QT_TRANSLATE_NOOP("PhysX", "Local Position"),
+                        QT_TRANSLATE_NOOP("PhysX", "The local position of the sensor relative to the articulation link"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationSensorConfiguration::m_localRotation,
-                        "Local Rotation",
-                        "The local rotation of the sensor relative to the articulation link")
+                        QT_TRANSLATE_NOOP("PhysX", "Local Rotation"),
+                        QT_TRANSLATE_NOOP("PhysX", "The local rotation of the sensor relative to the articulation link"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationSensorConfiguration::m_includeForwardDynamicsForces,
-                        "Include Forward Dynamics Forces",
-                        "Whether the output reported by the sensor should include forward dynamics forces")
+                        QT_TRANSLATE_NOOP("PhysX", "Include Forward Dynamics Forces"),
+                        QT_TRANSLATE_NOOP("PhysX", "Whether the output reported by the sensor should include forward dynamics forces"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationSensorConfiguration::m_includeConstraintSolverForces,
-                        "Include Constraint Solver Forces",
-                        "Whether the output reported by the sensor should include constraint solver forces")
+                        QT_TRANSLATE_NOOP("PhysX", "Include Constraint Solver Forces"),
+                        QT_TRANSLATE_NOOP("PhysX", "Whether the output reported by the sensor should include constraint solver forces"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationSensorConfiguration::m_useWorldFrame,
-                        "Use World Frame",
-                        "If true, the output will be reported in world space, otherwise in the local space of the sensor");
+                        QT_TRANSLATE_NOOP("PhysX", "Use World Frame"),
+                        QT_TRANSLATE_NOOP("PhysX", "If true, the output will be reported in world space, otherwise in the local space of the sensor"));
             }
         }
     }
@@ -78,14 +79,14 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<PhysX::ArticulationJointMotorProperties>("PhysX Joint Motor Configuration", "")
+                editContext->Class<PhysX::ArticulationJointMotorProperties>(QT_TRANSLATE_NOOP("PhysX", "PhysX Joint Motor Configuration"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_useMotor, "Use Motor", "Enable motor in the joint.")
-                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveForceLimit, "Force Limit Value", "Sets force limit value.")
-                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveStiffness, "Stiffness Value", "Stiffness of motor servo.")
-                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveDamping, "Damping Value", "Damping of motor servo.");
+                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_useMotor, QT_TRANSLATE_NOOP("PhysX", "Use Motor"), QT_TRANSLATE_NOOP("PhysX", "Enable motor in the joint."))
+                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveForceLimit, QT_TRANSLATE_NOOP("PhysX", "Force Limit Value"), QT_TRANSLATE_NOOP("PhysX", "Sets force limit value."))
+                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveStiffness, QT_TRANSLATE_NOOP("PhysX", "Stiffness Value"), QT_TRANSLATE_NOOP("PhysX", "Stiffness of motor servo."))
+                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveDamping, QT_TRANSLATE_NOOP("PhysX", "Damping Value"), QT_TRANSLATE_NOOP("PhysX", "Damping of motor servo."));
             }
         }
     }

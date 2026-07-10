@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<EditorPostFxSystemComponent>("Editor PostFx System", "Manages discovery of PostFx layer categories asset")
+                    ec->Class<EditorPostFxSystemComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "Editor PostFx System"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Manages discovery of PostFx layer categories asset"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

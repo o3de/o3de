@@ -1300,7 +1300,7 @@ namespace GraphCanvas
             BookmarkRequestBus::EventResult(bookmarkName, existingBookmark, &BookmarkRequests::GetBookmarkName);
 
             QMessageBox::StandardButton response = QMessageBox::StandardButton::No;
-            response = QMessageBox::question(this, QString("Bookmarking Conflict"), QString("Bookmark (%1) already registered with shortcut (%2).\nProceed with action and remove previous bookmark?").arg(bookmarkName.c_str()).arg(bookmarkShortcut), QMessageBox::StandardButton::Yes|QMessageBox::No);
+            response = QMessageBox::question(this, tr("Bookmarking Conflict"), tr("Bookmark (%1) already registered with shortcut (%2).\nProceed with action and remove previous bookmark?").arg(bookmarkName.c_str()).arg(bookmarkShortcut), QMessageBox::StandardButton::Yes|QMessageBox::No);
 
             if (response == QMessageBox::StandardButton::No)
             {

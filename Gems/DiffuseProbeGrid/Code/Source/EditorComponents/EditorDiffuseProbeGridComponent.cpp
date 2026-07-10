@@ -57,7 +57,8 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorDiffuseProbeGridComponent>(
-                        "Diffuse Probe Grid", "The DiffuseProbeGrid component generates a grid of diffuse light probes for global illumination")
+                        QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Diffuse Probe Grid"),
+                        QT_TRANSLATE_NOOP("DiffuseProbeGrid", "The DiffuseProbeGrid component generates a grid of diffuse light probes for global illumination"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -66,98 +67,144 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/diffuse-probe-grid/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Probe Spacing")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Probe Spacing"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingX, "X-Axis", "Meters between probes on the X-axis")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingX,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "X-Axis"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Meters between probes on the X-axis"))
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
-                                ->Attribute(AZ::Edit::Attributes::Suffix, " meters")
+                                ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("DiffuseProbeGrid", " meters"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnProbeSpacingValidateX)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnProbeSpacingChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingY, "Y-Axis", "Meters between probes on the Y-axis")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingY,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Y-Axis"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Meters between probes on the Y-axis"))
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
-                                ->Attribute(AZ::Edit::Attributes::Suffix, " meters")
+                                ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("DiffuseProbeGrid", " meters"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnProbeSpacingValidateY)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnProbeSpacingChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingZ, "Z-Axis", "Meters between probes on the Z-axis")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiffuseProbeGridComponent::m_probeSpacingZ,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Z-Axis"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Meters between probes on the Z-axis"))
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
-                                ->Attribute(AZ::Edit::Attributes::Suffix, " meters")
+                                ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("DiffuseProbeGrid", " meters"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnProbeSpacingValidateZ)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnProbeSpacingChanged)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Grid Settings")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Grid Settings"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_ambientMultiplier, "Ambient Multiplier", "Multiplier for the irradiance intensity")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_ambientMultiplier,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Ambient Multiplier"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Multiplier for the irradiance intensity"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnAmbientMultiplierChanged)
                                 ->Attribute(Edit::Attributes::Decimals, 1)
                                 ->Attribute(Edit::Attributes::Step, 0.1f)
                                 ->Attribute(Edit::Attributes::Min, 0.0f)
                                 ->Attribute(Edit::Attributes::Max, 10.0f)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_viewBias, "View Bias", "View bias adjustment")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_viewBias,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "View Bias"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "View bias adjustment"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnViewBiasChanged)
                                 ->Attribute(Edit::Attributes::Decimals, 2)
                                 ->Attribute(Edit::Attributes::Step, 0.1f)
                                 ->Attribute(Edit::Attributes::Min, 0.0f)
                                 ->Attribute(Edit::Attributes::Max, 1.0f)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_normalBias, "Normal Bias", "Normal bias adjustment")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_normalBias,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Normal Bias"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Normal bias adjustment"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnNormalBiasChanged)
                                 ->Attribute(Edit::Attributes::Decimals, 2)
                                 ->Attribute(Edit::Attributes::Step, 0.1f)
                                 ->Attribute(Edit::Attributes::Min, 0.0f)
                                 ->Attribute(Edit::Attributes::Max, 1.0f)
-                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_numRaysPerProbe, "Number of Rays Per Probe", "Number of rays cast by each probe to detect lighting in its surroundings")
+                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_numRaysPerProbe,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Number of Rays Per Probe"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Number of rays cast by each probe to detect lighting in its surroundings"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnNumRaysPerProbeChanged)
                                 ->Attribute(AZ::Edit::Attributes::EnumValues, &EditorDiffuseProbeGridComponent::GetNumRaysPerProbeEnumList)
-                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_scrolling, "Scrolling", "Scrolling causes the grid to move probes on the edges of the volume when it is translated, instead of moving all of the probes.  Use scrolling when the DiffuseProbeGrid is attached to a camera or moving entity.")
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_scrolling,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Scrolling"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Scrolling causes the grid to move probes on the edges of the volume when it is translated, instead of moving all of the probes.  Use scrolling when the DiffuseProbeGrid is attached to a camera or moving entity."))
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnScrollingChangeValidate)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnScrollingChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_edgeBlendIbl, "Edge Blend IBL", "Blend the edges of the DiffuseProbeGrid with the Diffuse IBL cubemap.")
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_edgeBlendIbl,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Edge Blend IBL"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Blend the edges of the DiffuseProbeGrid with the Diffuse IBL cubemap."))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnEdgeBlendIblChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &EditorDiffuseProbeGridComponent::m_frameUpdateCount, "Number of Update Frames", "The number of frames to update the complete DiffuseProbeGrid, by updating a subset of the probes each frame.  This will improve the performance of the Real-Time DiffuseProbeGrid update.")
+                            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &EditorDiffuseProbeGridComponent::m_frameUpdateCount,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Number of Update Frames"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "The number of frames to update the complete DiffuseProbeGrid, by updating a subset of the probes each frame.  This will improve the performance of the Real-Time DiffuseProbeGrid update."))
                                 ->Attribute(Edit::Attributes::Min, 1)
                                 ->Attribute(Edit::Attributes::Max, 10)
                                 ->Attribute(AZ::Edit::Attributes::SoftMin, 1)
                                 ->Attribute(AZ::Edit::Attributes::SoftMax, 10)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnFrameUpdateCountChanged)
-                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_transparencyMode, "Transparency Mode", "Controls how the DiffuseProbeGrid handles transparent geometry in the Real-Time update, and is a performance/quality tradeoff.  'Full' processes all transparencies found along the probe rays.  'Closest Only' processes only the closest transparency to the probe.  'None' disables transparency handling and treats all geometry as Opaque.")
-                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::Full, "Full")
-                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::ClosestOnly, "Closest Only")
-                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::None, "None")
+                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_transparencyMode,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Transparency Mode"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Controls how the DiffuseProbeGrid handles transparent geometry in the Real-Time update, and is a performance/quality tradeoff.  'Full' processes all transparencies found along the probe rays.  'Closest Only' processes only the closest transparency to the probe.  'None' disables transparency handling and treats all geometry as Opaque."))
+                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::Full,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Full"))
+                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::ClosestOnly,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Closest Only"))
+                                ->EnumAttribute(DiffuseProbeGridTransparencyMode::None,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "None"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnTransparencyModeChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_emissiveMultiplier, "Emissive Multiplier", "Multiplier for the emissive intensity")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_emissiveMultiplier,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Emissive Multiplier"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Multiplier for the emissive intensity"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnEmissiveMultiplierChanged)
                                 ->Attribute(Edit::Attributes::Decimals, 1)
                                 ->Attribute(Edit::Attributes::Step, 0.1f)
                                 ->Attribute(Edit::Attributes::Min, 0.0f)
                                 ->Attribute(Edit::Attributes::Max, 10.0f)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Visualization")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Visualization"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showVisualization, "Show Visualization", "Show the probe grid visualization")
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showVisualization,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Show Visualization"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Show the probe grid visualization"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnShowVisualizationChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showInactiveProbes, "Show Inactive Probes", "Show inactive probes in the probe grid visualization")
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showInactiveProbes,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Show Inactive Probes"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Show inactive probes in the probe grid visualization"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnShowInactiveProbesChanged)
-                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_visualizationSphereRadius, "Visualization Sphere Radius", "Radius of the spheres in the probe grid visualization")
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_visualizationSphereRadius,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Visualization Sphere Radius"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Radius of the spheres in the probe grid visualization"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnVisualizationSphereRadiusChanged)
                                 ->Attribute(Edit::Attributes::Decimals, 2)
                                 ->Attribute(Edit::Attributes::Step, 0.25f)
                                 ->Attribute(Edit::Attributes::Min, 0.25f)
                                 ->Attribute(Edit::Attributes::Max, 2.0f)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Grid mode")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Grid mode"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_editorMode, "Editor Mode", "Controls whether the editor uses RealTime or Baked diffuse GI. RealTime requires a ray-tracing capable GPU. Auto-Select will fallback to Baked if ray-tracing is not available")
+                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_editorMode,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Editor Mode"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Controls whether the editor uses RealTime or Baked diffuse GI. RealTime requires a ray-tracing capable GPU. Auto-Select will fallback to Baked if ray-tracing is not available"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnModeChangeValidate)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnEditorModeChanged)
-                                ->EnumAttribute(DiffuseProbeGridMode::RealTime, "Real Time (Ray-Traced)")
-                                ->EnumAttribute(DiffuseProbeGridMode::Baked, "Baked")
-                                ->EnumAttribute(DiffuseProbeGridMode::AutoSelect, "Auto Select")
-                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_runtimeMode, "Runtime Mode", "Controls whether the runtime uses RealTime or Baked diffuse GI. RealTime requires a ray-tracing capable GPU. Auto-Select will fallback to Baked if ray-tracing is not available")
+                                ->EnumAttribute(DiffuseProbeGridMode::RealTime,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Real Time (Ray-Traced)"))
+                                ->EnumAttribute(DiffuseProbeGridMode::Baked,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Baked"))
+                                ->EnumAttribute(DiffuseProbeGridMode::AutoSelect,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Auto Select"))
+                            ->DataElement(Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_runtimeMode,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Runtime Mode"),
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Controls whether the runtime uses RealTime or Baked diffuse GI. RealTime requires a ray-tracing capable GPU. Auto-Select will fallback to Baked if ray-tracing is not available"))
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnModeChangeValidate)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnRuntimeModeChanged)
-                                ->EnumAttribute(DiffuseProbeGridMode::RealTime, "Real Time (Ray-Traced)")
-                                ->EnumAttribute(DiffuseProbeGridMode::Baked, "Baked")
-                                ->EnumAttribute(DiffuseProbeGridMode::AutoSelect, "Auto Select")
+                                ->EnumAttribute(DiffuseProbeGridMode::RealTime,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Real Time (Ray-Traced)"))
+                                ->EnumAttribute(DiffuseProbeGridMode::Baked,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Baked"))
+                                ->EnumAttribute(DiffuseProbeGridMode::AutoSelect,
+                                    QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Auto Select"))
                         ->EndGroup()
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
+                        ->UIElement(AZ::Edit::UIHandlers::Button,
+                            QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Bake Textures"),
+                            QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked"))
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText,
+                                QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Bake Textures"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
                         ;
@@ -166,7 +213,8 @@ namespace AZ
                         "DiffuseProbeGridComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DiffuseProbeGridComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DiffuseProbeGridComponentController::m_configuration,
+                            QT_TRANSLATE_NOOP("DiffuseProbeGrid", "Configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
                 }

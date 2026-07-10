@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AtomToolsFramework
 {
@@ -27,13 +28,13 @@ namespace AtomToolsFramework
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DynamicPropertyGroup>("DynamicPropertyGroup", "")
+                editContext->Class<DynamicPropertyGroup>(QT_TRANSLATE_NOOP("AtomToolsFramework", "DynamicPropertyGroup"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // hides the DynamicPropertyGroup row
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicPropertyGroup::m_properties, "properties", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicPropertyGroup::m_properties, QT_TRANSLATE_NOOP("AtomToolsFramework", "properties"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // hides the m_properties row
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false) // probably not necessary since Visibility is children-only
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicPropertyGroup::m_groups, "groups", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicPropertyGroup::m_groups, QT_TRANSLATE_NOOP("AtomToolsFramework", "groups"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly) // hides the m_groups row
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false) // probably not necessary since Visibility is children-only
                     ;

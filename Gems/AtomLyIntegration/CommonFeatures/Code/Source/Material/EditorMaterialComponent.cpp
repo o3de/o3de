@@ -14,6 +14,7 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
@@ -35,8 +36,8 @@ namespace AZ
 {
     namespace Render
     {
-        const char* EditorMaterialComponent::GenerateMaterialsButtonText = "Generate/Manage Source Materials...";
-        const char* EditorMaterialComponent::GenerateMaterialsToolTipText = "Generate editable source material files from materials provided by the model.";
+        const char* EditorMaterialComponent::GenerateMaterialsButtonText = QT_TRANSLATE_NOOP("AtomLyIntegration", "Generate/Manage Source Materials...");
+        const char* EditorMaterialComponent::GenerateMaterialsToolTipText = QT_TRANSLATE_NOOP("AtomLyIntegration", "Generate editable source material files from materials provided by the model.");
 
         // Update serialized data to the new format and data types
         bool EditorMaterialComponent::ConvertVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
@@ -88,7 +89,7 @@ namespace AZ
                 if (auto editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorMaterialComponent>(
-                        "Material", "The material component specifies the material to use for this entity")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Material"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The material component specifies the material to use for this entity"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -101,16 +102,16 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, GenerateMaterialsButtonText)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponent::OpenMaterialExporterFromRPE)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_defaultMaterialSlot, "Default Material", "Materials assigned to this slot will be applied to the entire model unless specific model or LOD materials are set.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_defaultMaterialSlot, QT_TRANSLATE_NOOP("AtomLyIntegration", "Default Material"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Materials assigned to this slot will be applied to the entire model unless specific model or LOD materials are set."))
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponent::OnConfigurationChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_materialSlots, "Model Materials", "Materials assigned to these slots will be applied to every part of the model with same material slot name unless an overriding LOD material is specified.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_materialSlots, QT_TRANSLATE_NOOP("AtomLyIntegration", "Model Materials"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Materials assigned to these slots will be applied to every part of the model with same material slot name unless an overriding LOD material is specified."))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponent::OnConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_materialSlotsByLodEnabled, "Enable LOD Materials", "When this flag is enabled, materials can be specified per LOD.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_materialSlotsByLodEnabled, QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable LOD Materials"), QT_TRANSLATE_NOOP("AtomLyIntegration", "When this flag is enabled, materials can be specified per LOD."))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponent::OnLodsToggled)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_materialSlotsByLod, "LOD Materials", "Materials assigned to these slots will take precedence over all other materials settings.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMaterialComponent::m_materialSlotsByLod, QT_TRANSLATE_NOOP("AtomLyIntegration", "LOD Materials"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Materials assigned to these slots will take precedence over all other materials settings."))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMaterialComponent::OnConfigurationChanged)
                             ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &EditorMaterialComponent::GetLabelForLod)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMaterialComponent::GetLodVisibility)
@@ -125,7 +126,7 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialComponentConfig::m_materials, "Materials", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialComponentConfig::m_materials, QT_TRANSLATE_NOOP("AtomLyIntegration", "Materials"), "")
                         ;
                 }
             }

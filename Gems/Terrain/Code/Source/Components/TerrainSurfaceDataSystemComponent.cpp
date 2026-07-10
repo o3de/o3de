@@ -12,6 +12,7 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
@@ -33,7 +34,8 @@ namespace Terrain
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<TerrainSurfaceDataSystemConfig>(
-                    "Terrain Surface Data System", "Configures management of surface data requests against legacy terrain")
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain Surface Data System"),
+                    QT_TRANSLATE_NOOP("Terrain", "Configures management of surface data requests against legacy terrain"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
@@ -57,11 +59,14 @@ namespace Terrain
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<TerrainSurfaceDataSystemComponent>("Terrain Surface Data System", "Manages surface data requests against legacy terrain")
+                editContext->Class<TerrainSurfaceDataSystemComponent>(
+                    QT_TRANSLATE_NOOP("Terrain", "Terrain Surface Data System"),
+                    QT_TRANSLATE_NOOP("Terrain", "Manages surface data requests against legacy terrain"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Surface Data")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &TerrainSurfaceDataSystemComponent::m_configuration, "Configuration", "")
+                    ->DataElement(0, &TerrainSurfaceDataSystemComponent::m_configuration,
+                        QT_TRANSLATE_NOOP("Terrain", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

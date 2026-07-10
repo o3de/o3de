@@ -79,8 +79,8 @@ namespace EMStudio
 
             QMenu* contextMenu = new QMenu(toolBar);
 
-            m_loadActorAction = contextMenu->addAction("Load actor", GetMainWindow(), &MainWindow::OnFileOpenActor);
-            m_mergeActorAction = contextMenu->addAction("Merge actor", GetMainWindow(), &MainWindow::OnFileMergeActor);
+            m_loadActorAction = contextMenu->addAction(tr("Load actor"), GetMainWindow(), &MainWindow::OnFileOpenActor);
+            m_mergeActorAction = contextMenu->addAction(tr("Merge actor"), GetMainWindow(), &MainWindow::OnFileMergeActor);
 
             menuAction->setMenu(contextMenu);
         }
@@ -496,15 +496,15 @@ namespace EMStudio
         {
             if (instanceSelected)
             {
-                QAction* resetTransformationAction = menu.addAction("Reset transforms");
+                QAction* resetTransformationAction = menu.addAction(tr("Reset transforms"));
                 connect(resetTransformationAction, &QAction::triggered, this, &ActorsWindow::OnResetTransformationOfSelectedActorInstances);
 
                 menu.addSeparator();
 
-                QAction* hideAction = menu.addAction("Hide selected instance");
+                QAction* hideAction = menu.addAction(tr("Hide selected instance"));
                 connect(hideAction, &QAction::triggered, this, &ActorsWindow::OnHideSelected);
 
-                QAction* unhideAction = menu.addAction("Show selected instance");
+                QAction* unhideAction = menu.addAction(tr("Show selected instance"));
                 connect(unhideAction, &QAction::triggered, this, &ActorsWindow::OnUnhideSelected);
 
                 menu.addSeparator();
@@ -512,17 +512,17 @@ namespace EMStudio
 
             if (instanceSelected)
             {
-                QAction* cloneAction = menu.addAction("Copy selected");
+                QAction* cloneAction = menu.addAction(tr("Copy selected"));
                 connect(cloneAction, &QAction::triggered, this, &ActorsWindow::OnCloneSelected);
             }
 
-            QAction* removeAction = menu.addAction("Remove selected");
+            QAction* removeAction = menu.addAction(tr("Remove selected"));
             connect(removeAction, &QAction::triggered, this, &ActorsWindow::OnRemoveButtonClicked);
         }
 
         if (m_treeWidget->topLevelItemCount() > 0)
         {
-            QAction* clearAction = menu.addAction("Remove all");
+            QAction* clearAction = menu.addAction(tr("Remove all"));
             connect(clearAction, &QAction::triggered, this, &ActorsWindow::OnClearButtonClicked);
         }
 

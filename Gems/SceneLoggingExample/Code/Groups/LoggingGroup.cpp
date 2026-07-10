@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Groups/LoggingGroup.h>
 
 namespace SceneLoggingExample
@@ -45,19 +46,23 @@ namespace SceneLoggingExample
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            editContext->Class<LoggingGroup>("Logger", "Add additional logging to the SceneAPI.")
+            editContext->Class<LoggingGroup>(
+                    QT_TRANSLATE_NOOP("SceneLoggingExample", "Logger"),
+                    QT_TRANSLATE_NOOP("SceneLoggingExample", "Add additional logging to the SceneAPI."))
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute("AutoExpand", true)
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &LoggingGroup::m_groupName, 
-                    "Name", "The name of the group will be used in the log")
+                    QT_TRANSLATE_NOOP("SceneLoggingExample", "Name"),
+                    QT_TRANSLATE_NOOP("SceneLoggingExample", "The name of the group will be used in the log"))
                 // The Reflected Property Editor can pick a default editor for many types. However, for the string
                 // that will store the selected node, a more specialized editor is needed. NodeListSelection is
                 // one such editor and it is SceneGraph-aware. It allows the selection of a specific node from the
                 // graph and the selectable items can be filtered. You can find other available editors in the 
                 // "RowWidgets"-folder of the SceneUI.
                 ->DataElement(AZ_CRC_CE("NodeListSelection"), &LoggingGroup::m_graphLogRoot,
-                    "Graph log root", "Select the node in the graph to list children of to the log, or disable logging.")
+                    QT_TRANSLATE_NOOP("SceneLoggingExample", "Graph log root"),
+                    QT_TRANSLATE_NOOP("SceneLoggingExample", "Select the node in the graph to list children of to the log, or disable logging."))
                     ->Attribute(AZ_CRC_CE("DisabledOption"), s_disabledOption)
                     // Nodes in the SceneGraph can be marked as endpoints. To the graph, this means that these nodes 
                     // are not allowed to have children. While not a true one-to-one mapping, endpoints often act as 
@@ -66,7 +71,8 @@ namespace SceneLoggingExample
                     // as an endpoint, then it is the root transform for the group(s) that are its children.
                     ->Attribute(AZ_CRC_CE("ExcludeEndPoints"), true)
                 ->DataElement(AZ::Edit::UIHandlers::Default, &LoggingGroup::m_logProcessingEvents,
-                    "Log processing events", "Log processing events as they happen.");
+                    QT_TRANSLATE_NOOP("SceneLoggingExample", "Log processing events"),
+                    QT_TRANSLATE_NOOP("SceneLoggingExample", "Log processing events as they happen."));
         }
     }
 

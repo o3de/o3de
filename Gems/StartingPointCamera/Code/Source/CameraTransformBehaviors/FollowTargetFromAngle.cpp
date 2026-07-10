@@ -9,6 +9,7 @@
 #include "FollowTargetFromAngle.h"
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include "StartingPointCamera/StartingPointCameraUtilities.h"
 
 namespace Camera
@@ -27,16 +28,24 @@ namespace Camera
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<FollowTargetFromAngle>("FollowTargetFromAngle", "Follows behind the target by Angle degrees about RotationType")
+                editContext->Class<FollowTargetFromAngle>(
+                    QT_TRANSLATE_NOOP("Camera", "FollowTargetFromAngle"),
+                    QT_TRANSLATE_NOOP("Camera", "Follows behind the target by Angle degrees about RotationType"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(0, &FollowTargetFromAngle::m_angleInDegrees, "Angle", "The angle to rotate about RotationType")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "degrees")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FollowTargetFromAngle::m_rotationType, "Rotation Type", "Choose to Yaw, Pitch or Roll Angle degrees")
-                        ->EnumAttribute(EulerAngleType::Yaw, "Yaw")
-                        ->EnumAttribute(EulerAngleType::Pitch, "Pitch")
-                        ->EnumAttribute(EulerAngleType::Roll, "Roll")
-                    ->DataElement(0, &FollowTargetFromAngle::m_distanceFromTarget, "Distance From Target", "The range at which to follow the target from")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "m");
+                    ->DataElement(0, &FollowTargetFromAngle::m_angleInDegrees,
+                        QT_TRANSLATE_NOOP("Camera", "Angle"),
+                        QT_TRANSLATE_NOOP("Camera", "The angle to rotate about RotationType"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "degrees"))
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FollowTargetFromAngle::m_rotationType,
+                        QT_TRANSLATE_NOOP("Camera", "Rotation Type"),
+                        QT_TRANSLATE_NOOP("Camera", "Choose to Yaw, Pitch or Roll Angle degrees"))
+                        ->EnumAttribute(EulerAngleType::Yaw, QT_TRANSLATE_NOOP("Camera", "Yaw"))
+                        ->EnumAttribute(EulerAngleType::Pitch, QT_TRANSLATE_NOOP("Camera", "Pitch"))
+                        ->EnumAttribute(EulerAngleType::Roll, QT_TRANSLATE_NOOP("Camera", "Roll"))
+                    ->DataElement(0, &FollowTargetFromAngle::m_distanceFromTarget,
+                        QT_TRANSLATE_NOOP("Camera", "Distance From Target"),
+                        QT_TRANSLATE_NOOP("Camera", "The range at which to follow the target from"))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("Camera", "m"));
             }
         }
     }

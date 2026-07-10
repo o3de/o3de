@@ -9,6 +9,7 @@
 #include "MiniAudioSystemComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <MiniAudio/SoundAsset.h>
 #include <MiniAudio/SoundAssetRef.h>
 
@@ -42,7 +43,9 @@ namespace MiniAudio
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<MiniAudioSystemComponent>("MiniAudio", "[Description of functionality provided by this System Component]")
+                ec->Class<MiniAudioSystemComponent>(
+                    QT_TRANSLATE_NOOP("MiniAudio", "MiniAudio"),
+                    QT_TRANSLATE_NOOP("MiniAudio", "[Description of functionality provided by this System Component]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);

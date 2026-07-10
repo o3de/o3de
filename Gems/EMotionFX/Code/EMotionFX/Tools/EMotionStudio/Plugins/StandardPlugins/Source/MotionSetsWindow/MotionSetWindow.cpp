@@ -278,29 +278,29 @@ namespace EMStudio
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(0, headerItem);
 
-        headerItem = new QTableWidgetItem("ID");
+        headerItem = new QTableWidgetItem(tr("ID"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(1, headerItem);
 
-        headerItem = new QTableWidgetItem("Duration");
+        headerItem = new QTableWidgetItem(tr("Duration"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(2, headerItem);
 
-        headerItem = new QTableWidgetItem("Joints");
+        headerItem = new QTableWidgetItem(tr("Joints"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        headerItem->setToolTip("The number of joints inside the motion");
+        headerItem->setToolTip(tr("The number of joints inside the motion"));
         m_tableWidget->setHorizontalHeaderItem(3, headerItem);
 
-        headerItem = new QTableWidgetItem("Morphs");
+        headerItem = new QTableWidgetItem(tr("Morphs"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        headerItem->setToolTip("The number of morph targets inside the motion.");
+        headerItem->setToolTip(tr("The number of morph targets inside the motion."));
         m_tableWidget->setHorizontalHeaderItem(4, headerItem);
 
-        headerItem = new QTableWidgetItem("Type");
+        headerItem = new QTableWidgetItem(tr("Type"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(5, headerItem);
 
-        headerItem = new QTableWidgetItem("Filename");
+        headerItem = new QTableWidgetItem(tr("Filename"));
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
         m_tableWidget->setHorizontalHeaderItem(6, headerItem);
 
@@ -1598,15 +1598,15 @@ namespace EMStudio
         if (rowIndices.size() == 1)
         {
             // add the rename selected motion action
-            QAction* renameSelectedMotionAction = menu.addAction("Rename Motion ID");
+            QAction* renameSelectedMotionAction = menu.addAction(tr("Rename Motion ID"));
             connect(renameSelectedMotionAction, &QAction::triggered, this, &MotionSetWindow::OnRenameEntry);
 
             // Unassign the linked motion.
-            QAction* unassignMotionAction = menu.addAction("Unassign Motion");
+            QAction* unassignMotionAction = menu.addAction(tr("Unassign Motion"));
             connect(unassignMotionAction, &QAction::triggered, this, &MotionSetWindow::OnUnassignMotions);
 
             // add the copy selected motion ID action
-            QAction* copySelectedMotionIDAction = menu.addAction("Copy Selected Motion ID");
+            QAction* copySelectedMotionIDAction = menu.addAction(tr("Copy Selected Motion ID"));
             connect(copySelectedMotionIDAction, &QAction::triggered, this, &MotionSetWindow::OnCopyMotionID);
 
             QAction* browserAction = menu.addAction(AzQtComponents::fileBrowserActionName());
@@ -1628,17 +1628,17 @@ namespace EMStudio
         else if (rowIndices.size() > 1)
         {
             // Unassign linked motions for the selected entries.
-            QAction* unassignMotionAction = menu.addAction("Unassign Motions");
+            QAction* unassignMotionAction = menu.addAction(tr("Unassign Motions"));
             connect(unassignMotionAction, &QAction::triggered, this, &MotionSetWindow::OnUnassignMotions);
         }
 
-        QAction* saveMotionsAction = menu.addAction("Save Selected Motions");
+        QAction* saveMotionsAction = menu.addAction(tr("Save Selected Motions"));
         saveMotionsAction->setObjectName("EMFX.MotionSetTableWidget.SaveSelectedMotionsAction");
         connect(saveMotionsAction, &QAction::triggered, this, &MotionSetWindow::OnSave);
 
         menu.addSeparator();
 
-        QAction* removeSelectedMotionsAction = menu.addAction("Remove Selected Motions");
+        QAction* removeSelectedMotionsAction = menu.addAction(tr("Remove Selected Motions"));
         removeSelectedMotionsAction->setObjectName("EMFX.MotionSetTableWidget.RemoveSelectedMotionsAction");
         connect(removeSelectedMotionsAction, &QAction::triggered, this, &MotionSetWindow::OnRemoveMotions);
 

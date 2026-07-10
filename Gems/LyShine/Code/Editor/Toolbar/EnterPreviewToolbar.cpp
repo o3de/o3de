@@ -14,7 +14,7 @@
 #include <QPushButton>
 
 EnterPreviewToolbar::EnterPreviewToolbar(EditorWindow* parent)
-    : QToolBar("Enter Preview Toolbar", parent)
+    : QToolBar(tr("Enter Preview Toolbar"), parent)
 {
     setObjectName("EnterPreviewToolbar"); // needed to save state
     setFloatable(false);
@@ -25,7 +25,7 @@ EnterPreviewToolbar::EnterPreviewToolbar(EditorWindow* parent)
     addWidget(spacer);
 
     // Add the Preview button to the right of the toolbar
-    m_previewButton = new QPushButton("Preview", parent);
+    m_previewButton = new QPushButton(tr("Preview"), parent);
     QObject::connect(
         m_previewButton,
         &QPushButton::clicked,
@@ -35,7 +35,7 @@ EnterPreviewToolbar::EnterPreviewToolbar(EditorWindow* parent)
             parent->ToggleEditorMode();
         });
 
-    m_previewButton->setToolTip(QString("Switch to Preview mode"));
+    m_previewButton->setToolTip(tr("Switch to Preview mode"));
 
     // this uses the "primary button" style from the global style sheet
     m_previewButton->setProperty("class", "Primary");

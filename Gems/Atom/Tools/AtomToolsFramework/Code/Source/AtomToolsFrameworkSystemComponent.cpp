@@ -28,6 +28,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/string/regex.h>
 #include <Inspector/PropertyWidgets/PropertyStringBrowseEditCtrl.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AtomToolsFramework
 {
@@ -58,7 +59,7 @@ namespace AtomToolsFramework
 
             if (auto editContext = serialize->GetEditContext())
             {
-                editContext->Class<AtomToolsFrameworkSystemComponent>("AtomToolsFrameworkSystemComponent", "")
+                editContext->Class<AtomToolsFrameworkSystemComponent>(QT_TRANSLATE_NOOP("AtomToolsFramework", "AtomToolsFrameworkSystemComponent"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

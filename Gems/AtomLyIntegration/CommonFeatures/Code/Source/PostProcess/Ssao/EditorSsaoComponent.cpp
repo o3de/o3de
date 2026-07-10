@@ -8,6 +8,7 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <PostProcess/Ssao/EditorSsaoComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -25,7 +26,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorSsaoComponent>(
-                        "SSAO", "Controls SSAO.")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "SSAO"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Controls SSAO."))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Graphics/PostFX")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
@@ -39,7 +40,7 @@ namespace AZ
                         "SsaoComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->DataElement(AZ::Edit::UIHandlers::Default, &SsaoComponentController::m_configuration, "Configuration", "")
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &SsaoComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
@@ -48,52 +49,52 @@ namespace AZ
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &SsaoComponentConfig::m_enabled,
-                            "Enable SSAO",
-                            "Enable SSAO.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable SSAO"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable SSAO."))
 
                         ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_strength,
-                            "SSAO Strength",
-                            "Multiplier for how much strong SSAO appears.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "SSAO Strength"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Multiplier for how much strong SSAO appears."))
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 2.0f)
 
                         ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_samplingRadius,
-                            "Sampling Radius",
-                            "The sampling radius of the SSAO effect in screen UV space")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Sampling Radius"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "The sampling radius of the SSAO effect in screen UV space"))
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 0.25f)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &SsaoComponentConfig::m_enableBlur,
-                            "Enable Blur",
-                            "Enables SSAO Blur")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Blur"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enables SSAO Blur"))
 
                         ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_blurConstFalloff,
-                            "Blur Strength",
-                            "Affects how strong the blur is. Recommended value is 0.67")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Blur Strength"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Affects how strong the blur is. Recommended value is 0.67"))
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 0.95f)
 
                         ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_blurDepthFalloffStrength,
-                            "Blur Sharpness",
-                            "Affects how sharp the SSAO blur appears around edges. Recommended value is 50")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Blur Sharpness"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Affects how sharp the SSAO blur appears around edges. Recommended value is 50"))
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 400.0f)
 
                         ->DataElement(Edit::UIHandlers::Slider, &SsaoComponentConfig::m_blurDepthFalloffThreshold,
-                            "Blur Edge Threshold",
-                            "Affects the threshold needed for the blur algorithm to detect an edge. Recommended to be left at 0.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Blur Edge Threshold"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Affects the threshold needed for the blur algorithm to detect an edge. Recommended to be left at 0."))
                         ->Attribute(Edit::Attributes::Min, 0.0f)
                         ->Attribute(Edit::Attributes::Max, 1.0f)
 
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &SsaoComponentConfig::m_enableDownsample,
-                            "Enable Downsample",
-                            "Enables depth downsampling before SSAO. Slightly lower quality but 2x as fast as regular SSAO.")
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enable Downsample"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "Enables depth downsampling before SSAO. Slightly lower quality but 2x as fast as regular SSAO."))
 
 
                         // Overrides
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Overrides")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("AtomLyIntegration", "Overrides"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
 
                         // Auto-gen editor context settings for overrides

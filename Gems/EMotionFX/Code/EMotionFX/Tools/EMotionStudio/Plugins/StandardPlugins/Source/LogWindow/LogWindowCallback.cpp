@@ -371,22 +371,22 @@ namespace EMStudio
         // add actions
         if (!items.empty())
         {
-            QAction* copyAction = menu.addAction("Copy");
+            QAction* copyAction = menu.addAction(tr("Copy"));
             connect(copyAction, &QAction::triggered, this, &LogWindowCallback::Copy);
         }
         if (numRows > 0)
         {
-            QAction* selectAllAction = menu.addAction("Select All");
+            QAction* selectAllAction = menu.addAction(tr("Select All"));
             connect(selectAllAction, &QAction::triggered, this, &LogWindowCallback::SelectAll);
         }
         if (!items.empty())
         {
-            QAction* UnselectAllAction = menu.addAction("Unselect All");
+            QAction* UnselectAllAction = menu.addAction(tr("Unselect All"));
             connect(UnselectAllAction, &QAction::triggered, this, &LogWindowCallback::UnselectAll);
         }
         if (numRows > 0)
         {
-            QAction* clearAction = menu.addAction("Clear");
+            QAction* clearAction = menu.addAction(tr("Clear"));
             connect(clearAction, &QAction::triggered, this, &LogWindowCallback::Clear);
         }
 

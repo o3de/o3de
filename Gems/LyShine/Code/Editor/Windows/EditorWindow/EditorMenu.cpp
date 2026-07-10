@@ -110,12 +110,12 @@ void EditorWindow::EditorMenu_Open(QString optional_selectedFile)
 
 void EditorWindow::AddMenu_File()
 {
-    QMenu* menu = menuBar()->addMenu("&File");
+    QMenu* menu = menuBar()->addMenu(tr("&File"));
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     // Create a new canvas.
     {
-        QAction* action = new QAction("&New Canvas", this);
+        QAction* action = new QAction(tr("&New Canvas"), this);
         action->setShortcut(QKeySequence::New);
         QObject::connect(action, &QAction::triggered, this, &EditorWindow::NewCanvas);
         menu->addAction(action);
@@ -124,7 +124,7 @@ void EditorWindow::AddMenu_File()
 
     // Load a canvas.
     {
-        QAction* action = new QAction("&Open Canvas...", this);
+        QAction* action = new QAction(tr("&Open Canvas..."), this);
         action->setShortcut(QKeySequence::Open);
         QObject::connect(
             action,
@@ -208,7 +208,7 @@ void EditorWindow::AddMenu_File()
 
         // List of recent files.
         {
-            QMenu* recentMenu = menu->addMenu("&Recent Files");
+            QMenu* recentMenu = menu->addMenu(tr("&Recent Files"));
             recentMenu->setEnabled(!recentFiles.isEmpty());
 
             // QStringList -> QMenu.
@@ -230,7 +230,7 @@ void EditorWindow::AddMenu_File()
 
         // Clear Recent Files.
         {
-            QAction* action = new QAction("Clear Recent Files", this);
+            QAction* action = new QAction(tr("Clear Recent Files"), this);
             action->setEnabled(!recentFiles.isEmpty());
 
             QObject::connect(
@@ -282,7 +282,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
     // Select All.
     {
-        QAction* action = new QAction("Select &All", this);
+        QAction* action = new QAction(tr("Select &All"), this);
         action->setShortcut(QKeySequence::SelectAll);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         action->setEnabled(canvasLoaded);
@@ -299,7 +299,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
     // Cut.
     {
-        QAction* action = new QAction("Cu&t", this);
+        QAction* action = new QAction(tr("Cu&t"), this);
         action->setShortcut(QKeySequence::Cut);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         action->setEnabled(itemsAreSelected);
@@ -315,7 +315,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
     // Copy.
     {
-        QAction* action = new QAction("&Copy", this);
+        QAction* action = new QAction(tr("&Copy"), this);
         action->setShortcut(QKeySequence::Copy);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         action->setEnabled(itemsAreSelected);
@@ -331,7 +331,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
     {
         // Paste as sibling.
         {
-            QAction* action = new QAction(itemsAreSelected ? "&Paste as sibling" : "&Paste", this);
+            QAction* action = new QAction(itemsAreSelected ? tr("&Paste as sibling") : tr("&Paste"), this);
             action->setShortcut(QKeySequence::Paste);
             action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             action->setEnabled(canvasLoaded && thereIsContentInTheClipboard);
@@ -345,7 +345,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
         // Paste as child.
         {
-            QAction* action = new QAction("Paste as c&hild", this);
+            QAction* action = new QAction(tr("Paste as c&hild"), this);
             {
                 action->setShortcuts(
                     QList<QKeySequence>{ QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_V), QKeySequence(Qt::META | Qt::SHIFT | Qt::Key_V) });
@@ -377,7 +377,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
     if (debugViewUndoStack)
     {
-        QAction* action = new QAction("[DEBUG] View undo stack", this);
+        QAction* action = new QAction(tr("[DEBUG] View undo stack"), this);
         action->setEnabled(canvasLoaded);
         QObject::connect(
             action,
@@ -393,7 +393,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
                 else
                 {
                     undoView = new QUndoView(GetUndoGroup());
-                    undoView->setWindowTitle("[DEBUG] Undo stack");
+                    undoView->setWindowTitle(tr("[DEBUG] Undo stack"));
                     undoView->setAttribute(Qt::WA_QuitOnClose, false);
                 }
                 undoView->show();
@@ -406,7 +406,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
     // Find elements
     {
-        QAction* action = new QAction("&Find Elements...", this);
+        QAction* action = new QAction(tr("&Find Elements..."), this);
         action->setShortcut(QKeySequence::Find);
         action->setEnabled(canvasLoaded);
         QObject::connect(
@@ -424,7 +424,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
     // Delete.
     {
-        QAction* action = new QAction("Delete", this);
+        QAction* action = new QAction(tr("Delete"), this);
         action->setShortcut(QKeySequence::Delete);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         action->setEnabled(itemsAreSelected);
@@ -444,7 +444,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
     // Add Align sub-menu
     {
-        QMenu* alignMenu = menu->addMenu("Align");
+        QMenu* alignMenu = menu->addMenu(tr("Align"));
 
         auto viewport = canvasLoaded ? GetViewport() : nullptr;
         bool enabled = viewport && itemsAreSelected && ViewportAlign::IsAlignAllowed(this);
@@ -452,7 +452,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
         // Add each sub-menu item. Store the QActions so that we can enable/disable them when align is allowed or not.
         {
             m_actionsEnabledWithAlignAllowed.push_back(AddMenuAction(
-                "Top Edges",
+                tr("Top Edges"),
                 enabled,
                 alignMenu,
                 [this]([[maybe_unused]] bool checked)
@@ -460,7 +460,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
                     ViewportAlign::AlignSelectedElements(this, ViewportAlign::AlignType::VerticalTop);
                 }));
             m_actionsEnabledWithAlignAllowed.push_back(AddMenuAction(
-                "Vertical Centers",
+                tr("Vertical Centers"),
                 enabled,
                 alignMenu,
                 [this]([[maybe_unused]] bool checked)
@@ -468,7 +468,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
                     ViewportAlign::AlignSelectedElements(this, ViewportAlign::AlignType::VerticalCenter);
                 }));
             m_actionsEnabledWithAlignAllowed.push_back(AddMenuAction(
-                "Bottom Edges",
+                tr("Bottom Edges"),
                 enabled,
                 alignMenu,
                 [this]([[maybe_unused]] bool checked)
@@ -476,7 +476,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
                     ViewportAlign::AlignSelectedElements(this, ViewportAlign::AlignType::VerticalBottom);
                 }));
             m_actionsEnabledWithAlignAllowed.push_back(AddMenuAction(
-                "Left Edges",
+                tr("Left Edges"),
                 enabled,
                 alignMenu,
                 [this]([[maybe_unused]] bool checked)
@@ -484,7 +484,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
                     ViewportAlign::AlignSelectedElements(this, ViewportAlign::AlignType::HorizontalLeft);
                 }));
             m_actionsEnabledWithAlignAllowed.push_back(AddMenuAction(
-                "Horizontal Centers",
+                tr("Horizontal Centers"),
                 enabled,
                 alignMenu,
                 [this]([[maybe_unused]] bool checked)
@@ -492,7 +492,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
                     ViewportAlign::AlignSelectedElements(this, ViewportAlign::AlignType::HorizontalCenter);
                 }));
             m_actionsEnabledWithAlignAllowed.push_back(AddMenuAction(
-                "Right Edges",
+                tr("Right Edges"),
                 enabled,
                 alignMenu,
                 [this]([[maybe_unused]] bool checked)
@@ -505,7 +505,7 @@ void EditorWindow::AddMenuItems_Edit(QMenu* menu)
 
 void EditorWindow::AddMenu_Edit()
 {
-    QMenu* menu = menuBar()->addMenu("&Edit");
+    QMenu* menu = menuBar()->addMenu(tr("&Edit"));
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     AddMenuItems_Edit(menu);
@@ -513,7 +513,7 @@ void EditorWindow::AddMenu_Edit()
 
 void EditorWindow::AddMenu_View()
 {
-    QMenu* menu = menuBar()->addMenu("&View");
+    QMenu* menu = menuBar()->addMenu(tr("&View"));
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     bool canvasLoaded = GetCanvas().IsValid();
@@ -522,7 +522,7 @@ void EditorWindow::AddMenu_View()
     {
         // Zoom in
         {
-            QAction* action = new QAction("Zoom &In", this);
+            QAction* action = new QAction(tr("Zoom &In"), this);
             action->setShortcut(QKeySequence::ZoomIn);
             action->setEnabled(canvasLoaded);
             QObject::connect(
@@ -539,7 +539,7 @@ void EditorWindow::AddMenu_View()
 
         // Zoom out
         {
-            QAction* action = new QAction("Zoom &Out", this);
+            QAction* action = new QAction(tr("Zoom &Out"), this);
             action->setShortcut(QKeySequence::ZoomOut);
             action->setEnabled(canvasLoaded);
             QObject::connect(
@@ -556,7 +556,7 @@ void EditorWindow::AddMenu_View()
 
         // Zoom to fit
         {
-            QAction* action = new QAction("&Fit Canvas", this);
+            QAction* action = new QAction(tr("&Fit Canvas"), this);
             {
                 action->setShortcuts(
                     QList<QKeySequence>{ QKeySequence(0x0 | Qt::CTRL | Qt::Key_0), QKeySequence(0x0 | Qt::META | Qt::Key_0) });
@@ -576,7 +576,7 @@ void EditorWindow::AddMenu_View()
 
         // Actual size
         {
-            QAction* action = new QAction("Actual &Size", this);
+            QAction* action = new QAction(tr("Actual &Size"), this);
             {
                 action->setShortcuts(
                     QList<QKeySequence>{ QKeySequence(0x0 | Qt::CTRL | Qt::Key_1), QKeySequence(0x0 | Qt::META | Qt::Key_1) });
@@ -630,7 +630,7 @@ void EditorWindow::AddMenu_View()
 
     // Add menu item to hide/show the rulers
     {
-        QAction* action = new QAction("&Rulers", this);
+        QAction* action = new QAction(tr("&Rulers"), this);
         action->setCheckable(true);
         action->setChecked(GetViewport() ? GetViewport()->AreRulersShown() : false);
         action->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_R));
@@ -649,7 +649,7 @@ void EditorWindow::AddMenu_View()
 
     // Add menu item to hide/show the guides
     {
-        QAction* action = new QAction("&Guides", this);
+        QAction* action = new QAction(tr("&Guides"), this);
         action->setCheckable(true);
         action->setChecked(GetViewport() ? GetViewport()->AreGuidesShown() : false);
         action->setShortcut(QKeySequence(0x0 | Qt::CTRL | Qt::Key_Semicolon));
@@ -668,7 +668,7 @@ void EditorWindow::AddMenu_View()
 
     // Add menu item to lock the guides
     {
-        QAction* action = new QAction("Lock Guides", this);
+        QAction* action = new QAction(tr("Lock Guides"), this);
         action->setCheckable(true);
         action->setChecked(GuideHelpers::AreGuidesLocked(GetCanvas()));
         action->setEnabled(canvasLoaded);
@@ -688,7 +688,7 @@ void EditorWindow::AddMenu_View()
 
     // Add menu item to clear the guides
     {
-        QAction* action = new QAction("Clear Guides", this);
+        QAction* action = new QAction(tr("Clear Guides"), this);
         action->setEnabled(canvasLoaded);
         QObject::connect(
             action,
@@ -708,13 +708,13 @@ void EditorWindow::AddMenu_View()
 
     // Add sub-menu to control which elements have borders drawn on them
     {
-        QMenu* drawElementBordersMenu = menu->addMenu("Draw &Borders on Unselected Elements");
+        QMenu* drawElementBordersMenu = menu->addMenu(tr("Draw &Borders on Unselected Elements"));
 
         auto viewport = GetViewport();
 
         // Add option to draw borders on all unselected elements (subject to "Include" options below)
         {
-            QAction* action = new QAction("&Draw Borders", this);
+            QAction* action = new QAction(tr("&Draw Borders"), this);
             action->setCheckable(true);
             action->setChecked(canvasLoaded ? viewport->IsDrawingElementBorders(ViewportWidget::DrawElementBorders_Unselected) : false);
             action->setEnabled(canvasLoaded);
@@ -733,7 +733,7 @@ void EditorWindow::AddMenu_View()
 
         // Add option to include visual elements.
         {
-            QAction* action = new QAction("Include &Visual Elements", this);
+            QAction* action = new QAction(tr("Include &Visual Elements"), this);
             action->setCheckable(true);
             action->setChecked(canvasLoaded ? viewport->IsDrawingElementBorders(ViewportWidget::DrawElementBorders_Visual) : false);
             action->setEnabled(canvasLoaded ? viewport->IsDrawingElementBorders(ViewportWidget::DrawElementBorders_Unselected) : false);
@@ -751,7 +751,7 @@ void EditorWindow::AddMenu_View()
 
         // Add option to include parent elements.
         {
-            QAction* action = new QAction("Include &Parent Elements", this);
+            QAction* action = new QAction(tr("Include &Parent Elements"), this);
             action->setCheckable(true);
             action->setChecked(canvasLoaded ? viewport->IsDrawingElementBorders(ViewportWidget::DrawElementBorders_Parent) : false);
             action->setEnabled(canvasLoaded ? viewport->IsDrawingElementBorders(ViewportWidget::DrawElementBorders_Unselected) : false);
@@ -769,7 +769,7 @@ void EditorWindow::AddMenu_View()
 
         // Add option to include hidden elements.
         {
-            QAction* action = new QAction("Include &Hidden Elements", this);
+            QAction* action = new QAction(tr("Include &Hidden Elements"), this);
             action->setCheckable(true);
             action->setChecked(viewport ? viewport->IsDrawingElementBorders(ViewportWidget::DrawElementBorders_Hidden) : false);
             action->setEnabled(viewport ? viewport->IsDrawingElementBorders(ViewportWidget::DrawElementBorders_Unselected) : false);
@@ -790,7 +790,7 @@ void EditorWindow::AddMenu_View()
 
     // Reload all fonts
     {
-        QAction* action = new QAction("Reload All Fonts", this);
+        QAction* action = new QAction(tr("Reload All Fonts"), this);
         {
             action->setShortcuts(QList<QKeySequence>{ QKeySequence(0x0 | Qt::CTRL | Qt::Key_L), QKeySequence(0x0 | Qt::META | Qt::Key_L) });
         }
@@ -809,7 +809,7 @@ void EditorWindow::AddMenu_View()
 
 void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
 {
-    QMenu* setCurrentLanguageMenu = viewMenu->addMenu("Set Current &Language");
+    QMenu* setCurrentLanguageMenu = viewMenu->addMenu(tr("Set Current &Language"));
 
     // Group language settings together by action group to only allow one
     // selection/language to be active at a time
@@ -901,7 +901,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
 
 void EditorWindow::AddMenu_Preview()
 {
-    QMenu* menu = menuBar()->addMenu("&Preview");
+    QMenu* menu = menuBar()->addMenu(tr("&Preview"));
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     // Toggle preview.
@@ -909,11 +909,11 @@ void EditorWindow::AddMenu_Preview()
         QString menuItemName;
         if (m_editorMode == UiEditorMode::Edit)
         {
-            menuItemName = "&Preview";
+            menuItemName = tr("&Preview");
         }
         else
         {
-            menuItemName = "End &Preview";
+            menuItemName = tr("End &Preview");
         }
 
         QAction* action = new QAction(menuItemName, this);
@@ -927,7 +927,7 @@ void EditorWindow::AddMenu_Preview()
 
 void EditorWindow::AddMenu_PreviewView()
 {
-    QMenu* menu = menuBar()->addMenu("&View");
+    QMenu* menu = menuBar()->addMenu(tr("&View"));
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     // Add all Preview mode QDockWidget panes.
@@ -965,12 +965,12 @@ void EditorWindow::AddMenu_Help()
     const char* tutorialsUrl = "https://o3de.org/docs/learning-guide/tutorials/";
     const char* forumUrl = "https://o3de.org/community/";
 
-    QMenu* menu = menuBar()->addMenu("&Help");
+    QMenu* menu = menuBar()->addMenu(tr("&Help"));
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
 
     // Documentation
     {
-        QAction* action = new QAction("&Documentation", this);
+        QAction* action = new QAction(tr("&Documentation"), this);
 
         QObject::connect(
             action,
@@ -986,7 +986,7 @@ void EditorWindow::AddMenu_Help()
 
     // Tutorials
     {
-        QAction* action = new QAction("&Tutorials", this);
+        QAction* action = new QAction(tr("&Tutorials"), this);
 
         QObject::connect(
             action,
@@ -1002,7 +1002,7 @@ void EditorWindow::AddMenu_Help()
 
     // Forum
     {
-        QAction* action = new QAction("&Forum", this);
+        QAction* action = new QAction(tr("&Forum"), this);
 
         QObject::connect(
             action,
@@ -1085,7 +1085,7 @@ void EditorWindow::SetupShortcuts()
 
     // Cycle coordinate system
     {
-        QAction* action = new QAction("Coordinate System Cycle", this);
+        QAction* action = new QAction(tr("Coordinate System Cycle"), this);
         action->setShortcut(QKeySequence(UICANVASEDITOR_COORDINATE_SYSTEM_CYCLE_SHORTCUT_KEY_SEQUENCE));
         QObject::connect(
             action,
@@ -1099,7 +1099,7 @@ void EditorWindow::SetupShortcuts()
 
     // Toggle Snap to Grid
     {
-        QAction* action = new QAction("Snap to Grid Toggle", this);
+        QAction* action = new QAction(tr("Snap to Grid Toggle"), this);
         action->setShortcut(QKeySequence(UICANVASEDITOR_SNAP_TO_GRID_TOGGLE_SHORTCUT_KEY_SEQUENCE));
         QObject::connect(
             action,
@@ -1116,8 +1116,8 @@ void DisplayNullMetadataMessage(EditorWindow* editorWindow)
 {
     QMessageBox(
         QMessageBox::Critical,
-        "Error",
-        QString::fromUtf8("Unable to save: canvas metadata is null. Please try reopening the canvas."),
+        QObject::tr("Error"),
+        QObject::tr("Unable to save: canvas metadata is null. Please try reopening the canvas."),
         QMessageBox::Ok,
         editorWindow)
         .exec();
@@ -1136,7 +1136,7 @@ QAction* EditorWindow::CreateSaveCanvasAction(AZ::EntityId canvasEntityId, bool 
     }
 
     QFileInfo fileInfo(canvasSourcePathname.c_str());
-    QAction* action = new QAction(QString("&Save " + (fileInfo.fileName().isEmpty() ? "Canvas" : fileInfo.fileName())), this);
+    QAction* action = new QAction(tr("&Save %1").arg(fileInfo.fileName().isEmpty() ? tr("Canvas") : fileInfo.fileName()), this);
     if (!forContextMenu && !canvasFilename.empty())
     {
         action->setShortcut(QKeySequence::Save);
@@ -1186,7 +1186,7 @@ QAction* EditorWindow::CreateSaveCanvasAsAction(AZ::EntityId canvasEntityId, boo
         UiCanvasBus::EventResult(canvasFilename, canvasEntityId, &UiCanvasBus::Events::GetPathname);
     }
 
-    QAction* action = new QAction("Save Canvas &As...", this);
+    QAction* action = new QAction(tr("Save Canvas &As..."), this);
 
     if (!forContextMenu && canvasFilename.empty())
     {
@@ -1237,7 +1237,7 @@ QAction* EditorWindow::CreateSaveSliceAction(UiCanvasMetadata* canvasMetadata, b
     if (!sliceEntity)
     {
         // Slice entity not found, disable the menu item but also change it to indicate the error
-        QAction* action = new QAction(QString("&Save Slice (slice entity not found)"), this);
+        QAction* action = new QAction(tr("&Save Slice (slice entity not found)"), this);
         action->setEnabled(false);
         return action;
     }
@@ -1251,14 +1251,14 @@ QAction* EditorWindow::CreateSaveSliceAction(UiCanvasMetadata* canvasMetadata, b
     if (!sliceAddress.IsValid() || !sliceAddress.GetReference()->GetSliceAsset())
     {
         // Slice entity is no longer a slice instance, disable the menu item but also change it to indicate the error
-        QAction* action = new QAction(QString("&Save Slice (slice entity is no longer an instance)"), this);
+        QAction* action = new QAction(tr("&Save Slice (slice entity is no longer an instance)"), this);
         action->setEnabled(false);
         return action;
     }
 
     AZStd::string canvasDisplayName = canvasMetadata->m_canvasDisplayName;
 
-    QAction* action = new QAction(QString("&Save ") + canvasDisplayName.c_str(), this);
+    QAction* action = new QAction(tr("&Save %1").arg(canvasDisplayName.c_str()), this);
     if (!forContextMenu)
     {
         action->setShortcut(QKeySequence::Save);
@@ -1281,7 +1281,7 @@ QAction* EditorWindow::CreateSaveSliceAction(UiCanvasMetadata* canvasMetadata, b
 
 QAction* EditorWindow::CreateSaveAllCanvasesAction([[maybe_unused]] bool forContextMenu)
 {
-    QAction* action = new QAction(QString("Save All Canvases"), this);
+    QAction* action = new QAction(tr("Save All Canvases"), this);
     action->setEnabled(m_canvasMetadataMap.size() > 0);
     QObject::connect(
         action,
@@ -1316,7 +1316,7 @@ QAction* EditorWindow::CreateSaveAllCanvasesAction([[maybe_unused]] bool forCont
 
 QAction* EditorWindow::CreateCloseCanvasAction(AZ::EntityId canvasEntityId, bool forContextMenu)
 {
-    QAction* action = new QAction("&Close Canvas", this);
+    QAction* action = new QAction(tr("&Close Canvas"), this);
     if (!forContextMenu)
     {
         action->setShortcut(QKeySequence::Close);
@@ -1336,7 +1336,7 @@ QAction* EditorWindow::CreateCloseCanvasAction(AZ::EntityId canvasEntityId, bool
 
 QAction* EditorWindow::CreateCloseAllOtherCanvasesAction(AZ::EntityId canvasEntityId, bool forContextMenu)
 {
-    QAction* action = new QAction(forContextMenu ? "Close All but This Canvas" : "Close All but Active Canvas", this);
+    QAction* action = new QAction(forContextMenu ? tr("Close All but This Canvas") : tr("Close All but Active Canvas"), this);
     action->setEnabled(m_canvasMetadataMap.size() > 1);
     QObject::connect(
         action,
@@ -1352,7 +1352,7 @@ QAction* EditorWindow::CreateCloseAllOtherCanvasesAction(AZ::EntityId canvasEnti
 
 QAction* EditorWindow::CreateCloseAllCanvasesAction([[maybe_unused]] bool forContextMenu)
 {
-    QAction* action = new QAction("Close All Canvases", this);
+    QAction* action = new QAction(tr("Close All Canvases"), this);
     action->setEnabled(m_canvasMetadataMap.size() > 0);
     QObject::connect(action, &QAction::triggered, this, &EditorWindow::CloseAllCanvases);
 

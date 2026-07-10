@@ -41,12 +41,12 @@ void AlignToolbarSection::SetIsVisible(bool visible)
 void AlignToolbarSection::AddButtons(QToolBar* parent)
 {
     m_separator = parent->addSeparator();
-    AddButton(parent, ViewportAlign::AlignType::VerticalTop, "AlignVTop", "Align Top Edges");
-    AddButton(parent, ViewportAlign::AlignType::VerticalCenter, "AlignVCenter", "Align Centers Vertically");
-    AddButton(parent, ViewportAlign::AlignType::VerticalBottom, "AlignVBottom", "Align Bottom Edges");
-    AddButton(parent, ViewportAlign::AlignType::HorizontalLeft, "AlignHLeft", "Align Left Edges");
-    AddButton(parent, ViewportAlign::AlignType::HorizontalCenter, "AlignHCenter", "Align Centers Horizontally");
-    AddButton(parent, ViewportAlign::AlignType::HorizontalRight, "AlignHRight", "Align Right Edges");
+    AddButton(parent, ViewportAlign::AlignType::VerticalTop, "AlignVTop", QObject::tr("Align Top Edges"));
+    AddButton(parent, ViewportAlign::AlignType::VerticalCenter, "AlignVCenter", QObject::tr("Align Centers Vertically"));
+    AddButton(parent, ViewportAlign::AlignType::VerticalBottom, "AlignVBottom", QObject::tr("Align Bottom Edges"));
+    AddButton(parent, ViewportAlign::AlignType::HorizontalLeft, "AlignHLeft", QObject::tr("Align Left Edges"));
+    AddButton(parent, ViewportAlign::AlignType::HorizontalCenter, "AlignHCenter", QObject::tr("Align Centers Horizontally"));
+    AddButton(parent, ViewportAlign::AlignType::HorizontalRight, "AlignHRight", QObject::tr("Align Right Edges"));
 }
 
 void AlignToolbarSection::AddButton(QToolBar* parent, ViewportAlign::AlignType alignType, const QString& iconName, const QString& toolTip)

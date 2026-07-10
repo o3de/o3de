@@ -155,10 +155,10 @@ namespace EMStudio
 
             QMenu* contextMenu = new QMenu(toolBar);
 
-            QAction* addParameterAction = contextMenu->addAction("Add parameter");
+            QAction* addParameterAction = contextMenu->addAction(tr("Add parameter"));
             connect(addParameterAction, &QAction::triggered, this, &ParameterWindow::OnAddParameter);
 
-            QAction* addGroupAction = contextMenu->addAction("Add group");
+            QAction* addGroupAction = contextMenu->addAction(tr("Add group"));
             connect(addGroupAction, &QAction::triggered, this, &ParameterWindow::OnAddGroup);
 
             m_addAction->setMenu(contextMenu);
@@ -442,7 +442,7 @@ namespace EMStudio
                 EMotionFX::ActorInstance* actorInstance = GetCommandManager()->GetCurrentSelection().GetSingleActorInstance();
                 if (actorInstance && actorInstance->GetAnimGraphInstance())
                 {
-                    QAction* makeDefaultAction = menu->addAction("Make default value");
+                    QAction* makeDefaultAction = menu->addAction(tr("Make default value"));
                     connect(makeDefaultAction, &QAction::triggered, this, &ParameterWindow::OnMakeDefaultValue);
                 }
             }
@@ -453,7 +453,7 @@ namespace EMStudio
 
             // select group parameter action
             QMenu* groupMenu = new QMenu("Assign to group", menu);
-            QAction* noneGroupAction = groupMenu->addAction("Default");
+            QAction* noneGroupAction = groupMenu->addAction(tr("Default"));
             noneGroupAction->setCheckable(true);
 
             if (!parameter)
@@ -503,11 +503,11 @@ namespace EMStudio
         menu->addSeparator();
 
         // add parameter action
-        QAction* addParameter = menu->addAction("Add parameter");
+        QAction* addParameter = menu->addAction(tr("Add parameter"));
         connect(addParameter, &QAction::triggered, this, &ParameterWindow::OnAddParameter);
 
         // add group action
-        QAction* addGroupAction = menu->addAction("Add group");
+        QAction* addGroupAction = menu->addAction(tr("Add group"));
         connect(addGroupAction, &QAction::triggered, this, &ParameterWindow::OnAddGroup);
 
         menu->addSeparator();
@@ -515,14 +515,14 @@ namespace EMStudio
         // remove action
         if (!m_selectedParameterNames.empty())
         {
-            QAction* removeAction = menu->addAction("Remove");
+            QAction* removeAction = menu->addAction(tr("Remove"));
             connect(removeAction, &QAction::triggered, this, &ParameterWindow::OnRemoveSelected);
         }
 
         // clear action
         if (m_animGraph->GetNumParameters() > 0)
         {
-            QAction* clearAction = menu->addAction("Clear");
+            QAction* clearAction = menu->addAction(tr("Clear"));
             connect(clearAction, &QAction::triggered, this, &ParameterWindow::OnClearButton);
         }
 

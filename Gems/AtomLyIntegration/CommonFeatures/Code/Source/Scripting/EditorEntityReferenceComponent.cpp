@@ -7,6 +7,7 @@
  */
 
 #include <Scripting/EditorEntityReferenceComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorEntityReferenceComponent>(
-                        "Entity Reference", "Contains a reference list to other entities")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Entity Reference"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Contains a reference list to other entities"))
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Miscellaneous")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -37,12 +38,12 @@ namespace AZ
                     editContext->Class<EntityReferenceComponentController>("EntityReferenceComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EntityReferenceComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EntityReferenceComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
                     editContext->Class<EntityReferenceComponentConfig>("EntityReferenceComponentConfig", "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EntityReferenceComponentConfig::m_entityIdReferences, "EntityIdReferences", "List of references to other entities.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EntityReferenceComponentConfig::m_entityIdReferences, QT_TRANSLATE_NOOP("AtomLyIntegration", "EntityIdReferences"), QT_TRANSLATE_NOOP("AtomLyIntegration", "List of references to other entities."))
                         ;
                     ;
                 }

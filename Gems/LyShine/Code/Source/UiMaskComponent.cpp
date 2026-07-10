@@ -23,6 +23,7 @@
 
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <AtomCore/Instance/Instance.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -347,7 +348,7 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiMaskComponent>("Mask", "A component that masks child elements using its visual component");
+            auto editInfo = ec->Class<UiMaskComponent>(QT_TRANSLATE_NOOP("LyShine", "Mask"), QT_TRANSLATE_NOOP("LyShine", "A component that masks child elements using its visual component"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Effects")
@@ -356,37 +357,37 @@ void UiMaskComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_enableMasking, "Enable masking",
-                "When checked, only the parts of child elements that are revealed by the mask will be seen.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_enableMasking, QT_TRANSLATE_NOOP("LyShine", "Enable masking"),
+                QT_TRANSLATE_NOOP("LyShine", "When checked, only the parts of child elements that are revealed by the mask will be seen."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_maskInteraction, "Mask interaction",
-                "Check this box to prevent children hidden by the mask from getting input events.");
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_maskInteraction, QT_TRANSLATE_NOOP("LyShine", "Mask interaction"),
+                QT_TRANSLATE_NOOP("LyShine", "Check this box to prevent children hidden by the mask from getting input events."));
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiMaskComponent::m_childMaskElement, "Child mask element",
-                "A child element that is rendered as part of the mask.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiMaskComponent::m_childMaskElement, QT_TRANSLATE_NOOP("LyShine", "Child mask element"),
+                QT_TRANSLATE_NOOP("LyShine", "A child element that is rendered as part of the mask."))
                 ->Attribute(AZ::Edit::Attributes::EnumValues, &UiMaskComponent::PopulateChildEntityList)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-             editInfo->DataElement(0, &UiMaskComponent::m_useRenderToTexture, "Use alpha gradient",
-                "If true, this element's content and the mask are rendered to separate render targets\n"
+             editInfo->DataElement(0, &UiMaskComponent::m_useRenderToTexture, QT_TRANSLATE_NOOP("LyShine", "Use alpha gradient"),
+                QT_TRANSLATE_NOOP("LyShine", "If true, this element's content and the mask are rendered to separate render targets\n"
                 "and then rendered to the screen using the mask render target as an alpha gradient mask.\n"
-                "This allows soft-edged masking. The effect is limited to the rect of this element.")
+                "This allows soft-edged masking. The effect is limited to the rect of this element."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnRenderTargetChange);
 
-             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualBehindChildren, "Draw behind",
-                "Check this box to draw the mask visual behind the child elements.")
+             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualBehindChildren, QT_TRANSLATE_NOOP("LyShine", "Draw behind"),
+                QT_TRANSLATE_NOOP("LyShine", "Check this box to draw the mask visual behind the child elements."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiMaskComponent::IsStencilMask)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualInFrontOfChildren, "Draw in front",
-                "Check this box to draw the mask in front of the child elements.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_drawMaskVisualInFrontOfChildren, QT_TRANSLATE_NOOP("LyShine", "Draw in front"),
+                QT_TRANSLATE_NOOP("LyShine", "Check this box to draw the mask in front of the child elements."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiMaskComponent::IsStencilMask)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_useAlphaTest, "Use alpha test",
-                "Check this box to use the alpha channel in the mask visual's texture to define the mask.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiMaskComponent::m_useAlphaTest, QT_TRANSLATE_NOOP("LyShine", "Use alpha test"),
+                QT_TRANSLATE_NOOP("LyShine", "Check this box to use the alpha channel in the mask visual's texture to define the mask."))
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiMaskComponent::IsStencilMask)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiMaskComponent::OnEditorRenderSettingChange);
         }

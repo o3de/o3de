@@ -107,14 +107,14 @@ namespace EMStudio
         m_actorsWindow = new ActorsWindow(this);
 
         // add in the dialog stack
-        dialogStack->Add(m_actorsWindow, "Actors", false, true, true);
+        dialogStack->Add(m_actorsWindow, tr("Actors"), false, true, true);
 
         // create the actor properties window
         m_actorPropsWindow = new ActorPropertiesWindow(m_dock, this);
         m_actorPropsWindow->Init();
 
         // add the actor properties window to the stack window
-        dialogStack->Add(m_actorPropsWindow, "Actor Properties", false, false, true);
+        dialogStack->Add(m_actorPropsWindow, tr("Actor Properties"), false, false, true);
 
         // set dialog stack as main widget of the dock
         m_dock->setWidget(dialogStack);

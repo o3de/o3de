@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorUtils.h>
 #include <TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.h>
@@ -39,38 +40,45 @@ namespace Terrain
             {
                 editContext
                     ->Class<TerrainMacroMaterialConfig>(
-                        "Terrain Macro Material Component", "Provide a terrain macro material for a region of the world")
+                        QT_TRANSLATE_NOOP("Terrain", "Terrain Macro Material Component"),
+                        QT_TRANSLATE_NOOP("Terrain", "Provide a terrain macro material for a region of the world"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_macroColorAsset, "Color Texture",
-                        "Terrain macro color texture for use by any terrain inside the bounding box on this entity.")
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_macroColorAsset,
+                        QT_TRANSLATE_NOOP("Terrain", "Color Texture"),
+                        QT_TRANSLATE_NOOP("Terrain", "Terrain macro color texture for use by any terrain inside the bounding box on this entity."))
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &TerrainMacroMaterialConfig::GetMacroColorAssetPropertyName)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_macroNormalAsset, "Normal Texture",
-                        "Texture for defining surface normal direction. These will override normals generated from the geometry.")
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_macroNormalAsset,
+                        QT_TRANSLATE_NOOP("Terrain", "Normal Texture"),
+                        QT_TRANSLATE_NOOP("Terrain", "Texture for defining surface normal direction. These will override normals generated from the geometry."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipX, "Normal Flip X",
-                        "Flip tangent direction for this normal map.")
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipX,
+                        QT_TRANSLATE_NOOP("Terrain", "Normal Flip X"),
+                        QT_TRANSLATE_NOOP("Terrain", "Flip tangent direction for this normal map."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipY, "Normal Flip Y",
-                        "Flip bitangent direction for this normal map.")
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipY,
+                        QT_TRANSLATE_NOOP("Terrain", "Normal Flip Y"),
+                        QT_TRANSLATE_NOOP("Terrain", "Flip bitangent direction for this normal map."))
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &TerrainMacroMaterialConfig::m_normalFactor, "Normal Factor",
-                        "Strength factor for scaling the normal map values.")
+                        AZ::Edit::UIHandlers::Slider, &TerrainMacroMaterialConfig::m_normalFactor,
+                        QT_TRANSLATE_NOOP("Terrain", "Normal Factor"),
+                        QT_TRANSLATE_NOOP("Terrain", "Strength factor for scaling the normal map values."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &TerrainMacroMaterialConfig::m_priority, "Priority",
-                        "Defines order macro materials are applied.  Larger numbers = higher priority")
+                        AZ::Edit::UIHandlers::Slider, &TerrainMacroMaterialConfig::m_priority,
+                        QT_TRANSLATE_NOOP("Terrain", "Priority"),
+                        QT_TRANSLATE_NOOP("Terrain", "Defines order macro materials are applied.  Larger numbers = higher priority"))
                         ->Attribute(AZ::Edit::Attributes::Min, AreaConstants::s_priorityMin)
                         ->Attribute(AZ::Edit::Attributes::Max, AreaConstants::s_priorityMax)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_prioritySoftMin)
@@ -90,15 +98,16 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     // Configuration for the Terrain Macro Material
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTerrainMacroMaterialComponent::m_configuration, "Configuration", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorTerrainMacroMaterialComponent::m_configuration,
+                        QT_TRANSLATE_NOOP("Terrain", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorTerrainMacroMaterialComponent::ConfigurationChanged)
 
                     // Create/edit controls for the macro color image
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorTerrainMacroMaterialComponent::m_paintableMacroColorAssetHelper,
-                        "Edit Macro Color Image",
-                        "Edit the macro color image asset")
+                        QT_TRANSLATE_NOOP("Terrain", "Edit Macro Color Image"),
+                        QT_TRANSLATE_NOOP("Terrain", "Edit the macro color image asset"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

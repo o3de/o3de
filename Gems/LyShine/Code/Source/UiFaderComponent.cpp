@@ -25,6 +25,7 @@
 
 #include "UiSerialize.h"
 #include "RenderToTextureBus.h"
+#include <AzFramework/Translation/TranslationDef.h>
 
 // BehaviorContext UiFaderNotificationBus forwarder
 class BehaviorUiFaderNotificationBusHandler
@@ -272,7 +273,7 @@ void UiFaderComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiFaderComponent>("Fader", "A component that can fade its element and all its child elements");
+            auto editInfo = ec->Class<UiFaderComponent>(QT_TRANSLATE_NOOP("LyShine", "Fader"), QT_TRANSLATE_NOOP("LyShine", "A component that can fade its element and all its child elements"));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Effects")
@@ -281,16 +282,16 @@ void UiFaderComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiFaderComponent::m_fade, "Fade", "The initial fade value")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Slider, &UiFaderComponent::m_fade, QT_TRANSLATE_NOOP("LyShine", "Fade"), QT_TRANSLATE_NOOP("LyShine", "The initial fade value"))
                 ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFaderComponent::OnFadeValueChanged);
  
-            editInfo->DataElement(0, &UiFaderComponent::m_useRenderToTexture, "Use render to texture",
-                "If true, this element and all children are rendered to a separate render target\n"
+            editInfo->DataElement(0, &UiFaderComponent::m_useRenderToTexture, QT_TRANSLATE_NOOP("LyShine", "Use render to texture"),
+                QT_TRANSLATE_NOOP("LyShine", "If true, this element and all children are rendered to a separate render target\n"
                 "and then that target is rendered to the screen. This avoids child elements\n"
-                "blending with each other as they fade. But it is more expensive.")
+                "blending with each other as they fade. But it is more expensive."))
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiFaderComponent::OnRenderTargetChange);
         }
     }

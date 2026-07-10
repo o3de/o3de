@@ -58,7 +58,7 @@ namespace AtomToolsFramework
 
         // Screenshot
         m_takeScreenshot = new QToolButton(m_editorToolbar);
-        m_takeScreenshot->setToolTip("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard");
+        m_takeScreenshot->setToolTip(tr("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard"));
         m_takeScreenshot->setIcon(QIcon(":/Icons/screenshot.png"));
         m_takeScreenshot->setEnabled(false);
         connect(m_takeScreenshot, &QToolButton::clicked, this, [this](){

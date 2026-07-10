@@ -34,6 +34,8 @@
 #include "StringUtfUtils.h"
 #include "UiClipboard.h"
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace
 {
     // Orange color from the canvas editor style guide
@@ -1303,7 +1305,7 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiTextInputComponent>("TextInput", "An interactable component for editing a text string.");
+            auto editInfo = ec->Class<UiTextInputComponent>(QT_TRANSLATE_NOOP("LyShine", "TextInput"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for editing a text string."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -1314,54 +1316,54 @@ void UiTextInputComponent::Reflect(AZ::ReflectContext* context)
 
             // Elements group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Elements")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Elements"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextInputComponent::m_textEntity, "Text", "The UI element to hold the entered text.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextInputComponent::m_textEntity, QT_TRANSLATE_NOOP("LyShine", "Text"), QT_TRANSLATE_NOOP("LyShine", "The UI element to hold the entered text."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiTextInputComponent::PopulateTextEntityList);
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextInputComponent::m_placeHolderTextEntity, "Placeholder text", "The UI element to display the placeholder text.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTextInputComponent::m_placeHolderTextEntity, QT_TRANSLATE_NOOP("LyShine", "Placeholder text"), QT_TRANSLATE_NOOP("LyShine", "The UI element to display the placeholder text."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiTextInputComponent::PopulateTextEntityList);
             }
 
             // Text Editing group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Text editing")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Text editing"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiTextInputComponent::m_textSelectionColor,
-                    "Selection color", "The text selection color.");
+                    QT_TRANSLATE_NOOP("LyShine", "Selection color"), QT_TRANSLATE_NOOP("LyShine", "The text selection color."));
                 editInfo->DataElement(AZ::Edit::UIHandlers::Color, &UiTextInputComponent::m_textCursorColor,
-                    "Cursor color", "The text cursor color.");
+                    QT_TRANSLATE_NOOP("LyShine", "Cursor color"), QT_TRANSLATE_NOOP("LyShine", "The text cursor color."));
                 editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiTextInputComponent::m_cursorBlinkInterval,
-                    "Cursor blink time", "The cursor blink interval.")
+                    QT_TRANSLATE_NOOP("LyShine", "Cursor blink time"), QT_TRANSLATE_NOOP("LyShine", "The cursor blink interval."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f);
                 editInfo->DataElement(AZ::Edit::UIHandlers::SpinBox, &UiTextInputComponent::m_maxStringLength,
-                    "Max char count", "The maximum string length that can be entered. For unlimited enter -1.")
+                    QT_TRANSLATE_NOOP("LyShine", "Max char count"), QT_TRANSLATE_NOOP("LyShine", "The maximum string length that can be entered. For unlimited enter -1."))
                     ->Attribute(AZ::Edit::Attributes::Min, -1)
                     ->Attribute(AZ::Edit::Attributes::Step, 1);
 
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextInputComponent::m_isPasswordField,
-                    "Is password field", "A password field hides the entered text.")
+                    QT_TRANSLATE_NOOP("LyShine", "Is password field"), QT_TRANSLATE_NOOP("LyShine", "A password field hides the entered text."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
                 editInfo->DataElement(AZ_CRC_CE("Char"), &UiTextInputComponent::m_replacementCharacter,
-                    "Replacement character", "The replacement character used to hide password text.")
+                    QT_TRANSLATE_NOOP("LyShine", "Replacement character"), QT_TRANSLATE_NOOP("LyShine", "The replacement character used to hide password text."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTextInputComponent::OnReplacementCharacterChange)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiTextInputComponent::GetIsPasswordField);
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextInputComponent::m_clipInputText,
-                    "Clip input text", "When checked, the input text is clipped to this element's rect.");
+                    QT_TRANSLATE_NOOP("LyShine", "Clip input text"), QT_TRANSLATE_NOOP("LyShine", "When checked, the input text is clipped to this element's rect."));
                 editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiTextInputComponent::m_enableClipboard,
-                    "Enable clipboard", "When checked, Ctrl-C, Ctrl-X, and Ctrl-V events will be handled");
+                    QT_TRANSLATE_NOOP("LyShine", "Enable clipboard"), QT_TRANSLATE_NOOP("LyShine", "When checked, Ctrl-C, Ctrl-X, and Ctrl-V events will be handled"));
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiTextInputComponent::m_changeAction, "Change", "The action name triggered on each character typed.");
-                editInfo->DataElement(0, &UiTextInputComponent::m_endEditAction, "End edit", "The action name triggered on either focus change or enter.");
-                editInfo->DataElement(0, &UiTextInputComponent::m_enterAction, "Enter", "The action name triggered when enter is pressed.");
+                editInfo->DataElement(0, &UiTextInputComponent::m_changeAction, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered on each character typed."));
+                editInfo->DataElement(0, &UiTextInputComponent::m_endEditAction, QT_TRANSLATE_NOOP("LyShine", "End edit"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered on either focus change or enter."));
+                editInfo->DataElement(0, &UiTextInputComponent::m_enterAction, QT_TRANSLATE_NOOP("LyShine", "Enter"), QT_TRANSLATE_NOOP("LyShine", "The action name triggered when enter is pressed."));
             }
         }
     }

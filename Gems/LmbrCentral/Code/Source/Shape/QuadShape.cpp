@@ -37,9 +37,13 @@ namespace LmbrCentral
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<QuadShape>("Quad Shape", "Quad shape configuration parameters")
+                editContext->Class<QuadShape>(
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Quad Shape"),
+                    QT_TRANSLATE_NOOP("LmbrCentral", "Quad shape configuration parameters"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &QuadShape::m_quadShapeConfig, "Quad Configuration", "Quad shape configuration")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &QuadShape::m_quadShapeConfig,
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Quad Configuration"),
+                        QT_TRANSLATE_NOOP("LmbrCentral", "Quad shape configuration"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

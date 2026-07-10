@@ -21,6 +21,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/std/chrono/chrono.h>
@@ -149,30 +150,30 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<AreaSystemConfig>(
-                    "Vegetation Area System Config", "Handles the placement and removal of vegetation instance based on the vegetation area component rules")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Area System Config"), QT_TRANSLATE_NOOP("Vegetation", "Handles the placement and removal of vegetation instance based on the vegetation area component rules"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_viewRectangleSize, "View Area Grid Size", "The number of sectors (per-side) of a managed grid in a scrolling view centered around the camera.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_viewRectangleSize, QT_TRANSLATE_NOOP("Vegetation", "View Area Grid Size"), QT_TRANSLATE_NOOP("Vegetation", "The number of sectors (per-side) of a managed grid in a scrolling view centered around the camera."))
                     ->Attribute(AZ::Edit::Attributes::ChangeValidate, &AreaSystemConfig::ValidateViewArea)
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, s_maxViewRectangleSize)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_sectorDensity, "Sector Point Density", "The number of equally-spaced vegetation instance grid placement points (per-side) within a sector")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_sectorDensity, QT_TRANSLATE_NOOP("Vegetation", "Sector Point Density"), QT_TRANSLATE_NOOP("Vegetation", "The number of equally-spaced vegetation instance grid placement points (per-side) within a sector"))
                     ->Attribute(AZ::Edit::Attributes::ChangeValidate, &AreaSystemConfig::ValidateSectorDensity)
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, s_maxSectorDensity)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_sectorSizeInMeters, "Sector Size In Meters", "The size in meters (per-side) of each sector.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_sectorSizeInMeters, QT_TRANSLATE_NOOP("Vegetation", "Sector Size In Meters"), QT_TRANSLATE_NOOP("Vegetation", "The size in meters (per-side) of each sector."))
                     ->Attribute(AZ::Edit::Attributes::ChangeValidate, &AreaSystemConfig::ValidateSectorSize)
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, s_maxSectorSizeInMeters)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_threadProcessingIntervalMs, "Thread Processing Interval", "The delay (in milliseconds) between processing queued thread tasks.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_threadProcessingIntervalMs, QT_TRANSLATE_NOOP("Vegetation", "Thread Processing Interval"), QT_TRANSLATE_NOOP("Vegetation", "The delay (in milliseconds) between processing queued thread tasks."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Max, 5000)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_sectorSearchPadding, "Sector Search Padding", "Increases the search radius for surrounding sectors when enumerating instances.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaSystemConfig::m_sectorSearchPadding, QT_TRANSLATE_NOOP("Vegetation", "Sector Search Padding"), QT_TRANSLATE_NOOP("Vegetation", "Increases the search radius for surrounding sectors when enumerating instances."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Max, 2)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AreaSystemConfig::m_sectorPointSnapMode, "Sector Point Snap Mode", "Controls whether vegetation placement points are located at the corner or the center of the cell.")
-                    ->EnumAttribute(SnapMode::Corner, "Corner")
-                    ->EnumAttribute(SnapMode::Center, "Center")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &AreaSystemConfig::m_sectorPointSnapMode, QT_TRANSLATE_NOOP("Vegetation", "Sector Point Snap Mode"), QT_TRANSLATE_NOOP("Vegetation", "Controls whether vegetation placement points are located at the corner or the center of the cell."))
+                    ->EnumAttribute(SnapMode::Corner, QT_TRANSLATE_NOOP("Vegetation", "Corner"))
+                    ->EnumAttribute(SnapMode::Center, QT_TRANSLATE_NOOP("Vegetation", "Center"))
                 ;
             }
         }
@@ -303,12 +304,12 @@ namespace Vegetation
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<AreaSystemComponent>("Vegetation Area System", "Manages registration and processing of vegetation area entities")
+                editContext->Class<AreaSystemComponent>(QT_TRANSLATE_NOOP("Vegetation", "Vegetation Area System"), QT_TRANSLATE_NOOP("Vegetation", "Manages registration and processing of vegetation area entities"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
-                    ->DataElement(0, &AreaSystemComponent::m_configuration, "Configuration", "")
+                    ->DataElement(0, &AreaSystemComponent::m_configuration, QT_TRANSLATE_NOOP("Vegetation", "Configuration"), "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                 ;
             }

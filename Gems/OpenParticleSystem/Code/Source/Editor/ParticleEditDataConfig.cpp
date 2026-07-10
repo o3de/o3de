@@ -10,6 +10,7 @@
 #include <OpenParticleSystem/Asset/ParticleAsset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <OpenParticleSystem/ParticleEditDataConfig.h>
 
 namespace OpenParticle
@@ -513,228 +514,228 @@ namespace OpenParticle
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext != nullptr)
             {
-                editContext->Class<OpenParticle::SystemConfig>("Particle System Config", "")
+                editContext->Class<OpenParticle::SystemConfig>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle System Config"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SystemConfig::loop, "Looping",
-                        "Particle system loop playback.");
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SystemConfig::loop, QT_TRANSLATE_NOOP("OpenParticleSystem", "Looping"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle system loop playback."));
 
-                editContext->Class<OpenParticle::PreWarm>("PreWarm", "Particle Simulate Type CPU or GPU.")
+                editContext->Class<OpenParticle::PreWarm>(QT_TRANSLATE_NOOP("OpenParticleSystem", "PreWarm"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Simulate Type CPU or GPU."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::PreWarm::warmupTime,
-                        "Warmup Time",
-                        "Warm up time in seconds")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Warmup Time"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Warm up time in seconds"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::PreWarm::tickCount,
-                        "Tick Count",
-                        "Number of ticks to process for warmup")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Tick Count"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Number of ticks to process for warmup"))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::PreWarm::tickDelta,
-                        "Tick Delta",
-                        "Delta time to use for warmup ticks.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Tick Delta"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Delta time to use for warmup ticks."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f);
 
-                editContext->Class<OpenParticle::EmitterConfig>("Particle Emitter Conifg", "")
+                editContext->Class<OpenParticle::EmitterConfig>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Emitter Conifg"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::type, "Simulate Type",
-                        "The simulation type of the emitter.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::type, QT_TRANSLATE_NOOP("OpenParticleSystem", "Simulate Type"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The simulation type of the emitter."))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::duration,
-                        "Emitter Duration", "The duration of the emitter emits particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Emitter Duration"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The duration of the emitter emits particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, .05f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::localSpace,
-                        "Use Local Space", "Whether the emitter uses local space.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Use Local Space"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether the emitter uses local space."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::maxSize, "Max Particles",
-                        "Maximum number of particles emitted by the emitter.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::maxSize, QT_TRANSLATE_NOOP("OpenParticleSystem", "Max Particles"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Maximum number of particles emitted by the emitter."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000000)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::startTime, "Spawn Delay",
-                        "How long the emitter delays spawning particles.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::startTime, QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn Delay"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "How long the emitter delays spawning particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::loop, "Looping",
-                        "Particle system loop playback.");
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitterConfig::loop, QT_TRANSLATE_NOOP("OpenParticleSystem", "Looping"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle system loop playback."));
 
-                editContext->Class<OpenParticle::SingleBurst>("SingleBurst", "The burst list of particles.")
+                editContext->Class<OpenParticle::SingleBurst>(QT_TRANSLATE_NOOP("OpenParticleSystem", "SingleBurst"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The burst list of particles."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SingleBurst::time, "Time",
-                        "The burst time of particles.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SingleBurst::time, QT_TRANSLATE_NOOP("OpenParticleSystem", "Time"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The burst time of particles."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::SingleBurst::count,
-                        "Particle Number", "The burst number of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Number"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The burst number of particles."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0u)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::SingleBurst::minCount,
-                        "Min Particle Number",
-                        "The minimum burst number of particles.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Min Particle Number"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The minimum burst number of particles."));
 
-                editContext->Class<OpenParticle::EmitBurstList>("Burst List", "")
+                editContext->Class<OpenParticle::EmitBurstList>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Burst List"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::EmitBurstList::isProcessBurstList,
-                        "Process Burst List",
-                        "Whether to process burst.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Process Burst List"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to process burst."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitBurstList::burstList, "Burst List",
-                        "The list of the burst element.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::EmitBurstList::burstList, QT_TRANSLATE_NOOP("OpenParticleSystem", "Burst List"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The list of the burst element."))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editContext->Class<OpenParticle::EmitSpawn>("Spawn Rate", "")
+                editContext->Class<OpenParticle::EmitSpawn>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn Rate"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::EmitSpawn::isProcessSpawnRate,
-                        "Process Spawn Rate", "Whether to process spawn rate.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Process Spawn Rate"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to process spawn rate."))
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::EmitSpawn::spawnRateObject, "Particle Rate",
-                        "The rate of spawning particles.")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::EmitSpawn::spawnRateObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Rate"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The rate of spawning particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::EmitSpawn>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("spawnRateObject"));
 
-                editContext->Class<OpenParticle::EmitSpawnOverMoving>("Spawn Per Unit", "")
+                editContext->Class<OpenParticle::EmitSpawnOverMoving>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn Per Unit"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::EmitSpawnOverMoving::isProcessBurstList,
-                        "Process Burst List", "Whether to process burst.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Process Burst List"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to process burst."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::EmitSpawnOverMoving::isProcessSpawnRate,
-                        "Process Spawn Rate", "Whether to process spawn rate.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Process Spawn Rate"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to process spawn rate."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::EmitSpawnOverMoving::isIgnoreSpawnRateWhenMoving,
-                        "Ignore Spawn Rate When Moving",
-                        "Whether to ignore spawn rate when moving.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Ignore Spawn Rate When Moving"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to ignore spawn rate when moving."))
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::EmitSpawnOverMoving::spawnRatePerUnitObject,
-                        "Spawn Rate Per Unit", "The rate per unit distance of spawning particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn Rate Per Unit"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The rate per unit distance of spawning particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::EmitSpawnOverMoving>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("spawnRatePerUnitObject"));
 
-                editContext->Class<OpenParticle::ParticleEventHandler>("Event Handler", "")
+                editContext->Class<OpenParticle::ParticleEventHandler>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Event Handler"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &OpenParticle::ParticleEventHandler::emitterName,
-                        "Emitter Name",
-                        "The name of emitter whose event will be handled.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Emitter Name"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The name of emitter whose event will be handled."))
                         ->Attribute(AZ::Edit::Attributes::StringList, &OpenParticle::ParticleEventHandler::GetEmitterNames)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenParticle::ParticleEventHandler::OnEmitterNameChangedNotify)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleEventHandler::eventType,
-                        "Event Type", "The type of event which will be handled.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Event Type"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The type of event which will be handled."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleEventHandler::maxEventNum,
-                        "Max Event Number Per Frame",
-                        "The max number of event to be handled.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Max Event Number Per Frame"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The max number of event to be handled."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleEventHandler::emitNum,
-                        "Particle Number", "The number of particles to be emitted.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Number"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The number of particles to be emitted."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleEventHandler::useEventInfo,
-                        "Use Event Info",
-                        "Write cover particle attributes with event info.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Use Event Info"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Write cover particle attributes with event info."));
 
-                editContext->Class<OpenParticle::InheritanceHandler>("Inheritance Handler", "")
+                editContext->Class<OpenParticle::InheritanceHandler>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Inheritance Handler"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &OpenParticle::InheritanceHandler::emitterName,
-                        "Emitter Name",
-                        "The name of emitter which to be inherited.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Emitter Name"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The name of emitter which to be inherited."))
                         ->Attribute(AZ::Edit::Attributes::StringList, &OpenParticle::InheritanceHandler::GetEmitterNames)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenParticle::InheritanceHandler::OnEmitterNameChangedNotify)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::spawnEnable,
-                        "Spawn Enable",
-                        "Whether to enable spawn.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn Enable"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to enable spawn."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::calculateSpawnRate,
-                        "Calculate Spawn Rate",
-                        "Whether to calculate spawn rate or spawn once.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Calculate Spawn Rate"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to calculate spawn rate or spawn once."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::spawnRate,
-                        "Spawn Rate",
-                        "The spawn rate to calculate with source emitter.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn Rate"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The spawn rate to calculate with source emitter."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &OpenParticle::InheritanceHandler::CalculateSpawnRate)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::applyPosition,
-                        "Apply Position",
-                        "Whether to apply position.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Apply Position"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to apply position."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::positionOffset,
-                        "Position Offset",
-                        "The offset of source emitter's position.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Position Offset"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The offset of source emitter's position."))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &OpenParticle::InheritanceHandler::PositionApplyed)
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::applyVelocity,
-                        "Apply Velocity",
-                        "Whether to apply velocity.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Apply Velocity"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to apply velocity."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::overwriteVelocity,
-                        "Overwrite Velocity",
-                        "Whether to overwrite velocity.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Overwrite Velocity"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to overwrite velocity."))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &OpenParticle::InheritanceHandler::VelocityApplyed)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::velocityRatio,
-                        "Velocity Ratio",
-                        "The ratio of source emitter's velocity.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity Ratio"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The ratio of source emitter's velocity."))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &OpenParticle::InheritanceHandler::VelocityApplyed)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::applySize,
-                        "Apply Size",
-                        "Whether to apply size.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Apply Size"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to apply size."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::applyColorRGB,
-                        "Apply Color RGB",
-                        "Whether to apply RGB of color.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Apply Color RGB"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to apply RGB of color."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::applyColorAlpha,
-                        "Apply Color Alpha",
-                        "Whether to apply alpha of color.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Apply Color Alpha"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to apply alpha of color."))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &OpenParticle::InheritanceHandler::ColorApplyed)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::colorRatio,
-                        "Color Ratio",
-                        "The ratio of source emitter's color.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Color Ratio"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The ratio of source emitter's color."))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &OpenParticle::InheritanceHandler::ColorApplyed)
                         ->Attribute(AZ::Edit::Attributes::LabelForX, "R")
                         ->Attribute(AZ::Edit::Attributes::LabelForY, "G")
@@ -744,728 +745,731 @@ namespace OpenParticle
                         ->Attribute(AZ::Edit::Attributes::Max, 1000.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::applyAge,
-                        "Apply Particle Age",
-                        "Whether to apply age of particle.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Apply Particle Age"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to apply age of particle."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::InheritanceHandler::applyLifetime,
-                        "Apply Particle Lifetime",
-                        "Whether to apply lifetime of particle.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Apply Particle Lifetime"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to apply lifetime of particle."));
 
-                editContext->Class<OpenParticle::SpawnColor>("Start Color", "")
+                editContext->Class<OpenParticle::SpawnColor>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Start Color"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnColor::startColorObject, "Color",
-                        "The start color of partiles.")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnColor::startColorObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Color"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The start color of partiles."))
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnColor>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("startColorObject"));
 
-                editContext->Class<OpenParticle::SpawnLifetime>("Particle Lifetime", "")
+                editContext->Class<OpenParticle::SpawnLifetime>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Lifetime"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnLifetime::lifeTimeObject, "Lifetime",
-                        "The life time of particles.")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnLifetime::lifeTimeObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Lifetime"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The life time of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnLifetime>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("lifeTimeObject"));
 
-                editContext->Class<OpenParticle::SpawnLocBox>("Box", "")
+                editContext->Class<OpenParticle::SpawnLocBox>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Box"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocBox::center, "Position",
-                        "The position of the box center.")
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocBox::center, QT_TRANSLATE_NOOP("OpenParticleSystem", "Position"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The position of the box center."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocBox::size, "Size",
-                        "The size of the box.")
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocBox::size, QT_TRANSLATE_NOOP("OpenParticleSystem", "Size"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The size of the box."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f);
 
-                editContext->Class<OpenParticle::SpawnLocPoint>("Point", "")
+                editContext->Class<OpenParticle::SpawnLocPoint>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Point"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnLocPoint::positionObject, "Position",
-                        "The position of the point center.")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnLocPoint::positionObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Position"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The position of the point center."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnLocPoint>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("positionObject"));
 
-                editContext->Class<OpenParticle::SpawnLocSphere>("Sphere", "")
+                editContext->Class<OpenParticle::SpawnLocSphere>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Sphere"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocSphere::center, "Position",
-                        "The position of the sphere center.")
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocSphere::center, QT_TRANSLATE_NOOP("OpenParticleSystem", "Position"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The position of the sphere center."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::axis, "Axis",
-                        "The direction of the sphere.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::axis, QT_TRANSLATE_NOOP("OpenParticleSystem", "Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The direction of the sphere."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::angle, "Angle",
-                        "The emit angle of the sphere.")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "deg")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::angle, QT_TRANSLATE_NOOP("OpenParticleSystem", "Angle"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The emit angle of the sphere."))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("OpenParticleSystem", "deg"))
                         ->Attribute(AZ::Edit::Attributes::Min, -360.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 360.f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::radius, "Radius",
-                        "The radius of the sphere.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::radius, QT_TRANSLATE_NOOP("OpenParticleSystem", "Radius"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius of the sphere."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::radiusThickness,
-                        "Radius Thickness", "The radius thickness of the sphere.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Radius Thickness"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius thickness of the sphere."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::ratio, "Ratio",
-                        "The ratio of the sphere radius.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSphere::ratio, QT_TRANSLATE_NOOP("OpenParticleSystem", "Ratio"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The ratio of the sphere radius."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f);
 
-                editContext->Class<OpenParticle::SpawnLocSkeleton>("Mesh", "")
+                editContext->Class<OpenParticle::SpawnLocSkeleton>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Mesh"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocSkeleton::sampleType,
-                        "Mesh Sample Type", "To use the Bone or Vertex of the mesh.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Mesh Sample Type"), QT_TRANSLATE_NOOP("OpenParticleSystem", "To use the Bone or Vertex of the mesh."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocSkeleton::scale, "Scale",
-                        "Scale model size.");
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocSkeleton::scale, QT_TRANSLATE_NOOP("OpenParticleSystem", "Scale"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Scale model size."));
 
-                editContext->Class<OpenParticle::SpawnLocCylinder>("Cylinder", "")
+                editContext->Class<OpenParticle::SpawnLocCylinder>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Cylinder"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::axis, "Axis",
-                        "The direction of the cylinder.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::axis, QT_TRANSLATE_NOOP("OpenParticleSystem", "Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The direction of the cylinder."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocCylinder::center, "Position",
-                        "The position of the cylinder center.")
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocCylinder::center, QT_TRANSLATE_NOOP("OpenParticleSystem", "Position"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The position of the cylinder center."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::radius, "Radius",
-                        "The radius of the cylinder.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::radius, QT_TRANSLATE_NOOP("OpenParticleSystem", "Radius"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius of the cylinder."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::height, "Height",
-                        "The height of the cylinder.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::height, QT_TRANSLATE_NOOP("OpenParticleSystem", "Height"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The height of the cylinder."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::angle, "Angle",
-                        "The emit angle of the cylinder.")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "deg")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::angle, QT_TRANSLATE_NOOP("OpenParticleSystem", "Angle"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The emit angle of the cylinder."))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("OpenParticleSystem", "deg"))
                         ->Attribute(AZ::Edit::Attributes::Min, -360.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 360.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocCylinder::radiusThickness,
-                        "Radius Thickness", "The radius thickness of the cylinder.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Radius Thickness"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius thickness of the cylinder."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.f);
 
-                editContext->Class<OpenParticle::SpawnLocTorus>("Torus", "")
+                editContext->Class<OpenParticle::SpawnLocTorus>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Torus"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocTorus::center, "Center",
-                        "The position of the torus center.")
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnLocTorus::center, QT_TRANSLATE_NOOP("OpenParticleSystem", "Center"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The position of the torus center."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocTorus::torusAxis, "Torus Axis",
-                        "The direction of the torus.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocTorus::torusAxis, QT_TRANSLATE_NOOP("OpenParticleSystem", "Torus Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The direction of the torus."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocTorus::torusRadius, "Torus Radius",
-                        "The distance from the center of the tube to the center of the torus.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocTorus::torusRadius, QT_TRANSLATE_NOOP("OpenParticleSystem", "Torus Radius"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The distance from the center of the tube to the center of the torus."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocTorus::tubeRadius, "Tube Radius",
-                        "The radius of the tube.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocTorus::tubeRadius, QT_TRANSLATE_NOOP("OpenParticleSystem", "Tube Radius"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius of the tube."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f);
 
-                editContext->Class<OpenParticle::SpawnSize>("Start Size", "")
+                editContext->Class<OpenParticle::SpawnSize>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Start Size"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnSize::sizeObject, "Size",
-                        "The start size of particles.")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnSize::sizeObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Size"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The start size of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnSize>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("sizeObject"));
 
-                editContext->Class<OpenParticle::SpawnVelDirection>("Start Velocity", "")
+                editContext->Class<OpenParticle::SpawnVelDirection>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Start Velocity"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelDirection::strengthObject,
-                        "Velocity strength", "The start velocity strength of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity strength"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The start velocity strength of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnVelDirection>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("strengthObject"))
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelDirection::directionObject,
-                        "Velocity direction", "The start velocity direction of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity direction"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The start velocity direction of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnVelDirection>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("directionObject"));
 
-                editContext->Class<OpenParticle::SpawnVelSphere>("Velocity Sphere", "")
+                editContext->Class<OpenParticle::SpawnVelSphere>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity Sphere"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelSphere::strengthObject,
-                        "Velocity strength", "The velocity strength of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity strength"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The velocity strength of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnVelSphere>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("strengthObject"));
 
-                editContext->Class<OpenParticle::SpawnVelConcentrate>("Velocity Concentrate", "")
+                editContext->Class<OpenParticle::SpawnVelConcentrate>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity Concentrate"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelConcentrate::centre, "Center",
-                        "The center of the Concentrate.")
+                        AZ::Edit::UIHandlers::Default,
+                        &OpenParticle::SpawnVelConcentrate::centre,
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Center"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The center of the Concentrate."))
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelConcentrate::rateObject, "Rate",
-                        "The rate of Concentrate.")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelConcentrate::rateObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Rate"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The rate of Concentrate."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnVelConcentrate>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("rateObject"));
 
-                editContext->Class<OpenParticle::SpawnVelSector>("Velocity Sector", "")
+                editContext->Class<OpenParticle::SpawnVelSector>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity Sector"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelSector::strengthObject,
-                        "Velocity strength", "The velocity strength of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity strength"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The velocity strength of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnVelSector>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("strengthObject"))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelSector::centralAngle, "CentralAngle",
-                        "The central angle of the sector.")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "deg")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelSector::centralAngle, QT_TRANSLATE_NOOP("OpenParticleSystem", "CentralAngle"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The central angle of the sector."))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("OpenParticleSystem", "deg"))
                         ->Attribute(AZ::Edit::Attributes::Min, -360.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 360.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelSector::rotateAngle,
-                        "RotateAngle", "rotate the sector with this around sector central axis.")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "deg")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "RotateAngle"), QT_TRANSLATE_NOOP("OpenParticleSystem", "rotate the sector with this around sector central axis."))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("OpenParticleSystem", "deg"))
                         ->Attribute(AZ::Edit::Attributes::Min, -360.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 360.f)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnVelSector::direction, "Axis",
-                        "The direction of the sector plane.")
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnVelSector::direction, QT_TRANSLATE_NOOP("OpenParticleSystem", "Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The direction of the sector plane."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f);
 
-                editContext->Class<OpenParticle::SpawnVelCone>("Velocity Cone", "")
+                editContext->Class<OpenParticle::SpawnVelCone>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity Cone"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelCone::angle, "Angle",
-                        "The emit angle of the cone.")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "deg")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnVelCone::angle, QT_TRANSLATE_NOOP("OpenParticleSystem", "Angle"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The emit angle of the cone."))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("OpenParticleSystem", "deg"))
                         ->Attribute(AZ::Edit::Attributes::Min, -360.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 360.f)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnVelCone::strengthObject,
-                        "Velocity strength", "The velocity strength of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity strength"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The velocity strength of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnVelCone>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("strengthObject"))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnVelCone::direction, "Axis",
-                        "The direction of the cone.")
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnVelCone::direction, QT_TRANSLATE_NOOP("OpenParticleSystem", "Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The direction of the cone."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f);
 
-                editContext->Class<OpenParticle::SpawnRotation>("Start Rotation", "")
+                editContext->Class<OpenParticle::SpawnRotation>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Start Rotation"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnRotation::initAxis, "Init Axis",
-                        "The initial rotate axis of particles.")
+                        AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnRotation::initAxis, QT_TRANSLATE_NOOP("OpenParticleSystem", "Init Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The initial rotate axis of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnRotation::initAngleObject, "Init Angle",
-                        "The initial angle of particles.")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "deg")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnRotation::initAngleObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Init Angle"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The initial angle of particles."))
+                        ->Attribute(AZ::Edit::Attributes::Suffix, QT_TRANSLATE_NOOP("OpenParticleSystem", "deg"))
                         ->Attribute(AZ::Edit::Attributes::Min, -360.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 360.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnRotation>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("initAngleObject"))
                     ->DataElement(
-                            AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnRotation::rotateAxis, "Rotate Axis",
-                            "The rotate axis of particles.")
+                            AZ::Edit::UIHandlers::Vector3, &OpenParticle::SpawnRotation::rotateAxis, QT_TRANSLATE_NOOP("OpenParticleSystem", "Rotate Axis"),
+                            QT_TRANSLATE_NOOP("OpenParticleSystem", "The rotate axis of particles."))
                             ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                             ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                     ->DataElement(AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnRotation::rotateSpeedObject,
-                        "Rotate Speed", "The rotation rate of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Rotate Speed"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The rotation rate of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnRotation>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("rotateSpeedObject"));
 
-                editContext->Class<OpenParticle::SpawnLightEffect>("Light", "")
+                editContext->Class<OpenParticle::SpawnLightEffect>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Light"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnLightEffect::lightColorObject, "Color",
-                        "The color of light.")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnLightEffect::lightColorObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Color"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The color of light."))
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnLightEffect>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("lightColorObject"))
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnLightEffect::intensityObject,
-                        "Intensity",
-                        "The intensity of light.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Intensity"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The intensity of light."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnLightEffect>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("intensityObject"))
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SpawnLightEffect::radianScaleObject,
-                        "Radius",
-                        "The radius of light.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Radius"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius of light."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SpawnLightEffect>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("radianScaleObject"));
 
-                editContext->Class<OpenParticle::SpawnLocationEvent>("Spawn Event", "")
+                editContext->Class<OpenParticle::SpawnLocationEvent>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn Event"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::SpawnLocationEvent::whetherSendEvent,
-                        "Send Spawn Event", "Whether to send spawn event.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Send Spawn Event"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to send spawn event."));
 
-                editContext->Class<OpenParticle::UpdateConstForce>("Acceleration", "")
+                editContext->Class<OpenParticle::UpdateConstForce>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Acceleration"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateConstForce::forceObject,
-                        "Acceleration",
-                        "The acceleration of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Acceleration"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The acceleration of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateConstForce>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("forceObject"));
 
-                editContext->Class<OpenParticle::UpdateDragForce>("Drag", "")
+                editContext->Class<OpenParticle::UpdateDragForce>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Drag"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateDragForce::dragCoefficientObject,
-                        "Drag Coefficient", "The drag force of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Drag Coefficient"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The drag force of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateDragForce>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("dragCoefficientObject"));
 
-                editContext->Class<OpenParticle::UpdateVortexForce>("Vortex Force", "")
+                editContext->Class<OpenParticle::UpdateVortexForce>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Vortex Force"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateVortexForce::origin,
-                        "Origin",
-                        "The centre of the Vortex.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Origin"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The centre of the Vortex."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateVortexForce::vortexAxis,
-                        "Vortex Axis",
-                        "Vortex Axis.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Vortex Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Vortex Axis."))
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateVortexForce::originPullObject,
-                        "Origin Pull",
-                        "The tensile force of the origin.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Origin Pull"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The tensile force of the origin."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateVortexForce>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("originPullObject"))
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateVortexForce::vortexRateObject,
-                        "Vortex Rate",
-                        "The rate of vortex.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Vortex Rate"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The rate of vortex."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateVortexForce>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("vortexRateObject"))
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateVortexForce::vortexRadiusObject,
-                        "Vortex Radius",
-                        "The radius of a particle in the final steady state of rotation.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Vortex Radius"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius of a particle in the final steady state of rotation."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateVortexForce>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("vortexRadiusObject"));
 
-                editContext->Class<OpenParticle::UpdateCurlNoiseForce>("Noise", "")
+                editContext->Class<OpenParticle::UpdateCurlNoiseForce>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Noise"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateCurlNoiseForce::noiseStrength,
-                        "Noise Strength", "The noise strength of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Noise Strength"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The noise strength of particles."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateCurlNoiseForce::noiseFrequency,
-                        "Noise Frequency", "The noise frequency of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Noise Frequency"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The noise frequency of particles."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateCurlNoiseForce::panNoise,
-                        "Pan Noise", "The pan noise of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Pan Noise"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The pan noise of particles."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateCurlNoiseForce::panNoiseField,
-                        "Pan Noise Field", "The pan noise field of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Pan Noise Field"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The pan noise field of particles."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateCurlNoiseForce::randomSeed,
-                        "Random Seed", "The random seed of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Random Seed"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The random seed of particles."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateCurlNoiseForce::randomizationVector,
-                        "Randomization Vector", "The randomization vector of particles.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Randomization Vector"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The randomization vector of particles."));
 
-                editContext->Class<OpenParticle::UpdateColor>("Color Over Lifetime", "")
+                editContext->Class<OpenParticle::UpdateColor>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Color Over Lifetime"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(AZ_CRC("GradientColor"), &OpenParticle::UpdateColor::currentColorObject,
-                        "Color", "The color of particles changes with particle life time.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Color"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The color of particles changes with particle life time."))
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateColor>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("currentColorObject"));
 
-                editContext->Class<OpenParticle::UpdateLocationEvent>("Location Event", "")
+                editContext->Class<OpenParticle::UpdateLocationEvent>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Location Event"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateLocationEvent::whetherSendEvent,
-                        "Send Location Event",
-                        "Whether to send location event.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Send Location Event"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to send location event."));
 
-                editContext->Class<OpenParticle::UpdateDeathEvent>("Death Event", "")
+                editContext->Class<OpenParticle::UpdateDeathEvent>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Death Event"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateDeathEvent::whetherSendEvent,
-                        "Send Death Event", "Whether to send death event.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Send Death Event"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to send death event."));
 
-                editContext->Class<OpenParticle::UpdateCollisionEvent>("Collision Event", "")
+                editContext->Class<OpenParticle::UpdateCollisionEvent>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Collision Event"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateCollisionEvent::whetherSendEvent,
-                        "Send Collision Event", "Whether to send collision event.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Send Collision Event"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to send collision event."));
 
-                editContext->Class<OpenParticle::UpdateInheritanceEvent>("Inheritance Event", "")
+                editContext->Class<OpenParticle::UpdateInheritanceEvent>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Inheritance Event"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateInheritanceEvent::whetherSendEvent,
-                        "Send Inheritance Event", "Whether to send inheritance event.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Send Inheritance Event"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Whether to send inheritance event."));
 
-                editContext->Class<OpenParticle::UpdateSizeLinear>("Size Over Lifetime", "")
+                editContext->Class<OpenParticle::UpdateSizeLinear>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Size Over Lifetime"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateSizeLinear::sizeObject, "Size",
-                        "The size of particles changes with particle life time.")
+                        AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateSizeLinear::sizeObject, QT_TRANSLATE_NOOP("OpenParticleSystem", "Size"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The size of particles changes with particle life time."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateSizeLinear>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("sizeObject"));
 
-                editContext->Class<OpenParticle::UpdateSizeByVelocity>("Size By Speed", "")
+                editContext->Class<OpenParticle::UpdateSizeByVelocity>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Size By Speed"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateSizeByVelocity::velScaleObject,
-                        "Scale Factor", "The size scale factor of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Scale Factor"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The size scale factor of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateSizeByVelocity>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("velScaleObject"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateSizeByVelocity::velocityRange,
-                        "Velocity Range", "The maximum value of the velocity size.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity Range"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The maximum value of the velocity size."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f);
 
-                editContext->Class<OpenParticle::SizeScale>("Size Scale", "")
+                editContext->Class<OpenParticle::SizeScale>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Size Scale"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::SizeScale::scaleFactorObject,
-                        "Scale Factor", "The size scale factor of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Scale Factor"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The size scale factor of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::SizeScale>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("scaleFactorObject"));
 
-                editContext->Class<OpenParticle::UpdateSubUv>("SubUV", "")
+                editContext->Class<OpenParticle::UpdateSubUv>(QT_TRANSLATE_NOOP("OpenParticleSystem", "SubUV"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateSubUv::frameNum, "Frame Number",
-                        "The number of frames in the texture.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateSubUv::frameNum, QT_TRANSLATE_NOOP("OpenParticleSystem", "Frame Number"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The number of frames in the texture."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000000)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateSubUv::framePerSecond,
-                        "Frame Per Second", "The frames per second.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Frame Per Second"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The frames per second."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, 1000000)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateSubUv::spawnOnly,
-                        "Spawn Only", "Only update subUV once when particle spawn, FramePerSecond option would be ignored")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Spawn Only"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Only update subUV once when particle spawn, FramePerSecond option would be ignored"))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateSubUv::IndexByEventOrder,
-                        "Index By Event Order",
-                        "Only update subUV once when particle spawn, Index subUV by the order of event generation which trigger particle spawn.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Index By Event Order"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Only update subUV once when particle spawn, Index subUV by the order of event generation which trigger particle spawn."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &OpenParticle::UpdateSubUv::spawnOnly);
 
-                editContext->Class<OpenParticle::UpdateRotateAroundPoint>("Velocity Rotate Around Point", "")
+                editContext->Class<OpenParticle::UpdateRotateAroundPoint>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity Rotate Around Point"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateRotateAroundPoint::rotateRate,
-                        "Rotate Rate",
-                        "Rotate Rate.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Rotate Rate"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Rotate Rate."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateRotateAroundPoint::radius,
-                        "Radius", "The radius of the circle.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Radius"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius of the circle."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateRotateAroundPoint::xAxis,
-                        "First Axis",
-                        "The First Axis.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "First Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The First Axis."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateRotateAroundPoint::yAxis,
-                        "Second Axis",
-                        "The second Axis.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Second Axis"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The second Axis."))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::UpdateRotateAroundPoint::center,
-                        "Center",
-                        "The center of the circle.");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Center"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The center of the circle."));
 
-                editContext->Class<OpenParticle::UpdateVelocity>("Velocity Over Lifetime", "")
+                editContext->Class<OpenParticle::UpdateVelocity>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity Over Lifetime"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateVelocity::strengthObject,
-                        "Velocity strength", "The velocity strength of particles changes with particle life time.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity strength"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The velocity strength of particles changes with particle life time."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateVelocity>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("strengthObject"))
                     ->DataElement(AZ_CRC("DistCtrlHandler"), &OpenParticle::UpdateVelocity::directionObject,
-                        "Velocity direction", "The velocity direction of particles changes with particle life time.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Velocity direction"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The velocity direction of particles changes with particle life time."))
                         ->Attribute(AZ::Edit::Attributes::Min, -100000.f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100000.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::UpdateVelocity>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("directionObject"));
 
-                editContext->Class<OpenParticle::CollisionPlane>("Particle Collision", "")
+                editContext->Class<OpenParticle::CollisionPlane>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Collision"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionPlane::normal, "Plane Normal",
-                        "The normal of plane.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionPlane::normal, QT_TRANSLATE_NOOP("OpenParticleSystem", "Plane Normal"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The normal of plane."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionPlane::position, "Plane Position",
-                        "The position of plane.");
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionPlane::position, QT_TRANSLATE_NOOP("OpenParticleSystem", "Plane Position"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The position of plane."));
 
-                editContext->Class<OpenParticle::CollisionRadius>("CollisionRadius", "The collision radius of particles.")
+                editContext->Class<OpenParticle::CollisionRadius>(QT_TRANSLATE_NOOP("OpenParticleSystem", "CollisionRadius"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The collision radius of particles."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionRadius::type, "Calculation Type",
-                        "The radius calculation type of particles.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionRadius::type, QT_TRANSLATE_NOOP("OpenParticleSystem", "Calculation Type"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius calculation type of particles."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionRadius::method, "Calculation Method",
-                        "The radius calculation method of particles.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionRadius::radius, "Radius",
-                        "The radius of particles.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionRadius::method, QT_TRANSLATE_NOOP("OpenParticleSystem", "Calculation Method"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius calculation method of particles."))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionRadius::radius, QT_TRANSLATE_NOOP("OpenParticleSystem", "Radius"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &OpenParticle::CollisionRadius::RadiusVisibility)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionRadius::radiusScale, "Radius Scale",
-                        "The radius scale of particles.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::CollisionRadius::radiusScale, QT_TRANSLATE_NOOP("OpenParticleSystem", "Radius Scale"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The radius scale of particles."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
 
-                editContext->Class<OpenParticle::Bounce>("Bounce", "The bounce of plane.")
+                editContext->Class<OpenParticle::Bounce>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Bounce"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The bounce of plane."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::Bounce::restitution,
-                        "Restitution", "The restitution of plane.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Restitution"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The restitution of plane."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::Bounce::randomizeNormal,
-                        "Randomize Normal", "The randomize normal of plane.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Randomize Normal"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The randomize normal of plane."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
 
-                editContext->Class<OpenParticle::ParticleCollision>("Particle Collision", "")
+                editContext->Class<OpenParticle::ParticleCollision>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Particle Collision"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                          ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                          ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::collisionType, "Collision Type",
-                        "The collision type of particles.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::collisionType, QT_TRANSLATE_NOOP("OpenParticleSystem", "Collision Type"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The collision type of particles."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::collisionRadius, "Collision Radius",
-                        "The collision radius of particles.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::collisionRadius, QT_TRANSLATE_NOOP("OpenParticleSystem", "Collision Radius"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The collision radius of particles."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::bounce, "Bounce",
-                        "The bounce of plane.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::bounce, QT_TRANSLATE_NOOP("OpenParticleSystem", "Bounce"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The bounce of plane."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::useTwoPlane, "UseTwoPlane",
-                        "whether to use the plane 2.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::useTwoPlane, QT_TRANSLATE_NOOP("OpenParticleSystem", "UseTwoPlane"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "whether to use the plane 2."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::collisionPlane1, "Collision Plane1",
-                        "The collision plane 1.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::collisionPlane1, QT_TRANSLATE_NOOP("OpenParticleSystem", "Collision Plane1"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The collision plane 1."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::collisionPlane2, "Collision Plane2",
-                        "The collision plane 2.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::ParticleCollision::collisionPlane2, QT_TRANSLATE_NOOP("OpenParticleSystem", "Collision Plane2"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The collision plane 2."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ParticleCollision::UseTwoPlaneIsSelected);
 
-                editContext->Class<OpenParticle::SpriteConfig>("Sprite Renderer", "")
+                editContext->Class<OpenParticle::SpriteConfig>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Sprite Renderer"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpriteConfig::facing, "Render Alignment",
-                        "The alignment type of particles.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpriteConfig::facing, QT_TRANSLATE_NOOP("OpenParticleSystem", "Render Alignment"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The alignment type of particles."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpriteConfig::sortId, "Render Sort",
-                        "According to this this parameter to render the material.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::SpriteConfig::sortId, QT_TRANSLATE_NOOP("OpenParticleSystem", "Render Sort"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "According to this this parameter to render the material."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0u)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Vector2, &OpenParticle::SpriteConfig::subImageSize,
-                        "Sub Image Size", "The size of the image.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Sub Image Size"), QT_TRANSLATE_NOOP("OpenParticleSystem", "The size of the image."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1.f);
 
-                editContext->Class<OpenParticle::MeshConfig>("Mesh Renderer", "")
+                editContext->Class<OpenParticle::MeshConfig>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Mesh Renderer"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::MeshConfig::facing, "Render Alignment",
-                        "The alignment type of particles.")
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::MeshConfig::facing, QT_TRANSLATE_NOOP("OpenParticleSystem", "Render Alignment"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The alignment type of particles."))
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &OpenParticle::MeshConfig::sortId, "Render Sort",
-                        "According to this this parameter to render the material.");
+                        AZ::Edit::UIHandlers::Default, &OpenParticle::MeshConfig::sortId, QT_TRANSLATE_NOOP("OpenParticleSystem", "Render Sort"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "According to this this parameter to render the material."));
 
-                editContext->Class<OpenParticle::TrailParam>("TrailParam", "Trail Parameter")
+                editContext->Class<OpenParticle::TrailParam>(QT_TRANSLATE_NOOP("OpenParticleSystem", "TrailParam"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Trail Parameter"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::TrailParam::ratio,
-                        "Ratio",
-                        "Proportion of particles with tail")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Ratio"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Proportion of particles with tail"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::TrailParam::lifetime,
-                        "Lifetime", "Life time of trails")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Lifetime"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Life time of trails"))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::TrailParam::inheritLifetime,
-                        "Inherit Lifetime", "Inherit parent particle's lifetime.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Inherit Lifetime"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Inherit parent particle's lifetime."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::TrailParam::dieWithParticles,
-                        "Die With Particles",
-                        "Trials die with particles die");
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Die With Particles"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Trials die with particles die"));
 
-                editContext->Class<OpenParticle::RibbonParam>("RibbonParam", "Ribbon Parameter")
+                editContext->Class<OpenParticle::RibbonParam>(QT_TRANSLATE_NOOP("OpenParticleSystem", "RibbonParam"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Ribbon Parameter"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonParam::ribbonCount,
-                        "Ribbon Count", "the count of ribbons")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Ribbon Count"), QT_TRANSLATE_NOOP("OpenParticleSystem", "the count of ribbons"))
                         ->Attribute(AZ::Edit::Attributes::Min, 1u);
 
-                editContext->Class<OpenParticle::RibbonConfig>("Ribbon Renderer", "")
+                editContext->Class<OpenParticle::RibbonConfig>(QT_TRANSLATE_NOOP("OpenParticleSystem", "Ribbon Renderer"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::trailParam,
-                        "Trail Parameter",
-                        "The alignment type of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Trail Parameter"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The alignment type of particles."))
                          ->Attribute(AZ::Edit::Attributes::Visibility, &RibbonConfig::ModeChangToTrail)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::ribbonParam,
-                        "Ribbon Parameter",
-                        "The alignment type of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Ribbon Parameter"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The alignment type of particles."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &RibbonConfig::ModeChangToRibbon)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::sortId,
-                        "Render Sort",
-                        "According to this this parameter to render the material.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Render Sort"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "According to this this parameter to render the material."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0u)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::minRibbonSegmentLength,
-                        "Min Segment Length",
-                        "The minimum length between two particles in ribbon.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Min Segment Length"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The minimum length between two particles in ribbon."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1.f - SimuCore::ALMOST_ONE)
                     ->DataElement(
                         AZ_CRC("DistCtrlHandler"), &OpenParticle::RibbonConfig::ribbonWidthObject,
-                        "Ribbon Width",
-                        "The width of the ribbon.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Ribbon Width"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The width of the ribbon."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ_CRC("Id"), azrtti_typeid<OpenParticle::RibbonConfig>())
                         ->Attribute(AZ_CRC("ParamId"), AZ::TypeId::CreateName("ribbonWidthObject"))
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::inheritSize,
-                        "Inherit Size",
-                        "Inherit parent particle's size.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Inherit Size"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Inherit parent particle's size."))
                         ->Attribute(AZ::Edit::Attributes::Visibility, &RibbonConfig::ModeChangToTrail)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::tesselationFactor,
-                        "Tesselation Factor",
-                        "Each time a ribbon segment grows longer than this value, it will be subdivided.  Lower values result in more (smoother) subdivisions, more resource use.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Tesselation Factor"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Each time a ribbon segment grows longer than this value, it will be subdivided.  Lower values "
+                                          "result in more (smoother) subdivisions, more resource use."))
                         ->Attribute(AZ::Edit::Attributes::Min, 1.f - SimuCore::ALMOST_ONE) 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::curveTension,
-                        "Curve Tension",
-                        "The curve tension of the ribbon.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Curve Tension"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The curve tension of the ribbon."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Max, SimuCore::ALMOST_ONE)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::tilingDistance,
-                        "Tile Distance",
-                        "The tile distance of the ribbon.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Tile Distance"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The tile distance of the ribbon."))
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::facing,
-                        "Render Alignment",
-                        "The alignment type of particles.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Render Alignment"),
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "The alignment type of particles."))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &OpenParticle::RibbonConfig::mode,
-                        "Trail Mode", "Type of trail.")
+                        QT_TRANSLATE_NOOP("OpenParticleSystem", "Trail Mode"), QT_TRANSLATE_NOOP("OpenParticleSystem", "Type of trail."))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree);
             }
         }

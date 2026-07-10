@@ -17,6 +17,7 @@
 
 #include <LyShine/Bus/UiGameEntityContextBus.h>
 #include <LyShine/Bus/UiElementBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 // BehaviorContext UiSpawnerNotificationBus forwarder
 class BehaviorUiSpawnerNotificationBusHandler
@@ -72,8 +73,8 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* editContext = serializeContext->GetEditContext();
         if (editContext)
         {
-            auto editInfo = editContext->Class<UiSpawnerComponent>("UiSpawner",
-                    "The spawner component provides dynamic UI slice spawning support.");
+            auto editInfo = editContext->Class<UiSpawnerComponent>(QT_TRANSLATE_NOOP("LyShine", "UiSpawner"),
+                    QT_TRANSLATE_NOOP("LyShine", "The spawner component provides dynamic UI slice spawning support."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Gameplay")
@@ -82,9 +83,9 @@ void UiSpawnerComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiSpawnerComponent::m_sliceAsset, "Dynamic slice", "The slice to spawn");
-            editInfo->DataElement(0, &UiSpawnerComponent::m_spawnOnActivate, "Spawn on activate",
-                "Should the component spawn the selected slice upon activation?");
+            editInfo->DataElement(0, &UiSpawnerComponent::m_sliceAsset, QT_TRANSLATE_NOOP("LyShine", "Dynamic slice"), QT_TRANSLATE_NOOP("LyShine", "The slice to spawn"));
+            editInfo->DataElement(0, &UiSpawnerComponent::m_spawnOnActivate, QT_TRANSLATE_NOOP("LyShine", "Spawn on activate"),
+                QT_TRANSLATE_NOOP("LyShine", "Should the component spawn the selected slice upon activation?"));
         }
     }
 

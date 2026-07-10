@@ -11,8 +11,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/i18n/TranslationMacros.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
 #include <AzFramework/Physics/CollisionBus.h>
 
 namespace AzPhysics

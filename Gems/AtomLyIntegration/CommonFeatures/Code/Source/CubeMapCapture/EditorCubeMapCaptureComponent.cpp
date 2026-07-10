@@ -7,6 +7,7 @@
  */
 
 #include <CubeMapCapture/EditorCubeMapCaptureComponent.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -24,7 +25,7 @@ namespace AZ
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorCubeMapCaptureComponent>(
-                        "CubeMap Capture", "The CubeMap Capture component captures a specular or diffuse cubemap at a specific position in the level")
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "CubeMap Capture"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The CubeMap Capture component captures a specular or diffuse cubemap at a specific position in the level"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
@@ -32,9 +33,9 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->UIElement(AZ::Edit::UIHandlers::Button, "Capture CubeMap", "Capture CubeMap")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, QT_TRANSLATE_NOOP("AtomLyIntegration", "Capture CubeMap"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Capture CubeMap"))
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Capture CubeMap")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("AtomLyIntegration", "Capture CubeMap"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCubeMapCaptureComponent::CaptureCubeMap)
                         ;
 
@@ -42,7 +43,7 @@ namespace AZ
                         "CubeMapCaptureComponentController", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &CubeMapCaptureComponentController::m_configuration, "Configuration", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &CubeMapCaptureComponentController::m_configuration, QT_TRANSLATE_NOOP("AtomLyIntegration", "Configuration"), "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ;
 
@@ -50,24 +51,24 @@ namespace AZ
                         "CubeMapCaptureComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &CubeMapCaptureComponentConfig::m_exposure, "Exposure", "Exposure to use when capturing the cubemap")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &CubeMapCaptureComponentConfig::m_exposure, QT_TRANSLATE_NOOP("AtomLyIntegration", "Exposure"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Exposure to use when capturing the cubemap"))
                             ->Attribute(AZ::Edit::Attributes::SoftMin, -16.0f)
                             ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f)
                             ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CubeMapCaptureComponentConfig::m_captureType, "Capture Type", "The type of cubemap to capture")
-                            ->EnumAttribute(CubeMapCaptureType::Specular, "Specular IBL")
-                            ->EnumAttribute(CubeMapCaptureType::Diffuse, "Diffuse IBL")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CubeMapCaptureComponentConfig::m_captureType, QT_TRANSLATE_NOOP("AtomLyIntegration", "Capture Type"), QT_TRANSLATE_NOOP("AtomLyIntegration", "The type of cubemap to capture"))
+                            ->EnumAttribute(CubeMapCaptureType::Specular, QT_TRANSLATE_NOOP("AtomLyIntegration", "Specular IBL"))
+                            ->EnumAttribute(CubeMapCaptureType::Diffuse, QT_TRANSLATE_NOOP("AtomLyIntegration", "Diffuse IBL"))
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CubeMapCaptureComponentConfig::OnCaptureTypeChanged)
-                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CubeMapCaptureComponentConfig::m_specularQualityLevel, "Specular IBL CubeMap Quality", "Resolution of the Specular IBL cubemap")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CubeMapCaptureComponentConfig::m_specularQualityLevel, QT_TRANSLATE_NOOP("AtomLyIntegration", "Specular IBL CubeMap Quality"), QT_TRANSLATE_NOOP("AtomLyIntegration", "Resolution of the Specular IBL cubemap"))
                             ->Attribute(AZ::Edit::Attributes::Visibility, &CubeMapCaptureComponentConfig::GetSpecularQualityVisibilitySetting)
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &CubeMapCaptureComponentConfig::OnSpecularQualityChanged)
-                            ->EnumAttribute(CubeMapSpecularQualityLevel::VeryLow, "Very Low")
-                            ->EnumAttribute(CubeMapSpecularQualityLevel::Low, "Low")
-                            ->EnumAttribute(CubeMapSpecularQualityLevel::Medium, "Medium")
-                            ->EnumAttribute(CubeMapSpecularQualityLevel::High, "High")
-                            ->EnumAttribute(CubeMapSpecularQualityLevel::VeryHigh, "Very High")
-                        ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &CubeMapCaptureComponentConfig::m_relativePath, "CubeMap Path", "CubeMap Path")
+                            ->EnumAttribute(CubeMapSpecularQualityLevel::VeryLow, QT_TRANSLATE_NOOP("AtomLyIntegration", "Very Low"))
+                            ->EnumAttribute(CubeMapSpecularQualityLevel::Low, QT_TRANSLATE_NOOP("AtomLyIntegration", "Low"))
+                            ->EnumAttribute(CubeMapSpecularQualityLevel::Medium, QT_TRANSLATE_NOOP("AtomLyIntegration", "Medium"))
+                            ->EnumAttribute(CubeMapSpecularQualityLevel::High, QT_TRANSLATE_NOOP("AtomLyIntegration", "High"))
+                            ->EnumAttribute(CubeMapSpecularQualityLevel::VeryHigh, QT_TRANSLATE_NOOP("AtomLyIntegration", "Very High"))
+                        ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &CubeMapCaptureComponentConfig::m_relativePath, QT_TRANSLATE_NOOP("AtomLyIntegration", "CubeMap Path"), QT_TRANSLATE_NOOP("AtomLyIntegration", "CubeMap Path"))
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ;
                 }

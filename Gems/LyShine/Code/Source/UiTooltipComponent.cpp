@@ -12,6 +12,7 @@
 
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiTextBus.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -155,7 +156,7 @@ void UiTooltipComponent::Reflect(AZ::ReflectContext* context)
 
         if (ec)
         {
-            auto editInfo = ec->Class<UiTooltipComponent>("Tooltip", "A component that provides the data needed to display a tooltip.");
+            auto editInfo = ec->Class<UiTooltipComponent>(QT_TRANSLATE_NOOP("LyShine", "Tooltip"), QT_TRANSLATE_NOOP("LyShine", "A component that provides the data needed to display a tooltip."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Tooltip")
@@ -164,7 +165,7 @@ void UiTooltipComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-            editInfo->DataElement(0, &UiTooltipComponent::m_text, "Text", "The text string.");
+            editInfo->DataElement(0, &UiTooltipComponent::m_text, QT_TRANSLATE_NOOP("LyShine", "Text"), QT_TRANSLATE_NOOP("LyShine", "The text string."));
         }
     }
 

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/Utils.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <ScriptCanvas/Variable/VariableData.h>
 
@@ -94,9 +95,14 @@ namespace ScriptCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<VariableData>("Variables", "Variables exposed by the attached Script Canvas Graph")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Variable Fields")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &VariableData::m_variableMap, "Variables", "Table of Variables within the Script Canvas Graph")
+                editContext->Class<VariableData>(
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Variables"),
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Variables exposed by the attached Script Canvas Graph"))
+                    ->ClassElement(AZ::Edit::ClassElements::Group,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Variable Fields"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &VariableData::m_variableMap,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Variables"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Table of Variables within the Script Canvas Graph"))
                     ;
             }
         }
@@ -232,10 +238,15 @@ namespace ScriptCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditableVariableData>("Variables", "Variables exposed by the attached Script Canvas Graph")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Variable Fields")
+                editContext->Class<EditableVariableData>(
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Variables"),
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Variables exposed by the attached Script Canvas Graph"))
+                    ->ClassElement(AZ::Edit::ClassElements::Group,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Variable Fields"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditableVariableData::m_variables, "Variables", "Array of Variables within Script Canvas Graph")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditableVariableData::m_variables,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Variables"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Array of Variables within Script Canvas Graph"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
@@ -360,10 +371,14 @@ namespace ScriptCanvas
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditableVariableConfiguration>("Variable Element", "Represents a mapping of name to value")
+                editContext->Class<EditableVariableConfiguration>(
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Variable Element"),
+                    QT_TRANSLATE_NOOP("ScriptCanvas", "Represents a mapping of name to value"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditableVariableConfiguration::m_graphVariable, "Name,Value", "Variable Name and value")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditableVariableConfiguration::m_graphVariable,
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Name,Value"),
+                        QT_TRANSLATE_NOOP("ScriptCanvas", "Variable Name and value"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

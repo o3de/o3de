@@ -19,6 +19,7 @@
 #include <LyShine/Bus/UiTransformBus.h>
 
 #include <AzCore/Time/ITime.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiScrollerNotificationBus Behavior context handler class
@@ -789,7 +790,7 @@ void UiScrollBarComponent::Reflect(AZ::ReflectContext* context)
         AZ::EditContext* ec = serializeContext->GetEditContext();
         if (ec)
         {
-            auto editInfo = ec->Class<UiScrollBarComponent>("ScrollBar", "An interactable component for scrolling content that is larger than its viewing area.");
+            auto editInfo = ec->Class<UiScrollBarComponent>(QT_TRANSLATE_NOOP("LyShine", "ScrollBar"), QT_TRANSLATE_NOOP("LyShine", "An interactable component for scrolling content that is larger than its viewing area."));
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI/Interactable")
@@ -800,55 +801,55 @@ void UiScrollBarComponent::Reflect(AZ::ReflectContext* context)
 
             // Elements group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Elements")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Elements"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBarComponent::m_handleEntity, "Handle", "The child element that is the sliding handle.")
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBarComponent::m_handleEntity, QT_TRANSLATE_NOOP("LyShine", "Handle"), QT_TRANSLATE_NOOP("LyShine", "The child element that is the sliding handle."))
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &UiScrollBarComponent::PopulateChildEntityList);
             }
 
             // Values group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Values")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Values"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBarComponent::m_orientation, "Orientation", "The way the scrollbar should be oriented.")
-                    ->EnumAttribute(Orientation::Horizontal, "Horizontal")
-                    ->EnumAttribute(Orientation::Vertical, "Vertical");
+                editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiScrollBarComponent::m_orientation, QT_TRANSLATE_NOOP("LyShine", "Orientation"), QT_TRANSLATE_NOOP("LyShine", "The way the scrollbar should be oriented."))
+                    ->EnumAttribute(Orientation::Horizontal, QT_TRANSLATE_NOOP("LyShine", "Horizontal"))
+                    ->EnumAttribute(Orientation::Vertical, QT_TRANSLATE_NOOP("LyShine", "Vertical"));
 
-                editInfo->DataElement(0, &UiScrollBarComponent::m_value, "Value", "The initial value of the scrollbar.")
+                editInfo->DataElement(0, &UiScrollBarComponent::m_value, QT_TRANSLATE_NOOP("LyShine", "Value"), QT_TRANSLATE_NOOP("LyShine", "The initial value of the scrollbar."))
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
 
-                editInfo->DataElement(0, &UiScrollBarComponent::m_handleSize, "Handle size", "The size of the handle relative to the scrollbar.")
+                editInfo->DataElement(0, &UiScrollBarComponent::m_handleSize, QT_TRANSLATE_NOOP("LyShine", "Handle size"), QT_TRANSLATE_NOOP("LyShine", "The size of the handle relative to the scrollbar."))
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f);
 
-                editInfo->DataElement(0, &UiScrollBarComponent::m_minHandlePixelSize, "Min handle size", "The minimum size of the handle in pixels.")
+                editInfo->DataElement(0, &UiScrollBarComponent::m_minHandlePixelSize, QT_TRANSLATE_NOOP("LyShine", "Min handle size"), QT_TRANSLATE_NOOP("LyShine", "The minimum size of the handle in pixels."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f);
             }
 
             // Actions group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Actions")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Actions"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiScrollBarComponent::m_valueChangingActionName, "Change", "The action triggered while the value is changing.");
-                editInfo->DataElement(0, &UiScrollBarComponent::m_valueChangedActionName, "End change", "The action triggered when the value is done changing.");
+                editInfo->DataElement(0, &UiScrollBarComponent::m_valueChangingActionName, QT_TRANSLATE_NOOP("LyShine", "Change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered while the value is changing."));
+                editInfo->DataElement(0, &UiScrollBarComponent::m_valueChangedActionName, QT_TRANSLATE_NOOP("LyShine", "End change"), QT_TRANSLATE_NOOP("LyShine", "The action triggered when the value is done changing."));
             }
 
             // Visibility group
             {
-                editInfo->ClassElement(AZ::Edit::ClassElements::Group, "Fade")
+                editInfo->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("LyShine", "Fade"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
-                editInfo->DataElement(0, &UiScrollBarComponent::m_isAutoFadeEnabled, "Auto Fade When Not In Use", "The scrollbar will automatically fade away when not in use.")
+                editInfo->DataElement(0, &UiScrollBarComponent::m_isAutoFadeEnabled, QT_TRANSLATE_NOOP("LyShine", "Auto Fade When Not In Use"), QT_TRANSLATE_NOOP("LyShine", "The scrollbar will automatically fade away when not in use."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC_CE("RefreshEntireTree"));
-                editInfo->DataElement(0, &UiScrollBarComponent::m_inactiveSecondsBeforeFade, "Fade Delay", "The delay in seconds before the scrollbar will begin to fade.")
+                editInfo->DataElement(0, &UiScrollBarComponent::m_inactiveSecondsBeforeFade, QT_TRANSLATE_NOOP("LyShine", "Fade Delay"), QT_TRANSLATE_NOOP("LyShine", "The delay in seconds before the scrollbar will begin to fade."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBarComponent::m_isAutoFadeEnabled);
-                editInfo->DataElement(0, &UiScrollBarComponent::m_fadeSpeed, "Fade Speed", "The speed in seconds at which the scrollbar will fade away.")
+                editInfo->DataElement(0, &UiScrollBarComponent::m_fadeSpeed, QT_TRANSLATE_NOOP("LyShine", "Fade Speed"), QT_TRANSLATE_NOOP("LyShine", "The speed in seconds at which the scrollbar will fade away."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &UiScrollBarComponent::m_isAutoFadeEnabled);
             }
         }

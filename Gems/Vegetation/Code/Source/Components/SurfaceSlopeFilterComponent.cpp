@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 #include <Vegetation/Descriptor.h>
 #include <Vegetation/InstanceData.h>
 #include <AzCore/Debug/Profiler.h>
@@ -39,19 +40,19 @@ namespace Vegetation
             if (edit)
             {
                 edit->Class<SurfaceSlopeFilterConfig>(
-                    "Vegetation Slope Filter", "")
+                    QT_TRANSLATE_NOOP("Vegetation", "Vegetation Slope Filter"), "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceSlopeFilterConfig::m_filterStage, "Filter Stage", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers.")
-                    ->EnumAttribute(FilterStage::Default, "Default")
-                    ->EnumAttribute(FilterStage::PreProcess, "PreProcess")
-                    ->EnumAttribute(FilterStage::PostProcess, "PostProcess")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SurfaceSlopeFilterConfig::m_allowOverrides, "Allow Per-Item Overrides", "Allow per-descriptor parameters to override component parameters.")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeFilterConfig::m_slopeMin, "Slope Min", "Minimum surface slope angle in degrees.")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SurfaceSlopeFilterConfig::m_filterStage, QT_TRANSLATE_NOOP("Vegetation", "Filter Stage"), QT_TRANSLATE_NOOP("Vegetation", "Determines if filter is applied before (PreProcess) or after (PostProcess) modifiers."))
+                    ->EnumAttribute(FilterStage::Default, QT_TRANSLATE_NOOP("Vegetation", "Default"))
+                    ->EnumAttribute(FilterStage::PreProcess, QT_TRANSLATE_NOOP("Vegetation", "PreProcess"))
+                    ->EnumAttribute(FilterStage::PostProcess, QT_TRANSLATE_NOOP("Vegetation", "PostProcess"))
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &SurfaceSlopeFilterConfig::m_allowOverrides, QT_TRANSLATE_NOOP("Vegetation", "Allow Per-Item Overrides"), QT_TRANSLATE_NOOP("Vegetation", "Allow per-descriptor parameters to override component parameters."))
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeFilterConfig::m_slopeMin, QT_TRANSLATE_NOOP("Vegetation", "Slope Min"), QT_TRANSLATE_NOOP("Vegetation", "Minimum surface slope angle in degrees."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeFilterConfig::m_slopeMax, "Slope Max", "Maximum surface slope angle in degrees.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &SurfaceSlopeFilterConfig::m_slopeMax, QT_TRANSLATE_NOOP("Vegetation", "Slope Max"), QT_TRANSLATE_NOOP("Vegetation", "Maximum surface slope angle in degrees."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                     ;

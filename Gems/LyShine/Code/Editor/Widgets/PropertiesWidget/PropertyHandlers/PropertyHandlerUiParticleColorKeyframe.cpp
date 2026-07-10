@@ -32,7 +32,7 @@ PropertyUiParticleColorKeyframeCtrl::PropertyUiParticleColorKeyframeCtrl(QWidget
     layout->setSpacing(2);
 
     QLabel* timeLabel = new QLabel(parent);
-    timeLabel->setText("Time");
+    timeLabel->setText(tr("Time"));
     timeLabel->setObjectName("Time");
     layout->addWidget(timeLabel);
 
@@ -53,7 +53,7 @@ PropertyUiParticleColorKeyframeCtrl::PropertyUiParticleColorKeyframeCtrl(QWidget
     layout->addWidget(m_timeCtrl);
 
     QLabel* colorLabel = new QLabel(parent);
-    colorLabel->setText("Color");
+    colorLabel->setText(tr("Color"));
     colorLabel->setObjectName("Color");
     layout->addWidget(colorLabel);
 
@@ -69,19 +69,19 @@ PropertyUiParticleColorKeyframeCtrl::PropertyUiParticleColorKeyframeCtrl(QWidget
 
     AZStd::pair<AZ::s64, AZStd::string> easeInTangent;
     easeInTangent.first = static_cast<AZ::s64>(UiParticleEmitterInterface::ParticleKeyframeTangentType::EaseIn);
-    easeInTangent.second = "Ease In";
+    easeInTangent.second = tr("Ease In").toUtf8().constData();
     AZStd::pair<AZ::s64, AZStd::string> easeOutTangent;
     easeOutTangent.first = static_cast<AZ::s64>(UiParticleEmitterInterface::ParticleKeyframeTangentType::EaseOut);
-    easeOutTangent.second = "Ease Out";
+    easeOutTangent.second = tr("Ease Out").toUtf8().constData();
     AZStd::pair<AZ::s64, AZStd::string> linearTangent;
     linearTangent.first = static_cast<AZ::s64>(UiParticleEmitterInterface::ParticleKeyframeTangentType::Linear);
-    linearTangent.second = "Linear";
+    linearTangent.second = tr("Linear").toUtf8().constData();
     AZStd::pair<AZ::s64, AZStd::string> stepTangent;
     stepTangent.first = static_cast<AZ::s64>(UiParticleEmitterInterface::ParticleKeyframeTangentType::Step);
-    stepTangent.second = "Step";
+    stepTangent.second = tr("Step").toUtf8().constData();
 
     QLabel* inTangentLabel = new QLabel(parent);
-    inTangentLabel->setText("In tangent");
+    inTangentLabel->setText(tr("In tangent"));
     inTangentLabel->setObjectName("In tangent");
     layoutRow2->addWidget(inTangentLabel);
 
@@ -99,7 +99,7 @@ PropertyUiParticleColorKeyframeCtrl::PropertyUiParticleColorKeyframeCtrl(QWidget
     layoutRow2->addWidget(m_inTangentCtrl);
 
     QLabel* outTangentLabel = new QLabel(parent);
-    outTangentLabel->setText("Out tangent");
+    outTangentLabel->setText(tr("Out tangent"));
     outTangentLabel->setObjectName("Out tangent");
     layoutRow2->addWidget(outTangentLabel);
 

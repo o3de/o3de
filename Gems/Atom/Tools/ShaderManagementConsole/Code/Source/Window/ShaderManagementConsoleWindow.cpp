@@ -38,11 +38,11 @@ namespace ShaderManagementConsole
         m_assetBrowser->GetSearchWidget()->ClearTypeFilter();
         m_assetBrowser->GetSearchWidget()->SetTypeFilterVisible(false);
         m_assetBrowser->SetFileTypeFilters({
-            { "Material", { "material" }, true },
-            { "Material Type", { "materialtype" }, true },
-            { "Shader", { "shader" }, true },
-            { "Shader Template", { "shader.template" }, true },
-            { "Shader Variant List", { "shadervariantlist" }, true },
+            { tr("Material").toUtf8().constData(), { "material" }, true },
+            { tr("Material Type").toUtf8().constData(), { "materialtype" }, true },
+            { tr("Shader").toUtf8().constData(), { "shader" }, true },
+            { tr("Shader Template").toUtf8().constData(), { "shader.template" }, true },
+            { tr("Shader Variant List").toUtf8().constData(), { "shadervariantlist" }, true },
             { "AZSL", { "azsl", "azsli", "srgi" }, true },
         });
 
@@ -82,10 +82,10 @@ namespace ShaderManagementConsole
         shaderFullPath = AZ::RPI::AssetUtils::ResolvePathReference(initialPath, shaderVariantList.m_shaderFilePath);
         
         QMessageBox msgBox;
-        msgBox.setText("Where do you want to save the list?");
-        QPushButton* projectBtn = msgBox.addButton(QObject::tr("Save to project"), QMessageBox::ActionRole);
-        QPushButton* engineBtn = msgBox.addButton(QObject::tr("Save to engine"), QMessageBox::ActionRole);
-        msgBox.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+        msgBox.setText(tr("Where do you want to save the list?"));
+        QPushButton* projectBtn = msgBox.addButton(tr("Save to project"), QMessageBox::ActionRole);
+        QPushButton* engineBtn = msgBox.addButton(tr("Save to engine"), QMessageBox::ActionRole);
+        msgBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
         msgBox.exec();
 
         AZ::IO::Path result;

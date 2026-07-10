@@ -206,9 +206,9 @@ namespace ScriptCanvasEditor
         AZStd::string variableName;
         ScriptCanvas::GraphVariableManagerRequestBus::EventResult(variableName, scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::GetVariableName, varId);
 
-        QAction* getAction = new QAction(QObject::tr("Get %1").arg(variableName.c_str()), this);
-        getAction->setToolTip(QObject::tr("Adds a Get %1 variable node onto the active graph.").arg(variableName.c_str()));
-        getAction->setStatusTip(QObject::tr("Adds a Get %1 variable node onto the active graph.").arg(variableName.c_str()));
+        QAction* getAction = new QAction(tr("Get %1").arg(variableName.c_str()), this);
+        getAction->setToolTip(tr("Adds a Get %1 variable node onto the active graph.").arg(variableName.c_str()));
+        getAction->setStatusTip(tr("Adds a Get %1 variable node onto the active graph.").arg(variableName.c_str()));
         
         QObject::connect(getAction,
                 &QAction::triggered,
@@ -225,9 +225,9 @@ namespace ScriptCanvasEditor
             mimeEvent.ExecuteEvent(viewCenter, viewCenter, graphCanvasGraphId);
         });
         
-        QAction* setAction = new QAction(QObject::tr("Set %1").arg(variableName.c_str()), this);
-        setAction->setToolTip(QObject::tr("Adds a Set %1 variable node onto the active graph.").arg(variableName.c_str()));
-        setAction->setStatusTip(QObject::tr("Adds a Set %1 variable node onto the active graph.").arg(variableName.c_str()));
+        QAction* setAction = new QAction(tr("Set %1").arg(variableName.c_str()), this);
+        setAction->setToolTip(tr("Adds a Set %1 variable node onto the active graph.").arg(variableName.c_str()));
+        setAction->setStatusTip(tr("Adds a Set %1 variable node onto the active graph.").arg(variableName.c_str()));
 
         QObject::connect(setAction,
                 &QAction::triggered,
@@ -244,9 +244,9 @@ namespace ScriptCanvasEditor
             mimeEvent.ExecuteEvent(viewCenter, viewCenter, graphCanvasGraphId);
         });
 
-        QAction* copyAction = new QAction(QObject::tr("Copy %1").arg(variableName.c_str()), this);        
-        copyAction->setToolTip(QObject::tr("Copies the variable called - %1").arg(variableName.c_str()));
-        copyAction->setStatusTip(QObject::tr("Copies the variable called - %1").arg(variableName.c_str()));
+        QAction* copyAction = new QAction(tr("Copy %1").arg(variableName.c_str()), this);        
+        copyAction->setToolTip(tr("Copies the variable called - %1").arg(variableName.c_str()));
+        copyAction->setStatusTip(tr("Copies the variable called - %1").arg(variableName.c_str()));
 
         QObject::connect(copyAction,
             &QAction::triggered,
@@ -255,9 +255,9 @@ namespace ScriptCanvasEditor
             GraphVariablesTableView::CopyVariableToClipboard(dockWidget->GetActiveScriptCanvasId(), varId);
         });
 
-        QAction* pasteAction = new QAction(QObject::tr("Paste %1").arg(variableName.c_str()), this);
-        pasteAction->setToolTip(QObject::tr("Pastes the variable %1 currently on the clipboard").arg(variableName.c_str()));
-        pasteAction->setStatusTip(QObject::tr("Pastes the variable %1 currently on the clipboard").arg(variableName.c_str()));
+        QAction* pasteAction = new QAction(tr("Paste %1").arg(variableName.c_str()), this);
+        pasteAction->setToolTip(tr("Pastes the variable %1 currently on the clipboard").arg(variableName.c_str()));
+        pasteAction->setStatusTip(tr("Pastes the variable %1 currently on the clipboard").arg(variableName.c_str()));
 
         pasteAction->setEnabled(GraphVariablesTableView::HasCopyVariableData());
 
@@ -268,9 +268,9 @@ namespace ScriptCanvasEditor
             GraphVariablesTableView::HandleVariablePaste(dockWidget->GetActiveScriptCanvasId());
         });
 
-        QAction* duplicateAction = new QAction(QObject::tr("Duplicate %1").arg(variableName.c_str()), this);
-        duplicateAction->setToolTip(QObject::tr("Duplicates the variable called - %1").arg(variableName.c_str()));
-        duplicateAction->setStatusTip(QObject::tr("Duplicates the variable called - %1").arg(variableName.c_str()));
+        QAction* duplicateAction = new QAction(tr("Duplicate %1").arg(variableName.c_str()), this);
+        duplicateAction->setToolTip(tr("Duplicates the variable called - %1").arg(variableName.c_str()));
+        duplicateAction->setStatusTip(tr("Duplicates the variable called - %1").arg(variableName.c_str()));
 
         QObject::connect(duplicateAction,
             &QAction::triggered,
@@ -279,9 +279,9 @@ namespace ScriptCanvasEditor
             dockWidget->OnDuplicateVariable(varId);
         });
 
-        QAction* deleteAction = new QAction(QObject::tr("Delete %1").arg(variableName.c_str()), this);
-        deleteAction->setToolTip(QObject::tr("Deletes the variable called - %1").arg(variableName.c_str()));
-        deleteAction->setStatusTip(QObject::tr("Deletes the variable called - %1").arg(variableName.c_str()));
+        QAction* deleteAction = new QAction(tr("Delete %1").arg(variableName.c_str()), this);
+        deleteAction->setToolTip(tr("Deletes the variable called - %1").arg(variableName.c_str()));
+        deleteAction->setStatusTip(tr("Deletes the variable called - %1").arg(variableName.c_str()));
 
         QObject::connect(deleteAction,
             &QAction::triggered,
@@ -291,9 +291,9 @@ namespace ScriptCanvasEditor
             dockWidget->OnDeleteVariables(variableIds);
         });
 
-        QAction* configureAction = new QAction(QObject::tr("Configure %1").arg(variableName.c_str()), this);
-        configureAction->setToolTip(QObject::tr("Sets the name/type the variable called - %1").arg(variableName.c_str()));
-        configureAction->setStatusTip(QObject::tr("Sets the name/type the variable called - %1").arg(variableName.c_str()));
+        QAction* configureAction = new QAction(tr("Configure %1").arg(variableName.c_str()), this);
+        configureAction->setToolTip(tr("Sets the name/type the variable called - %1").arg(variableName.c_str()));
+        configureAction->setStatusTip(tr("Sets the name/type the variable called - %1").arg(variableName.c_str()));
 
         QObject::connect(configureAction,
             &QAction::triggered,
@@ -589,7 +589,7 @@ namespace ScriptCanvasEditor
 
         ui->variablePalette->clearSelection();
 
-        ui->searchFilter->setPlaceholderText("Search...");
+        ui->searchFilter->setPlaceholderText(tr("Search..."));
 
         ui->searchFilter->setCompleter(nullptr);
 
@@ -693,7 +693,7 @@ namespace ScriptCanvasEditor
             sortByType->setChecked(true);
         }
 
-        QAction* cleanupAction = new QAction(QObject::tr("Remove unused variables"), this);
+        QAction* cleanupAction = new QAction(tr("Remove unused variables"), this);
         QAction* actionResult = nullptr;
 
 

@@ -18,6 +18,7 @@
 #include <SkinnedMesh/SkinnedMeshDebugDisplay.h>
 
 #include <IEditor.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 namespace AZ
 {
@@ -37,12 +38,12 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<EditorCommonFeaturesSystemComponent>("AtomEditorCommonFeaturesSystemComponent",
-                        "Configures editor- and tool-specific functionality for common render features.")
+                    ec->Class<EditorCommonFeaturesSystemComponent>(QT_TRANSLATE_NOOP("AtomLyIntegration", "AtomEditorCommonFeaturesSystemComponent"),
+                        QT_TRANSLATE_NOOP("AtomLyIntegration", "Configures editor- and tool-specific functionality for common render features."))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(nullptr, &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultAssetPath, "Atom Level Default Asset Path",
-                            "path to the slice the instantiate for a new Atom level")
+                        ->DataElement(nullptr, &EditorCommonFeaturesSystemComponent::m_atomLevelDefaultAssetPath, QT_TRANSLATE_NOOP("AtomLyIntegration", "Atom Level Default Asset Path"),
+                            QT_TRANSLATE_NOOP("AtomLyIntegration", "path to the slice the instantiate for a new Atom level"))
                         ;
                 }
             }

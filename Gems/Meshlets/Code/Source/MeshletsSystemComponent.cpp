@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -34,7 +35,9 @@ namespace AZ
 
                 if (AZ::EditContext* ec = serialize->GetEditContext())
                 {
-                    ec->Class<MeshletsSystemComponent>("Meshlets", "[Description of functionality provided by this System Component]")
+                    ec->Class<MeshletsSystemComponent>(
+                        QT_TRANSLATE_NOOP("Meshlets", "Meshlets"),
+                        QT_TRANSLATE_NOOP("Meshlets", "[Description of functionality provided by this System Component]"))
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;

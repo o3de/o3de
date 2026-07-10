@@ -37,8 +37,8 @@ namespace ScriptCanvasEditor
 
     void MainWindowStatusWidget::OnResultsChanged(int errorCount, int warningCount)
     {
-        m_ui->showErrorButton->setText(QString("%1 Errors").arg(errorCount));
-        m_ui->showWarningButton->setText(QString("%1 Warnings").arg(warningCount));
+        m_ui->showErrorButton->setText(tr("%1 Errors").arg(errorCount));
+        m_ui->showWarningButton->setText(tr("%1 Warnings").arg(warningCount));
     }
 
 }

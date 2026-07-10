@@ -17,7 +17,7 @@
 #include <QString>
 
 MainToolbar::MainToolbar(EditorWindow* parent)
-    : QToolBar("Main Toolbar", parent)
+    : QToolBar(tr("Main Toolbar"), parent)
     , m_newElementToolbarSection(new NewElementToolbarSection(this, true))
     , m_coordinateSystemToolbarSection(new CoordinateSystemToolbarSection(this, true))
     , m_canvasSizeToolbarSection(new ReferenceCanvasSizeToolbarSection(this, false))
@@ -27,13 +27,13 @@ MainToolbar::MainToolbar(EditorWindow* parent)
     setFloatable(false);
 
     // Zoom factor.
-    QLabel* zoomLabel = new QLabel("Zoom:", parent);
+    QLabel* zoomLabel = new QLabel(tr("Zoom:"), parent);
     m_zoomFactorSpinBox->setRange(10.0, 1000.0);
     m_zoomFactorSpinBox->setSingleStep(20.0);
     m_zoomFactorSpinBox->setSuffix("%");
     m_zoomFactorSpinBox->setValue(100.0);
     m_zoomFactorSpinBox->setDecimals(2);
-    m_zoomFactorSpinBox->setToolTip(QString("Canvas zoom percentage"));
+    m_zoomFactorSpinBox->setToolTip(tr("Canvas zoom percentage"));
     m_zoomFactorSpinBox->setKeyboardTracking(false);
     m_zoomFactorSpinBox->setButtonSymbols(QDoubleSpinBox::ButtonSymbols::UpDownArrows);
 

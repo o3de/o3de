@@ -29,7 +29,8 @@ namespace LandscapeCanvas
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<TerrainSurfaceMaterialsListNode>("TerrainSurfaceMaterialsListNode", "")->
+                editContext->Class<TerrainSurfaceMaterialsListNode>(
+                    QT_TRANSLATE_NOOP("LandscapeCanvas", "TerrainSurfaceMaterialsListNode"), "")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                     Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "TerrainNodeTitlePalette")
                     ;

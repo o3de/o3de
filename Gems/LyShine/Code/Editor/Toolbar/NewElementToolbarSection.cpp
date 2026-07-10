@@ -20,7 +20,7 @@ NewElementToolbarSection::NewElementToolbarSection(QToolBar* parent, bool addSep
     EditorWindow* editorWindow = static_cast<EditorWindow*>(parent->parent());
 
     {
-        QPushButton* button = new QPushButton("New...", parent);
+        QPushButton* button = new QPushButton(QObject::tr("New..."), parent);
         QObject::connect(
             button,
             &QPushButton::clicked,

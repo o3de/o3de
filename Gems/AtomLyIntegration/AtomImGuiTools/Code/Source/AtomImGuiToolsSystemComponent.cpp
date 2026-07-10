@@ -17,6 +17,8 @@
 #include <AzFramework/Components/ConsoleBus.h>
 #include <ImGuiBus.h>
 
+#include <AzFramework/Translation/TranslationDef.h>
+
 namespace AtomImGuiTools
 {
     void AtomImGuiToolsSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -29,7 +31,7 @@ namespace AtomImGuiTools
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<AtomImGuiToolsSystemComponent>("AtomImGuiTools", "[Manager of various Atom ImGui tools.]")
+                ec->Class<AtomImGuiToolsSystemComponent>(QT_TRANSLATE_NOOP("AtomImGuiTools", "AtomImGuiTools"), QT_TRANSLATE_NOOP("AtomImGuiTools", "[Manager of various Atom ImGui tools.]"))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

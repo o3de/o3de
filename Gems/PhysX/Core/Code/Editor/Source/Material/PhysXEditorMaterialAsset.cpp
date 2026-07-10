@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Translation/TranslationDef.h>
 
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
 
@@ -29,8 +30,8 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorMaterialAsset::m_materialConfiguration, "PhysX Material",
-                        "PhysX material properties")
+                        AZ::Edit::UIHandlers::Default, &EditorMaterialAsset::m_materialConfiguration, QT_TRANSLATE_NOOP("PhysX", "PhysX Material"),
+                        QT_TRANSLATE_NOOP("PhysX", "PhysX material properties"))
                         ->Attribute(AZ::Edit::Attributes::ForceAutoExpand, true);
             }
         }
