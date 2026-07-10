@@ -43,6 +43,11 @@
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
+#include <Atom/RPI.Public/Pass/Pass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
 // Editor
 #include "ViewManager.h"
 #include "Settings.h"
@@ -61,6 +66,60 @@ static const std::pair<int, int> ViewportResolutions[] =
 static const size_t ViewportResolutionsCount = sizeof(ViewportResolutions) / sizeof(ViewportResolutions[0]);
 static constexpr int SortKeySpacing = 100;
 
+static AZ::RPI::RenderPipelinePtr FocusedViewportPipeline()
+{
+    auto* viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (!viewportContextManager)
+    {
+        return nullptr;
+    }
+
+    CViewport* viewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
+    AZ::RPI::ViewportContextPtr viewportContext = viewport
+        ? viewportContextManager->GetViewportContextById(viewport->GetViewportId())
+        : viewportContextManager->GetDefaultViewportContext();
+    return viewportContext ? viewportContext->GetCurrentPipeline() : nullptr;
+}
+
+static bool IsFocusedViewportPassEnabled(const char* passName)
+{
+    AZ::RPI::RenderPipelinePtr pipeline = FocusedViewportPipeline();
+    AZ::RPI::Ptr<AZ::RPI::Pass> pass = pipeline ? pipeline->FindFirstPass(AZ::Name(passName)) : nullptr;
+    return pass && pass->IsEnabled();
+}
+
+static void SetFocusedViewportViewModes(bool normal, bool wireframe, bool overdraw)
+{
+    AZ::RPI::RenderPipelinePtr pipeline = FocusedViewportPipeline();
+    if (!pipeline)
+    {
+        return;
+    }
+
+    const bool flatBackground = !normal && (wireframe || overdraw);
+    const struct
+    {
+        const char* m_pass;
+        bool m_enabled;
+    } passes[] = {
+        { "OpaquePass", normal },
+        { "Forward", normal },
+        { "TransparentPass", normal },
+        { "ViewModeBackgroundPass", flatBackground },
+        { "ViewModeWireframeHiddenPass", wireframe },
+        { "ViewModeWireframePass", wireframe },
+        { "ViewModeOverdrawCountPass", overdraw },
+        { "ViewModeOverdrawResolvePass", overdraw },
+    };
+    for (const auto& entry : passes)
+    {
+        if (AZ::RPI::Ptr<AZ::RPI::Pass> pass = pipeline->FindFirstPass(AZ::Name(entry.m_pass)))
+        {
+            pass->SetEnabled(entry.m_enabled);
+        }
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CLayoutViewPane
 //////////////////////////////////////////////////////////////////////////
@@ -68,6 +127,7 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     : AzQtComponents::ToolBarArea(parent)
 {
     m_viewport = nullptr;
+    m_viewportTitleDlg = nullptr;
     m_active = false;
     m_nBorder = VIEW_BORDER;
 
@@ -150,6 +210,11 @@ void CLayoutViewPane::OnMenuRegistrationHook()
         menuProperties.m_name = "Viewport Options";
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, menuProperties);
     }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Viewport View Mode";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, menuProperties);
+    }
 }
 
 void CLayoutViewPane::OnToolBarRegistrationHook()
@@ -196,6 +261,94 @@ void CLayoutViewPane::OnActionRegistrationHook()
             actionProperties,
             []
             {
+            }
+        );
+    }
+
+    // Dummy Action with View Mode Icon
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewMode";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "View Mode";
+        actionProperties.m_iconPath = ":/Menu/material_editor.svg";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+            }
+        );
+    }
+
+    // Viewport View Mode
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewMode.normal";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Normal";
+        actionProperties.m_category = "Viewport View Mode";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SetFocusedViewportViewModes(
+                    !IsFocusedViewportPassEnabled("OpaquePass"),
+                    IsFocusedViewportPassEnabled("ViewModeWireframePass"),
+                    IsFocusedViewportPassEnabled("ViewModeOverdrawCountPass"));
+            },
+            []() -> bool
+            {
+                return IsFocusedViewportPassEnabled("OpaquePass");
+            }
+        );
+    }
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewMode.wireframe";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Wireframe";
+        actionProperties.m_category = "Viewport View Mode";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SetFocusedViewportViewModes(
+                    IsFocusedViewportPassEnabled("OpaquePass"),
+                    !IsFocusedViewportPassEnabled("ViewModeWireframePass"),
+                    IsFocusedViewportPassEnabled("ViewModeOverdrawCountPass"));
+            },
+            []() -> bool
+            {
+                return IsFocusedViewportPassEnabled("ViewModeWireframePass");
+            }
+        );
+    }
+    {
+        constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.viewMode.overdraw";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Quad Overdraw";
+        actionProperties.m_category = "Viewport View Mode";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorIdentifiers::MainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            []
+            {
+                SetFocusedViewportViewModes(
+                    IsFocusedViewportPassEnabled("OpaquePass"),
+                    IsFocusedViewportPassEnabled("ViewModeWireframePass"),
+                    !IsFocusedViewportPassEnabled("ViewModeOverdrawCountPass"));
+            },
+            []() -> bool
+            {
+                return IsFocusedViewportPassEnabled("ViewModeOverdrawCountPass");
             }
         );
     }
@@ -500,6 +653,13 @@ void CLayoutViewPane::OnMenuBindingHook()
         }
     }
 
+    // View Mode
+    {
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewMode.normal", 100);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewMode.wireframe", 200);
+        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportViewModeMenuIdentifier, "o3de.action.viewport.viewMode.overdraw", 300);
+    }
+
     // Options
     {
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportOptionsMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 300);
@@ -524,6 +684,8 @@ void CLayoutViewPane::OnToolBarBindingHook()
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.view.showHelpers", EditorIdentifiers::ViewportHelpersMenuIdentifier, 700);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.resizeIcon", EditorIdentifiers::ViewportSizeMenuIdentifier, 800);
+    m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
+        EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.viewMode", EditorIdentifiers::ViewportViewModeMenuIdentifier, 850);
     m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(
         EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.viewport.menuIcon", EditorIdentifiers::ViewportOptionsMenuIdentifier, 900);
 }

@@ -1,0 +1,12 @@
+#include "ViewModeCommon.azsli"
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    RWTexture2D<uint> m_mask;
+}
+
+[earlydepthstencil]
+void MainPS(VsOutput IN, uint primitiveId : SV_PrimitiveID)
+{
+    InterlockedOr(PassSrg::m_mask[uint2(IN.m_position.xy)], 1u << (primitiveId & 31u));
+}

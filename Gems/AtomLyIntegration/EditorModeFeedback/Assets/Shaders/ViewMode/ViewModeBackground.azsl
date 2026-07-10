@@ -1,0 +1,10 @@
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+    OUT.m_color = float4(0.12, 0.13, 0.15, 1.0);
+    return OUT;
+}

@@ -1,0 +1,31 @@
+#pragma once
+
+#define PIPELINE_HAS_PASS_SRG 0
+
+#include <viewsrg_all.srgi>
+
+ShaderResourceGroup ViewModeObjectSrg : SRG_PerObject
+{
+    row_major float4x4 m_world;
+    float4 m_color;
+}
+
+struct VsInput
+{
+    float3 m_position : POSITION;
+};
+
+struct VsOutput
+{
+    float4 m_position : SV_Position;
+    float m_viewDepth : TEXCOORD0;
+};
+
+VsOutput MainVS(VsInput IN)
+{
+    VsOutput OUT;
+    const float4 worldPosition = mul(ViewModeObjectSrg::m_world, float4(IN.m_position, 1.0));
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    OUT.m_viewDepth = OUT.m_position.w;
+    return OUT;
+}

@@ -43,10 +43,13 @@ namespace AZ
             }
 
             EditorModeFeatureProcessor::Reflect(context);
+            ViewModeFeatureProcessor::Reflect(context);
         }
 
         void EditorModeFeedbackSystemComponent::Activate()
         {
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<ViewModeFeatureProcessor>();
+
             AzFramework::ApplicationRequests::Bus::Broadcast(
                 [this](AzFramework::ApplicationRequests::Bus::Events* ebus)
                 {
@@ -66,6 +69,8 @@ namespace AZ
 
         void EditorModeFeedbackSystemComponent::Deactivate()
         {
+            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<ViewModeFeatureProcessor>();
+
             if (!m_registeryEnabled)
             {
                 return;
