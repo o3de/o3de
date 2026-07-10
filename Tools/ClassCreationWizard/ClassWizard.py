@@ -104,20 +104,24 @@ def _pyside6_add_dll_dir(path: Path) -> None:
 def _bootstrap_pyside6() -> None:
     """Put O3DE's shipped PySide6 on the path so a standalone launch can import
     it. Safe to call when PySide6 is partially available."""
-    import importlib.util
     engine_root = _pyside6_engine_root()
     if engine_root is None:
         return
     packages = _pyside6_packages_folder(engine_root)
 
-    # 1. Ensure the importable PySide6 Python package is on sys.path. An engine
-    #    venv may already expose it (via a .pth into the build's 3rdParty copy),
-    #    so only add it ourselves when it is genuinely missing.
-    if importlib.util.find_spec("PySide6") is None:
-        site_packages = _pyside6_newest_package(packages, "pyside6-", "pyside6/lib/site-packages")
-        if site_packages is None or not (site_packages / "PySide6").is_dir():
-            return
-        sys.path.insert(0, str(site_packages))
+    # 1. Put the engine's own complete PySide6 package first on sys.path. We match
+    #    the package to the RUNNING interpreter's Python tag (e.g. "py3.10") so a
+    #    non-matching interpreter's own PySide6 (e.g. a system wheel under 3.13) is
+    #    never shadowed by an ABI-incompatible build. Prepending unconditionally --
+    #    rather than only when PySide6 seems missing -- is deliberate: an engine
+    #    venv can carry a BROKEN/partial PySide6 + shiboken6 (e.g. the native
+    #    shiboken6.Shiboken .pyd absent -> "No module named 'shiboken6.Shiboken'"),
+    #    and the engine's complete 3rdParty copy must win over that.
+    py_tag = f"py{sys.version_info.major}.{sys.version_info.minor}"
+    site_packages = _pyside6_newest_package(packages, f"pyside6-*-{py_tag}-", "pyside6/lib/site-packages")
+    if site_packages is None or not (site_packages / "PySide6").is_dir():
+        return  # No interpreter-matched engine package; leave any existing PySide6 alone.
+    sys.path.insert(0, str(site_packages))
 
     # 2. Make PySide6's native Qt6 dependencies discoverable. This is required
     #    even when the PySide6 package itself is already importable: the Qt6 DLLs
@@ -125,9 +129,7 @@ def _bootstrap_pyside6() -> None:
     #    so 'import PySide6.QtCore' fails with "DLL load failed" without it. The
     #    pyside6 and qt 3rdParty package bin folders are build-independent; the
     #    engine's built bin/<config> is added too when present as an exact match.
-    pyside6_bin = _pyside6_newest_package(packages, "pyside6-", "pyside6/bin")
-    if pyside6_bin is not None:
-        _pyside6_add_dll_dir(pyside6_bin)
+    _pyside6_add_dll_dir(site_packages.parent.parent / "bin")           # <pyside6-pkg>/pyside6/bin
     qt_bin = _pyside6_newest_package(packages, "qt-", "qt/bin")
     if qt_bin is not None:
         _pyside6_add_dll_dir(qt_bin)
@@ -2926,14 +2928,25 @@ def main():
             return 0
 
 if __name__ == "__main__":
-    # Running as a standalone script (not embedded in O3DE Editor).
-    # Always propagate the exit code so callers can detect failure.
     try:
         result = main()
-        sys.exit(result)
     except SystemExit:
-        raise  # Let sys.exit propagate normally
+        raise  # Let an explicit sys.exit (e.g. argparse) propagate normally.
     except Exception as e:
         print(f"Error: {e}")
         traceback.print_exc()
-        sys.exit(1)
+        result = 1
+
+    # Only propagate an exit code for a genuine standalone launch. Inside the O3DE
+    # Editor the interpreter is shared and the wizard window lives on after this
+    # returns; calling sys.exit() there raises SystemExit into the editor's Python
+    # runner, which misreports it as "script failure ... return code -1" even on a
+    # clean exit (0). azlmbr is importable only in the editor's embedded interpreter.
+    try:
+        import azlmbr  # noqa: F401  -- presence signals the embedded editor interpreter
+        _embedded_in_editor = True
+    except ImportError:
+        _embedded_in_editor = False
+
+    if not _embedded_in_editor:
+        sys.exit(result if result is not None else 0)
