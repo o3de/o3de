@@ -7,6 +7,7 @@
 
 import argparse
 import contextlib
+import io
 import json
 import os
 import re
@@ -151,13 +152,29 @@ def _bootstrap_pyside6() -> None:
 
 
 # Try the NATURAL import first -- exactly as any O3DE-tied Python app would, using
-# only whatever the engine's Python environment provides. If that works, the engine
-# is self-sufficient and we touch nothing and stay silent. Only when it fails do we
-# engage the wizard's own PySide6 bootstrap, and say so on stderr -- so a takeover
-# is always visible, and a healthy engine environment produces no such message.
+# only whatever the engine's Python environment provides. If that works, we touch
+# nothing. If it fails, engage the wizard's own PySide6 bootstrap so the tool runs
+# anywhere (terminal, VS, Rider, an extension, ...).
+#
+# The bootstrap is EXPECTED for a standalone launcher: a .pyd's dependent DLLs are
+# not resolved from PATH since Python 3.8, so a bare interpreter genuinely cannot
+# load Qt without an in-process os.add_dll_directory -- which only code inside the
+# process (this bootstrap) can do. So that case stays silent. Only the O3DE editor's
+# EMBEDDED interpreter is expected to hand us a fully working PySide6; a failure
+# there is unexpected and worth flagging, since it points at a broken engine Python.
+# The probe is expected to fail (and print its own diagnostic) on a bare launcher,
+# so capture its stderr; we only re-surface it in the unexpected (editor) case.
+_pyside_probe_stderr = io.StringIO()
 try:
-    import PySide6.QtCore  # noqa: F401  -- natural probe; reused by the imports below
+    with contextlib.redirect_stderr(_pyside_probe_stderr):
+        import PySide6.QtCore  # noqa: F401  -- natural probe; reused by the imports below
 except BaseException as _natural_pyside_err:
+    try:
+        import azlmbr  # noqa: F401  -- importable only in the editor's embedded interpreter
+        _in_embedded_editor = True
+    except Exception:
+        _in_embedded_editor = False
+
     if isinstance(_natural_pyside_err, ModuleNotFoundError):
         _pyside_reason = "PySide6/shiboken6 native module missing from the venv"
     elif isinstance(_natural_pyside_err, ImportError):
@@ -175,12 +192,19 @@ except BaseException as _natural_pyside_err:
     except Exception:
         pass  # Fall through: the import below raises a clear, actionable error.
 
-    print(
-        f"[ClassWizard] PySide6 was not importable from the engine environment "
-        f"({_pyside_reason}); the wizard engaged its own PySide6 bootstrap to run. "
-        f"A self-sufficient engine environment would not need this.",
-        file=sys.stderr,
-    )
+    if _in_embedded_editor:
+        # Unexpected: the editor's embedded interpreter should already provide
+        # PySide6. Falling back here suggests a broken engine Python environment.
+        print(
+            f"[ClassWizard] Unexpected: PySide6 was not importable from the O3DE "
+            f"editor's Python environment ({_pyside_reason}); fell back to the "
+            f"wizard's own bootstrap. This usually means the engine's Python setup "
+            f"is broken.",
+            file=sys.stderr,
+        )
+        _probe_diag = _pyside_probe_stderr.getvalue().strip()
+        if _probe_diag:
+            print(_probe_diag, file=sys.stderr)
 
 try:
     from PySide6.QtCore import Qt, Signal, QTimer, QSettings
