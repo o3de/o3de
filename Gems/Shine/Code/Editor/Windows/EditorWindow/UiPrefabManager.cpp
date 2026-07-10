@@ -97,7 +97,7 @@ void UiPrefabManager::InstantiatePrefab(const AZStd::string& prefabPath, Hierarc
     file.Read(fileSize, xml.data());
     file.Close();
 
-    // Use the same creation path as paste — this gives us undo/redo support
+    // Use the same creation path as paste -- this gives us undo/redo support
     QTreeWidgetItemRawPtrQList selectedItems = hierarchy->selectedItems();
 
     CommandHierarchyItemCreateFromData::Push(
@@ -113,7 +113,7 @@ void UiPrefabManager::InstantiatePrefab(const AZStd::string& prefabPath, Hierarc
                 nullptr,
                 m_editorWindow->GetEntityContext(),
                 xml,
-                true, // isCopyOperation — generates new entity IDs
+                true, // isCopyOperation -- generates new entity IDs
                 &listOfNewlyCreatedTopLevelElements);
         },
         "Instantiate UI Prefab");

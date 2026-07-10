@@ -71,7 +71,7 @@ namespace LYShineToShine
         const AssetBuilderSDK::CreateJobsRequest& request,
         AssetBuilderSDK::CreateJobsResponse& response)
     {
-        // Builder disabled — use console commands instead:
+        // Builder disabled -- use console commands instead:
         //   1. convert_slices <dir>   (creates .uiprefab files from .slice files)
         //   2. upgrade_canvases <dir> (upgrades v2 canvases to v4 with prefab references)
         // The AP builder cannot guarantee correct ordering (slices must be converted
@@ -114,7 +114,7 @@ namespace LYShineToShine
 
         AZ_TracePrintf(s_builderName, "Successfully upgraded canvas: %s\n", request.m_sourceFile.c_str());
 
-        // No product output — the converted source will be picked up by AP and
+        // No product output -- the converted source will be picked up by AP and
         // processed by the Shine builder to produce the runtime product.
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
     }

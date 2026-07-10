@@ -47,7 +47,7 @@ namespace LYShineToShine
 
     void LYShineToShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        // No required services — the conversion code uses raw AzCore serialization APIs
+        // No required services -- the conversion code uses raw AzCore serialization APIs
         // and does not depend on Shine being active.
     }
 

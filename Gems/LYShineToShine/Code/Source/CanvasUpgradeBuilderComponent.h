@@ -16,7 +16,7 @@ namespace LYShineToShine
     //! to Shine v4 format in-place. This is a one-time migration builder:
     //!   - If the source .uicanvas is already v4, no job is emitted.
     //!   - If v1/v2, a job is emitted. ProcessJob converts the source file in-place
-    //!     and produces no product asset (the Shine builder handles v4 → product).
+    //!     and produces no product asset (the Shine builder handles v4 -> product).
     //!   - After AP detects the source change, the Shine builder processes the now-v4 file.
     //!
     //! Once all canvases are converted, remove the LYShineToShine gem entirely.

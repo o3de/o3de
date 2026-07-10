@@ -203,7 +203,7 @@ namespace LYShineToShine
 
     bool CanvasUpgrader::HasSliceReferences(const AZStd::string& xmlContent) const
     {
-        // Old files use "PrefabReference", newer files use "SliceReference" — same type UUID
+        // Old files use "PrefabReference", newer files use "SliceReference" -- same type UUID
         return xmlContent.find("SliceReference") != AZStd::string::npos
             || xmlContent.find("PrefabReference") != AZStd::string::npos;
     }
@@ -560,7 +560,7 @@ namespace LYShineToShine
                     continue;
                 }
 
-                // Add instantiated entities to ChildEntities — they already have
+                // Add instantiated entities to ChildEntities -- they already have
                 // correct parent-child relationships and canvas-specific entity IDs.
                 // PrefabInstances are stored as metadata for future save/reload support
                 // but entities are NOT re-instantiated from .uiprefab at load time

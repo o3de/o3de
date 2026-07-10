@@ -194,7 +194,7 @@ namespace Shine
         RegisterComponentTypeForMenuOrdering(UiFlipbookAnimationComponent::RTTI_Type());
 
 #if !defined(SHINE_BUILDER) && !defined(SHINE_TESTS)
-        // Add Shine pass — only if the RPI is actually available (not in AssetBuilder context)
+        // Add Shine pass -- only if the RPI is actually available (not in AssetBuilder context)
         auto* passSystem = AZ::RPI::PassSystemInterface::Get();
         if (passSystem)
         {

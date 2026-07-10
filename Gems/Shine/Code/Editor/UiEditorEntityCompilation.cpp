@@ -18,7 +18,7 @@
 namespace Shine
 {
     //////////////////////////////////////////////////////////////////////////
-    // Internal helpers — ported from EditorInfoRemover (prefab system's slice-free path)
+    // Internal helpers -- ported from EditorInfoRemover (prefab system's slice-free path)
     //////////////////////////////////////////////////////////////////////////
     namespace Internal
     {
@@ -195,7 +195,7 @@ namespace Shine
             return AZ::Success();
         }
 
-        //! Export a single component: resolve callback → BuildGameEntity fallback → clone runtime.
+        //! Export a single component: resolve callback -> BuildGameEntity fallback -> clone runtime.
         static AZ::Outcome<void, AZStd::string> ExportComponent(
             AZ::Component* component,
             const AZ::PlatformTagSet& platformTags,

@@ -17,7 +17,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! A UiPrefabInstance represents one instantiation of a .uiprefab in a canvas.
-//! It stores the source prefab path, an entity ID mapping (base → instance),
+//! It stores the source prefab path, an entity ID mapping (base -> instance),
 //! and per-instance field-level overrides as JSON Patches (RFC 6902).
 //!
 //! This replaces the old SliceReference + SliceInstance + DataPatch system.

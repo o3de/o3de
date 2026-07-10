@@ -191,7 +191,7 @@ bool UiEditorEntityContext::SaveToStreamForGame(AZ::IO::GenericStream& stream, A
     // Serialize the entities directly as a vector
     bool result = AZ::Utils::SaveObjectToStream<AZStd::vector<AZ::Entity*>>(stream, streamType, &exportEntities);
 
-    // Clean up exported entities — they are clones
+    // Clean up exported entities -- they are clones
     for (auto* entity : exportEntities)
     {
         delete entity;

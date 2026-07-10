@@ -21,25 +21,25 @@ namespace LYShineToShine
 {
     //! Upgrades old LyShine v1/v2 .uicanvas files to Shine v4 format.
     //!
-    //! The v2 format stores entities inside a RootSliceEntity → SliceComponent hierarchy:
+    //! The v2 format stores entities inside a RootSliceEntity -> SliceComponent hierarchy:
     //!   UiCanvasFileObject (version 2)
     //!     CanvasEntity (with UiCanvasComponent)
     //!     RootSliceEntity (AZ::Entity with SliceComponent)
     //!       SliceComponent
-    //!         Entities[] — loose entities
-    //!         Prefabs[] — SliceReference[] → SliceInstance[] (with EntityIdMap + DataPatch)
+    //!         Entities[] -- loose entities
+    //!         Prefabs[] -- SliceReference[] -> SliceInstance[] (with EntityIdMap + DataPatch)
     //!
     //! The v4 format stores local entities and prefab references:
     //!   UiCanvasFileObject (version 4)
     //!     CanvasEntity (with UiCanvasComponent)
-    //!     ChildEntities[] — entities local to this canvas (not from any prefab)
-    //!     PrefabInstances[] — references to .uiprefab files with JSON Patch overrides
+    //!     ChildEntities[] -- entities local to this canvas (not from any prefab)
+    //!     PrefabInstances[] -- references to .uiprefab files with JSON Patch overrides
     //!
     //! Conversion strategy:
-    //!   Phase 1 (Simple): Files with no SliceReferences — extract entities from
+    //!   Phase 1 (Simple): Files with no SliceReferences -- extract entities from
     //!     SliceComponent::Entities and move to ChildEntities. Pure XML manipulation.
     //!
-    //!   Phase 2 (Complex): Files with SliceReferences — extract direct entities to
+    //!   Phase 2 (Complex): Files with SliceReferences -- extract direct entities to
     //!     ChildEntities, convert each SliceReference to a UiPrefabInstance that
     //!     references the corresponding .uiprefab file (created by convert_slices).
     //!
