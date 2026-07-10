@@ -150,10 +150,37 @@ def _bootstrap_pyside6() -> None:
             os.environ["QT_PLUGIN_PATH"] = str(qt_plugins)
 
 
+# Try the NATURAL import first -- exactly as any O3DE-tied Python app would, using
+# only whatever the engine's Python environment provides. If that works, the engine
+# is self-sufficient and we touch nothing and stay silent. Only when it fails do we
+# engage the wizard's own PySide6 bootstrap, and say so on stderr -- so a takeover
+# is always visible, and a healthy engine environment produces no such message.
 try:
-    _bootstrap_pyside6()
-except Exception:
-    pass  # Fall through: the import below raises a clear, actionable error.
+    import PySide6.QtCore  # noqa: F401  -- natural probe; reused by the imports below
+except BaseException as _natural_pyside_err:
+    if isinstance(_natural_pyside_err, ModuleNotFoundError):
+        _pyside_reason = "PySide6/shiboken6 native module missing from the venv"
+    elif isinstance(_natural_pyside_err, ImportError):
+        _pyside_reason = "Qt6 DLLs not on the interpreter's search path"
+    else:
+        _pyside_reason = type(_natural_pyside_err).__name__
+
+    # Drop any partially-initialized modules so the retry resolves from our path.
+    for _m in [m for m in list(sys.modules)
+               if m in ("PySide6", "shiboken6") or m.startswith(("PySide6.", "shiboken6."))]:
+        del sys.modules[_m]
+
+    try:
+        _bootstrap_pyside6()
+    except Exception:
+        pass  # Fall through: the import below raises a clear, actionable error.
+
+    print(
+        f"[ClassWizard] PySide6 was not importable from the engine environment "
+        f"({_pyside_reason}); the wizard engaged its own PySide6 bootstrap to run. "
+        f"A self-sufficient engine environment would not need this.",
+        file=sys.stderr,
+    )
 
 try:
     from PySide6.QtCore import Qt, Signal, QTimer, QSettings
