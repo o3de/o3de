@@ -42,6 +42,13 @@ namespace AZ::Render
         void Render(const FeatureProcessor::RenderPacket& packet) override;
         void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
 
+        //! Re-establish pipeline-dependent state when a pipeline's passes are rebuilt -- e.g.
+        //! entering/exiting maximized play mode. Without this our injected compute pass (Dynamic) is
+        //! left orphaned and the scene IBL slots stale, so the gradient lighting stops applying.
+        void OnRenderPipelineChanged(
+            RPI::RenderPipeline* renderPipeline,
+            RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+
         // =====================================================================
         // GradientGIFeatureProcessorInterface
         // =====================================================================

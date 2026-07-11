@@ -73,6 +73,10 @@ namespace AZ::Render
         {
             CacheSceneSrgIndices();
         }
+
+        // Listen for pipeline pass rebuilds so we can re-establish our pass / IBL delegation
+        // (e.g. when maximized play mode tears down and recreates the render pipeline).
+        EnableSceneNotification();
     }
 
     void GradientGIFeatureProcessor::SafeRemoveDynamicPass()
@@ -112,6 +116,8 @@ namespace AZ::Render
 
     void GradientGIFeatureProcessor::Deactivate()
     {
+        DisableSceneNotification();
+
         // Remove the GPU pass from the pipeline, then drop our reference.
         SafeRemoveDynamicPass();
 
@@ -264,6 +270,38 @@ namespace AZ::Render
         renderPipeline->AddPassBefore(m_gradientPassPtr, AZ::Name("DepthPrePass"));
 
         m_active = true;
+    }
+
+    // =========================================================================
+    // OnRenderPipelineChanged -- re-establish state after a pipeline pass rebuild
+    // =========================================================================
+
+    void GradientGIFeatureProcessor::OnRenderPipelineChanged(
+        RPI::RenderPipeline* /*renderPipeline*/,
+        RPI::SceneNotification::RenderPipelineChangeType changeType)
+    {
+        // Only a pass rebuild matters. Entering/exiting maximized play mode tears down and rebuilds
+        // the render pipeline, which orphans our injected compute pass (Dynamic) and can invalidate
+        // the cached scene SRG, and can leave the scene IBL slots stale (Static). Re-establish the
+        // active mode's output so the gradient GI keeps applying instead of dropping out.
+        if (changeType != RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+        {
+            return;
+        }
+
+        if (m_updateMode == UpdateMode::Dynamic)
+        {
+            // The scene SRG may have been rebuilt; re-cache its IBL slot indices, then recreate the
+            // compute pass if the rebuild orphaned it (EnsureDynamicPassExists is a no-op if healthy).
+            m_sceneSrgIndicesCached = false;
+            CacheSceneSrgIndices();
+            EnsureDynamicPassExists();
+        }
+        else // Static
+        {
+            // Re-publish our cubemap to the IBL FP on the next Simulate() and reclaim the IBL slots.
+            m_needsRebuild = true;
+        }
     }
 
     // =========================================================================
