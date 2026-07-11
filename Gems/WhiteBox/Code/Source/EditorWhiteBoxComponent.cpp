@@ -618,30 +618,36 @@ namespace WhiteBox
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DrawStairData>("Stair", "Staircase-specific Draw Shape settings.")
+                editContext->Class<DrawStairData>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "Stair"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "Staircase-specific Draw Shape settings."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DrawStairData::m_byHeight, "Stair By Step Height",
-                        "When on, the Staircase is divided by a fixed step (riser) height; the step count is derived "
-                        "from the pull height. When off, a fixed step count is used.")
+                        AZ::Edit::UIHandlers::Default, &DrawStairData::m_byHeight,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Stair By Step Height"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "When on, the Staircase is divided by a fixed step (riser) height; the step count is derived "
+                        "from the pull height. When off, a fixed step count is used."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &DrawStairData::m_steps, "Step Count",
-                        "Number of steps the Draw Shape tool builds when the shape is a Staircase.")
+                        AZ::Edit::UIHandlers::Slider, &DrawStairData::m_steps,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Step Count"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Number of steps the Draw Shape tool builds when the shape is a Staircase."))
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 128)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DrawStairData::StepsVisibility)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DrawStairData::m_stepHeight, "Step Height",
-                        "Riser height of each step; the step count is derived from the pull height.")
+                        AZ::Edit::UIHandlers::Default, &DrawStairData::m_stepHeight,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Step Height"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Riser height of each step; the step count is derived from the pull height."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1000.0f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DrawStairData::StepHeightVisibility)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &DrawStairData::m_rotation, "Stair Rotation (x90)",
-                        "Orientation of the Staircase in 90-degree steps about the drawn surface. 2 (180 degrees) puts "
-                        "the tall end at the corner you first clicked.")
+                        AZ::Edit::UIHandlers::Slider, &DrawStairData::m_rotation,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Stair Rotation (x90)"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Orientation of the Staircase in 90-degree steps about the drawn surface. 2 (180 degrees) puts "
+                        "the tall end at the corner you first clicked."))
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
                     ->Attribute(AZ::Edit::Attributes::Max, 3);
             }
@@ -662,28 +668,33 @@ namespace WhiteBox
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<DrawShapeData>("Draw Shape", "Draw Shape tool settings.")
+                editContext->Class<DrawShapeData>(
+                    QT_TRANSLATE_NOOP("WhiteBox", "Draw Shape"),
+                    QT_TRANSLATE_NOOP("WhiteBox", "Draw Shape tool settings."))
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &DrawShapeData::m_shape, "Draw Shape",
-                        "Shape the Draw Shape tool builds. Changing this resets Draw Sides to a sensible default.")
-                    ->EnumAttribute(DrawShapeType::Box, "Box")
-                    ->EnumAttribute(DrawShapeType::Cylinder, "Cylinder")
-                    ->EnumAttribute(DrawShapeType::Pyramid, "Pyramid")
-                    ->EnumAttribute(DrawShapeType::Cone, "Cone")
-                    ->EnumAttribute(DrawShapeType::Sphere, "Sphere")
-                    ->EnumAttribute(DrawShapeType::Staircase, "Staircase")
+                        AZ::Edit::UIHandlers::ComboBox, &DrawShapeData::m_shape,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Draw Shape"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Shape the Draw Shape tool builds. Changing this resets Draw Sides to a sensible default."))
+                    ->EnumAttribute(DrawShapeType::Box, QT_TRANSLATE_NOOP("WhiteBox", "Box"))
+                    ->EnumAttribute(DrawShapeType::Cylinder, QT_TRANSLATE_NOOP("WhiteBox", "Cylinder"))
+                    ->EnumAttribute(DrawShapeType::Pyramid, QT_TRANSLATE_NOOP("WhiteBox", "Pyramid"))
+                    ->EnumAttribute(DrawShapeType::Cone, QT_TRANSLATE_NOOP("WhiteBox", "Cone"))
+                    ->EnumAttribute(DrawShapeType::Sphere, QT_TRANSLATE_NOOP("WhiteBox", "Sphere"))
+                    ->EnumAttribute(DrawShapeType::Staircase, QT_TRANSLATE_NOOP("WhiteBox", "Staircase"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &DrawShapeData::OnShapeChange)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Slider, &DrawShapeData::m_sides, "Draw Sides",
-                        "Number of sides for round / N-gon shapes (4 = box / square), or the subdivision of the Sphere.")
+                        AZ::Edit::UIHandlers::Slider, &DrawShapeData::m_sides,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Draw Sides"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Number of sides for round / N-gon shapes (4 = box / square), or the subdivision of the Sphere."))
                     ->Attribute(AZ::Edit::Attributes::Min, 3)
                     ->Attribute(AZ::Edit::Attributes::Max, 128)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::SidesVisibility)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &DrawShapeData::m_stair, "Stair",
-                        "Staircase-specific settings.")
+                        AZ::Edit::UIHandlers::Default, &DrawShapeData::m_stair,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Stair"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Staircase-specific settings."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DrawShapeData::StairVisibility)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
@@ -741,21 +752,25 @@ namespace WhiteBox
                     ->EnumAttribute(DefaultShapeType::Asset, QT_TRANSLATE_NOOP("WhiteBox", "Mesh Asset"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnDefaultShapeChange)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawShapeData, "Draw Shape",
-                        "Draw Shape tool settings.")
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawShapeData,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Draw Shape"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Draw Shape tool settings."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_drawCarve, "Carve (Boolean)",
-                        "When on, drawing performs a CSG boolean (same as holding Ctrl): pull into the surface to "
-                        "carve/subtract, pull out to add/union.")
+                        AZ::Edit::UIHandlers::CheckBox, &EditorWhiteBoxComponent::m_drawCarve,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Carve (Boolean)"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "When on, drawing performs a CSG boolean (same as holding Ctrl): pull into the surface to "
+                        "carve/subtract, pull out to add/union."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawUnitCube, "Unit Cube Stamp",
-                        "In draw mode, click to stamp a grid-snapped 1x1x1 cube (CSG union; hold Ctrl to subtract) "
-                        "instead of click-drag-pull.")
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_drawUnitCube,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Unit Cube Stamp"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "In draw mode, click to stamp a grid-snapped 1x1x1 cube (CSG union; hold Ctrl to subtract) "
+                        "instead of click-drag-pull."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset, "Editor Mesh Asset",
-                        "Editor Mesh Asset")
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_editorMeshAsset,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Editor Mesh Asset"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::AssetVisibility)
                     ->UIElement(AZ::Edit::UIHandlers::Button,
                         QT_TRANSLATE_NOOP("WhiteBox", "Save as asset"),
@@ -784,43 +799,48 @@ namespace WhiteBox
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &EditorWhiteBoxComponent::m_flipYZForExport,
-                        "Flip Y and Z for Export",
-                        "Flip the Y and Z axes when exportings so they aren't imported sideways into coord systems where the Y-axis goes up.")
+                        QT_TRANSLATE_NOOP("WhiteBox", "Flip Y and Z for Export"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Flip the Y and Z axes when exportings so they aren't imported sideways into coord systems where the Y-axis goes up."))
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_booleanSourceEntity, "Boolean Source",
-                        "Another entity with a White Box component to use as the boolean operand.")
+                        AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_booleanSourceEntity,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Boolean Source"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Another entity with a White Box component to use as the boolean operand."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnBooleanSourceChange)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Boolean")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, QT_TRANSLATE_NOOP("WhiteBox", "Boolean"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     // Apply Boolean is placed as the FIRST child of the group: a UIElement
                     // that is the LAST child of a group is dropped by the property editor.
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "", "Apply the boolean using the source entity's mesh")
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "",
+                        QT_TRANSLATE_NOOP("WhiteBox", "Apply the boolean using the source entity's mesh"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::ApplyBoolean)
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Apply Boolean")
+                    ->Attribute(AZ::Edit::Attributes::ButtonText, QT_TRANSLATE_NOOP("WhiteBox", "Apply Boolean"))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_booleanOperation, "Boolean Operation",
-                        "How to combine the source mesh with this one.")
-                    ->EnumAttribute(Api::BooleanOperation::Subtraction, "Subtract")
-                    ->EnumAttribute(Api::BooleanOperation::Union, "Union")
-                    ->EnumAttribute(Api::BooleanOperation::Intersection, "Intersect")
+                        AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_booleanOperation,
+                        QT_TRANSLATE_NOOP("WhiteBox", "Boolean Operation"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "How to combine the source mesh with this one."))
+                    ->EnumAttribute(Api::BooleanOperation::Subtraction, QT_TRANSLATE_NOOP("WhiteBox", "Subtract"))
+                    ->EnumAttribute(Api::BooleanOperation::Union, QT_TRANSLATE_NOOP("WhiteBox", "Union"))
+                    ->EnumAttribute(Api::BooleanOperation::Intersection, QT_TRANSLATE_NOOP("WhiteBox", "Intersect"))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_liveBoolean,
-                        "Non-Destructive (Live)",
-                        "Keep this mesh editable and show the boolean result live (re-evaluates when the source "
-                        "moves or either mesh changes). Leave off to use the one-shot Apply Boolean button.")
+                        QT_TRANSLATE_NOOP("WhiteBox", "Non-Destructive (Live)"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Keep this mesh editable and show the boolean result live (re-evaluates when the source "
+                        "moves or either mesh changes). Leave off to use the one-shot Apply Boolean button."))
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorWhiteBoxComponent::OnLiveBooleanChange)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_hideSourceAfterApply,
-                        "Hide Source After Apply", "Hide the source entity once the boolean is applied.")
+                        QT_TRANSLATE_NOOP("WhiteBox", "Hide Source After Apply"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Hide the source entity once the boolean is applied."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxComponent::m_deleteSourceAfterApply,
-                        "Delete Source After Apply", "Delete the source entity once the boolean is applied.")
+                        QT_TRANSLATE_NOOP("WhiteBox", "Delete Source After Apply"),
+                        QT_TRANSLATE_NOOP("WhiteBox", "Delete the source entity once the boolean is applied."))
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorWhiteBoxComponent::BooleanGroupVisibility);
             }
         }
