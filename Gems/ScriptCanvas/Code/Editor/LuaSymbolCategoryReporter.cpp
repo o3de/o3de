@@ -20,7 +20,7 @@
 namespace ScriptCanvasEditor
 {
     //////////////////////////////////////////////////////////////////////////
-    // Category resolution — a faithful, UI-free copy of the Node Palette's
+    // Category resolution - a faithful, UI-free copy of the Node Palette's
     // per-kind rules (NodePaletteModel.cpp). Keep these in step if that file
     // changes. Each rule is: translation override -> reflection Category
     // attribute -> default bucket, with the same leaf/append behavior per kind.
@@ -28,7 +28,7 @@ namespace ScriptCanvasEditor
 
     namespace
     {
-        // Default buckets — must match NodePaletteModel's constants exactly.
+        // Default buckets - must match NodePaletteModel's constants exactly.
         constexpr char DefaultClassMethodCategory[]    = "Class Methods";
         constexpr char DefaultGlobalMethodCategory[]   = "Global Methods";
         constexpr char DefaultGlobalConstantCategory[] = "Global Constants";
@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
         constexpr char DefaultEbusEventCategory[]      = "Events";
 
         // Reads the reflection Category attribute (path form, e.g. "Gameplay/Camera").
-        // Empty when unspecified — the correct "uncategorized" signal.
+        // Empty when unspecified - the correct "uncategorized" signal.
         AZStd::string GetCategoryAttribute(const AZ::AttributeArray& attributes, const AZ::BehaviorContext& behaviorContext)
         {
             AZStd::string retVal;
